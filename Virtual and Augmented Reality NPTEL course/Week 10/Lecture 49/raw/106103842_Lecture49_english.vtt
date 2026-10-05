@@ -1,0 +1,825 @@
+WEBVTT
+
+1
+00:00:24.095 --> 00:00:31.527
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:31.547 --> 00:00:39.198
+Now we are going to start a new topic, which is Optimizing VR Navigation Experience.
+
+3
+00:00:41.883 --> 00:00:46.069
+Before we start, let us quickly recap what we have learned so far.
+
+4
+00:00:49.019 --> 00:01:01.881
+In our learning so far, we have mostly focused on the foundational aspects of extended reality systems, which included the idea of VR systems,
+
+4.1
+00:01:01.881 --> 00:01:16.242
+namely the hardware and software used to build such systems, and also extended reality systems in general, including AR systems,
+
+5
+00:01:20.187 --> 00:01:32.585
+the role of human factors, how they are important, why we should bother about them, and how they can be taken into account while building extended reality systems.
+
+6
+00:01:32.605 --> 00:01:37.633
+We have also learned about the design lifecycle for any extended reality system.
+
+7
+00:01:37.653 --> 00:01:39.515
+There we talked about interactive systems.
+
+8
+00:01:39.836 --> 00:01:43.722
+Extended reality systems are essentially a subset of interactive systems.
+
+9
+00:01:44.222 --> 00:01:47.087
+And we talked about the interactive system development lifecycle.
+
+10
+00:01:47.447 --> 00:01:48.709
+Primarily we focused on
+
+11
+00:01:49.094 --> 00:02:00.950
+the requirement gathering, the design-prototype-evaluate cycle, that is, interface and interaction design, where we learned about design guidelines, prototyping, and expert evaluation techniques.
+
+12
+00:02:01.751 --> 00:02:10.683
+Also, we talked about implementation and usability evaluation of such systems.
+
+13
+00:02:14.127 --> 00:02:16.350
+Now, all these concepts
+
+14
+00:02:17.309 --> 00:02:19.832
+pertain to usable system development.
+
+15
+00:02:19.872 --> 00:02:30.290
+So, essentially, our objective is to build systems that are usable, and in order to do so, whatever we needed to know, whatever we needed to use,
+
+15.1
+00:02:30.290 --> 00:02:38.693
+all those basic things we have covered so far, with the objective that we should be able to enhance the user experience.
+
+16
+00:02:40.976 --> 00:02:42.878
+Now, the considerations that we have
+
+17
+00:02:43.668 --> 00:02:54.004
+covered so far, the topics that we have covered so far, are important considerations, no doubt.
+
+18
+00:02:54.024 --> 00:03:01.616
+But there are more such important considerations to be taken into account while building systems.
+
+19
+00:03:01.636 --> 00:03:07.525
+So, usability is something that rests on many things.
+
+20
+00:03:07.986 --> 00:03:12.072
+We have covered a few of those, and there are many other such considerations,
+
+21
+00:03:13.013 --> 00:03:18.785
+when we are talking of usable system development and deployment.
+
+22
+00:03:18.805 --> 00:03:25.540
+Now, other considerations can broadly be related to the issues of optimization.
+
+23
+00:03:26.402 --> 00:03:32.575
+So, we are going to devote time to understanding what these issues of optimization are.
+
+24
+00:03:39.271 --> 00:03:48.584
+Here, in these lectures, we will primarily focus on optimization in VR, immersive experience in particular.
+
+25
+00:03:49.205 --> 00:03:54.833
+Now, we can look at this optimization problem, the issues of optimization, from two perspectives.
+
+26
+00:03:56.856 --> 00:04:02.103
+One is optimized experience, that is, psychophysiological experience optimization.
+
+27
+00:04:03.005 --> 00:04:08.232
+The other one is optimized resource utilization or resource requirement, that is,
+
+28
+00:04:08.566 --> 00:04:09.967
+technological optimization.
+
+29
+00:04:11.008 --> 00:04:16.333
+So, these two perspectives we can think of while talking about optimization in VR.
+
+30
+00:04:19.897 --> 00:04:34.410
+These two optimization requirements are there in any XR system, of course, but the thing is that in an immersive experience, the optimization requirements gain more prominence.
+
+31
+00:04:34.430 --> 00:04:37.493
+So, we will be focusing mostly on immersive VR experience,
+
+32
+00:04:37.979 --> 00:04:42.065
+and immersive VR systems while dealing with optimization issues.
+
+33
+00:04:43.567 --> 00:04:45.831
+So, let us first talk about experience optimization.
+
+34
+00:04:47.293 --> 00:04:53.883
+Now, earlier we talked about a major issue in immersive VR, that is the issue of cyber sickness.
+
+35
+00:04:53.903 --> 00:05:04.931
+When we talk about an optimized experience, one way to look at it is to design the experience so as to minimize cyber sickness.
+
+36
+00:05:04.931 --> 00:05:17.933
+So, when we are trying to minimize cyber sickness or minimize the possibility of the induction of cyber sickness while using a system, then we can roughly call it an experience optimization problem.
+
+37
+00:05:23.419 --> 00:05:24.160
+What is the other one?
+
+38
+00:05:24.381 --> 00:05:25.442
+Resource optimization.
+
+39
+00:05:25.882 --> 00:05:29.907
+So, in XR or extended reality in general and VR in particular.
+
+40
+00:05:33.295 --> 00:05:35.318
+The systems are generally resource-hungry.
+
+41
+00:05:38.382 --> 00:05:47.567
+To get some idea of what this means, you can recap our discussion on the VR hardware and software where we talked about the hardware requirements,
+
+41.1
+00:05:47.567 --> 00:05:56.548
+what kind of hardware we need to suitably deploy VR systems in particular.
+
+42
+00:05:58.671 --> 00:06:03.117
+Now, if the requirement is too high, then certainly the systems will not be
+
+43
+00:06:03.603 --> 00:06:11.935
+Affordable, and it will be difficult to make products for the masses where affordability is a major concern.
+
+44
+00:06:12.516 --> 00:06:24.493
+So, we should aim to build systems to minimize resource requirements as well while trying to minimize cyber sickness.
+
+45
+00:06:25.956 --> 00:06:32.445
+Now, while trying to minimize resource requirements, we should not compromise on experience.
+
+46
+00:06:33.809 --> 00:06:44.120
+We should try to maximize the immersive experience; then only we can say that this resource optimization is effective.
+
+47
+00:06:44.500 --> 00:06:51.387
+Otherwise, we may optimize resources, but if that affects the experience, then we cannot call it optimization.
+
+48
+00:06:52.568 --> 00:07:01.858
+So, our goal is to build and deploy VR systems with as few resources as possible,
+
+49
+00:07:03.121 --> 00:07:12.898
+without compromising on experience or without reducing the quality of experience to the extent possible.
+
+50
+00:07:13.039 --> 00:07:18.811
+Of course, when we are trying to optimize two things, one is resource requirements and the other one is experience,
+
+50.1
+00:07:18.811 --> 00:07:27.745
+we have to balance some trade-offs, and balancing those trade-offs is the optimization that we are talking about here.
+
+51
+00:07:30.644 --> 00:07:35.231
+So, in this lecture, we will talk about ways to optimize experience.
+
+52
+00:07:35.271 --> 00:07:37.815
+We will not focus on the resource optimization part here.
+
+53
+00:07:38.696 --> 00:07:47.308
+In order to understand resource optimization, we require a detailed discussion on certain relevant things, which we will take up in subsequent lectures.
+
+54
+00:07:48.370 --> 00:07:52.496
+This lecture will focus on experience optimization.
+
+55
+00:07:53.057 --> 00:08:00.027
+Now, as we have already talked, when we talk of experience optimization, particularly in the context of VR,
+
+56
+00:08:00.395 --> 00:08:04.900
+we are essentially referring to the fact that we are trying to minimize cyber sickness.
+
+57
+00:08:08.244 --> 00:08:13.510
+So, experience optimization essentially can be equated with optimizing cyber sickness.
+
+58
+00:08:16.714 --> 00:08:24.343
+Before we delve deeper into the experience optimization techniques, let us quickly recap what cyber sickness is.
+
+59
+00:08:25.488 --> 00:08:30.643
+As you may recollect, it is also known as visually induced motion sickness, or VIMS,
+
+59.1
+00:08:30.643 --> 00:08:41.613
+which is a condition that can affect individuals when they interact with virtual reality technologies and can be caused by a variety of factors.
+
+60
+00:08:43.416 --> 00:08:53.892
+So, it is not a single-factor effect; a variety of factors can affect the cyber sickness in a user.
+
+61
+00:08:55.964 --> 00:08:57.846
+So, what are those causes of cyber sickness?
+
+62
+00:08:59.747 --> 00:09:09.616
+So, there are broadly two categories of factors we can relate to the induction of cyber sickness: internal factors and external factors.
+
+63
+00:09:09.656 --> 00:09:17.343
+External factors can broadly be divided into hardware and VR content categories for cyber sickness.
+
+64
+00:09:17.764 --> 00:09:24.570
+Now, under internal factors, we have several factors such as the age of the user,
+
+65
+00:09:24.989 --> 00:09:37.887
+the gender of the user, susceptibility to motion sickness of the user, the physical condition of the user, and the emotional condition also of the user.
+
+66
+00:09:38.367 --> 00:09:51.325
+So, these five are primarily responsible for cyber sickness in a user, which can be categorized under internal factors, internal to the user.
+
+67
+00:09:51.826 --> 00:09:54.169
+Now, among the external factors, we have hardware,
+
+68
+00:09:54.689 --> 00:10:05.984
+under which there is display resolution, latency, latency jitter, type of display, and type of input, which are primarily considered to be responsible for cyber sickness.
+
+69
+00:10:06.805 --> 00:10:22.485
+Under VR content, we have visual motion, means of locomotion, field of view, type of content, duration, and visual complexity, which are responsible for cyber sickness.
+
+70
+00:10:24.625 --> 00:10:30.334
+Of course, for details of each of these factors, you can refer to our earlier discussion on cyber sickness.
+
+71
+00:10:30.374 --> 00:10:32.557
+We had a very detailed discussion on cyber sickness.
+
+72
+00:10:33.999 --> 00:10:35.582
+Please refer to those.
+
+73
+00:10:37.485 --> 00:10:46.979
+Now, finding a feasible solution to reduce the impact of cyber sickness on a user is extremely important for two reasons.
+
+74
+00:10:48.301 --> 00:10:52.287
+It is supposed to greatly enhance overall user experience and
+
+75
+00:10:52.739 --> 00:10:56.464
+make VR more appealing to a wider range of people.
+
+76
+00:10:57.045 --> 00:11:10.444
+So, it is very important to find solutions to address the cyber sickness issue while the user is experiencing a VR system.
+
+77
+00:11:14.189 --> 00:11:20.738
+Now, solutions to address cyber sickness issues
+
+78
+00:11:22.372 --> 00:11:26.378
+broadly come under the mitigation strategies for mitigation of cyber sickness.
+
+79
+00:11:28.020 --> 00:11:40.385
+Now, these mitigation strategies often come at the cost of presence; that is, if we try to reduce cyber sickness, then the presence may be
+
+79.1
+00:11:40.385 --> 00:11:49.711
+reduced. That is, the user will feel more like in an artificial environment than a real environment.
+
+80
+00:11:49.731 --> 00:11:50.472
+So, the user will
+
+81
+00:11:52.460 --> 00:11:55.503
+be less likely to get a proper immersive experience.
+
+82
+00:11:57.345 --> 00:12:04.734
+Now, this is where the challenge lies: developing mitigation strategies without compromising on user experience.
+
+83
+00:12:04.754 --> 00:12:16.847
+So, our motto is that we should try to develop cyber sickness mitigation strategies, but at the same time, we should not compromise on presence,
+
+84
+00:12:19.173 --> 00:12:27.622
+which indirectly is related to user experience.
+
+85
+00:12:27.642 --> 00:12:43.159
+So, what we are going to learn in this lecture is we will try to understand how to minimize cyber sickness by minimizing the duration or distance covered in navigation.
+
+86
+00:12:43.179 --> 00:12:45.602
+So, what we are going to learn is basically
+
+87
+00:12:46.763 --> 00:13:03.521
+minimizing cyber sickness by minimizing the duration of navigation in the virtual environment or minimizing distance in navigation during the virtual experience.
+
+88
+00:13:03.541 --> 00:13:14.492
+Now, while we are trying to minimize either of these, duration or distance covered, we should keep in mind that we should not compromise on presence.
+
+89
+00:13:14.742 --> 00:13:25.817
+So, our objective is to try to minimize duration or distance in navigation while trying to maximize presence.
+
+90
+00:13:31.145 --> 00:13:35.611
+So, then it brings us to the issue of VR navigation.
+
+91
+00:13:35.651 --> 00:13:42.420
+So, we are trying to optimize user experience.
+
+92
+00:13:43.278 --> 00:13:51.191
+In immersive systems, in order to do so, we are trying to minimize cyber sickness without compromising on presence.
+
+93
+00:13:51.211 --> 00:13:59.982
+And we are trying to minimize cyber sickness by minimizing the duration of exposure to the virtual world or,
+
+93.1
+00:13:59.982 --> 00:14:08.020
+by minimizing the distance covered in the virtual world during navigation in the virtual world.
+
+94
+00:14:09.198 --> 00:14:12.101
+While doing so, we try to maximize presence.
+
+95
+00:14:12.121 --> 00:14:20.411
+Now, since we are talking of navigation, the duration or distance covered in navigation, let us quickly have a recap on VR navigation.
+
+96
+00:14:21.472 --> 00:14:25.376
+We have already had a detailed discussion on VR navigation earlier.
+
+97
+00:14:25.717 --> 00:14:27.479
+Let us just have a quick recap.
+
+98
+00:14:32.765 --> 00:14:37.450
+To navigate in the VR world, we use virtual locomotion techniques or
+
+99
+00:14:38.071 --> 00:14:39.312
+In short, VLTs.
+
+100
+00:14:40.333 --> 00:14:48.461
+Now, when you talk of VLTs, there are different categories of virtual locomotion techniques, as we have discussed earlier in detail.
+
+101
+00:14:50.743 --> 00:15:02.995
+We have walking-based locomotion techniques where physical walking is involved, under which we can have full gait, partial gait, and gait negation techniques.
+
+102
+00:15:03.535 --> 00:15:05.277
+Then we have steering-based locomotion techniques,
+
+103
+00:15:07.484 --> 00:15:15.255
+selection-based locomotion techniques, and finally, manipulation-based locomotion techniques.
+
+104
+00:15:15.275 --> 00:15:24.228
+So, broadly, these four categories of techniques are utilized for locomotion in the virtual world, that is, moving from one point to another.
+
+105
+00:15:28.674 --> 00:15:32.800
+Now, VLTs allow us to perform navigation in the VR world.
+
+106
+00:15:33.522 --> 00:15:43.551
+In other words, we can say that VLTs allow us to perform a VR tour, or virtual reality tour, in the virtual environment.
+
+107
+00:15:43.571 --> 00:15:51.679
+Now, these virtual reality tours, based on the way they are made, can be categorized into two broad groups.
+
+108
+00:15:54.262 --> 00:15:57.505
+One is user-controlled virtual tours.
+
+109
+00:15:57.525 --> 00:16:01.048
+The second one is system-controlled virtual tours.
+
+110
+00:16:03.762 --> 00:16:09.747
+In the case of user-controlled virtual tours, what do we perform?
+
+111
+00:16:10.708 --> 00:16:20.236
+So, user-controlled tours essentially refer to a tour in which the user has control over their travel and navigation within the VR environment.
+
+112
+00:16:20.256 --> 00:16:30.725
+So, the user can control how to navigate, where to navigate; the user has full control of their navigation in the virtual world. That is a user-controlled VR tour.
+
+113
+00:16:32.507 --> 00:16:33.668
+It typically involves
+
+114
+00:16:34.407 --> 00:16:43.783
+controllers or other input modalities to move and explore virtual space according to the preferences and actions of the user.
+
+115
+00:16:43.803 --> 00:16:46.808
+So, some means of interaction must be there.
+
+116
+00:16:50.014 --> 00:16:53.640
+As opposed to that, we have system-controlled virtual tours.
+
+117
+00:16:53.780 --> 00:16:58.508
+Here, the system or application is
+
+118
+00:16:58.943 --> 00:17:02.648
+in control of the user's travel within the VR environment.
+
+119
+00:17:02.688 --> 00:17:08.841
+So, in the case of a user-controlled tour, the user is controlling how to move and where to move, whereas in the case of a system-controlled tour,
+
+119.1
+00:17:08.841 --> 00:17:15.483
+the system is controlling how the user is moving in the virtual world and where the user is moving.
+
+120
+00:17:21.310 --> 00:17:28.140
+So, the user's movement and navigation are guided or controlled by the system itself.
+
+121
+00:17:28.778 --> 00:17:36.310
+Unlike in the previous case, where the user is controlling the movement and navigation.
+
+122
+00:17:39.655 --> 00:17:50.852
+Now, since the system is controlling the user's movement, such techniques or such VR tools often follow a predetermined path or sequence of movements.
+
+123
+00:17:52.375 --> 00:17:55.680
+It is already decided which way to move and where to move.
+
+124
+00:17:57.483 --> 00:18:03.853
+Now, like any other system, we have positives and negatives for system-controlled tools as well.
+
+125
+00:18:04.775 --> 00:18:17.433
+On the positive side, we have this positive effect: that is, system-controlled tools are often an effortless experience with reduced cognitive demands,
+
+125.1
+00:18:17.433 --> 00:18:21.482
+allowing the users to concentrate more on the experience itself.
+
+126
+00:18:22.205 --> 00:18:24.588
+Why is the cognitive demand reduced?
+
+127
+00:18:24.929 --> 00:18:28.935
+The user does not have to decide which way to move, how to move, or any of those things.
+
+128
+00:18:28.975 --> 00:18:31.398
+The system takes care of those decision-making things.
+
+129
+00:18:33.321 --> 00:18:49.444
+So the user is free to choose to experience, to concentrate more on the experience itself rather than spend time on planning to move.
+
+130
+00:18:52.698 --> 00:18:54.319
+On the negative side, what is there?
+
+131
+00:18:54.760 --> 00:18:58.383
+Lack of user involvement makes them less realistic.
+
+132
+00:18:58.423 --> 00:19:04.949
+So since the user is unable to control the movement, the user feels like it is not real.
+
+133
+00:19:05.349 --> 00:19:11.855
+It is a system in which the user is experiencing the thing which defeats the very purpose of presence.
+
+134
+00:19:20.643 --> 00:19:21.844
+Whatever that is,
+
+135
+00:19:22.128 --> 00:19:24.211
+whatever positive and negative sides it has.
+
+136
+00:19:24.792 --> 00:19:30.240
+So, in this lecture, we will be focusing on system-controlled tours.
+
+137
+00:19:30.260 --> 00:19:37.190
+More specifically, we will be focusing on realistic walking experiences in system-controlled tours.
+
+138
+00:19:37.210 --> 00:19:42.718
+So, while the navigation is taking place in a system-controlled tour, the user should not feel like
+
+139
+00:19:43.610 --> 00:19:46.534
+they are actually being controlled by the system.
+
+140
+00:19:46.554 --> 00:19:51.643
+Instead, if the walking experience or navigation experience is realistic,
+
+140.1
+00:19:51.643 --> 00:20:03.979
+the user will forget, or the difference between the realistic and unrealistic things will vanish, will reduce in the mind of the user.
+
+141
+00:20:04.460 --> 00:20:05.922
+So, our objective is to
+
+142
+00:20:08.602 --> 00:20:18.531
+have a realistic walking experience in a system control tool so that the user feels present in the tool.
+
+143
+00:20:18.631 --> 00:20:35.086
+Subsequently, we will see how that realistic walking experience approach that we can adopt to make the user feel present in the tool can be utilized to optimize user experience.
+
+144
+00:20:35.106 --> 00:20:37.748
+So, why are we focusing on a realistic walking experience?
+
+145
+00:20:39.483 --> 00:20:51.178
+Now, improving the walking experience in VR tours is vital for enhanced realism, or in other words, enhanced presence.
+
+146
+00:20:54.682 --> 00:20:59.649
+For that, it is essential to use the user's actual walking speed as the travel speed.
+
+147
+00:21:00.029 --> 00:21:09.321
+So, when the user is navigating in a system-controlled tour, that is, the system is forcing the user to move from one place to another, the speed at which the user is moving
+
+148
+00:21:10.516 --> 00:21:13.300
+should match the user's real-world experience.
+
+149
+00:21:14.501 --> 00:21:20.089
+Now, here we are assuming that the navigation is taking place as if the user is walking.
+
+150
+00:21:20.830 --> 00:21:23.053
+Of course, that is not necessarily the case always.
+
+151
+00:21:23.714 --> 00:21:40.236
+However, in our case, we are assuming that the user is navigating through walking, and it is essential to use the user's actual walking speed to give the user a feel of realism.
+
+152
+00:21:43.895 --> 00:21:52.264
+Now, when you say 'actual,' it refers to the user's typical walking behavior, not during walking in a VR tour.
+
+153
+00:21:55.067 --> 00:22:02.335
+So, the challenge here is that system-automated tours typically do not allow for continuous user input.
+
+154
+00:22:02.355 --> 00:22:06.640
+So, that makes it difficult to align the user's input with the walking speed.
+
+155
+00:22:06.660 --> 00:22:13.007
+So, if the input mechanism is not there, then how do we tell
+
+156
+00:22:13.561 --> 00:22:27.882
+or how the user can tell whether they want to move at a natural walking speed or whether the speed being provided by the system is good enough.
+
+157
+00:22:27.902 --> 00:22:35.613
+So, one way out can be a constant walking speed as an optic flow, or in other words, the speed of change of the scene.
+
+158
+00:22:35.933 --> 00:22:38.197
+So, how do we perceive that somebody is moving?
+
+159
+00:22:40.840 --> 00:22:42.623
+We perceive our movement by
+
+160
+00:22:44.054 --> 00:22:47.737
+perceiving the change in our view of the surroundings.
+
+161
+00:22:47.978 --> 00:22:49.499
+In other words, change in the scene.
+
+162
+00:22:50.740 --> 00:22:54.924
+Now, in a virtual world, a virtual tour, the same thing happens.
+
+163
+00:22:55.184 --> 00:22:59.308
+When I say the user is moving or navigating, that means the scene is changing constantly.
+
+164
+00:22:59.769 --> 00:23:06.815
+Now, the speed at which the scene changes needs to match the user's realistic walking speed.
+
+165
+00:23:07.356 --> 00:23:09.138
+Otherwise, it will look unrealistic.
+
+166
+00:23:09.158 --> 00:23:10.759
+It may be very fast or very slow.
+
+167
+00:23:13.582 --> 00:23:13.842
+Now,
+
+168
+00:23:14.986 --> 00:23:29.800
+One way to make it look more realistic is to have a constant walking speed as an optic flow; that is, the speed at which the scenes change remains constant over time.
+
+169
+00:23:32.483 --> 00:23:42.613
+But this is not very realistic, of course, as we can intuitively understand, because when we move, we rarely follow a constant speed while walking.
+
+170
+00:23:43.876 --> 00:23:45.198
+We ourselves do not do it.
+
+171
+00:23:45.498 --> 00:23:53.908
+So, if the system is doing so, there is less possibility that we will feel realistic while exploring the virtual space.
+
+172
+00:23:56.912 --> 00:24:01.678
+Now, our objective is to have a more realistic experience.
+
+173
+00:24:03.780 --> 00:24:13.512
+In other words, we are trying to display a visual speed or optic flow that matches the user's instantaneous walking speed.
+
+174
+00:24:15.483 --> 00:24:22.373
+So, essentially, what we are trying to figure out is a model of the user's walking speed.
+
+175
+00:24:23.775 --> 00:24:38.617
+How typically a user moves and what is the instantaneous speed during movement, and accordingly, we should try to change the scenario, the visual scene in the virtual world.
+
+176
+00:24:39.258 --> 00:24:42.503
+Then it may give the user a realistic feeling.
+
+177
+00:24:47.562 --> 00:24:53.025
+So, in the next part of the lecture, we are going to learn about such a model which can provide
+
+177.1
+00:24:53.025 --> 00:25:00.080
+an idea of the instantaneous walking speed, and correspondingly, we can have a more realistic walking experience.
+
+178
+00:25:00.100 --> 00:25:04.066
+However, that we will take up in the next part of the lecture.
+
+179
+00:25:07.130 --> 00:25:09.673
+So, let us summarize what we have covered so far.
+
+180
+00:25:09.854 --> 00:25:15.662
+We talked about the idea of optimization in VR; there we talked about two optimizations:
+
+181
+00:25:16.385 --> 00:25:18.247
+psychophysiological and technological.
+
+182
+00:25:18.287 --> 00:25:32.141
+Now, the psychophysiological optimization, we essentially equated it with the VR experience optimization.
+
+183
+00:25:32.161 --> 00:25:44.434
+Further, we equated it with optimizing cyber sickness prevalence; that is, we want to minimize cyber sickness while the user is experiencing the immersive system.
+
+184
+00:25:45.595 --> 00:25:49.139
+So, that is the way we have framed the optimization problem.
+
+185
+00:25:49.740 --> 00:25:51.402
+How do we minimize cyber sickness?
+
+186
+00:25:52.183 --> 00:26:03.744
+And in order to do so, we assume that we are talking about system-controlled VR tools where the user is navigating through walking and
+
+186.1
+00:26:03.744 --> 00:26:12.227
+we want to give the user a realistic walking experience so that the user feels present in the system.
+
+187
+00:26:13.355 --> 00:26:16.699
+When we try to optimize cyber sickness, of course, presence is very important.
+
+188
+00:26:16.840 --> 00:26:27.273
+If we compromise on presence, then whether you optimize cyber sickness or not, essentially the quality of experience will deteriorate.
+
+189
+00:26:27.293 --> 00:26:30.838
+So, taking care of presence is very important.
+
+190
+00:26:31.679 --> 00:26:41.151
+Towards that direction, we are trying to have a natural walking experience in the VR world, in a system-controlled VR tour.
+
+191
+00:26:44.708 --> 00:26:54.781
+In the next part of the lecture, we are going to talk about models for optimization which include a description of a model for natural walking experience.
+
+192
+00:26:56.944 --> 00:27:01.069
+I hope you could follow the topic, you could follow the concepts.
+
+193
+00:27:01.089 --> 00:27:03.312
+Looking forward to meeting you in the next part of the lecture.
+
+194
+00:27:03.673 --> 00:27:07.037
+Till then, thank you, goodbye and happy learning.

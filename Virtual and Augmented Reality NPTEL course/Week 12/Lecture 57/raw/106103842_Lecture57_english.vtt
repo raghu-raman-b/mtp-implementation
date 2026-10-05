@@ -1,0 +1,1185 @@
+WEBVTT
+
+1
+00:00:24.179 --> 00:00:29.988
+Hello and welcome to the NPTEL MOOC's course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:31.210 --> 00:00:35.497
+We will be continuing our discussion on resource optimization.
+
+3
+00:00:36.579 --> 00:00:50.541
+In particular, we are talking about resource optimization from the point of view of rendering, which is a very important component in any extended reality applications including
+
+4
+00:00:52.006 --> 00:00:54.550
+virtual reality and augmented reality applications.
+
+5
+00:00:58.295 --> 00:01:13.438
+So, we will primarily focus on immersive experience, as we have already stated earlier, and we are going to relate the discussion to VR resource optimization in particular.
+
+6
+00:01:15.240 --> 00:01:20.528
+Although such concerns equally apply to AR,
+
+7
+00:01:21.571 --> 00:01:33.933
+However, the emphasis is more on resource optimization in the context of VR because realistic scene generation is more important there and that
+
+7.1
+00:01:33.933 --> 00:01:37.616
+requires more resources as compared to AR experiences.
+
+8
+00:01:39.098 --> 00:01:45.047
+In order to understand resource optimization concerns, we started our discussion on
+
+9
+00:01:45.517 --> 00:01:55.528
+computer graphics, which deals with the rendering process, rendering on a computer screen or any display device such as HMDs.
+
+10
+00:01:57.911 --> 00:02:04.118
+So, we learned about the basic idea of computer graphics, including the 3D graphics pipeline stages.
+
+11
+00:02:06.360 --> 00:02:13.228
+Also, so far we have covered three of those stages, namely the first stage, object representation; the second stage,
+
+12
+00:02:14.238 --> 00:02:26.656
+modeling transformation; and the third stage, lighting calculation or calculation of intensities at the pixel point pixel positions.
+
+13
+00:02:26.676 --> 00:02:37.572
+In this part of the lecture, we are going to talk about the fourth stage of the pipeline, that is, view transformation.
+
+14
+00:02:37.592 --> 00:02:43.080
+So, just to put things into perspective, we have this 3D graphics pipeline.
+
+15
+00:02:51.683 --> 00:02:57.889
+Now, here we have object representation, the first stage, which takes place in the local coordinate reference frame.
+
+16
+00:02:58.589 --> 00:02:59.550
+We already covered it.
+
+17
+00:03:00.191 --> 00:03:05.377
+Then we have modeling transformation, the second stage, also known as geometric transformation, which
+
+17.1
+00:03:05.377 --> 00:03:16.046
+transfers the object definition from local coordinates to the definition in a world coordinate scene.
+
+18
+00:03:16.066 --> 00:03:21.471
+Then we have the third stage, that is lighting calculation, which
+
+19
+00:03:21.653 --> 00:03:25.557
+as per our pipeline discussion, takes place in the world coordinate scene.
+
+20
+00:03:27.578 --> 00:03:35.105
+Now, this lighting calculation is quite complex, and we talked about one simple lighting model.
+
+21
+00:03:37.948 --> 00:03:49.298
+In this part, today's part of the lecture, we are going to cover the fourth stage, that is the viewing pipeline, comprising all these transformations and other processes.
+
+22
+00:03:51.758 --> 00:03:54.121
+And later on, we will cover the scan conversion.
+
+23
+00:03:57.084 --> 00:04:03.651
+So, let us get the idea of the fourth stage, that is view transformation.
+
+24
+00:04:04.813 --> 00:04:10.659
+Here again, our emphasis will be on giving you the basic idea rather than going into the intricate details.
+
+25
+00:04:10.939 --> 00:04:17.867
+So, we will try to confine our discussion to a bare minimum level.
+
+26
+00:04:20.411 --> 00:04:21.713
+So, what is the basic idea?
+
+27
+00:04:23.995 --> 00:04:35.367
+The idea is that when we see an image on a screen, any screen including HMD, we are basically seeing a projection of a portion of the 3D scene.
+
+28
+00:04:36.047 --> 00:04:42.193
+So, we have a 3D scene which we have constructed and illuminated with our earlier stages.
+
+29
+00:04:42.814 --> 00:04:50.301
+Now, when we say that we are trying to render it on a computer screen, then essentially what we are doing is
+
+30
+00:04:50.838 --> 00:05:02.057
+Selecting a portion of it and then projecting it from a 3D scene to a 2D display plane or 2D view plane.
+
+31
+00:05:04.901 --> 00:05:08.287
+So, this is similar to taking a photograph.
+
+32
+00:05:08.367 --> 00:05:15.759
+So, if you are a photographer or if you know something about capturing photos, what do we do?
+
+33
+00:05:16.100 --> 00:05:17.402
+We typically have a camera.
+
+34
+00:05:17.855 --> 00:05:20.039
+Any camera, even your smartphone camera.
+
+35
+00:05:20.439 --> 00:05:26.930
+So, when we try to capture a photo, first we look at the scene with our naked eye; that is the 3D scene.
+
+36
+00:05:26.950 --> 00:05:32.459
+Then we look at the same scene using the camera screen.
+
+37
+00:05:36.005 --> 00:05:39.170
+Then we capture a portion of the scene.
+
+38
+00:05:39.190 --> 00:05:42.816
+So, the scene, our field of view covers a wide range of
+
+39
+00:05:43.387 --> 00:05:44.888
+a wide portion of the scene.
+
+40
+00:05:45.049 --> 00:05:52.156
+However, we do not capture the entire thing; we capture only the portion which is within the field of view of the camera.
+
+41
+00:05:53.177 --> 00:05:58.702
+And we set the camera in such a way that our area of interest is captured.
+
+42
+00:06:00.183 --> 00:06:04.688
+Now, when we say captured, that means we are able to see it on our screen.
+
+43
+00:06:04.708 --> 00:06:12.195
+Now, the screen is a 2D plane, whereas the scene, the portion of the scene that we have captured, is in the 3D space.
+
+44
+00:06:12.867 --> 00:06:24.179
+So, then there is a transformation, a projection transformation, which transforms from 3D space to a 2D screen.
+
+45
+00:06:24.199 --> 00:06:32.948
+The same thing we try to simulate in computer graphics with a set of stages, which are the viewing pipeline stages.
+
+46
+00:06:37.132 --> 00:06:40.596
+So, view transformation essentially is this viewing pipeline.
+
+47
+00:06:41.200 --> 00:06:53.616
+It has its own sub-stages that simulate the process of capturing a photo.
+
+48
+00:06:53.636 --> 00:07:09.016
+So first, we do a viewing transformation, a 3D viewing transformation, where the 3D world coordinate description of the scene gets transformed to a 3D view coordinate description.
+
+49
+00:07:09.036 --> 00:07:10.718
+So we define a view coordinate system.
+
+50
+00:07:13.853 --> 00:07:15.895
+So, this is a 3D view coordinate.
+
+51
+00:07:16.336 --> 00:07:25.407
+So, we define a view coordinate system, then perform a transformation operation that transforms the 3D world coordinates into the view coordinate system.
+
+52
+00:07:25.467 --> 00:07:30.894
+Now, this is akin to saying that we are looking at the scene through the camera lens.
+
+53
+00:07:32.215 --> 00:07:42.848
+When we capture a photo, before that, we see the scene using the camera mechanism, the camera viewing mechanism provided.
+
+54
+00:07:43.334 --> 00:07:52.728
+So, looking at the scene through the camera viewing mechanism and looking at the scene through our naked eyes, these two are different things.
+
+55
+00:07:53.789 --> 00:08:02.342
+And when we are looking at the scene through the camera viewing mechanism, essentially the scene gets transformed from the world coordinate system to
+
+55.1
+00:08:02.342 --> 00:08:08.591
+a view coordinate system that is defined by the camera or, in other words, the camera parameters.
+
+56
+00:08:08.711 --> 00:08:10.253
+So, that is what happens here.
+
+57
+00:08:11.735 --> 00:08:22.633
+The second thing is a projection transformation that projects the 3D view coordinate scene to a view plane, which is a 2D plane.
+
+58
+00:08:26.019 --> 00:08:35.193
+So, this is the projection transformation from the 3D view coordinate system to the 2D view coordinate system or 2D view plane.
+
+59
+00:08:37.368 --> 00:08:42.832
+And then finally, there is another transformation, which is the window-to-viewport transformation, that happens here.
+
+59.1
+00:08:42.832 --> 00:08:57.974
+Here, we transform from a 2D view plane description of the scene, or the projected scene, to a 2D device coordinate space.
+
+60
+00:09:00.917 --> 00:09:07.105
+Now, here, there are two more operations that take place: one is clipping, and one is hidden surface removal.
+
+61
+00:09:07.928 --> 00:09:19.464
+Clipping takes place in the 3D view coordinate system, as per our way of understanding the pipeline, and hidden surface removal again takes place in the 3D view coordinate system.
+
+62
+00:09:20.165 --> 00:09:30.339
+Just to emphasize here is that the way we are explaining the pipeline, it is not necessary that this sequence should be followed in implementation.
+
+63
+00:09:30.379 --> 00:09:37.108
+So, different implementations can alter the sequence of the stages or sub-stages.
+
+64
+00:09:37.527 --> 00:09:46.356
+So, this sequence of stages or sub-stages is not sacrosanct; it may be changed depending on the implementation.
+
+65
+00:09:46.376 --> 00:10:01.751
+So, we have three transformations: viewing transformation, projection transformation, and window-to-viewport transformation; and two operations: clipping and hidden surface removal.
+
+66
+00:10:03.252 --> 00:10:06.235
+Together, they constitute the viewing pipeline.
+
+67
+00:10:09.151 --> 00:10:12.374
+That is the fourth stage of the 3D graphics pipeline.
+
+68
+00:10:15.057 --> 00:10:18.600
+Now, let us try to understand these transformations in brief.
+
+69
+00:10:20.542 --> 00:10:29.992
+So, let us start with the first one, which is the 3D viewing transformation, where we transform from a 3D world coordinate description to a 3D view coordinate description.
+
+70
+00:10:30.952 --> 00:10:35.597
+This is to simulate the camera photo-taking analogy,
+
+71
+00:10:37.737 --> 00:10:43.546
+looking at the same scene, not with our bare eyes, but with the camera viewing mechanism.
+
+72
+00:10:44.828 --> 00:10:51.678
+So, first, we need to define the view coordinate system, and then we perform the transformation.
+
+73
+00:10:52.199 --> 00:10:58.568
+And this definition of the view coordinate system depends on the parameters, the camera parameters.
+
+74
+00:10:59.950 --> 00:11:03.095
+So, the setup is something like this.
+
+75
+00:11:03.175 --> 00:11:06.360
+So, this is the point in the world coordinate scene.
+
+76
+00:11:10.340 --> 00:11:18.793
+This is the world coordinate system reference frame within which all the scene points are defined.
+
+77
+00:11:19.334 --> 00:11:38.203
+Now, we have to define a view coordinate system having its own axes u, n, and v. So, essentially what we are trying to do is transfer this point in the world coordinate
+
+78
+00:11:39.162 --> 00:11:45.992
+to this view coordinate scene, the 3D view coordinate scene.
+
+79
+00:11:46.012 --> 00:11:48.616
+So, we are given the camera parameters.
+
+80
+00:11:48.857 --> 00:11:49.898
+What are those parameters?
+
+81
+00:11:50.038 --> 00:12:05.021
+The camera position serves as the origin, which can be represented by this origin vector with respect to the world coordinate scene.
+
+82
+00:12:05.041 --> 00:12:07.785
+So, this is the vector. Then,
+
+83
+00:12:08.896 --> 00:12:23.145
+Second is the view of point, again, can be another vector, the view of point, and the view direction we can define with respect to the vector. And third is the
+
+83.1
+00:12:23.145 --> 00:12:31.180
+center of interest or the look-at point P. This is the center of interest or the look-at point.
+
+84
+00:12:32.441 --> 00:12:36.726
+So, before taking a photo, we typically focus on a look-at point.
+
+85
+00:12:37.178 --> 00:12:39.580
+or center of interest, and then capture the photo.
+
+86
+00:12:39.600 --> 00:12:42.583
+So, that idea is taken here.
+
+87
+00:12:44.746 --> 00:12:49.390
+Now, from these parameters, we can set up the view coordinate system.
+
+88
+00:12:50.732 --> 00:12:51.793
+We will skip the details.
+
+89
+00:12:53.254 --> 00:12:57.819
+For those details, you can refer to the material cited at the end of the lecture.
+
+90
+00:12:59.040 --> 00:13:06.848
+So, we can simply say that to determine the parameters, to determine the view coordinate system, we need to determine the three
+
+91
+00:13:07.655 --> 00:13:24.114
+orthogonal axes N, V, and U. N can be obtained; N is the unit basis vector opposite to the looking direction and can be obtained with respect to the origin vector and the
+
+91.1
+00:13:24.114 --> 00:13:35.738
+look-up direction, that is the N vector, and then the unit vector we can obtain by its value.
+
+92
+00:13:38.789 --> 00:13:53.432
+Then, that is the first axis N. Then, the second one we can determine is the V unit basis vector along the V up direction, that is,
+
+92.1
+00:13:53.432 --> 00:14:08.087
+we can first get the V up direction, that is V up minus O, and then we get the unit basis vector as this ratio.
+
+93
+00:14:09.299 --> 00:14:22.654
+Once these two, n and v, are obtained—remember n is obtained using the origin vector and the look-at point, v is obtained using the view up point and
+
+93.1
+00:14:22.654 --> 00:14:30.379
+the origin point—and once these two are determined, we can determine u, the third
+
+94
+00:14:32.772 --> 00:14:44.251
+axis and the third unit basis vector, as u simply is the cross product of v and n.
+
+94.1
+00:14:44.251 --> 00:14:58.240
+So, that is how we can determine the three mutually orthogonal axes, and these three axes together define the view coordinate system.
+
+95
+00:15:00.447 --> 00:15:08.464
+Now, once we have the view coordinate system, that is the three axes, we can transform the
+
+95.1
+00:15:08.464 --> 00:15:20.230
+world coordinate description to the view coordinate description by two basic transformation operations: translation and rotation.
+
+96
+00:15:21.031 --> 00:15:29.340
+So, the composite transformation matrix is the dot product of these two transformation matrices.
+
+97
+00:15:30.147 --> 00:15:49.128
+r and t, and then any point in the view coordinate system is obtained from the corresponding point in the void coordinate system after the point vector is multiplied with this
+
+97.1
+00:15:49.128 --> 00:15:59.850
+composite transformation matrix comprising r and t. So, if a point P is here and if we want to transform it to a point in
+
+98
+00:16:00.303 --> 00:16:05.289
+the view coordinate system, then we can do so using this formulation.
+
+99
+00:16:09.033 --> 00:16:25.551
+Again here, how to, what is the matrix for M that is the composite matrix, or rather what are the individual matrices for R and T? These details we are skipping.
+
+100
+00:16:26.628 --> 00:16:30.232
+You can refer to the material cited at the end for those details.
+
+101
+00:16:33.176 --> 00:16:34.858
+So, that is about view transformation.
+
+102
+00:16:34.878 --> 00:16:49.388
+So, we define a view coordinate system with respect to three camera parameters, and then we use that information to transform a point from the
+
+102.1
+00:16:49.388 --> 00:16:56.365
+void coordinate system to the view coordinate system, and those matrices are formed on the basis of those
+
+103
+00:16:56.767 --> 00:16:59.411
+axis vectors and their scalar components.
+
+104
+00:17:04.318 --> 00:17:08.344
+Next is projection transformation.
+
+105
+00:17:08.364 --> 00:17:17.416
+After view transformation, we project 3D objects in the view coordinate system, the 3D view coordinate system, onto a 2D view plane.
+
+106
+00:17:20.221 --> 00:17:21.002
+So, this is our
+
+107
+00:17:23.935 --> 00:17:29.664
+world coordinate description; it gets transformed to a 2D view plane description.
+
+108
+00:17:31.266 --> 00:17:39.980
+So, in between, we first transform it to a 3D view coordinate description, and from there we project it to a 2D view plane description.
+
+109
+00:17:40.261 --> 00:17:41.623
+So, this is the view plane.
+
+110
+00:17:45.088 --> 00:17:50.196
+So, such view planes are usually defined as a rectangular area.
+
+111
+00:17:50.800 --> 00:17:54.603
+which is often called a clipping window.
+
+112
+00:17:54.623 --> 00:17:59.308
+So, there are different terminologies used to refer to more or less the same concept.
+
+113
+00:18:03.691 --> 00:18:20.166
+Now, in order to perform projection, apart from the clipping window, we also define a 3D volume, a 3D region in the scene that is basically what portion of the scene
+
+114
+00:18:20.905 --> 00:18:22.967
+we are going to project.
+
+115
+00:18:24.548 --> 00:18:26.110
+This is known as the view volume.
+
+116
+00:18:27.070 --> 00:18:32.135
+So, the view volume defines the portion of the scene that we are going to project on the view plane.
+
+117
+00:18:34.637 --> 00:18:44.025
+Objects that are inside this view volume are projected on the view plane, and objects that are outside are discarded.
+
+118
+00:18:44.045 --> 00:18:50.811
+Now, when we say that we are discarding objects that are outside of this view volume but part of the scene,
+
+119
+00:18:51.567 --> 00:18:53.810
+we call that a clipping process.
+
+120
+00:18:56.474 --> 00:19:02.242
+So, clipping takes place, as per our description of the pipeline, before we perform the projection.
+
+121
+00:19:05.306 --> 00:19:17.743
+Now, when we say we want to perform projection, projection can be of different types, and we also have to determine the computation based on the type of projection that we want to have.
+
+122
+00:19:18.702 --> 00:19:21.928
+So, one type is perspective projection.
+
+123
+00:19:22.428 --> 00:19:36.247
+Here, the projectors, which are lines emanating from the object in the 3D view coordinate system and intersecting the view plane,
+
+123.1
+00:19:36.247 --> 00:19:42.904
+these projectors are not parallel to each other; they tend to converge to a center of projection.
+
+124
+00:19:44.403 --> 00:19:45.184
+Something like this.
+
+125
+00:19:45.305 --> 00:19:48.570
+So, this is the object, suppose.
+
+126
+00:19:50.173 --> 00:19:58.387
+Now, if we extend some lines from these vertices of the object, and this is the view plane.
+
+127
+00:19:59.148 --> 00:20:09.887
+So, they intersect the view plane; the points where they intersect define the projection of that 3D object on the 2D view plane.
+
+128
+00:20:10.542 --> 00:20:21.557
+In the case of perspective projection, those lines tend to meet at a distance or converge at a distance.
+
+129
+00:20:23.119 --> 00:20:28.006
+That is called the center of projection or point of projection.
+
+130
+00:20:35.937 --> 00:20:38.440
+So, this perspective projection gives us
+
+131
+00:20:39.112 --> 00:20:43.638
+realistic rendering, a realistic feeling.
+
+132
+00:20:44.439 --> 00:20:49.886
+So, if we want to generate a realistic scene, then we should stick to perspective projection.
+
+133
+00:20:51.088 --> 00:20:54.232
+Now, there is another type of projection that is called parallel projection.
+
+134
+00:20:54.352 --> 00:21:05.507
+Here, the projectors are parallel to each other; that is, the center of projection or the point of projection is at infinity, which means they never meet.
+
+135
+00:21:06.466 --> 00:21:10.632
+This is something like that, as illustrated here.
+
+136
+00:21:10.852 --> 00:21:19.265
+The idea is something as illustrated in this figure, where we have an object; projectors are shown here.
+
+137
+00:21:20.066 --> 00:21:27.136
+They intersect the view plane and give us this projection.
+
+138
+00:21:27.176 --> 00:21:31.663
+However, the projectors are parallel to each other, so they do not meet.
+
+139
+00:21:34.782 --> 00:21:42.454
+And we say that in such cases, we call that parallel projection, where we say that the projectors meet at infinity.
+
+140
+00:21:47.521 --> 00:21:54.460
+So, for parallel projection, the view volume, if we want to generate an effect resulting from parallel projection,
+
+140.1
+00:21:54.460 --> 00:22:03.405
+then we wish to have a view volume that is a rectangular parallelepiped-shaped region as shown here.
+
+141
+00:22:07.030 --> 00:22:13.000
+And this volume defines the objects that are to be projected on the clipping window.
+
+142
+00:22:13.020 --> 00:22:25.360
+So, typically such volumes have one face as the clipping window, as shown here, and then we have other faces.
+
+143
+00:22:30.132 --> 00:22:34.917
+For perspective projection, such a view volume takes the shape of a frustum, as shown here.
+
+144
+00:22:35.097 --> 00:22:38.982
+Again, one side of the frustum is the clipping window.
+
+145
+00:22:39.042 --> 00:22:47.211
+Our objective is that whatever objects are within this frustum are to be projected on this clipping window.
+
+146
+00:22:51.716 --> 00:22:54.939
+Now, there is a concept called a canonical view volume.
+
+147
+00:22:55.279 --> 00:22:57.642
+So, remember we talked about the clipping operation.
+
+148
+00:22:58.178 --> 00:23:02.143
+That is, discarding objects that are outside the view volume.
+
+149
+00:23:02.784 --> 00:23:18.184
+Now, to discard the objects, if we go by the naive method, the simplest most intuitive method, then we have to compute the intersection of the view volume boundaries with the object boundaries.
+
+150
+00:23:19.125 --> 00:23:27.055
+Now, if we are dealing with arbitrarily shaped view volumes such as the frustums, then typically
+
+151
+00:23:27.558 --> 00:23:39.212
+calculation of those surfaces and of view volume boundary intersection points turns out to be quite computation intensive.
+
+152
+00:23:42.616 --> 00:23:51.387
+In order to simplify that, we take recourse to a concept called canonical view volume, which is used to simplify the pipeline computations.
+
+153
+00:23:52.608 --> 00:23:53.329
+The idea is that
+
+154
+00:23:56.448 --> 00:24:06.004
+we use a normalized cube to define the view volume. That means whatever view volume is defined,
+
+154.1
+00:24:06.004 --> 00:24:15.090
+whether for parallel or perspective projection of arbitrary shape and size, we convert those to a normalized cube.
+
+155
+00:24:17.173 --> 00:24:26.404
+Now, for parallel projection, such a canonical view volume can be obtained by scaling the
+
+156
+00:24:28.088 --> 00:24:32.193
+arbitrarily defined view volume for the parallel projection.
+
+157
+00:24:34.115 --> 00:24:34.976
+The idea is shown here.
+
+158
+00:24:36.677 --> 00:24:50.793
+This is a view volume defined for parallel projection arbitrarily, and this is a transformed view volume which is called the canonical view volume for parallel projection, which is a unit cube.
+
+159
+00:24:52.195 --> 00:24:54.417
+For perspective projection,
+
+160
+00:24:56.810 --> 00:24:58.773
+the computation is a little bit higher.
+
+161
+00:24:59.474 --> 00:25:10.790
+So, here we need to convert the frustum to a parallel canonical view volume, that is, a normalized unit cube.
+
+162
+00:25:14.315 --> 00:25:21.805
+So, to convert a frustum to a normalized unit cube such as this requires
+
+163
+00:25:23.557 --> 00:25:29.684
+scaling as well as shearing operations to change the shape along with the change in size.
+
+164
+00:25:30.885 --> 00:25:40.716
+So, here the amount of computation involved in such a transformation is a bit more as compared to parallel projection.
+
+165
+00:25:45.221 --> 00:25:49.786
+Now, let us quickly talk about the two projections: how to perform the projections.
+
+166
+00:25:49.806 --> 00:25:52.990
+Like before, here also we take recourse to
+
+167
+00:25:53.678 --> 00:25:56.842
+matrices projection transformation matrices.
+
+168
+00:25:56.862 --> 00:26:03.209
+So, we multiply the point vectors with the transformation matrix to get the requisite projection.
+
+169
+00:26:04.250 --> 00:26:07.234
+So, for parallel projection we have a matrix like this.
+
+170
+00:26:07.494 --> 00:26:20.289
+This is a very simplified representation of the matrix where D is the distance of the clipping window from the origin of the 3D view coordinate system.
+
+171
+00:26:20.309 --> 00:26:23.112
+So, then we have such a representation
+
+172
+00:26:24.914 --> 00:26:39.285
+in a 4 by 4 matrix and to get a projected point on this clipping window, what we need to do is,
+
+172.1
+00:26:39.285 --> 00:26:53.132
+we need to have this point vector defined in the 3D view coordinate system, we multiply it with the projection matrix to get this
+
+173
+00:26:55.036 --> 00:26:58.940
+transformed point in the form of a point vector.
+
+174
+00:26:59.000 --> 00:27:05.567
+However, here we have this homogeneous factor w which is typically not equal to 1.
+
+175
+00:27:07.028 --> 00:27:17.319
+So, to get to the Cartesian points what we need to do is basically to divide the obtained coordinate values by this homogeneous factor.
+
+176
+00:27:17.339 --> 00:27:19.221
+So, to get
+
+177
+00:27:20.635 --> 00:27:37.613
+Cartesian value along the x direction, we need to divide this corresponding vector value by the homogeneous coordinate, similarly for y and z. We need to do this additional computation here.
+
+178
+00:27:41.077 --> 00:27:43.760
+What about perspective projection transformation?
+
+179
+00:27:43.780 --> 00:27:49.866
+So, we have a point here, we want to project it on the clipping window here.
+
+180
+00:27:50.858 --> 00:27:55.964
+and D is, as usual, the distance of the window from the view coordinate origin.
+
+181
+00:27:58.306 --> 00:28:02.891
+Here, D is the distance of the window from the center of projection.
+
+182
+00:28:02.931 --> 00:28:07.296
+Now, the center of projection may typically be assumed to be at the origin.
+
+183
+00:28:07.496 --> 00:28:09.358
+So, accordingly, the setup can be made.
+
+184
+00:28:09.458 --> 00:28:11.881
+However, that is not necessarily the case always.
+
+185
+00:28:13.102 --> 00:28:19.369
+But let us assume that D is the distance from the clipping window to the center of projection.
+
+186
+00:28:19.389 --> 00:28:20.410
+So, in that case,
+
+187
+00:28:20.997 --> 00:28:34.118
+we have a perspective projection matrix in this form shown here, which is a bit more complex as compared to the parallel projection matrix.
+
+188
+00:28:36.522 --> 00:28:38.105
+And then we follow the same procedure.
+
+189
+00:28:38.305 --> 00:28:41.390
+We have this point vector in the 3D view coordinate system.
+
+190
+00:28:42.151 --> 00:28:47.460
+We multiply it with the projection matrix, here the perspective projection matrix, to get
+
+191
+00:28:48.453 --> 00:29:07.153
+the projected point in the homogeneous coordinate form, and then to get to the Cartesian coordinate form we need to divide by the homogeneous factor, as we have done before for parallel projection.
+
+192
+00:29:07.173 --> 00:29:08.754
+This is for perspective projection.
+
+193
+00:29:08.774 --> 00:29:15.962
+So, here again, we are skipping many different types of projections under each of these categories, that is, parallel and perspective.
+
+194
+00:29:16.735 --> 00:29:22.785
+Here, we are just trying to give you a very broad idea of projection and how it can be done.
+
+195
+00:29:26.931 --> 00:29:43.738
+So, then, let us try to enumerate the sequence of transformations that are involved to project a point P in the world coordinate system to a point on the 2D view plane.
+
+196
+00:29:47.161 --> 00:29:53.330
+So, first it gets transformed to the view coordinate system, the 3D view coordinate system.
+
+197
+00:29:54.632 --> 00:30:06.049
+Then the view volume in which the point lies is transformed to a canonical view volume, which is typically the case before we perform the clipping operation.
+
+198
+00:30:08.072 --> 00:30:14.822
+And finally, the point in the canonical view volume is projected onto the view plane.
+
+199
+00:30:15.258 --> 00:30:16.960
+through the projection transformation.
+
+200
+00:30:17.020 --> 00:30:26.092
+So, if P' is the final point that we obtain on the view plane, the 2D view plane, then we can compute P' in terms of the original point P in the world coordinate scene and
+
+200.1
+00:30:30.757 --> 00:30:43.554
+multiplying P with the transformation matrices for view coordinate, world coordinate to 3D view coordinate transformation matrix, then
+
+201
+00:30:43.554 --> 00:30:51.375
+a matrix to transform to the canonical view volume, and finally the projection transformation matrix.
+
+202
+00:30:54.318 --> 00:31:07.773
+So, these are the matrices we need to multiply together to get a composite matrix representing the overall projection from the world coordinate scene to the 2D view plane.
+
+203
+00:31:12.018 --> 00:31:14.020
+That is up to projection to the view plane.
+
+204
+00:31:14.540 --> 00:31:17.887
+Now, there is one more projection, which is window to viewport.
+
+205
+00:31:18.248 --> 00:31:19.130
+Now, what is a window?
+
+206
+00:31:20.834 --> 00:31:24.202
+A window is the same as a normalized clipping window.
+
+207
+00:31:24.222 --> 00:31:28.752
+So, typically there is another term for this view plane, which is window.
+
+208
+00:31:29.353 --> 00:31:32.059
+This is actually a normalized clipping window.
+
+209
+00:31:38.182 --> 00:31:49.352
+The viewport, on the other hand, is not defined on the view plane; it is defined in the device space, that is, a portion of the final screen where the scene will be rendered.
+
+210
+00:31:51.114 --> 00:31:57.620
+So, this is defined with respect to the screen origin and the screen dimensions or display origin and display dimensions.
+
+211
+00:31:57.700 --> 00:32:02.545
+The viewport has nothing to do with the display; it is an abstract intermediate representation.
+
+212
+00:32:03.005 --> 00:32:07.429
+The window has nothing to do with the display; it is an abstract intermediate representation.
+
+213
+00:32:07.898 --> 00:32:16.171
+The viewport is defined with respect to the display origin or screen origin and screen dimensions.
+
+214
+00:32:16.191 --> 00:32:27.528
+So, we need to map from this abstract representation in the window to a device-specific representation in the viewport.
+
+215
+00:32:27.548 --> 00:32:35.560
+In other words, given a point on the window, we need to transform it to a point on the viewport.
+
+216
+00:32:37.261 --> 00:32:48.252
+So, if a point is represented in the form W x W y on the window, we want to map it to a point V x V y on the viewport.
+
+217
+00:32:48.272 --> 00:32:50.795
+So, here I will just talk about the transformation matrix.
+
+218
+00:32:51.375 --> 00:32:57.161
+I will not dwell on how these matrices or how this matrix is particularly obtained.
+
+219
+00:32:57.882 --> 00:33:06.711
+That can be obtained by simple geometric operations and correspondence between the two representations.
+
+220
+00:33:07.653 --> 00:33:13.541
+For the derivation again, I would like to request you to refer to the material cited at the end.
+
+221
+00:33:17.086 --> 00:33:36.512
+So, the transformation matrix can be represented in the form of this 3 by 3 matrix, where Sx is defined in terms of the viewport dimensions and window dimensions.
+
+222
+00:33:37.960 --> 00:33:52.182
+Sy is similarly defined with respect to the viewport dimensions and window dimensions along the y-axis; Sx is the dimensions along the x-axis.
+
+223
+00:33:52.202 --> 00:34:03.360
+Then Tx can be computed in terms of Sx and the window dimension and viewport dimension along x.
+
+224
+00:34:04.623 --> 00:34:11.913
+Ty can be computed in terms of Sy and again the window and viewport dimensions along y.
+
+224.1
+00:34:11.913 --> 00:34:26.766
+So, once these are computed, then we can have this transformation matrix T v p, and to get to the point, to get the transformed point, what we need to do is basically multiply
+
+225
+00:34:29.833 --> 00:34:39.588
+the point with this transformation matrix.
+
+226
+00:34:41.891 --> 00:34:47.440
+So, we have this point vector transformation matrix; after multiplication, it will yield the transformed point.
+
+227
+00:34:50.284 --> 00:34:58.997
+So, to get the transformed point, we have this window point W x, W y.
+
+228
+00:34:59.399 --> 00:35:14.392
+We multiply it with the transformation matrix to get the transformed point as shown here, and to get to the Cartesian points, what we need to do is divide the obtained
+
+228.1
+00:35:14.392 --> 00:35:28.798
+point with this homogeneous factor W. So, here the representation is again homogeneous coordinate representation, and to get back to the Cartesian point, we need to divide the obtained point with
+
+229
+00:35:29.808 --> 00:35:46.991
+the homogeneous factor W. Here we should note that there are two more processes that take place in this stage, which we have mentioned earlier: one is clipping, one is hidden surface removal.
+
+230
+00:35:47.432 --> 00:35:58.887
+So, in clipping, what happens is that we define a view volume; the objects that lie outside the view volume are removed or eliminated. Only the
+
+231
+00:35:59.457 --> 00:36:02.440
+objects that are inside are retained.
+
+232
+00:36:03.481 --> 00:36:17.675
+So, it is done before projection because then the projection operations need to be applied on a fewer number of vertices, and the corresponding computational complexity will be diminished or reduced.
+
+233
+00:36:17.695 --> 00:36:23.241
+So, the idea is illustrated in this figure here.
+
+234
+00:36:26.604 --> 00:36:29.447
+As you can see, suppose this object; we have this view volume.
+
+235
+00:36:29.917 --> 00:36:32.181
+This portion of the object is outside.
+
+236
+00:36:32.201 --> 00:36:35.746
+So, we have to determine this portion of the object and remove it.
+
+237
+00:36:36.367 --> 00:36:38.331
+In this case, the whole object is outside.
+
+238
+00:36:39.613 --> 00:36:47.926
+So, we just discard the whole object, whereas in this case the whole object is inside, so we need to retain the whole object.
+
+239
+00:36:48.727 --> 00:36:56.059
+So, this process of discarding objects, that is, identifying which part to keep and which part to discard, is the clipping process.
+
+240
+00:36:59.161 --> 00:37:03.846
+Now, another operation that takes place in this stage is hidden surface removal.
+
+241
+00:37:05.928 --> 00:37:10.181
+Although with clipping we are removing objects that lie outside,
+
+241.1
+00:37:10.181 --> 00:37:21.363
+sometimes even within the view volume, it is possible that with respect to the viewer position, some portion of the objects or some objects altogether are not visible.
+
+242
+00:37:23.205 --> 00:37:25.928
+So, in such cases, we need to remove
+
+243
+00:37:26.363 --> 00:37:40.464
+either fully or partially objects that are inside the view volume, but not visible or not supposed to be visible with respect to a particular viewer position or view position.
+
+244
+00:37:40.484 --> 00:37:41.686
+The idea is illustrated here.
+
+245
+00:37:42.166 --> 00:37:47.915
+So, both these objects are within the view volume, and we ideally need to project them.
+
+246
+00:37:49.097 --> 00:37:52.742
+However, if the viewer is looking at these two objects from this direction,
+
+247
+00:37:53.988 --> 00:38:08.642
+then you can see that this surface will be occluded by this front object with respect to the viewer or viewing direction.
+
+248
+00:38:08.662 --> 00:38:11.485
+So, then projecting this surface makes no sense.
+
+249
+00:38:12.586 --> 00:38:22.375
+So, to further reduce computational complexity, we ideally should remove this surface before projecting the other vertices onto the view plane.
+
+250
+00:38:25.578 --> 00:38:38.830
+So, this process of identifying objects that are not visible to a viewer or from a particular viewing position is called hidden surface removal.
+
+251
+00:38:40.452 --> 00:38:53.003
+So, object A is partially blocked from the viewer by B, and if the viewer position changes to this direction, then object
+
+252
+00:38:53.219 --> 00:39:06.235
+B will be partially blocked by object A. So, for realistic image generation as well as to reduce computation, the blocked portion of A should be eliminated before the scene is rendered.
+
+253
+00:39:07.897 --> 00:39:21.353
+And in order to do that, we need to remove these surfaces or these surface points from further processing in the pipeline stages. That
+
+254
+00:39:21.805 --> 00:39:24.288
+is known as hidden surface removal.
+
+255
+00:39:24.388 --> 00:39:38.245
+That type of removal of surfaces or surface points that ideally should not be rendered with respect to the viewing position is called hidden surface removal.
+
+256
+00:39:40.488 --> 00:39:46.075
+There are a number of algorithms for each of these operations, namely clipping and hidden surface removal.
+
+257
+00:39:47.658 --> 00:39:54.687
+They have their own complexities and, of course, introduce more and more computations into the overall process.
+
+258
+00:39:55.488 --> 00:40:04.219
+However, as is the case with our previous topics, we will skip those here for simplicity.
+
+259
+00:40:04.580 --> 00:40:12.110
+Our objective is just to give you some idea of the amount of computation involved, not to get into the details of the actual computations.
+
+260
+00:40:14.092 --> 00:40:16.956
+But for those of you who might be interested in learning more,
+
+261
+00:40:17.510 --> 00:40:23.799
+please refer to the material cited at the end for more such details.
+
+262
+00:40:26.283 --> 00:40:29.928
+So, let us summarize what we have learned so far.
+
+263
+00:40:31.290 --> 00:40:38.481
+So, in this part of the lecture, we covered one more stage of the graphics pipeline, that is the fourth stage, which is the viewing transformation.
+
+264
+00:40:39.442 --> 00:40:47.314
+Essentially, it is a pipeline in itself involving multiple transformations: view transformation, which transforms
+
+265
+00:40:47.682 --> 00:40:58.682
+a world coordinate scene to a 3D view coordinate scene; projection transformation, which transforms a 3D view coordinate scene to a 2D view plane description; and finally,
+
+265.1
+00:40:58.682 --> 00:41:07.246
+viewport transformation, which transforms a 2D view plane description to a 2D device space description.
+
+266
+00:41:09.548 --> 00:41:15.816
+Also, we mentioned two operations: clipping and hidden surface removal. What are those operations, and what needs to be done
+
+267
+00:41:16.353 --> 00:41:18.456
+to carry out those operations?
+
+268
+00:41:19.177 --> 00:41:26.689
+In the next part of the lecture, we will cover the remaining stage of the pipeline, which is the fifth stage: scan conversion.
+
+269
+00:41:27.590 --> 00:41:33.780
+Along with that, we will have some more discussion on the implications of the knowledge that we have gained so far.
+
+270
+00:41:35.122 --> 00:41:42.133
+So, I hope that you could follow the topic and understand the topic that we discussed.
+
+271
+00:41:42.233 --> 00:41:44.436
+Of course, we have skipped a lot of details.
+
+272
+00:41:44.922 --> 00:41:48.667
+Those details are not relevant for the present course of discussion.
+
+273
+00:41:49.067 --> 00:41:58.600
+However, for those of you who are more interested, please refer to the material cited at the end of this whole discussion.
+
+274
+00:41:58.620 --> 00:42:01.824
+So, I look forward to meeting you in the next part of the lecture.
+
+275
+00:42:03.426 --> 00:42:06.390
+Until then, thank you, goodbye, and happy learning.

@@ -1,0 +1,1268 @@
+1
+00:00:24,567 --> 00:00:30,033
+Hello and welcome to the NPTEL MOOC's course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:33,496 --> 00:00:39,943
+We are discussing a topic related to the optimization of experience.
+
+3
+00:00:40,904 --> 00:00:45,529
+In particular, we are talking about the optimization of VR navigation experience.
+
+4
+00:00:45,909 --> 00:00:52,476
+So, we will continue our discussion on that topic in this part of the lecture as well.
+
+5
+00:00:52,496 --> 00:00:54,118
+Earlier, we talked about
+
+6
+00:00:54,790 --> 00:01:11,107
+one model for a realistic walking experience; that is, we are assuming that we are having a system-controlled VR tour where user movements and navigation will be controlled by the system.
+
+7
+00:01:11,768 --> 00:01:24,561
+Now, to provide the user a natural walking experience, we have seen a model for that; we can use that model to provide the user the natural walking experience.
+
+8
+00:01:24,963 --> 00:01:40,822
+Now, that model is supposed to display a visual speed, or the optic flow, which is the rate at which the scenes change in the virtual world, so that the user gets the perception of movement.
+
+9
+00:01:43,325 --> 00:01:52,236
+Now, that visual speed is supposed to be provided by the walking model, which matches the user's instantaneous walking speed.
+
+10
+00:01:53,330 --> 00:01:57,257
+Rather, we should say the perceived instantaneous walking speed.
+
+11
+00:01:59,180 --> 00:02:00,462
+So that is the model.
+
+12
+00:02:00,943 --> 00:02:05,631
+Now, that model itself does not provide anything related to experience optimization.
+
+13
+00:02:06,212 --> 00:02:12,223
+It can only be used to enhance presence in the virtual world.
+
+14
+00:02:12,884 --> 00:02:18,173
+Now, in this lecture, what we are going to do is basically see the use of the model,
+
+15
+00:02:19,030 --> 00:02:26,885
+and with that model, how we can go for an optimization approach where we will try to optimize for cyber sickness.
+
+16
+00:02:29,269 --> 00:02:33,497
+Also, it may be noted that in this lecture, we are going to talk about one such approach.
+
+17
+00:02:33,558 --> 00:02:34,860
+There are many other approaches.
+
+18
+00:02:35,020 --> 00:02:40,110
+In a subsequent part of the lecture, we will talk about another approach as well.
+
+19
+00:02:44,883 --> 00:02:57,816
+Now, this approach we can broadly term as addressing the cyber sickness concern, that is, optimizing cyber sickness by controlling the exposure duration.
+
+20
+00:02:58,297 --> 00:03:05,484
+So, earlier we talked about one of the factors of cyber sickness being the duration of exposure in the virtual world.
+
+21
+00:03:05,504 --> 00:03:14,113
+So here, our objective would be to try to optimize the exposure duration so that cyber sickness can be optimized.
+
+22
+00:03:15,477 --> 00:03:22,988
+Details about this can be found at the reference mentioned at the end of the overall lecture, reference number 4.
+
+23
+00:03:23,669 --> 00:03:30,739
+We will point out the relevant reference when we reach the end of the lecture.
+
+24
+00:03:33,924 --> 00:03:36,287
+Now, if you can recollect,
+
+25
+00:03:38,123 --> 00:03:46,814
+cyber sickness is correlated to the exposure duration in a VR environment, as we have repeatedly seen in our discussions on cyber sickness.
+
+26
+00:03:47,415 --> 00:03:52,662
+Now, the degree of the symptoms rises proportionally with the VR session duration.
+
+27
+00:03:52,702 --> 00:03:59,190
+The more the duration is, the more the exposure is, the more severe the symptoms will be.
+
+28
+00:04:02,554 --> 00:04:04,857
+So, clearly, shorter duration exposure,
+
+29
+00:04:05,545 --> 00:04:17,901
+if possible, can help in getting rid of the cyber sickness problem or at least can help in minimizing the onset of cyber sickness.
+
+30
+00:04:19,623 --> 00:04:29,075
+So, that is the basic assumption on which our approach will be built.
+
+31
+00:04:30,377 --> 00:04:34,422
+Now, the duration of exposure to cyber sickness
+
+32
+00:04:34,672 --> 00:04:43,056
+depends on several factors, such as the size of the virtual world, the travelling speed, or the travelling time,
+
+33
+00:04:43,056 --> 00:04:55,813
+interaction time, such as interaction with objects, such as inspection, selection, and manipulation of objects.
+
+34
+00:04:55,833 --> 00:04:56,974
+So, there are several factors.
+
+35
+00:04:59,376 --> 00:05:02,299
+The size of the virtual world, let us see how it affects.
+
+36
+00:05:03,005 --> 00:05:17,763
+Now, a VR environment can be very small, such as a room, or very large, like a city, or sometimes even larger, such as the Majuli Island that we talked about in our case study.
+
+37
+00:05:20,506 --> 00:05:31,780
+For large or larger VR systems or environments, it is quite natural to have a longer duration of VR exposure because the user needs to cover
+
+38
+00:05:32,620 --> 00:05:34,583
+a larger geographical area.
+
+39
+00:05:37,647 --> 00:05:47,661
+Now, we can reduce the exposure time if we can control the speed of movement, the speed of navigation.
+
+40
+00:05:48,623 --> 00:05:58,797
+This is quite obvious: the higher the speed is, the lower will be the time to travel and explore the entire geographical area.
+
+41
+00:06:04,801 --> 00:06:09,347
+So, duration and travel speed are related, intimately related.
+
+42
+00:06:10,269 --> 00:06:16,197
+Now, duration can be adjusted by adjusting the virtual travel speed, which is quite obvious.
+
+43
+00:06:16,698 --> 00:06:22,325
+So, higher speed effectively refers to a shorter duration of exposure in the virtual world.
+
+44
+00:06:24,829 --> 00:06:31,779
+However, to provide a realistic walking experience, we cannot modify the speed arbitrarily.
+
+45
+00:06:33,081 --> 00:06:33,441
+So,
+
+46
+00:06:34,180 --> 00:06:38,185
+Teleportation-type movement, of course, would be the best choice.
+
+47
+00:06:39,547 --> 00:06:47,757
+There, the speed is the maximum, so instantaneous movement occurs between two points, so then the overall duration can be reduced.
+
+48
+00:06:47,817 --> 00:06:57,049
+However, that may not always be a good way to approach the problem because teleportation is not a natural movement.
+
+49
+00:06:57,265 --> 00:06:59,288
+Sometimes we look for naturalness.
+
+50
+00:06:59,768 --> 00:07:10,323
+In that case, such type of movement or any arbitrary speed imposed on the user while navigating in the virtual world may not be a good idea.
+
+51
+00:07:16,331 --> 00:07:24,943
+There can be other ways to control the duration, such as manipulation of the terrain or the
+
+52
+00:07:25,767 --> 00:07:29,371
+or the size of the world.
+
+53
+00:07:29,391 --> 00:07:41,685
+By adjusting the distances between the points of interest in the terrain, by adjusting the terrain of course, we can reduce the travel time and subsequently reduce the exposure time.
+
+54
+00:07:44,648 --> 00:07:50,034
+But the problem here is that it excludes users from getting an idea about the size of the real space.
+
+55
+00:07:50,575 --> 00:07:53,378
+So, this is similar to having a teleportation-type movement.
+
+56
+00:07:54,235 --> 00:08:01,542
+If we arbitrarily change the terrain shape, then the user will not get the true feel of the terrain.
+
+57
+00:08:03,824 --> 00:08:19,720
+So, that will hamper the user's ability to build a mental map, which in effect can hamper the user's ability to do the wayfinding activities in the virtual world.
+
+58
+00:08:22,720 --> 00:08:33,852
+To get some idea on this mental map, please refer to our earlier lecture on wayfinding, where we talked about the need for a mental map and how it helps in wayfinding.
+
+59
+00:08:38,636 --> 00:08:44,443
+In the case of a purely system-automated or system-controlled tool, users do not interact.
+
+60
+00:08:44,503 --> 00:08:48,087
+So, there is no scope for the user to interactively change anything.
+
+61
+00:08:49,602 --> 00:08:58,121
+So, in that case, we can ignore the interaction time, that is, the time required to interact with the virtual objects.
+
+62
+00:09:02,370 --> 00:09:07,341
+In such a scenario, when we are talking of an entirely system-controlled VR tool,
+
+63
+00:09:10,257 --> 00:09:11,719
+the interaction time can be ignored.
+
+64
+00:09:11,739 --> 00:09:15,164
+However, we are concerned with semi-interactive tours.
+
+65
+00:09:15,405 --> 00:09:18,089
+That means we are not totally disregarding interactions.
+
+66
+00:09:18,669 --> 00:09:24,698
+Users can still interact with objects after a navigation task is complete.
+
+67
+00:09:24,718 --> 00:09:35,995
+So, there the travel will be automatic, system-controlled, but the interactions can happen on a limited scale only at the points of interest,
+
+68
+00:09:36,937 --> 00:09:43,967
+or a small set of objects, all objects that are present in the virtual environment.
+
+69
+00:09:43,987 --> 00:09:48,833
+Only with those objects are users allowed to interact in the virtual world.
+
+70
+00:09:49,534 --> 00:09:52,198
+With other objects, users cannot interact.
+
+71
+00:09:52,739 --> 00:10:03,754
+So, if such a scenario is assumed, then we can call it a semi-interactive tour: interaction with POIs and navigation by system control.
+
+72
+00:10:06,181 --> 00:10:12,851
+So, the same idea we have used while formulating the natural walking speed model.
+
+73
+00:10:13,332 --> 00:10:24,672
+So, you can refer to that part of the lecture, the previous lecture, to get some idea on this assumption: that movement from one point to another is controlled by the system tool, whereas
+
+74
+00:10:24,672 --> 00:10:31,800
+at specific chosen points called points of interest, users can interact with those.
+
+75
+00:10:37,096 --> 00:10:50,609
+So, our objective is to deal with semi-interactive system control tools and thereby reduce the duration of exposure to the virtual world.
+
+76
+00:10:50,949 --> 00:10:51,630
+What can we do?
+
+77
+00:10:52,811 --> 00:11:01,639
+We can limit the interaction time at the points of interest based on an appropriate time.
+
+78
+00:11:01,739 --> 00:11:06,023
+So we have to a priori estimate how much time at the most
+
+79
+00:11:06,577 --> 00:11:17,595
+an average user requires to interact with a point of interest, and accordingly we will allow the user to have that much time at most; after
+
+80
+00:11:17,595 --> 00:11:23,777
+that, the system will automatically force the user to move to another point.
+
+81
+00:11:23,797 --> 00:11:35,250
+Now, this idea of a semi-interactive tour and appropriate time of interaction—so there is a limit on the time of interaction—can be utilized
+
+82
+00:11:35,872 --> 00:11:42,541
+to optimize the duration of exposure in a virtual tour in either of two ways.
+
+83
+00:11:44,904 --> 00:12:02,267
+One is that we can have an optimum path that lets the users experience all points of interest in minimum time, so the user will be experiencing all points of interest, but
+
+84
+00:12:02,872 --> 00:12:10,162
+the total time required to navigate plus interact will be minimized.
+
+85
+00:12:10,182 --> 00:12:26,565
+Second is, given a fixed time—so we have now a time limit for both navigation and interaction—an optimum path to experience the maximum POIs can be found.
+
+86
+00:12:26,585 --> 00:12:31,191
+So, in the first case, we have an optimum path that allows the user to interact
+
+87
+00:12:31,660 --> 00:12:33,602
+and explore all points of interest.
+
+88
+00:12:34,563 --> 00:12:45,614
+In the second case, we have an optimum path that allows the users to interact with the maximum possible number of points of interest within a given fixed time.
+
+89
+00:12:47,817 --> 00:13:00,570
+So, with either of these two approaches or problems, we can address how to come up with an optimum VR tour where the duration of exposure is optimized.
+
+90
+00:13:00,955 --> 00:13:08,172
+And by optimizing the duration of exposure, we are expecting that the prevalence of cyber sickness,
+
+91
+00:13:08,172 --> 00:13:14,093
+Onset of cyber sickness may be optimized because duration and cyber sickness are directly related.
+
+92
+00:13:15,995 --> 00:13:27,030
+So, let us talk about the first problem, that is, optimum travel path covering all the POIs or points of interest.
+
+93
+00:13:29,525 --> 00:13:38,917
+So, in order to solve this problem, what we need to do first is to formulate the problem in the form of a graph.
+
+94
+00:13:38,937 --> 00:13:43,002
+So, we need a graph theoretic formulation of the problem.
+
+95
+00:13:43,843 --> 00:13:54,276
+So, we can think of the virtual world, that is part of the virtual experience, as a weighted graph.
+
+96
+00:13:54,296 --> 00:13:56,038
+We can represent it with g.
+
+97
+00:13:56,677 --> 00:14:01,022
+V and E, V is set of vertices, E is set of edges.
+
+98
+00:14:01,182 --> 00:14:06,969
+So, V or the vertex set represents all the points of interest.
+
+99
+00:14:08,130 --> 00:14:24,810
+So, each point of interest we are assuming to be a node or vertex in the graph, and E is the weighted edge set that is the
+
+100
+00:14:25,145 --> 00:14:28,229
+weighted edges between all the POIs.
+
+101
+00:14:29,830 --> 00:14:36,238
+Now, each edge weight denotes the Euclidean distance between the pair of vertices.
+
+102
+00:14:36,598 --> 00:14:46,714
+So, when we say that we are utilizing weights, we are assigning weights to the edges, that is, the path from one POI to another,
+
+103
+00:14:46,714 --> 00:14:54,139
+the weight we are determining based on the Euclidean distance between these two POIs.
+
+104
+00:14:59,232 --> 00:15:06,784
+Effectively, G represents a top view of the whole virtual world under consideration.
+
+105
+00:15:06,804 --> 00:15:17,822
+So, we need to come up with a G, that is the graph which represents the whole virtual world, a kind of top view of the virtual world.
+
+106
+00:15:20,386 --> 00:15:22,489
+That is the first thing that we need to do.
+
+107
+00:15:24,764 --> 00:15:29,209
+One important thing here to note is that G need not be complete.
+
+108
+00:15:29,510 --> 00:15:40,282
+So, while going for this graph theoretic formulation, we need not go for finding a graph that is complete.
+
+109
+00:15:42,105 --> 00:15:49,253
+Because in a realistic environment, there may not always be a direct path from one place to another.
+
+110
+00:15:50,060 --> 00:15:53,725
+Now, an example you can see here in this virtual world.
+
+111
+00:15:53,745 --> 00:15:58,831
+So, on the left-hand side, the colored image is the virtual world having these objects.
+
+112
+00:16:01,855 --> 00:16:07,883
+Several objects are there, and objects within objects can be points of interest.
+
+113
+00:16:07,943 --> 00:16:11,047
+So, a single object does not mean a single node.
+
+114
+00:16:11,067 --> 00:16:14,131
+A single point of interest is a node.
+
+115
+00:16:14,151 --> 00:16:19,257
+So, for example, the swimming pool here is a single object V4.
+
+116
+00:16:20,418 --> 00:16:32,115
+Then it shows that there can be multiple objects from this 1, 2, 3, 4.
+
+117
+00:16:34,678 --> 00:16:46,375
+Then this one can map to this object, this node V3, and each of these can map to these nodes.
+
+118
+00:16:49,645 --> 00:17:03,520
+So, we can map this structure to this node V7, and V8, V9, V6 are some of the points of interest which may be located in this region.
+
+119
+00:17:04,601 --> 00:17:16,935
+So, effectively, although we see that there are 1, 2, 3, 4, 5 structures, there can be more than that number of
+
+120
+00:17:17,354 --> 00:17:24,404
+points of interest; each structure may contain multiple points of interest, and accordingly we have to decide on the nodes and the edges.
+
+121
+00:17:26,547 --> 00:17:41,848
+Now, in this graph theoretic formulation of this virtual world, you can see that this is not a complete graph because there is no edge from, say, V3 to V4 or V4 to V7 and so on.
+
+122
+00:17:41,988 --> 00:17:43,851
+So, there are many edges,
+
+123
+00:17:44,371 --> 00:17:48,938
+many pairs of vertices where there is no direct path between them.
+
+124
+00:17:48,958 --> 00:17:50,440
+And that is the nature of the problem.
+
+125
+00:17:50,821 --> 00:17:57,270
+In realistic environments, we cannot expect that there will always be a direct path.
+
+126
+00:17:58,572 --> 00:18:06,204
+So, we can have graphs that are not complete.
+
+127
+00:18:06,224 --> 00:18:11,712
+Now, for every pair of vertices V1, V2 belonging to this vertex set V,
+
+128
+00:18:13,278 --> 00:18:25,871
+the edge weights can be defined as the weight epsilon v1, v2 is the Euclidean distance between v1, v2 if
+
+129
+00:18:25,871 --> 00:18:33,892
+they are directly connected or a very large number denoted by this infinity symbol if they are not directly connected.
+
+130
+00:18:35,695 --> 00:18:37,598
+So, d is the Euclidean distance.
+
+131
+00:18:39,029 --> 00:18:47,720
+So, if the two vertices are directly connected, then we can compute the Euclidean distance between them and assign that as the edge weight.
+
+132
+00:18:48,001 --> 00:18:58,554
+If they are not directly connected, then we can assume that they are having a weight of a very, very, very large number which we are representing with this infinity symbol.
+
+133
+00:19:03,681 --> 00:19:05,323
+So, given this background,
+
+134
+00:19:07,008 --> 00:19:08,971
+let us formally state the problem.
+
+135
+00:19:10,452 --> 00:19:25,332
+Our problem is to find a path P in the given graph G which covers all vertices in V and finishes in the least possible time while maintaining a realistic speed throughout.
+
+136
+00:19:27,655 --> 00:19:36,306
+So, once we have formulated the problem in the form of a graph, then we can state the problem as that.
+
+137
+00:19:37,467 --> 00:19:45,217
+We want to find a path within this graph P which includes all the nodes because we are interested in exploring all points of interest.
+
+138
+00:19:47,601 --> 00:20:04,183
+However, while exploring all points of interest, the objective is to minimize the time required to do so while maintaining a realistic speed so that the user gets a realistic feeling.
+
+139
+00:20:08,467 --> 00:20:13,491
+So let us now see how we can come up with an algorithm that solves this problem.
+
+140
+00:20:13,892 --> 00:20:25,882
+So the first stage of the algorithm is to compute the time to travel between two nodes which are directly connected with natural walking speed.
+
+141
+00:20:25,922 --> 00:20:28,024
+That is the first problem we need to resolve.
+
+142
+00:20:30,245 --> 00:20:35,670
+Now we can make use of our earlier natural walking model to resolve this problem.
+
+143
+00:20:36,751 --> 00:20:38,052
+If you recollect,
+
+144
+00:20:38,234 --> 00:20:47,849
+Earlier we talked about the instantaneous walking speed, which is realistic as represented by V perceived.
+
+145
+00:20:47,930 --> 00:20:55,482
+So here we are talking of perceived instantaneous walking speed, which can be represented in this form 2.1.
+
+146
+00:20:56,604 --> 00:21:02,453
+That is the visual gain into the actual instantaneous realistic walking speed V act.
+
+147
+00:21:03,310 --> 00:21:10,898
+Now, this speed, of course, we know from our basic knowledge of calculus that speed can be represented as dx by dt.
+
+148
+00:21:15,943 --> 00:21:26,955
+So, then we can say by rearranging the terms that dt, that is this denominator here, is equal to dx by 2.1 into dt.
+
+149
+00:21:27,340 --> 00:21:33,611
+The act or the actual instantaneous walking speed which is realistic.
+
+150
+00:21:36,035 --> 00:21:38,439
+So, dt is instantaneous time.
+
+151
+00:21:38,940 --> 00:21:50,901
+Now, if we want to find out the total time, then we need to take an integral of dt over a distance d.
+
+152
+00:21:55,876 --> 00:22:11,252
+So this is the integration from 0 to D of dt, or we can say that this is the integration between 0 and D of dx divided by 2.1 times V actual.
+
+153
+00:22:12,533 --> 00:22:23,284
+That is the formula using which we can compute the total travel time between two nodes.
+
+154
+00:22:25,846 --> 00:22:30,915
+where the distance between the nodes when they are directly connected is D.
+
+155
+00:22:30,915 --> 00:22:46,572
+We also know that V actual can be represented in the form f x divided by 0.15 times 157 times h divided by 1.7, all squared.
+
+156
+00:22:51,260 --> 00:22:56,205
+For reference, you can refer to the previous lecture where we talked about these models and terms.
+
+157
+00:22:57,547 --> 00:23:12,884
+Now, f is the instantaneous step frequency and h is the height of the user.
+
+158
+00:23:12,964 --> 00:23:18,870
+So, after simplification, we can get this total time integral
+
+159
+00:23:19,373 --> 00:23:26,294
+over dt between 0 and d. That is the integral from 0 to d of dx divided by 2.1 times V act, or
+
+160
+00:23:26,294 --> 00:23:39,958
+the integral from 0 to d of dx divided by 2.1 into this V act formula, that is f x divided by 0.157 times h divided by 1.72, all squared.
+
+161
+00:23:42,461 --> 00:23:48,148
+Or by rearranging the terms, we can say that dt equals
+
+162
+00:23:49,529 --> 00:24:01,023
+this term: 0.157 times 1.72 squared divided by 2.1 times h squared, times dx divided by f x squared.
+
+163
+00:24:02,905 --> 00:24:13,197
+Now, this we can further simplify and rewrite in this form: 1 divided by Vm times dx divided by f x squared.
+
+164
+00:24:15,019 --> 00:24:18,844
+Now, here Vm is a constant for a specific height.
+
+165
+00:24:19,313 --> 00:24:27,742
+which is expressed in this way: 2.1 times h squared divided by 0.157 times 1.72 squared.
+
+166
+00:24:28,923 --> 00:24:34,286
+f(x) we can represent using this expression,
+
+167
+00:24:34,286 --> 00:24:40,987
+whole expression, 4 by pi into 1.8 into summation over k equal to 0 to d by 2 minus 1,
+
+168
+00:24:40,987 --> 00:24:48,004
+1 by 2k plus 1 sine of 2k plus 1 omega x. So, it is a variable over x where x is the
+
+169
+00:24:49,857 --> 00:24:56,967
+instantaneous point.
+
+170
+00:24:56,987 --> 00:25:01,934
+In fact, this f(x) term we can further simplify using the Taylor expansion.
+
+171
+00:25:03,496 --> 00:25:17,535
+So, 1 by f(x) square we can simplify as approximately 3 minus 2 square x by 1.8 square, where the square x term is
+
+172
+00:25:19,135 --> 00:25:29,798
+represented by this one, this expression 4 by pi summation over k, k equal to 0 to d by 2 minus 1,
+
+173
+00:25:29,798 --> 00:25:45,240
+1 by 2k plus 1 sin of 2k plus 1 omega x. Now, that is the formulation of the time between a pair of nodes which are directly connected.
+
+174
+00:25:45,581 --> 00:25:46,982
+Now, solving the integral
+
+175
+00:25:48,481 --> 00:25:59,194
+DT with all these simplifications, rearrangements, and Fourier series expansions up to the term N naught,
+
+176
+00:25:59,194 --> 00:26:11,957
+we can get travel time estimate tau D between a directly connected vertex pair as tau D equal to D by V naught.
+
+177
+00:26:13,895 --> 00:26:20,183
+and this term 3 minus 16 by pi square into summation k equal to 1 to n naught of 1 by 2k minus 1 square.
+
+178
+00:26:20,564 --> 00:26:33,100
+So, this is the result of the computation for DT after using all the simplifications that we have mentioned.
+
+179
+00:26:33,120 --> 00:26:37,185
+So, as you can see, it is a function of d.
+
+180
+00:26:41,283 --> 00:26:49,414
+Now, V naught is 2.1 into h square by 0.157 into 1.72 square into 1.8 square.
+
+181
+00:26:49,815 --> 00:26:53,140
+So, this is a constant for a given height.
+
+182
+00:27:02,613 --> 00:27:09,703
+So, if we formulate it in this way, then we can say with certainty that the travel time computed
+
+183
+00:27:10,493 --> 00:27:16,522
+travel time between a pair of directly connected vertices with natural walking speed we can compute.
+
+184
+00:27:20,367 --> 00:27:32,311
+So, our calculation so far assumes this natural walking model, and accordingly we can claim that the time that we are calculating for traveling from one POI to the next, which are
+
+185
+00:27:32,311 --> 00:27:39,235
+directly connected, is the travel time when we are assuming a natural walking speed.
+
+186
+00:27:40,278 --> 00:27:47,366
+Now, this is between pairs of vertices, and we need to estimate the total time for the entire graph.
+
+187
+00:27:48,988 --> 00:28:07,450
+Now, this problem we can mathematically formulate as total time P equal to i equal to 1 to n minus 1 time between each pair of vertices tau epsilon vi vi plus 1, where i
+
+188
+00:28:07,970 --> 00:28:09,993
+varies from 1 to n minus 1.
+
+189
+00:28:10,494 --> 00:28:22,592
+So, we need to find out the times between each pair and then add them up, where P is a path in the graph.
+
+190
+00:28:22,673 --> 00:28:35,412
+So, we are finding out the total time to travel given a path P, and here
+
+191
+00:28:35,881 --> 00:28:43,189
+P contains n number of nodes, we are assuming, and then we are calculating the total time to cover the entire path.
+
+192
+00:28:45,071 --> 00:28:58,465
+And this is the edge length we have already seen before; epsilon vi vi plus 1 is the edge weight or length, the Euclidean distance between the pair of vertices.
+
+193
+00:29:00,888 --> 00:29:04,892
+So, given all such paths, what we need is to minimize
+
+194
+00:29:05,902 --> 00:29:06,843
+this travel time.
+
+195
+00:29:06,944 --> 00:29:25,172
+So, we can recast it as minimize for P given a path where for all V belonging to V and V belonging to P. So, this travel path contains nodes.
+
+196
+00:29:26,093 --> 00:29:33,765
+When we minimize, we need to ensure that all the vertices of the graph are included in P.
+
+197
+00:29:37,373 --> 00:29:48,587
+That we have to ensure, and then we have to find out a path satisfying these constraints which gives the minimum duration of travel.
+
+198
+00:29:52,472 --> 00:29:59,101
+Now, this problem is a variation of the classical and celebrated travelling salesman problem, or TSP.
+
+199
+00:29:59,641 --> 00:30:01,744
+Many of us may be familiar with this problem.
+
+200
+00:30:02,973 --> 00:30:18,506
+Which says that, given a complete graph—note the term complete graph—what is the shortest possible path that visits each node exactly once and returns to the starting node?
+
+201
+00:30:18,526 --> 00:30:27,935
+The shortest path is defined based on the total weight of edges in the path.
+
+202
+00:30:27,955 --> 00:30:32,018
+However, in our case, we did not assume that the graph
+
+203
+00:30:32,622 --> 00:30:37,967
+that we are creating is a complete graph.
+
+204
+00:30:37,987 --> 00:30:43,973
+So, there may be cases where there is no Hamiltonian path in G, or in other words, a path where all nodes are
+
+205
+00:30:43,973 --> 00:30:52,201
+covered and each node is visited exactly once, because we are not assuming it to be a complete graph.
+
+206
+00:30:52,221 --> 00:31:00,469
+So, one solution to this problem can be to introduce a hypothetical edge between vertices having no edge,
+
+207
+00:31:01,630 --> 00:31:03,191
+or no direct connection.
+
+208
+00:31:03,211 --> 00:31:09,217
+So, when there is no direct connection, we can introduce a hypothetical edge for the sake of computation.
+
+209
+00:31:10,958 --> 00:31:16,043
+And the length of the hypothetical edge is the shortest path length between the vertices.
+
+210
+00:31:16,083 --> 00:31:20,436
+So, if there are two vertices which are not directly connected,
+
+211
+00:31:20,436 --> 00:31:31,637
+Then we have to identify the shortest path between these two vertices and the corresponding sum of edge weights for the shortest path, and then that
+
+212
+00:31:32,377 --> 00:31:39,268
+edge weight sum of the shortest path will be the weight of the hypothetical edge between these two vertices.
+
+213
+00:31:43,895 --> 00:31:48,423
+Now, the shortest path is well-defined as G is connected.
+
+214
+00:31:48,483 --> 00:31:56,836
+So, there is no issue in finding the shortest path because G is a connected graph.
+
+215
+00:31:56,856 --> 00:32:00,021
+So, then what is the modified definition of edge weight?
+
+216
+00:32:00,642 --> 00:32:12,618
+If we are assuming the presence of hypothetical edges, let us call this modified edge weight definition to be epsilon dash v1 v2, that is the weight between two nodes v1 and v2,
+
+217
+00:32:12,618 --> 00:32:17,064
+which is d v1 v2 if they are directly connected,
+
+218
+00:32:17,064 --> 00:32:27,831
+d is the Euclidean distance, or the shortest path v1 v2 if they are not directly connected, that means the sum of the edge weights in the shortest path.
+
+219
+00:32:30,832 --> 00:32:35,637
+Or, in other words, SP here indicates the shortest path length between the vertex pair.
+
+220
+00:32:38,720 --> 00:32:41,684
+So, then we need to revise the problem.
+
+221
+00:32:43,145 --> 00:32:52,455
+So, we have a modified graph G dash with a modified set of edges V and epsilon dash.
+
+222
+00:32:52,475 --> 00:32:55,058
+Here we are introducing newer edges, hypothetical edges.
+
+223
+00:32:55,078 --> 00:32:56,940
+So, the edge set changes.
+
+224
+00:32:58,118 --> 00:33:08,973
+Now, this modified graph is an instance of the TSP problem, and we need to solve for the optimum path.
+
+225
+00:33:10,175 --> 00:33:15,943
+In order to do that, we can use standard TSP solver approaches or solving algorithms.
+
+226
+00:33:16,804 --> 00:33:21,851
+We do not need to find a new algorithm, of course, because we are mapping our problem to the standard problem.
+
+227
+00:33:24,635 --> 00:33:27,940
+Now, with this approach of using a standard solver,
+
+228
+00:33:28,679 --> 00:33:29,580
+There is one problem.
+
+229
+00:33:30,442 --> 00:33:43,901
+The output of the TSP solver will give us a path on the graph G' that has an edge set containing hypothetical edges, not on the original graph G where there are no such hypothetical edges.
+
+230
+00:33:44,502 --> 00:33:48,247
+So, what we need to do is to take care of this problem.
+
+231
+00:33:48,928 --> 00:33:58,382
+So, the solution obtained using a TSP solver may have some hypothetical edges that are present in G' but not in the original graph G.
+
+232
+00:33:59,560 --> 00:34:03,063
+Of course, that is the basic idea.
+
+233
+00:34:04,024 --> 00:34:09,309
+So, we need to replace such edges in the optimal path with the shortest path sp.
+
+234
+00:34:13,353 --> 00:34:22,661
+So, some more work we have to do on the output provided by a standard TSP solver or solving algorithm.
+
+235
+00:34:24,382 --> 00:34:26,985
+We have to modify
+
+236
+00:34:27,217 --> 00:34:34,886
+the output graph output path with replacement of the hypothetical edges in the path with the shortest path.
+
+237
+00:34:36,588 --> 00:34:41,773
+So, with this basic understanding of the algorithm, let us now see the steps of the algorithm.
+
+238
+00:34:42,393 --> 00:34:54,846
+Now, here our input is the original graph G with the vertex set V and edge set epsilon, and the output is the optimal time T and path P.
+
+239
+00:34:56,699 --> 00:35:06,734
+First, we need to compute the complete graph g dash v epsilon dash; that is, we need to compute the hypothetical edge lengths and replace
+
+240
+00:35:06,734 --> 00:35:13,221
+the edge set with an edge set having hypothetical edges so that we can convert the original graph to a complete graph.
+
+241
+00:35:15,164 --> 00:35:22,774
+So, for i equal to 1 to n minus 1, do for j equal to 1 to n do, so n is the total number of nodes.
+
+242
+00:35:23,935 --> 00:35:30,827
+If epsilon v i v j is less than infinity, then epsilon dash v i v j equals.
+
+243
+00:35:30,847 --> 00:35:34,212
+So, if they are directly connected, then there is no need to change anything.
+
+244
+00:35:34,833 --> 00:35:46,112
+Otherwise, you change the edge with the shortest path between the vertices.
+
+245
+00:35:49,805 --> 00:35:56,294
+Next, we need to replace the edge weights or distances in gv dash with travel time t.
+
+246
+00:35:56,294 --> 00:36:18,968
+For i equal to again 1 to n, for j equal to 1 to n, for i equal to 1 to n minus 1, j equal to 1 to n, the edge weight between this pair of vertices is the time
+
+247
+00:36:22,036 --> 00:36:30,047
+taken to travel from one vertex to another, which defines the edge.
+
+248
+00:36:31,349 --> 00:36:42,553
+So, first we have modified the graph to a complete graph; then, in order to come up with a travelling salesman problem, we are modifying the edge weights. Earlier it was the
+
+249
+00:36:42,553 --> 00:36:50,254
+Euclidean distance; now we are replacing the edge weights with the time to travel between the pair of vertices.
+
+250
+00:36:53,423 --> 00:37:02,233
+Once that is done, then we have a complete graph where the edge weights are the time to travel between the pair of vertices defining the edge.
+
+251
+00:37:04,276 --> 00:37:23,278
+Then we are ready to pass it on to a TSP solver, any standard TSP solver; there are lots available where the input will be the modified graph G double dash V epsilon double dash. Now this,
+
+252
+00:37:23,562 --> 00:37:36,559
+modified graph contains edge sets having edges with weights that are travelling time between the pair of vertices, not Euclidean distance or distance between the pair of vertices.
+
+253
+00:37:38,702 --> 00:37:48,855
+So, once we pass it on, we get an optimal time and path as output of the TSP solver.
+
+254
+00:37:48,875 --> 00:37:53,181
+So, let us denote this optimal time as tau opt and the path as p opt.
+
+255
+00:37:55,085 --> 00:38:04,054
+So, then we get tau opt P opt as output of this solved TSP, the TSP solver, where the input is this modified graph.
+
+256
+00:38:07,677 --> 00:38:18,467
+Now, we cannot stop there, as I have already mentioned, because what we get at the end need not be the original graph due to the hypothetical edges.
+
+257
+00:38:18,868 --> 00:38:23,472
+So, we need to modify the output P opt to P dashed opt.
+
+258
+00:38:23,975 --> 00:38:27,883
+so that the hypothetical edges are removed from the output path.
+
+259
+00:38:30,589 --> 00:38:44,397
+So, for all the vertices in the path, what we need to do is basically check in the original edge if there is a direct connection or not.
+
+260
+00:38:45,575 --> 00:38:53,525
+If the original edge contained a very large value, represented by infinity, that means they were not directly connected originally.
+
+261
+00:38:53,606 --> 00:39:02,898
+So, we have to replace the hypothetical edge between them with the shortest path between them.
+
+262
+00:39:04,760 --> 00:39:14,653
+So, if the original graph contained edges having a very high value, that means they were not directly connected in the modified graph which was given as input to the
+
+263
+00:39:15,241 --> 00:39:19,167
+TSP solver; we assumed a hypothetical edge.
+
+264
+00:39:19,748 --> 00:39:33,469
+Now, in the path, if such edges appeared between a pair of vertices, then we need to replace them with the shortest path from the original graph.
+
+265
+00:39:33,489 --> 00:39:43,965
+So, once that is done, then we are ready with our solution; that is, we have the optimum time and the optimum path.
+
+266
+00:39:44,992 --> 00:39:59,850
+This is the path which corresponds to the original graph, whereas the earlier output Popt did not correspond to the original graph because it contained hypothetical edges.
+
+267
+00:40:03,835 --> 00:40:11,384
+So, this is the process to compute the optimal path that takes the minimum time to cover.
+
+268
+00:40:11,584 --> 00:40:14,307
+I hope you could follow the steps of the algorithm and the
+
+269
+00:40:14,658 --> 00:40:15,699
+preceding discussions.
+
+270
+00:40:17,542 --> 00:40:19,144
+However, there is one problem.
+
+271
+00:40:19,565 --> 00:40:28,357
+This minimum time that we are calculating for this optimal path may still be more than the cybersickness time threshold.
+
+272
+00:40:28,377 --> 00:40:36,007
+So, the algorithm may give a minimum time to cover all vertices in the original graph.
+
+273
+00:40:36,488 --> 00:40:43,517
+However, that time may still be large enough if the terrain, if the virtual environment, is large.
+
+274
+00:40:44,729 --> 00:40:52,138
+So in that case, of course, it may still cross the threshold beyond which there is a possibility of cybersickness.
+
+275
+00:40:52,178 --> 00:40:55,222
+So our whole purpose may be defeated.
+
+276
+00:40:55,242 --> 00:40:58,806
+So we can, and we have to, do better in such cases.
+
+277
+00:41:01,329 --> 00:41:12,222
+In the next part of the lecture, we will see how we can address this concern when we are dealing with really large geographical terrain with a large number of points of interest.
+
+278
+00:41:14,260 --> 00:41:16,944
+So let us summarize what we have covered so far.
+
+279
+00:41:18,526 --> 00:41:23,012
+So earlier we talked about natural walking speed.
+
+280
+00:41:23,472 --> 00:41:24,614
+We learned a model on that.
+
+281
+00:41:25,916 --> 00:41:39,013
+Then we talked about how we can optimize our experience by optimizing the possibility of cybersickness, minimizing the possibility of cybersickness by either of two approaches.
+
+282
+00:41:39,033 --> 00:41:43,980
+One is to find out a path in the virtual world
+
+283
+00:41:44,348 --> 00:41:49,894
+that will cover all points of interest, but in a minimum time.
+
+284
+00:41:51,015 --> 00:42:01,687
+And the second one is, given a time threshold, given a time limit, find out a path that will cover the maximum possible points of interest.
+
+285
+00:42:02,568 --> 00:42:13,680
+So, in this lecture, in this part of the lecture, we talked about the first approach, that is, to minimize the time duration when we are trying to cover
+
+286
+00:42:14,285 --> 00:42:15,126
+the virtual world.
+
+287
+00:42:15,146 --> 00:42:19,752
+So, to recap for better understanding, here is what we discussed.
+
+288
+00:42:20,813 --> 00:42:23,857
+So, we converted the problem into a graph theoretic problem.
+
+289
+00:42:23,897 --> 00:42:32,491
+So, we are assuming that we can convert the virtual world into the form of a graph where the nodes are essentially points of interest,
+
+290
+00:42:32,491 --> 00:42:42,942
+the edges between nodes are weighted, and the weight is the Euclidean distance between the points of interest if they are directly connected.
+
+291
+00:42:44,710 --> 00:42:47,494
+So, the graph need not be a complete graph.
+
+292
+00:42:47,514 --> 00:43:02,796
+Now, we mapped the problem of finding the minimum duration travel within this graph covering all points of interest to a travelling salesman problem, which is a standard classical problem.
+
+293
+00:43:04,057 --> 00:43:12,169
+In order to do so, we first computed the travel time between pairs of vertices.
+
+294
+00:43:12,942 --> 00:43:26,365
+If the pair is directly connected to each other, then we can use the natural walking speed model to compute the time taken to travel from one vertex to another.
+
+295
+00:43:27,186 --> 00:43:31,373
+If they are not directly connected, we introduce some hypothetical edge between them.
+
+296
+00:43:33,023 --> 00:43:42,874
+which is the shortest path between the pair of vertices, and then compute the travel time from one vertex to another along the shortest path using the natural walking speed.
+
+297
+00:43:44,796 --> 00:43:54,707
+So, in that way, we compute the travel time, which is the new weight we assign to the graph after converting it to a complete graph by introducing hypothetical edges.
+
+298
+00:43:55,208 --> 00:44:01,815
+Now, this modified graph is given as input to the TSP solver.
+
+299
+00:44:02,504 --> 00:44:07,091
+And that provides an output which gives the optimum time and optimal path.
+
+300
+00:44:07,111 --> 00:44:09,575
+Now, that path may contain hypothetical edges.
+
+301
+00:44:10,316 --> 00:44:14,943
+We need to remove it before we can come up with the final solution.
+
+302
+00:44:16,686 --> 00:44:19,790
+So, all these things were mentioned in the stages of the algorithm.
+
+303
+00:44:20,512 --> 00:44:29,065
+In the next lecture, what we are going to do is talk about the other problem, which is given a time limit.
+
+304
+00:44:29,085 --> 00:44:31,228
+Maximum how many nodes we can cover.
+
+305
+00:44:33,284 --> 00:44:34,386
+with an optimal path.
+
+306
+00:44:34,666 --> 00:44:43,583
+So essentially the problem is that a time limit is given because whatever we have done with this current approach discussed in this part of the lecture,
+
+307
+00:44:43,583 --> 00:44:52,070
+it can still lead to a large time which may be beyond the threshold beyond which cyber sickness may happen.
+
+308
+00:44:53,873 --> 00:45:01,924
+So we will restrict the time, but given that our objective is to explore the maximum number of points of interest,
+
+309
+00:45:03,018 --> 00:45:03,679
+How to do that?
+
+310
+00:45:04,099 --> 00:45:07,264
+What optimization method can we adopt?
+
+311
+00:45:07,684 --> 00:45:10,408
+We are going to talk about that in the next lecture.
+
+312
+00:45:10,428 --> 00:45:15,916
+So, in the next lecture, we will be covering the other approach of optimization.
+
+313
+00:45:15,936 --> 00:45:18,620
+So, I hope you could follow the topics.
+
+314
+00:45:18,640 --> 00:45:27,692
+It was a bit involved, I understand, but I hope that my explanations could clear your concepts.
+
+315
+00:45:29,849 --> 00:45:33,121
+So, looking forward to meeting you again in the next lecture.
+
+316
+00:45:33,543 --> 00:45:35,992
+In the next part of this lecture, we will continue on the same topic.
+
+317
+00:45:37,598 --> 00:45:39,927
+So, thank you, goodbye, and happy learning.
+

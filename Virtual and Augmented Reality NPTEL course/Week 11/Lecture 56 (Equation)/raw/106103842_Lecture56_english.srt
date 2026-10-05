@@ -1,0 +1,1268 @@
+1
+00:00:23,960 --> 00:00:28,986
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:29,887 --> 00:00:37,895
+We are going to continue our discussion on resource optimization, specifically in the context of virtual reality.
+
+3
+00:00:37,915 --> 00:00:48,647
+So, if we quickly recap what we have done so far, earlier we talked about the basic idea of computer graphics.
+
+4
+00:00:49,588 --> 00:00:53,713
+Now, why are we talking about computer graphics? Because the
+
+5
+00:00:54,470 --> 00:00:59,290
+key component of any immersive experience is the rendering part,
+
+6
+00:00:59,290 --> 00:01:11,872
+how the scene is rendered in front of the eyes of the user on the display device, and the idea of rendering is covered in the discipline of computer graphics.
+
+7
+00:01:13,194 --> 00:01:20,443
+So, it is essential to know the complexities involved in rendering, and in order to do that, we need to know
+
+8
+00:01:21,250 --> 00:01:24,493
+or at least we should have some idea of computer graphics.
+
+9
+00:01:25,194 --> 00:01:27,776
+So, we started our discussion on computer graphics.
+
+10
+00:01:28,097 --> 00:01:30,579
+We have gone through some basic terminologies.
+
+11
+00:01:31,220 --> 00:01:45,154
+Then, after covering the basic idea, we covered the idea of the 3D graphics pipeline and also the stages constituting the pipeline.
+
+12
+00:01:45,174 --> 00:01:49,738
+We have also covered the first stage of the pipeline, that is, the object representation.
+
+13
+00:01:50,005 --> 00:02:05,086
+Note that although we are talking about this as the first stage, in object representation, there is no computation as such related to intensity calculation or determination of the pixel intensities.
+
+14
+00:02:06,308 --> 00:02:13,077
+So, we may or may not call it the first stage, but for the sake of simplicity, we are calling it the first stage of the graphics pipeline.
+
+15
+00:02:14,778 --> 00:02:22,685
+Now, in this lecture, what we are going to do is cover the second and third stages of the graphics pipeline.
+
+16
+00:02:22,786 --> 00:02:25,688
+So, two more stages will be covered in this lecture.
+
+17
+00:02:26,049 --> 00:02:34,436
+But before we do that, let us quickly have a relook at the 3D graphics pipeline as discussed in the previous lecture.
+
+18
+00:02:36,859 --> 00:02:41,443
+So, we have these five stages: object representation, first stage.
+
+19
+00:02:41,693 --> 00:02:45,818
+which happens in the local coordinate system.
+
+20
+00:02:48,341 --> 00:02:49,843
+We have already talked about this one.
+
+21
+00:02:51,144 --> 00:03:02,157
+The second stage is modeling transformation, in which the local coordinate description is transformed to a world coordinate description; that is,
+
+22
+00:03:02,157 --> 00:03:07,624
+local to world transformation, local to world coordinate transformation.
+
+23
+00:03:08,424 --> 00:03:09,726
+Third is the lighting stage.
+
+24
+00:03:12,710 --> 00:03:17,038
+which takes place in the world coordinate reference frame.
+
+25
+00:03:18,600 --> 00:03:27,397
+Then we have the fourth stage, that is the viewing pipeline, containing several sub-stages starting with viewing transformation,
+
+26
+00:03:27,397 --> 00:03:36,692
+where again we transform from world coordinate system to a 3D view coordinate system.
+
+27
+00:03:38,056 --> 00:03:50,713
+This is followed by clipping, an operation taking place in the 3D view coordinate system, followed by hidden surface removal, another operation taking place again in the 3D view coordinate system.
+
+28
+00:03:52,295 --> 00:04:03,270
+Then we have projection transformation, where we transform from 3D view coordinate to 2D view coordinate system, and then we have window to viewport transformation, where we transfer
+
+29
+00:04:03,858 --> 00:04:09,004
+the scene description in the 2D view coordinate system to a device coordinate system.
+
+30
+00:04:12,048 --> 00:04:25,764
+The fifth and final stage is scan conversion, where we transfer or transform from the device coordinate scene description to screen coordinate or pixel grid description of the scene.
+
+31
+00:04:27,066 --> 00:04:28,768
+So, these are the five stages.
+
+32
+00:04:30,368 --> 00:04:39,104
+Out of these, we have already covered the first one, and we are going to cover these two stages, namely modeling transformation and
+
+33
+00:04:39,104 --> 00:04:44,609
+the lighting, or the second and third stages, in this part of the lecture.
+
+34
+00:04:46,892 --> 00:04:52,541
+So, let us start with stage 2, that is modeling or geometric transformation.
+
+35
+00:04:52,581 --> 00:04:58,890
+So, both terms are used; either modeling transformation can be used, or we can use the term geometric transformation.
+
+36
+00:05:01,317 --> 00:05:03,920
+Now, what is the basic idea behind this stage?
+
+37
+00:05:05,381 --> 00:05:07,444
+Earlier, we talked about object representation.
+
+38
+00:05:07,464 --> 00:05:13,150
+Now, these object representation techniques allow us to represent objects individually.
+
+39
+00:05:13,611 --> 00:05:25,924
+So, for each object, we can have an individual definition of the object, and that definition is often called the local or object coordinate system description of the object.
+
+40
+00:05:27,524 --> 00:05:42,447
+So, essentially, we can think of each object as having its own coordinate reference frame in which the object is defined; that is, its position, dimension, and so on are defined.
+
+41
+00:05:42,467 --> 00:05:48,497
+Now, in order to construct a scene, what we need to do is put multiple objects together.
+
+42
+00:05:48,697 --> 00:05:55,708
+Now, each individual object is defined in its own coordinate system, or its local coordinate system.
+
+43
+00:05:57,747 --> 00:06:06,275
+We need to redefine the object in a common coordinate system where all the objects can be put together and defined.
+
+44
+00:06:07,076 --> 00:06:16,425
+So, objects need to be assembled together in a different setting, which we can call the scene or world coordinate system.
+
+45
+00:06:21,991 --> 00:06:24,193
+So, essentially, what we do is basically
+
+46
+00:06:24,595 --> 00:06:29,781
+taking the object from its local coordinate description to a scene or world coordinate description.
+
+47
+00:06:29,881 --> 00:06:32,645
+The idea is illustrated here.
+
+48
+00:06:34,727 --> 00:06:43,798
+So, suppose we have object 1 and object 2, each having its own coordinate system as shown here.
+
+49
+00:06:44,439 --> 00:06:52,729
+Now, using these two objects, we are constructing a scene which comprises this shape
+
+50
+00:06:53,384 --> 00:07:06,575
+resembling the English letter H. So, as you can see, in order to construct this H, we have used multiple instances of object 1 and object 2 and that
+
+51
+00:07:06,575 --> 00:07:11,064
+too in different shapes, sizes, orientations, and so on.
+
+52
+00:07:12,266 --> 00:07:18,733
+Say, for example, this is one instance of object 1, a second instance of object 1,
+
+53
+00:07:27,944 --> 00:07:32,768
+a third instance of object 1, a fourth instance of object 1.
+
+54
+00:07:33,929 --> 00:07:38,534
+So, these are all object 1 and these are all object 2.
+
+55
+00:07:43,878 --> 00:07:56,550
+So, there are four instances of object 1 and three instances of object 2 used to create this particular shape, and if you compare
+
+56
+00:07:58,302 --> 00:08:06,376
+the definition to the final position or shape or orientation of the objects, you can see a lot of changes.
+
+57
+00:08:07,638 --> 00:08:18,336
+So, this is what we are calling transformation from local coordinate definition to world coordinate definition or scene coordinate definition.
+
+58
+00:08:21,539 --> 00:08:35,480
+So, this modeling transformation, the second stage, implies applying some operations on the object definition in local coordinates to transform to the world or scene coordinate system.
+
+59
+00:08:37,102 --> 00:08:41,168
+All these operations can be derived from a set of basic operations.
+
+60
+00:08:43,813 --> 00:08:46,217
+which are the basic transformations.
+
+61
+00:08:46,237 --> 00:08:47,619
+What are those basic transformations?
+
+62
+00:08:47,659 --> 00:09:00,431
+We are all familiar with those transformations, such as translation, rotation by some angle either in a clockwise or anticlockwise direction around an axis,
+
+63
+00:09:00,431 --> 00:09:11,252
+scaling, that is reduction or increase in the size of the object, and shearing, that is changing the shape of the object.
+
+64
+00:09:12,914 --> 00:09:13,315
+So,
+
+65
+00:09:14,864 --> 00:09:27,801
+These four constitute the basic transformations, and we can use combinations of these four to create any sort of transformation required to construct a scene.
+
+66
+00:09:30,324 --> 00:09:36,552
+Now, typically, each transformation is represented in the form of a matrix.
+
+67
+00:09:38,405 --> 00:09:46,376
+But the matrix representation of transformations happens in a different setting, that is typically called a homogeneous coordinate system.
+
+68
+00:09:47,979 --> 00:09:56,070
+So, for example, for a 2D transformation, that is a transformation happening in a 2D plane, we can have 3 by 3 matrices.
+
+69
+00:09:56,651 --> 00:10:04,422
+For a 3D transformation, that is a transformation happening in 3D, we can have 4 by 4 matrices and so on.
+
+70
+00:10:04,442 --> 00:10:08,007
+So, one extra dimension is added in the homogeneous coordinate system.
+
+71
+00:10:10,417 --> 00:10:24,776
+So, for example, for translation, we can have this 3 by 3 matrix for 2D translation, where Tx and Ty are the amounts of translation along the x and y directions.
+
+72
+00:10:25,397 --> 00:10:31,084
+For rotation in 2D, we have this 3 by 3 matrix; phi is the angle of rotation.
+
+73
+00:10:32,286 --> 00:10:39,175
+For scaling in 2D, we can have this 3 by 3 matrix, where Sx and Sy are scaling factors along
+
+74
+00:10:39,712 --> 00:10:40,834
+the x and y directions.
+
+75
+00:10:43,297 --> 00:10:49,005
+For shearing in 2D, the corresponding 3 by 3 matrix is shown here.
+
+76
+00:10:49,806 --> 00:10:55,735
+Here Sx, Shx and Shy are the shearing factors along the x and y directions.
+
+77
+00:10:58,078 --> 00:11:04,347
+Similarly, we can have the matrix representation of transformations for 3D operations.
+
+78
+00:11:05,669 --> 00:11:05,989
+Now,
+
+79
+00:11:07,336 --> 00:11:22,896
+The matrix representation is a convenient way to represent transformations, and using these matrices we can transform points from an object's own local coordinate system to a world coordinate system.
+
+80
+00:11:23,997 --> 00:11:24,678
+So, how does it work?
+
+81
+00:11:25,759 --> 00:11:33,249
+Given a point (x, y), we can assume that it is in the local coordinate system where the object is defined.
+
+82
+00:11:34,070 --> 00:11:36,533
+We can represent it as a column vector.
+
+83
+00:11:39,230 --> 00:11:54,654
+Then we can multiply the transformation matrix with the column vector to get the new point in the form of another column vector, P dash,
+
+84
+00:11:54,654 --> 00:12:04,815
+which we can obtain using the transformation matrix S and the original point P to get the new point.
+
+85
+00:12:07,225 --> 00:12:22,302
+So, effectively, the transformation refers to a matrix multiplication of the points which are on the surface of the object to the new points that ideally should be in the world coordinate system.
+
+86
+00:12:24,244 --> 00:12:33,655
+There is one issue, though: sometimes to construct a world coordinate scene, we need to perform multiple geometric or modeling transformations on an object.
+
+87
+00:12:33,854 --> 00:12:42,175
+That is, not only the basic operations, but multiple operations may be required, and there we need to go for a composite transformation matrix rather than
+
+88
+00:12:42,175 --> 00:12:48,850
+basic transformation matrices like translation, rotation, scaling, or shearing.
+
+89
+00:12:50,972 --> 00:12:59,541
+Just to illustrate the idea, or rather the issue, let us consider one example: an object,
+
+90
+00:13:00,449 --> 00:13:13,724
+which is a rectangle shown here, ABCD, is defined in the local coordinate system which is used to define a chimney of the house in the world coordinate system.
+
+91
+00:13:13,785 --> 00:13:22,615
+So, this rectangle is used to define a chimney-like shape in this house shown in the world coordinate scene.
+
+92
+00:13:23,396 --> 00:13:28,802
+So, in order to do that, in order to construct this scene with the chimney in its place,
+
+93
+00:13:29,963 --> 00:13:30,804
+What do we need to do?
+
+94
+00:13:31,125 --> 00:13:47,026
+What we need to do is basically transform ABCD, the original rectangle in its local coordinate scene, to A dash, B dash, C dash, D dash, that is this chimney-like shape.
+
+95
+00:13:49,189 --> 00:13:53,975
+Now, that is not possible with only a single basic transformation.
+
+96
+00:13:53,995 --> 00:13:59,683
+So, using either translation only, rotation only, scaling only, or shearing only,
+
+97
+00:14:00,187 --> 00:14:02,230
+we will not be able to do this.
+
+98
+00:14:02,471 --> 00:14:08,541
+We will not be able to transfer or transform ABCD to A dash, B dash, C dash, and D dash.
+
+99
+00:14:10,905 --> 00:14:13,950
+We actually require two basic transformations together.
+
+100
+00:14:14,752 --> 00:14:17,196
+One is scaling and one is translation.
+
+101
+00:14:20,642 --> 00:14:24,929
+So, in order to perform the transformation, we need to go through stages.
+
+102
+00:14:25,310 --> 00:14:26,211
+The first stage is
+
+103
+00:14:27,102 --> 00:14:32,450
+to determine the basic matrices for individual transformations, that is, scaling and translation.
+
+104
+00:14:33,892 --> 00:14:43,906
+As we can see, from here to this shape in the world coordinate scene, the object is halved in length while the height remains the same.
+
+105
+00:14:44,046 --> 00:14:53,259
+That means the scaling factor along the x direction must be half, and the scaling factor along the y direction should be 1.
+
+106
+00:14:54,541 --> 00:14:56,063
+So, the scaling matrix
+
+107
+00:14:56,465 --> 00:15:13,774
+should be of this form 0.5 0 0 1 0 0 0 0 1 where Sx equals 0.5, the scaling factor along the x direction, and Sy equals 1 since there is no change.
+
+108
+00:15:17,941 --> 00:15:19,163
+Also, we need to translate.
+
+109
+00:15:20,987 --> 00:15:23,643
+So, vertex-wise, if we look,
+
+110
+00:15:23,643 --> 00:15:35,325
+we can see that vertex D(0, 0), that is the origin, has been translated to D dash, that is 55 in the world coordinate scene.
+
+111
+00:15:35,825 --> 00:15:48,578
+So, the translation matrix should be this one: 1 0 5, 0 1 5, 0 0 1, that is Tx equals 5, Ty equals 5.
+
+112
+00:15:51,258 --> 00:15:55,703
+Translation along the x-axis should be 5, translation along the y-axis should be 5.
+
+113
+00:15:59,388 --> 00:16:02,031
+So, now we have identified the two basic matrices.
+
+114
+00:16:02,311 --> 00:16:09,600
+So, the second step is to obtain the composite matrix, the composite transformation matrix where both are used.
+
+115
+00:16:12,564 --> 00:16:19,172
+So, the first transformation applied to the object is the rightmost in the sequence.
+
+116
+00:16:21,143 --> 00:16:23,547
+The next transformation is placed on the left.
+
+117
+00:16:24,128 --> 00:16:29,156
+This is how we can obtain the composite matrix.
+
+118
+00:16:31,459 --> 00:16:34,144
+And we continue in this way until the last transformation.
+
+119
+00:16:34,164 --> 00:16:37,990
+Since we have only two, after the first two steps, we can stop.
+
+120
+00:16:38,030 --> 00:16:43,939
+That is, the first transformation, whatever it is, we put it on the right-hand side.
+
+121
+00:16:44,500 --> 00:16:45,582
+That is T1.
+
+122
+00:16:46,102 --> 00:16:49,686
+Then the next transformation is placed on the left of this transformation.
+
+123
+00:16:49,706 --> 00:16:52,749
+So if the next one is T2, then we put it in this way.
+
+124
+00:16:52,769 --> 00:17:01,659
+So right-to-left arrangement of transformations that are applied.
+
+125
+00:17:06,984 --> 00:17:10,127
+And then we perform a matrix multiplication of those transformations.
+
+126
+00:17:10,147 --> 00:17:13,712
+So if we do the same for our example,
+
+127
+00:17:15,194 --> 00:17:21,801
+We can obtain the composite matrix by multiplying these two: translation followed by scaling.
+
+128
+00:17:22,843 --> 00:17:26,067
+So, right to left, then we multiply these two.
+
+129
+00:17:30,813 --> 00:17:44,610
+So, if we follow the same, then we can see that scaling is the first transformation applied, followed by translation, and we arrange them from right to left as mentioned previously.
+
+130
+00:17:46,328 --> 00:18:00,895
+And then we take a multiplication, we perform a multiplication of the matrices to get a composite transformation matrix in this form; that is the composite transformation matrix.
+
+131
+00:18:03,406 --> 00:18:10,537
+In the third step, what we do is obtain the new coordinate positions by multiplying the current vertices with the composite matrix.
+
+132
+00:18:10,957 --> 00:18:23,096
+Current vertices are given here: A, B, C, D. The composite matrix is this one. Current vertex,
+
+133
+00:18:23,116 --> 00:18:32,670
+if it is A, then A dash would be given by multiplying M with A. Similarly,
+
+134
+00:18:34,962 --> 00:18:48,399
+multiplying M with B we get B dashed as shown here; C dashed in a similar fashion we can get, and D dashed similarly we will get like this,
+
+135
+00:18:48,399 --> 00:19:02,050
+by multiplying M with current vertex D. So, this is how we can obtain the transformed points.
+
+136
+00:19:03,700 --> 00:19:05,062
+in the world coordinate scene.
+
+137
+00:19:07,204 --> 00:19:15,134
+One thing we should note here is that matrix multiplication is not commutative, and the sequence is very important.
+
+138
+00:19:15,254 --> 00:19:30,973
+So, if we are unable to formulate the sequence in the proper order, like right to left as we have discussed previously, then if the sequence is wrong, it may lead to an incorrect result.
+
+139
+00:19:32,388 --> 00:19:40,136
+So, the order in which we put the transformations before multiplying them is very important.
+
+140
+00:19:43,260 --> 00:19:55,273
+Nevertheless, without going into further details of all the complexities involved in modeling or geometric transformation, we can say that
+
+141
+00:19:55,844 --> 00:20:02,962
+modeling transformation involves multiplication of a transformation matrix, whether it is a basic matrix or a composite matrix,
+
+142
+00:20:02,962 --> 00:20:12,279
+with the vertices to get a transformed vertex in the world coordinate scene.
+
+143
+00:20:12,299 --> 00:20:13,480
+That is about stage 2.
+
+144
+00:20:14,321 --> 00:20:17,524
+Let us talk about stage 3, that is, color computation.
+
+145
+00:20:21,388 --> 00:20:24,771
+So, in the third stage, what we do is basically
+
+146
+00:20:25,358 --> 00:20:28,921
+we try to assign colors to the objects in the scene.
+
+147
+00:20:29,742 --> 00:20:40,533
+If a color is not assigned, then we will not be able to perceive depth, which will affect our perception of the 3D scene.
+
+148
+00:20:40,973 --> 00:20:45,438
+So, essentially, the quality of experience will reduce, as shown in this example.
+
+149
+00:20:46,639 --> 00:20:49,061
+The top one is without assigning proper color.
+
+150
+00:20:50,062 --> 00:20:54,927
+Some color is there, but it is not done properly, and the bottom figure shows
+
+151
+00:20:55,295 --> 00:21:02,085
+If we assign colors properly, then we can get a more realistic perception.
+
+152
+00:21:07,093 --> 00:21:11,820
+Now, in order to do that, we use lighting or shading models.
+
+153
+00:21:14,344 --> 00:21:23,918
+The term lighting model and the term shading model are distinctly used in the context of computer graphics, although they may physically represent more or less similar things.
+
+154
+00:21:25,248 --> 00:21:30,579
+But here the terms are differentiated in terms of the computation involved.
+
+155
+00:21:30,599 --> 00:21:36,291
+Lighting models are those that involve more computation as compared to shading models.
+
+156
+00:21:36,451 --> 00:21:44,708
+Shading models are used to reduce computation but without compromising on the quality of experience.
+
+157
+00:21:46,949 --> 00:21:49,653
+Here, let us focus our attention on lighting models.
+
+158
+00:21:49,673 --> 00:21:57,866
+Shading models are essentially approximations of color assignment, approximations of methods used to assign colors using the lighting models.
+
+159
+00:21:59,528 --> 00:22:01,231
+So, they also rely on lighting models.
+
+160
+00:22:01,251 --> 00:22:09,784
+So, let us try to understand the lighting model that will give a holistic understanding of this color assignment process.
+
+161
+00:22:10,591 --> 00:22:21,526
+So, lighting models compute colors in terms of continuous intensity values; essentially, these are real numbers typically within the range 0 to 1.
+
+162
+00:22:21,887 --> 00:22:25,091
+So, typically a normalized real number.
+
+163
+00:22:27,194 --> 00:22:35,346
+Now, these real numbers are mapped to computer-supported discrete values.
+
+164
+00:22:36,968 --> 00:22:40,513
+So, we will come back to this point at the end of this lecture.
+
+165
+00:22:42,940 --> 00:22:48,490
+In order to understand the lighting model, let us first try to quickly understand the idea of color.
+
+166
+00:22:50,073 --> 00:22:59,129
+Now, a source emits light. Say, for example, this is a scenario: here there is a direct light source; it emits light.
+
+167
+00:22:59,149 --> 00:23:03,717
+The emitted light energy falls upon a point on the surface, say here.
+
+168
+00:23:06,920 --> 00:23:12,628
+Sometimes, emitted light falls on the point after getting reflected from surrounding surfaces.
+
+169
+00:23:12,688 --> 00:23:21,982
+So, this light, after getting reflected from here, comes and falls on the same point.
+
+170
+00:23:22,002 --> 00:23:24,024
+The incident light then reflects.
+
+171
+00:23:24,345 --> 00:23:31,375
+So, whatever light is incident at this point gets reflected and comes to our, or the viewer's, eye.
+
+172
+00:23:33,937 --> 00:23:38,802
+The intensity of light reaching the viewer's eye results in color perception.
+
+173
+00:23:38,822 --> 00:23:45,649
+Whatever the intensity of this reflected light is determines what color the viewer is going to perceive.
+
+174
+00:23:48,291 --> 00:23:53,977
+Now, in computer graphics, we are interested in simulating this process through a lighting model.
+
+175
+00:23:54,057 --> 00:24:03,927
+So, to compute the intensity of this reflected light, essentially the color of the surface point from where the light is coming,
+
+176
+00:24:04,750 --> 00:24:08,394
+we simulate the process using a lighting model in computer graphics.
+
+177
+00:24:11,537 --> 00:24:14,300
+Now, there are many such models.
+
+178
+00:24:15,021 --> 00:24:18,265
+Let us understand the process.
+
+179
+00:24:18,325 --> 00:24:22,049
+Let us go through one simple lighting model.
+
+180
+00:24:23,250 --> 00:24:31,139
+In this model, the light intensity reaching the viewer from a surface point can be modeled as the sum of three intensities.
+
+181
+00:24:33,061 --> 00:24:34,302
+Ambient light intensity.
+
+182
+00:24:35,935 --> 00:24:50,853
+which you can represent with I amb, then diffuse reflection intensity of direct light I diffuse, I diff and specular reflection intensity of direct light that is I spec.
+
+183
+00:24:51,454 --> 00:24:52,655
+The idea is illustrated here.
+
+184
+00:24:53,456 --> 00:25:02,787
+So, whatever light falls on the surface of this object after getting reflected from surrounding surfaces that is called ambient light.
+
+185
+00:25:03,138 --> 00:25:14,089
+If light is coming directly from the source and getting reflected in a diffuse manner then that is the diffuse light component.
+
+186
+00:25:14,109 --> 00:25:28,584
+If the light comes from the source and gets reflected with a specular effect that is a shiny bright spot effect then that is the specular reflection component.
+
+187
+00:25:29,925 --> 00:25:31,947
+So, each type of light
+
+188
+00:25:33,901 --> 00:25:42,132
+will have its own intensity and these three intensities together after combining these three intensities they come to the viewer's eye.
+
+189
+00:25:42,753 --> 00:25:52,147
+And correspondingly we can have the simple lighting model which says that the intensity of the incident light on the viewer's eye is the sum of the
+
+190
+00:25:52,147 --> 00:26:00,516
+incident light due to ambient component, due to diffuse component and due to specular component.
+
+191
+00:26:02,302 --> 00:26:09,894
+This is the simplistic way of looking at the lighting model.
+
+192
+00:26:09,914 --> 00:26:16,223
+Now, the reflected light intensity is a fraction of the incident light intensity.
+
+193
+00:26:16,243 --> 00:26:20,069
+Whatever falls, a fraction of it gets reflected and comes to the viewer's eye.
+
+194
+00:26:21,451 --> 00:26:27,921
+Now, this fraction is determined by a surface property known as reflection coefficient or reflectivity.
+
+195
+00:26:31,900 --> 00:26:43,445
+We define three coefficients for the simple lighting model corresponding to three types of incident lights that is diffuse reflection coefficient for ambient light Ka,
+
+196
+00:26:43,445 --> 00:26:53,025
+diffuse reflection coefficient for direct light Kd and specular reflection coefficient for direct light Ks.
+
+197
+00:26:55,648 --> 00:27:01,755
+Now, the values of each of these reflectivity
+
+198
+00:27:02,377 --> 00:27:19,375
+or reflection coefficients vary between 0.0 to 1.0; that is, if the value is close to 0 or 0, then it represents a dull surface with no reflection, as most of the light gets absorbed
+
+199
+00:27:19,375 --> 00:27:28,415
+by the surface. And if it is close to 1 or 1, that means a shiny, mirror-like surface where all light gets reflected.
+
+200
+00:27:28,475 --> 00:27:30,358
+So, if we want to generate different effects
+
+201
+00:27:31,705 --> 00:27:37,550
+between dull and shiny surfaces, we can vary these coefficients accordingly.
+
+202
+00:27:40,953 --> 00:27:54,952
+Now, to compute the intensity contribution due to the ambient light, what we need to do is simply multiply the ambient light intensity falling on the surface point
+
+203
+00:27:54,952 --> 00:28:00,210
+with the reflectivity for the ambient light, that is Ka, to get the
+
+204
+00:28:02,063 --> 00:28:06,889
+fraction of the ambient light that comes to the viewer's eye.
+
+205
+00:28:09,251 --> 00:28:11,254
+So, this is I_a equal to K_a I_a.
+
+206
+00:28:12,775 --> 00:28:16,880
+For the diffuse reflection component, it is slightly more complicated.
+
+207
+00:28:16,960 --> 00:28:25,370
+Here, we need to take into account the surface normal at the surface point from where the light gets reflected and the light source direction.
+
+208
+00:28:27,152 --> 00:28:29,995
+So, let the surface normal be n, a vector,
+
+209
+00:28:31,443 --> 00:28:55,257
+and the light source direction be L, another vector. Then we can compute the diffuse reflection component coming to the user's or viewer's eye as Kd Is, where Is is the source light intensity
+
+210
+00:28:55,878 --> 00:29:09,078
+and the dot product of these two vectors, N dot L, if N dot L is greater than 0; otherwise, it is 0, which means there is no reflection.
+
+211
+00:29:14,266 --> 00:29:17,511
+Now, specular component calculation is even more complex.
+
+212
+00:29:18,993 --> 00:29:22,999
+Here we are going to talk about one approximate model.
+
+213
+00:29:24,194 --> 00:29:30,800
+named after its inventor Phong.
+
+214
+00:29:30,820 --> 00:29:37,586
+So, the component is I spec equal to KDIS cos NS phi.
+
+215
+00:29:37,606 --> 00:29:53,340
+Phi is, as you can see in this figure, the angle between the viewer direction and the ideal specular reflection direction; that is, if it is a mirror, then the direction of the reflected light.
+
+216
+00:29:55,750 --> 00:30:05,881
+Now, we can see from here that cos phi equal to V dot r, another dot product of the two vectors.
+
+217
+00:30:07,082 --> 00:30:11,406
+V is the viewer direction vector, r is the ideal specular reflection direction vector.
+
+218
+00:30:12,628 --> 00:30:22,618
+So, we can say I specular is Ks Is, where Is is the source light intensity and Ks is the reflectivity for the specular component.
+
+219
+00:30:24,961 --> 00:30:31,250
+V dot r Ns if V dot r is greater than 0, otherwise it is 0.
+
+220
+00:30:33,312 --> 00:30:45,031
+Now, this r, the ideal specular reflection direction, we can represent with the surface normal at that point, the normal vector at that point that is N, and
+
+221
+00:30:45,031 --> 00:30:53,820
+the light source light direction vector L as r equal to twice L dot N
+
+222
+00:30:55,758 --> 00:31:17,923
+multiplied by N minus L. So, we can replace R here with this expression to finally come up with the component as a dot product of the vectors L, N, and V. So,
+
+223
+00:31:17,923 --> 00:31:23,487
+we need to know these vectors in order to be able to compute the specular component.
+
+224
+00:31:27,905 --> 00:31:41,011
+Now, whatever we have discussed so far assumes that no matter where the light source is, if its emission intensity, if the intensity of the emitted light at the source is IS, then
+
+225
+00:31:41,011 --> 00:31:48,836
+the same intensity will come to the surface point irrespective of the distance between the source and the surface point.
+
+226
+00:31:48,917 --> 00:31:50,779
+But in practice, that typically never happens.
+
+227
+00:31:54,084 --> 00:31:57,169
+Typically, light intensity diminishes.
+
+228
+00:31:57,706 --> 00:31:59,208
+over distance.
+
+229
+00:32:01,011 --> 00:32:07,701
+So, we need to take care of this factor that is intensity attenuation over distance.
+
+230
+00:32:08,342 --> 00:32:20,120
+So, there are two ways to take care of it: one is radial intensity attenuation, that is, the radial factor accounts for the effect of diminishing light intensity over distance.
+
+231
+00:32:20,140 --> 00:32:26,329
+Typically, an inverse quadratic function is used to compute
+
+232
+00:32:27,288 --> 00:32:44,471
+this factor in the form f, that is, attenuation factor for radial attenuation, as given by this expression inverse quadratic function where
+
+233
+00:32:44,471 --> 00:32:52,854
+d is the distance between the source and the surface point; a0, a1, a2 these are coefficients varied to produce a better realistic effect.
+
+234
+00:32:52,874 --> 00:32:54,375
+So, we can control these values.
+
+235
+00:32:56,667 --> 00:33:08,463
+Also, angular intensity attenuation can be taken care of, can be considered primarily if we are interested in generating spotlight effects such as shown here.
+
+236
+00:33:11,167 --> 00:33:25,847
+If we want to have an effect like this, where within a region only those elements will be visible or brightly visible and outside that spotlight zone things will be darker.
+
+237
+00:33:26,384 --> 00:33:32,492
+If we want to generate such type of effect, then we can make use of intensity attenuation factor.
+
+238
+00:33:34,095 --> 00:33:44,549
+A commonly used function to determine the factor is this given here: attenuation factor angular.
+
+239
+00:33:45,070 --> 00:33:53,742
+It is 0 if the surface point is outside the angular limit theta, that is, the range of the spotlight cone.
+
+240
+00:33:55,426 --> 00:34:03,447
+And if it is within that angular limit, then it varies in the form cos A1 phi where
+
+241
+00:34:03,447 --> 00:34:10,592
+A1 is the angular attenuation exponent, having a positive value, and we can vary this value to achieve different effects.
+
+242
+00:34:13,538 --> 00:34:15,521
+So, this is for angular attenuation.
+
+243
+00:34:16,042 --> 00:34:21,231
+So, if we take into account this attenuation factor, that is, the light source intensity changes
+
+244
+00:34:24,029 --> 00:34:29,054
+based on the distance of the surface point from the light source.
+
+245
+00:34:32,518 --> 00:34:37,225
+Then, taking into account this attenuation, we can modify the simple lighting model.
+
+246
+00:34:37,284 --> 00:34:40,529
+Earlier it was simply IM plus ID plus ISPEC.
+
+247
+00:34:41,110 --> 00:34:53,985
+Now we can say IM; here we are not taking into account the intensity attenuation, but for diffuse and specular reflection, we are doing that by multiplying these two factors with the sum of
+
+248
+00:34:54,657 --> 00:34:55,819
+these two components.
+
+249
+00:34:56,679 --> 00:35:04,870
+Now, if these are one, that means the factor is uniform, meaning we are not taking them into account; then it boils down to the earlier formulation.
+
+250
+00:35:06,072 --> 00:35:15,484
+If it is not one, then the effect is taken care of.
+
+251
+00:35:15,504 --> 00:35:20,010
+Also, when we are thinking of assigning colors,
+
+252
+00:35:20,351 --> 00:35:22,133
+so, the colored light model
+
+253
+00:35:23,665 --> 00:35:25,107
+is a slightly different way.
+
+254
+00:35:26,068 --> 00:35:36,923
+Emitted light intensity has three components in such a case, rather than a single component; in a colored light source, these correspond to the primary colors red, green, and blue.
+
+255
+00:35:37,564 --> 00:35:44,433
+Now, these three intensities combine together to give the perception of any color.
+
+256
+00:35:46,817 --> 00:35:52,204
+So, the source intensity is a three-element vector Is: Isr, Isg, Isb.
+
+257
+00:35:52,775 --> 00:35:54,637
+corresponding to the three primary colors.
+
+258
+00:35:55,318 --> 00:36:05,279
+Reflection coefficients also need to be specified as three-element vectors: k equal to one for red,
+
+259
+00:36:05,279 --> 00:36:14,120
+one for green, one for blue; kd again one for red, green, blue; and ks one for red, green, and blue.
+
+260
+00:36:16,243 --> 00:36:22,410
+So, when we compute color, we have to individually compute these
+
+261
+00:36:23,825 --> 00:36:31,732
+components, and then once these three are generated together, we perceive the color.
+
+262
+00:36:32,973 --> 00:36:36,156
+Now, so far we have talked about a single light source.
+
+263
+00:36:36,176 --> 00:36:39,179
+What happens when there are multiple light sources?
+
+264
+00:36:40,280 --> 00:36:42,402
+Let us assume that there are n light sources.
+
+265
+00:36:43,182 --> 00:36:45,945
+So, in such a case, we need to further revise the model.
+
+266
+00:36:46,065 --> 00:36:51,690
+It will be IP equal to I ambient plus summation.
+
+267
+00:36:52,090 --> 00:36:53,832
+A summation term is introduced,
+
+268
+00:36:55,195 --> 00:37:05,825
+i from 1 to n, that is, for each light source we have to calculate this part, and then we
+
+269
+00:37:05,825 --> 00:37:14,258
+have to add those up, and each of these we need to compute for individual colors for the colored light sources.
+
+270
+00:37:14,899 --> 00:37:23,329
+So, if we have multiple colored light sources, then this needs to be done for individual colors for the colored light sources.
+
+271
+00:37:24,676 --> 00:37:29,580
+So, you can get some idea of the kind of computations involved in assigning colors.
+
+272
+00:37:30,901 --> 00:37:36,166
+In the previous case, we have seen the computation involved in transformation.
+
+273
+00:37:36,226 --> 00:37:39,309
+Now, we are seeing the computation involved in assigning colors.
+
+274
+00:37:40,890 --> 00:37:42,892
+The other part is intensity mapping.
+
+275
+00:37:42,952 --> 00:37:53,181
+So, the lighting model computes an intensity value for a pixel, but then that value can be anything between 0 and 1.
+
+276
+00:37:53,920 --> 00:37:54,862
+An infinite range.
+
+277
+00:37:55,523 --> 00:38:02,053
+However, devices do not support arbitrary ranges; they have a finite range of values.
+
+278
+00:38:02,073 --> 00:38:13,371
+Say, for example, an 8-bit display will support 2 to the power 8 or 256 colors for each of the pixels.
+
+279
+00:38:13,451 --> 00:38:16,656
+So, we have 256 values supported by the device.
+
+280
+00:38:19,200 --> 00:38:19,641
+But then,
+
+281
+00:38:20,566 --> 00:38:23,911
+the range 0 to 1 is infinite; any value can be generated.
+
+282
+00:38:23,931 --> 00:38:42,416
+So, what we need to do is we find the nearest value to IP from the device-supported intensity values, say I k, then the frame buffer stores the bit pattern for I k at the pixel location.
+
+283
+00:38:42,436 --> 00:38:50,387
+So, how to do that? Essentially, what we need to know, what we need to do, is determine the n number of device-supported levels.
+
+284
+00:38:53,152 --> 00:39:06,909
+Then we need to determine the minimum device-supported intensity value I naught using a photometer, and we know that the maximum value can be 1.
+
+285
+00:39:07,350 --> 00:39:12,236
+So, we have I naught and 1 known, and n, the number of levels supported.
+
+286
+00:39:12,837 --> 00:39:19,665
+Then there is a factor r which we need to compute using the equation I n equal to I
+
+287
+00:39:19,966 --> 00:39:21,447
+r to the power n I naught.
+
+288
+00:39:21,648 --> 00:39:27,442
+Now, this equation is formed based on one of our psychophysiological properties, that is,
+
+289
+00:39:27,442 --> 00:39:35,280
+we can perceive relative change between two intensity values rather than absolute change in the intensity values.
+
+290
+00:39:38,403 --> 00:39:47,391
+Based on that, we can formulate this equation as successive intensity values to be represented by this.
+
+291
+00:39:47,962 --> 00:40:10,257
+i1 equal to r to the power n i0, r to the power 1 i0, i2 equal to r square i0, i3 equal to r cube i0 and so on up to the nth value.
+
+292
+00:40:13,662 --> 00:40:32,222
+Now, once R is determined, we need to calculate these values I0, I1, I2, I3, store that in a table, and for each such value we assign a bit pattern and also store that along with those values.
+
+293
+00:40:33,424 --> 00:40:40,311
+Then we determine the device intensities and bit patterns and store them in a table, and finally,
+
+294
+00:40:41,118 --> 00:40:50,307
+when we compute using a lighting model pixel intensity, we map the computed intensity to the nearest device intensity.
+
+295
+00:40:50,327 --> 00:41:10,888
+So, we have a table storing I0, I1, I2, IN and corresponding bit patterns, bit pattern 1, bit pattern 2, bit pattern 3,
+
+296
+00:41:13,484 --> 00:41:25,211
+n. So, once we have the computed value, we map it to the table; that means we map it to the nearest intensity, and the corresponding bit pattern is obtained and
+
+297
+00:41:25,211 --> 00:41:32,046
+stored in the frame buffer. That is how we map a computed value to the device-supported value.
+
+298
+00:41:32,066 --> 00:41:34,469
+So, let us summarize what we have covered so far.
+
+299
+00:41:36,131 --> 00:41:39,255
+In this part of the lecture, we have covered two more stages
+
+300
+00:41:39,927 --> 00:41:43,712
+of the pipeline: modeling transformation and intensity calculation lighting.
+
+301
+00:41:43,732 --> 00:41:53,300
+In modeling transformation, we have seen that to transform a point from its local coordinate system to the world coordinate system, we first need to
+
+302
+00:41:53,300 --> 00:41:58,753
+obtain the transformation matrix, which can be an individual basic matrix or a composite matrix.
+
+303
+00:41:59,233 --> 00:42:07,825
+A composite matrix is more common, and then we multiply the point vector with the composite matrix to determine the transformed point. That is
+
+304
+00:42:08,665 --> 00:42:10,548
+one set of computations.
+
+305
+00:42:10,568 --> 00:42:19,171
+Once the point is transformed in the world coordinate scene, then for that point, we assign some color; that is, we compute the
+
+306
+00:42:19,171 --> 00:42:23,768
+intensity of the light which gets reflected from that point and comes to the user's eye.
+
+307
+00:42:24,910 --> 00:42:32,201
+Note that here we are not actually computing color at the pixel level, but color in the 3D scene at the point level.
+
+308
+00:42:33,022 --> 00:42:35,807
+And in order to do that, we need a lighting model.
+
+309
+00:42:36,508 --> 00:42:36,748
+We have
+
+310
+00:42:37,893 --> 00:42:49,926
+quickly gone through a simple lighting model to get some idea, and we have also talked about how to map the color computed with the lighting model to a color supported by the device.
+
+311
+00:42:51,207 --> 00:42:59,636
+The mapping table is device-specific. For a given display, the table is fixed, and we need to map it to the supported value.
+
+312
+00:43:00,858 --> 00:43:05,082
+In the next part of the lecture, we are going to cover the remaining stages of the pipeline.
+
+313
+00:43:06,226 --> 00:43:11,534
+I hope you could follow the topics and understand the concepts covered here.
+
+314
+00:43:12,075 --> 00:43:16,322
+For more detail, of course, we are keeping things at a very broad, simple level.
+
+315
+00:43:16,702 --> 00:43:22,391
+For more details, you can always refer to the material referenced at the end of this lecture.
+
+316
+00:43:24,154 --> 00:43:26,618
+So, looking forward to meeting you in the next part of the lecture.
+
+317
+00:43:27,339 --> 00:43:29,382
+Thank you, goodbye, and happy learning.
+

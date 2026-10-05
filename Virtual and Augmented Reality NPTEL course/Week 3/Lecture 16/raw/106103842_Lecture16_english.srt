@@ -1,0 +1,792 @@
+1
+00:00:24,382 --> 00:00:31,088
+Hello and welcome to the NPTEL MOOC's course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:32,168 --> 00:00:41,818
+Today, we are going to start discussion on a new topic that is tracking, that is lecture number 9.
+
+3
+00:00:44,160 --> 00:00:48,945
+So, tracking of course, we have covered earlier in bits and pieces.
+
+4
+00:00:49,505 --> 00:00:51,267
+In this lecture, we are going to get a
+
+5
+00:00:51,668 --> 00:01:08,564
+get a comprehensive overview of the entire tracking hardware that is typically used in XR applications as well as basic understanding of how tracking works with respect to different technologies.
+
+6
+00:01:08,584 --> 00:01:19,515
+Now, earlier we talked about various hardware used in VR as well as AR; one hardware component
+
+7
+00:01:19,934 --> 00:01:24,381
+which is part of the overall XR system is tracking.
+
+8
+00:01:24,581 --> 00:01:34,277
+It is an integral part of any XR hardware and as I mentioned, we covered this part in bits and pieces earlier.
+
+9
+00:01:34,978 --> 00:01:44,052
+Now, we are going to have a comprehensive overview of the tracking hardware as well as their basic working in this lecture.
+
+10
+00:01:48,419 --> 00:01:51,684
+Now why should we bother about tracking?
+
+11
+00:01:52,485 --> 00:02:04,823
+Why the other components such as basic knowledge of displays or inputs or digital overlaying, all these things are not sufficient?
+
+12
+00:02:04,843 --> 00:02:18,223
+Because keeping track of motion in physical world is a crucial part of any XR system, more importantly VR systems.
+
+13
+00:02:18,490 --> 00:02:29,862
+So, when we are talking of tracking, it is important in both AR and VR systems, but the requirements are different, the importance is different.
+
+14
+00:02:32,985 --> 00:02:42,060
+In VR systems, it is more about tracking motion in the physical world so that it can be translated to virtual motion in the virtual world.
+
+15
+00:02:42,060 --> 00:02:48,261
+Whereas in AR, it is more about tracking objects and how they are moving in the field of view.
+
+16
+00:02:52,932 --> 00:02:59,037
+So, AR requires virtual content to be registered in 3D with respect to some anchor in the real world.
+
+17
+00:02:59,778 --> 00:03:12,480
+In other words, it requires keeping track of users' pose, position, and orientation and also tracking of some objects that are part of the real world,
+
+18
+00:03:12,480 --> 00:03:15,712
+objects that are moving and are part of the real world.
+
+19
+00:03:19,655 --> 00:03:22,838
+So, in VR, our primary concern is to
+
+20
+00:03:23,425 --> 00:03:32,215
+track input, track users, whereas in AR the concern can be tracking the user as well as tracking parts of the real world.
+
+21
+00:03:36,880 --> 00:03:42,847
+So, in both cases we require some sort of tracking or, in other words, it is often called sensing.
+
+22
+00:03:43,367 --> 00:03:52,217
+So, both terms are commonly used; tracking is more popular compared to sensing, however,
+
+23
+00:03:52,822 --> 00:04:03,012
+the devices that enable us to do this are more often called sensors, coming from sensing, than trackers, coming from tracking.
+
+24
+00:04:07,677 --> 00:04:12,121
+So, let us quickly have a look at different categories of tracking.
+
+25
+00:04:13,022 --> 00:04:21,769
+So, this categorization can be done based on what we are tracking, what is being tracked.
+
+26
+00:04:21,790 --> 00:04:22,491
+So, we can have
+
+27
+00:04:22,910 --> 00:04:32,081
+three categories of tracking based on what is being tracked.
+
+28
+00:04:32,101 --> 00:04:39,850
+We can track the user's sense organs, so that is one category: tracking of the user's sense organs.
+
+29
+00:04:43,354 --> 00:04:51,364
+Then we can also track the user's other body parts, not only the sense organs; that is the second category of tracking.
+
+30
+00:04:54,112 --> 00:05:01,140
+Thirdly, we can track the rest of the environment not related to the user.
+
+31
+00:05:01,561 --> 00:05:03,703
+So, that is the third category of tracking.
+
+32
+00:05:05,365 --> 00:05:16,238
+Now, tracking the rest of the environment is more important in AR, but also important in the context of VR, as we have earlier seen while discussing VR systems.
+
+33
+00:05:22,765 --> 00:05:33,101
+Now, our sense organs, such as eyes and ears, have degrees of freedom controlled by the body.
+
+34
+00:05:35,545 --> 00:05:37,027
+So, we need to track that.
+
+35
+00:05:40,292 --> 00:05:49,026
+If a display is attached to a sense organ and we need to perceive
+
+36
+00:05:49,529 --> 00:06:02,147
+that as being attached to the surrounding world so that it changes with changes in our positioning of the sense organ.
+
+37
+00:06:03,669 --> 00:06:18,810
+Then this position and orientation of the organ need to be tracked so that the corresponding changes can be reflected in the virtual world or in the user experience.
+
+38
+00:06:23,920 --> 00:06:43,207
+In VR, most of the work focuses on head tracking which is sufficient for visual and aural components of VR related to our eyes and ears.
+
+39
+00:06:43,227 --> 00:06:51,919
+It may further require eye tracking if rendering and display technology requires compensating for eye movements.
+
+40
+00:06:53,215 --> 00:06:55,757
+So, eye tracking may also be part of head tracking.
+
+41
+00:06:59,681 --> 00:07:09,099
+On the other hand, if the user wants to see a representation of the body in the virtual world in the form of avatars or body components such as virtual hands,
+
+42
+00:07:09,099 --> 00:07:20,421
+its motion should be tracked so that it can be reproduced in the matched zone, that is, tracking the user's other body parts.
+
+43
+00:07:22,510 --> 00:07:27,599
+So, the first category we just have seen is tracking the sense organs.
+
+44
+00:07:29,102 --> 00:07:33,550
+We are now in the second category of tracking, that is, tracking other body parts.
+
+45
+00:07:34,011 --> 00:07:39,141
+These are required when the user likes to see a representation of the body in the virtual world.
+
+46
+00:07:42,366 --> 00:07:45,953
+Then that body part needs to be tracked.
+
+47
+00:07:47,806 --> 00:07:54,894
+so that it can be reproduced in the matched zone; what is a matched zone we have already discussed in the previous lectures.
+
+48
+00:07:58,818 --> 00:08:03,363
+Now, it may involve facial expressions or hand gestures for interaction.
+
+49
+00:08:09,469 --> 00:08:17,678
+One thing to be noted here is that perfect matching may not be required for tracking other body parts; even approximate
+
+50
+00:08:18,232 --> 00:08:26,663
+movement or approximate representation of body part movement in the virtual world is good enough to give a good experience.
+
+51
+00:08:34,392 --> 00:08:46,247
+A limiting case of tracking other body parts can be for the user to explicitly send a signal to track a body part.
+
+52
+00:08:46,582 --> 00:08:47,523
+by pressing a button.
+
+53
+00:08:47,563 --> 00:08:51,690
+So, the user could simply press a button to change body configuration.
+
+54
+00:08:53,613 --> 00:09:02,817
+So, here no elaborate tracking mechanism is employed; instead, one input signal is sent to indicate that now this
+
+55
+00:09:02,817 --> 00:09:08,736
+current body configuration may be changed to a predetermined body configuration based on the input.
+
+56
+00:09:09,797 --> 00:09:14,985
+For example, grasping an object with a virtual hand can be done
+
+57
+00:09:15,455 --> 00:09:22,624
+either by tracking the physical hand or by simply a single click of some input device.
+
+58
+00:09:24,887 --> 00:09:34,118
+So, once the click event happens, then the virtual hand is shown to grasp the object; here no further tracking is required.
+
+59
+00:09:34,178 --> 00:09:45,192
+So, that is one limiting or extreme case of tracking which is a very simplistic way of looking at the tracking problem by enabling the
+
+60
+00:09:46,167 --> 00:10:03,428
+tracked movement through the generation of a simple input device, a simple input event; that is about tracking other body parts.
+
+61
+00:10:03,768 --> 00:10:08,153
+The third category is tracking the surrounding environment.
+
+62
+00:10:11,177 --> 00:10:16,123
+So, physical objects in the real world surrounding the user may be tracked.
+
+63
+00:10:17,470 --> 00:10:27,512
+Why that is important in VR we have already discussed earlier while talking about VR systems, and we all know that it is very important in AR because
+
+64
+00:10:27,512 --> 00:10:39,682
+if an object is being moved, then it needs to be properly tracked in our real world view so that the digital content can be appropriately registered in 3D.
+
+65
+00:10:42,767 --> 00:10:48,488
+For physical objects not in the virtual world in the context of VR
+
+66
+00:10:48,488 --> 00:10:53,802
+The system may alert the user to their presence.
+
+67
+00:10:55,884 --> 00:11:01,551
+For example, imagine a scenario where a user is about to hit a wall.
+
+68
+00:11:07,237 --> 00:11:12,663
+So, in such cases, the wall is there in the physical world, but it is not there in the virtual world.
+
+69
+00:11:12,723 --> 00:11:15,726
+So, since the user is immersed in the virtual world,
+
+70
+00:11:16,195 --> 00:11:19,659
+the user may not be aware of the physical world's presence.
+
+71
+00:11:19,839 --> 00:11:24,444
+So, the movement may continue and then it may cause harm to the user.
+
+72
+00:11:25,045 --> 00:11:31,992
+So, maybe some sort of tracking the surrounding world can help in alleviating this problem.
+
+73
+00:11:32,212 --> 00:11:35,476
+Note that here tracking the user will not be of any use.
+
+74
+00:11:35,916 --> 00:11:37,999
+You need to track the surrounding environment.
+
+75
+00:11:39,861 --> 00:11:44,886
+In some apps, tracked physical objects may be matched
+
+76
+00:11:45,068 --> 00:11:50,074
+in VR so that the user receives touch feedback while interacting with them.
+
+77
+00:11:51,015 --> 00:12:00,246
+So, that is also a way of utilizing the tracking information and giving the user a better, more natural experience.
+
+78
+00:12:04,311 --> 00:12:13,843
+In other apps such as telepresence, a large part of the physical world could be brought into the virtual world through live capture.
+
+79
+00:12:15,376 --> 00:12:34,579
+So, we can augment the virtual world with a live capture of the real world which generally falls under the category of augmented virtuality that we have talked about in our introductory lectures.
+
+80
+00:12:38,583 --> 00:12:42,548
+That idea is also some sort of tracking the surroundings.
+
+81
+00:12:45,413 --> 00:12:48,176
+So these are broadly the three categories of tracking.
+
+82
+00:12:48,857 --> 00:12:54,864
+We can track users' body parts, particularly the sense organs.
+
+83
+00:12:55,385 --> 00:13:02,053
+We can track other body parts not related to the sense organs.
+
+84
+00:13:02,073 --> 00:13:10,743
+That is required when we need to give a representation of the user's other body parts in the virtual world.
+
+85
+00:13:11,304 --> 00:13:14,087
+And thirdly, we can also track the environment.
+
+86
+00:13:14,810 --> 00:13:15,872
+for various purposes.
+
+87
+00:13:18,657 --> 00:13:24,928
+So, that is one way of understanding tracking by categorizing it based on what is being tracked.
+
+88
+00:13:25,689 --> 00:13:38,792
+Let us have a look at a different way of understanding from the point of view of technology, that is, how to track.
+
+89
+00:13:39,211 --> 00:13:43,559
+So, when we ask this question how to track, it depends on various things.
+
+90
+00:13:43,979 --> 00:13:47,145
+It is a very complex process, not easy at all.
+
+91
+00:13:48,347 --> 00:14:02,272
+And the things that we should consider while deciding on how to track, what method, what technique we should apply, we need to consider tracker position, tracking process, and the tracker types.
+
+92
+00:14:02,292 --> 00:14:04,155
+So, all these three we will discuss.
+
+93
+00:14:04,388 --> 00:14:08,613
+Discuss in some detail in the subsequent part of the lecture.
+
+94
+00:14:08,994 --> 00:14:12,598
+Let us start with the tracker position part.
+
+95
+00:14:12,618 --> 00:14:22,269
+Now, depending on the position of the tracker or the sensor that provides input for tracking, we can have two types of tracking.
+
+96
+00:14:22,610 --> 00:14:25,493
+One is outside-in tracking.
+
+97
+00:14:30,039 --> 00:14:33,703
+So, in this case, the sensors or trackers are external to the
+
+98
+00:14:34,325 --> 00:14:34,826
+device.
+
+99
+00:14:37,328 --> 00:14:47,861
+It can be any sensor including cameras or there can be markers present in the environment.
+
+100
+00:14:47,881 --> 00:15:03,859
+Now, tracking is constrained to the specific area where the sensors are placed and this is used by most VR headsets today where they make use of external sensors.
+
+101
+00:15:04,733 --> 00:15:08,156
+which falls under the category of outside-in tracking.
+
+102
+00:15:14,002 --> 00:15:16,504
+Then we can have inside-out tracking.
+
+103
+00:15:21,489 --> 00:15:34,521
+So, in this case the cameras or other sensors that are required for tracking are located within the device itself, that is, the HMD in case of VR which is more common.
+
+104
+00:15:34,771 --> 00:15:43,740
+If we are using any other device to get the experience, then the sensors or trackers should be inside that other device as well.
+
+105
+00:15:45,222 --> 00:15:47,464
+Then we can call it inside-out tracking.
+
+106
+00:15:48,305 --> 00:15:56,714
+So, in this case, there is no need for other external devices to do the tracking or to assist in the tracking.
+
+107
+00:15:57,675 --> 00:16:02,280
+So, we have two categories: one is inside-out, one is outside-in.
+
+108
+00:16:03,340 --> 00:16:10,268
+Now, examples of inside-out tracking are Microsoft HoloLens, Intel Project Alloy, and Qualcomm VR820.
+
+109
+00:16:10,288 --> 00:16:12,290
+So, different systems are there.
+
+110
+00:16:15,714 --> 00:16:28,048
+As you can see in this accompanying figure, there is this attached camera part, sensory part attached to the display part to assist in tracking.
+
+111
+00:16:30,239 --> 00:16:34,064
+Earlier we have seen Microsoft HoloLens which comes with all the sensors and cameras.
+
+112
+00:16:36,748 --> 00:16:41,194
+So that is another compact way of looking at inside-out tracking.
+
+113
+00:16:44,499 --> 00:16:56,835
+Schematically, we can understand the two categories of tracking systems based on the location of sensors as shown in this accompanying figure.
+
+114
+00:16:57,577 --> 00:16:59,419
+So in the case of inside out,
+
+115
+00:17:00,091 --> 00:17:11,883
+Suppose this is the user and this is the device through which the user is experiencing VR in this case.
+
+116
+00:17:12,904 --> 00:17:27,819
+Now the HMD or whatever device the user is using contains either cameras or other sensors or both.
+
+117
+00:17:28,745 --> 00:17:48,003
+Since it is being used by the user, we can say it is attached to the user and the environment is being tracked with the sensors present with this attached device; that is inside-out.
+
+118
+00:17:48,023 --> 00:17:58,093
+In the case of outside-in, the user may have some device to experience, but the device does not contain any tracker or sensor as such.
+
+119
+00:18:01,027 --> 00:18:16,134
+So, this is the user again; instead, the trackers or sensors are placed within the real world external to the user, not attached to the user, and the
+
+120
+00:18:16,134 --> 00:18:30,358
+data coming from those trackers or sensors helps the system attached to the user identify and track the motion and the pose.
+
+121
+00:18:30,760 --> 00:18:32,782
+the orientation of the user.
+
+122
+00:18:34,965 --> 00:18:45,860
+As we have already discussed, because we are putting sensors in the external world, this tracking works only when the user is in that particular environment within the
+
+123
+00:18:45,860 --> 00:18:48,801
+range of those sensors; otherwise, it will not work.
+
+124
+00:18:48,941 --> 00:18:59,333
+Whereas, in the case of inside-out, since the user is already wearing the sensors or the sensors are attached to the user, the user can go anywhere and
+
+125
+00:18:59,937 --> 00:19:01,559
+it will still work.
+
+126
+00:19:01,579 --> 00:19:16,217
+So, outside-in is restricted in the sense that it restricts the movement within which things can be tracked, whereas inside-out does not have any such restriction.
+
+127
+00:19:22,665 --> 00:19:25,789
+Now, let us shift our focus to the process part.
+
+128
+00:19:25,849 --> 00:19:29,353
+So, we have seen we are discussing how
+
+129
+00:19:30,008 --> 00:19:31,530
+we can track.
+
+130
+00:19:31,550 --> 00:19:35,395
+So, broadly, there are two ways to get the input for tracking.
+
+131
+00:19:36,376 --> 00:19:39,741
+One is using the inside-out technique; one is using outside-in.
+
+132
+00:19:40,261 --> 00:19:45,128
+Then, once the input is there, what exactly is done?
+
+133
+00:19:45,608 --> 00:19:46,870
+What do we do with this data?
+
+134
+00:19:47,351 --> 00:19:50,415
+Let us try to understand that.
+
+135
+00:19:51,216 --> 00:19:57,484
+So, we will restrict our discussion to a very broad-level understanding of the process rather than going into minute details.
+
+136
+00:19:57,734 --> 00:20:05,906
+The idea is to give you an overview rather than detailed information about individual tracking processes.
+
+137
+00:20:09,672 --> 00:20:15,781
+So, there are broadly four steps through which tracking works.
+
+138
+00:20:18,605 --> 00:20:19,346
+What are those steps?
+
+139
+00:20:19,907 --> 00:20:27,538
+First is calibration, then registration, integration, and drift correction.
+
+140
+00:20:28,126 --> 00:20:44,091
+So, we have these four steps for tracking: calibration, registration, integration, and drift correction.
+
+141
+00:20:44,111 --> 00:20:46,135
+What do these steps mean?
+
+142
+00:20:47,036 --> 00:20:52,024
+So, let us have a brief overview of each of these steps.
+
+143
+00:20:55,058 --> 00:21:03,643
+When we are talking about calibration, essentially what we are referring to is that the sensor output, whatever sensor is there,
+
+144
+00:21:03,643 --> 00:21:15,744
+to track the output of those sensors is transformed to behave as closely to the real value as possible.
+
+145
+00:21:15,784 --> 00:21:21,211
+So the inherent assumption is that there will not be a perfect sensor.
+
+146
+00:21:22,793 --> 00:21:24,475
+When we are making a movement,
+
+147
+00:21:24,893 --> 00:21:31,543
+we generate some values; sensors will capture those values, but they will not be perfectly capturing those values.
+
+148
+00:21:31,563 --> 00:21:34,768
+So, their output will be somewhat imperfect.
+
+149
+00:21:34,788 --> 00:21:46,707
+However, the calibration state or calibration step is meant to make or reduce that error to the extent possible.
+
+150
+00:21:48,229 --> 00:21:52,656
+So, through this stage what we try to do is basically make the output
+
+151
+00:21:53,159 --> 00:21:56,865
+as close to natural or real output as possible.
+
+152
+00:22:02,214 --> 00:22:06,000
+Then comes the registration phase or registration step.
+
+153
+00:22:07,643 --> 00:22:15,035
+In this step, what we do is estimate or determine the initial sensor position and orientation.
+
+154
+00:22:18,340 --> 00:22:19,302
+The idea is simple.
+
+155
+00:22:20,277 --> 00:22:26,342
+We need to first know where exactly it starts, and then we can track the movement.
+
+156
+00:22:29,145 --> 00:22:33,909
+Third is the integration phase or integration step.
+
+157
+00:22:33,929 --> 00:22:43,938
+So, in this step the aggregation or integration of sensory measurements are done at discrete points of time.
+
+158
+00:22:44,258 --> 00:22:48,242
+So, we are getting, we may be getting
+
+159
+00:22:48,661 --> 00:22:52,665
+Data from multiple sensors at discrete points in time.
+
+160
+00:22:53,146 --> 00:23:08,562
+So, we need to combine all those values to effectively track whatever we are tracking, be it sense organs, body parts, or environment.
+
+161
+00:23:08,582 --> 00:23:18,432
+Now, combining all the input data sources at different intervals of time, discrete intervals of time.
+
+162
+00:23:19,120 --> 00:23:22,485
+is the step that is called integration.
+
+163
+00:23:25,590 --> 00:23:27,133
+And finally, drift correction.
+
+164
+00:23:27,193 --> 00:23:35,446
+Remember that we started by assuming that there will always be some error when we are measuring something with sensors or trackers.
+
+165
+00:23:36,107 --> 00:23:40,574
+So, it can never give you exactly the natural values.
+
+166
+00:23:41,475 --> 00:23:44,740
+Now, drift correction means compensating for
+
+167
+00:23:45,935 --> 00:24:00,911
+differences between the estimated position and orientation or the estimated tracking and the actual value, that is the actual position and orientation.
+
+168
+00:24:02,092 --> 00:24:14,946
+So, we are assuming that with sensors we will be tracking the position and orientation of the user or the user's sense organs or body parts or some objects in the
+
+169
+00:24:15,702 --> 00:24:19,425
+world in the environment.
+
+170
+00:24:19,445 --> 00:24:27,973
+However, that is still an estimate that is not the exact pose, orientation, or movement.
+
+171
+00:24:27,993 --> 00:24:44,427
+In the drift correction phase, what we try to do is basically try to compensate for the mismatch, try to reduce the error in estimation; that is the drift correction phase.
+
+172
+00:24:44,626 --> 00:24:47,629
+With that, we have come to the end of this part of the lecture.
+
+173
+00:24:47,850 --> 00:24:54,817
+Here we got some basic understanding of tracking.
+
+174
+00:24:55,118 --> 00:25:02,966
+So, we started by first trying to understand what are the things that we are tracking. Broadly, we are tracking three things.
+
+175
+00:25:03,106 --> 00:25:13,738
+One is the user's sense organs, one is the user's other body parts, and the third is the surrounding environment, or rather objects in the surrounding environment.
+
+176
+00:25:15,406 --> 00:25:21,034
+After that, we briefly covered the tracking process.
+
+177
+00:25:21,475 --> 00:25:22,296
+So, how to track?
+
+178
+00:25:22,777 --> 00:25:23,978
+It has three distinct parts.
+
+179
+00:25:24,079 --> 00:25:28,725
+One is the broad technological aspects.
+
+180
+00:25:29,106 --> 00:25:31,169
+How do we employ the tracking methods?
+
+181
+00:25:32,030 --> 00:25:34,394
+So, broadly, there are two categories of such methods.
+
+182
+00:25:34,754 --> 00:25:37,037
+One is inside-out, the other one is outside-in.
+
+183
+00:25:37,678 --> 00:25:45,109
+In inside-out tracking, the tracker carries the sensors that are part of the devices that the user,
+
+184
+00:25:45,427 --> 00:26:00,601
+are wearing or using, whereas, in the case of outside-in, the trackers or sensors are not part of the devices that the user is wearing or using; instead, they are part of the environment.
+
+185
+00:26:00,621 --> 00:26:14,995
+Then we started our discussion on the actual steps or processes to convert the tracker input to estimation of the pose, orientation, or whatever we are
+
+186
+00:26:15,970 --> 00:26:18,112
+trying to achieve through tracking.
+
+187
+00:26:19,133 --> 00:26:22,517
+Now, there we talked about four broad steps of tracking.
+
+188
+00:26:22,857 --> 00:26:31,366
+One is calibration, one is registration, then integration, and finally drift correction.
+
+189
+00:26:32,027 --> 00:26:33,008
+We got basic ideas.
+
+190
+00:26:33,688 --> 00:26:43,058
+In the calibration phase, what we do is basically orient the tracker as close to the real world as possible.
+
+191
+00:26:43,578 --> 00:26:47,122
+In registration, we get the initial position and orientation of the tracker.
+
+192
+00:26:47,922 --> 00:26:59,955
+In integration, the continuous data stream is fused and combined to be able to estimate.
+
+193
+00:26:59,975 --> 00:27:09,805
+And finally, drift correction means compensating for estimation error between the device trackers and the real-world values.
+
+194
+00:27:11,573 --> 00:27:19,261
+So, we will continue our discussion on these ideas of tracking stages in the next part of the lecture.
+
+195
+00:27:22,484 --> 00:27:34,936
+So, we are going to continue our discussion on this process as well as different tracking technologies, specific technologies that are in use in practice.
+
+196
+00:27:37,218 --> 00:27:40,922
+So, I hope you have enjoyed this part and have understood the concepts.
+
+197
+00:27:41,459 --> 00:27:44,160
+Looking forward to meeting you in the next part of the lecture.
+
+198
+00:27:45,047 --> 00:27:46,660
+Thank you and happy learning.
+

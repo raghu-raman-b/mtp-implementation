@@ -1,0 +1,1056 @@
+1
+00:00:24,196 --> 00:00:29,181
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:30,822 --> 00:00:33,965
+We are going to continue our discussion on system implementation.
+
+3
+00:00:35,827 --> 00:00:43,574
+So, previously we talked about the importance of the prototype design prototype evaluate cycle.
+
+4
+00:00:45,256 --> 00:00:47,698
+We learned about different prototyping approaches.
+
+5
+00:00:50,020 --> 00:00:51,942
+Just to recollect, we have
+
+6
+00:00:53,609 --> 00:00:56,894
+two categories of prototypes: vertical and horizontal.
+
+7
+00:00:57,275 --> 00:01:04,605
+We have four approaches to build prototypes: low fidelity, medium fidelity, high fidelity, as well as Wizard of Oz.
+
+8
+00:01:05,868 --> 00:01:13,420
+And we have three ways to use the prototypes: that is thrown away, incremental, and evolutionary usage.
+
+9
+00:01:14,862 --> 00:01:17,546
+Also, we talked about the expert evaluation techniques.
+
+10
+00:01:18,167 --> 00:01:21,152
+We talked about two such techniques: cognitive walkthrough and
+
+11
+00:01:22,735 --> 00:01:26,541
+heuristic evaluation, which are used to quickly evaluate the prototypes.
+
+12
+00:01:28,404 --> 00:01:32,969
+We are going to continue our discussion on another quick evaluation technique,
+
+13
+00:01:32,969 --> 00:01:40,702
+our discussion on evaluation techniques, and we are going to cover another quick evaluation technique: that is the user evaluation.
+
+14
+00:01:40,722 --> 00:01:50,097
+Along with that, we are also going to briefly talk about how we implemented the modular tour.
+
+15
+00:01:50,117 --> 00:01:51,038
+So let us talk about
+
+16
+00:01:51,980 --> 00:01:55,443
+The third quick evaluation technique is user evaluation.
+
+17
+00:01:57,785 --> 00:02:08,315
+Now the basic idea here is, as we have already noted earlier, to get quick feedback from users by asking them questions directly.
+
+18
+00:02:08,695 --> 00:02:20,586
+So, in this case of user evaluation, we have to involve the users. In the previous two expert evaluation techniques, involvement of users was optional.
+
+19
+00:02:23,131 --> 00:02:26,417
+But in the case of user evaluation, it is mandatory.
+
+20
+00:02:26,978 --> 00:02:30,344
+Now, this is often called evaluation with self-reports.
+
+21
+00:02:34,110 --> 00:02:42,625
+The user feedback is collected with some rating scales, and the data collected is sometimes called subjective or preference data.
+
+22
+00:02:47,853 --> 00:02:54,099
+Collection of feedback with rating scales is easy compared to more rigorous evaluation techniques.
+
+23
+00:02:55,160 --> 00:02:58,803
+However, there are two major points of concern.
+
+24
+00:03:02,727 --> 00:03:10,795
+The first issue is that when we collect user feedback on a rating scale, we collect ratings on items.
+
+25
+00:03:11,615 --> 00:03:14,518
+Now, these items are essentially questions or statements.
+
+26
+00:03:15,612 --> 00:03:22,541
+For example, rate the statement 'The controls are easily accessible' on a three-point Likert scale.
+
+27
+00:03:23,703 --> 00:03:26,626
+Now, the Likert scale is, of course, a well-known rating scale.
+
+28
+00:03:28,309 --> 00:03:37,120
+And these types of questions or statements will be provided to the users for them to rate on such a scale.
+
+29
+00:03:37,140 --> 00:03:42,447
+Now, the prerequisite is we have to identify suitable items or
+
+30
+00:03:44,131 --> 00:03:45,773
+questionnaire.
+
+31
+00:03:47,034 --> 00:03:54,843
+So these items are commonly referred to as questionnaires, although they need not contain questions; they can be statements as well.
+
+32
+00:03:57,827 --> 00:04:04,415
+Now, it is of course quite challenging to identify suitable questionnaires; that is the first issue.
+
+33
+00:04:04,435 --> 00:04:08,279
+The second issue is we have two points for data collection.
+
+34
+00:04:09,821 --> 00:04:13,345
+After every task, so we are assuming that the users are given some tasks,
+
+35
+00:04:14,388 --> 00:04:19,034
+to perform on the prototype, and then we are collecting feedback.
+
+36
+00:04:19,053 --> 00:04:22,539
+Now, there can be two data collection points.
+
+37
+00:04:22,839 --> 00:04:29,167
+One is after every task is performed, and the second is at the end of the session where all the tasks are performed.
+
+38
+00:04:30,389 --> 00:04:34,034
+So, when should we collect the data?
+
+39
+00:04:35,276 --> 00:04:39,942
+Of course, it is desirable to collect data at both points if feasible.
+
+40
+00:04:40,442 --> 00:04:44,007
+Otherwise, we have to choose either of these two points.
+
+41
+00:04:45,337 --> 00:04:50,863
+Now, depending on when we are collecting the data, we have to create suitable questionnaires.
+
+42
+00:04:51,363 --> 00:04:55,307
+So, corresponding questionnaires may not be the same.
+
+43
+00:04:55,327 --> 00:05:05,678
+So, questionnaires required to collect data after every task need not be the same as the questionnaires required to collect data after the whole session.
+
+44
+00:05:08,141 --> 00:05:12,846
+So, depending on these different requirements, we can have different questionnaires.
+
+45
+00:05:13,146 --> 00:05:15,208
+Already, there are well-known questionnaires.
+
+46
+00:05:15,627 --> 00:05:18,432
+available which can be directly used.
+
+47
+00:05:18,853 --> 00:05:29,652
+So, for post-task data collection we have post-task questionnaire such as After Scenario Questionnaire or ASQ designed way back in 1991 by Lewis.
+
+48
+00:05:30,493 --> 00:05:37,045
+Then Expectation Measure or EM questionnaire designed in 2003 by Albert and Dixon.
+
+49
+00:05:38,206 --> 00:05:51,682
+Similarly, for post-session data collection, we have post-session questionnaires such as System Usability Scale or SUS, a very popular questionnaire designed in 1996 by Brooke.
+
+50
+00:05:51,702 --> 00:05:58,630
+Then Computer System Usability Questionnaire CSUQ, again designed by Lewis in 1995.
+
+51
+00:05:59,671 --> 00:06:05,378
+Questionnaire for User Interface Satisfaction QUIS, designed by Chin et al.,
+
+52
+00:06:06,202 --> 00:06:20,323
+in 1988 that is even before then Usefulness Satisfaction and Ease of Use questionnaire or USE proposed by Lund in 2001.
+
+53
+00:06:21,184 --> 00:06:27,333
+So, as you can see there are different questionnaire sets meant for collecting data at different points of time.
+
+54
+00:06:27,634 --> 00:06:35,145
+So, let us quickly go through an example from each of these two types of questionnaires to get some idea on the
+
+55
+00:06:35,581 --> 00:06:38,726
+nature of the questionnaires.
+
+56
+00:06:38,746 --> 00:06:47,238
+So, let us talk about post-task questionnaire we have seen two out of which let us talk about the ASQ After Scenario Questionnaire.
+
+57
+00:06:47,258 --> 00:06:56,692
+So, it is a post-task questionnaire consists of three statements although we are calling it questionnaire, but essentially there are three statements in that questionnaire.
+
+58
+00:06:56,713 --> 00:07:01,740
+Users are asked to provide rating on a seven-point rating scale.
+
+59
+00:07:02,041 --> 00:07:04,665
+for each statement in the questionnaire.
+
+60
+00:07:04,685 --> 00:07:05,627
+What are those statements?
+
+61
+00:07:06,748 --> 00:07:07,450
+We will see soon.
+
+62
+00:07:08,010 --> 00:07:16,023
+Now, ratings range from strongly disagree with the statement, which is rating 1, to strongly agree, which is rating 7.
+
+63
+00:07:17,806 --> 00:07:20,290
+So, let us see the statements in the questionnaire.
+
+64
+00:07:21,071 --> 00:07:25,718
+First one is: I am satisfied with the ease of completing the tasks in this scenario.
+
+65
+00:07:26,680 --> 00:07:28,723
+The user has to rate between 1 to 7.
+
+66
+00:07:30,256 --> 00:07:35,942
+Two is: I am satisfied with the amount of time it took to complete the tasks in this scenario.
+
+67
+00:07:40,146 --> 00:07:45,091
+Again, between 1 to 7, the user has to rate the satisfaction level.
+
+68
+00:07:46,192 --> 00:07:54,441
+Third is: I am satisfied with the support information that is comprised of online help, messages, documentation when completing the tasks.
+
+69
+00:07:56,294 --> 00:07:59,297
+User has to rate this statement on a scale of 1 to 7.
+
+70
+00:07:59,857 --> 00:08:05,263
+So, these three are the statements that comprise the ASQ questionnaire.
+
+71
+00:08:07,705 --> 00:08:13,911
+Now, the first statement is related to the effectiveness measure of usability.
+
+72
+00:08:14,752 --> 00:08:22,459
+Efficiency aspect is covered in the second statement, and all three taken together represent satisfaction.
+
+73
+00:08:22,539 --> 00:08:26,183
+We can roughly map the three measures of usability as
+
+74
+00:08:26,669 --> 00:08:30,915
+mentioned in the ISO definition to these three statements.
+
+75
+00:08:34,220 --> 00:08:36,863
+How are we going to use the feedback?
+
+76
+00:08:36,883 --> 00:08:48,219
+We can consider the average rating for each statement collected from all the users who participated in the evaluation or the average rating for all statements taken together.
+
+77
+00:08:48,820 --> 00:08:50,803
+So, either we can average out
+
+78
+00:08:52,555 --> 00:08:58,663
+For each statement or for all statements taken together, we can take an average value.
+
+79
+00:08:59,324 --> 00:09:00,646
+So either way is possible.
+
+80
+00:09:04,512 --> 00:09:11,902
+Now let us talk about another questionnaire that is SUS, the System Usability Scale.
+
+81
+00:09:12,883 --> 00:09:15,246
+So this is a post-session questionnaire.
+
+82
+00:09:15,266 --> 00:09:17,810
+Earlier we talked about a post-task questionnaire.
+
+83
+00:09:17,850 --> 00:09:19,813
+Now this is a post-session questionnaire.
+
+84
+00:09:19,833 --> 00:09:21,415
+That means it is
+
+85
+00:09:22,593 --> 00:09:28,781
+administered or the feedback is collected at the end of the session when users completed all the tasks.
+
+86
+00:09:30,403 --> 00:09:32,285
+Now it consists of 10 statements.
+
+87
+00:09:32,385 --> 00:09:37,412
+Again we are calling it a questionnaire but it contains statements rather than questions.
+
+88
+00:09:40,195 --> 00:09:45,081
+Out of these 10, half or 5 statements are positively worded.
+
+89
+00:09:45,582 --> 00:09:50,488
+These are statement numbers 1, 3, 5, 7, and 9.
+
+90
+00:09:51,209 --> 00:09:52,110
+Assuming that we have
+
+91
+00:09:52,748 --> 00:09:56,293
+Number the statements from 1 to 10.
+
+92
+00:09:56,914 --> 00:10:11,597
+So, every alternative statement starting from the first one is positively worded and the other half is negatively worded, that is 2, 4, 6, 8, and 10.
+
+93
+00:10:15,864 --> 00:10:18,688
+Let us have a look at the statements.
+
+94
+00:10:20,103 --> 00:10:27,195
+Now, question number 1 or statement number 1, you can see is: I think that I would like to use this system frequently.
+
+95
+00:10:27,215 --> 00:10:29,318
+So, this is a positively worded statement.
+
+96
+00:10:31,282 --> 00:10:34,467
+2 is: I found the system unnecessarily complex.
+
+97
+00:10:34,487 --> 00:10:36,110
+This is a negatively worded statement.
+
+98
+00:10:41,419 --> 00:10:44,404
+Statement number 3 is: I thought the system was easy to use.
+
+99
+00:10:44,564 --> 00:10:46,347
+Again, positively worded.
+
+100
+00:10:46,867 --> 00:10:53,013
+4 is: I think I would need the support of a technical person to be able to use the system, negatively worded.
+
+101
+00:10:53,033 --> 00:10:57,337
+So, as you can see, first and second statements are related.
+
+102
+00:10:57,438 --> 00:11:01,301
+One is positively worded, the other one is the negatively worded version of the same statement.
+
+103
+00:11:01,862 --> 00:11:03,904
+Similarly, 3 and 4 are related.
+
+104
+00:11:03,924 --> 00:11:06,667
+5 and 6 are also related.
+
+105
+00:11:06,687 --> 00:11:15,996
+5 is: I found the various functions in this system were well integrated, whereas 6 says: I thought the system was too inconsistent.
+
+106
+00:11:17,900 --> 00:11:19,923
+So, 6 is the negative version of 5.
+
+107
+00:11:21,766 --> 00:11:23,709
+Similarly, 8 is the negative version of 7.
+
+108
+00:11:23,729 --> 00:11:33,966
+7 states that I would imagine that most people would learn to use the system very quickly, whereas 8 says that I found the system very cumbersome to use.
+
+109
+00:11:33,986 --> 00:11:36,069
+Finally, 10 is the negative version of 9.
+
+110
+00:11:36,089 --> 00:11:44,903
+9 says I felt very confident using the system, whereas 10 says I needed to learn a lot of things before I could get going with this system.
+
+111
+00:11:48,376 --> 00:11:54,388
+Now, each of these statements a user is supposed to rate on a scale of 1 to 5.
+
+112
+00:11:54,929 --> 00:12:02,525
+That is a 5-point agreement scale where 1 indicates strongly disagree and 5 indicates strongly agree.
+
+113
+00:12:03,387 --> 00:12:07,695
+In the ASQ questionnaire, the rating scale was 1 to 7.
+
+114
+00:12:08,397 --> 00:12:09,439
+Here it is 1 to 5.
+
+115
+00:12:13,199 --> 00:12:14,500
+Now, how to use the rating?
+
+116
+00:12:14,821 --> 00:12:26,294
+Earlier we saw that we can use the rating for ASQ, that is, the post-task questionnaire, by just taking the average either question-wise or with all three statements taken together.
+
+117
+00:12:26,734 --> 00:12:28,817
+Here it is a little bit different.
+
+118
+00:12:28,977 --> 00:12:42,953
+Here, what we can do is we can combine the ratings for all 10 statements to obtain an overall SUS score using the formula S, that is the score, equals the summation of ri minus 1
+
+119
+00:12:43,304 --> 00:12:57,697
+plus the summation of 5 minus ri; this whole thing is multiplied by 2.5, where ri is the rating for the ith statement, and i ranges from 1 to 10.
+
+120
+00:12:58,198 --> 00:13:11,910
+So, when i is taking the values of the positive statements, that is 1, 3, 5, 7, 9, the expression is ri minus 1, so rating minus 1, and when it is the negative statements,
+
+121
+00:13:12,970 --> 00:13:24,807
+That is 2, 4, 6, 8, 9. Then we use the expression 5 minus R i. Then we add these two weighted sums, add these two sums, and then multiply it with 2.5.
+
+122
+00:13:24,888 --> 00:13:27,171
+That is the formulation to combine the scores.
+
+123
+00:13:30,616 --> 00:13:33,600
+We can interpret the score as a percentage.
+
+124
+00:13:33,620 --> 00:13:40,851
+So, whatever result we get after doing this calculation, we can convert it to a percentage directly.
+
+125
+00:13:43,497 --> 00:13:51,966
+Typically, a SUS score around 70 percent or higher is desirable.
+
+126
+00:13:52,186 --> 00:13:57,392
+So, we can assume that if the score is 70 percent or higher, then the interface is usable.
+
+127
+00:13:58,213 --> 00:14:05,321
+If it is below 70 percent, scores lower than that 70 percent might indicate usability problems.
+
+128
+00:14:05,421 --> 00:14:11,968
+So, we may need to have a re-look at the design.
+
+129
+00:14:12,488 --> 00:14:20,920
+Unlike the expert evaluation technique, as you can see here, the scores do not give a detailed report because it is coming from the users.
+
+130
+00:14:20,940 --> 00:14:26,529
+Users themselves may not know the reason for their satisfaction or dissatisfaction.
+
+131
+00:14:26,549 --> 00:14:31,015
+So, in that case, the designers have to further brainstorm and identify the problem.
+
+132
+00:14:31,756 --> 00:14:34,360
+It will only tell that there is a problem or not.
+
+133
+00:14:34,380 --> 00:14:39,087
+If the SUS score is greater than 70% or equal to 70%,
+
+134
+00:14:39,775 --> 00:14:43,940
+then there is likely to be no problem or very minimal problem not to be bothered about.
+
+135
+00:14:44,641 --> 00:14:51,414
+If it is less than 70%, then there are problems, but these problems the designers have to find out through further brainstorming.
+
+136
+00:14:51,414 --> 00:15:00,182
+Maybe by looking at the scores of the different statements and then inferring from there where exactly the problem is.
+
+137
+00:15:01,383 --> 00:15:08,112
+So, the previous evaluation techniques probably or most likely are
+
+138
+00:15:08,935 --> 00:15:17,724
+Better for the designers; it gives more detailed reports from each evaluator so that it is easier for the designer to identify the problems.
+
+139
+00:15:17,744 --> 00:15:19,586
+In this case, it is not so easy.
+
+140
+00:15:20,046 --> 00:15:30,397
+It can identify the problem quickly by taking user feedback in the form of ratings, but pinpointing the problem requires more effort from the designers.
+
+141
+00:15:34,021 --> 00:15:37,204
+Now, ASQ, SUS, these are all,
+
+142
+00:15:37,808 --> 00:15:44,060
+Questionnaires that are meant for interactive systems, not specifically meant for extended reality systems.
+
+143
+00:15:45,082 --> 00:15:50,412
+So they are generic questionnaires applicable to any interactive system.
+
+144
+00:15:50,432 --> 00:15:56,163
+Now there are few questionnaires which are more commonly used in and specifically designed for XR.
+
+145
+00:15:57,125 --> 00:16:00,812
+Some of these questionnaires we have already discussed in module 1 where
+
+146
+00:16:01,889 --> 00:16:08,595
+In lecture 11, lecture number 11, we talked about questionnaires specifically meant for cyber sickness.
+
+147
+00:16:10,777 --> 00:16:12,719
+Let us quickly recap those.
+
+148
+00:16:12,739 --> 00:16:15,561
+So, we have the simulator sickness questionnaire or SSQ.
+
+149
+00:16:15,841 --> 00:16:18,023
+This is the most extensively used.
+
+150
+00:16:19,324 --> 00:16:27,812
+Other relevant questionnaires are the virtual reality sickness questionnaire, VRSQ, and the cyber sickness questionnaire, CSQ.
+
+151
+00:16:28,553 --> 00:16:31,255
+It is good for evaluating VR experiences with HMDs.
+
+152
+00:16:33,142 --> 00:16:49,329
+Shorter and more precise, more concise questionnaires are there to assess specific conditions such as misery scale or MIS, fast motion sickness scale or FMS.
+
+153
+00:16:51,313 --> 00:16:53,817
+We can also measure susceptibility to CS.
+
+154
+00:16:55,282 --> 00:17:09,492
+Using Motion History Questionnaire, MHQ, Motion Sickness Susceptibility Questionnaire, MSSQ, Visually Induced Motion Sickness Susceptibility Questionnaire, VIMSSQ.
+
+155
+00:17:12,005 --> 00:17:23,757
+Also, commonly used questionnaires to assess overall discomfort are also there, such as nausea scale, motion sickness assessment questionnaire or MSAQ and so on.
+
+156
+00:17:24,017 --> 00:17:27,861
+So, these are specifically designed for immersive experiences.
+
+157
+00:17:28,560 --> 00:17:40,273
+To be more precise, these are specifically designed for specific aspects of immersive experience that is primarily related to cyber sickness.
+
+158
+00:17:44,084 --> 00:17:55,297
+Now, let us quickly move our focus to how we implemented these implementation ideas in our case that is Majuli VR Tour.
+
+159
+00:17:56,999 --> 00:18:04,327
+So, whatever we have learned so far, namely design considerations, prototype building and expert evaluations, are meant to fine tune the design.
+
+160
+00:18:07,811 --> 00:18:11,475
+The next stage is full scale system implementation.
+
+161
+00:18:14,746 --> 00:18:21,176
+And that implementation we are going to briefly talk about here in the case of Majuli.
+
+162
+00:18:21,797 --> 00:18:32,134
+So, the tour was developed using the Unity engine, the XR engine, Unity version 2021.3.22f1.
+
+163
+00:18:34,097 --> 00:18:39,285
+It was developed for Oculus Quest 2 platform and also Android smartphones.
+
+164
+00:18:40,835 --> 00:18:44,681
+Where we used older version of Android, Android version 6.
+
+165
+00:18:47,867 --> 00:18:56,000
+We employed the XR toolkit for the Quest version and the Google VR SDK for the Cardboard version.
+
+166
+00:18:58,204 --> 00:19:02,691
+Also, we utilized Autodesk Maya software to create 3D models
+
+167
+00:19:03,565 --> 00:19:13,380
+for the immersive experience where we used the real images as references and utilized the real images as textures on modeled objects.
+
+168
+00:19:16,504 --> 00:19:17,706
+Now, there are some concerns.
+
+169
+00:19:18,147 --> 00:19:19,909
+One concern was optimizing the size.
+
+170
+00:19:20,651 --> 00:19:29,223
+So, initial application size because the content was heavy to cover the entire geographic spread, the application size was 9.85 GB.
+
+171
+00:19:30,926 --> 00:19:33,049
+Now, to reduce the space requirements,
+
+172
+00:19:33,552 --> 00:19:43,841
+we used cloud to store all the videos, cloud services.
+
+173
+00:19:43,861 --> 00:19:59,354
+When a user clicks on the video thumbnail from the video player in the Quest, that is the video player that is seen on that tablet interface, then the video is loaded from the cloud and played.
+
+174
+00:19:59,834 --> 00:20:02,817
+So it is not that the video is always there in the client device.
+
+175
+00:20:03,573 --> 00:20:07,778
+So it led to the reduced application size of 5.1 GB.
+
+176
+00:20:10,682 --> 00:20:14,627
+Now we also created a mobile version to be experienced with Google Cardboard.
+
+177
+00:20:16,729 --> 00:20:21,155
+This 5.1 GB size application was not suitable for deployment on mobiles.
+
+178
+00:20:23,237 --> 00:20:25,780
+So what we used is compressed images.
+
+179
+00:20:25,820 --> 00:20:32,989
+So whatever images, 360 degree or 2D images we have captured in high resolution, we compressed those.
+
+180
+00:20:33,357 --> 00:20:42,227
+To reduce the storage requirements, also we reduced the video playback support for many of the cases except one or two video playback supports.
+
+181
+00:20:42,768 --> 00:20:49,636
+We removed most of the video playback support for making it deployable on mobile devices.
+
+182
+00:20:51,158 --> 00:21:03,212
+So, with those optimization processing done, the size got reduced to 0.7 GB which we deployed on mobiles to be experienced with a Google Cardboard device.
+
+183
+00:21:05,774 --> 00:21:11,904
+Just let us have a quick look at the different optimizations we achieved.
+
+184
+00:21:11,924 --> 00:21:18,314
+So, in the Oculus Quest version, the size was 5.1 GB, whereas for the mobile or cardboard version, it was 0.7 GB.
+
+185
+00:21:19,636 --> 00:21:22,801
+Number of images in Oculus Quest, all the images, 597.
+
+186
+00:21:23,603 --> 00:21:27,489
+We also used all the images, but in a compressed form in the cardboard version.
+
+187
+00:21:28,150 --> 00:21:29,993
+Number of cultural videos published.
+
+188
+00:21:30,462 --> 00:21:34,847
+It was 11 there, but no such videos were used in the cardboard or mobile version.
+
+189
+00:21:35,748 --> 00:21:42,617
+Number of drone videos, 8 videos were used in the Quest version, whereas no videos were used in the mobile version.
+
+190
+00:21:43,357 --> 00:21:52,248
+360 degree videos, there were 5 used in the Quest version and 1 used in the cardboard version for the initial experience.
+
+191
+00:21:53,650 --> 00:21:56,453
+Development platform used Unity in both cases.
+
+192
+00:22:00,145 --> 00:22:05,632
+SDKs used XR toolkit for the Oculus Quest and Google VR for the cardboard version.
+
+193
+00:22:06,473 --> 00:22:10,738
+And the OS requirement was Android 6.0 in both cases.
+
+194
+00:22:13,842 --> 00:22:19,029
+So let us quickly go through the implementation in the form of demos.
+
+195
+00:22:21,292 --> 00:22:23,875
+Okay, so let us have a look at the
+
+196
+00:22:24,833 --> 00:22:28,017
+implementation of the Majuli VR tours.
+
+197
+00:22:28,538 --> 00:22:30,361
+So, we have made three implementations.
+
+198
+00:22:30,901 --> 00:22:33,846
+Accordingly, let us have a look at each of these three.
+
+199
+00:22:34,186 --> 00:22:44,540
+So, the first one is a tour using 360-degree images, and it was made for the Oculus Quest platform as we said.
+
+200
+00:22:45,021 --> 00:22:50,128
+Let us quickly have a look in a brief video on the implementation.
+
+201
+00:22:50,489 --> 00:22:52,191
+So, as you can see, this is the
+
+202
+00:22:52,627 --> 00:23:03,974
+start screen, and then there is this ray casting-based selection method. On the start screen, initial videos and other things are to
+
+203
+00:23:03,974 --> 00:23:13,019
+be played, videos on Majuli and also a tutorial, and then the user can make selections on the start screen.
+
+204
+00:23:16,364 --> 00:23:19,950
+It shows information about Majuli and also it talks about
+
+205
+00:23:20,183 --> 00:23:22,827
+how to control the system, how to use the system.
+
+206
+00:23:40,857 --> 00:23:44,824
+So, different aspects of the Majuli island are shown.
+
+207
+00:23:46,863 --> 00:24:00,881
+Then there is this user group selection, and that is followed by a boat ride experience, that is, traversing the river through a boat from the mainland to the island.
+
+208
+00:24:02,023 --> 00:24:12,516
+It is actually a 360-degree video captured during our field trips, and that is used here to give the user the experience of traveling by boat.
+
+209
+00:24:16,546 --> 00:24:25,577
+Then the user reaches the riverbank, and there, this tablet interface appears.
+
+210
+00:24:26,599 --> 00:24:34,528
+The user can select a location using the tablet interface, the map, and then can go to a particular location.
+
+211
+00:24:34,849 --> 00:24:41,457
+There once the user enters a location, then this place appears.
+
+212
+00:24:42,635 --> 00:24:50,405
+Where using the arrow keys user can move forward, backward and also you can see the icons meant for information.
+
+213
+00:24:50,906 --> 00:25:05,365
+Plus at a place there is notification if there are some cultural videos to be experienced and that gets played on the tablet interface as we have discussed before.
+
+214
+00:25:09,411 --> 00:25:12,034
+So user can move from one point to another.
+
+215
+00:25:15,659 --> 00:25:29,506
+Using the overall island map on the tablet interface and this is the mini map or the wild in miniature support as we have discussed.
+
+216
+00:25:29,747 --> 00:25:32,352
+So, in a location where the user is
+
+217
+00:25:32,905 --> 00:25:40,993
+Is depicted on a minimap of the location where you can see on this minimap interface, there are white dots.
+
+218
+00:25:41,273 --> 00:25:43,635
+Each white dot represents a 360 degree image.
+
+219
+00:25:43,755 --> 00:25:51,083
+So when user moves, that means moving from one image to another and the user's current location is marked in green.
+
+220
+00:25:56,688 --> 00:26:01,933
+And you can hear the, so there is this, there is this ambient sound also added.
+
+221
+00:26:04,040 --> 00:26:10,816
+And to travel from one point to another along with teleportation, we have used this vehicle metaphor, which is kind of route planning.
+
+222
+00:26:11,397 --> 00:26:20,479
+The route is fixed, but user can experience the movement along the road as if the user is sitting on a vehicle and moving along the road.
+
+223
+00:26:28,660 --> 00:26:34,629
+Once reaching a destination, user can move forward by following the arrow keys as shown here.
+
+224
+00:26:38,375 --> 00:26:42,780
+And each selection of arrow key actually transports the user from one image,
+
+225
+00:26:42,780 --> 00:26:51,495
+to the next image and during transitions we have used techniques as discussed earlier to enhance the quality of experience.
+
+226
+00:27:12,316 --> 00:27:25,169
+So, at different points different cultural videos are to be experienced and also different activities can be experienced.
+
+227
+00:27:26,590 --> 00:27:35,219
+This is the implementation for Oculus Quest using 360-degree images and the cultural videos as well as 360-degree videos.
+
+228
+00:27:35,239 --> 00:27:39,403
+Our next implementation is
+
+229
+00:27:40,312 --> 00:27:42,195
+the tool using a 3D model.
+
+230
+00:27:42,235 --> 00:27:54,253
+So, earlier we used 360-degree images and videos to create the experience; here we used 3D models to create the experience.
+
+231
+00:27:55,254 --> 00:28:07,332
+So, as you can see here, the model of the entrance to a Satra is created and used for the experience, unlike the previous case where we used the actual 360-degree images.
+
+232
+00:28:07,784 --> 00:28:12,410
+So, this is for Kamalabadi Satra, a prominent spot on the Majuli Island.
+
+233
+00:28:13,091 --> 00:28:23,085
+Then the entire campus was modeled and then you can move along the roads to enter different parts of the campus.
+
+234
+00:28:25,628 --> 00:28:29,694
+Then we have created models for the villages, the dwelling units.
+
+235
+00:28:34,521 --> 00:28:36,323
+So, this is 3D model based.
+
+236
+00:28:36,758 --> 00:28:45,587
+And to create the models, of course, we have used the texture from the real images and then used those to create a realistic looking model.
+
+237
+00:28:47,189 --> 00:28:54,756
+Now, this model-based implementation was also meant for headsets, Oculus Quest headset.
+
+238
+00:28:55,918 --> 00:29:00,202
+The third implementation is for mobile devices.
+
+239
+00:29:00,943 --> 00:29:06,208
+So, this was one done to experience with a Google Cardboard where you can insert your phone
+
+240
+00:29:06,593 --> 00:29:09,037
+and you can have a 360-degree experience.
+
+241
+00:29:10,579 --> 00:29:22,576
+So, the deployment would be on your smartphone, and then the smartphone can be inserted into the Google Cardboard device, and then you can experience it.
+
+242
+00:29:22,596 --> 00:29:27,003
+So, this is the kind of experience.
+
+243
+00:29:27,063 --> 00:29:33,192
+Here we have not used videos, most of the videos, to optimize the size as mentioned earlier.
+
+244
+00:29:35,180 --> 00:29:44,182
+Simpler controls were provided, and fewer features were provided.
+
+245
+00:29:48,673 --> 00:29:51,079
+So, this is the boat ride experience which we kept.
+
+246
+00:30:04,120 --> 00:30:15,333
+In the same tablet interface, but in a different form, and also a minimap is there as you can see at each place.
+
+247
+00:30:15,353 --> 00:30:21,820
+However, in most of the places we have not used the cultural videos to save on space.
+
+248
+00:30:22,441 --> 00:30:25,324
+Some prominent videos were used, but not all.
+
+249
+00:30:28,307 --> 00:30:30,550
+So, this obviously gives a more
+
+250
+00:30:31,424 --> 00:30:44,544
+reduced form of experience as compared to the full-fledged version implemented for the headsets such as Oculus Quest.
+
+251
+00:30:49,651 --> 00:30:54,278
+But other modes of navigation, selection, and manipulation were more or less the same.
+
+252
+00:30:55,380 --> 00:30:57,583
+We have arrows and so on.
+
+253
+00:31:02,373 --> 00:31:07,099
+Okay, let us summarize the discussion that we have done so far.
+
+254
+00:31:08,280 --> 00:31:13,306
+So, we talked about the design prototype evaluate lifecycle, how to build and evaluate prototypes.
+
+255
+00:31:14,728 --> 00:31:21,456
+Also, we talked about the expert evaluation techniques and how we implemented the Majuli VR Tour.
+
+256
+00:31:23,859 --> 00:31:27,584
+So, with that we have come to the end of the discussion on the implementation part.
+
+257
+00:31:28,024 --> 00:31:29,646
+The next part that is remaining
+
+258
+00:31:30,487 --> 00:31:40,900
+on this implementation concept, implementation topic is how to evaluate for usability through full-fledged user evaluation.
+
+259
+00:31:40,920 --> 00:31:49,591
+So, previously we talked about quick and cheap evaluation using expert evaluation techniques or some quick user evaluation techniques.
+
+260
+00:31:49,671 --> 00:31:54,437
+Next, we are going to talk about empirical evaluation in detail.
+
+261
+00:31:55,298 --> 00:31:58,722
+So, I hope you could follow the topics and
+
+262
+00:31:59,714 --> 00:32:03,164
+able to understand the concepts.
+
+263
+00:32:03,886 --> 00:32:06,354
+So, looking forward to meeting you in the next part of the lecture.
+
+264
+00:32:06,956 --> 00:32:10,787
+Till then, thank you, goodbye and happy learning.
+

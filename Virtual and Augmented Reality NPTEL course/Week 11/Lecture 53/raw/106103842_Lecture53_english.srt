@@ -1,0 +1,548 @@
+1
+00:00:24,213 --> 00:00:30,241
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:31,063 --> 00:00:36,430
+We are going to continue our discussion on VR Navigation Experience Optimization.
+
+3
+00:00:36,530 --> 00:00:44,902
+In other words, we are trying to understand in these lectures how to optimize the navigation experience in VR.
+
+4
+00:00:47,506 --> 00:00:53,494
+So, so far we have discussed the idea of
+
+5
+00:00:54,233 --> 00:01:06,294
+the psychophysiological or experience optimization in VR, where we emphasize that the objective is to primarily take care of the cyber sickness related issues,
+
+6
+00:01:06,294 --> 00:01:14,361
+how we can take measures to avoid the onset of cyber sickness or to minimize the possibility of cyber sickness.
+
+7
+00:01:15,322 --> 00:01:22,232
+Now, in order to do that, we talked about one realistic natural walking model.
+
+8
+00:01:23,258 --> 00:01:30,987
+And we have seen how this model can be utilized to formulate two approaches.
+
+9
+00:01:31,107 --> 00:01:37,654
+One is the optimal path approach, the other one is the optimal path under time constraint approach.
+
+10
+00:01:37,674 --> 00:01:52,911
+In the optimal path approach, we talked about identifying a path in this virtual world that lets the user explore all points of interest,
+
+11
+00:01:53,937 --> 00:01:54,918
+in minimum time.
+
+12
+00:01:57,803 --> 00:02:05,186
+Now, the problem with this approach is that if the virtual world is large, such as the Majuli River Island,
+
+13
+00:02:05,186 --> 00:02:15,709
+this virtual tour, then there may be a large number of points of interest, and to cover all the points of interest,
+
+14
+00:02:17,866 --> 00:02:25,010
+to find out a path that covers all the points of interest in minimum time may not solve our issue because that minimum time,
+
+15
+00:02:25,010 --> 00:02:43,030
+the minimum duration to cover, assuming natural walking speed, may still be very large as compared to the duration we expect to let the user be exposed to in the virtual world,
+
+16
+00:02:47,262 --> 00:02:49,685
+which can induce cyber sickness.
+
+17
+00:02:50,206 --> 00:02:57,995
+So, essentially this optimal path solution may still lead to cyber sickness if the virtual world is very large.
+
+18
+00:02:58,456 --> 00:03:03,722
+So, in such cases, we are assuming that the user is exploring the world by walking.
+
+19
+00:03:06,866 --> 00:03:14,015
+In such a case, we can go for another approach, that is, optimal path under a time constraint.
+
+20
+00:03:14,115 --> 00:03:16,999
+So, there is an upper limit of time.
+
+21
+00:03:18,042 --> 00:03:25,473
+So, the user will be exposed to the virtual tour at most for that time duration, which we are calling the time threshold.
+
+22
+00:03:26,455 --> 00:03:42,700
+And within that time duration, the user is expected to cover a path that will allow the user to cover the maximum number of the most important points of interest, where by the term 'covering'
+
+23
+00:03:43,473 --> 00:03:50,260
+I also mean that the user should be able to interact with or inspect those, along with navigation from one point to another.
+
+24
+00:03:51,261 --> 00:04:02,833
+So, in order to do that, we introduced a few more terms, such as the importance of a node, waiting time at a node, and then we showed how to solve this problem.
+
+25
+00:04:04,615 --> 00:04:09,160
+So, these two we have discussed in the previous parts of the lecture.
+
+26
+00:04:11,857 --> 00:04:17,562
+Now, in this lecture, we will try to understand how this theory can be put into practice.
+
+27
+00:04:18,944 --> 00:04:22,781
+Of course, we will not go into all the details of the theory, but
+
+28
+00:04:22,781 --> 00:04:35,359
+the initial part, that is, how a practical problem can be modeled in this graph theoretic form so that these optimization approaches can be applied.
+
+29
+00:04:37,281 --> 00:04:39,163
+That we will do in terms of the
+
+30
+00:04:39,920 --> 00:04:42,102
+case study that we introduced earlier.
+
+31
+00:04:44,665 --> 00:04:51,031
+So let us try to understand how we can use the idea in practice with respect to the Majuli case study.
+
+32
+00:04:52,412 --> 00:05:08,087
+Just to recap, Majuli is the river island on the Brahmaputra River, which is in the eastern part of the country in the state of Assam, and this is how the river island looks, surrounded by
+
+33
+00:05:08,827 --> 00:05:13,652
+rivers on all sides by the Brahmaputra River and its tributaries.
+
+34
+00:05:17,416 --> 00:05:26,025
+It is also the world's largest inhabited river island and a contender for UNESCO World Heritage Site status.
+
+35
+00:05:26,045 --> 00:05:38,378
+So, there are these Satras, or the monasteries of the Vaisnavite faith, which contain several cultural aspects,
+
+36
+00:05:39,472 --> 00:05:41,735
+both tangible and intangible.
+
+37
+00:05:42,776 --> 00:05:47,302
+And there is a total of 22 Satras.
+
+38
+00:05:49,004 --> 00:05:58,112
+Each Satra has several parts, including a Naamghar, the prayer hall, which is the central part, then the Monikut,
+
+39
+00:05:58,112 --> 00:06:05,985
+the place of the idol, Haatis, the hostel of the disciples, and residences of the satradhikar or the master of the Satra.
+
+40
+00:06:08,328 --> 00:06:18,503
+On that island, there is one Auniati Satra, which is one of the largest, most prominent, and most visited Satras on the island.
+
+41
+00:06:21,908 --> 00:06:29,278
+Now, the campus of that Satra covers approximately 1200 square meters, a pretty large area.
+
+42
+00:06:31,341 --> 00:06:37,390
+And we have estimated that there are at least 25 points of interest
+
+43
+00:06:38,686 --> 00:06:40,768
+in that Satra, at least.
+
+44
+00:06:43,450 --> 00:06:53,740
+Now, what we want is to make a system-controlled VR tour to cover the Satra to get the experience of that Satra.
+
+45
+00:06:55,882 --> 00:07:06,752
+Here we are assuming that we will be having a walking-based exploration, and in the walking-based exploration, to have a realistic
+
+46
+00:07:07,390 --> 00:07:15,741
+Experience will be using the natural walking speed model that we had discussed earlier.
+
+47
+00:07:18,024 --> 00:07:35,608
+Now, in a practical scenario, if somebody wants to explore the whole Satra by walking, it may take up to a day to explore the whole site, including stoppage at the points of interest. Clearly,
+
+48
+00:07:36,128 --> 00:07:48,399
+the whole day exposure to a virtual world, if we are trying to do the same in the virtual tour, is not recommended for a VR tour because that is surely going to induce cyber sickness.
+
+49
+00:07:48,419 --> 00:08:03,773
+So, we should not do it, but then how can we come up with an optimum path that minimizes this duration? And if the minimum duration is still not at an acceptable level,
+
+50
+00:08:05,002 --> 00:08:20,483
+still not below the time threshold, then how can we come up with a path that allows the user to explore the most important POIs in the virtual world within the given time threshold?
+
+51
+00:08:24,709 --> 00:08:33,220
+So, using either of the approaches, we can actually propose a path to maximize the user experience in the virtual world.
+
+52
+00:08:33,773 --> 00:08:35,796
+Exploration of the Satra.
+
+53
+00:08:38,938 --> 00:08:42,864
+In order to do that, first we need to map the site to a graph.
+
+54
+00:08:42,884 --> 00:08:54,158
+So, essentially we need to convert the Satra, the campus of the Satra with all its POIs, into a graph where the points of interest will be the nodes.
+
+55
+00:08:54,178 --> 00:08:58,103
+So, as I said before, at least 25 points of interest are there.
+
+56
+00:08:58,123 --> 00:09:00,386
+So, at least 25 nodes should be there.
+
+57
+00:09:02,048 --> 00:09:02,869
+Also, we need to
+
+58
+00:09:04,520 --> 00:09:15,831
+calculate the distance between them, the Euclidean distance, so that we can use it as the edge weights, edges that are connecting, edges that are connecting pairs of nodes.
+
+59
+00:09:18,974 --> 00:09:29,243
+Also, if we want to implement the second approach, assuming the first approach yields a minimum time which is still more than the time threshold,
+
+60
+00:09:29,243 --> 00:09:34,189
+then we need to have some idea of the relative importance of each of the
+
+61
+00:09:34,456 --> 00:09:40,283
+points of interest or each of the nodes.
+
+62
+00:09:40,303 --> 00:09:55,462
+Along with that, in order to be able to find out an optimal path following the second approach, we also need to estimate the maximum wait time at each POI, which is required
+
+63
+00:09:55,462 --> 00:10:02,792
+for a user to stop at the POI, inspect it, interact with it if possible, and then resume the navigation.
+
+64
+00:10:07,919 --> 00:10:11,744
+So there are several challenges, several things to figure out.
+
+65
+00:10:14,547 --> 00:10:19,614
+The first thing is converting the site to a graph representation.
+
+66
+00:10:20,535 --> 00:10:22,057
+How do we do the mapping?
+
+67
+00:10:22,778 --> 00:10:31,889
+Clearly, this is not an easy task to do, and it requires detailed field study and, of course, patience because it cannot be done in one shot.
+
+68
+00:10:31,909 --> 00:10:36,475
+So initially, you can come up with a plan of converting it to a graph, but then that graph may not look
+
+69
+00:10:36,623 --> 00:10:38,185
+proper; you need to revise it.
+
+70
+00:10:39,147 --> 00:10:40,188
+It is an iterative process.
+
+71
+00:10:41,530 --> 00:10:45,877
+It requires patience.
+
+72
+00:10:45,897 --> 00:10:49,662
+Now, in our case, what did we do?
+
+73
+00:10:54,269 --> 00:10:56,553
+A team visited the site.
+
+74
+00:10:56,573 --> 00:11:06,107
+So, one field trip was made during the Kati Bihu festival, which gives a better idea about the places of importance, the POIs,
+
+75
+00:11:07,943 --> 00:11:12,069
+the observation and interaction time, or the waiting time at each POI.
+
+76
+00:11:17,817 --> 00:11:27,291
+Any festival time could have been picked, but due to several logistical issues, we had chosen one of those important festival times.
+
+77
+00:11:29,734 --> 00:11:36,364
+Now, observed during that field visit, the team observed the people's travel behavior.
+
+78
+00:11:37,289 --> 00:11:45,057
+Throughout the whole day, how the people travel within this Satra, where they stop, what they do, it is a kind of field study.
+
+79
+00:11:48,541 --> 00:11:52,905
+Or, in other words, you can say it is a kind of contextual inquiry.
+
+80
+00:11:55,368 --> 00:12:03,516
+Similar to a contextual inquiry, so you can refer to earlier lectures on contextual inquiry to understand this concept.
+
+81
+00:12:05,318 --> 00:12:19,192
+Now, the team also talked to local people, mostly campus residents and the Satra committee members, for further clarity on certain aspects of the observations.
+
+82
+00:12:19,212 --> 00:12:23,837
+Now, the team members asked two questions to the people.
+
+83
+00:12:26,920 --> 00:12:30,163
+What are typically the places people visit when they come to this place?
+
+84
+00:12:31,445 --> 00:12:34,768
+And what are the places you, that means the
+
+85
+00:12:35,153 --> 00:12:41,199
+person being interviewed, suggest a tourist must visit when they come to the Satra.
+
+86
+00:12:44,281 --> 00:12:56,292
+Now, based on observations, manual recording of the behavior, and interactions with the committee members or people who are residents of the campus,
+
+87
+00:12:56,292 --> 00:13:03,439
+the team could accumulate the desired information in terms of the points of interest and then
+
+88
+00:13:05,377 --> 00:13:08,581
+could formulate a graph.
+
+89
+00:13:08,601 --> 00:13:11,245
+So, they could accumulate information on points of interest.
+
+90
+00:13:12,647 --> 00:13:17,513
+Once the points of interest are known, then the distance between them can be measured, which they did.
+
+91
+00:13:18,514 --> 00:13:23,981
+And then that can be used as weight between the nodes.
+
+92
+00:13:25,744 --> 00:13:31,992
+Also, by talking to the people, some idea was
+
+93
+00:13:32,393 --> 00:13:40,144
+gained about the relative importance of each node, and accordingly the importance was assigned to the nodes.
+
+94
+00:13:42,428 --> 00:13:53,484
+And also, based on the observation of people's behavior when they visit the places, an estimate of the maximum wait time was done at each POI.
+
+95
+00:13:54,846 --> 00:13:55,667
+So, all these
+
+96
+00:13:56,018 --> 00:14:06,672
+information was obtained through observations, manual recording, and interactions with the people there.
+
+97
+00:14:06,692 --> 00:14:22,954
+So, based on that analysis of data and the information, the campus can be modeled in this form, having the points of interest
+
+98
+00:14:26,984 --> 00:14:34,716
+having some locations, places, objects, and the points of interest.
+
+99
+00:14:37,120 --> 00:14:44,010
+So, as you can see here, the nodes in circles indicate the points of interest.
+
+100
+00:14:45,232 --> 00:14:49,178
+Note that the points of interest need not always
+
+101
+00:14:49,647 --> 00:14:55,115
+refer to the actual physical object; such as a lake is not considered a point of interest.
+
+102
+00:14:55,135 --> 00:14:59,321
+However, the corners of the lake are considered points of interest.
+
+103
+00:15:01,484 --> 00:15:17,848
+So, starting from the entry point number 1, then the gate is another point of interest, then different paths, and along the paths, different points of interest are marked.
+
+104
+00:15:18,436 --> 00:15:37,425
+So, in this graph, you can see the points of interest denoted by these filled circles, whereas the artifacts and places in the campus are shown in rectangular forms.
+
+105
+00:15:39,488 --> 00:15:47,160
+So, this is what was obtained based on contextual inquiry or the field study.
+
+106
+00:15:47,798 --> 00:16:05,280
+And once we know the points of interest and have formulated a graph, say for example, between node 12 and 13, the distance was measured as 58 meters.
+
+107
+00:16:05,300 --> 00:16:16,033
+So, this will serve as the weight between these nodes or the weight for this edge.
+
+108
+00:16:17,785 --> 00:16:29,983
+Similarly, everywhere the weight was obtained, and also the relative importance was given plus wait time.
+
+109
+00:16:30,584 --> 00:16:33,849
+So, that relative importance and wait time is not shown here.
+
+110
+00:16:34,970 --> 00:16:40,739
+To keep things simple, only the graph form is shown along with the distance between the nodes.
+
+111
+00:16:41,700 --> 00:16:46,307
+Now, once this is there, we can readily use our algorithms to either
+
+112
+00:16:46,979 --> 00:16:58,385
+come up with an optimal path covering all the nodes, 25 nodes which can be navigated,
+
+113
+00:16:58,385 --> 00:17:09,492
+which can be traversed in minimum time, or we can come up with an optimal path which can be traversed within a time threshold.
+
+114
+00:17:10,034 --> 00:17:15,061
+But during that period, the maximum number of most important POIs can be covered,
+
+115
+00:17:15,481 --> 00:17:18,765
+taking into account the wait time at each POI.
+
+116
+00:17:21,628 --> 00:17:27,297
+So, that can be done straightforwardly from here based on the algorithms and the available tools.
+
+117
+00:17:29,440 --> 00:17:35,488
+So, this is how we can put the idea into practice.
+
+118
+00:17:35,508 --> 00:17:45,201
+Thus, once this graph is obtained, we can now apply the algorithms to get an optimal path using a TSP solver,
+
+119
+00:17:46,160 --> 00:17:57,313
+the whole path covering all the nodes, or an optimal path within the given time constant set by us, that is the time threshold, using the VRPP solver.
+
+120
+00:18:00,777 --> 00:18:06,604
+So, let us quickly summarize what we have done so far.
+
+121
+00:18:09,748 --> 00:18:16,015
+So, we started our discussion on experience optimization in XR. Specifically, we are talking about
+
+122
+00:18:16,552 --> 00:18:23,199
+VR experience optimization, where we are emphasizing that this is related to psychophysiological optimization.
+
+123
+00:18:23,219 --> 00:18:35,343
+So, we talked about the idea of optimization, then the idea of psychophysiological optimization in VR experience, which was primarily aimed
+
+124
+00:18:35,343 --> 00:18:44,162
+to take care of the cybersickness issues. There, we talked about a couple of approaches: optimal path, optimal path under time constant, and we have also seen
+
+125
+00:18:45,593 --> 00:18:52,001
+how these approaches can be put into practice.
+
+126
+00:18:52,021 --> 00:18:58,409
+So, we talked about two types of optimizations that are of importance to XR.
+
+127
+00:18:58,769 --> 00:19:04,096
+One is psychophysiological or experience optimization, and the other one is resource optimization.
+
+128
+00:19:04,116 --> 00:19:15,550
+So, in the next lecture, our focus will be on resource optimization for immersive experience.
+
+129
+00:19:16,610 --> 00:19:21,876
+Throughout the discussion, we referred to many prior works.
+
+130
+00:19:22,797 --> 00:19:31,026
+So, this is the list of references that can be used to get more ideas on the different topics that are covered.
+
+131
+00:19:33,009 --> 00:19:37,434
+So, references 1, 2, and 3 are there.
+
+132
+00:19:38,355 --> 00:19:40,938
+Along with that, there are three more references: 4, 5, and 6.
+
+133
+00:19:40,978 --> 00:19:44,862
+So, you can make use of these six references
+
+134
+00:19:47,423 --> 00:19:50,989
+to get more clarity on some of the topics that we have discussed here.
+
+135
+00:19:52,692 --> 00:20:02,790
+So, I hope you could follow the overall flow of the lecture, the concepts covered, the topics discussed, and that you enjoyed the discussion.
+
+136
+00:20:03,372 --> 00:20:07,819
+So, looking forward to meeting you again in the next lecture on resource optimization.
+
+137
+00:20:08,601 --> 00:20:12,047
+So, until then, thank you, goodbye, and happy learning.
+

@@ -1,0 +1,1361 @@
+WEBVTT
+
+1
+00:00:24.027 --> 00:00:29.376
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:30.378 --> 00:00:37.870
+We are going to start a new lecture topic today that is on implementation: how to implement an XR system.
+
+3
+00:00:40.996 --> 00:00:43.339
+So, earlier what have we learned?
+
+4
+00:00:44.081 --> 00:00:46.184
+We talked about two things.
+
+5
+00:00:46.425 --> 00:00:49.630
+First, user requirement gathering: how to gather requirements.
+
+6
+00:00:50.588 --> 00:00:55.774
+There are different techniques we have learned about, including data collection and analysis techniques.
+
+7
+00:00:58.077 --> 00:01:11.533
+And also we learned about how those user requirement gathering approaches were used in our case study, which is the Majuli Island virtual tour design.
+
+8
+00:01:14.534 --> 00:01:17.478
+Also, we talked about designing the experience.
+
+9
+00:01:18.079 --> 00:01:26.510
+So, two things were discussed: one is gathering requirements, and secondly, based on the requirements, designing the experience.
+
+10
+00:01:26.530 --> 00:01:35.182
+In the design lecture also we learned about different design stages, approaches, and guidelines.
+
+11
+00:01:38.186 --> 00:01:43.714
+Now, our focus was on the design of interface and interaction, and as we have mentioned,
+
+12
+00:01:44.099 --> 00:01:58.632
+We did not discuss anything about code design or system design as such because those design approaches are standard like any other software development stage,
+
+12.1
+00:01:58.632 --> 00:02:02.140
+like any other software development lifecycle stage on code design.
+
+13
+00:02:02.801 --> 00:02:08.588
+So, there was nothing special with respect to virtual reality or augmented reality system design.
+
+14
+00:02:09.369 --> 00:02:12.232
+Accordingly, we have skipped that code design part.
+
+15
+00:02:12.252 --> 00:02:13.093
+However, we focused
+
+16
+00:02:13.917 --> 00:02:17.945
+on the design of the interface and interaction part.
+
+17
+00:02:21.572 --> 00:02:25.039
+So, we have talked about requirement gathering, we have talked about designing.
+
+18
+00:02:25.200 --> 00:02:27.865
+What is left is implementation.
+
+19
+00:02:27.885 --> 00:02:34.879
+How do I implement the design ideas that we have formulated based on the requirements?
+
+20
+00:02:37.255 --> 00:02:40.020
+So that implementation we are going to learn in this lecture.
+
+21
+00:02:40.140 --> 00:02:53.691
+Specifically, here we will be talking about several related concepts including the idea of prototyping, what it is and why it is required, then how to evaluate prototypes quickly,
+
+21.1
+00:02:53.691 --> 00:03:00.874
+quick prototype evaluation, then system implementation, overall implementation of the system.
+
+22
+00:03:00.934 --> 00:03:04.039
+Of course, this part we will talk about in a very brief manner.
+
+23
+00:03:04.576 --> 00:03:09.822
+because code-related implementations are not the focus of this lecture.
+
+24
+00:03:10.243 --> 00:03:17.231
+And finally, empirical or usability evaluation, evaluation of the whole system from the point of view of usability.
+
+25
+00:03:17.251 --> 00:03:26.442
+Now, when we are talking about evaluation, we also have to keep in mind that there are several evaluations present in the overall development lifecycle.
+
+26
+00:03:26.903 --> 00:03:31.849
+For a quick recollection, let us have a look at the development lifecycle.
+
+27
+00:03:33.348 --> 00:03:40.738
+Interactive system development lifecycle which is equally applicable for extended reality systems as we have discussed earlier.
+
+28
+00:03:41.158 --> 00:03:47.686
+So, the lifecycle starts with the feasibility study stage followed by requirement gathering analysis and specification stage.
+
+29
+00:03:49.649 --> 00:04:00.503
+Then we have this design prototype evaluate cycle where we have the design stage, prototype stage and early evaluation or quick evaluation stage.
+
+30
+00:04:01.377 --> 00:04:04.822
+Now, these three stages are connected through a cycle.
+
+31
+00:04:05.502 --> 00:04:13.814
+So, design followed by prototyping, followed by quick evaluation, which is followed by the design phase again.
+
+32
+00:04:15.396 --> 00:04:21.724
+That is refinement of the design based on the evaluation results and so on till the design stabilizes.
+
+33
+00:04:21.744 --> 00:04:27.672
+Now, once the design prototype evaluate cycle stage gets over, we move to the code design part.
+
+34
+00:04:28.867 --> 00:04:32.933
+then coding and implementation part and finally code testing part.
+
+35
+00:04:32.953 --> 00:04:39.482
+So, these three are standard software development stages.
+
+36
+00:04:39.783 --> 00:04:52.100
+So, there is nothing special or nothing distinct between the code design evaluation and implementation in interactive system as compared to any other software system.
+
+37
+00:04:52.120 --> 00:04:54.604
+So, we are not focusing much on these three stages.
+
+38
+00:04:56.440 --> 00:05:06.272
+Once the code testing is done and we know that the code is bug-free or it runs smoothly, we go for empirical study or usability evaluation stage.
+
+39
+00:05:08.294 --> 00:05:12.159
+Now, there may be other cycles also apart from design prototype evaluate cycle.
+
+40
+00:05:12.259 --> 00:05:18.807
+Say for example, between code design, coding and code testing there can be a cycle.
+
+41
+00:05:18.887 --> 00:05:22.431
+So, code design followed by implementation followed by testing may
+
+42
+00:05:22.900 --> 00:05:30.948
+result in some coding errors which may be rectified in the code design stage or implementation stage.
+
+43
+00:05:31.309 --> 00:05:33.371
+So, this cycle is possible.
+
+44
+00:05:33.431 --> 00:05:40.779
+Similarly, after evaluation study, after empirical study or usability study, we may find out usability problems.
+
+45
+00:05:40.799 --> 00:05:50.629
+So, we may have to go back to the design prototype evaluate cycle stage or interface design stage within this cycle.
+
+46
+00:05:52.853 --> 00:05:53.794
+That is also possible.
+
+47
+00:05:54.515 --> 00:06:02.502
+Similarly, we have another cycle here between design, prototype, evaluate, and requirement gathering stages.
+
+48
+00:06:02.522 --> 00:06:09.089
+Now, of course, these cycles are not frequent, and if they are frequent, then it will lead to cost and time overrun.
+
+49
+00:06:09.770 --> 00:06:15.495
+So, generally, our objective is to have as few instances of these cycles as possible.
+
+50
+00:06:17.337 --> 00:06:20.380
+However, the design, prototype, evaluate cycle may be frequent.
+
+51
+00:06:22.638 --> 00:06:28.404
+And we will see how this frequent cycle may not lead to cost or time overrun.
+
+52
+00:06:31.107 --> 00:06:41.919
+So, in this lecture, what we are going to do is primarily learn about this prototyping and early evaluation.
+
+53
+00:06:43.021 --> 00:06:47.025
+Also, we are going to talk about empirical studies or usability evaluation.
+
+54
+00:06:47.275 --> 00:06:52.381
+Already, we have covered the design stage in the previous lecture.
+
+55
+00:06:52.741 --> 00:07:02.472
+So, we are going to focus on prototyping and early evaluation in this lecture, as well as final usability evaluation in this lecture as well.
+
+56
+00:07:05.376 --> 00:07:10.161
+As you can see, in this lifecycle, there is also a code evaluation stage.
+
+57
+00:07:11.204 --> 00:07:14.068
+The SDLC includes code or system evaluation as well.
+
+58
+00:07:14.128 --> 00:07:20.596
+However, that is not our primary focus here because it is the same as in any other software development lifecycle.
+
+59
+00:07:20.956 --> 00:07:22.838
+So, there is nothing special about it.
+
+60
+00:07:24.020 --> 00:07:27.304
+So, accordingly, we are not going to discuss much about it.
+
+61
+00:07:27.324 --> 00:07:35.334
+Any standard software development lifecycle material will contain this discussion.
+
+62
+00:07:35.434 --> 00:07:38.578
+So at the end, we will provide references for further study.
+
+63
+00:07:40.972 --> 00:07:50.824
+Now, let us start our discussion on the design-prototype-evaluate cycle or the remaining stages of the cycle that we are going to cover in this lecture.
+
+64
+00:07:51.445 --> 00:08:02.078
+Now, we know that experience design, design of the immersive experience, involves the entire design-prototype-evaluate cycle.
+
+65
+00:08:03.440 --> 00:08:08.346
+We design, then quickly prototype the design, then evaluate it.
+
+66
+00:08:08.562 --> 00:08:15.194
+Find out problems, then refine the design, then again make a new prototype, evaluate it, and so on.
+
+67
+00:08:19.342 --> 00:08:25.373
+It may require many cycles before the design is stabilized.
+
+68
+00:08:25.793 --> 00:08:31.684
+Note that here by the term 'design,' I am referring only to interface and interaction design, not the code design.
+
+69
+00:08:32.187 --> 00:08:38.996
+So, multiple cycles may occur in this design-prototype-evaluate cycle stage.
+
+70
+00:08:42.302 --> 00:08:53.959
+In order to be able to accommodate those many cycles within a reasonable timeframe without any cost overrun, what we require is a quick usability evaluation technique.
+
+71
+00:08:54.219 --> 00:09:00.068
+We should be able to quickly evaluate the usability of the design ideas so that later on
+
+72
+00:09:00.554 --> 00:09:03.298
+once implemented, they lead to a usable system.
+
+73
+00:09:04.320 --> 00:09:17.560
+If this usability evaluation at this stage is not done quickly, then what will happen is that the turnaround time will increase, which will lead to cost overrun as well.
+
+74
+00:09:21.346 --> 00:09:26.654
+Now, this quick evaluation of the design ideas requires a couple of things.
+
+75
+00:09:28.056 --> 00:09:29.498
+One is a prototype.
+
+76
+00:09:30.136 --> 00:09:41.592
+That is a model of our idea which we should be able to build quickly.
+
+77
+00:09:43.615 --> 00:09:45.858
+Second is quick evaluation.
+
+78
+00:09:46.218 --> 00:09:47.139
+So both are important.
+
+79
+00:09:47.260 --> 00:09:54.169
+One is to be able to quickly model or demonstrate our idea through a prototype.
+
+80
+00:09:55.482 --> 00:10:03.309
+Which in turn implies that we should be able to build the prototype quickly, and second is evaluation: we should be able to test our prototype quickly.
+
+81
+00:10:03.629 --> 00:10:12.036
+So, both are equally important when we are looking for a quick design prototype evaluate cycle execution.
+
+82
+00:10:16.080 --> 00:10:24.527
+So, let us learn what are the prototyping techniques that we can use for quick prototyping
+
+83
+00:10:25.199 --> 00:10:30.990
+and quick evaluation of the prototype.
+
+84
+00:10:31.010 --> 00:10:37.501
+Now, these prototyping techniques are typically used for collecting feedback on usability of the design ideas.
+
+85
+00:10:41.970 --> 00:10:48.745
+In our previous discussion on design, we said that a starting point is given by design guidelines.
+
+86
+00:10:48.745 --> 00:10:52.532
+However, guidelines offer merely a starting point.
+
+87
+00:10:52.552 --> 00:10:55.517
+Once we have those, we can go for a design.
+
+88
+00:10:56.038 --> 00:11:00.004
+So essentially, with the help of the guidelines, we come up with a design.
+
+89
+00:11:00.044 --> 00:11:04.491
+But the guidelines do not tell us whether the design is good or bad or usable or not usable.
+
+90
+00:11:06.073 --> 00:11:10.760
+For that, we need to somehow implement it and get it tested.
+
+91
+00:11:11.702 --> 00:11:14.005
+That is where the idea of a prototype comes in.
+
+92
+00:11:14.879 --> 00:11:18.403
+to know if the design is going to work in practice.
+
+93
+00:11:18.423 --> 00:11:24.491
+In our case, if the design is going to be usable in practice, we need not fully implement the idea first.
+
+94
+00:11:25.031 --> 00:11:41.511
+Now, full implementation of an idea for software, to be specific, involves engaging skilled, highly skilled manpower that is programmers and involves a lot of cost components.
+
+95
+00:11:42.858 --> 00:11:48.506
+including setting up or procuring resources and engaging the manpower.
+
+96
+00:11:49.848 --> 00:11:58.540
+So, after full implementation of the idea, if we come to know that the idea is not good, then certainly all that money and time is wasted.
+
+97
+00:11:59.001 --> 00:12:12.460
+Instead, we should look for a way where we can, without engaging, without spending too much money or time on testing the idea,
+
+98
+00:12:13.030 --> 00:12:20.998
+we can do it on a very limited scale, but get the desired outcome.
+
+99
+00:12:24.722 --> 00:12:34.513
+So, the moral of the story is that to know if the design is going to work or not, we should not always go for full implementation of the idea.
+
+100
+00:12:35.033 --> 00:12:41.620
+Instead, what we can do is we can go for a prototype or a lightweight implementation in a sense,
+
+101
+00:12:41.971 --> 00:12:43.313
+to test our idea.
+
+102
+00:12:44.494 --> 00:12:54.290
+So, prototypes are implementations but lightweight implementations whose requirements in terms of resources, skilled manpower,
+
+102.1
+00:12:54.290 --> 00:13:08.367
+cost all these are much much less as compared to a full implementation of the idea and prototypes can be used to test our idea without
+
+103
+00:13:09.815 --> 00:13:13.900
+engaging too much manpower or without spending money and time.
+
+104
+00:13:17.384 --> 00:13:20.188
+Now, these prototypes can be used in multiple ways.
+
+105
+00:13:20.588 --> 00:13:27.777
+Once the purpose of the prototype is served, that is we are able to test our design ideas, we can discard the prototype.
+
+106
+00:13:27.797 --> 00:13:30.500
+That is one way to utilize the prototype.
+
+107
+00:13:30.520 --> 00:13:37.729
+Second thing is, which we can call the best case, is that the prototype can be incrementally refined,
+
+108
+00:13:39.278 --> 00:13:48.027
+and tested as we make progress in the development until the end, at which point it becomes the fully implemented product.
+
+109
+00:13:48.407 --> 00:14:00.720
+So, we do not discard the prototype; instead, we keep on building on the prototype on top of the current prototype version so that at the end it evolves into a fully implemented final product.
+
+110
+00:14:02.322 --> 00:14:08.408
+So, at one extreme, we can simply discard the prototype after its purpose is served.
+
+111
+00:14:09.113 --> 00:14:16.202
+At the other extreme, that is the best case, we can actually evolve the prototype into the full-fledged final product.
+
+112
+00:14:17.644 --> 00:14:30.489
+So, with that basic knowledge of a prototype, that is a lightweight implementation of the system, which we can either discard or evolve into a full-fledged final product or something in between,
+
+112.1
+00:14:30.489 --> 00:14:37.450
+let us now try to understand different categories of prototypes that are there.
+
+113
+00:14:41.581 --> 00:14:44.085
+So, broadly, there are two categories of prototypes.
+
+114
+00:14:44.345 --> 00:14:45.948
+One is horizontal prototypes.
+
+115
+00:14:47.910 --> 00:14:55.262
+So here the entire interface is depicted at a surface level without any functionality.
+
+116
+00:14:55.282 --> 00:15:08.922
+So essentially it shows how the surface appears or how the interface appears to the user rather than providing
+
+117
+00:15:09.425 --> 00:15:12.648
+any idea about how to interact with the interface.
+
+118
+00:15:13.069 --> 00:15:20.937
+So essentially no functionality is provided, but primarily the look and feel and the appearance of the interface is prototyped.
+
+119
+00:15:23.720 --> 00:15:30.327
+So interaction is not prototyped in case of a horizontal prototype system.
+
+120
+00:15:33.090 --> 00:15:38.436
+Since interaction is not there, that means how to get work done in the system is not implemented.
+
+121
+00:15:39.395 --> 00:15:47.424
+We cannot expect to do any real work with the horizontal prototype.
+
+122
+00:15:47.444 --> 00:15:53.351
+Then why do we go for it unless we are able to demonstrate how the system works?
+
+123
+00:15:54.492 --> 00:16:01.641
+These are suitable to discuss or brainstorm or elicit feedback on the interface look and feel mostly.
+
+124
+00:16:02.121 --> 00:16:07.107
+So essentially how the interface appears, whether things are understandable, intuitive,
+
+125
+00:16:08.808 --> 00:16:24.984
+usable, these types of characteristics about the appearance of the interface can be elicited from the users based on a horizontal prototype.
+
+126
+00:16:25.004 --> 00:16:29.729
+Then the other category of prototype is the vertical prototype.
+
+127
+00:16:29.749 --> 00:16:35.355
+These are designed to represent interactions in the horizontal prototype.
+
+128
+00:16:36.010 --> 00:16:40.757
+The primary purpose is to represent interfaces or their appearances.
+
+129
+00:16:40.777 --> 00:16:45.103
+In vertical prototype, the primary purpose is to represent interactions or the functionalities.
+
+130
+00:16:48.788 --> 00:16:52.394
+But one thing to be noted here is that we are talking about a prototype.
+
+131
+00:16:52.454 --> 00:16:57.701
+So not all functionalities or not all possible interactions are prototyped.
+
+132
+00:16:57.721 --> 00:17:00.105
+Then that would be as good as having the full system.
+
+133
+00:17:00.626 --> 00:17:04.431
+Instead, few selected features
+
+134
+00:17:04.816 --> 00:17:21.632
+which are likely to be most commonly used while put in practice are implemented in depth starting from the first screen to the last screen after the last action is performed.
+
+135
+00:17:23.093 --> 00:17:24.935
+Now, here the terms are quite generic.
+
+136
+00:17:25.095 --> 00:17:30.220
+So, for example, when I use the term 'implemented', it does not mean that I need to write code always.
+
+137
+00:17:31.060 --> 00:17:32.882
+There are other ways to implement that as well.
+
+138
+00:17:34.702 --> 00:17:45.948
+Also, when I am using the term 'screen', it may represent a 2D computer screen or a scene in a virtual environment, in an immersive environment.
+
+139
+00:17:45.988 --> 00:17:48.173
+So, the terms here are used in a generic sense.
+
+140
+00:17:48.193 --> 00:17:52.002
+However, it has to be understood in the specific context.
+
+141
+00:17:56.150 --> 00:18:05.163
+Now these prototypes, vertical prototypes are suitable for analysis of interactions and features, as is obvious because here we are implementing interactions.
+
+142
+00:18:06.444 --> 00:18:11.552
+So, these are two broad categories in which prototypes can be considered.
+
+143
+00:18:11.672 --> 00:18:14.756
+One is horizontal prototype, one is vertical prototype.
+
+144
+00:18:14.796 --> 00:18:23.288
+Horizontal, just to summarize, are those that only prototype appearances rather than any real interaction.
+
+145
+00:18:24.162 --> 00:18:29.309
+Vertical prototypes are those where we prototype the interactions primarily.
+
+146
+00:18:32.052 --> 00:18:37.800
+Now, when we go for building a prototype, what are the different approaches that we can use?
+
+147
+00:18:41.304 --> 00:18:46.091
+There are broadly three ways in which we can create prototypes.
+
+148
+00:18:46.491 --> 00:18:51.638
+The first is low-fidelity prototypes or creation of
+
+149
+00:18:52.327 --> 00:18:54.529
+prototypes using a low-fidelity approach.
+
+150
+00:18:54.929 --> 00:18:58.192
+So, in this case, there is no technological intervention.
+
+151
+00:18:58.793 --> 00:19:06.420
+In other words, we do not need to write any program, code, anything or do not even require any computer.
+
+152
+00:19:06.440 --> 00:19:10.323
+These are made with paper, cardboard, wood, and so on.
+
+153
+00:19:10.783 --> 00:19:17.409
+So, essentially elements that have nothing to do with digital computers.
+
+154
+00:19:18.330 --> 00:19:21.473
+A popular example of such prototypes
+
+155
+00:19:22.280 --> 00:19:28.065
+are the paper mockups for interface look, feel, and even functionality.
+
+156
+00:19:28.365 --> 00:19:35.431
+So, although we are using the term low fidelity, it does not mean that we will not be able to implement vertical prototypes.
+
+157
+00:19:36.712 --> 00:19:41.136
+Intuitively, low fidelity is primarily associated with horizontal prototyping.
+
+158
+00:19:41.617 --> 00:19:48.063
+However, it is also possible to implement vertical prototyping using a low fidelity approach.
+
+159
+00:19:48.063 --> 00:20:03.425
+Clearly, this approach provides a very quick and cheap way to make and modify the prototypes as compared to something which requires coding and computers.
+
+160
+00:20:06.829 --> 00:20:17.680
+As I said, these are good for horizontal prototypes primarily and used to brainstorm alternative designs and get user responses on the idea, essentially get feedback on usability.
+
+161
+00:20:18.061 --> 00:20:20.383
+However, it is not
+
+162
+00:20:22.152 --> 00:20:26.736
+I mean, we should not think of it as only meant for horizontal prototypes.
+
+163
+00:20:27.457 --> 00:20:35.024
+Using this low fidelity approach, we can also make vertical prototypes as well.
+
+164
+00:20:35.044 --> 00:20:40.469
+So, one low fidelity approach to create prototypes is through interface sketches.
+
+165
+00:20:41.110 --> 00:20:48.497
+Now, these are drawings depicting major components of an interface, simple illustration of the interface,
+
+166
+00:20:48.730 --> 00:20:52.313
+and it provides a way to envision the appearance of the interface.
+
+167
+00:20:52.333 --> 00:20:59.640
+So, we have some idea in our mind, and we want to express it so that others can comment on it or users can provide feedback.
+
+168
+00:20:59.660 --> 00:21:15.634
+So, in order to do that we can have some sketches which are called interface sketches; that is one way. The sketches can be on paper, and that is one way of creating a low-fidelity prototype.
+
+169
+00:21:15.654 --> 00:21:17.235
+Let us take one example.
+
+170
+00:21:17.688 --> 00:21:23.657
+Let us consider a shop that sells various consumer items such as clothes, bags, and so on.
+
+171
+00:21:25.219 --> 00:21:35.394
+Now, the shop owner wants an interactive system to generate bills based on the selection by a customer.
+
+172
+00:21:36.435 --> 00:21:43.105
+The customer selection is scanned and identified by the system, and the bill is generated.
+
+173
+00:21:45.548 --> 00:21:47.591
+So, we want to prototype this idea.
+
+174
+00:21:47.972 --> 00:21:53.240
+So, we have some idea based on this description of the problem, and we want to prototype this idea.
+
+175
+00:21:54.261 --> 00:22:09.524
+To express the prototype or to express the idea, a sketch for the proposed interface design can be made, which is shown along with one possible final design in the next slide.
+
+176
+00:22:10.806 --> 00:22:12.889
+So, this is the sketch that
+
+177
+00:22:13.696 --> 00:22:15.618
+I talked about in the previous description.
+
+178
+00:22:16.939 --> 00:22:19.963
+It can be made on paper, as you can see.
+
+179
+00:22:21.504 --> 00:22:23.507
+Of course, this is somewhat crude.
+
+180
+00:22:25.168 --> 00:22:35.659
+As you can see, with this sketch, we can actually be able to depict what are the elements on the screen that the user gets to see,
+
+180.1
+00:22:35.659 --> 00:22:43.568
+including the buttons, including the options for selections and so on, and including the
+
+181
+00:22:44.088 --> 00:22:51.897
+Appearance of the elements, their layout, and many such things we can visualize based on such a sketch.
+
+182
+00:22:53.338 --> 00:22:59.045
+And the same sketch need not be exactly replicated in the final design.
+
+183
+00:23:01.448 --> 00:23:04.051
+Based on feedback, we may like to change it.
+
+184
+00:23:04.071 --> 00:23:08.736
+Say, for example, this same sketch appeared here in this way.
+
+185
+00:23:10.137 --> 00:23:10.618
+However,
+
+186
+00:23:11.459 --> 00:23:16.423
+Suppose through this design-prototype-evaluate cycle, we came to know that this is not correct.
+
+187
+00:23:17.024 --> 00:23:18.545
+I mean, there are some issues with this.
+
+188
+00:23:19.566 --> 00:23:28.995
+So, we can make minor corrections and come up with another final design, which looks somewhat similar, but somewhat dissimilar also to the initial sketch.
+
+189
+00:23:29.435 --> 00:23:40.605
+As shown here, where some of the elements or their appearance have changed, their position changed, the layout changed, some things changed.
+
+190
+00:23:41.294 --> 00:23:48.948
+Possibly due to feedback received during this prototype evaluation stage.
+
+191
+00:23:54.499 --> 00:23:59.889
+Now, sketches are primarily meant for horizontal prototypes.
+
+192
+00:23:59.909 --> 00:24:04.838
+In itself, if we have a single sketch, it is not sufficient to prototype interactions.
+
+193
+00:24:06.607 --> 00:24:14.901
+From the previous sketch example, we can see that it is not possible to know the sequence of actions and the corresponding changes on the interface to
+
+193.1
+00:24:14.901 --> 00:24:26.088
+execute a task such as a stroller purchase for which we can use a prototype.
+
+194
+00:24:26.108 --> 00:24:31.374
+So therefore, sketches are essentially used to represent horizontal prototypes.
+
+195
+00:24:33.276 --> 00:24:35.078
+To represent interaction, we need
+
+196
+00:24:35.530 --> 00:24:41.980
+Not a single sketch, but a series of sketches often called storyboarding.
+
+197
+00:24:42.000 --> 00:24:45.986
+Now, this term comes from the film industry, as we know.
+
+198
+00:24:49.712 --> 00:24:52.436
+So, with a single sketch, we have a horizontal prototype.
+
+199
+00:24:52.456 --> 00:24:58.586
+With a series of sketches, we can have a vertical prototype depicting interaction.
+
+200
+00:24:59.087 --> 00:25:03.934
+As I said before, a low-fidelity approach need not always mean horizontal prototyping.
+
+201
+00:25:04.235 --> 00:25:11.283
+We can also modify or utilize the approach to create vertical prototypes as well.
+
+202
+00:25:11.684 --> 00:25:16.890
+Storyboarding is one such modification of the basic approach.
+
+203
+00:25:16.910 --> 00:25:21.516
+The idea originated from the film industry, where it is used to depict a scene.
+
+204
+00:25:21.656 --> 00:25:26.682
+Typically, for animated movies, this is more commonly used.
+
+205
+00:25:27.590 --> 00:25:39.024
+Now, each sketch in a storyboard represents a keyframe, again a term borrowed from the movie or film industry.
+
+206
+00:25:39.044 --> 00:25:45.392
+Now, each keyframe is nothing but a snapshot of the interaction at a particular point in time.
+
+207
+00:25:48.235 --> 00:25:57.006
+These keyframes allow us to visualize the nature of interaction in its entirety, but for a specific scene.
+
+208
+00:25:57.847 --> 00:26:04.575
+That means a specific task and the corresponding scenes associated with the task.
+
+209
+00:26:07.158 --> 00:26:12.545
+For example, let us talk about a mobile app.
+
+210
+00:26:13.066 --> 00:26:20.455
+Now, the mobile app is designed to find spicy food in your neighborhood.
+
+211
+00:26:20.915 --> 00:26:26.622
+So, then how do we perform the interactions?
+
+212
+00:26:27.344 --> 00:26:36.038
+What are the ideas we can have to provide interactions to the user so that the user is able to find out the spicy food in the neighborhood?
+
+213
+00:26:38.021 --> 00:26:44.411
+This can be one possible instance of the storyboard, that is one possible instance of the design idea.
+
+214
+00:26:44.852 --> 00:26:51.883
+So, here the user somehow specifies the requirement that they want to eat something spicy.
+
+215
+00:26:53.382 --> 00:27:01.956
+Then it goes to the app and the app lists different menu items.
+
+216
+00:27:03.959 --> 00:27:09.328
+Then it further chooses a particular option or particular cuisine.
+
+217
+00:27:11.491 --> 00:27:13.855
+There can be subcategories of that cuisine as well.
+
+218
+00:27:14.307 --> 00:27:16.270
+North Indian, South Indian as you can see here.
+
+219
+00:27:16.610 --> 00:27:20.356
+That is the second stage after selection in the first stage.
+
+220
+00:27:21.297 --> 00:27:26.205
+Then North Indian, there can be further subcategories as you can see.
+
+221
+00:27:31.032 --> 00:27:37.601
+And from there, the user can choose or get to see the category he or she is looking for.
+
+222
+00:27:40.666 --> 00:27:43.470
+Then the user needs to provide details
+
+223
+00:27:43.687 --> 00:27:46.471
+for the food to be delivered.
+
+224
+00:27:46.491 --> 00:27:55.764
+So, there are six such sketches: 1, 2, 3, 4, 5 and 6.
+
+225
+00:27:56.305 --> 00:28:00.170
+Now, these six sketches together are the storyboard.
+
+226
+00:28:00.190 --> 00:28:09.643
+Each sketch is a keyframe and each sketch shows a specific instance of the
+
+227
+00:28:10.855 --> 00:28:20.305
+execution of the task by the user, a specific instance of how the screen appears at that point in time to the user.
+
+228
+00:28:23.088 --> 00:28:32.217
+And the storyboard together with all these six sketches captures the sequence of actions required from the user to get the work done.
+
+229
+00:28:33.439 --> 00:28:39.445
+We have to remember that this is only one idea which we are converting to a storyboard
+
+230
+00:28:40.673 --> 00:28:42.415
+this need not be the only idea.
+
+231
+00:28:42.475 --> 00:28:51.648
+So, the overall purpose of a prototype is to have some idea, convert it to some prototype and then evaluate it.
+
+232
+00:28:52.028 --> 00:28:59.438
+If there is some issue, then revise this idea, revise the prototype, get it evaluated again and so on.
+
+233
+00:29:03.283 --> 00:29:06.327
+So, in this storyboard, what we can see is that it starts from the
+
+234
+00:29:07.437 --> 00:29:14.613
+very first step that is the desire to have the food and ends to the last step,
+
+234.1
+00:29:14.613 --> 00:29:29.116
+ends at the last stage that is the food is found, the actual finding of the food and it also shows the intermediate screen.
+
+235
+00:29:29.156 --> 00:29:37.343
+So, that is the main idea that from the beginning to the end what are the things that the user does and what are the things that the user gets to see.
+
+236
+00:29:38.538 --> 00:29:43.624
+That is what is captured in this storyboarding approach.
+
+237
+00:29:47.108 --> 00:29:51.593
+That is about the low fidelity approach where we may not require any computer as well.
+
+238
+00:29:52.515 --> 00:29:58.362
+The same storyboard can be done on a simple paper without using any digital medium.
+
+239
+00:29:58.842 --> 00:30:07.212
+Now, there is another category that is called medium fidelity, another approach of building a prototype that is the medium fidelity approach.
+
+240
+00:30:07.664 --> 00:30:15.172
+Here we use a computer to create simple prototypes which are typically of low fidelity.
+
+241
+00:30:17.574 --> 00:30:21.479
+That means earlier we talked about a low-fidelity approach where we are not using computers.
+
+242
+00:30:21.799 --> 00:30:37.215
+Now if we want to create the same type of things but using a computer, say for example using a paint system to create the interface sketches, then that prototype is called
+
+243
+00:30:37.988 --> 00:30:52.647
+built using medium fidelity approach if the computer is used to create static sketches only it still remains horizontal prototype since no real functionality is there so essentially,
+
+243.1
+00:30:52.647 --> 00:31:04.249
+computer is used to just build the prototype rather than adding anything we can also include videos in the medium fidelity prototype as well
+
+244
+00:31:04.735 --> 00:31:07.898
+which is not possible with a low-fidelity approach.
+
+245
+00:31:09.499 --> 00:31:16.986
+Low-fidelity approach does not rely on computers, so the addition of any digital medium is not possible.
+
+246
+00:31:17.066 --> 00:31:20.336
+However, when we are creating a medium-fidelity approach,
+
+246.1
+00:31:20.336 --> 00:31:33.460
+we are building prototypes using a medium-fidelity approach; it is possible to utilize different media to build a prototype, which may still
+
+247
+00:31:34.486 --> 00:31:42.354
+which may still be a horizontal prototype or a vertical prototype.
+
+248
+00:31:42.374 --> 00:31:50.948
+For example, we can have an animation video created with say Adobe Flash Player flash tool for example,
+
+248.1
+00:31:50.948 --> 00:31:59.751
+to prototype the food selection app of the previous slide in the video simple controls such as space key pressing
+
+249
+00:32:00.102 --> 00:32:06.814
+or any up-down arrow key pressing can be provided to simulate the interaction.
+
+250
+00:32:06.834 --> 00:32:12.484
+So, to change screens we can simply press a key in the video.
+
+251
+00:32:13.125 --> 00:32:14.007
+So, that is possible.
+
+252
+00:32:14.948 --> 00:32:21.059
+In that way we would be able to implement a vertical prototype.
+
+253
+00:32:21.079 --> 00:32:23.123
+So, that is one way of
+
+254
+00:32:24.065 --> 00:32:30.133
+utilizing a computer to build horizontal or vertical prototypes, but still without involving any coding.
+
+255
+00:32:34.679 --> 00:32:45.134
+So, interaction can also be simulated with as simple a tool as a Microsoft PowerPoint slideshow that is effectively kind of a video also.
+
+256
+00:32:45.995 --> 00:32:53.565
+So, these tools PPT slideshow or Adobe Flash tools can be utilized to create interactive videos
+
+257
+00:32:55.807 --> 00:33:10.872
+to prototype to create a vertical prototype or we can simply use any image or paint type editing tool to create simple sketches,
+
+257.1
+00:33:10.872 --> 00:33:21.723
+using computers which are called medium fidelity prototypes because we are using computers here.
+
+258
+00:33:21.743 --> 00:33:23.485
+So, in case of PPT slideshow,
+
+259
+00:33:23.920 --> 00:33:43.013
+keyframes are converted to slides and simple controls such as timers or key press can be used to transition the slide transition the slide to the next one which depicts interaction.
+
+260
+00:33:43.033 --> 00:33:48.342
+So, that is a better way of creating a vertical prototype as compared to a paper based
+
+261
+00:33:49.250 --> 00:33:54.395
+interface sketch or series of sketches as is obvious.
+
+262
+00:33:58.439 --> 00:34:00.462
+Finally, we have the high fidelity approach.
+
+263
+00:34:00.562 --> 00:34:04.025
+Here the prototypes are created with computer programs.
+
+264
+00:34:05.146 --> 00:34:09.451
+So, in the previous case, in the first case low fidelity approach, no computers are involved.
+
+265
+00:34:09.971 --> 00:34:16.438
+In the second case, medium fidelity approach, computers are involved but in a different way.
+
+266
+00:34:18.038 --> 00:34:23.342
+In the high fidelity approach, we are actually using programming to create a prototype.
+
+267
+00:34:24.103 --> 00:34:30.969
+So, it is effectively actual software development, maybe on a reduced scale.
+
+268
+00:34:34.853 --> 00:34:38.397
+Clearly, this is more sophisticated and requires much more effort.
+
+269
+00:34:38.637 --> 00:34:46.965
+You require skilled manpower programmers to build such a prototype, including expertise in programming than the other two categories.
+
+270
+00:34:50.489 --> 00:34:54.875
+Now, these high fidelity prototypes are mainly used to create vertical prototypes.
+
+271
+00:34:55.676 --> 00:35:00.323
+Of course, making horizontal prototypes using a high fidelity approach may not make much sense.
+
+272
+00:35:01.405 --> 00:35:05.591
+So, primarily they are meant for vertical prototypes.
+
+273
+00:35:05.611 --> 00:35:09.757
+So, low fidelity prototypes are primarily meant for horizontal prototypes.
+
+274
+00:35:10.357 --> 00:35:19.230
+High fidelity approaches are primarily meant for vertical prototypes and medium fidelity approaches are meant for both horizontal and vertical prototypes.
+
+275
+00:35:20.105 --> 00:35:35.164
+Primarily. Apart from these three approaches, there is something interesting way of, there is some interesting way of creating prototype called Wizard of Oz approach.
+
+276
+00:35:38.228 --> 00:35:41.813
+It is a very interesting technique and its origin is even more interesting.
+
+277
+00:35:43.094 --> 00:35:49.082
+So, in this approach, a human subject is involved who believes that
+
+278
+00:35:49.805 --> 00:35:56.074
+they are interacting with an autonomous computer or a computer in short.
+
+279
+00:35:57.116 --> 00:36:06.350
+But in reality, what happens is that the computer is actually operated by another human being who is unseen by the subject.
+
+280
+00:36:09.915 --> 00:36:12.759
+That operator can be called the wizard.
+
+281
+00:36:13.600 --> 00:36:18.107
+So whatever the human subject wants from the computer,
+
+282
+00:36:19.083 --> 00:36:29.258
+the wizard somehow knows and shows in some manner or returns the result in some manner to the subject.
+
+283
+00:36:32.102 --> 00:36:38.272
+The term originated in the early 1980s, although the concept was there beforehand.
+
+284
+00:36:40.255 --> 00:36:48.567
+One very interesting example of this approach is the listening typewriter experiment conducted by IBM
+
+285
+00:36:48.985 --> 00:36:50.447
+way back in 1984.
+
+286
+00:36:52.870 --> 00:37:04.085
+At that time, IBM was trying to develop a speech recognition system and it wanted to test the acceptability of the idea, which required a working system.
+
+287
+00:37:05.086 --> 00:37:10.033
+The problem was that nobody had a speech recognizer at that time.
+
+288
+00:37:10.113 --> 00:37:17.102
+It was not yet developed and the company did not want to spend money and effort on building a speech recognizer first.
+
+289
+00:37:18.280 --> 00:37:23.349
+Before testing the acceptability of the idea of the listening typewriter.
+
+290
+00:37:24.010 --> 00:37:28.298
+So, the technology was not yet available.
+
+291
+00:37:28.719 --> 00:37:34.750
+However, the company wanted to test the idea first before committing resources to build the technology.
+
+292
+00:37:36.493 --> 00:37:37.175
+So, how to do that?
+
+293
+00:37:38.597 --> 00:37:42.364
+So, they decided to go for a Wizard of Oz experiment.
+
+294
+00:37:44.487 --> 00:37:46.048
+And this is the experimental setup.
+
+295
+00:37:46.689 --> 00:37:50.633
+There is this human user in front of a microphone.
+
+296
+00:37:52.034 --> 00:37:53.676
+He talks about something.
+
+297
+00:37:54.937 --> 00:37:55.938
+There is a computer.
+
+298
+00:37:56.398 --> 00:37:58.420
+The subject thinks that this is a real computer.
+
+299
+00:37:59.141 --> 00:38:06.268
+However, the computer is connected to another computer here through some intermediary.
+
+300
+00:38:07.189 --> 00:38:12.874
+And there is this wizard sitting hidden away from the subject.
+
+301
+00:38:15.267 --> 00:38:16.048
+This is the subject.
+
+302
+00:38:16.789 --> 00:38:17.730
+This is the wizard.
+
+303
+00:38:18.371 --> 00:38:19.052
+There is a wall.
+
+304
+00:38:20.334 --> 00:38:26.442
+So the subject cannot see the wizard, but the subject is thinking that he is interacting with a computer.
+
+305
+00:38:26.603 --> 00:38:34.153
+So whatever he speaks, the computer displays in the form of text.
+
+306
+00:38:34.173 --> 00:38:35.335
+So the user says something.
+
+307
+00:38:35.455 --> 00:38:36.496
+It appears on the screen.
+
+308
+00:38:36.516 --> 00:38:42.945
+However, whatever the user says, this microphone is also connected to the speaker of the computer.
+
+309
+00:38:44.461 --> 00:38:57.691
+So, the wizard gets to hear what the subject is speaking, and based on that, the wizard types those characters.
+
+309.1
+00:38:57.691 --> 00:39:04.166
+Then that gets transmitted because these two computers are connected, and it gets displayed on the subject's computer screen.
+
+310
+00:39:05.527 --> 00:39:09.372
+Effectively letting the subject believe that whatever he has spoken,
+
+311
+00:39:09.824 --> 00:39:16.254
+has appeared on the screen, so this is a good system or this is a bad system, whatever the perception of the subject is.
+
+312
+00:39:17.495 --> 00:39:23.965
+However, in reality, there is no such technology which can automatically convert that.
+
+313
+00:39:24.005 --> 00:39:25.968
+So, at that time, there was no such technology.
+
+314
+00:39:26.749 --> 00:39:32.718
+So, the human wizard was listening and typing and sending the result back to the subject.
+
+315
+00:39:32.738 --> 00:39:36.844
+So, this setup, this idea is what is called the Wizard of Oz approach.
+
+316
+00:39:38.950 --> 00:39:43.075
+So with that, we can conclude our discussion here.
+
+317
+00:39:44.276 --> 00:39:53.027
+In summary, what we can say is that in this part of the lecture, we started a new topic on implementation.
+
+318
+00:39:53.067 --> 00:39:56.230
+However, we covered only a small part of the topic in this lecture.
+
+319
+00:39:58.813 --> 00:40:03.038
+In this part of the lecture, we talked about the importance of the design prototype evaluate cycle.
+
+320
+00:40:03.619 --> 00:40:04.640
+We re-emphasized it.
+
+321
+00:40:05.782 --> 00:40:06.983
+And then we talked about
+
+322
+00:40:07.368 --> 00:40:10.671
+prototypes, how to build prototypes, and why they are important.
+
+323
+00:40:15.356 --> 00:40:20.882
+Now we will continue on these prototypes in the next part of the lecture.
+
+324
+00:40:20.962 --> 00:40:30.432
+Some more concepts related to prototypes are there, which we will continue in the next part of the lecture.
+
+325
+00:40:31.373 --> 00:40:35.417
+So, I hope you could follow the concepts and the topics covered.
+
+326
+00:40:37.743 --> 00:40:41.295
+And understood whatever has been covered so far.
+
+327
+00:40:43.423 --> 00:40:45.671
+Looking forward to meeting you in the next part.
+
+328
+00:40:45.691 --> 00:40:48.360
+Until then, thank you, goodbye, and happy learning.

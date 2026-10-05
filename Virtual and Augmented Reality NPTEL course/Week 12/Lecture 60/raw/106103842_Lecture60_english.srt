@@ -1,0 +1,604 @@
+1
+00:00:24,179 --> 00:00:29,487
+Hello and welcome to the NPTEL MOOC's course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:30,108 --> 00:00:32,932
+So, we have come to almost the end of this course.
+
+3
+00:00:33,694 --> 00:00:44,981
+Before we conclude, we will cover one more topic, one more interesting topic where we will discuss how to link our theoretical knowledge that 
+
+4
+00:00:44,981 --> 00:00:50,980
+we have acquired so far through the previous lectures to practical implementation.
+
+5
+00:00:52,394 --> 00:00:59,708
+So, essentially what we will try to do in this lecture before we conclude is to link the theory to practice.
+
+6
+00:01:00,550 --> 00:01:14,757
+Now, we have learned so far the idea of XR and the foundational aspects which include several areas including human factors, including interactive system development,
+
+7
+00:01:15,125 --> 00:01:24,918
+concerns including hardware, software, tracking, and many such concepts that we have covered in our discussion so far.
+
+8
+00:01:26,540 --> 00:01:29,103
+But as I said, these are mostly theoretical.
+
+9
+00:01:29,884 --> 00:01:45,064
+So, we have not delved deeper into the practical aspects except the fact that we have discussed one case study to gain some practical knowledge on how to
+
+10
+00:01:45,348 --> 00:01:48,852
+translate the theory to practice.
+
+11
+00:01:52,257 --> 00:02:00,047
+But a case study is one way to link the theory to practice and it is, of course, not the only way or the best way.
+
+12
+00:02:00,067 --> 00:02:10,259
+It is primarily focused on the broader aspects of development, particularly the interactive system development lifecycle, the stages of the lifecycle, and how those are translated to practice.
+
+13
+00:02:10,759 --> 00:02:13,684
+What are the things involved in translating
+
+14
+00:02:14,002 --> 00:02:19,609
+the theoretical knowledge to practice, primarily focused towards the broader aspects.
+
+15
+00:02:21,051 --> 00:02:31,364
+Now, in this lecture, let us try to understand the linkage between theory and practice from a different viewpoint, which is more towards actual implementation.
+
+16
+00:02:31,984 --> 00:02:36,870
+How a developer can develop and deploy a system, marrying theory with practice.
+
+17
+00:02:37,591 --> 00:02:41,376
+So, of course, case study gives you some idea.
+
+18
+00:02:41,795 --> 00:02:51,493
+But here we will try to get more implementation level ideas, how the theory is converted to practical ideas.
+
+19
+00:02:53,196 --> 00:03:02,453
+At this stage, it will be pertinent to recollect the interactive system development lifecycle, which we have talked about earlier in details.
+
+20
+00:03:03,580 --> 00:03:09,451
+Comprising of several stages, starting with feasibility study, then requirement gathering and specification.
+
+21
+00:03:10,573 --> 00:03:19,970
+Then this design prototype evaluate cycle comprising of the design stage, prototyping stage and evaluation stage.
+
+22
+00:03:19,990 --> 00:03:27,343
+This is followed by the code design stage, followed by coding and implementation, followed by testing of the code.
+
+23
+00:03:28,252 --> 00:03:36,023
+followed by empirical study or usability study, followed by deployment and maintenance.
+
+24
+00:03:36,043 --> 00:03:41,871
+Also, there are several loops as we have repeatedly discussed, so I will not go into the details of those.
+
+25
+00:03:44,414 --> 00:03:54,328
+The primary concern of us in this lecture will be this stage, coding and implementation.
+
+26
+00:03:54,809 --> 00:03:57,212
+So, here we are assuming that
+
+27
+00:03:58,998 --> 00:04:09,934
+We have already completed the design part that means we have gathered requirement, usability requirements, converted those to design ideas by 
+
+28
+00:04:09,934 --> 00:04:17,516
+following the iterative design cycle and also we have come up with the broader design of the code or the system.
+
+29
+00:04:18,116 --> 00:04:28,566
+Now, it is the time to translate the code into practice and there we would like to see how our concepts, theoretically acquired concepts can be translated to practice.
+
+30
+00:04:29,170 --> 00:04:33,495
+using available programming environment.
+
+31
+00:04:33,515 --> 00:04:39,863
+So our focus here will be coding and implementation.
+
+32
+00:04:39,883 --> 00:04:48,339
+So essentially what we will do, we will delve deeper, little deeper on programming environment and system building, 
+
+33
+00:04:48,339 --> 00:04:56,663
+which of course is followed by deployment to understand the support available for a developer
+
+34
+00:04:57,048 --> 00:04:59,731
+from the point of view of programming environments.
+
+35
+00:05:00,953 --> 00:05:05,238
+And in order to do that, we will take help of the Unity platform.
+
+36
+00:05:06,180 --> 00:05:15,672
+It is a very popular and well-known programming environment for developers who wish to work with extended reality systems.
+
+37
+00:05:15,692 --> 00:05:25,384
+Now, the Unity platform comprises the game engine, Unity 3D game engine and a developer's interface, which a developer can use to
+
+38
+00:05:26,663 --> 00:05:28,005
+implement the ideas.
+
+39
+00:05:29,948 --> 00:05:33,873
+So, we will talk about those in this lecture.
+
+40
+00:05:37,278 --> 00:05:42,886
+Before we proceed further, let us quickly try to understand what exactly we are looking for.
+
+41
+00:05:44,028 --> 00:05:51,338
+So, we are looking for support for implementation of essentially the graphics pipeline that we have discussed earlier, the computer graphics pipeline.
+
+42
+00:05:52,651 --> 00:06:00,900
+including object definition, scene construction, lighting effects, view transformation and of course scan conversion or rendering.
+
+43
+00:06:02,862 --> 00:06:18,338
+Now, we are trying to basically look for support where the developer need not put effort to master the pipeline concepts and implement the pipeline by himself or herself.
+
+44
+00:06:21,490 --> 00:06:32,964
+So, essentially what we are looking for is a support environment where the developer can focus on the immersive experience building rather than implementation of the graphics pipeline.
+
+45
+00:06:35,407 --> 00:06:38,071
+So, with that objective in our mind, 
+
+46
+00:06:38,071 --> 00:06:50,586
+let us try to get some basic idea of the Unity developer's platform and then we will proceed on specific developmental support that is there or that is provided by the
+
+47
+00:06:51,342 --> 00:06:56,169
+platform, the Unity platform.
+
+48
+00:06:56,189 --> 00:07:13,374
+Now, Unity as we have talked about earlier while talking about extended reality software, it is a cross-platform game engine initially released by Unity Technologies in 2005, about 20 years back.
+
+49
+00:07:13,394 --> 00:07:18,261
+It supports both 2D and 3D games or interactive content.
+
+50
+00:07:19,996 --> 00:07:34,174
+and supports over 20 different platforms including PC, mobile, Android based mobile and Apple mobile platforms, iOS.
+
+51
+00:07:34,995 --> 00:07:42,084
+So, it has a wide support base for different platforms.
+
+52
+00:07:44,627 --> 00:07:48,332
+Now, let us talk briefly about the installation.
+
+53
+00:07:49,358 --> 00:08:00,653
+There is a package called the Unity Hub, which is the primary way to install the Unity Editor or the developer's interface that we are talking about and the Unity Game Engine.
+
+54
+00:08:00,713 --> 00:08:01,915
+So, there are two things.
+
+55
+00:08:02,015 --> 00:08:13,971
+One is the Game Engine, which is a middleware and then interface, which allows developers to build extended reality experience or extended reality systems and deploy it on a specific platform.
+
+56
+00:08:14,792 --> 00:08:18,657
+So, both can be installed if we are installing Unity Hub.
+
+57
+00:08:20,662 --> 00:08:27,350
+And this is also a way to allow the developer to build and deploy projects.
+
+58
+00:08:27,370 --> 00:08:39,986
+So, through the menu options on the Unity Editor interface, the developers can build and deploy their system.
+
+59
+00:08:41,067 --> 00:08:48,797
+The main advantage of installing Unity Hub is that it supports multiple versions of Unity.
+
+60
+00:08:49,237 --> 00:08:49,858
+So, you can
+
+61
+00:08:50,345 --> 00:08:56,110
+to manage multiple versions of Unity together at one place.
+
+62
+00:08:58,092 --> 00:09:09,942
+For more details about the installation, you can refer to this documentation docs.unity3d.com, their hub under that manual and its index page.
+
+63
+00:09:10,242 --> 00:09:12,684
+You can refer to for different topics on installation.
+
+64
+00:09:14,546 --> 00:09:19,170
+But Unity Hub installation is of course not mandatory.
+
+65
+00:09:19,336 --> 00:09:27,871
+working with Unity, you can separately install the Unity editor and the engine separately also you can install.
+
+66
+00:09:28,472 --> 00:09:33,421
+In that case, of course, you can install only one and you can deal with only one version of Unity, 
+
+67
+00:09:33,421 --> 00:09:43,858
+whereas whereas Unity hub interface allows you to deal with multiple Unity versions, but both ways are possible.
+
+68
+00:09:44,463 --> 00:09:53,995
+Unity Hub essentially is a standalone application that streamlines the way you find, download and manage your Unity projects and installations.
+
+69
+00:09:55,016 --> 00:10:01,885
+It can manually add versions of Unity that are already installed in your system, if any, to the Hub.
+
+70
+00:10:01,905 --> 00:10:05,550
+And it is easy, it makes it easy to install Unity Engine.
+
+71
+00:10:07,112 --> 00:10:11,938
+So, it is easy to install Unity Engine using the Unity Hub package.
+
+72
+00:10:13,471 --> 00:10:17,755
+Now, as I said, once you install the package, you get two things.
+
+73
+00:10:17,875 --> 00:10:20,818
+One is the editor interface, other one is the game engine.
+
+74
+00:10:21,398 --> 00:10:32,328
+Game engine gets installed as a middleware and you get editor interface where you can utilize different options to build your system, to develop your system.
+
+75
+00:10:33,029 --> 00:10:43,258
+So, the editor interface allows you to build and deploy realistic immersive environment without having to master and implement the CG pipeline, which was our original objective.
+
+76
+00:10:43,778 --> 00:10:54,639
+It is essentially an IDE or integrated development environment providing the developer all the features required to build and deploy a system.
+
+77
+00:10:57,123 --> 00:11:06,040
+Now, when you are dealing with extended reality systems through the Unity editor interface, there is a preference tab.
+
+78
+00:11:07,437 --> 00:11:13,467
+In the preference tab on this interface, Unity has XR settings for three types of systems.
+
+79
+00:11:13,627 --> 00:11:20,318
+One is virtual reality, which essentially is as per the editor interface.
+
+80
+00:11:21,139 --> 00:11:26,167
+It simulates a completely different environment around the user, artificial environment.
+
+81
+00:11:26,187 --> 00:11:33,799
+Then there is this mixed reality setting in which it combines its own environment with
+
+82
+00:11:34,218 --> 00:11:47,512
+the user's real world environment and allows them to interact with each other and augmented reality where it provides layers of content over a digital view of the real world.
+
+83
+00:11:49,675 --> 00:12:01,828
+So, although in our earlier discussion, we said that we will, for the sake of discussion, we will regard, we will consider this augmented reality and mixed reality to be
+
+84
+00:12:02,399 --> 00:12:11,677
+referring to almost the same concept. Here in the Unity interface editor interface, you can actually select settings for each type and 
+
+85
+00:12:11,677 --> 00:12:17,058
+then accordingly you will get to do certain things when you choose a particular option.
+
+86
+00:12:20,562 --> 00:12:28,272
+So, this is how the interface looks. It has several components marked as A, B, C, D, E, F, G, H.
+
+87
+00:12:29,973 --> 00:12:35,531
+So, A is basically called the scene view as shown here, 
+
+88
+00:12:35,531 --> 00:12:51,625
+then B refers to the game view, C is the hierarchy window, D is the inspector window, E the toolbar, F the status bar, G the project window, and H the console window.
+
+89
+00:12:51,645 --> 00:12:55,491
+So, there are different components; we will not go into all those components here.
+
+90
+00:12:56,956 --> 00:13:07,727
+But to understand the basic thing, we will focus only on these two components, A and B, that is the scene view and the game view, what they refer to.
+
+91
+00:13:08,167 --> 00:13:10,870
+Other components we will ignore for the sake of this discussion.
+
+92
+00:13:14,053 --> 00:13:16,075
+So let us talk about the scene view.
+
+93
+00:13:16,095 --> 00:13:21,701
+It is an interactive view of the world you are, you meaning the developer, is creating.
+
+94
+00:13:23,062 --> 00:13:26,946
+So essentially, when you start building a scene,
+
+95
+00:13:27,567 --> 00:13:29,590
+then you get to see it in the scene view.
+
+96
+00:13:32,613 --> 00:13:36,278
+So, in this view, what you can do is play around with the scene.
+
+97
+00:13:36,478 --> 00:13:48,593
+So, you can perform selection, manipulation, and modification of the game objects, which are the fundamental concepts in Unity, in the scene view option.
+
+98
+00:13:50,035 --> 00:13:53,739
+Now, these objects, of course, comprises of the scene.
+
+99
+00:13:54,360 --> 00:13:55,802
+So, these objects put together
+
+100
+00:13:56,440 --> 00:14:03,887
+Creates the scene and you can play around with these objects in the scene view.
+
+101
+00:14:03,907 --> 00:14:06,289
+Once the next thing is the game view.
+
+102
+00:14:06,309 --> 00:14:20,742
+So once you are done with your system building, you can or once you think that you have developed a scene, you can view the final scene from the game view.
+
+103
+00:14:20,762 --> 00:14:23,904
+Scene view is the developer's view.
+
+104
+00:14:24,505 --> 00:14:25,806
+Game view is the final view.
+
+105
+00:14:26,410 --> 00:14:42,872
+So, here in GameView, the scene is rendered from the camera set by the developer and it represents the final published application or the deployed application.
+
+106
+00:14:42,892 --> 00:14:45,956
+So, that is one support you get with Unity.
+
+107
+00:14:46,417 --> 00:14:53,987
+Now, in order to understand what is a scene and how it works, we need to have some basic understanding of certain other things.
+
+108
+00:14:54,862 --> 00:15:00,308
+One such thing is the Unity assets, the concept of asset.
+
+109
+00:15:00,328 --> 00:15:10,618
+Any item that you use in your Unity project to create your app is called an asset.
+
+110
+00:15:10,638 --> 00:15:20,228
+Such assets can represent visual or audio elements in your project such as 3D models or textures, those things.
+
+111
+00:15:22,030 --> 00:15:32,663
+An asset may come from a file created outside of Unity, so you can import asset from outside or you can build it inside the Unity environment.
+
+112
+00:15:33,004 --> 00:15:40,173
+So, when you are importing, you can import it as a file such as a 3D model, an audio file or an image.
+
+113
+00:15:44,098 --> 00:15:48,223
+Unity also offers creation of internal assets, so both ways are possible.
+
+114
+00:15:49,688 --> 00:15:58,537
+For example, scenes, animations, materials, scripts, prefabs, these are all concepts associated with Unity and these are also assets.
+
+115
+00:16:04,023 --> 00:16:06,625
+Now, scenes is a type of asset.
+
+116
+00:16:09,388 --> 00:16:13,472
+Scenes are a specific type of assets.
+
+117
+00:16:14,273 --> 00:16:18,177
+Assets that contain all or part of a game or application is assets.
+
+118
+00:16:18,815 --> 00:16:19,716
+called a scene.
+
+119
+00:16:20,477 --> 00:16:26,062
+You can create any number of scenes in a project, depends on how many layers levels are there.
+
+120
+00:16:28,064 --> 00:16:36,093
+And Unity provides a scene interface to edit or create or modify a scene.
+
+121
+00:16:36,113 --> 00:16:43,320
+As shown on this screen, you can see this is a scene comprising of several components, each can be a different asset and so on.
+
+122
+00:16:48,532 --> 00:16:51,295
+Another fundamental concept is game objects.
+
+123
+00:16:51,375 --> 00:16:56,721
+So, these are the fundamental objects that represents characters, props or scenario.
+
+124
+00:17:00,445 --> 00:17:08,974
+Now, game objects act as container for components which implement the functionality of any object.
+
+125
+00:17:11,117 --> 00:17:15,281
+To give a game object the properties, you need to add components to it.
+
+126
+00:17:19,295 --> 00:17:31,246
+And through the editor interface, we can access lots of built-in component types so that we can assign it to game objects.
+
+127
+00:17:31,266 --> 00:17:39,934
+We can also make our own components and game objects using scripting APIs.
+
+128
+00:17:42,597 --> 00:17:48,222
+For instance, a light object can be built by adding the light component to a game object.
+
+129
+00:17:49,805 --> 00:17:50,486
+with a script.
+
+130
+00:17:55,894 --> 00:18:10,756
+Now, there are some primitive object types that can be created directly within Unity such as cube, sphere, capsule, cylinder, plane, basic shapes that are game objects.
+
+131
+00:18:10,916 --> 00:18:13,720
+Next is prefabs, another fundamental concept.
+
+132
+00:18:14,408 --> 00:18:21,696
+It allows you to create, configure and store game objects, acting as a template to create new prefabs in the scene.
+
+133
+00:18:22,958 --> 00:18:29,605
+We can think of prefabs as objects that the user can make instances of.
+
+134
+00:18:29,625 --> 00:18:40,517
+For example, if you are dealing with a shooter game, then a certain type of bullet can be used as a prefab and then we can create prefabs.
+
+135
+00:18:40,936 --> 00:18:44,401
+instances of such bullets multiple times around a level of a game.
+
+136
+00:18:45,884 --> 00:18:49,289
+So, the bullet type is a prefab.
+
+137
+00:18:52,754 --> 00:18:59,545
+So, these are the basic concepts that we should know while dealing with Unity.
+
+138
+00:19:00,025 --> 00:19:02,549
+So, let us summarize what we have covered so far.
+
+139
+00:19:03,951 --> 00:19:06,255
+What have we learned?
+
+140
+00:19:06,275 --> 00:19:08,378
+Got introduced to the basic idea of Unity.
+
+141
+00:19:09,387 --> 00:19:19,480
+where when we are using the term Unity, we are referring to both the game engine which is a middleware and the editor interface which allows the developer to create a system.
+
+142
+00:19:21,282 --> 00:19:37,302
+So, we talked about the IDE which we get when we install the Unity Hub package, then the various components of the IDE and also some core concepts such as GameObject, Asset, Prefab and Scene.
+
+143
+00:19:38,918 --> 00:19:47,045
+We are going to continue our discussion in the next part of this lecture on linking theory to practice.
+
+144
+00:19:47,065 --> 00:19:50,829
+I hope you could follow the discussion.
+
+145
+00:19:51,449 --> 00:19:56,073
+Of course, for more details on Unity, you have to refer to the developer's manual.
+
+146
+00:19:56,514 --> 00:20:02,119
+Here, our focus is on the basic concepts and how we can relate theory to practice.
+
+147
+00:20:03,480 --> 00:20:06,883
+So, we will not go into the details of all features of Unity.
+
+148
+00:20:08,888 --> 00:20:17,027
+So, I hope you can understand the concepts and you can go through the documentation for further reading on your own.
+
+149
+00:20:17,709 --> 00:20:20,957
+So, looking forward to meeting you in the next part of this lecture.
+
+150
+00:20:21,799 --> 00:20:23,022
+Thank you and goodbye.
+
+151
+00:20:25,127 --> 00:20:25,648
+Happy learning.
+

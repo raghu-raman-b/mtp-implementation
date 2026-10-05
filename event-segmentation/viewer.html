@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture</title>
+<style>
+  :root {
+    --text: #111827;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --line: #e5e7eb;
+    --track: #e5e7eb;
+    --soft: #f9fafb;
+    --accent: #1d4ed8;
+    --accent-soft: #eff4ff;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--text); }
+  body {
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  svg { display: block; }
+  button {
+    font: inherit; font-weight: 500; font-size: 14px;
+    padding: 9px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--text);
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  button:hover:not(:disabled) { background: var(--soft); border-color: #d1d5db; }
+  button:disabled { color: var(--faint); cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover:not(:disabled) { background: #1e40af; border-color: #1e40af; }
+  button.primary:disabled { background: #c7d2fe; border-color: #c7d2fe; color: #fff; }
+  button:focus-visible, .pick:focus-within, .step:focus-visible, .scrub:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .dur { display: inline-flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
+  .dur svg { width: 13px; height: 13px; flex: none; }
+
+  /* ---------- loader ---------- */
+  #loader { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+  .load-card {
+    width: min(440px, 100%); border: 1px solid var(--line); border-radius: 14px;
+    padding: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.04);
+  }
+  .load-card p { margin: 0 0 20px; font-size: 16px; font-weight: 600; }
+  .pick {
+    display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-bottom: 12px;
+    border: 1px dashed #d1d5db; border-radius: var(--radius); cursor: pointer; transition: background .15s, border-color .15s;
+  }
+  .pick:hover { background: var(--soft); }
+  .pick.chosen { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .pick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .pick-icon {
+    flex: none; width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center;
+    background: var(--soft); color: var(--muted); border: 1px solid var(--line);
+  }
+  .pick.chosen .pick-icon { background: #fff; color: var(--accent); border-color: #c7d2fe; }
+  .pick-text { min-width: 0; }
+  .pick-label { font-weight: 600; font-size: 14px; }
+  .pick-file { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #loadError { color: #b91c1c; font-size: 13px; margin: 4px 0 12px; white-space: pre-wrap; }
+  #openBtn { width: 100%; margin-top: 8px; padding: 11px; }
+
+  /* ---------- app ---------- */
+  #app {
+    display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 40px;
+    max-width: 1440px; margin: 0 auto; padding: 32px; min-height: 100vh; align-items: start;
+  }
+  main { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 64px); }
+  .stage { width: 100%; max-width: 1040px; }
+
+  /* player: video + own controls; this whole box is what goes fullscreen */
+  .player { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
+  .screen { position: relative; background: #000; cursor: pointer; }
+  video { display: block; width: 100%; max-height: calc(100vh - 260px); background: #000; }
+  .player:fullscreen { display: flex; flex-direction: column; border: 0; border-radius: 0; }
+  .player:fullscreen .screen { flex: 1; display: grid; place-items: center; }
+  .player:fullscreen video { max-height: 100%; height: 100%; }
+
+  .controls { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #fff; }
+  .icon-btn {
+    flex: none; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px;
+    display: grid; place-items: center; background: transparent; color: var(--text);
+  }
+  .icon-btn:hover:not(:disabled) { background: var(--soft); }
+  .icon-btn svg { width: 20px; height: 20px; }
+  .icon-btn.play { background: var(--text); color: #fff; border-radius: 50%; }
+  .icon-btn.play:hover:not(:disabled) { background: #374151; }
+  .icon-btn.play svg { width: 16px; height: 16px; }
+
+  /* scrubber: covers the current step only */
+  .scrub { position: relative; flex: 1; min-width: 0; height: 28px; display: flex; align-items: center; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .scrub .track { position: relative; width: 100%; height: 6px; border-radius: 6px; background: var(--track); overflow: hidden; transition: height .12s; }
+  .scrub:hover .track, .scrub.dragging .track { height: 8px; }
+  .scrub .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); border-radius: 6px; }
+  .scrub .knob {
+    position: absolute; top: 50%; left: 0; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.25);
+    transform: translateY(-50%); pointer-events: none;
+  }
+  .time { flex: none; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .speed { position: relative; flex: none; }
+  .speed-btn { width: auto; min-width: 48px; padding: 0 10px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .speed-menu {
+    position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 10; min-width: 120px; padding: 6px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  .speed-menu .kicker { padding: 4px 10px 6px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .speed-menu button {
+    display: flex; justify-content: space-between; align-items: center; width: 100%; border: 0; border-radius: 6px;
+    padding: 7px 10px; font-size: 13px; font-variant-numeric: tabular-nums; text-align: left;
+  }
+  .speed-menu button[aria-checked="true"] { color: var(--accent); font-weight: 600; }
+  .speed-menu button svg { width: 14px; height: 14px; visibility: hidden; }
+  .speed-menu button[aria-checked="true"] svg { visibility: visible; }
+
+  .overlay {
+    position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; cursor: default;
+    background: rgba(255,255,255,.95); backdrop-filter: blur(2px);
+  }
+  .ov-card { max-width: 520px; text-align: center; }
+  .ov-status { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-weight: 600; font-size: 14px; }
+  .ov-status svg { width: 18px; height: 18px; }
+  .ov-kicker { margin-top: 22px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .ov-goal { margin-top: 6px; font-size: 20px; font-weight: 600; line-height: 1.35; }
+  .ov-dur { margin-top: 8px; color: var(--muted); font-size: 13px; display: flex; justify-content: center; }
+  .ov-actions { margin-top: 24px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  .nowbar { display: flex; align-items: center; gap: 24px; margin-top: 18px; }
+  .now-text { flex: 1; min-width: 0; }
+  .now-meta { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .now-goal { font-size: 18px; font-weight: 600; line-height: 1.35; margin-top: 2px; }
+  .nav { display: flex; gap: 8px; flex: none; }
+
+  /* ---------- roadmap ---------- */
+  aside {
+    position: sticky; top: 32px; max-height: calc(100vh - 64px); overflow-y: auto;
+    border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px;
+  }
+  .rm-kicker { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .rm-top { font-size: 16px; font-weight: 600; line-height: 1.4; margin-top: 6px; }
+  .rm-progress { display: flex; align-items: center; gap: 10px; margin: 14px 0 6px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .bar { flex: 1; height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 4px; transition: width .2s linear; }
+
+  .rm-tree, .rm-tree ol { list-style: none; margin: 0; padding: 0; }
+  .rm-tree.flat { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .part { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .part .part { margin-top: 10px; padding-top: 0; border-top: 0; padding-left: 12px; border-left: 2px solid var(--line); }
+  .part-num { display: flex; justify-content: space-between; align-items: center; color: var(--faint); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; transition: color .15s; }
+  .part-num .dur { letter-spacing: 0; text-transform: none; font-weight: 500; }
+  .part-goal { font-weight: 600; font-size: 14px; line-height: 1.4; margin: 3px 0 8px; color: var(--muted); transition: color .15s; }
+  .part.active > .part-head .part-num { color: var(--accent); }
+  .part.active > .part-head .part-goal { color: var(--text); }
+
+  .step {
+    position: relative; display: flex; gap: 12px; padding: 10px 10px 10px 8px; margin: 0 -10px 0 -8px;
+    border-radius: var(--radius); cursor: pointer; transition: background .15s;
+  }
+  .step:hover { background: var(--soft); }
+  .step + .step::before {
+    content: ""; position: absolute; left: 19px; top: -8px; height: 16px; width: 2px; background: var(--line);
+  }
+  .marker {
+    flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+    border: 1.5px solid #d1d5db; color: var(--muted); background: #fff; position: relative; z-index: 1;
+  }
+  .marker svg { width: 13px; height: 13px; }
+  .step-body { min-width: 0; flex: 1; }
+  .step-goal { font-size: 14px; line-height: 1.4; color: var(--muted); }
+  .step-time { font-size: 12px; color: var(--faint); margin-top: 4px; }
+  .step .bar { margin-top: 8px; display: none; }
+
+  .step.done .marker { background: var(--text); border-color: var(--text); color: #fff; }
+  .step.done .step-goal { color: var(--text); }
+  .step.current { background: var(--accent-soft); }
+  .step.current .marker { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step.current .step-goal { color: var(--text); font-weight: 600; }
+  .step.current .step-time { color: var(--accent); }
+  .step.current .bar { display: block; }
+
+  @media (max-width: 1000px) {
+    #app { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 16px; }
+    main { min-height: 0; order: -1; }
+    aside { position: static; max-height: none; }
+    video { max-height: 60vh; }
+    .controls { gap: 8px; padding: 10px; }
+    .nowbar { flex-direction: column; align-items: stretch; gap: 12px; }
+    .nav { justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="load-card">
+    <p>Load the lecture IR and its video</p>
+    <label class="pick" id="irPick">
+      <input type="file" id="irInput" accept=".lir,text/plain">
+      <span class="pick-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+      </span>
+      <span class="pick-text">
+        <div class="pick-label">Lecture IR</div>
+        <div class="pick-file" id="irName">Choose a .lir file</div>
+      </span>
+    </label>
+    <label class="pick" id="videoPick">
+      <input type="file" id="videoInput" accept="video/*">
+      <span class="pick-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg>
+      </span>
+      <span class="pick-text">
+        <div class="pick-label">Video</div>
+        <div class="pick-file" id="videoName">Choose the lecture video</div>
+      </span>
+    </label>
+    <div id="loadError" hidden></div>
+    <button id="openBtn" class="primary" disabled>Open</button>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <aside id="roadmap" aria-label="Roadmap"></aside>
+  <main>
+    <div class="stage">
+      <div class="player" id="player">
+        <div class="screen" id="screen">
+          <video id="video" preload="metadata" playsinline disablepictureinpicture controlslist="nodownload noplaybackrate"></video>
+          <div class="overlay" id="overlay" hidden>
+            <div class="ov-card">
+              <div class="ov-status">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>
+                <span id="ovStatus"></span>
+              </div>
+              <div class="ov-kicker" id="ovKicker"></div>
+              <div class="ov-goal" id="ovGoal"></div>
+              <div class="ov-dur" id="ovDur"></div>
+              <div class="ov-actions">
+                <button id="ovReplay">Replay step</button>
+                <button id="ovNext" class="primary">Next step</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="icon-btn play" id="playBtn" aria-label="Play"></button>
+          <div class="scrub" id="scrub" tabindex="0" role="slider" aria-label="Position in this step">
+            <div class="track"><div class="fill" id="scrubFill"></div></div>
+            <span class="knob" id="scrubKnob"></span>
+          </div>
+          <span class="time" id="timeLabel"></span>
+          <div class="speed">
+            <button class="icon-btn speed-btn" id="speedBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Playback speed">1×</button>
+            <div class="speed-menu" id="speedMenu" role="menu" hidden>
+              <div class="kicker">Speed</div>
+            </div>
+          </div>
+          <button class="icon-btn" id="muteBtn" aria-label="Mute"></button>
+          <button class="icon-btn" id="fsBtn" aria-label="Full screen"></button>
+        </div>
+      </div>
+      <div class="nowbar">
+        <div class="now-text">
+          <div class="now-meta" id="nowMeta"></div>
+          <div class="now-goal" id="nowGoal"></div>
+        </div>
+        <div class="nav">
+          <button id="prevBtn">Previous</button>
+          <button id="nextBtn">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script id="lir-parser">
+/* Parser for LIR v1 (see build_ir.py for the grammar). Returns
+   { id, title, source, goals: Map(id -> {id, text, parent, children}), root, segments: [...] } */
+function parseLIR(text) {
+  const STR = '"(?:[^"\\\\]|\\\\.)*"';
+  const TS = '\\d+:\\d{2}:\\d{2}(?:\\.\\d+)?';
+  const RE = {
+    header: /^lir\s+(\S+)$/,
+    lecture: /^lecture\s+(\S+)\s*\{$/,
+    meta: new RegExp(`^(title|source)\\s+(${STR})$`),
+    goal: new RegExp(`^goal\\s+(\\S+)\\s+(${STR})(?:\\s+under\\s+(\\S+))?$`),
+    segment: /^segment\s+(\S+)\s*\{$/,
+    bind: new RegExp(`^(\\S+?):\\s*(\\S+)\\s+(${STR})$`),
+    time: new RegExp(`^time\\s+(${TS})\\s*->\\s*(${TS})$`),
+    content: new RegExp(`^content\\s+(${STR})$`),
+  };
+  const lines = text.split(/\r?\n/);
+  let n = -1;
+  const fail = msg => { throw new Error(`Line ${n + 1}: ${msg}`); };
+  const next = () => {
+    while (++n < lines.length) {
+      const l = lines[n].trim();
+      if (l && !l.startsWith('//')) return l;
+    }
+    return null;
+  };
+  const str = s => JSON.parse(s);
+  const secs = ts => { const [h, m, s] = ts.split(':'); return +h * 3600 + +m * 60 + parseFloat(s); };
+
+  let l = next(), m;
+  if (!l || !(m = l.match(RE.header))) fail('expected "lir <version>" header');
+  if (m[1] !== '1') fail(`unsupported LIR version ${m[1]}`);
+  if (!(m = (l = next() || '').match(RE.lecture))) fail('expected "lecture <id> {"');
+  const lec = { id: m[1], title: '', source: '', goals: new Map(), root: null, segments: [] };
+
+  for (;;) {
+    l = next();
+    if (l === null) fail('unexpected end of file, missing "}"');
+    if (l === '}') break;
+    if ((m = l.match(RE.meta))) { lec[m[1]] = str(m[2]); continue; }
+    if ((m = l.match(RE.goal))) {
+      if (lec.goals.has(m[1])) fail(`goal ${m[1]} declared twice`);
+      lec.goals.set(m[1], { id: m[1], text: str(m[2]), parent: m[3] || null, children: [] });
+      continue;
+    }
+    if ((m = l.match(RE.segment))) {
+      const seg = { id: m[1], parent: null, goal: null, text: '', start: null, end: null, content: '' };
+      for (;;) {
+        l = next();
+        if (l === null) fail(`segment ${seg.id} is not closed`);
+        if (l === '}') break;
+        if ((m = l.match(RE.time))) { seg.start = secs(m[1]); seg.end = secs(m[2]); }
+        else if ((m = l.match(RE.content))) seg.content = str(m[1]);
+        else if ((m = l.match(RE.bind))) { seg.parent = m[1]; seg.goal = m[2]; seg.text = str(m[3]); }
+        else fail(`unexpected statement in segment ${seg.id}: ${l.slice(0, 60)}`);
+      }
+      if (!seg.goal) fail(`segment ${seg.id} has no "<goal>: <subgoal>" line`);
+      if (seg.start === null) fail(`segment ${seg.id} has no time`);
+      if (seg.end <= seg.start) fail(`segment ${seg.id} ends before it starts`);
+      lec.segments.push(seg);
+      continue;
+    }
+    fail(`unexpected statement: ${l.slice(0, 60)}`);
+  }
+  if (next() !== null) fail('content after the closing "}"');
+
+  // link the goal tree: declared goals first, then each segment's subgoal under its parent
+  for (const g of lec.goals.values()) {
+    if (g.parent === null) {
+      if (lec.root) throw new Error(`two root goals: ${lec.root.id} and ${g.id}`);
+      lec.root = g;
+    } else if (!lec.goals.has(g.parent)) throw new Error(`goal ${g.id} is under unknown goal ${g.parent}`);
+    else lec.goals.get(g.parent).children.push(g);
+  }
+  if (!lec.root) throw new Error('no root goal (a goal without "under")');
+  if (!lec.segments.length) throw new Error('the lecture has no segments');
+  lec.segments.forEach((s, i) => {
+    if (!lec.goals.has(s.parent)) throw new Error(`segment ${s.id} rolls up to unknown goal ${s.parent}`);
+    if (lec.goals.has(s.goal)) throw new Error(`segment ${s.id}: subgoal ${s.goal} is already declared`);
+    if (i && s.start < lec.segments[i - 1].start) throw new Error(`segment ${s.id} starts before the previous one`);
+    const node = { id: s.goal, text: s.text, parent: s.parent, children: [], segment: i };
+    lec.goals.set(s.goal, node);
+    lec.goals.get(s.parent).children.push(node);
+  });
+  return lec;
+}
+if (typeof module !== 'undefined') module.exports = { parseLIR };
+</script>
+
+<script>
+const $ = id => document.getElementById(id);
+const video = $('video');
+const ICON = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="5" height="16" rx="1.2"/><rect x="14" y="4" width="5" height="16" rx="1.2"/></svg>',
+  replay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  sound: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  muted: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 6 6M22 9l-6 6"/></svg>',
+  expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  shrink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+};
+
+let lec = null, ranges = [], cur = 0, completed = new Set(), finished = false;
+let irFile = null, videoFile = null;
+
+// ---------------------------------------------------------------- loading
+function pick(input, pickEl, nameEl, set) {
+  nameEl.dataset.empty = nameEl.textContent;
+  input.addEventListener('change', () => {
+    const f = input.files[0] || null;
+    set(f);
+    pickEl.classList.toggle('chosen', !!f);
+    nameEl.textContent = f ? f.name : nameEl.dataset.empty;
+    $('loadError').hidden = true;
+    $('openBtn').disabled = !(irFile && videoFile);
+  });
+}
+pick($('irInput'), $('irPick'), $('irName'), f => irFile = f);
+pick($('videoInput'), $('videoPick'), $('videoName'), f => videoFile = f);
+
+function loadError(msg) { $('loadError').textContent = msg; $('loadError').hidden = false; }
+
+$('openBtn').addEventListener('click', async () => {
+  let parsed;
+  try { parsed = parseLIR(await irFile.text()); }
+  catch (e) { return loadError(`This IR file could not be read.\n${e.message}`); }
+
+  if (video.src) URL.revokeObjectURL(video.src);
+  video.src = URL.createObjectURL(videoFile);
+  try {
+    await new Promise((ok, bad) => {
+      video.onloadedmetadata = ok;
+      video.onerror = () => bad(new Error('This video format is not supported by the browser.'));
+    });
+  } catch (e) { return loadError(e.message); }
+  if (video.duration < parsed.segments[parsed.segments.length - 1].end) {
+    return loadError('The video is shorter than the lecture IR expects. Check that the two files belong together.');
+  }
+  start(parsed);
+});
+
+// ---------------------------------------------------------------- playback model
+// The video is cut into back-to-back parts: each runs until the next begins, the
+// first starts at the very beginning and the last runs to the end of the file.
+// Only the current part is ever playable; there is no clock and no full timeline.
+function start(parsed) {
+  lec = parsed;
+  const S = lec.segments;
+  ranges = S.map((s, i) => ({
+    from: i === 0 ? 0 : S[i].start,
+    to: i === S.length - 1 ? video.duration : S[i + 1].start,
+  }));
+  cur = 0; completed = new Set(); finished = false;
+  document.title = lec.title || 'Lecture';
+  buildRoadmap();
+  $('loader').hidden = true;
+  $('app').hidden = false;
+  goTo(0, false);
+}
+
+const dur = i => ranges[i].to - ranges[i].from;
+
+function goTo(i, play) {
+  cur = i; finished = false;
+  hideOverlay();
+  video.currentTime = ranges[i].from + 0.001;
+  render();
+  if (play) playVideo();
+}
+
+function playVideo() {
+  if (finished) return goTo(cur, true);   // play on a finished part replays it
+  video.play().catch(() => {});
+}
+
+function seekWithin(p) {  // p in [0, 1] of the current part
+  const r = ranges[cur];
+  if (finished) { finished = false; hideOverlay(); }
+  video.currentTime = r.from + Math.min(Math.max(p, 0), 0.999) * (r.to - r.from);
+  render();
+}
+
+function completeStep() {
+  video.pause();
+  completed.add(cur);
+  finished = true;
+  showOverlay();
+  render();
+}
+
+// stop precisely at the cut, checked every frame while playing
+function tick() {
+  if (lec && !video.paused && !video.seeking && !finished && video.currentTime >= ranges[cur].to - 0.03) completeStep();
+  updateProgress();
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+video.addEventListener('ended', () => { if (lec && !finished) completeStep(); });
+video.addEventListener('play', () => { if (finished) video.pause(); updatePlayBtn(); });
+video.addEventListener('pause', updatePlayBtn);
+video.addEventListener('volumechange', updateMuteBtn);
+video.addEventListener('contextmenu', e => e.preventDefault());   // no "show controls" escape hatch
+
+// ---------------------------------------------------------------- controls
+$('playBtn').addEventListener('click', () => video.paused ? playVideo() : video.pause());
+$('screen').addEventListener('click', e => {
+  if (e.target === video) video.paused ? playVideo() : video.pause();
+});
+$('muteBtn').addEventListener('click', () => { video.muted = !video.muted; });
+$('fsBtn').addEventListener('click', () => {
+  document.fullscreenElement ? document.exitFullscreen() : $('player').requestFullscreen().catch(() => {});
+});
+document.addEventListener('fullscreenchange', updateFsBtn);
+$('prevBtn').addEventListener('click', () => cur > 0 && goTo(cur - 1, true));
+$('nextBtn').addEventListener('click', () => cur < ranges.length - 1 && goTo(cur + 1, true));
+$('ovNext').addEventListener('click', () => cur < ranges.length - 1 && goTo(cur + 1, true));
+$('ovReplay').addEventListener('click', () => goTo(cur, true));
+
+document.addEventListener('keydown', e => {
+  if (!lec || $('app').hidden || e.target.closest('button, input') || e.altKey || e.ctrlKey || e.metaKey) return;
+  const r = ranges[cur];
+  if (e.key === ' ' || e.key === 'k') { e.preventDefault(); video.paused ? playVideo() : video.pause(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    const t = video.currentTime + (e.key === 'ArrowLeft' ? -5 : 5);
+    seekWithin((t - r.from) / (r.to - r.from));
+  }
+  else if (e.key === 'm') video.muted = !video.muted;
+  else if (e.key === 'f') $('fsBtn').click();
+});
+
+function updatePlayBtn() {
+  const b = $('playBtn');
+  b.innerHTML = finished ? ICON.replay : video.paused ? ICON.play : ICON.pause;
+  b.setAttribute('aria-label', finished ? 'Replay step' : video.paused ? 'Play' : 'Pause');
+}
+function updateMuteBtn() {
+  $('muteBtn').innerHTML = video.muted ? ICON.muted : ICON.sound;
+  $('muteBtn').setAttribute('aria-label', video.muted ? 'Unmute' : 'Mute');
+}
+function updateFsBtn() {
+  $('fsBtn').innerHTML = document.fullscreenElement ? ICON.shrink : ICON.expand;
+  $('fsBtn').setAttribute('aria-label', document.fullscreenElement ? 'Exit full screen' : 'Full screen');
+}
+updatePlayBtn(); updateMuteBtn(); updateFsBtn();
+
+function showOverlay() {
+  const S = lec.segments, last = cur === S.length - 1;
+  $('ovStatus').textContent = last ? 'Lecture complete' : `Step ${cur + 1} of ${S.length} complete`;
+  $('ovKicker').textContent = last ? 'You have worked through' : 'Up next';
+  $('ovGoal').textContent = last ? lec.root.text : S[cur + 1].text;
+  $('ovDur').innerHTML = last ? '' : durationHTML(dur(cur + 1));
+  $('ovNext').hidden = last;
+  $('overlay').hidden = false;
+  if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+}
+function hideOverlay() { $('overlay').hidden = true; }
+
+// ---------------------------------------------------------------- scrubber (current step only)
+let drag = false;
+(() => {
+  const bar = $('scrub');
+  const frac = e => { const b = bar.getBoundingClientRect(); return (e.clientX - b.left) / b.width; };
+  bar.addEventListener('pointerdown', e => {
+    if (!lec) return;
+    drag = true; bar.classList.add('dragging'); bar.setPointerCapture(e.pointerId);
+    seekWithin(frac(e));
+  });
+  bar.addEventListener('pointermove', e => { if (drag) seekWithin(frac(e)); });
+  const end = () => { drag = false; bar.classList.remove('dragging'); };
+  bar.addEventListener('pointerup', end);
+  bar.addEventListener('pointercancel', end);
+})();
+
+// ---------------------------------------------------------------- speed
+const SPEEDS = [1, 1.25, 1.5, 2];
+(() => {
+  const btn = $('speedBtn'), menu = $('speedMenu');
+  for (const r of SPEEDS) {
+    const item = el('button');
+    item.setAttribute('role', 'menuitemradio');
+    item.dataset.rate = r;
+    item.innerHTML = `<span>${r}×</span>${ICON.check}`;
+    item.addEventListener('click', () => { video.playbackRate = r; video.defaultPlaybackRate = r; close(); });
+    menu.append(item);
+  }
+  const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+    btn.setAttribute('aria-expanded', String(!menu.hidden));
+  });
+  document.addEventListener('click', e => { if (!menu.hidden && !menu.contains(e.target)) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  video.addEventListener('ratechange', updateSpeed);
+})();
+function updateSpeed() {
+  $('speedBtn').textContent = `${video.playbackRate}×`;
+  $('speedMenu').querySelectorAll('[data-rate]').forEach(b => b.setAttribute('aria-checked', String(+b.dataset.rate === video.playbackRate)));
+}
+updateSpeed();
+
+// ---------------------------------------------------------------- rendering
+function clock(t) {
+  t = Math.max(0, Math.floor(t));
+  const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = String(t % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+}
+function minutes(t) { return `${Math.max(1, Math.round(t / 60))} min`; }
+function durationHTML(t) { return `<span class="dur">${ICON.clock}${minutes(t)}</span>`; }
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+let stepEls = [], partEls = [];
+
+function buildRoadmap() {
+  const aside = $('roadmap');
+  aside.replaceChildren();
+  stepEls = []; partEls = [];
+  aside.append(el('div', 'rm-kicker', 'Lecture goal'), el('div', 'rm-top', lec.root.text));
+  const prog = el('div', 'rm-progress');
+  const count = el('span'); count.id = 'rmCount';
+  const bar = el('div', 'bar'); bar.innerHTML = '<i id="rmBar"></i>';
+  prog.append(count, bar);
+  aside.append(prog);
+
+  let partNo = 0;
+  const renderNodes = (nodes, depth) => {
+    const ol = el('ol', 'rm-tree');
+    for (const node of nodes) {
+      ol.append(node.segment !== undefined ? stepItem(node) : partItem(node, depth, depth === 0 ? ++partNo : null));
+    }
+    return ol;
+  };
+  const partItem = (node, depth, no) => {
+    const li = el('li', 'part');
+    const segs = segmentsUnder(node);
+    const head = el('div', 'part-head');
+    const num = el('div', 'part-num');
+    num.append(el('span', '', no ? `Part ${no}` : ''));
+    num.insertAdjacentHTML('beforeend', durationHTML(segs.reduce((a, i) => a + dur(i), 0)));
+    head.append(num, el('div', 'part-goal', node.text));
+    li.append(head, renderNodes(node.children, depth + 1));
+    li._segments = segs;
+    partEls.push(li);
+    return li;
+  };
+  const stepItem = node => {
+    const i = node.segment;
+    const li = el('li', 'step');
+    li.tabIndex = 0;
+    li.title = `${lec.segments[i].id} · ${node.id}`;
+    const body = el('div', 'step-body');
+    body.append(el('div', 'step-goal', node.text));
+    body.insertAdjacentHTML('beforeend', `<div class="step-time">${durationHTML(dur(i))}</div><div class="bar"><i></i></div>`);
+    li.append(el('span', 'marker'), body);
+    li.addEventListener('click', () => goTo(i, true));
+    li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); goTo(i, true); } });
+    stepEls[i] = li;
+    return li;
+  };
+  const tree = renderNodes(lec.root.children, 0);
+  if (!partEls.length) tree.classList.add('flat');   // subgoals directly under the lecture goal
+  aside.append(tree);
+}
+
+function segmentsUnder(node) {
+  return node.segment !== undefined ? [node.segment] : node.children.flatMap(segmentsUnder);
+}
+
+function render() {
+  const S = lec.segments;
+  $('nowMeta').innerHTML = `<span>Step ${cur + 1} of ${S.length}</span><span aria-hidden="true">·</span>${durationHTML(dur(cur))}`;
+  $('nowGoal').textContent = S[cur].text;
+  $('prevBtn').disabled = cur === 0;
+  $('nextBtn').disabled = cur === S.length - 1;
+  $('nextBtn').classList.toggle('primary', finished && cur < S.length - 1);
+
+  stepEls.forEach((li, i) => {
+    const state = i === cur ? 'current' : completed.has(i) ? 'done' : 'upcoming';
+    li.className = `step ${state}`;
+    li.setAttribute('aria-current', i === cur ? 'step' : 'false');
+    li.querySelector('.marker').innerHTML = state === 'done' ? ICON.check : String(i + 1);
+  });
+  partEls.forEach(p => p.classList.toggle('active', p._segments.includes(cur)));
+  $('rmCount').textContent = `${completed.size} of ${S.length} steps completed`;
+  $('rmBar').style.width = `${100 * completed.size / S.length}%`;
+
+  const aside = $('roadmap');
+  if (stepEls[cur] && aside.scrollHeight > aside.clientHeight) stepEls[cur].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  updatePlayBtn();
+  updateProgress();
+}
+
+function updateProgress() {
+  if (!lec) return;
+  const r = ranges[cur];
+  const p = finished ? 1 : Math.min(1, Math.max(0, (video.currentTime - r.from) / (r.to - r.from)));
+  const pct = `${(p * 100).toFixed(2)}%`;
+  if (stepEls[cur]) stepEls[cur].querySelector('.bar i').style.width = pct;
+  $('scrubFill').style.width = pct;
+  $('scrubKnob').style.left = pct;
+  // time inside this step only; the length of the whole video is never shown
+  const label = `${clock(p * (r.to - r.from))} / ${clock(r.to - r.from)}`;
+  if ($('timeLabel').textContent !== label) $('timeLabel').textContent = label;
+  $('scrub').setAttribute('aria-valuetext', label);
+}
+</script>
+</body>
+</html>

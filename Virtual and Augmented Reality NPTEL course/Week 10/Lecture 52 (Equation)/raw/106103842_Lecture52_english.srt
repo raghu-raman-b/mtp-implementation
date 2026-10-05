@@ -1,0 +1,584 @@
+1
+00:00:24,263 --> 00:00:29,811
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:30,952 --> 00:00:39,104
+We are going to continue our discussion on VR Navigation Experience Optimization, which we started earlier.
+
+3
+00:00:40,326 --> 00:00:51,942
+So, earlier we talked about one way to address the problem of minimizing the possibility of CS or cyber sickness.
+
+4
+00:00:52,512 --> 00:00:56,296
+in a system-controlled virtual tour.
+
+5
+00:00:56,316 --> 00:00:57,278
+And how did we do that?
+
+6
+00:00:57,678 --> 00:01:16,540
+We made use of one approach where we tried to figure out an optimal path covering all vertices in a given graph representing the virtual world which can be traversed in minimum time.
+
+7
+00:01:18,643 --> 00:01:19,684
+That was one approach.
+
+8
+00:01:20,170 --> 00:01:28,681
+There is one more approach which we are going to talk about in this lecture.
+
+9
+00:01:28,701 --> 00:01:41,057
+Now, that other approach is essentially to find out an optimal path covering the maximum number of points of interest or POIs given some time constraints.
+
+10
+00:01:41,077 --> 00:01:42,919
+So, earlier we did not have a time constraint.
+
+11
+00:01:43,340 --> 00:01:46,684
+Our objective was to find a path covering all vertices.
+
+12
+00:01:47,170 --> 00:01:48,912
+that can be traversed in minimum time.
+
+13
+00:01:49,012 --> 00:01:59,005
+Now we are imposing one time constraint and our objective is to find out a path, given this time constraint, where the number of POIs covered will be maximum.
+
+14
+00:02:00,567 --> 00:02:10,038
+So, in order to find that time constraint, time threshold, we need to define such a threshold, a time threshold.
+
+15
+00:02:10,158 --> 00:02:12,942
+So, earlier we saw how to compute an optimal tour.
+
+16
+00:02:13,951 --> 00:02:17,675
+where the path covers all nodes in minimum time.
+
+17
+00:02:20,757 --> 00:02:33,670
+The problem is that that minimum time may still be more than the time typically associated with the onset of cyber sickness.
+
+18
+00:02:34,250 --> 00:02:43,519
+So, that minimum time, although it is minimum given all possible paths, may still be responsible for inducing cyber sickness.
+
+19
+00:02:45,929 --> 00:02:50,154
+It may still be more than the time threshold above which CS occurs.
+
+20
+00:02:50,194 --> 00:02:54,720
+So, we are talking about something called a time threshold.
+
+21
+00:02:54,820 --> 00:03:06,195
+So, essentially, our objective should be to restrict the movement time, or the experience time of the user, or the VR exposure time of the user, within this threshold.
+
+22
+00:03:06,515 --> 00:03:09,399
+If we cross it, then there is a possibility of cyber sickness.
+
+23
+00:03:12,262 --> 00:03:15,126
+Now, let us call this time threshold TTH.
+
+24
+00:03:15,798 --> 00:03:16,599
+as shown here.
+
+25
+00:03:17,500 --> 00:03:30,013
+So, essentially, what we are trying to do is find an optimal path that completes within the threshold time.
+
+26
+00:03:31,875 --> 00:03:39,063
+Now, when I say complete, essentially that means that the user should be able to cover the optimal path within this time threshold.
+
+27
+00:03:41,405 --> 00:03:44,809
+And this time threshold can be the duration of the
+
+28
+00:03:46,392 --> 00:03:49,816
+virtual tour, the maximum duration of the virtual tour.
+
+29
+00:03:54,281 --> 00:03:57,625
+Now, of course, there is no easy way to find out the time threshold.
+
+30
+00:03:57,745 --> 00:04:06,395
+Of course, there are some studies which recommend some thresholds, which depend on the content.
+
+31
+00:04:10,199 --> 00:04:16,146
+Sometimes it may also depend on the speed of movement and so on.
+
+32
+00:04:16,784 --> 00:04:25,633
+And we can obtain the threshold value through some empirical study with a limited number of users.
+
+33
+00:04:26,995 --> 00:04:28,837
+That is one possibility.
+
+34
+00:04:28,857 --> 00:04:34,663
+We can also use some pre-existing study results to decide on a threshold.
+
+35
+00:04:37,526 --> 00:04:46,335
+Now, when we are talking of a time threshold and when we are talking of covering a tour or completing a tour within the given time threshold,
+
+36
+00:04:49,015 --> 00:05:04,572
+it is not mandatory and not always possible also to visit every single node or vertex which represents the points of interest.
+
+37
+00:05:07,375 --> 00:05:18,887
+So, essentially, here what we are saying is that we want the user to complete a tour within a given time threshold and during that tour, we are fully aware of the fact that
+
+38
+00:05:19,238 --> 00:05:24,445
+the user may not be able to cover all points of interest, unlike in the previous approach.
+
+39
+00:05:29,493 --> 00:05:40,268
+Now, in order to take this into account to formulate our overall problem, we defined a term called the importance
+
+40
+00:05:42,104 --> 00:05:45,028
+of every node, how important a node is.
+
+41
+00:05:45,529 --> 00:05:49,995
+Unless we know the importance, we do not know which nodes to cover within the given time threshold.
+
+42
+00:05:53,840 --> 00:06:09,681
+In order to do that, we can define an importance function, a function that computes importance or assigns importance to every node, which is in the form f, v maps to the set of positive real numbers.
+
+43
+00:06:11,956 --> 00:06:28,126
+In other words, every vertex is mapped to every vertex or every point of interest, V belonging to the set of V, maps to a positive real number which indicates the importance.
+
+44
+00:06:28,146 --> 00:06:31,392
+So, we are capturing the importance in terms of a positive real number.
+
+45
+00:06:32,113 --> 00:06:34,858
+The more the number is, the higher the importance.
+
+46
+00:06:38,281 --> 00:06:44,447
+Then, once we define the idea of importance for every node, what can we do?
+
+47
+00:06:46,109 --> 00:06:49,773
+We can compute the total importance of a given path.
+
+48
+00:06:49,873 --> 00:06:56,680
+Suppose we have a path P containing the nodes V1 to Vn.
+
+49
+00:06:58,302 --> 00:07:01,525
+Now, each node has its importance.
+
+50
+00:07:02,887 --> 00:07:06,010
+So, the total importance of the path can be defined as
+
+51
+00:07:06,800 --> 00:07:16,274
+fp, which is a summation of fvi, where i varies from 1 to n, and n is the number of nodes in the path.
+
+52
+00:07:20,881 --> 00:07:32,318
+It is a quite obvious formulation that to identify or determine total importance, we simply add up the individual importance of each node in a given path.
+
+53
+00:07:35,302 --> 00:07:49,617
+So, then, in terms of that, we can have a problem statement: we want to maximize Fp, that is, the total importance for paths that can be completed within the time threshold TH.
+
+54
+00:07:50,218 --> 00:07:59,267
+In other words, we want to basically identify a path which
+
+55
+00:08:00,682 --> 00:08:13,599
+takes time less than or equal to the threshold time, but in which we are maximizing the total importance.
+
+56
+00:08:13,619 --> 00:08:19,928
+Now, there is another important aspect that needs to be considered, which is the waiting time.
+
+57
+00:08:19,988 --> 00:08:29,541
+So, at a given point of interest, the user is expected to spend some time to inspect or to
+
+58
+00:08:30,280 --> 00:08:40,375
+do something with that point of interest, as we have indicated in our earlier lectures during the experiments we have done.
+
+59
+00:08:43,078 --> 00:08:50,489
+So, this waiting time is also a concern when we are trying to figure out a path maximizing the total importance.
+
+60
+00:08:53,273 --> 00:08:58,060
+Now, this waiting time is essentially the time required by the user to inspect or interact
+
+61
+00:08:58,495 --> 00:09:04,423
+with a particular object at a node that is the point of interest.
+
+62
+00:09:08,168 --> 00:09:12,614
+So, like the importance function, we can also have a waiting time function.
+
+63
+00:09:13,215 --> 00:09:24,330
+So, we can define this function, the waiting time function, as W where V is mapped to a real positive number.
+
+64
+00:09:24,431 --> 00:09:27,675
+In other words, every node is mapped to a real positive number.
+
+65
+00:09:28,735 --> 00:09:49,858
+which indicates the maximum time required to inspect or interact with the object that is there at V. So, this is the maximum time a user requires to spend at the point of interest.
+
+66
+00:09:50,919 --> 00:09:56,565
+So, now we have two quantities: one is importance,
+
+67
+00:09:57,811 --> 00:09:59,172
+and the other one is waiting time.
+
+68
+00:09:59,273 --> 00:10:06,160
+So, two quantities are associated with each node: one is importance, and the other one is the waiting time.
+
+69
+00:10:08,983 --> 00:10:13,328
+Like total importance, we can also calculate total waiting time in a similar manner.
+
+70
+00:10:13,368 --> 00:10:26,822
+Suppose we have a path P having all these vertices v1 to vn, n nodes, each node has an associated waiting time; then the total waiting time w
+
+71
+00:10:27,781 --> 00:10:41,857
+capital W capital P equals the summation of individual waiting times for all the nodes i equal to 1 to n. So, again, it is quite obvious, like the total importance calculated earlier.
+
+72
+00:10:45,101 --> 00:10:50,487
+Then we need to revise our earlier problem statement.
+
+73
+00:10:50,507 --> 00:10:51,409
+What is that revision?
+
+74
+00:10:52,069 --> 00:10:56,995
+We want to maximize the total importance
+
+75
+00:10:57,768 --> 00:11:04,439
+for paths that complete within the time threshold TH, taking into account the waiting time.
+
+76
+00:11:10,548 --> 00:11:25,632
+So, essentially what we want to state is TP plus WP must be less than or equal to T threshold, where we are also maximizing FP.
+
+77
+00:11:29,932 --> 00:11:31,374
+Now, how do we solve this?
+
+78
+00:11:31,554 --> 00:11:34,798
+This is a well-known problem in operations research.
+
+79
+00:11:35,479 --> 00:11:43,429
+It is called a generalization of a well-known problem, that is, the vehicle routing problem or VRP.
+
+80
+00:11:46,273 --> 00:11:49,377
+This is called VRP with profit, or VRPP.
+
+81
+00:11:49,997 --> 00:11:56,125
+For more details on this problem, you can refer to the material cited at the
+
+82
+00:11:57,691 --> 00:12:00,495
+end of this lecture.
+
+83
+00:12:04,460 --> 00:12:13,451
+So, the idea here is that we do not need to visit all the nodes; instead, we want to maximize profit within the given time constraints.
+
+84
+00:12:13,511 --> 00:12:18,958
+So, here the profit is in terms of the importance of the nodes.
+
+85
+00:12:19,579 --> 00:12:24,525
+So, we want to maximize the importance within the given time constraint without
+
+86
+00:12:25,197 --> 00:12:29,241
+necessarily requiring us to visit all the nodes.
+
+87
+00:12:29,262 --> 00:12:38,568
+Like in the previous approach where we talked about TRP solvers, so existing tools available to solve the traveling salesman problem,
+
+88
+00:12:38,568 --> 00:12:50,445
+here also we can make use of existing VRPP solvers, so vehicle routing problem with profit solvers.
+
+89
+00:12:51,117 --> 00:12:59,667
+to get the optimum path that maximizes profit within the given time constraint, that is, the threshold time.
+
+90
+00:13:01,509 --> 00:13:06,034
+And maximizing profit essentially maximizes importance, the total importance.
+
+91
+00:13:09,078 --> 00:13:20,331
+So, in other words, we want to get a path that lets the user visit the maximum number of the most important POIs.
+
+92
+00:13:20,935 --> 00:13:30,528
+This is a rephrasing of the overall problem that we are trying to solve.
+
+93
+00:13:30,548 --> 00:13:35,855
+And if you look at this statement, you can see that this will serve our purpose: given a threshold,
+
+94
+00:13:35,855 --> 00:13:49,052
+a time threshold beyond which cybersickness may occur, we want to restrict the user's exposure below that threshold time and
+
+95
+00:13:49,505 --> 00:13:57,275
+within that time, we want to ensure that the user is able to visit the most important POIs, as many as possible.
+
+96
+00:13:57,295 --> 00:14:06,066
+So essentially, we are trying to figure out a path that will achieve these objectives.
+
+97
+00:14:09,590 --> 00:14:11,673
+So let us quickly go through the algorithm.
+
+98
+00:14:12,073 --> 00:14:15,698
+So the input is the graph.
+
+99
+00:14:16,235 --> 00:14:29,914
+Remember that during our earlier discussion, we talked about converting the virtual environment to a graph, which is not necessarily a complete graph, but a fully connected graph.
+
+100
+00:14:29,934 --> 00:14:45,195
+So, we have this original graph G having the vertex set V and edge set E epsilon, along with the importance f and waiting time w specified for
+
+101
+00:14:45,597 --> 00:15:01,176
+each of the nodes, and the output that we want is this optimal path P where F is maximized and the total traveling time plus wait time is less than the threshold.
+
+102
+00:15:01,917 --> 00:15:07,544
+So, earlier we talked about only traveling time, but now we also have to take into account the wait time.
+
+103
+00:15:07,564 --> 00:15:15,013
+So, traveling time plus wait time, which together represent the total exposure time, must be less than the time threshold.
+
+104
+00:15:18,824 --> 00:15:30,497
+So, the first thing is, as before, what we need to do is compute the complete graph G dash, where we will be replacing the edges that are not
+
+105
+00:15:30,497 --> 00:15:37,985
+directly connected with the shortest path between those vertices.
+
+106
+00:15:39,307 --> 00:15:40,908
+This is what we did before also.
+
+107
+00:15:40,948 --> 00:15:42,630
+So, the same thing we will be doing here.
+
+108
+00:15:43,771 --> 00:15:46,114
+Convert the graph to a complete graph.
+
+109
+00:15:48,592 --> 00:15:58,422
+Then again, the second stage is also the same: replace the edge weights, which are originally the Euclidean distance between the two nodes in the
+
+110
+00:15:58,422 --> 00:16:10,957
+modified graph, with the travel time t as we did before, where travel time we compute using the natural walking model.
+
+111
+00:16:15,121 --> 00:16:17,704
+Then, once this is given,
+
+112
+00:16:18,578 --> 00:16:23,704
+Also, we have separately specified the importance and the wait time.
+
+113
+00:16:24,424 --> 00:16:47,269
+So, we then need to use the VRPP solver with input the final graph, that is G double dash, which contains vertices and edges where the edges are weighted with the duration of travel between the
+
+114
+00:16:48,397 --> 00:16:51,560
+vertices which define the edges.
+
+115
+00:16:55,864 --> 00:17:04,963
+So, essentially, we will be using a solver on this modified graph G double dash, and also we will be providing the input values for f, the waiting
+
+116
+00:17:04,963 --> 00:17:12,219
+the importance of each node, and w, that is the waiting time for each node, to get the optimal path P opt.
+
+117
+00:17:15,983 --> 00:17:18,285
+So, here we will be using the solvers
+
+118
+00:17:18,805 --> 00:17:29,742
+solve VRPP where the input is G double dash, F, and W, then we get the output as P opt.
+
+119
+00:17:29,762 --> 00:17:37,775
+Now, like before, what we need to do is basically modify the output to reflect the original graph.
+
+120
+00:17:40,099 --> 00:17:45,167
+So, what we need to do is there will be edges that were not originally connected in the
+
+121
+00:17:45,738 --> 00:17:53,268
+Virtual graph virtual world representation, but we introduced hypothetical edges in the form of shortest paths.
+
+122
+00:17:53,408 --> 00:18:00,577
+So, we need to replace those edges to reflect the original nature of the graph.
+
+123
+00:18:00,597 --> 00:18:06,265
+So, replace hypothetical edges joining VI, VJ with the shortest path VI, VJ.
+
+124
+00:18:11,692 --> 00:18:13,534
+Then we need to return
+
+125
+00:18:14,830 --> 00:18:22,639
+the optimal path which is modified after replacing the edges with the shortest path.
+
+126
+00:18:23,580 --> 00:18:32,407
+So, this is the algorithm: we are first creating the graph, then converting it to a complete graph, then
+
+127
+00:18:32,407 --> 00:18:39,437
+converting it to a graph with edge weights equal to the travel duration, where travel is the
+
+128
+00:18:39,923 --> 00:18:46,751
+duration computed using the natural walking model to give a realistic experience.
+
+129
+00:18:48,153 --> 00:18:57,989
+Then this graph, along with the importance and wait time at each node, is provided as input to the VRPP solver, and then
+
+130
+00:18:57,989 --> 00:19:09,238
+the output is further modified to replace the hypothetical edges with the shortest path to finally get the optimum path.
+
+131
+00:19:09,826 --> 00:19:26,080
+that can be covered with the maximum number of most important POIs within the given time threshold, taking into account waiting time at each node.
+
+132
+00:19:26,100 --> 00:19:28,602
+So, let us summarize what we have learned so far.
+
+133
+00:19:30,544 --> 00:19:33,927
+So, we are talking about experience optimization.
+
+134
+00:19:34,207 --> 00:19:39,732
+So, there we talked about a couple of approaches to take care of the CS issues.
+
+135
+00:19:40,994 --> 00:19:53,001
+cyber sickness issues. First, we talked about identifying an optimal path in a given graph representation of a virtual environment which can be covered in
+
+136
+00:19:53,001 --> 00:20:03,850
+The minimum time now for a given large environment, this minimum time may not be addressing the cyber sickness concern because this
+
+137
+00:20:03,850 --> 00:20:08,925
+time may still be large enough to induce cyber sickness. So, in order to address that,
+
+138
+00:20:09,361 --> 00:20:21,672
+we are going for another optimal path formulation where we talked about node weights, where we talked about the node importance and waiting times.
+
+139
+00:20:22,613 --> 00:20:30,213
+Then we talked about a time threshold, and then we are trying to find out an optimal path that can be covered by the
+
+140
+00:20:30,213 --> 00:20:37,427
+user within the time threshold, taking into account the importance of each node and the waiting time at each node.
+
+141
+00:20:38,538 --> 00:20:48,006
+In other words, this optimal path will allow the user to cover the maximum number of the most important POIs within a given time threshold,
+
+142
+00:20:48,006 --> 00:20:57,677
+taking into account the time required to spend at each point of interest to inspect or interact with the object present there.
+
+143
+00:21:01,606 --> 00:21:09,535
+So, in the next part of the lecture, we will have a quick look at how this idea has been put into practice in the context of our case study.
+
+144
+00:21:11,297 --> 00:21:18,806
+So, looking forward to meeting you again in the next part of this lecture, which will be the final part of this particular topic of experience optimization.
+
+145
+00:21:20,107 --> 00:21:22,930
+So, I hope you could follow the discussion.
+
+146
+00:21:24,372 --> 00:21:26,955
+Thank you, goodbye, and happy learning.
+
