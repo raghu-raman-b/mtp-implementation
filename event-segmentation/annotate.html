@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Segment Annotator</title>
+<style>
+  :root {
+    --text: #111827;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --line: #e5e7eb;
+    --soft: #f9fafb;
+    --accent: #1d4ed8;
+    --accent-soft: #eff4ff;
+    --split: #b45309;
+    --split-soft: #fffbeb;
+    --danger: #b91c1c;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--text); }
+  body {
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  button, select, input { font: inherit; }
+  button {
+    font-weight: 500; font-size: 14px;
+    padding: 9px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--text);
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  button:hover:not(:disabled) { background: var(--soft); border-color: #d1d5db; }
+  button:disabled { color: var(--faint); cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover:not(:disabled) { background: #1e40af; border-color: #1e40af; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  kbd {
+    font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 5px; background: #fff; color: var(--muted);
+  }
+  .tabnum { font-variant-numeric: tabular-nums; }
+
+  /* ---------- setup ---------- */
+  #setup { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+  .card {
+    width: min(480px, 100%); border: 1px solid var(--line); border-radius: 14px;
+    padding: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.04);
+  }
+  .card h1 { margin: 0 0 4px; font-size: 18px; }
+  .card .sub { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .field input[type=text] {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  }
+  .field input[type=file] { width: 100%; font-size: 13px; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+  .check input { margin-top: 4px; }
+  #setupError { color: var(--danger); font-size: 13px; margin: 4px 0 12px; white-space: pre-wrap; }
+  #resumeBox {
+    border: 1px solid #c7d2fe; background: var(--accent-soft); border-radius: var(--radius);
+    padding: 12px 14px; font-size: 14px; margin-bottom: 16px;
+  }
+  #resumeBox .row { display: flex; gap: 8px; margin-top: 10px; }
+  #startBtn { width: 100%; margin-top: 8px; padding: 11px; }
+
+  /* ---------- annotate ---------- */
+  #annotate { max-width: 1400px; margin: 0 auto; padding: 20px 24px 32px; }
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+    padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line);
+  }
+  header .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--muted); }
+  header .meta b { color: var(--text); font-weight: 600; }
+  header .spacer { flex: 1; }
+  #saveState { font-size: 13px; color: var(--muted); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+  @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+  .player { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .screen { position: relative; background: #000; }
+  video { display: block; width: 100%; max-height: 62vh; background: #000; }
+  #flash {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; color: #fff;
+    opacity: 0; transition: opacity .35s; pointer-events: none;
+  }
+  #flash.show { opacity: 1; transition: none; }
+  #flash.split { background: var(--split); }
+  #flash.undo { background: #374151; }
+
+  .controls { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
+  .controls button { padding: 6px 12px; }
+  #clock { font-size: 14px; color: var(--muted); min-width: 140px; }
+  .controls .spacer { flex: 1; }
+  #lockBadge { font-size: 12px; color: var(--muted); }
+  #rate { padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+
+  /* timeline: split ticks + playhead */
+  .timeline { position: relative; height: 24px; margin: 0 12px 12px; user-select: none; background: var(--soft); border-radius: 4px; }
+  .timeline.seekable { cursor: pointer; }
+  .tick { position: absolute; top: 0; width: 3px; height: 100%; margin-left: -1px; border-radius: 1px; background: var(--split); }
+  #progress { position: absolute; top: 0; bottom: 0; left: 0; background: rgba(29,78,216,.07); border-radius: 4px; pointer-events: none; }
+  #playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); pointer-events: none; }
+
+  #splitBtn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; margin-top: 16px;
+    padding: 18px 12px; border-radius: 12px; border: 2px solid var(--split);
+    color: var(--split); background: var(--split-soft); font-size: 17px; font-weight: 600;
+  }
+  #splitBtn:hover { background: #fef3c7; border-color: var(--split); }
+  #splitBtn small { font-weight: 400; font-size: 13px; }
+  #splitBtn.pulse { transform: scale(.98); }
+  .shortcuts { margin-top: 12px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+
+  aside { border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 110px); }
+  aside .head { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; }
+  aside .head b { font-size: 14px; }
+  #counts { font-size: 13px; color: var(--muted); }
+  #markList { list-style: none; margin: 0; padding: 4px 0; overflow-y: auto; flex: 1; }
+  #markList li { display: flex; align-items: center; gap: 10px; padding: 5px 14px; font-size: 14px; }
+  #markList li:hover { background: var(--soft); }
+  #markList .n { color: var(--faint); font-size: 12px; width: 22px; }
+  #markList .t { flex: 1; cursor: default; }
+  #markList .t.seekable { cursor: pointer; }
+  #markList .del { padding: 2px 8px; font-size: 12px; color: var(--muted); border-color: transparent; background: transparent; }
+  #markList .del:hover { color: var(--danger); border-color: var(--line); }
+  #markList .empty { color: var(--faint); padding: 14px; }
+  aside .foot { padding: 12px 14px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; }
+  aside .foot button { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ========== setup ========== -->
+<section id="setup">
+  <div class="card">
+    <h1>Segment annotator</h1>
+    <p class="sub">Mark where a lecture video should be split.</p>
+
+    <div class="field">
+      <label for="participant">Participant ID</label>
+      <input type="text" id="participant" placeholder="P01" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="video">Lecture video</label>
+      <input type="file" id="video" accept="video/*">
+    </div>
+    <div class="field">
+      <label for="lecture">Lecture ID</label>
+      <input type="text" id="lecture" placeholder="week01_lecture01" autocomplete="off">
+      <div class="hint">Use the same ID as the pipeline output folder so results line up.</div>
+    </div>
+    <div class="field">
+      <label for="captions">Captions (.vtt, optional)</label>
+      <input type="file" id="captions" accept=".vtt,text/vtt">
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="lock" checked>
+        <span>Study mode: no seeking or speed changes, so every split is marked during one continuous viewing</span></label>
+    </div>
+
+    <div id="resumeBox" hidden>
+      <div id="resumeText"></div>
+      <div class="row">
+        <button id="resumeBtn" class="primary">Resume</button>
+        <button id="discardBtn">Start over</button>
+      </div>
+    </div>
+
+    <div id="setupError" hidden></div>
+    <button id="startBtn" class="primary">Start</button>
+  </div>
+</section>
+
+<!-- ========== annotate ========== -->
+<section id="annotate" hidden>
+  <header>
+    <div class="meta">
+      <span>Participant <b id="hParticipant"></b></span>
+      <span>Lecture <b id="hLecture"></b></span>
+    </div>
+    <div class="spacer"></div>
+    <span id="saveState"></span>
+  </header>
+
+  <div class="layout">
+    <div>
+      <div class="player">
+        <div class="screen">
+          <video id="player" playsinline></video>
+          <div id="flash"></div>
+        </div>
+        <div class="controls">
+          <button id="playBtn">Play</button>
+          <span id="clock" class="tabnum">0:00 / 0:00</span>
+          <div class="spacer"></div>
+          <span id="lockBadge">Seeking locked</span>
+          <select id="rate" title="Playback speed">
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+          <button id="ccBtn" hidden>Captions off</button>
+        </div>
+        <div class="timeline" id="timeline">
+          <div id="ticks"></div>
+          <div id="progress"></div>
+          <div id="playhead"></div>
+        </div>
+      </div>
+
+      <button id="splitBtn">Split here <small><kbd>S</kbd></small></button>
+      <div class="shortcuts">
+        <span><kbd>Space</kbd> play / pause</span>
+        <span><kbd>Z</kbd> undo last split</span>
+        <span id="seekKeys"><kbd>←</kbd> <kbd>→</kbd> seek 5 s</span>
+      </div>
+    </div>
+
+    <aside>
+      <div class="head"><b>Splits</b><span id="counts" class="tabnum"></span></div>
+      <ul id="markList"></ul>
+      <div class="foot">
+        <button id="csvBtn">Export CSV</button>
+        <button id="jsonBtn" class="primary">Export JSON</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+const SCHEMA = 'event-seg-annotation/2';
+const GRANULARITY = 'coarse';
+const STORE_PREFIX = 'segsplit:';
+const MIN_GAP = 0.25;  // seconds; presses closer than this are treated as one
+
+let S = null;          // the session (what gets saved and exported)
+let videoFile = null;
+let captionFile = null;
+let pendingResume = null;
+
+/* ---------- helpers ---------- */
+function timecode(t) {  // hh:mm:ss.mmm, same as the pipeline's segments.txt
+  const ms = Math.round(t * 1000);
+  const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
+}
+function clock(t) {
+  if (!isFinite(t)) t = 0;
+  const s = Math.floor(t), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = s % 60;
+  return (h ? `${h}:${String(m).padStart(2, '0')}` : `${m}`) + `:${String(ss).padStart(2, '0')}`;
+}
+const round3 = x => Math.round(x * 1000) / 1000;
+const storeKey = (p, l) => STORE_PREFIX + p + '|' + l;
+function storeGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } }
+function storeDel(k) { try { localStorage.removeItem(k); } catch {} }
+
+/* ---------- setup ---------- */
+$('video').addEventListener('change', e => {
+  videoFile = e.target.files[0] || null;
+  if (videoFile && !$('lecture').value.trim()) {
+    const m = videoFile.name.match(/Lecture(\d+)/i);
+    $('lecture').value = m ? `lecture${m[1].padStart(2, '0')}` : videoFile.name.replace(/\.[^.]+$/, '');
+  }
+  checkResume();
+});
+$('captions').addEventListener('change', e => { captionFile = e.target.files[0] || null; });
+$('participant').addEventListener('input', checkResume);
+$('lecture').addEventListener('input', checkResume);
+
+function checkResume() {
+  const p = $('participant').value.trim(), l = $('lecture').value.trim();
+  pendingResume = p && l ? storeGet(storeKey(p, l)) : null;
+  $('resumeBox').hidden = !pendingResume;
+  $('startBtn').hidden = !!pendingResume;
+  if (pendingResume) {
+    const n = pendingResume.marks.length;
+    $('resumeText').textContent =
+      `A saved session exists for ${p} / ${l}: ${n} split${n === 1 ? '' : 's'}, ` +
+      `last at ${clock(pendingResume.last_position || 0)}, saved ${new Date(pendingResume.updated).toLocaleString()}.`;
+  }
+}
+
+function setupError(msg) { $('setupError').textContent = msg; $('setupError').hidden = !msg; }
+
+function validate() {
+  const p = $('participant').value.trim(), l = $('lecture').value.trim();
+  const missing = [!p && 'participant ID', !videoFile && 'video', !l && 'lecture ID'].filter(Boolean);
+  if (missing.length) { setupError('Missing: ' + missing.join(', ')); return null; }
+  setupError('');
+  return { p, l };
+}
+
+$('startBtn').addEventListener('click', () => {
+  const v = validate(); if (!v) return;
+  S = {
+    schema: SCHEMA,
+    participant: v.p,
+    lecture: v.l,
+    seek_locked: $('lock').checked,
+    video: { file: videoFile.name, size_bytes: videoFile.size, duration: null },
+    started: new Date().toISOString(),
+    updated: new Date().toISOString(),
+    last_position: 0,
+    marks: [],   // {id, t, wall}
+    log: [],     // player and annotation events, for checking how the session went
+    next_id: 1,
+  };
+  begin();
+});
+$('resumeBtn').addEventListener('click', () => {
+  if (!validate()) return;
+  S = pendingResume;
+  if (S.video.file !== videoFile.name &&
+      !confirm(`This session was recorded on "${S.video.file}", but you picked "${videoFile.name}". Resume anyway?`)) return;
+  begin(true);
+});
+$('discardBtn').addEventListener('click', () => {
+  if (!confirm('Delete the saved session and start over? Export it first if you need it.')) return;
+  storeDel(storeKey($('participant').value.trim(), $('lecture').value.trim()));
+  checkResume();
+});
+
+/* ---------- annotate ---------- */
+const video = $('player');
+
+function begin(resumed) {
+  $('setup').hidden = true;
+  $('annotate').hidden = false;
+  $('hParticipant').textContent = S.participant;
+  $('hLecture').textContent = S.lecture;
+  $('lockBadge').hidden = !S.seek_locked;
+  $('rate').hidden = S.seek_locked;
+  $('seekKeys').hidden = S.seek_locked;
+  $('timeline').classList.toggle('seekable', !S.seek_locked);
+
+  video.src = URL.createObjectURL(videoFile);
+  if (captionFile) {
+    const track = document.createElement('track');
+    track.kind = 'subtitles'; track.label = 'Captions'; track.srclang = 'en';
+    track.src = URL.createObjectURL(captionFile);
+    video.appendChild(track);
+    $('ccBtn').hidden = false;
+    video.textTracks[0].mode = 'hidden';
+  }
+  video.addEventListener('loadedmetadata', () => {
+    S.video.duration = round3(video.duration);
+    if (resumed && S.last_position) video.currentTime = S.last_position;
+    logEvent(resumed ? 'resume' : 'start');
+    render();
+  }, { once: true });
+}
+
+function logEvent(type, extra) {
+  if (type === 'split' || type === 'undo' || type === 'delete') S.exported = false;
+  S.log.push({ type, t: round3(video.currentTime || 0), wall: new Date().toISOString(), ...extra });
+  save();
+}
+
+let saveTimer = null;
+function save() {
+  S.updated = new Date().toISOString();
+  S.last_position = round3(video.currentTime || 0);
+  const ok = storeSet(storeKey(S.participant, S.lecture), S);
+  $('saveState').textContent = ok ? `Autosaved ${new Date().toLocaleTimeString()}` : 'Autosave unavailable: export before closing';
+  $('saveState').style.color = ok ? '' : 'var(--danger)';
+}
+
+function split() {
+  if (!S || !video.duration) return;
+  const t = round3(video.currentTime);
+  const last = S.marks[S.marks.length - 1];
+  if (last && Math.abs(last.t - t) < MIN_GAP) return;
+  S.marks.push({ id: S.next_id++, t, wall: new Date().toISOString() });
+  logEvent('split');
+  flash('split', `Split · ${clock(t)}`);
+  $('splitBtn').classList.add('pulse'); setTimeout(() => $('splitBtn').classList.remove('pulse'), 120);
+  render();
+}
+
+function undo() {
+  if (!S.marks.length) return;
+  const m = S.marks.pop();
+  logEvent('undo', { removed_t: m.t });
+  flash('undo', `Removed split · ${clock(m.t)}`);
+  render();
+}
+
+function removeMark(id) {
+  const i = S.marks.findIndex(m => m.id === id);
+  if (i < 0) return;
+  const [m] = S.marks.splice(i, 1);
+  logEvent('delete', { removed_t: m.t });
+  render();
+}
+
+let flashTimer = null;
+function flash(cls, text) {
+  const f = $('flash');
+  f.className = cls + ' show'; f.textContent = text;
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => f.classList.remove('show'), 700);
+}
+
+function togglePlay() { video.paused ? video.play() : video.pause(); }
+function seekTo(t) {
+  if (S.seek_locked) return;
+  video.currentTime = Math.max(0, Math.min(video.duration || 0, t));
+}
+
+/* rendering */
+function render() {
+  const d = video.duration || S.video.duration || 0;
+  const sorted = [...S.marks].sort((a, b) => a.t - b.t);
+  $('ticks').replaceChildren(...sorted.map(m => {
+    const el = document.createElement('div');
+    el.className = 'tick'; el.style.left = (d ? m.t / d * 100 : 0) + '%';
+    el.title = timecode(m.t);
+    return el;
+  }));
+  $('counts').textContent = `${sorted.length} split${sorted.length === 1 ? '' : 's'} · ${sorted.length + 1} segments`;
+
+  const list = $('markList');
+  if (!sorted.length) {
+    list.innerHTML = '<li class="empty">No splits yet.</li>';
+  } else {
+    list.replaceChildren(...sorted.map((m, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="n tabnum">${i + 1}</span><span class="t tabnum">${timecode(m.t)}</span>` +
+                     `<button class="del" title="Delete split">✕</button>`;
+      const t = li.querySelector('.t');
+      if (!S.seek_locked) { t.classList.add('seekable'); t.onclick = () => seekTo(m.t); }
+      li.querySelector('.del').onclick = () => removeMark(m.id);
+      return li;
+    }));
+  }
+  tick();
+}
+
+function tick() {
+  const d = video.duration || 0, t = video.currentTime || 0;
+  const p = d ? t / d * 100 : 0;
+  $('playhead').style.left = p + '%';
+  $('progress').style.width = p + '%';
+  $('clock').textContent = `${clock(t)} / ${clock(d)}`;
+}
+
+video.addEventListener('timeupdate', () => {
+  tick();
+  clearTimeout(saveTimer);  // keep last_position fresh without writing on every frame
+  saveTimer = setTimeout(save, 2000);
+});
+video.addEventListener('play', () => { $('playBtn').textContent = 'Pause'; logEvent('play'); });
+video.addEventListener('pause', () => { $('playBtn').textContent = 'Play'; if (!video.ended) logEvent('pause'); });
+video.addEventListener('seeked', () => { logEvent('seek'); tick(); });
+video.addEventListener('ratechange', () => logEvent('rate', { rate: video.playbackRate }));
+video.addEventListener('ended', () => {
+  $('playBtn').textContent = 'Play';
+  logEvent('ended');
+  flash('undo', 'Video finished: export your splits');
+});
+
+$('playBtn').addEventListener('click', togglePlay);
+$('splitBtn').addEventListener('click', split);
+$('rate').addEventListener('change', e => { video.playbackRate = +e.target.value; });
+$('ccBtn').addEventListener('click', () => {
+  const tr = video.textTracks[0];
+  tr.mode = tr.mode === 'showing' ? 'hidden' : 'showing';
+  $('ccBtn').textContent = tr.mode === 'showing' ? 'Captions on' : 'Captions off';
+  logEvent('captions', { on: tr.mode === 'showing' });
+});
+$('timeline').addEventListener('click', e => {
+  if (S.seek_locked || !video.duration) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  seekTo((e.clientX - r.left) / r.width * video.duration);
+});
+// clicking the video itself toggles play
+video.addEventListener('click', togglePlay);
+
+document.addEventListener('keydown', e => {
+  if ($('annotate').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target.matches('input, select, textarea')) return;
+  const k = e.key.toLowerCase();
+  if (k === 's') { split(); }
+  else if (k === ' ') { togglePlay(); }
+  else if (k === 'z' || k === 'backspace') { undo(); }
+  else if (k === 'arrowleft') { seekTo(video.currentTime - 5); }
+  else if (k === 'arrowright') { seekTo(video.currentTime + 5); }
+  else return;
+  e.preventDefault();
+  // keep focus off buttons so Space never re-clicks the last pressed one
+  if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
+});
+// buttons clicked with the mouse would otherwise keep focus and swallow Space
+document.querySelectorAll('#annotate button').forEach(b => b.addEventListener('mouseup', () => b.blur()));
+
+window.addEventListener('beforeunload', e => {
+  if (S && S.marks.length && !S.exported) { save(); e.preventDefault(); }
+});
+
+/* ---------- export ---------- */
+// segments in the same {id, start, end} shape as the pipeline's segments.json
+function segmentsFrom(bounds, duration) {
+  const cuts = [0, ...bounds.filter(b => b > 0 && b < duration), duration];
+  return cuts.slice(0, -1).map((s, i) => ({ id: 'S' + String(i + 1).padStart(2, '0'), start: s, end: cuts[i + 1] }));
+}
+
+function exportData() {
+  const sorted = [...S.marks].sort((a, b) => a.t - b.t);
+  const boundaries = sorted.map(m => m.t);
+  return {
+    schema: SCHEMA,
+    participant: S.participant,
+    lecture: S.lecture,
+    granularity: GRANULARITY,
+    seek_locked: S.seek_locked,
+    video: S.video,
+    started: S.started,
+    exported: new Date().toISOString(),
+    boundaries,
+    segments: segmentsFrom(boundaries, S.video.duration),
+    marks: sorted.map(({ id, t, wall }) => ({ id, t, timecode: timecode(t), wall })),
+    log: S.log,
+  };
+}
+
+function download(name, text, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: mime }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const baseName = () => `${S.lecture}__${S.participant}`.replace(/[^\w.-]+/g, '_');
+
+$('jsonBtn').addEventListener('click', () => {
+  logEvent('export', { format: 'json' });
+  download(baseName() + '.json', JSON.stringify(exportData(), null, 2), 'application/json');
+  S.exported = true; save();
+});
+$('csvBtn').addEventListener('click', () => {
+  logEvent('export', { format: 'csv' });
+  const esc = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
+  const rows = [['participant', 'lecture', 'granularity', 't_seconds', 'timecode', 'video_duration', 'wall_clock']];
+  for (const m of [...S.marks].sort((a, b) => a.t - b.t))
+    rows.push([S.participant, S.lecture, GRANULARITY, m.t, timecode(m.t), S.video.duration, m.wall]);
+  download(baseName() + '.csv', rows.map(r => r.map(esc).join(',')).join('\n') + '\n', 'text/csv');
+  S.exported = true; save();
+});
+</script>
+</body>
+</html>

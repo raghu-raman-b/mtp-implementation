@@ -1,0 +1,86 @@
+{
+ "prompts": [
+  "Below is the transcript of a lecture video, one sentence per line, each with its number in brackets.\n\nSplit the lecture into segments. Find the apt boundaries: the points where the instructor has completed an instructional goal or a topic and moves on to the next one.\n\nEach segment must stand alone: a learner who starts watching at the first sentence of any segment, without having seen what came before, must be able to follow it. Cut only at a logically concluded point, after the instructor has finished the thought, never while he is in the middle of explaining something. A question and the discussion of that question belong in the same segment. Do not cut at every change of example or sentence-level aside; prefer fewer, complete segments over many fragments.\n\nAnswer with a JSON list of the sentence numbers that START a new segment (do not include sentence 1), in order, and nothing else. Example of the format: [14, 52, 97]\n\nTranscript:\n{transcript}",
+  "A lecture video is being split into segments that learners can watch on their own. Below is a short stretch of the transcript with a proposed cut in it.\n\n{before}\n======== proposed cut ========\n{after}\n\nDecide whether this is a good place to cut.\n\nGOOD: the instructor has finished the previous point, and what follows the cut opens a new topic or goal that a learner could follow without having heard what came before the cut.\n\nBAD: the instructor is still in the middle of the same thought. For example, the text after the cut answers, comments on or continues what was said just before it, or its first sentence only makes sense because of the sentence before it.\n\nAnswer with one word: GOOD or BAD.",
+  "A lecture video is being split into segments that learners can watch on their own. A cut was proposed just before sentence [{cut}] below, but there the instructor is still in the middle of a thought.\n\n{window}\n\nFind the nearest place in this stretch where a cut does work: the instructor has finished the previous point, and the sentence that follows opens a new topic or goal that a learner could follow without having heard what came before.\n\nAnswer with the number of the sentence that should START the new segment. If the whole stretch is one continuous thought and no such place exists, answer NONE. Answer with the number or NONE only."
+ ],
+ "seeds": {
+  "0": {
+   "answer": "[14, 42, 76, 113, 131, 191, 209]",
+   "verdicts": {
+    "12": true,
+    "40": true,
+    "74": false,
+    "111": true,
+    "129": true,
+    "189": true,
+    "207": true
+   },
+   "moves": {
+    "74": 78
+   }
+  },
+  "1": {
+   "answer": "[5, 14, 42, 76, 131, 191, 209]",
+   "verdicts": {
+    "3": true,
+    "12": false,
+    "40": true,
+    "74": false,
+    "129": true,
+    "189": true,
+    "207": true
+   },
+   "moves": {
+    "12": null,
+    "74": 78
+   }
+  },
+  "2": {
+   "answer": "[5, 14, 42, 76, 113, 131, 191, 209]",
+   "verdicts": {
+    "3": true,
+    "12": false,
+    "40": true,
+    "74": false,
+    "111": true,
+    "129": true,
+    "189": true,
+    "207": true
+   },
+   "moves": {
+    "12": null,
+    "74": 78
+   }
+  },
+  "3": {
+   "answer": "[36, 76, 131, 191, 209]",
+   "verdicts": {
+    "34": false,
+    "74": false,
+    "129": true,
+    "189": true,
+    "207": true
+   },
+   "moves": {
+    "34": 40,
+    "74": 78
+   }
+  },
+  "4": {
+   "answer": "[14, 42, 76, 113, 131, 191, 209]",
+   "verdicts": {
+    "12": true,
+    "40": true,
+    "74": false,
+    "111": true,
+    "129": true,
+    "189": true,
+    "207": true
+   },
+   "moves": {
+    "74": 78
+   }
+  }
+ }
+}
