@@ -228,7 +228,10 @@ def main():
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--host", default="127.0.0.1")
     args = ap.parse_args()
-    threading.Thread(target=lambda: embed(["warm up"]), daemon=True).start()  # load the CPU model in the background
+    if embed_or_none():  # load the CPU model in the background
+        threading.Thread(target=lambda: embed(["warm up"]), daemon=True).start()
+    else:
+        print("sentence-transformers is not installed: open answers are scored by keywords only")
     print(f"LIR viewer: http://localhost:{args.port}   (Ctrl+C to stop)")
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 

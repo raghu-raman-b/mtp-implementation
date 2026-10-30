@@ -83,7 +83,7 @@ def write(R: Run, total_wall: float, extra: dict | None = None) -> str:
                      if l.inp.duration else None,
                      "by_stage_s": {k: round(v, 1) for k, v in per_lec_stage[l.id].items()},
                      "timing_source": l.inp.timing_source, "flags": len(l.flags)})
-    data = {"course_id": R.course.course_id, "generator": R.llm.model, "judge": R.judge.model if R.judge else None,
+    data = {"course_id": R.course.course_id, "generator": R.llm.model, "judge_model": R.judge.model if R.judge else None,
             "slots": R.server.slots, "date": time.strftime("%Y-%m-%d %H:%M"), "pipeline_wall_s": round(pipeline, 1),
             "total_wall_s": round(total_wall, 1), "video_s": round(video, 1), "lectures": rows, "stages": stage_rows,
             "pass_rates": pass_rows, "judge": {k: dict(v) for k, v in judge.items()}, **(extra or {})}
@@ -91,7 +91,7 @@ def write(R: Run, total_wall: float, extra: dict | None = None) -> str:
 
     n = max(1, len(lecs))
     L = [f"# LIR build report: {R.course.title}", "",
-         f"{time.strftime('%Y-%m-%d %H:%M')} · generator **{R.llm.model}** · judge **{data['judge']}** · "
+         f"{time.strftime('%Y-%m-%d %H:%M')} · generator **{R.llm.model}** · judge **{data['judge_model']}** · "
          f"{R.server.slots} parallel slots · thinking on for every call · temperature 0", "",
          "## Summary", "",
          f"- **{len(lecs)} lectures, {_m(video)} min of video, built in {_m(pipeline)} min** "

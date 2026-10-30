@@ -21,6 +21,27 @@ the project venv by itself, and starts and stops the model server in the `llm-en
 | `--fresh` | ignore cached LLM answers |
 | `--keep-server` | leave the local generator running for the next run |
 
+## Running on another PC
+
+The LIR, the viewer and the LLM answer cache are in the repo; the videos are not (5.5 GB, over GitHub's file limit).
+
+```bash
+git clone https://github.com/raghu-raman-b/mtp-implementation.git && cd mtp-implementation/lir-construction
+pip install -r requirements-viewer.txt          # numpy (+ optional sentence-transformers, nltk)
+python3 serve.py                                 # http://localhost:8000; segments play from YouTube
+```
+
+For local videos (offline playback), download them once; no GPU needed:
+
+```bash
+pip install -r requirements.txt
+python3 generate_lir.py --lecture ../dataset/virtual_and_augmented_reality --videos-only
+```
+
+Rebuilding the LIR on that PC (for example after editing a stage) replays every answer from `output/<course>/cache/`,
+so it needs neither a GPU nor API money unless a prompt or model changes. A full rebuild from scratch needs
+llama.cpp's `llama-server` (set its path in `pipeline/llm.py`, `LLAMA_SERVER`) or an API generator in `lir_config.toml`.
+
 ## Choosing the models: `lir_config.toml`
 
 Each role (`[generator]`, `[judge]`) names a model. A Hugging Face GGUF reference `org/repo:file.gguf` runs locally on

@@ -30,8 +30,9 @@ Status: ✅ done · 🔄 in progress · ⬜ to do · ⚠️ blocked or needs a d
 | ✅ | Local server restarted automatically if another run stops it | lets two runs share the GPU |
 | ✅ | Judge speed: thinking cap per server (`--reasoning-budget`: judge 4096, generator 8192) | one judge call looped to 16k tokens without it |
 | ✅ | Judge speed: open questions judged inside their segment's call; edges in groups of 6 | |
-| 🔄 | Full VR course run (all 63 lectures, judged, videos at 720p) | started; estimate 2–2.5 h, ~$0.4 |
-| ⬜ | Check the viewer in a browser on the full course | |
+| ✅ | Full VR course run (all 63 lectures, judged, videos at 720p) | 2 h 51 min for 31 h of video (2.7 min/lecture); judge $0.52; 81% of 5,242 items passed first time |
+| ✅ | Check the viewer on the full course | home, lecture 40, scoring API |
+| ✅ | Portable: answer cache in git, requirements files, “run on another PC” in README | videos re-downloaded with `--videos-only` |
 
 ## Viewer (`viewer/`, `serve.py`)
 
@@ -61,5 +62,5 @@ Status: ✅ done · 🔄 in progress · ⬜ to do · ⚠️ blocked or needs a d
 
 ## Notes
 
-- vLLM: still installing in the toolbox venv (`lir-construction/.venv`); wired in as `--engine vllm`, but the FP8 model does
+- vLLM 0.32.0 installed in the toolbox venv (`lir-construction/.venv`, torch 2.13 + CUDA 13, sees the RTX 5070), but the FP8 model does
   not fit the 12 GB card (embedding tables stay bf16, about 11 GB for the model alone). llama.cpp Q8 is the engine.
