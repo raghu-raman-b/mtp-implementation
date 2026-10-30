@@ -18,6 +18,7 @@ from .transcript import numbered
 class KP(BaseModel):
     text: str = Field(max_length=300)
     sentence_ids: list[int] = Field(min_length=1, max_length=8)
+    about: Literal["subject", "course"]
 
 
 class AnnA(BaseModel):
@@ -33,7 +34,7 @@ class Term(BaseModel):
 
 
 class AnnB(BaseModel):
-    key_terms: list[Term] = Field(max_length=6)
+    key_terms: list[Term] = Field(max_length=5)
     used_concepts: list[str] = Field(max_length=8)
 
 
@@ -61,9 +62,12 @@ def _bad_terms(lec: Lec, seg: Seg, x: AnnB) -> list[str]:
         e = V.check_ids(t.sentence_ids, seg.a, seg.b, f'term "{t.term}"')
         if not e:
             cited = " ".join(lec.sentences[i].text for i in t.sentence_ids)
-            if not V.fuzzy_in(t.term, cited):
+            name = re.sub(r"\s*\([^)]*\)\s*$", "", t.term).strip()
+            if not V.fuzzy_in(name, cited) and not V.fuzzy_in(t.term, cited):
                 e = [f'term "{t.term}" does not occur in its cited sentences {t.sentence_ids}; cite the sentences '
                      f'where it is said, or leave it out']
+            else:
+                e = V.check_definition(t.term, t.definition, f'term "{t.term}"')
         errs += e
     return errs
 
@@ -89,14 +93,14 @@ def run(R: Run):
                 R.flag(lec.id, f"{seg.id}: annotation failed validation ({o.errors}); placeholder used")
                 first = lec.sentences[seg.a]
                 seg.subgoal, seg.content_type = f"Follow part {seg.id[1:]} of the lecture", "discussion"
-                seg.key_points = [{"id": f"{seg.id}.K1", "text": first.text, "sentence_ids": [first.id]}]
+                seg.key_points = [{"id": f"{seg.id}.K1", "text": first.text, "sentence_ids": [first.id], "about": "course"}]
                 continue
             if not o.ok:
                 R.flag(lec.id, f"{seg.id}: annotation kept despite failed checks: {o.errors}")
             seg.subgoal = x.subgoal.strip().rstrip(".")
             seg.subgoal = seg.subgoal[:1].upper() + seg.subgoal[1:]
             seg.content_type = x.content_type
-            seg.key_points = [{"id": f"{seg.id}.K{i}", "text": strip_ids(kp.text),
+            seg.key_points = [{"id": f"{seg.id}.K{i}", "text": strip_ids(kp.text), "about": kp.about,
                                "sentence_ids": sorted({j for j in kp.sentence_ids if seg.contains(j)}) or [seg.a]}
                               for i, kp in enumerate(x.key_points, 1)]
         else:
@@ -106,7 +110,7 @@ def run(R: Run):
             terms = []
             for t in x.key_terms:  # after retries, drop the terms that still fail (optional items)
                 if not _bad_terms(lec, seg, AnnB(key_terms=[t], used_concepts=[])):
-                    terms.append({"term": t.term.strip(), "definition": strip_ids(t.definition),
+                    terms.append({"term": V.display_name(t.term), "definition": strip_ids(t.definition),
                                   "sentence_ids": sorted(set(t.sentence_ids))})
             seg.key_terms = terms
             seg.used_concepts = [u.strip() for u in x.used_concepts if u.strip()]

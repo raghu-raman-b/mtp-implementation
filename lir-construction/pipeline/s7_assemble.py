@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import scorer
@@ -29,6 +30,35 @@ def _concept_refs(obj, out: set):
         for v in obj:
             _concept_refs(v, out)
     return out
+
+
+# LaTeX in generated text loses backslashes when the model writes \t, \f, \b, \n, \r or \v inside a JSON string:
+# "\theta" arrives as a tab + "heta", "\frac" as a form feed + "rac". Put the backslash back inside $...$ math, and in
+# short bare expressions such as an answer option "n \times 1". Real line breaks in ordinary text are left alone.
+_CTRL = {"\t": "\\t", "\b": "\\b", "\f": "\\f", "\r": "\\r", "\n": "\\n", "\v": "\\v"}
+_MATH = re.compile(r"\$[^$]{1,300}?\$")
+_CTRL_RE = re.compile(r"[\t\b\f\r\n\v]")
+
+
+def _fix_tex(s: str) -> str:
+    s = _MATH.sub(lambda m: _CTRL_RE.sub(lambda c: _CTRL[c.group()], m.group()), s)
+    if "$" not in s and len(s) <= 60 and re.search(r"[\t\b\f\v][a-z]", s):
+        s = re.sub(r"[\t\b\f\v]", lambda c: _CTRL[c.group()], s)
+    return s
+
+
+def fix_math(obj, stats: list | None = None):
+    """Return obj with the LaTeX backslashes repaired in every string (transcript sentences are left as they are)."""
+    if isinstance(obj, dict):
+        return {k: (v if k == "sentences" else fix_math(v, stats)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [fix_math(v, stats) for v in obj]
+    if isinstance(obj, str):
+        new = _fix_tex(obj)
+        if new != obj and stats is not None:
+            stats.append(1)
+        return new
+    return obj
 
 
 def _leak_errors(R: Run, lec_json: dict, pos: int) -> list[str]:
@@ -77,6 +107,7 @@ def run(R: Run, video_dir: Path | None = None):
     for kp, e in zip(kps, embed([kp["text"] for kp in kps])):
         kp["embedding"] = [round(float(x), 5) for x in e]
 
+    fixed: list = []
     for pos, lec in enumerate(R.lectures, 1):
         segs = [{"id": s.id, "sentence_range": [s.a, s.b], "start": s.start, "end": s.end, "subgoal": s.subgoal,
                  "content_type": s.content_type, "objective_id": s.objective_id, "key_points": s.key_points,
@@ -88,7 +119,7 @@ def run(R: Run, video_dir: Path | None = None):
         except ValueError:
             src = str(lec.inp.srt)
         video = None
-        if video_dir is not None:
+        if video_dir is not None and ((video_dir / f"{lec.id}.mp4").exists() or getattr(R, "videos_expected", False)):
             video = str((video_dir / f"{lec.id}.mp4").relative_to(HERE))
         doc = {"course_id": R.course.course_id, "lecture_id": lec.id, "index": lec.inp.index, "title": lec.inp.title,
                "source_file": src, "timing_source": lec.inp.timing_source, "youtube_id": lec.inp.youtube_id or None,
@@ -100,6 +131,7 @@ def run(R: Run, video_dir: Path | None = None):
         for e in _leak_errors(R, doc, pos):
             R.flag(lec.id, f"leakage check: {e}")
         doc["flags"] = lec.flags
+        doc = fix_math(doc, fixed)
         model = Lecture.model_validate(doc)  # schema check of the whole file
         (out / f"{lec.id}.json").write_text(model.model_dump_json(indent=1), encoding="utf-8")
 
@@ -113,7 +145,10 @@ def run(R: Run, video_dir: Path | None = None):
               "embedding_model": EMBED_MODEL,
               "concept_embeddings": {cid: [round(float(x), 5) for x in c.emb] for cid, c in R.state.concepts.items()},
               "origin": R.course_origin}
+    course = fix_math(course, fixed)
     (out / "course.json").write_text(Course.model_validate(course).model_dump_json(indent=1), encoding="utf-8")
+    if fixed:
+        R.log(f"  repaired LaTeX backslashes in {len(fixed)} strings", "ok")
     _write_index(out.parent)
     R.log(f"  wrote course.json and {len(R.lectures)} lecture files to {out}", "ok")
 

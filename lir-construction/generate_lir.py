@@ -9,9 +9,8 @@
     videos         downloaded from YouTube (titles.tsv youtube_id) in the background while the LIR is built
     0 transcripts  SRT -> sentences; lectures without an SRT are aligned to YouTube's captions
     1-5            segment, annotate, goal hierarchy, course state, generate          (Gemma 4 E4B, Q8)
-    6              calibrate the answer scorer; judge every item and repair failures   (Gemma 4 12B judge)
+    6              calibrate the answer scorer; judge every item and repair failures   (judge from lir_config.toml)
     7              assemble and validate the LIR -> lir/<course_id>/
-    docs           docs/pipeline.html, rebuilt from the outputs
     view           python3 serve.py, then open http://localhost:8000
 
 Build files (cache, stage outputs, course state, logs, timing report) go to output/<course_id>/.
@@ -162,6 +161,7 @@ def main():
         ledger = Ledger(cfg, course.course_id)
         gen = Server(cfg.generator, cfg, out / "logs", ledger)
         judge_srv = Server(cfg.judge, cfg, out / "logs", ledger)
+        fb_srv = Server(cfg.judge_fallback, cfg, out / "logs", ledger) if cfg.judge_fallback and not cfg.judge.local else None
 
         def status(srv):
             spend = (f" · API spend ${ledger.spent:.3f} of ${ledger.budget:.2f}"
@@ -192,11 +192,30 @@ def main():
             raise SystemExit(f"The judge model does not fit on the GPU (see {judge_srv.log_path}). "
                              f"Free GPU memory, or rerun with --no-judge.")
 
+        def start_fallback():
+            """The API budget ran out: put the local fallback judge on the GPU (the generator steps aside)."""
+            if fb_srv.health():
+                return
+            for slots, ctx in [(cfg.judge_fallback.slots, cfg.judge_fallback.kv_tokens), (6, 24576), (4, 16384)]:
+                fb_srv.slots, fb_srv.ctx_total = slots, ctx
+                try:
+                    fb_srv.start(lambda m: log(m, "dim"))
+                    R.judge_fallback.workers = slots
+                    R.judge_fallback._budget = int(ctx * 0.85)
+                    ui.server(f"  fallback judge: {cfg.judge_fallback.name} ({slots} slots)")
+                    return
+                except RuntimeError:
+                    log(f"  ! fallback judge did not fit with {slots} slots and a {ctx:,}-token KV pool", "warn")
+            raise SystemExit(f"The fallback judge does not fit on the GPU (see {fb_srv.log_path}).")
+
         start_generator()
         records: list = []
         llm = LLM(gen, out / "cache", workers=cfg.generator.slots, log=log, ui=ui, records=records)
         R = Run(course, lectures, llm, gen, out, timer, log, args.seg_max_tokens, ui=ui, lir_dir=lir_dir)
         R.judge = LLM(judge_srv, out / "cache", workers=cfg.judge.slots, log=log, ui=ui, records=records)
+        R.judge_fallback = (LLM(fb_srv, out / "cache", workers=cfg.judge_fallback.slots, log=log, ui=ui, records=records)
+                            if fb_srv else None)
+        R.start_fallback = start_fallback
         try:
             with timer.stage("stage1_segment"):
                 s1_segment.run(R)
@@ -218,20 +237,15 @@ def main():
         finally:
             if not args.keep_server:
                 judge_srv.stop(force=True)
+                if fb_srv:
+                    fb_srv.stop(force=True)
                 gen.stop(force=True)
                 ui.server("  servers stopped")
         with timer.stage("stage7_assemble"):
-            s7_assemble.run(R, media_dir if downloader else None)
+            R.videos_expected = downloader is not None  # being downloaded now; otherwise link the files already there
+            s7_assemble.run(R, media_dir)
 
         scoring = json.loads((lir_dir / f"{lectures[0].id}.json").read_text())["scoring"]["open_answer"]
-        with timer.stage("docs"):
-            try:
-                import build_docs
-                path = build_docs.build(HERE)
-                log(f"  documentation → {path.relative_to(HERE)}", "ok")
-            except Exception as e:  # the docs never block the LIR
-                log(f"  ! docs not rebuilt: {e}", "warn")
-
         if downloader:
             if downloader.is_alive():
                 log("\nWaiting for the video downloads to finish…", "video")
@@ -247,7 +261,6 @@ def main():
     ui.console.print(text.split("## Per lecture")[0].strip().replace("**", ""))
     ui.log(f"\nLIR      → lir/{course.course_id}/  ({len(lectures)} lectures + course.json)", "ok")
     ui.log(f"Report   → output/{course.course_id}/timing_report.md", "ok")
-    ui.log("Docs     → docs/pipeline.html", "ok")
     ui.log(f"\nReady to view:  cd {HERE} && python3 serve.py   →   http://localhost:8000", "stage")
 
 

@@ -43,6 +43,9 @@ _model = None
 _model_lock = threading.Lock()
 
 
+PUBLIC = ("/viewer/", "/lir/", "/media/", "/docs/")
+
+
 def embed(texts):
     """CPU sentence embeddings, loaded on first use."""
     global _model
@@ -88,8 +91,11 @@ def score_answer(req: dict) -> dict:
               if q["id"] == req["oq_id"])
     cfg = lec["scoring"]["open_answer"]
     res = scorer.score(req.get("answer", ""), oq["key_points"], cfg["m"], cfg["tau"], embed_or_none())
-    # first feedback names the tier and gives a hint from one missed key point (the doc's revise loop)
-    res["hint"] = res["missed"][0] if res["missed"] else None
+    # first feedback names the tier and gives a hint built from one missed key point (the doc's revise loop);
+    # the hint names a keyword, not the key point itself, so it does not hand over the answer
+    missed = next((kp for kp in oq["key_points"] if kp["text"] in res["missed"]), None)
+    res["hint"] = (f"Your answer does not yet say anything about \u201c{missed['keywords'][0]}\u201d. What role does it play here?"
+                   if missed and missed.get("keywords") else None)
     return res
 
 
@@ -170,8 +176,11 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/favicon.ico":  # no icon; answer quietly instead of a 404
             self.send_response(HTTPStatus.NO_CONTENT)
             return self.end_headers()
-        if self.path in ("/", "/index.html"):
+        if self.path.split("?")[0] in ("/", "/index.html"):  # the viewer, with or without ?dev=1
             self.path = "/viewer/index.html"
+        # serve only the public folders (never .env, the cache or the code)
+        if not self.path.startswith(PUBLIC) or "/." in self.path or ".." in self.path:
+            return self.send_error(HTTPStatus.NOT_FOUND)
         if self.headers.get("Range") and self.path.startswith("/media/"):
             return self._range()
         return super().do_GET()

@@ -313,7 +313,7 @@ class LLM:
                                               "Authorization": f"Bearer {self.server.key}"})
         t0 = time.time()
         try:
-            for attempt in range(6):
+            for attempt in range(20):
                 try:
                     with urllib.request.urlopen(req, timeout=600) as r:
                         d = json.load(r)
@@ -325,9 +325,12 @@ class LLM:
                         continue
                     raise RuntimeError(f"API rejected the request ({e.code}): {msg}")
                 except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
-                    if attempt == 5:
+                    # network down (dropped Wi-Fi, captive portal): wait up to ~15 min in total before giving up
+                    if attempt == 19:
                         raise
-                    time.sleep(5)
+                    if attempt in (0, 5, 10, 15):
+                        self.log(f"    ! API unreachable ({e}); retrying")
+                    time.sleep(min(60, 5 * 2 ** min(attempt, 4)))
         except Exception:
             ledger.release(est)
             raise

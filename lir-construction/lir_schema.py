@@ -49,6 +49,7 @@ class KeyPoint(BaseModel):
     id: str                           # "S2.K1"
     text: str
     sentence_ids: list[int]
+    about: Literal["subject", "course"] = "subject"   # course logistics are never quizzed
 
 
 class KeyTerm(BaseModel):
@@ -93,7 +94,7 @@ class JumpLink(BaseModel):
 class RecallItem(BaseModel):
     concept_id: str
     concept: str
-    for_new_concept_id: str           # the new concept in this lecture that builds on it
+    for_new_concept_id: Optional[str] = None   # the concept in this lecture that builds on it (None: mentioned only)
     question: str
     recap: str
     jump_to: JumpLink
@@ -143,8 +144,9 @@ class QuizItem(BaseModel):
 
 
 class Quiz(BaseModel):
-    items: list[QuizItem]
-    explanations_shown: Literal["after_all_items"] = "after_all_items"
+    items: list[QuizItem]             # 0 to 4: the model writes as many as the segment has ideas worth testing
+    explanations_shown: Literal["after_item_resolved"] = "after_item_resolved"  # after a right answer or the 2nd try
+    tries: int = 2                    # tries per multiple-choice item (true/false and yes/no: 1)
 
 
 class SummaryConcept(BaseModel):
@@ -161,10 +163,20 @@ class EarlierLink(BaseModel):
     label: str
     to_concept_id: str                # the concept in this segment it links to
     jump_to: JumpLink
+    direction: Optional[Literal["from_earlier", "to_earlier"]] = None  # edge reads earlier -> here, or here -> earlier
+
+
+class ReviewQuestion(BaseModel):
+    key_point: str                    # "S2.K1"
+    question: str
+    answer: str                       # revealed on click
+    sentence_ids: list[int]
+    t: float                          # jump-back time in the lecture video
 
 
 class Summary(BaseModel):
     recap: str
+    review: list[ReviewQuestion] = []  # check-yourself questions, one per key point
     key_concepts: list[SummaryConcept]
     key_terms: list[KeyTerm]
     earlier_links: list[EarlierLink]

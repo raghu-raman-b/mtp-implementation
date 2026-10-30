@@ -34,9 +34,17 @@ JUDGE_ROLE = ("You are a strict reviewer of learning material that was generated
               "transcript. An item passes only if the transcript supports it.")
 VERDICT = {"type": "object", "additionalProperties": False, "required": ["reason", "ok"],
            "properties": {"reason": {"type": "string", "maxLength": 300}, "ok": {"type": "boolean"}}}
-QUIZ_VERDICT = {"type": "object", "additionalProperties": False, "required": ["reason", "answerable", "correct"],
-                "properties": {"reason": {"type": "string", "maxLength": 300}, "answerable": {"type": "boolean"},
-                               "correct": {"type": "boolean"}}}
+QUIZ_VERDICT = {"type": "object", "additionalProperties": False,
+                "required": ["reason", "worth_asking", "answerable", "correct"],
+                "properties": {"reason": {"type": "string", "maxLength": 300}, "worth_asking": {"type": "boolean"},
+                               "answerable": {"type": "boolean"}, "correct": {"type": "boolean"}}}
+EDGE_VERDICT = {"type": "object", "additionalProperties": False, "required": ["reason", "ok", "reversed_ok"],
+                "properties": {"reason": {"type": "string", "maxLength": 300}, "ok": {"type": "boolean"},
+                               "reversed_ok": {"type": "boolean"}}}
+TERM_VERDICT = {"type": "object", "additionalProperties": False,
+                "required": ["reason", "worth_learning", "faithful", "useful"],
+                "properties": {"reason": {"type": "string", "maxLength": 300}, "worth_learning": {"type": "boolean"},
+                               "faithful": {"type": "boolean"}, "useful": {"type": "boolean"}}}
 LETTERS = "ABCD"
 
 
@@ -48,6 +56,7 @@ class Item:
     key: str                  # unique: "L03/S2/quiz/q1"
     ref: dict = field(default_factory=dict)   # what the item points at (e.g. {"index": 0})
     reason: str = ""
+    final: bool = False       # the item is not worth having at all: drop it without a repair
 
 
 def _active(lec: Lec, sid: str) -> dict:
@@ -98,6 +107,18 @@ def _find_edge(R: Run, t: tuple) -> dict | None:
     return next((e for e in R.state.edges if (e["src"], e["rel"], e["dst"]) == t), None)
 
 
+def _flip_edge(R: Run, it: "Item") -> bool:
+    e = _find_edge(R, it.ref["edge"])
+    if e is None or _find_edge(R, (e["dst"], e["rel"], e["src"])) is not None:
+        return False
+    e["src"], e["dst"] = e["dst"], e["src"]
+    e["label"] = {"example_of": "is an example of", "part_of": "is part of", "prerequisite_of": "is needed for",
+                  "used_in": "is used in", "leads_to": "leads to"}.get(e["rel"], e["label"])
+    it.ref["edge"] = (e["src"], e["rel"], e["dst"])
+    R.state.snapshots.clear()
+    return True
+
+
 # ------------------------------------------------------------------ judge prompts
 def _seg_judge_call(R: Run, lec: Lec, seg: Seg, items: list[Item]) -> Call:
     lines, props = [], {}
@@ -110,10 +131,16 @@ def _seg_judge_call(R: Run, lec: Lec, seg: Seg, items: list[Item]) -> Call:
             k = f"term_{len([p for p in props if p.startswith('term_')]) + 1}"
             it.ref["slot"] = k
             cited = " ".join(f"[{i}]" for i in t["sentence_ids"])
-            lines.append(f'{k}: "{t["term"]}" defined as "{t["definition"]}" (cited sentences {cited})\n'
-                         f"  ok = the definition is faithful to the cited sentences: nothing contradicts them and "
-                         f"nothing important is invented.")
-            props[k] = VERDICT
+            lines.append(f'{k}: key term "{t["term"]}" defined as "{t["definition"]}" (cited sentences {cited})\n'
+                         f"  worth_learning = it is a concept of the subject that this lecture actually teaches and a "
+                         f"student should learn; false for a generic word, a passing mention, course logistics, or a "
+                         f"bare abbreviation.\n"
+                         f"  faithful = the definition agrees with the cited sentences and invents nothing important.\n"
+                         f"  useful = a student who has never heard the term would understand what it is from the "
+                         f"definition alone: it starts with the term (not \"It\" or \"This\"), says what kind of thing "
+                         f"the term is and what sets it apart from related terms; false if it mostly repeats the term's "
+                         f"own words, repeats itself, reads like copied speech, or only expands an abbreviation.")
+            props[k] = TERM_VERDICT
         elif it.kind == "quiz":
             q = _find_quiz(lec, it.ref["id"])
             k = q["id"].split(".")[1].lower()
@@ -126,12 +153,17 @@ def _seg_judge_call(R: Run, lec: Lec, seg: Seg, items: list[Item]) -> Call:
                          f"against this definition instead of the transcript: {f['concept']}: {f['definition']}")
             lines.append(f'{k} ({q["item_type"].replace("_", " ")}): "{q["stem"]}"\n  {opts}\n'
                          f'  Marked correct: {LETTERS[q["correct_index"]]}){extra}\n'
+                         f"  worth_asking = it tests an idea of the subject that matters; false if it asks what the "
+                         f"course, lecture or instructor says or plans, what an abbreviation stands for, or other trivia.\n"
                          f"  answerable = a learner who watched only this segment can answer it; correct = the "
                          f"marked option is right and no other option is also right.")
             props[k] = QUIZ_VERDICT
         elif it.kind == "summary":
-            lines.append(f'summary: "{_active(lec, seg.id)["summary"]["recap"]}"\n'
-                         f"  ok = every statement in the recap is supported by the transcript.")
+            sm = _active(lec, seg.id)["summary"]
+            rv = "".join(f'\n  review question: "{r["question"]}" answer: "{r["answer"]}"' for r in sm.get("review", []))
+            lines.append(f'summary: "{sm["recap"]}"{rv}\n'
+                         f"  ok = every statement in the recap is supported by the transcript, and each review answer "
+                         f"is correct, answers its question, and the question asks about the subject.")
             props["summary"] = VERDICT
         elif it.kind == "oq":
             q = _find_oq(lec, it.ref["id"])
@@ -150,7 +182,7 @@ def _seg_judge_call(R: Run, lec: Lec, seg: Seg, items: list[Item]) -> Call:
               "\n\nFor every item give a short reason first (what is wrong, or \"fine\"), then the verdict.")
     schema = {"type": "object", "additionalProperties": False, "required": list(props), "properties": props}
     return Call(key=f"{lec.id}/{seg.id}/judge", lecture_id=lec.id, prompt=prompt, schema=schema,
-                prompt_id="judge.segment", prompt_version="1", stage="stage6_judge", ctx={"items": items})
+                prompt_id="judge.segment", prompt_version="2", stage="stage6_judge", ctx={"items": items})
 
 
 def _oq_judge_call(R: Run, lec: Lec, it: Item) -> Call:
@@ -193,8 +225,9 @@ def _lecture_judge_call(R: Run, lec: Lec, items: list[Item]) -> Call:
                           if 0 <= i < len(lec.sentences))
             lines.append(f'{k}: "{C[e["src"]]["name"]}" {e["rel"]} "{C[e["dst"]]["name"]}" (map label: '
                          f'"{e["label"]}")\n  evidence: {ev}\n'
-                         f"  ok = the evidence or the definitions support this relation in this direction.")
-        props[k] = VERDICT
+                         f"  ok = the evidence or the definitions support this relation in this direction; "
+                         f"reversed_ok = they support the same relation with src and dst swapped.")
+        props[k] = VERDICT if it.kind == "recall" else EDGE_VERDICT
     defs = "\n".join(f"- {C[c]['name']}: {C[c]['definition'] or '(no definition recorded)'}" for c in sorted(cids)
                      if c in C)
     prompt = (f"{JUDGE_ROLE}\n\nCourse: {R.course.title}\nLecture {lec.id}: {lec.inp.title}\n\nConcepts:\n{defs}\n\n"
@@ -204,7 +237,7 @@ def _lecture_judge_call(R: Run, lec: Lec, items: list[Item]) -> Call:
               "\n\nFor every item give a short reason first, then the verdict.")
     schema = {"type": "object", "additionalProperties": False, "required": list(props), "properties": props}
     return Call(key=f"{lec.id}/lecture/judge", lecture_id=lec.id, prompt=prompt, schema=schema,
-                prompt_id="judge.lecture", prompt_version="1", stage="stage6_judge", ctx={"items": items})
+                prompt_id="judge.lecture", prompt_version="2", stage="stage6_judge", ctx={"items": items})
 
 
 def _judge(R: Run, items: list[Item], rnd: int) -> list[Item]:
@@ -226,25 +259,54 @@ def _judge(R: Run, items: list[Item], rnd: int) -> list[Item]:
             c = _lecture_judge_call(R, R.lec(lid), grp)
             c.key = f"{lid}/lecture/judge/{g}"
             calls.append(c)
-    failed = []
-    for o in R.judge.run("stage6_judge", calls, f"judge round {rnd + 1}: {len(items)} items"):
-        R.record(o, "stage6_judge", f"{o.call.key}.r{rnd + 1}", llm=R.judge)
+    failed, blocked = [], []
+    fallback = getattr(R, "judge_fallback", None)
+    # once the API budget is spent, later rounds go straight to the local fallback judge
+    first = fallback if (fallback is not None and getattr(R, "budget_spent", False)) else R.judge
+    if first is fallback:
+        R.start_fallback()
+    for o in first.run("stage6_judge", calls, f"judge round {rnd + 1}: {len(items)} items"):
         if o.parsed is None and any(e.startswith("budget:") for e in o.errors):
-            for it in o.call.ctx["items"]:  # never sent: the API budget ran out
+            blocked.append(o.call)
+            continue
+        _take(R, o, rnd, first, failed)
+    if blocked and fallback is not None:
+        R.budget_spent = True
+        R.log(f"  API budget reached: {len(blocked)} judge calls go to the local judge {fallback.model}", "warn")
+        R.start_fallback()
+        for o in fallback.run("stage6_judge", blocked, f"local judge round {rnd + 1}: {len(blocked)} calls"):
+            _take(R, o, rnd, fallback, failed)
+    elif blocked:
+        for c in blocked:
+            for it in c.ctx["items"]:  # never sent: the API budget ran out
                 it.reason = "not judged: API budget reached"
                 R.unjudged.append(it)
-            continue
-        for it in o.call.ctx["items"]:
-            if o.parsed is None:
-                it.reason = "the judge's answer was unusable"
-                failed.append(it)
-                continue
-            v = o.parsed[it.ref.get("slot", it.kind)]
-            ok = (v["answerable"] and v["correct"]) if it.kind == "quiz" else v["ok"]
-            if not ok:
-                it.reason = v["reason"]
-                failed.append(it)
     return failed
+
+
+def _take(R: Run, o, rnd: int, judge, failed: list):
+    """Read one judge answer into its items: verdicts, reasons and the failed list."""
+    R.record(o, "stage6_judge", f"{o.call.key}.r{rnd + 1}", llm=judge)
+    if judge is not R.judge:
+        R.fallback_judged.update(it.key for it in o.call.ctx["items"])
+    for it in o.call.ctx["items"]:
+        if o.parsed is None:
+            it.reason = "the judge's answer was unusable"
+            failed.append(it)
+            continue
+        v = o.parsed[it.ref.get("slot", it.kind)]
+        if it.kind == "quiz":
+            ok, it.final = v["worth_asking"] and v["answerable"] and v["correct"], not v["worth_asking"]
+        elif it.kind == "term":
+            ok, it.final = v["worth_learning"] and v["faithful"] and v["useful"], not v["worth_learning"]
+        else:
+            ok = v["ok"]
+            if it.kind == "edge" and not ok and v.get("reversed_ok") and _flip_edge(R, it):
+                ok = True  # the model had the direction backwards: code swaps the ends instead of dropping it
+                R.flipped.append({"item": it.key, "reason": v["reason"], "action": "direction reversed"})
+        if not ok:
+            it.reason = ("not worth keeping: " if it.final else "") + v["reason"]
+            failed.append(it)
 
 
 # ------------------------------------------------------------------ repairs (generator model)
@@ -265,11 +327,15 @@ def _repair_calls(R: Run, failed: list[Item]) -> list[Call]:
             check = lambda x: V.check_verb_first(x["subgoal"], "subgoal")
         elif it.kind == "term":
             t = next(x for x in seg.key_terms if x["term"] == it.ref["term"])
+            lo, hi = max(seg.a, min(t["sentence_ids"]) - 3), min(seg.b, max(t["sentence_ids"]) + 3)
             task = (f'{head}Rejected definition of "{t["term"]}": "{t["definition"]}"\nReason: {it.reason}\n\nTask: write '
-                    f"a one-sentence definition of \"{t['term']}\" that is faithful to sentences {t['sentence_ids']}.")
+                    f"a new definition of \"{t['term']}\" from what the instructor says in sentences {lo} to {hi}: one or "
+                    f"two self-contained sentences that start with the term itself and say what kind of thing it is "
+                    f"and what sets it apart from related ideas. Never start with \"It\" or \"This\" and do not just "
+                    f"spell out an abbreviation.")
             schema = {"type": "object", "additionalProperties": False, "required": ["definition"],
-                      "properties": {"definition": {"type": "string", "maxLength": 300}}}
-            check = None
+                      "properties": {"definition": {"type": "string", "maxLength": 400}}}
+            check = lambda x, term=t["term"]: V.check_definition(term, x["definition"], "definition")
         elif it.kind == "quiz":
             q = _find_quiz(lec, it.ref["id"])
             kp = next((k for k in seg.key_points if k["id"] == q["target_key_point"]), None)
@@ -282,11 +348,15 @@ def _repair_calls(R: Run, failed: list[Item]) -> list[Call]:
                     f'correct: "{q["options"][q["correct_index"]]}"\nReason: {it.reason}\n\nTask: write a replacement '
                     f"{kind} that tests this point: {point}\n" + S5.QUIZ_RULES)
         elif it.kind == "summary":
-            task = (f'{head}Rejected recap: "{_active(lec, seg.id)["summary"]["recap"]}"\nReason: {it.reason}\n\nTask: '
-                    f"write a new recap of this segment: 2 to 3 sentences, plain language, only what the segment says.")
-            schema = {"type": "object", "additionalProperties": False, "required": ["recap"],
-                      "properties": {"recap": {"type": "string", "maxLength": 700}}}
-            check = lambda x: ([] if 2 <= V.sentence_count(x["recap"]) <= 3 else ["write 2 to 3 sentences"])
+            call = S5.summary_call(R, lec, seg, R.state.pos_of[lec.id])
+            sm = _active(lec, seg.id)["summary"]
+            call.prompt += (f'\n\nA previous version was rejected by a reviewer.\nRejected recap: "{sm["recap"]}"\n'
+                            + "".join(f'Rejected review question: "{r["question"]}" answer: "{r["answer"]}"\n'
+                                      for r in sm.get("review", []))
+                            + f"Reason: {it.reason}\nWrite a better one.")
+            call.key, call.stage, call.ctx = f"{it.key}/repair", "stage6_repair", {"item": it, **call.ctx}
+            calls.append(call)
+            continue
         elif it.kind == "oq":
             q = _find_oq(lec, it.ref["id"])
             plan = R.oq_plans[lec.id][int(q["id"][2:]) - 1]
@@ -318,7 +388,9 @@ def _apply_repair(R: Run, it: Item, x) -> bool:
         q = _find_quiz(lec, it.ref["id"])
         q.update(S5.single_item_fields(q["item_type"], x, f"{lec.id}/{q['id']}/repair", q["options"][q["correct_index"]]))
     elif it.kind == "summary":
-        _active(lec, seg.id)["summary"]["recap"] = x["recap"].strip()
+        sm = _active(lec, seg.id)["summary"]
+        sm["recap"] = x["recap"].strip()
+        sm["review"] = S5.review_items(lec, seg, x)
     elif it.kind == "oq":
         q = _find_oq(lec, it.ref["id"])
         new = S5.oq_from(lec, x, R.oq_plans[lec.id][int(q["id"][2:]) - 1], int(q["id"][2:]))
@@ -364,7 +436,9 @@ def _resolve(R: Run, it: Item):
         seg.key_terms = [x for x in seg.key_terms if x["term"] != it.ref["term"]]
         return "dropped"
     if it.kind == "summary":
-        _active(lec, seg.id)["summary"]["recap"] = " ".join(k["text"].rstrip(".") + "." for k in seg.key_points[:3])
+        sm = _active(lec, seg.id)["summary"]
+        sm["recap"] = " ".join(k["text"].rstrip(".") + "." for k in seg.key_points[:3])
+        sm["review"] = []
         return "replaced by key points"
     if it.kind == "subgoal":
         kp = seg.key_points[0]["text"].rstrip(".")
@@ -381,7 +455,8 @@ def run(R: Run, start_judge, start_generator):
     stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))  # lid -> kind -> counter
     for it in items:
         stats[it.lid][it.kind]["judged"] += 1
-    R.unjudged = []
+    R.unjudged, R.flipped = [], []
+    R.fallback_judged, R.budget_spent = set(), False
     R.log(f"  {len(items)} items to judge across {len(R.lectures)} lectures", "judge")
     pending = items
     resolved_log = defaultdict(list)
@@ -396,7 +471,7 @@ def run(R: Run, start_judge, start_generator):
         R.log(f"  round {rnd + 1}: {len(pending) - len(failed)}/{len(pending)} passed", "judge")
         if not failed:
             break
-        optional = [it for it in failed if it.kind in ("recall", "edge")]
+        optional = [it for it in failed if it.kind in ("recall", "edge") or it.final]
         for it in optional:
             _resolve(R, it)
             stats[it.lid][it.kind]["dropped"] += 1
@@ -424,11 +499,28 @@ def run(R: Run, start_judge, start_generator):
             break
     for it in R.unjudged:
         stats[it.lid][it.kind]["not_judged_budget"] += 1
+    fb_model = R.judge_fallback.model if getattr(R, "judge_fallback", None) else None
+    for it in items:
+        if it.key in R.fallback_judged:
+            stats[it.lid][it.kind]["judged_by_fallback"] += 1
+    if R.fallback_judged:
+        R.log(f"  {len(R.fallback_judged)} items were judged by the local fallback judge ({fb_model})", "warn")
+    for f in R.flipped:
+        lid = f["item"].split("/")[0]
+        stats[lid]["edge"]["direction_reversed"] += 1
+        resolved_log[lid].append(f)
     if R.unjudged:
         R.log(f"  ! API budget reached: {len(R.unjudged)} items were not judged (they passed the code checks)", "warn")
     for lec in R.lectures:
         lec.quality = {"judge_model": R.judge.model, "rounds": ROUNDS,
+                       "fallback_judge_model": fb_model if any(k.startswith(lec.id + "/") for k in R.fallback_judged) else None,
                        "checks": {k: dict(v) for k, v in stats[lec.id].items()},
                        "resolved_by_code": resolved_log[lec.id]}
+    # a concept whose every definition was rejected is not a concept worth learning: it leaves the registry
+    gone = [c for c in R.state.concepts.values() if not c.definitions and not c.dropped]
+    for c in gone:
+        c.dropped = True
+    R.state.snapshots.clear()
+    R.log(f"  {len(gone)} concepts left the registry (no definition survived the judge)", "judge")
     S5.refresh_derived(R)  # dropped edges and definitions change maps, links and primers
     R.dump("stage6_judge", {l.id: l.quality for l in R.lectures})

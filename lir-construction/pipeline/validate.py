@@ -104,3 +104,67 @@ def sentence_count(text: str) -> int:
 def missing_keywords(keywords: list[str], answer: str) -> list[str]:
     aw = " ".join(norm_words(answer))
     return [k for k in keywords if " ".join(norm_words(k)) not in aw]
+
+
+def display_name(name: str) -> str:
+    """Names start with a capital letter ("Real environment"); "iPhone"-style words are left alone."""
+    name = name.strip()
+    if not name or re.match(r"^[a-z][A-Z]", name):
+        return name
+    return name[0].upper() + name[1:]
+
+
+PRONOUN_START = re.compile(r"^\s*(it|this|these|they|that|those|here)\b", re.I)
+
+
+def check_definition(term: str, definition: str, what: str) -> list[str]:
+    """A key-term definition must stand on its own: start with the term, say more than the term's own words,
+    and not merely spell out an abbreviation."""
+    errs = []
+    name = re.sub(r"\s*\([^)]*\)\s*$", "", term).strip()          # "Augmented reality (AR)" -> "Augmented reality"
+    if PRONOUN_START.match(definition):
+        errs.append(f'{what}: the definition starts with "{definition.split()[0]}"; start it with the term itself, '
+                    f'e.g. "{display_name(name)} is ..."')
+    head = norm_words(name)
+    first = norm_words(" ".join(definition.split()[:10]))
+    if head and not any(w in first for w in head):
+        errs.append(f'{what}: start the definition with the term itself, e.g. "{display_name(name)} is ..."')
+    extra = [w for w in norm_words(definition) if w not in set(head) and len(w) > 2]
+    if len(extra) < 5:
+        errs.append(f"{what}: the definition is too thin; say what kind of thing it is and what sets it apart")
+    if re.search(r"\b(stands for|is short for|abbreviat\w*|acronym)\b", definition, re.I) and len(extra) < 9:
+        errs.append(f"{what}: do not just spell out the abbreviation; explain what the concept is")
+    if "," in name or len(name.split()) > 5:
+        errs.append(f'{what}: "{term}" is not one concept; give each concept as its own short term')
+    parts = [s for s in re.split(r"(?<=[.!?])\s+", definition.strip()) if s]
+    if len(parts) >= 2 and similar(parts[0], parts[1]) > 0.6:
+        errs.append(f"{what}: the definition repeats itself; say it once, clearly")
+    t = term.replace(".", "").strip()
+    if 2 <= len(t) <= 6 and t.isalnum() and sum(c.isupper() for c in t) >= 2:
+        errs.append(f'{what}: "{term}" is a bare abbreviation; write the full name with the abbreviation in '
+                    f'brackets, e.g. "Augmented reality (AR)"')
+    return errs
+
+
+LECTURE_TALK = re.compile(r"\b(according to the (lecture|instructor|speaker|course|video)|(does|did) the (lecture|instructor|"
+                          r"speaker|course)|the (lecture|instructor|speaker|course) (says?|states?|describes?|mentions?|"
+                          r"suggests?|explains?|discuss\w*|cover\w*|plans?|intends?)|(this|the) (course|lecture|segment)"
+                          r"('s)? (goal|aim|objective|focus|structure)|(primary|main) (goal|focus|objective) of (this|the) "
+                          r"course|stand for\b|stands for\b|(mentioned|described|discussed|covered|listed|stated|presented|"
+                          r"given|shown|introduced) (in|by) (the|this) (lecture|course|segment|video|instructor|speaker)|"
+                          r"(in|from) (the|this) (lecture|segment|video)\b|(will|does) (this|the) course)", re.I)
+
+
+def check_subject_question(stem: str, what: str) -> list[str]:
+    """Quiz and review questions test the subject, not what the lecture or course says, and not abbreviations."""
+    m = LECTURE_TALK.search(stem)
+    if m:
+        return [f'{what}: "{m.group(0)}" — test the subject itself, not what the lecture or course says, and do not '
+                f"ask what an abbreviation stands for"]
+    return []
+
+
+def check_label(label: str, what: str) -> list[str]:
+    if re.search(r"\b(and|or|the|a|an|between|of the)\s*$", label.strip(), re.I):
+        return [f'{what}: the label "{label}" is unfinished; "src label dst" must read as a complete sentence']
+    return []

@@ -18,7 +18,7 @@ from .llm import Call
 from .s2_annotate import prefix
 
 MAX_RECALL, MAX_KEY_TERMS, MAX_SUMMARY_CONCEPTS, MAX_EARLIER_LINKS = 4, 8, 8, 6
-MAP_MAX_LECTURE_NODES, N_OPEN_QUESTIONS = 15, 4
+MAP_MAX_NODES, MAP_MAX_EARLIER, N_OPEN_QUESTIONS = 14, 4, 4
 FAILURE = re.compile(r"\b(fail\w*|error\w*|mistake\w*|wrong|pitfall\w*|bug\w*|careful|break\w*|diverg\w*|"
                      r"go(es)? wrong|doesn'?t work|won'?t work|problem with)\b", re.I)
 
@@ -33,37 +33,62 @@ def _jump(c: dict) -> dict:
 
 
 # ------------------------------------------------------------------ primer
-def _recall_call(R: Run, lec: Lec, pos: int):
+RECALL_RANK = {"prerequisite_of": 0, "used_in": 0, "linked": 1, "mentioned": 2}
+
+
+def _recall_candidates(R: Run, lec: Lec, pos: int) -> dict:
+    """Earlier concepts this lecture builds on, best first: concepts with a prerequisite / used-in edge into this
+    lecture's concepts, then any other edge, then earlier concepts the lecture mentions again. Reads state[k-1] for
+    what the learner knows, plus lecture k's own annotations (its mentions and edges)."""
     prev, now = R.state.snapshot(pos - 1), R.state.snapshot(pos)
-    new = {cid for cid, c in now["concepts"].items() if c["intro_pos"] == pos}
-    links = {}  # earlier concept -> (new concept, rel, evidence)
-    # rule: follow "earlier prerequisite_of / used_in new" edges; other links only if there are none
+    known = {cid: c for cid, c in prev["concepts"].items() if c["definition"]}
+    here = {cid for cid, c in now["concepts"].items() if any(m["lecture_id"] == lec.id for m in c["mentions"])}
+    cands = {}  # earlier concept -> (concept here, rule, evidence sentence ids)
+
+    def add(a, b, rule, ev):
+        if a in known and (a not in cands or RECALL_RANK[rule] < RECALL_RANK[cands[a][1]]):
+            cands[a] = (b, rule, ev)
+
     for e in now["edges"]:
-        if e["rel"] in ("prerequisite_of", "used_in") and e["src"] in prev["concepts"] and e["dst"] in new:
-            links.setdefault(e["src"], (e["dst"], e["rel"], e["evidence"]["sentence_ids"]))
+        if e["evidence"]["lecture_id"] != lec.id:
+            continue
+        if e["rel"] in ("prerequisite_of", "used_in") and e["dst"] in here and e["src"] not in here - set(known):
+            add(e["src"], e["dst"], e["rel"], e["evidence"]["sentence_ids"])
+        for a, b in ((e["src"], e["dst"]), (e["dst"], e["src"])):
+            if b in here and b != a:
+                add(a, b, "linked", e["evidence"]["sentence_ids"])
+    for cid in here & set(known):
+        ms = [m for m in now["concepts"][cid]["mentions"] if m["lecture_id"] == lec.id]
+        add(cid, None, "mentioned", sorted({i for m in ms for i in m["sentence_ids"]})[:4])
+    n_segs = lambda cid: len({m["segment_id"] for m in now["concepts"][cid]["mentions"] if m["lecture_id"] == lec.id})
+    order = sorted(cands, key=lambda c: (RECALL_RANK[cands[c][1]], -n_segs(c), -known[c]["salience"]))
+    return {c: cands[c] for c in order[:MAX_RECALL]}
+
+
+def _recall_call(R: Run, lec: Lec, pos: int):
+    links = _recall_candidates(R, lec, pos)
     if not links:
-        for e in now["edges"]:
-            for a, b in ((e["src"], e["dst"]), (e["dst"], e["src"])):
-                if a in prev["concepts"] and b in new:
-                    links.setdefault(a, (b, "linked", e["evidence"]["sentence_ids"]))
-    earlier = sorted(links, key=lambda c: -prev["concepts"][c]["salience"])[:MAX_RECALL]
-    if not earlier:
         return None
+    prev, now = R.state.snapshot(pos - 1), R.state.snapshot(pos)
+    earlier = list(links)
     lines = []
     for cid in earlier:
-        c, (nb, rel, _) = prev["concepts"][cid], links[cid]
-        lines.append(f"{cid}: {c['name']} (lecture {c['introduced']['lecture_id']}): "
-                     f"{c['definition'] or '(no definition recorded)'} | needed for: {now['concepts'][nb]['name']}")
+        c, (nb, rule, _) = prev["concepts"][cid], links[cid]
+        why = f"needed for: {now['concepts'][nb]['name']}" if nb else "used again in this lecture"
+        lines.append(f"{cid}: {c['name']} (lecture {c['introduced']['lecture_id']}): {c['definition']} | {why}")
     schema = {"type": "object", "additionalProperties": False, "required": ["items"], "properties": {
         "items": {"type": "array", "minItems": len(earlier), "maxItems": len(earlier), "items": {
             "type": "object", "additionalProperties": False, "required": ["concept_id", "question", "recap"],
             "properties": {"concept_id": {"type": "string", "enum": earlier},
                            "question": {"type": "string", "maxLength": 250},
-                           "recap": {"type": "string", "maxLength": 300}}}}}}
+                           "recap": {"type": "string", "maxLength": 400}}}}}}
 
     def check(x):
         got = [i["concept_id"] for i in x["items"]]
-        return [] if sorted(got) == sorted(earlier) else [f"give exactly one item for each of {earlier}"]
+        errs = [] if sorted(got) == sorted(earlier) else [f"give exactly one item for each of {earlier}"]
+        for i in x["items"]:
+            errs += V.check_subject_question(i["question"], f"question about {i['concept_id']}")
+        return errs
 
     prompt = P.RECALL[2].format(role=P.ROLE, lecture_id=lec.id, title=lec.inp.title, items="\n".join(lines))
     return Call(key=f"{lec.id}/recall", lecture_id=lec.id, prompt=prompt, schema=schema, prompt_id=P.RECALL[0],
@@ -94,12 +119,14 @@ def _primer(R: Run, lec: Lec, pos: int, recall_out) -> dict:
             nb, rel, ev = links[cid]
             if R.state.pos_of[c["introduced"]["lecture_id"]] >= pos:  # recall must point to an earlier lecture
                 continue
-            why = (f"{now['concepts'][nb]['name']} builds on it ({rel.replace('_', ' ')} edge)"
-                   if rel != "linked" else f"it is linked to {now['concepts'][nb]['name']}, new in this lecture")
+            why = {"linked": lambda: f"it is linked to {now['concepts'][nb]['name']} in this lecture",
+                   "mentioned": lambda: "this lecture uses it again"}.get(
+                rel, lambda: f"{now['concepts'][nb]['name']} builds on it ({rel.replace('_', ' ')} edge)")()
             recall.append({"concept_id": cid, "concept": c["name"], "for_new_concept_id": nb,
                            "question": it["question"].strip(), "recap": it["recap"].strip(), "jump_to": _jump(c),
                            "intent": intent(["prior_knowledge_activation", "retrieval_practice"], "active", "remember",
-                                            f"primer.recall.{rel}_edge", f"{c['name']} is recalled because {why}.",
+                                            f"primer.recall.{rel}" + ("" if rel == "mentioned" else "_edge"),
+                                            f"{c['name']} is recalled because {why}.",
                                             ev)})
     rationale = (f"Objectives and {len(key_terms)} new key terms are shown before the lecture as an advance organizer"
                  + (f"; {len(recall)} recall items reactivate earlier concepts the lecture builds on." if recall
@@ -111,12 +138,13 @@ def _primer(R: Run, lec: Lec, pos: int, recall_out) -> dict:
 
 
 # ------------------------------------------------------------------ quiz
-QUIZ_TYPES = ["multiple_choice", "multiple_choice", "true_false", "yes_no"]
-QUIZ_RULES = ("Rules: the item must be answerable from the material it tests; test understanding, not wording trivia; "
-              "do not copy the point; multiple choice has exactly 4 options and exactly one correct option, wrong "
-              "options are plausible misconceptions of similar length, no \"all/none of the above\", correct option "
-              "first; multiple-choice and yes/no stems are questions ending with \"?\"; give a one-sentence "
-              "explanation for every option.")
+MAX_QUIZ = 4
+QUIZ_RULES = ("Rules: the item must be answerable from the material it tests; test understanding of the subject, "
+              "not what the course, lecture or instructor says, and never what an abbreviation stands for; do not "
+              "copy the point; multiple choice has exactly 4 options and exactly one correct option, wrong options "
+              "are plausible misconceptions of similar length, no \"all/none of the above\", correct option first; "
+              "multiple-choice and yes/no stems are questions ending with \"?\"; give a one-sentence explanation "
+              "for every option.")
 _s = lambda n: {"type": "string", "maxLength": n}
 MCQ = {"type": "object", "additionalProperties": False, "required": ["stem", "options", "explanations"],
        "properties": {"stem": _s(300), "options": {"type": "array", "minItems": 4, "maxItems": 4, "items": _s(200)},
@@ -125,18 +153,53 @@ TF = {"type": "object", "additionalProperties": False, "required": ["statement",
       "properties": {"statement": _s(300), "explanation_true": _s(300), "explanation_false": _s(300)}}
 YN = {"type": "object", "additionalProperties": False, "required": ["question", "explanation_yes", "explanation_no"],
       "properties": {"question": _s(300), "explanation_yes": _s(300), "explanation_no": _s(300)}}
+ITEM = {"type": "object", "additionalProperties": False,
+        "required": ["key_point", "type", "question", "options", "correct_answer", "explanations"],
+        "properties": {"key_point": {"type": "string"},
+                       "type": {"type": "string", "enum": ["multiple_choice", "true_false", "yes_no"]},
+                       "question": _s(300),
+                       "options": {"type": "array", "maxItems": 4, "items": _s(200)},
+                       "correct_answer": {"type": "string", "enum": ["first option", "True", "False", "Yes", "No"]},
+                       "explanations": {"type": "array", "minItems": 2, "maxItems": 4, "items": _s(300)}}}
 
 
 def _item_errors(t: str, q: dict, point: str, label: str) -> list[str]:
+    """Checks for the single-item formats (MCQ / TF / YN), used by the judge's repair step."""
     errs = []
     stem = q.get("stem") or q.get("statement") or q.get("question") or ""
     if t == "multiple_choice":
         errs += V.check_quiz_options(q["options"], 0, label)
     if t != "true_false" and not stem.strip().endswith("?"):
         errs.append(f"{label}: write the stem as a question ending with '?'")
-    if t != "true_false" and V.similar(stem, point) > 0.9:  # a true/false statement may restate its point
+    if t != "true_false" and point and V.similar(stem, point) > 0.9:
         errs.append(f"{label}: the stem copies the point it tests; ask about it instead")
-    return errs
+    return errs + V.check_subject_question(stem, label)
+
+
+def _gen_item_errors(q: dict, point: str, label: str) -> list[str]:
+    """Checks for one item of the quiz call, where the model chose the item type."""
+    t, stem, ans = q["type"], q["question"].strip(), q["correct_answer"]
+    errs = []
+    if t == "multiple_choice":
+        if len(q["options"]) != 4 or len(q["explanations"]) != 4:
+            errs.append(f"{label}: multiple choice needs exactly 4 options and 4 explanations")
+        else:
+            errs += V.check_quiz_options(q["options"], 0, label)
+        if ans != "first option":
+            errs.append(f'{label}: for multiple choice, put the correct option first and set correct_answer to "first option"')
+    else:
+        want = ("True", "False") if t == "true_false" else ("Yes", "No")
+        if ans not in want:
+            errs.append(f"{label}: correct_answer must be {want[0]} or {want[1]}")
+        if len(q["explanations"]) != 2:
+            errs.append(f"{label}: give 2 explanations, for {want[0]} then {want[1]}")
+    if t != "true_false" and not stem.endswith("?"):
+        errs.append(f"{label}: write the question so it ends with '?'")
+    if t == "true_false" and stem.endswith("?"):
+        errs.append(f"{label}: a true/false item is a statement, not a question")
+    if t != "true_false" and V.similar(stem, point) > 0.9:
+        errs.append(f"{label}: the question copies the key point it tests; ask about it instead")
+    return errs + V.check_subject_question(stem, label)
 
 
 def single_item_schema(t: str, correct: str):
@@ -145,7 +208,9 @@ def single_item_schema(t: str, correct: str):
         return ("multiple-choice item (4 options, correct option first)", MCQ,
                 lambda x: _item_errors(t, x, "", "item"))
     if t == "true_false":
-        return (f"true/false statement whose correct answer is {correct}", TF, lambda x: [])
+        return (f"true/false statement whose correct answer is {correct}", TF,
+                lambda x: V.check_subject_question(x["statement"], "item")
+                + (["item: a true/false item is a statement, not a question"] if x["statement"].strip().endswith("?") else []))
     return (f"yes/no question whose correct answer is {correct}", YN, lambda x: _item_errors(t, x, "", "item"))
 
 
@@ -165,8 +230,20 @@ def single_item_fields(t: str, q: dict, key: str, correct: str) -> dict:
             "explanations": [q["explanation_yes"].strip(), q["explanation_no"].strip()]}
 
 
+def _fields_from_generated(q: dict, key: str) -> dict:
+    t = q["type"]
+    if t == "multiple_choice":
+        return single_item_fields(t, {"stem": q["question"], "options": q["options"], "explanations": q["explanations"]},
+                                  key, "")
+    if t == "true_false":
+        return single_item_fields(t, {"statement": q["question"], "explanation_true": q["explanations"][0],
+                                      "explanation_false": q["explanations"][1]}, key, q["correct_answer"])
+    return single_item_fields(t, {"question": q["question"], "explanation_yes": q["explanations"][0],
+                                  "explanation_no": q["explanations"][1]}, key, q["correct_answer"])
+
+
 def _interleave_target(R: Run, lec: Lec, seg: Seg, pos: int) -> dict | None:
-    """At most one quiz item per segment reviews an earlier lecture: an earlier concept linked to this segment."""
+    """At most one quiz item per segment may review an earlier lecture: an earlier concept linked to this segment."""
     if pos <= 1:
         return None
     now = R.state.snapshot(pos)
@@ -185,39 +262,45 @@ def _interleave_target(R: Run, lec: Lec, seg: Seg, pos: int) -> dict | None:
             "lecture_id": c["introduced"]["lecture_id"], "t": c["introduced"]["t"]}
 
 
-def _quiz_call(R: Run, lec: Lec, seg: Seg, pos: int) -> Call:
-    kps = seg.key_points
-    targets = [kps[i % len(kps)] for i in range(4)]
+def quiz_points(seg: Seg) -> list[dict]:
+    """Key points worth quizzing: the subject ones (course logistics are never quizzed)."""
+    return [kp for kp in seg.key_points if kp.get("about", "subject") == "subject"]
+
+
+def _quiz_call(R: Run, lec: Lec, seg: Seg, pos: int) -> Call | None:
+    kps = quiz_points(seg)
+    if not kps:
+        return None
     inter = _interleave_target(R, lec, seg, pos)
-    rng = _rng(f"{lec.id}/{seg.id}/answers")
-    tf_answer, yn_answer = rng.choice(["True", "False"]), rng.choice(["Yes", "No"])
-    points = [kp["text"] for kp in targets]
-    if inter:  # q2 reviews the earlier concept (interleaving)
-        points[1] = f"{inter['concept']}: {inter['definition']}"
-    lines = []
-    for i, (t, point) in enumerate(zip(QUIZ_TYPES, points), 1):
-        kind = {"multiple_choice": "multiple choice, 4 options",
-                "true_false": f"true/false statement, correct answer: {tf_answer}",
-                "yes_no": f"yes/no question, correct answer: {yn_answer}"}[t]
-        src = (f"testing this point from an earlier lecture ({inter['lecture_id']}), which the learner has seen"
-               if inter and i == 2 else "testing this key point")
-        lines.append(f"q{i} ({kind}), {src}: {point}")
-    schema = {"type": "object", "additionalProperties": False, "required": ["q1", "q2", "q3", "q4"],
-              "properties": {"q1": MCQ, "q2": MCQ, "q3": TF, "q4": YN}}
+    lines = [f"{kp['id']}: {kp['text']}" for kp in kps]
+    if inter:
+        lines.append(f"R (optional: a concept from an earlier lecture ({inter['lecture_id']}) that the learner has seen; "
+                     f"use it only if a good question connects it to this segment): {inter['concept']}: "
+                     f"{inter['definition']}")
+    ids = [kp["id"] for kp in kps] + (["R"] if inter else [])
+    hi = min(MAX_QUIZ, len(ids))
+    item = {**ITEM, "properties": {**ITEM["properties"], "key_point": {"type": "string", "enum": ids}}}
+    schema = {"type": "object", "additionalProperties": False, "required": ["items"], "properties": {
+        "items": {"type": "array", "minItems": 1, "maxItems": hi, "items": item}}}
+    point_of = {kp["id"]: kp["text"] for kp in kps}
+    if inter:
+        point_of["R"] = f"{inter['concept']}: {inter['definition']}"
 
     def check(x):
         errs = []
-        for i, (t, point) in enumerate(zip(QUIZ_TYPES, points), 1):
-            errs += _item_errors(t, x[f"q{i}"], point, f"q{i}")
-        stems = [x["q1"]["stem"], x["q2"]["stem"], x["q3"]["statement"], x["q4"]["question"]]
-        if len({re.sub(r"\W+", " ", t.lower()) for t in stems}) < 4:
-            errs.append("the four items must be different questions")
+        for i, q in enumerate(x["items"], 1):
+            errs += _gen_item_errors(q, point_of.get(q["key_point"], ""), f"question {i}")
+        used = [q["key_point"] for q in x["items"]]
+        if len(set(used)) < len(used):
+            errs.append("each question must test a different key point")
+        if len({re.sub(r"\W+", " ", q["question"].lower()) for q in x["items"]}) < len(x["items"]):
+            errs.append("the questions must all be different")
         return errs
 
-    return Call(key=f"{lec.id}/{seg.id}/quiz", lecture_id=lec.id,
-                prompt=prefix(R, lec, seg) + P.QUIZ[2].format(items="\n".join(lines)), schema=schema,
+    prompt = prefix(R, lec, seg) + P.QUIZ[2].format(points="\n".join(lines), lo=1, hi=hi)
+    return Call(key=f"{lec.id}/{seg.id}/quiz", lecture_id=lec.id, prompt=prompt, schema=schema,
                 prompt_id=P.QUIZ[0], prompt_version=P.QUIZ[1], check=check, stage="stage5_quiz",
-                ctx={"kind": "quiz", "seg": seg, "targets": targets, "tf": tf_answer, "yn": yn_answer, "inter": inter})
+                ctx={"kind": "quiz", "seg": seg, "inter": inter})
 
 
 def _quiz(lec: Lec, seg: Seg, o) -> dict | None:
@@ -226,22 +309,30 @@ def _quiz(lec: Lec, seg: Seg, o) -> dict | None:
         return None
     items = []
     inter = o.call.ctx["inter"]
-    for i, (t, kp) in enumerate(zip(QUIZ_TYPES, o.call.ctx["targets"]), 1):
-        correct = {"true_false": o.call.ctx["tf"], "yes_no": o.call.ctx["yn"]}.get(t, "")
-        item = {"id": f"{seg.id}.Q{i}", "item_type": t, "target_key_point": kp["id"],
-                **single_item_fields(t, x[f"q{i}"], f"{o.call.key}/q{i}", correct)}
+    kp_of = {kp["id"]: kp for kp in seg.key_points}
+    for i, q in enumerate(x["items"], 1):
+        if _gen_item_errors(q, "", "item"):
+            continue  # after the retries, an item that still fails the checks is dropped (the others stay)
+        t = q["type"]
+        item = {"id": f"{seg.id}.Q{len(items) + 1}", "item_type": t, "target_key_point": q["key_point"],
+                **_fields_from_generated(q, f"{o.call.key}/q{i}")}
         bloom = "understand" if t == "multiple_choice" else "remember"
-        if inter and i == 2:
+        if q["key_point"] == "R" and inter:
             item["target_key_point"] = f"{inter['lecture_id']}:{inter['concept_id']}"
             item["interleaved_from"] = inter
             item["intent"] = intent("retrieval_practice", "active", bloom, "quiz.interleave.earlier_concept",
                                     f"Interleaved review of {inter['concept']} from {inter['lecture_id']}, which this "
                                     f"segment builds on.", [])
-        else:
+        elif q["key_point"] in kp_of:
+            kp = kp_of[q["key_point"]]
             item["intent"] = intent("retrieval_practice", "active", bloom, f"quiz.target_key_point.{t}",
-                                    f"Tests key point {kp['id']}: {kp['text'][:120]}", kp["sentence_ids"])
+                                    f"Tests key point {kp['id']}: {kp['text'][:120]}. The model chose {len(x['items'])} "
+                                    f"item(s) for {len(quiz_points(seg))} subject key point(s) and the "
+                                    f"{t.replace('_', ' ')} type for this one.", kp["sentence_ids"])
+        else:
+            continue
         items.append(item)
-    return {"items": items, "explanations_shown": "after_all_items"}
+    return {"items": items, "explanations_shown": "after_item_resolved", "tries": 2}
 
 
 # ------------------------------------------------------------------ summary
@@ -254,13 +345,25 @@ def _summary_parts(R: Run, lec: Lec, seg: Seg, pos: int):
     return now, cs, need
 
 
-def _summary_call(R: Run, lec: Lec, seg: Seg, pos: int) -> Call:
+def review_points(seg: Seg) -> list[dict]:
+    """Key points that get a check-yourself question in the summary: the subject ones, else all of them."""
+    return quiz_points(seg)
+
+
+def summary_call(R: Run, lec: Lec, seg: Seg, pos: int) -> Call:
     now, cs, need = _summary_parts(R, lec, seg, pos)
     names = [c["name"] for c in need]
-    explain = ("Also, for each of these concepts used in the segment, write a one-sentence explanation of it as "
+    kps = review_points(seg)
+    ids = [kp["id"] for kp in kps]
+    explain = ("- explanations: for each of these concepts used in the segment, a one-sentence explanation of it as "
                "it is used here: " + "; ".join(names)) if names else ""
-    schema = {"type": "object", "additionalProperties": False, "required": ["recap", "explanations"], "properties": {
+    schema = {"type": "object", "additionalProperties": False, "required": ["recap", "review", "explanations"],
+              "properties": {
         "recap": {"type": "string", "maxLength": 700},
+        "review": {"type": "array", "minItems": len(ids), "maxItems": len(ids), "items": {
+            "type": "object", "additionalProperties": False, "required": ["key_point", "question", "answer"],
+            "properties": {"key_point": {"type": "string", "enum": ids or ["-"]}, "question": {"type": "string", "maxLength": 250},
+                           "answer": {"type": "string", "maxLength": 400}}}},
         "explanations": {"type": "array", "minItems": len(names), "maxItems": len(names), "items": {
             "type": "object", "additionalProperties": False, "required": ["concept", "explanation"],
             "properties": {"concept": {"type": "string", "enum": names or ["-"]},
@@ -271,14 +374,36 @@ def _summary_call(R: Run, lec: Lec, seg: Seg, pos: int) -> Call:
         n = V.sentence_count(x["recap"])
         if not 2 <= n <= 3:
             errs.append(f"the recap has {n} sentences; write 2 to 3")
+        if sorted(r["key_point"] for r in x["review"]) != sorted(ids):
+            errs.append(f"write exactly one review question for each key point: {ids}")
+        for r in x["review"]:
+            if not r["question"].strip().endswith("?"):
+                errs.append(f"review question for {r['key_point']} must end with '?'")
+            errs += V.check_subject_question(r["question"], f"review question for {r['key_point']}")
+            if V.sentence_count(r["answer"]) > 3:
+                errs.append(f"the answer for {r['key_point']} is too long; 1 or 2 sentences")
         if sorted(e["concept"] for e in x["explanations"]) != sorted(names):
             errs.append(f"explain each of these concepts exactly once: {names}")
         return errs
 
+    points = "\n".join(f"{kp['id']}: {kp['text']}" for kp in kps) or "(none: this segment is about the course itself, so write no review questions)"
     return Call(key=f"{lec.id}/{seg.id}/summary", lecture_id=lec.id,
-                prompt=prefix(R, lec, seg) + P.SUMMARY[2].format(explain=explain), schema=schema,
+                prompt=prefix(R, lec, seg) + P.SUMMARY[2].format(points=points, explain=explain), schema=schema,
                 prompt_id=P.SUMMARY[0], prompt_version=P.SUMMARY[1], check=check, stage="stage5_summary",
                 ctx={"kind": "summary", "seg": seg, "pos": pos})
+
+
+def review_items(lec: Lec, seg: Seg, x: dict | None) -> list[dict]:
+    kp_of = {kp["id"]: kp for kp in seg.key_points}
+    out = []
+    for r in (x or {}).get("review", []):
+        kp = kp_of.get(r["key_point"])
+        if not kp:
+            continue
+        sid = kp["sentence_ids"][0]
+        out.append({"key_point": kp["id"], "question": r["question"].strip(), "answer": r["answer"].strip(),
+                    "sentence_ids": kp["sentence_ids"], "t": lec.sentences[sid].start})
+    return out
 
 
 def _earlier_links(lec: Lec, seg: Seg, pos: int, now: dict) -> list[dict]:
@@ -299,7 +424,8 @@ def _earlier_links(lec: Lec, seg: Seg, pos: int, now: dict) -> list[dict]:
                 if not any(l["concept_id"] == a for l in links):
                     c = now["concepts"][a]
                     links.append({"concept_id": a, "name": c["name"], "relation": e["rel"], "label": e["label"],
-                                  "to_concept_id": b, "jump_to": _jump(c)})
+                                  "to_concept_id": b, "jump_to": _jump(c),
+                                  "direction": "from_earlier" if a == e["src"] else "to_earlier"})
     return links[:MAX_EARLIER_LINKS]
 
 
@@ -318,7 +444,7 @@ def _summary(R: Run, lec: Lec, seg: Seg, pos: int, o) -> dict:
     key_terms = [{"concept_id": t.get("concept_id", ""), "term": t["term"], "definition": t["definition"],
                   "sentence_ids": t["sentence_ids"]} for t in seg.key_terms]
     recap = (o.parsed or {}).get("recap", "").strip()
-    return {"recap": recap, "key_concepts": concepts, "key_terms": key_terms, "earlier_links": links[:MAX_EARLIER_LINKS],
+    return {"recap": recap, "review": review_items(lec, seg, o.parsed), "key_concepts": concepts, "key_terms": key_terms, "earlier_links": links[:MAX_EARLIER_LINKS],
             "learner_highlights": {"source": "ui", "keyed_by": "sentence_id"},
             "intent": intent("summarizing", "passive", "understand", "summary.segment",
                              f"Summary of {seg.id} with {len(concepts)} key concepts and {len(links[:MAX_EARLIER_LINKS])} "
@@ -475,33 +601,38 @@ def oq_from(lec: Lec, x: dict, p: dict, i: int) -> dict:
 
 # ------------------------------------------------------------------ concept map (code only)
 def _concept_map(R: Run, lec: Lec, pos: int) -> dict:
+    """Reference map: this lecture's concepts plus earlier concepts one edge away, cut to a readable core of at most
+    MAP_MAX_NODES connected concepts (at most MAP_MAX_EARLIER of them from earlier lectures). Only links that come
+    from this lecture or touch a concept it introduces are drawn."""
     now = R.state.snapshot(pos)
     C = now["concepts"]
-    here = [c for c in C.values() if any(m["lecture_id"] == lec.id for m in c["mentions"])]
-    here.sort(key=lambda c: -c["salience"])
-    here_ids = {c["id"] for c in here}
-    touching = [e for e in now["edges"] if e["src"] in here_ids or e["dst"] in here_ids]
-    with_edges = {x for e in touching for x in (e["src"], e["dst"]) if x in here_ids}
-    keep = [c for c in here if c["id"] in with_edges][:MAP_MAX_LECTURE_NODES]
-    keep += [c for c in here if c not in keep][:max(0, MAP_MAX_LECTURE_NODES - len(keep))]
-    keep_ids = {c["id"] for c in keep}
-    earlier_ids = {x for e in touching for x in (e["src"], e["dst"])
-                   if x not in here_ids and x in C and C[x]["intro_pos"] < pos
-                   and (e["src"] in keep_ids or e["dst"] in keep_ids)}
-    nodes = keep + [C[x] for x in earlier_ids]
-    node_ids = {c["id"] for c in nodes}
+    here_ids = {c["id"] for c in C.values() if any(m["lecture_id"] == lec.id for m in c["mentions"])}
+    touching = [e for e in now["edges"] if (e["src"] in here_ids or e["dst"] in here_ids)
+                and (e["evidence"]["lecture_id"] == lec.id or C[e["src"]]["intro_pos"] == pos or C[e["dst"]]["intro_pos"] == pos)]
+    deg = {}
+    for e in touching:
+        for x in (e["src"], e["dst"]):
+            deg[x] = deg.get(x, 0) + 1
+    rank = lambda cid: (-min(deg.get(cid, 0), 5), -C[cid]["salience"])
+    own = sorted([x for x in deg if C[x]["intro_pos"] == pos], key=rank)
+    earlier = sorted([x for x in deg if C[x]["intro_pos"] < pos], key=rank)
+    n_earlier = min(MAP_MAX_EARLIER, len(earlier), max(2, MAP_MAX_NODES - len(own)))
+    keep = set(own[:MAP_MAX_NODES - n_earlier] + earlier[:n_earlier])
     edges = [{"src": e["src"], "rel": e["rel"], "dst": e["dst"], "label": e["label"]}
-             for e in now["edges"] if e["src"] in node_ids and e["dst"] in node_ids]
-    # seeds: the lecture's own top concepts (introduced here first), plus 1 or 2 earlier anchors
-    own = [c for c in keep if c["intro_pos"] == pos] + [c for c in keep if c["intro_pos"] != pos]
-    seeds = [c["id"] for c in own[:4]]
-    earlier_nodes = [c["id"] for c in nodes if c["intro_pos"] < pos and c["id"] not in seeds]
-    anchors = sorted(earlier_nodes, key=lambda x: -C[x]["salience"])[:2]
+             for e in touching if e["src"] in keep and e["dst"] in keep]
+    linked = {x for e in edges for x in (e["src"], e["dst"])}
+    # seeds: the lecture's own top concepts (introduced here), plus 1 or 2 earlier anchors
+    intro_here = sorted([c["id"] for c in C.values() if c["intro_pos"] == pos],
+                        key=lambda cid: (cid not in linked, -C[cid]["salience"]))
+    seeds = intro_here[:4]
+    anchors = [x for x in sorted(linked, key=rank) if C[x]["intro_pos"] < pos][:2]
     seeds += anchors
+    node_ids = linked | set(seeds)
+    nodes = sorted((C[x] for x in node_ids), key=lambda c: (c["intro_pos"] < pos, -c["salience"]))
     node = lambda c: {"concept_id": c["id"], "name": c["name"], "lecture_id": c["introduced"]["lecture_id"],
                       "is_seed": c["id"] in seeds}
-    ev = sorted({i for e in now["edges"] if e["evidence"]["lecture_id"] == lec.id
-                 and e["src"] in node_ids and e["dst"] in node_ids for i in e["evidence"]["sentence_ids"]})
+    ev = sorted({i for e in touching if e["evidence"]["lecture_id"] == lec.id
+                 and e["src"] in keep and e["dst"] in keep for i in e["evidence"]["sentence_ids"]})
     return {"instructions": "Build a concept map of this lecture. Start from the seed concepts: add the concepts you "
                             "think belong to the lecture, draw links between related concepts, and label each link "
                             "with a short phrase (for example \"is part of\" or \"is used in\"). Then compare your map "
@@ -510,7 +641,8 @@ def _concept_map(R: Run, lec: Lec, pos: int) -> dict:
             "reference_edges": edges,
             "intent": intent("concept_mapping", "constructive", "analyze", "cmap.state_k.one_edge",
                              f"Concept map with {len(seeds)} seeds ({len(anchors)} from earlier lectures); the reference "
-                             f"has {len(nodes)} nodes and {len(edges)} links, built from state[{lec.id}].", ev)}
+                             f"keeps the {len(linked)} best-connected concepts and their {len(edges)} links (of "
+                             f"{len(touching)} links touching this lecture), built from state[{lec.id}].", ev)}
 
 
 # ------------------------------------------------------------------ after the judge
@@ -522,11 +654,14 @@ def refresh_derived(R: Run):
         edges = {frozenset((e["src"], e["dst"])) for e in now["edges"]}
         primer = lec.phases[0]
         primer["key_terms"] = _primer_key_terms(R, pos)
-        primer["recall"] = [r for r in primer["recall"]
-                            if frozenset((r["concept_id"], r["for_new_concept_id"])) in edges]
+        primer["recall"] = [r for r in primer["recall"] if r["concept_id"] in now["concepts"]
+                            and (r["for_new_concept_id"] is None
+                                 or frozenset((r["concept_id"], r["for_new_concept_id"])) in edges)]
         for ph in lec.phases:
             if ph["type"] == "active":
                 seg = lec.seg(ph["segment_id"])
+                ph["quiz"]["items"] = [q for q in ph["quiz"]["items"] if not q.get("interleaved_from")
+                                       or q["interleaved_from"]["concept_id"] in now["concepts"]]
                 sm = ph["summary"]
                 sm["earlier_links"] = _earlier_links(lec, seg, pos, now)
                 kept = []
@@ -553,8 +688,10 @@ def run(R: Run):
         if c:
             calls.append(c)
         for seg in lec.segments:
-            calls.append(_quiz_call(R, lec, seg, pos))
-            calls.append(_summary_call(R, lec, seg, pos))
+            qc = _quiz_call(R, lec, seg, pos)
+            if qc:  # a segment with only course logistics gets no quiz
+                calls.append(qc)
+            calls.append(summary_call(R, lec, seg, pos))
         plans[lec.id] = _pick_questions(R, lec, pos)
         R.oq_plans = plans
         for i, p in enumerate(plans[lec.id], 1):
@@ -573,19 +710,21 @@ def run(R: Run):
                            "intent": intent("segmenting", "passive", "understand", "segment.stage1.standalone",
                                             f"{seg.id} runs {(seg.end - seg.start) / 60:.1f} min and was cut where "
                                             f"the instructor completes a goal.", [seg.a, seg.b])})
-            qo, so = by[f"{lec.id}/{seg.id}/quiz"], by[f"{lec.id}/{seg.id}/summary"]
-            R.record(qo, "stage5_quiz", f"{lec.id}.{seg.id}.quiz")
+            qo, so = by.get(f"{lec.id}/{seg.id}/quiz"), by[f"{lec.id}/{seg.id}/summary"]
             R.record(so, "stage5_summary", f"{lec.id}.{seg.id}.summary")
-            quiz = _quiz(lec, seg, qo)
-            if quiz is None or not qo.ok:
-                R.flag(lec.id, f"{seg.id}: quiz failed validation: {qo.errors}")
+            quiz = None
+            if qo is not None:
+                R.record(qo, "stage5_quiz", f"{lec.id}.{seg.id}.quiz")
+                quiz = _quiz(lec, seg, qo)
+                if quiz is None or not qo.ok:
+                    R.flag(lec.id, f"{seg.id}: quiz failed validation: {qo.errors}")
             if not so.ok:
                 R.flag(lec.id, f"{seg.id}: summary failed validation: {so.errors}")
             phases.append({"type": "active", "segment_id": seg.id,
                            "intent": intent(["retrieval_practice", "summarizing"], "active", "understand",
                                             "active.after_segment", f"Quiz and summary after {seg.id}.",
                                             [seg.a, seg.b]),
-                           "quiz": quiz or {"items": [], "explanations_shown": "after_all_items"},
+                           "quiz": quiz or {"items": [], "explanations_shown": "after_item_resolved", "tries": 2},
                            "summary": _summary(R, lec, seg, pos, so)})
         oqs = []
         for i in range(1, len(plans[lec.id]) + 1):

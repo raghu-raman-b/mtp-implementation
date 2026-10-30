@@ -19,8 +19,9 @@ FAMILY = {
     "stage5_generate": {"stage5_primer", "stage5_quiz", "stage5_summary", "stage5_open_questions", "stage5_generate"},
     "stage6_calibrate": {"stage6_calibrate"}, "stage6_judge": {"stage6_judge", "stage6_repair"},
 }
-KIND_LABEL = {"subgoal": "sub-goal describes segment", "term": "definition faithful", "quiz": "quiz item answerable + correct",
-              "summary": "summary supported", "oq": "open question sound", "recall": "recall item sound",
+KIND_LABEL = {"subgoal": "sub-goal describes segment", "term": "key term worth learning, definition faithful + useful",
+              "quiz": "quiz item worth asking, answerable + correct",
+              "summary": "summary + review questions supported", "oq": "open question sound", "recall": "recall item sound",
               "edge": "edge true"}
 
 

@@ -23,13 +23,18 @@ the project venv by itself, and starts and stops the model server in the `llm-en
 
 ## Running on another PC
 
-The LIR, the viewer and the LLM answer cache are in the repo; the videos are not (5.5 GB, over GitHub's file limit).
+The LIR, the viewer and the LLM answer cache are in the repo; the videos are not (9 GB for the two courses, over GitHub's file limit).
 
 ```bash
 git clone https://github.com/raghu-raman-b/mtp-implementation.git && cd mtp-implementation/lir-construction
 pip install -r requirements-viewer.txt          # numpy (+ optional sentence-transformers, nltk)
 python3 serve.py                                 # http://localhost:8000; segments play from YouTube
 ```
+
+In the viewer, each segment plays as its own clip with the viewer's controls; captions are off by default and
+clicking a caption highlights that sentence. **Dev mode** (top bar, or open `http://localhost:8000/?dev=1`) shows the
+answers, each item's intent and source sentences, its origin record and the judge's verdict. The server only serves
+`viewer/`, `lir/`, `media/` and `docs/`.
 
 For local videos (offline playback), download them once; no GPU needed:
 
@@ -56,7 +61,8 @@ kv_tokens = 32768
 ```
 
 API spending is checked before every call against `[api] budget_usd` (total across runs) and recorded in
-`api_spend.json`; prices per model go under `[api.prices."<model>"]`. Every field is explained in
+`api_spend.json`. If the budget runs out mid-run, the judge calls that were not sent go to `[judge_fallback]` (a local
+model, now Gemma 4 12B) instead of leaving items unjudged; prices per model go under `[api.prices."<model>"]`. Every field is explained in
 `docs/pipeline.html` → Configuration.
 
 ## Output

@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
-PORTS = {"generator": 8091, "judge": 8093}
+PORTS = {"generator": 8091, "judge": 8093, "judge_fallback": 8095}
 
 
 @dataclass
@@ -49,6 +49,7 @@ class Config:
     api: dict
     videos: dict
     path: Path
+    judge_fallback: ModelSpec | None = None   # local judge for the items left when the API budget runs out
 
     def api_key(self) -> str:
         env = HERE / self.api.get("env_file", ".env")
@@ -78,7 +79,10 @@ def load(path: Path | None = None) -> Config:
         r = d[role]
         return ModelSpec(role, r["model"], int(r.get("slots", 8)), int(r.get("kv_tokens", 32768)),
                          int(r.get("think_budget", 4096)), r.get("reasoning_effort", "medium"))
-    return Config(spec("generator"), spec("judge"), d.get("api", {}), d.get("videos", {"height": 720}), path)
+    fb = spec("judge_fallback") if "judge_fallback" in d else None
+    if fb is not None and not fb.local:
+        raise SystemExit(f"[judge_fallback] in {path} must be a local GGUF model (it runs when the API budget is spent).")
+    return Config(spec("generator"), spec("judge"), d.get("api", {}), d.get("videos", {"height": 720}), path, fb)
 
 
 class BudgetExhausted(RuntimeError):

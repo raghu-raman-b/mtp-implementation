@@ -32,7 +32,7 @@ Transcript:
 {transcript}""")
 
 # ---------------------------------------------------------------- stage 2
-ANNOTATE = ("annotate.subgoal_points", "1", """Task: describe this segment.
+ANNOTATE = ("annotate.subgoal_points", "2", """Task: describe this segment.
 - subgoal: what the learner achieves in this segment, as one short phrase that starts with a verb, for example \
 "Explain why ...", "Derive ...", "Compare ...", "Apply ...". Be specific to this segment, at most 15 words.
 - content_type: the one type that best describes what the instructor mainly does in this segment:
@@ -42,17 +42,34 @@ specific instance), comparison, application_or_demo, recap (summarises earlier m
 opinions, course logistics).
 - key_points: 2 to 5 key points. Each is one atomic, self-contained statement of something the segment teaches \
 (a fact, claim, step or result), understandable without the transcript, with the IDs of the sentences that state it.
-Use only what is said in this segment.""")
+  For each key point, about: "subject" if it is about the subject matter itself, or "course" if it is about the \
+course, the lecture or its organisation (what the course covers, its goals, structure, schedule, assignments or \
+the instructor's plans). Write subject key points as facts of the subject ("Optical flow is ..."), not as \
+reports of the lecture ("The lecture explains that ...").
+Use only what is said in this segment.
 
-TERMS = ("annotate.terms", "2", """Task: list the key terms this segment defines, and the other concepts it relies on.
-- key_terms: up to 6 technical terms or named concepts that the instructor defines, explains or introduces in this \
-segment: the terms a student would put in a glossary for this subject. For each give the term as it is said (a \
-short noun phrase, singular), a one-sentence definition faithful to what the instructor says, and the IDs of the \
-sentences where it is defined or explained. Do not list generic words (such as "example", "system", "technology", \
-"basic understanding"), course logistics, or names of people, institutions or courses.
+""")
+
+TERMS = ("annotate.terms", "3", """Task: list the key terms a student should learn from this segment, and the other concepts it relies on.
+- key_terms: up to 5 terms of the subject that the instructor explains in this segment: concepts a student must \
+understand to follow this course, the kind that belong in the subject's glossary. Leave out generic words (such as \
+"system", "example", "technology", "approach", "application areas", "categories", "forecasts"), passing mentions \
+that the instructor does not explain, course logistics, and names of people, institutions or courses. Never list \
+an abbreviation on its own: write the full name with the abbreviation in brackets, for example \
+"Augmented reality (AR)".
+  For each key term give:
+  - term: the name as the instructor says it, a short noun phrase in the singular.
+  - definition: one or two self-contained sentences that start with the term itself and say what kind of thing \
+it is and what sets it apart from related ideas, for example "Optical flow is the apparent motion of the scene \
+that a viewer perceives when they or the objects around them move." Write it in your own clear words, faithful \
+to what the instructor says: do not copy the instructor's spoken sentences and do not repeat yourself. A student \
+who has never heard the term must understand what it is from the definition alone. Never start with "It", "This", \
+"These" or "They", never just spell out an abbreviation, and do not define the term with its own words. One \
+concept per term: never list several concepts as one term.
+  - sentence_ids: the IDs of the sentences where it is defined or explained.
 - used_concepts: up to 8 other technical concepts of the subject that the segment uses or mentions without \
 explaining them (short noun phrases; no generic words, people, institutions or courses).
-If the segment defines nothing, return an empty key_terms list.""")
+If the segment explains no subject terms, return an empty key_terms list.""")
 
 # ---------------------------------------------------------------- stage 3
 GOALS = ("goals.hierarchy", "1", """{role}
@@ -86,7 +103,7 @@ B: "{b}" ({b_where}): {b_def}
 Do A and B name the same concept (synonyms, abbreviations, or spelling variants), so a learner should treat them as \
 one idea? Answer same=false if one is a special case, a part, or an example of the other.""")
 
-EDGES = ("state.edges", "2", """{role}
+EDGES = ("state.edges", "3", """{role}
 
 Course: {course}
 Lecture {lecture_id}: {title}
@@ -111,40 +128,57 @@ the specific thing is src, the general category is dst)
 - used_in: src is used as a tool or step in dst
 src and dst must be two different concepts.
 label: a link phrase of 2 to 5 words that sits between the two concept names on a concept map, read as \
-"src label dst", e.g. "is a kind of", "is computed by", "is needed for". Do not repeat the concept names in the label.
+"src label dst", e.g. "is a kind of", "is computed by", "is needed for". "src label dst" must read as a complete, \
+grammatical sentence: the label never ends in "and", "or", "the", "a" or "between". Do not repeat the concept \
+names in the label.
 evidence: the sentence IDs from the evidence list that support the edge.
 At least one end of every edge must be a concept from this lecture. Give at most 20 edges, the most important first. \
 Do not invent relations the lecture does not support.""")
 
 # ---------------------------------------------------------------- stage 5
-RECALL = ("primer.recall", "1", """{role}
+RECALL = ("primer.recall", "2", """{role}
 
 The learner is about to watch lecture {lecture_id}: {title}
 It builds on these concepts from earlier lectures:
 {items}
 
 Task: for each earlier concept, write
-- question: a short recall question that makes the learner retrieve the concept from memory (the question must not \
-give the answer away),
-- recap: one sentence reminding the learner what the concept is.""")
+- question: a short recall question that makes the learner retrieve what the concept means or how it works, \
+in the subject's own terms (the question must not give the answer away, and must not just ask what an \
+abbreviation stands for),
+- recap: one or two sentences that answer the question and remind the learner what the concept is.
 
-QUIZ = ("active.quiz", "2", """Task: write a 4-item quiz that checks whether a learner understood this segment. Each item \
-tests the key point assigned to it:
-{items}
+""")
+
+QUIZ = ("active.quiz", "3", """Task: write a short quiz that checks whether a learner understood the subject matter of this \
+segment. These are the segment's key points, by ID:
+{points}
+
+Write {lo} to {hi} questions: as many as the segment has ideas worth testing, and no more. Do not pad the quiz \
+with trivial questions. Each question tests one key point (give its ID), and no two questions test the same point.
+For each question choose the item type that suits its point:
+- multiple_choice: a question with exactly 4 options and exactly one correct option, the correct option first \
+(the order is shuffled later). Wrong options are plausible misconceptions of similar length and style. No "all of \
+the above" or "none of the above". correct_answer: "first option".
+- true_false: a statement that the segment makes clearly true or clearly false; correct_answer: "True" or "False".
+- yes_no: a question with a clear yes or no answer; correct_answer: "Yes" or "No".
+explanations: one sentence per option saying why it is right or wrong (multiple choice: 4, in option order; \
+true/false: 2, for True then False; yes/no: 2, for Yes then No).
 
 Rules:
-- Every item must be answerable from this segment alone. Test understanding, not wording trivia.
-- Do not copy the key point. Write multiple-choice stems and yes/no items as questions ending with "?", and do \
-not let the correct option repeat the wording of the stem.
-- Multiple choice: exactly 4 options and exactly one correct option. Wrong options are plausible misconceptions. \
-All options have similar length and style. No "all of the above" or "none of the above". Put the correct option \
-first (the order is shuffled later).
-- True/false: write a statement whose correct answer is the one given above.
-- Yes/no: write a question whose correct answer is the one given above.
-- For every option, write a one-sentence explanation of why it is right or wrong.""")
+- Test understanding of the subject: what something is, how or why it works, how ideas relate, when to use it. \
+Never test what the course, the lecture or the instructor says, covers or plans, and never write "according to \
+the lecture" or "does the lecture describe". Do not ask what an abbreviation stands for.
+- Every question must be answerable from this segment alone.
+- Do not copy the key point. Multiple-choice and yes/no questions end with "?"; a true/false item is a statement.""")
 
-SUMMARY = ("active.summary", "1", """Task: write a recap of this segment for a learner who has just watched it: 2 to 3 sentences, \
-plain language, nothing that is not in the segment, and do not start with "In this segment".
+SUMMARY = ("active.summary", "2", """Task: write an interactive summary of this segment for a learner who has just watched it.
+- recap: 2 to 3 sentences in plain language, nothing that is not in the segment, and do not start with "In this \
+segment".
+- review: one check-yourself question for each of these key points, with a short answer (1 or 2 sentences) that \
+the learner can reveal after thinking. The question asks about the subject (not about the lecture) and does not \
+give the answer away.
+{points}
 {explain}""")
 
 OQ_TASKS = {

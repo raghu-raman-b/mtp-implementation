@@ -86,6 +86,7 @@ class Group:
     occs: list[dict]              # {segment_id, sentence_ids, defined}
     emb: np.ndarray | None = None
     norms: set = field(default_factory=set)   # normalized name plus aliases ("(AR)")
+    definitions: list = field(default_factory=list)  # every definition given in this lecture, in order
 
 
 @dataclass
@@ -98,6 +99,7 @@ class Concept:
     intro_pos: int
     mentions: list[dict]          # {lecture_id, segment_id, sentence_ids, pos}
     emb: np.ndarray
+    dropped: bool = False         # every definition was rejected by the judge: not a concept worth learning
 
 
 @dataclass
@@ -113,14 +115,16 @@ class CourseState:
             return self.snapshots[k]
         concepts = {}
         for c in self.concepts.values():
-            if c.intro_pos > k:
+            if c.intro_pos > k or c.dropped:
                 continue
-            defs = [d for d in c.definitions if d[0] <= k]
+            # the definition shown: from the earliest lecture, one that passes the definition checks, about 25 words
+            defs = sorted((d for d in c.definitions if d[0] <= k),
+                          key=lambda d: (d[0], bool(V.check_definition(c.name, d[2], "")), abs(len(d[2].split()) - 25)))
             mentions = [{kk: v for kk, v in m.items() if kk != "pos"} for m in c.mentions if m["pos"] <= k]
             concepts[c.id] = {"id": c.id, "name": c.name, "aliases": c.aliases,
                               "definition": defs[0][2] if defs else None, "introduced": c.introduced,
                               "intro_pos": c.intro_pos, "mentions": mentions}
-        edges = [e for e in self.edges if e["pos"] <= k]
+        edges = [e for e in self.edges if e["pos"] <= k and e["src"] in concepts and e["dst"] in concepts]
         degree = {cid: 0 for cid in concepts}
         for e in edges:
             for end in (e["src"], e["dst"]):
@@ -172,6 +176,8 @@ def _groups(R: Run) -> list[Group]:
                 g.norms.add(norm(alias))
             if defined and not g.definition:
                 g.definition = definition
+            if defined and definition not in g.definitions:
+                g.definitions.append(definition)
             g.occs.append({"segment_id": sid, "sentence_ids": sids, "defined": defined})
     if groups:
         embs = embed([g.names[0] for g in groups])
@@ -264,15 +270,15 @@ def _build_registry(R: Run, groups: list[Group], roots: dict[int, int]) -> Cours
             occ = next((o for o in g.occs if o["defined"]), g.occs[0])
             seg = lec.seg(occ["segment_id"])
             sid = occ["sentence_ids"][0] if occ["sentence_ids"] else seg.a
-            st.concepts[cid] = Concept(cid, g.names[0], [], [], {
+            st.concepts[cid] = Concept(cid, V.display_name(g.names[0]), [], [], {
                 "lecture_id": lec.id, "segment_id": seg.id, "sentence_id": sid, "t": lec.sentences[sid].start},
                 g.pos, [], g.emb)
         c = st.concepts[cid_of_root[r]]
         for n in g.names:
             if n != c.name and n not in c.aliases and norm(n) != norm(c.name):
                 c.aliases.append(n)
-        if g.definition:
-            c.definitions.append((g.pos, g.lecture_id, g.definition))
+        for d in g.definitions:  # all of them: if the judge rejects one, another can take its place
+            c.definitions.append((g.pos, g.lecture_id, d))
         for o in g.occs:
             c.mentions.append({"lecture_id": g.lecture_id, "segment_id": o["segment_id"],
                                "sentence_ids": o["sentence_ids"], "pos": g.pos})
@@ -281,7 +287,7 @@ def _build_registry(R: Run, groups: list[Group], roots: dict[int, int]) -> Cours
                 seg.concept_ids.append(c.id)
         for seg in lec.segments:
             for t in seg.key_terms:
-                if norm(t["term"]) == g.norm:
+                if norm(split_alias(t["term"])[0]) == g.norm or norm(t["term"]) == g.norm:
                     t["concept_id"] = c.id
     return st
 
@@ -332,6 +338,7 @@ def _edges(R: Run, st: CourseState):
             errs = []
             if len(e["label"].split()) > 6:
                 errs.append(f'edge {e["src"]} -> {e["dst"]}: the label "{e["label"]}" is too long; use 2 to 5 words')
+            errs += V.check_label(e["label"], f'edge {e["src"]} -> {e["dst"]}')
             if e["src"] == e["dst"]:
                 errs.append(f'edge {e["src"]} -> {e["dst"]} links a concept to itself')
             if e["src"] not in here_names and e["dst"] not in here_names:
