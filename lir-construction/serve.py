@@ -158,7 +158,7 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*a, directory=str(HERE), **kw)
 
     def log_message(self, fmt, *args):
-        if "/api/" in (args[0] if args else ""):
+        if args and "/api/" in str(args[0]):
             sys.stderr.write("%s\n" % (fmt % args))
 
     def end_headers(self):
@@ -167,6 +167,9 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        if self.path == "/favicon.ico":  # no icon; answer quietly instead of a 404
+            self.send_response(HTTPStatus.NO_CONTENT)
+            return self.end_headers()
         if self.path in ("/", "/index.html"):
             self.path = "/viewer/index.html"
         if self.headers.get("Range") and self.path.startswith("/media/"):

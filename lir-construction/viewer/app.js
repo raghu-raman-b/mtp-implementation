@@ -190,12 +190,17 @@ function lectureCard(lid, i) {
     h("div", { class: "row", style: "margin-top:10px" },
       h("button", { class: "primary", onclick: () => go(lid, firstOpenPhase(lid)) },
         p >= 1 ? "Review lecture" : p > 0 ? "Continue lecture" : "Start lecture")));
+  const toggle = h("button", { class: "ghost small", onclick: (e) => {
+    e.stopPropagation(); body.hidden = !body.hidden; toggle.textContent = body.hidden ? "Show parts ▾" : "Hide parts ▴";
+  } }, "Show parts ▾");
   return h("div", { class: "card lec" + (p >= 1 ? " done" : "") },
-    h("div", { class: "lec-head", onclick: () => { body.hidden = !body.hidden; } },
+    h("div", { class: "lec-head", onclick: () => go(lid, firstOpenPhase(lid)), title: "Open this lecture" },
       h("div", { class: "lec-num" }, p >= 1 ? "✓" : i + 1),
-      h("div", {}, h("div", { class: "lec-title" }, L.title), h("div", { class: "lec-goal" }, L.roadmap.lecture_goal)),
-      h("div", { class: "lec-meta" }, p >= 1 ? "Done" : p > 0 ? `${Math.round(p * 100)}%` : "",
-        p > 0 && p < 1 ? h("div", { class: "progress" }, h("div", { style: `width:${p * 100}%` })) : null)),
+      h("div", {}, h("div", { class: "lec-title" }, L.title), h("div", { class: "lec-goal" }, L.roadmap.lecture_goal),
+        h("div", { style: "margin-top:4px" }, toggle)),
+      h("div", { class: "lec-meta" },
+        h("button", { class: p > 0 && p < 1 ? "primary" : "", onclick: (e) => { e.stopPropagation(); go(lid, firstOpenPhase(lid)); } },
+          p >= 1 ? "Review ▸" : p > 0 ? `Continue · ${Math.round(p * 100)}% ▸` : "Open ▸"))),
     body);
 }
 
@@ -231,7 +236,9 @@ function renderLecture(lid, idx, t) {
   const li = S.order.indexOf(lid);
   const top = h("div", { class: "topbar" },
     h("button", { class: "ghost", onclick: () => { location.hash = "#/"; } }, "← Roadmap"),
-    h("span", { class: "title" }, `${lectureName(lid)} · ${L.title}`),
+    h("select", { class: "lec-switch", title: "Go to another lecture",
+      onchange: (e) => go(e.target.value, firstOpenPhase(e.target.value)) },
+      S.order.map((x, k) => h("option", { value: x, selected: x === lid }, `Lecture ${k + 1} · ${S.lec[x].title}`))),
     h("div", { class: "progress", style: "width:140px", id: "lecbar" }, h("div", { style: `width:${lectureProgress(lid) * 100}%` })),
     h("span", { class: "spacer" }), themeButton());
   const main = h("div", { class: "main" });
