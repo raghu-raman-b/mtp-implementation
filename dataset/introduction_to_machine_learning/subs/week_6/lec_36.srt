@@ -1,0 +1,443 @@
+1
+00:00:47,640 --> 00:00:53,790
+So look at the probability of a data point in M region, belonging to class K which is PMK right
+
+2
+00:00:53,790 --> 00:01:03,480
+not talking politics but so you estimate that by there is no counting the number of data points of
+
+3
+00:01:03,480 --> 00:01:08,400
+class k and region m and dividing it by the total number of data points is fairly safe further this
+
+4
+00:01:08,400 --> 00:01:15,640
+is how I do the prediction right so what about how do I grow a tree to do classification it
+
+5
+00:01:15,640 --> 00:01:24,270
+is exactly the same as this except that I do not use square error right can I use
+
+6
+00:01:32,130 --> 00:01:41,550
+square error why not exactly. So it depends on how I encode it right I
+
+7
+00:01:41,550 --> 00:01:47,280
+mean earlier in the linear regression you are kind of faking it by encoding it as indicator
+
+8
+00:01:47,280 --> 00:01:53,100
+variables or whatever right so here I am going to have actual outputs I can still look at the
+
+9
+00:01:53,100 --> 00:01:59,070
+distance of the prediction vector to the indicator variable vector right and try to
+
+10
+00:01:59,070 --> 00:02:05,580
+do that right I can still do that but there are better ways of doing it right so the first thing
+
+11
+00:02:05,580 --> 00:03:06,180
+I can use is the miss classification error. So denote by K(m) the class label that I am going
+
+12
+00:03:06,180 --> 00:03:14,760
+to assign to the entire region M just like we did the C hat(m) as the, the response that I am going
+
+13
+00:03:14,760 --> 00:03:20,430
+to assign for the entire region M so k of M is the rest for the class label I am going to assign for
+
+14
+00:03:20,430 --> 00:03:27,840
+the entire region M okay that just say arg max of this okay. so now the Miss classification error
+
+15
+00:03:27,840 --> 00:03:34,170
+is I am going to count all the data points in RM which do not have K(m) as their label
+
+16
+00:03:34,170 --> 00:03:42,660
+right that is a Miss classification right is all those data points the label I will be outputting
+
+17
+00:03:42,660 --> 00:03:48,570
+K(m) right for all the data points in RM. I will be outputting K(m) has the label so all the
+
+18
+00:03:48,570 --> 00:03:54,600
+data points in RM which do not really have k of M has their label or misclassified right and divided
+
+19
+00:03:54,600 --> 00:03:59,670
+by the total number of data points that gives me the average miss classification error is there
+
+20
+00:03:59,670 --> 00:04:26,080
+some way to simplify this 1 minus Pm K(m) okay so because the fraction of data points that will be
+
+21
+00:04:26,080 --> 00:04:33,280
+correctly classified or Pm K(m) right. Because the two label is K(m) I am outputting K(m)
+
+22
+00:04:33,280 --> 00:04:37,690
+there will be correctly classified right so the fraction that you be misclassified is 1 minus Pm
+
+23
+00:04:37,690 --> 00:04:42,070
+K(m) okay so that is a Miss classification error so how do I use this essentially I
+
+24
+00:04:42,070 --> 00:04:49,930
+plug it in here right find the split point and splitting variables such that the Miss
+
+25
+00:04:49,930 --> 00:04:55,270
+classification error in each of the regions is minimized at the sum of the Miss classification
+
+26
+00:04:55,270 --> 00:05:03,280
+error in each of the regions many ways. So remember that this has a very specific solution
+
+27
+00:05:03,280 --> 00:05:07,540
+for minimizing so you do not really have to do this minimization is a fixed process right as
+
+28
+00:05:07,540 --> 00:05:13,300
+soon as you find the region you just take the most abundant class in that region and set that
+
+29
+00:05:13,300 --> 00:05:19,600
+as the class label for the entire region okay right is it clear I will do the how you used
+
+30
+00:05:19,600 --> 00:05:23,500
+to miss classification error rate. So the next thing we would like to look at this
+
+31
+00:05:40,990 --> 00:05:50,140
+so one of the downsides of not being able to say anything very theoretically formal about decision
+
+32
+00:05:50,140 --> 00:06:01,270
+trees is that it leads to dogmas so there are two camps of people who are very sure that this
+
+33
+00:06:01,270 --> 00:06:06,640
+is the right way to do decision trees right they, they just keep fighting each other right and there
+
+34
+00:06:06,640 --> 00:06:13,030
+are two very, very popular measures for doing classification using decision trees okay.
+
+35
+00:06:13,030 --> 00:06:26,830
+So the first one is called the Gini index ok so the Gini index was actually originally proposed
+
+36
+00:06:26,830 --> 00:06:36,190
+by economists to look at disparity of wealth right so let us look at the wealth distribution
+
+37
+00:06:36,190 --> 00:06:43,570
+in a population okay so are there more rich people than poor people or their lot more
+
+38
+00:06:43,570 --> 00:06:48,730
+poor people than rich people I mean how does a disparity of the distribution of wealth okay
+
+39
+00:06:48,730 --> 00:06:55,150
+that is essentially introduced that so in that in some sense you can roughly see that right.
+
+40
+00:06:55,150 --> 00:07:01,570
+So are there more class one data points than class two data points or anything else suppose
+
+41
+00:07:01,570 --> 00:07:08,500
+I have K classes okay in this particular region are there more lot more class one data points
+
+42
+00:07:08,500 --> 00:07:16,000
+than 22 k if I am able to split my regions like that then I am doing something good right because
+
+43
+00:07:16,000 --> 00:07:25,450
+I can output the class level as one and I will have less error correct so if I am able to split
+
+44
+00:07:25,450 --> 00:07:29,080
+region says that the class distribution is actually skewed within that region.
+
+45
+00:07:29,080 --> 00:07:35,620
+Then I am doing something good and if the class distribution is uniform within that region then
+
+46
+00:07:35,620 --> 00:07:40,870
+I am doing something bad that because that is not a good region because whatever class table
+
+47
+00:07:40,870 --> 00:07:46,780
+I output I am going to have a lot of error but if the class distribution is skewed in favor of one
+
+48
+00:07:46,780 --> 00:07:53,620
+class over the other then I can output that class in fact the ideal leaf would be so skewed.
+
+49
+00:07:54,340 --> 00:08:02,260
+There is only one class present click so the skewness measure is what I have to look for
+
+50
+00:08:02,260 --> 00:08:12,790
+and the more skewed the data is the better so the Gini index is actually more popularly given
+
+51
+00:08:12,790 --> 00:08:48,370
+by this form so I do this for each region so this is for a single region I do this for all regions
+
+52
+00:09:46,610 --> 00:09:54,350
+so the other popular measure is cross entropy or deviance but it is more popularly known by the
+
+53
+00:09:54,350 --> 00:09:59,420
+name I will give it to you in a minute right. And this is given by this expression this looks
+
+54
+00:09:59,420 --> 00:10:08,360
+familiar to you guys Shannon's entropy kind of thing races cross entropy where is the cross part
+
+55
+00:10:08,360 --> 00:10:17,930
+you have P hat mk and P hat mk. there so why do they call it cross entropy okay it turns out that
+
+56
+00:10:17,930 --> 00:10:27,920
+that they see the true output label distribution that you have right from the data that is given to
+
+57
+00:10:27,920 --> 00:10:35,090
+you right and this is what you do for estimating this is the estimated label distribution.
+
+58
+00:10:35,090 --> 00:10:41,900
+And since you are using an unbiased estimator for the probabilities you end up actually estimating
+
+59
+00:10:41,900 --> 00:10:46,940
+the true probabilities so that is why it is called cross, cross entropy this, this is supposed to be
+
+60
+00:10:46,940 --> 00:11:09,440
+the that is the estimated okay and since you are anyway just counting the number of labels of each
+
+61
+00:11:09,440 --> 00:11:13,100
+class and then dividing it and doing this so it is essentially end up with the same thing okay.
+
+62
+00:11:13,100 --> 00:11:18,980
+So the first one is the output label distribution this is the estimated one and so if you end
+
+63
+00:11:18,980 --> 00:11:26,030
+up with the same thing right so another way of thinking about it is if you look at the prevalence
+
+64
+00:11:26,030 --> 00:11:32,810
+of the labels in the data and I give you100 data points right essentially if I am going to randomly
+
+65
+00:11:32,810 --> 00:11:42,650
+pick a data point and look at the label right so this is the probability of seeing label k correct
+
+66
+00:11:42,650 --> 00:11:54,140
+so going back to your ideas of Shannon’s entropy so if I have if I have a sequence of 100 things I
+
+67
+00:11:54,140 --> 00:12:01,310
+have k possible symbols that can occur right. And this gives me the number of bits I need to
+
+68
+00:12:01,310 --> 00:12:08,810
+encode these k symbols given the relative frequency of those symbols right if I had
+
+69
+00:12:08,810 --> 00:12:16,130
+not done the splitting right if I had not split into M regions right if I had kept the data as
+
+70
+00:12:16,130 --> 00:12:24,800
+a whole I would have required some number of bits to encode the output level that make sense suppose
+
+71
+00:12:24,800 --> 00:12:33,440
+let us look at it this way so I have my data so there are 400 data points of each class.
+
+72
+00:12:34,340 --> 00:12:39,590
+I will require some amount of bits to encode this right half, half the entropy is I mean
+
+73
+00:12:39,590 --> 00:12:43,700
+the probability is half and half I will need some amount of thing to encode this suppose I split it
+
+74
+00:12:43,700 --> 00:13:09,890
+up so that I get I get two regions one gives me 400,150 other gives me 0 and 250 that is how many
+
+75
+00:13:09,890 --> 00:13:21,050
+bits do I need to encode the output variable here none right always the big improvement.
+
+76
+00:13:21,050 --> 00:13:23,990
+I do not need any bits for encoding the variable here and here I will need some
+
+77
+00:13:23,990 --> 00:13:29,960
+but that certainly be less than this because we know half of the worst case right so in,
+
+78
+00:13:29,960 --> 00:13:35,120
+in terms of the number of bits that I need for specifying the label I have
+
+79
+00:13:35,120 --> 00:13:40,130
+some improvement when I do the split when I go from 400, 400 when you go from there
+
+80
+00:13:40,130 --> 00:13:44,810
+and I get these two splits the number of bits I need has come down right.
+
+81
+00:13:44,810 --> 00:13:54,200
+So I have gained some information by doing this split right so how much information have gained?
+
+82
+00:14:01,460 --> 00:14:12,680
+sorry right so the original entropy minus this quantity gives me the amount of information I
+
+83
+00:14:12,680 --> 00:14:17,330
+have gained right so sometimes this is also known as the information gain criteria because of that
+
+84
+00:14:17,330 --> 00:14:34,370
+right so either you, you minimize the cross center of PR you maximize the information gain let us
+
+85
+00:14:34,370 --> 00:14:40,580
+information gain is essentially some constant minus this so that is information again.
+
+86
+00:14:40,580 --> 00:14:44,540
+Therefore you maximize the information gain or minimize entropy so again the process is
+
+87
+00:14:44,540 --> 00:14:55,280
+very simple you for every feature J you try to find that split point S such that this or this
+
+88
+00:14:55,280 --> 00:15:01,310
+is optimized right one of these three things but the most popular or actually the Gini index and
+
+89
+00:15:01,310 --> 00:15:18,130
+the cross entropy so one thing I want to point out so when you are splitting this into two
+
+90
+00:15:18,130 --> 00:15:22,330
+things right and then I have to find out the overall cross-entropy are devious right.
+
+91
+00:15:22,330 --> 00:15:32,140
+So what I need to do is so the entropy of this will be weighted by 250 the entropy of
+
+92
+00:15:32,140 --> 00:15:39,790
+this will be weighted by 550 by 800 right both of these cases so I will have to have some kind
+
+93
+00:15:39,790 --> 00:15:45,040
+of weighted combination of the code or the Gini index whatever it is I have to have a
+
+94
+00:15:45,040 --> 00:15:51,310
+weighted combination of the Gini index of the individual partitions or the deviance of the
+
+95
+00:15:51,310 --> 00:15:56,380
+individual partitions so I have to be careful about that just do not add the M up okay.
+
+96
+00:15:56,380 --> 00:16:06,250
+You have to use the weighted combination so for this it is fine because it is per region yeah
+
+97
+00:16:06,250 --> 00:16:15,880
+so again you have to be we have to make sure you are combining it appropriately right yeah there is
+
+98
+00:16:15,880 --> 00:16:26,860
+only one output will come right only one symbol is present there is only one symbol present you
+
+99
+00:16:26,860 --> 00:16:31,000
+do not need any bits to encode it because that is only symbol this present class one will not
+
+100
+00:16:31,000 --> 00:16:35,800
+happen so, so 400, 400 means class one there are 400 data points class 2 there are 400 data
+
+101
+00:16:35,800 --> 00:16:40,360
+points 0 to50 means class 1 there are zero data points class 2 there are 250 data points.
+
+102
+00:16:40,360 --> 00:16:44,770
+The symbols I am talking about are the classes right here there will be no occurrence of
+
+103
+00:16:44,770 --> 00:16:57,590
+class 0 and only class 2will occur okay so one again one other caveat we are using this for
+
+104
+00:16:57,590 --> 00:17:02,900
+classification you are doing cause complexity pruning right almost always you are supposed to
+
+105
+00:17:02,900 --> 00:17:06,080
+use the Miss classification error because that is eventually what you are trying to
+
+106
+00:17:06,080 --> 00:17:10,400
+optimize so you grow that tree with whatever error measure you want but when you prove the
+
+107
+00:17:10,400 --> 00:17:15,170
+tree use the Miss classification error. Because at the end of the day I am going to
+
+108
+00:17:15,170 --> 00:17:19,010
+evaluate you based on the Miss classification error not on the Gini index or information gain
+
+109
+00:17:19,010 --> 00:17:23,780
+or anything and these are in some sense they are relative measures we are good for comparing one
+
+110
+00:17:23,780 --> 00:17:29,780
+feature against the other right but the final performance measure is only miss classification
+
+111
+00:17:29,780 --> 00:17:33,080
+error right so use that when you are doing the protein ok so I will stop here.

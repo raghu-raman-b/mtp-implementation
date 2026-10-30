@@ -1,0 +1,1331 @@
+1
+00:00:15,839 --> 00:00:26,070
+So we started with defining Gaussian mixture models which are just superposition of K different
+
+2
+00:00:26,070 --> 00:00:31,800
+Gaussians, and in a general mixture model instead of a Gaussian, you can use any other
+
+3
+00:00:31,800 --> 00:00:39,210
+probability distribution. So the three important set of parameter are the mixture weights,
+
+4
+00:00:39,210 --> 00:00:44,469
+the mean and the covariance matrices of each of the Gaussians, and there are K components.
+
+5
+00:00:44,469 --> 00:00:50,329
+I have still not come back to, someone had asked how do we estimate K. We will see that
+
+6
+00:00:50,329 --> 00:00:53,780
+today.
+
+7
+00:00:53,780 --> 00:01:00,190
+We saw some examples of how to fit Gaussian mixture models. We saw that Gaussian mixture
+
+8
+00:01:00,190 --> 00:01:06,860
+models are good models, when there is, naturally good models when there is a cluster structure
+
+9
+00:01:06,860 --> 00:01:15,210
+in the data so that each of those clusters can be nicely fitted with a Gaussian.
+
+10
+00:01:15,210 --> 00:01:25,709
+Then we saw that the Gaussian mixture model can be very intuitively explained through
+
+11
+00:01:25,709 --> 00:01:32,780
+the generative procedure, where you assume that there is a latent variable that basically
+
+12
+00:01:32,780 --> 00:01:38,490
+tells you which Gaussian to pick, and then once you pick that, you sample your, or you
+
+13
+00:01:38,490 --> 00:01:44,429
+generate your data from that particular Gaussian. I think this is very important to remember
+
+14
+00:01:44,429 --> 00:01:51,530
+as it makes a lot of the math, it makes sense of a lot of the math.
+
+15
+00:01:51,530 --> 00:01:57,140
+Then we saw our posterior probabilities, which are also called responsibilities, the posterior
+
+16
+00:01:57,140 --> 00:02:04,179
+probability of the latent variable taking a value k given the data, and we saw it coming
+
+17
+00:02:04,179 --> 00:02:10,399
+up repeatedly in all our calculations.
+
+18
+00:02:10,399 --> 00:02:16,400
+So the estimation, assuming that we know K, on P dimensional data, the estimation problem
+
+19
+00:02:16,400 --> 00:02:22,400
+is to estimate these pi k s, mu k, and sigma k for each of the Gaussians, right.
+
+20
+00:02:22,400 --> 00:02:30,650
+And we saw that initially, we first saw that if we assume that we know the responsibilities,
+
+21
+00:02:30,650 --> 00:02:39,530
+then the math works out very nicely, and we get very intuitive forms for the different
+
+22
+00:02:39,530 --> 00:02:48,790
+parameters.
+
+23
+00:02:48,790 --> 00:02:56,680
+And then we designed an iterative algorithm that essentially guesses the parameter first,
+
+24
+00:02:56,680 --> 00:03:02,730
+and computes these responsibilities, and then refines the guess in each iteration. And later
+
+25
+00:03:02,730 --> 00:03:09,080
+we saw that this actually is the EM algorithm for Gaussian mixture models, right.
+
+26
+00:03:09,080 --> 00:03:16,010
+So let’s see this more carefully. In general EM had been proposed for data which had some
+
+27
+00:03:16,010 --> 00:03:27,299
+hidden datapoints, not known when you get the data set. And so Z is, we denote that
+
+28
+00:03:27,299 --> 00:03:32,370
+hidden data by Z, and for the purpose of this discussion we assumed it’s discrete, and
+
+29
+00:03:32,370 --> 00:03:37,599
+later we saw that in the case of the Gaussian mixture models we can take latent variables
+
+30
+00:03:37,599 --> 00:03:43,180
+to be hidden. That’s a common trick used in many other models.
+
+31
+00:03:43,180 --> 00:03:49,599
+And then we saw that EM is a good approach to take when the joint likelihood, the complete
+
+32
+00:03:49,599 --> 00:03:58,139
+data likelihood can be easily parameterized. And the, if that is a, if we make that assumption
+
+33
+00:03:58,139 --> 00:04:04,340
+then we see that we can get the marginal likelihood also.
+
+34
+00:04:04,340 --> 00:04:14,920
+So what is EM? The key idea is that, so this is the key idea - we take the expectation
+
+35
+00:04:14,920 --> 00:04:21,209
+of the log likelihood of the complete data under the distribution of latent variables
+
+36
+00:04:21,209 --> 00:04:26,950
+assuming the guesses of the parameter that we have made, right.
+
+37
+00:04:26,950 --> 00:04:35,110
+And instead of computing the maximum likelihood, we compute the parameters that maximizes this
+
+38
+00:04:35,110 --> 00:04:43,220
+expectation, and this is the key idea of EM, right. Actually if you remember this, I mean
+
+39
+00:04:43,220 --> 00:04:50,140
+this should be the main take away of this class - this formula.
+
+40
+00:04:50,140 --> 00:04:59,560
+So then we saw that if we use this formulation, then for Gaussian mixture models, we essentially
+
+41
+00:04:59,560 --> 00:05:02,680
+get back the iterative algorithm that we had guessed.
+
+42
+00:05:02,680 --> 00:05:09,500
+We used this, so this expectation is also called Q function in the literature. We get
+
+43
+00:05:09,500 --> 00:05:16,460
+a very nice form for the Q function. The reason, so reason we get a nice form is one because
+
+44
+00:05:16,460 --> 00:05:22,120
+we are using an expectation operator which pushes the summation to the outside, and the
+
+45
+00:05:22,120 --> 00:05:28,180
+second reason is that we get, so we get the logarithm of, we get this logarithm of the
+
+46
+00:05:28,180 --> 00:05:33,121
+Gaussian without any summation inside, the expectation pushes it outside, right. That
+
+47
+00:05:33,121 --> 00:05:38,210
+was the reason why the math worked out.
+
+48
+00:05:38,210 --> 00:05:45,430
+And the derivatives became very easy to calculate for the case of Gaussian, right.
+
+49
+00:05:45,430 --> 00:05:53,150
+We essentially got back the same formulas for mu k, Sigma k and pi k that we had guessed
+
+50
+00:05:53,150 --> 00:05:57,259
+earlier, asumming that we know the responsibilities, right.
+
+51
+00:05:57,259 --> 00:06:04,980
+So the general EM algorithm is this - guess the posterior distribution of the hidden data
+
+52
+00:06:04,980 --> 00:06:12,300
+or the latent variables, and then refine your guess by taking, by maximizing the Q function,
+
+53
+00:06:12,300 --> 00:06:17,780
+which is the expectation of the complete data likelihood under the distribution of Z with
+
+54
+00:06:17,780 --> 00:06:19,190
+your current guess.
+
+55
+00:06:19,190 --> 00:06:29,620
+And today we are going to see that this procedure is nice because it guarantees that the likelihood
+
+56
+00:06:29,620 --> 00:06:34,840
+will increase in every iteration. So whatever likelihood you start with, at every iteration
+
+57
+00:06:34,840 --> 00:06:40,870
+the likelihood is going to increase. So that is what we are going to show today.
+
+58
+00:06:40,870 --> 00:06:49,590
+This is the complete EM algorithm for estimating the parameter of a Gaussian mixture.
+
+59
+00:06:49,590 --> 00:06:57,699
+And we also saw that if we take, if we assume that the only parameter to be determine is
+
+60
+00:06:57,699 --> 00:07:07,689
+mu k, which means all, we assume that all the Gaussians are spherical with known covariance
+
+61
+00:07:07,689 --> 00:07:16,889
+matrices, and pi k is set to 1 over K, then essentially what we get back is the K-means
+
+62
+00:07:16,889 --> 00:07:21,370
+algorithm.
+
+63
+00:07:21,370 --> 00:07:27,050
+So we can see this, so this is the theoretical guarantee I was talking about - EM monotonically
+
+64
+00:07:27,050 --> 00:07:33,430
+increases the observed data likelihood, and until it reaches some local maximum. It can
+
+65
+00:07:33,430 --> 00:07:38,770
+also get stuck in some saddle points but yeah.
+
+66
+00:07:38,770 --> 00:07:43,259
+So it doesn’t give you the global maximum. It only gives you a, it only reaches, takes
+
+67
+00:07:43,259 --> 00:07:45,300
+you to the local maximum.
+
+68
+00:07:45,300 --> 00:07:59,610
+So let me show you that simulation that I had shown you last time.
+
+69
+00:07:59,610 --> 00:08:08,400
+So I generate some data - 3 Gaussians. This is what the data looks like.
+
+70
+00:08:08,400 --> 00:08:15,889
+It was generated like this by taking those 3 means and covariance matrices.
+
+71
+00:08:15,889 --> 00:08:23,370
+This is what the fitted density looks like.
+
+72
+00:08:23,370 --> 00:08:36,010
+If I run EM once… Right. So this time EM did not do well. You can see what happened.
+
+73
+00:08:36,010 --> 00:08:43,120
+The means that it inferred were, two of them are here and the third one is here. Because
+
+74
+00:08:43,120 --> 00:08:46,850
+these two clusters are very close together it assumed that it is coming, it has been
+
+75
+00:08:46,850 --> 00:08:53,220
+generated from the same Gaussian, right.
+
+76
+00:08:53,220 --> 00:09:05,080
+Let’s now run this. So I ran this 10 times and what I see is that the likelihood, for
+
+77
+00:09:05,080 --> 00:09:08,840
+each of this run the likelihood keeps increasing.
+
+78
+00:09:08,840 --> 00:09:14,390
+Every time, for each iteration the likelihood increases. Sometimes it gets stuck, and, at
+
+79
+00:09:14,390 --> 00:09:19,060
+a saddle point or fixed point and then it does not increase. So this is the typical
+
+80
+00:09:19,060 --> 00:09:25,880
+behavior of EM. Infact this is a very good debugging tool if you are writing EM algorithms
+
+81
+00:09:25,880 --> 00:09:29,850
+for your models, and if you see that the likelihood is not increasing there is some bug in your
+
+82
+00:09:29,850 --> 00:09:31,400
+program.
+
+83
+00:09:31,400 --> 00:09:41,150
+Now let’s see. In these 10 runs, these are the likelihood values it got stuck at, at
+
+84
+00:09:41,150 --> 00:09:48,870
+the end or it stopped at, at the end, not necessarily stuck at. So if we see the minimum
+
+85
+00:09:48,870 --> 00:09:59,840
+of these, this is the second one, and we see the fitted density when we use that run. Yeah.
+
+86
+00:09:59,840 --> 00:10:04,390
+You see the fit is not very good.
+
+87
+00:10:04,390 --> 00:10:17,080
+If we take the maximum, the maximum likelihood among those 10 runs, it’s the 9th one, the
+
+88
+00:10:17,080 --> 00:10:22,730
+fit is much better now, you see. This time when the likelihood was… In the 9th run,
+
+89
+00:10:22,730 --> 00:10:37,070
+the likelihood was the highest among these 10 runs and the fit was also much better.
+
+90
+00:10:37,070 --> 00:10:45,140
+So now let’s prove that what we saw there is true in all cases, that it actually monotonically
+
+91
+00:10:45,140 --> 00:10:48,760
+increases the likelihood in every iteration.
+
+92
+00:10:48,760 --> 00:10:56,250
+So the main result we will need to prove this is Jensen’s inequality. Are you all familiar
+
+93
+00:10:56,250 --> 00:11:05,651
+with this? No. Okay, it’s very simple. So if you have a convex function, then, and you
+
+94
+00:11:05,651 --> 00:11:12,820
+have a linear combination of these points x i, then the convex function applied to the
+
+95
+00:11:12,820 --> 00:11:19,450
+linear combination is less than or equal to the summation, the linear combination of the,
+
+96
+00:11:19,450 --> 00:11:26,420
+of f(xi), where the function is applied to each of the xi s, right. And what we are interested
+
+97
+00:11:26,420 --> 00:11:30,330
+in, you might have guessed, is the logarithm function because log is what appears in our
+
+98
+00:11:30,330 --> 00:11:31,620
+summation.
+
+99
+00:11:31,620 --> 00:11:37,670
+And if we use the fact that –log(x) is convex and put it here, then we get this inequality.
+
+100
+00:11:37,670 --> 00:11:45,860
+Right, it’s the same thing. The function is just the logarithm. So what we see is that
+
+101
+00:11:45,860 --> 00:11:55,410
+log of summation is always greater than equal to the summation of those lambda i times log
+
+102
+00:11:55,410 --> 00:11:59,510
+xi.
+
+103
+00:11:59,510 --> 00:12:08,860
+So let us start with… So we have these latent variables, or the hidden variables in some
+
+104
+00:12:08,860 --> 00:12:15,170
+cases. Let’s assume that they, Let’s assume that q is some arbitratary distribution over
+
+105
+00:12:15,170 --> 00:12:22,290
+the latent variables. We will not define what q is right now. So because these are probability
+
+106
+00:12:22,290 --> 00:12:29,050
+values, each of these q(zn)s, for, each latent variable is greater than 0, and this sum over
+
+107
+00:12:29,050 --> 00:12:33,760
+all zn is equal to 1.
+
+108
+00:12:33,760 --> 00:12:41,940
+So now let take the likelihood of our data, and we express it again, as usual, in terms
+
+109
+00:12:41,940 --> 00:12:48,270
+of joint likelihood with respect to their latent variables. And then we just multiply
+
+110
+00:12:48,270 --> 00:12:58,130
+and divide by q(zn). Now because of this condition, q(zn) is same as lambda i s here. It follows
+
+111
+00:12:58,130 --> 00:13:05,200
+the assumptions of Jensen’s inequality. So we can apply Jensen’s inequality here
+
+112
+00:13:05,200 --> 00:13:12,370
+and get a lower bound on this expression, right. Basically take the summation outside
+
+113
+00:13:12,370 --> 00:13:17,820
+and get the log inside, and this lower bound just follows from Jensen’s inequality, right.
+
+114
+00:13:17,820 --> 00:13:22,510
+All we have done is applied this inequality.
+
+115
+00:13:22,510 --> 00:13:28,760
+And lambda i s are the q(zn) s here because they are probabilities, the assumptions at
+
+116
+00:13:28,760 --> 00:13:38,670
+true, okay. So now this logarithm can be written as a difference of the log of the numerator
+
+117
+00:13:38,670 --> 00:13:45,510
+minus log of the denominator, and what we get here, now this expression should start
+
+118
+00:13:45,510 --> 00:13:51,420
+looking familiar to you. This is just an expectation. It is the expectation of the complete data
+
+119
+00:13:51,420 --> 00:13:56,529
+likelihood under the distribution q, right.
+
+120
+00:13:56,529 --> 00:14:03,030
+So this is something that we, we have been working with in EM. And on this side, we have
+
+121
+00:14:03,030 --> 00:14:08,760
+the entropy, right. This, so this entropy term is not going to be, not going to play
+
+122
+00:14:08,760 --> 00:14:15,940
+a big role here but we are going to be interested in this. So let us call this Q. This is a..
+
+123
+00:14:15,940 --> 00:14:20,780
+Although it will be the same Q eventually, I have used different Q here because right
+
+124
+00:14:20,780 --> 00:14:24,370
+now we do not know that it’s the same Q, okay.
+
+125
+00:14:24,370 --> 00:14:31,720
+So what have we got? We have got a lower bound on the log likelihood, right. And we have
+
+126
+00:14:31,720 --> 00:14:36,550
+proved this for any arbitrary distribution, right. We have not said that it is the distribution
+
+127
+00:14:36,550 --> 00:14:42,640
+of the latent variables under the guesses of the parameters that we had, we didn’t
+
+128
+00:14:42,640 --> 00:14:49,600
+say anything about that. So now the question is which distribution q should we choose.
+
+129
+00:14:49,600 --> 00:15:07,340
+Any guesses? So what we have is a lower bound. What kind of distribution would you like to
+
+130
+00:15:07,340 --> 00:15:12,380
+choose? No guesses? Think iteratively.
+
+131
+00:15:12,380 --> 00:15:20,660
+Alright, so we, since this is the lower bound, we want the bound to be as tight as possible,
+
+132
+00:15:20,660 --> 00:15:27,580
+okay. So we will choose a q such that we want to maximize, such that we maximize the lower
+
+133
+00:15:27,580 --> 00:15:33,620
+bound to reach the actual likelihood, right. So that’s a natural choice when you are
+
+134
+00:15:33,620 --> 00:15:36,620
+dealing with bounds, right.
+
+135
+00:15:36,620 --> 00:15:44,220
+So let’s see how we can choose such a q, okay. To do that let’s just look at this
+
+136
+00:15:44,220 --> 00:15:51,870
+expression again. We will ignore the summation n because, we will bring it back later, but
+
+137
+00:15:51,870 --> 00:15:59,470
+I have just not written it. So this is the original expression for the lower bound, right.
+
+138
+00:15:59,470 --> 00:16:06,370
+The Q function is here. I have just written that again here, and now we, I am just expressing
+
+139
+00:16:06,370 --> 00:16:12,191
+this joint likelihood, I am factorizing it in this way, right. So you have the probability
+
+140
+00:16:12,191 --> 00:16:20,310
+of xn, zn, the joint probability is just the probability of zn, and then the probability
+
+141
+00:16:20,310 --> 00:16:27,620
+of zn given theta. So there should be xn, zn here.
+
+142
+00:16:27,620 --> 00:16:40,060
+Yeah it is fine. So this is just factorization of this probability, and then I just separate
+
+143
+00:16:40,060 --> 00:16:48,640
+it out in a different way this time, and what we get here is a term which is just the Kullback-Leibler
+
+144
+00:16:48,640 --> 00:16:54,840
+distance between q(zn) and this probability, this distribution, right. It is negative of
+
+145
+00:16:54,840 --> 00:17:02,230
+the KL divergence between q(zn) and probability of zn given xn and theta, right.
+
+146
+00:17:02,230 --> 00:17:09,070
+And this term is essentially summing over all zn for this. So this is independent of
+
+147
+00:17:09,070 --> 00:17:16,030
+q, and we just get logarithm of, you just get the likelihood back here, right. And here
+
+148
+00:17:16,030 --> 00:17:22,699
+we have the negative KL divergence between these two distributions. So if we want the
+
+149
+00:17:22,699 --> 00:17:28,100
+lower bound to reach the actual likelihood which we are getting here, we want this term
+
+150
+00:17:28,100 --> 00:17:30,270
+to become zero, right.
+
+151
+00:17:30,270 --> 00:17:35,740
+And that we can do by just putting q(zn) equal to this probability, probability of zn given
+
+152
+00:17:35,740 --> 00:17:43,360
+xn, theta. But again we come back to the same problem that we don’t know the actual theta,
+
+153
+00:17:43,360 --> 00:17:50,510
+the curly theta, but in an iteration of EM we have guessed the value of theta, theta
+
+154
+00:17:50,510 --> 00:18:00,440
+m. So we can use that value of theta m to, and use that probability distribution as q,
+
+155
+00:18:00,440 --> 00:18:02,360
+okay.
+
+156
+00:18:02,360 --> 00:18:08,779
+So what we get if we use this value for q m which is the probability of z n given x
+
+157
+00:18:08,779 --> 00:18:16,080
+n and the guessd theta m values is nothing but this expectation which we saw coming up
+
+158
+00:18:16,080 --> 00:18:23,590
+here, except that instead of q, we are using q m, which is based on the current guess value,
+
+159
+00:18:23,590 --> 00:18:29,380
+and we are getting entropy term but this entropy term is independent of the thetas. So when
+
+160
+00:18:29,380 --> 00:18:36,100
+we maximize this in our M step of EM, this does not play any role, and what we have eventually
+
+161
+00:18:36,100 --> 00:18:47,129
+maximizing is this expectation of the likelihood under the distribution of Z.
+
+162
+00:18:47,129 --> 00:19:00,570
+Right, so let me again summarizes what I did. I took the log likelihood. This is the likelihood
+
+163
+00:19:00,570 --> 00:19:06,419
+that we are interested in for getting maximum likelihood estimates. Using Jensen’s inequality,
+
+164
+00:19:06,419 --> 00:19:13,870
+I got a lower bound. The lower bound was in the form of an expectation, right, which is
+
+165
+00:19:13,870 --> 00:19:22,220
+the expectation we maximize in the E-step if we take qm to be exactly this probability
+
+166
+00:19:22,220 --> 00:19:28,970
+distribution, and this probability distribution turns out to be exactly the probability distribution
+
+167
+00:19:28,970 --> 00:19:35,180
+to take which will maximize the lower bound to reach the actual data log likelihood at
+
+168
+00:19:35,180 --> 00:19:40,269
+that step, right.
+
+169
+00:19:40,269 --> 00:19:50,750
+So what? What have we done? We have maximized, we have taken our current guesses and chosen
+
+170
+00:19:50,750 --> 00:20:01,049
+a value of qm that will reach the actual likelihood with respect to the current guess, okay. But
+
+171
+00:20:01,049 --> 00:20:05,570
+that has not bought us closer to the real theta, right. We are still working with our
+
+172
+00:20:05,570 --> 00:20:14,410
+guesses of the parameters. Is that clear?
+
+173
+00:20:14,410 --> 00:20:23,379
+So here comes the crucial part. So at the m th step, we took q m, the distribution of
+
+174
+00:20:23,379 --> 00:20:29,179
+zn, to be exactly this probability distribution - the posterior distribution z n, given the
+
+175
+00:20:29,179 --> 00:20:36,350
+data points and the current guesses, and we saw that this likelihood is exactly equal
+
+176
+00:20:36,350 --> 00:20:44,940
+to the KL divergence plus the log likelihood. And because this KL divergence becomes zero
+
+177
+00:20:44,940 --> 00:20:50,999
+at this point, this Q function is exactly equal to the log likelihood, which means the
+
+178
+00:20:50,999 --> 00:20:59,190
+lower bound is tight after E step, which is what we wanted. And, so maximizing Q after
+
+179
+00:20:59,190 --> 00:21:03,350
+this is going to maximize the data log likelihood also.
+
+180
+00:21:03,350 --> 00:21:11,190
+To see that, see this picture. So this is your current value, the guessed value of theta.
+
+181
+00:21:11,190 --> 00:21:19,610
+Now the E step, and this red curve here is the actual data log likelihood with the original
+
+182
+00:21:19,610 --> 00:21:26,789
+parameters that you don’t know. Now what the E step has ensured is that you get a lower
+
+183
+00:21:26,789 --> 00:21:30,509
+bound using the Q function that we had. So that lower bound is L.
+
+184
+00:21:30,509 --> 00:21:38,259
+So this is the is the lower bound, right, and which is exactly the expectation that
+
+185
+00:21:38,259 --> 00:21:41,610
+we are trying to maximize.
+
+186
+00:21:41,610 --> 00:21:48,269
+So you use this L function, and you get a, and you know that this is a lower bound which
+
+187
+00:21:48,269 --> 00:21:55,059
+means it is always lesser than the red curve, right. The important point is that at the
+
+188
+00:21:55,059 --> 00:22:01,220
+E step, this bound is tight which means this is touching the red curve, right, and if you
+
+189
+00:22:01,220 --> 00:22:09,570
+maximize this, you will get a new set of parameters which will increase the L value, right, but
+
+190
+00:22:09,570 --> 00:22:13,960
+because this is touching it and because this is the lower bound it will also increase the
+
+191
+00:22:13,960 --> 00:22:21,379
+likelihood value for the, with respect to the original theta, right.
+
+192
+00:22:21,379 --> 00:22:27,419
+So it is a trick because you cannot, we cannot compute this likelihood, but we know the lower
+
+193
+00:22:27,419 --> 00:22:33,100
+bound, we have computed the lower bound and we have maximizing this, but it is guaranteed
+
+194
+00:22:33,100 --> 00:22:39,669
+to be, the new values are guaranteed to increase the likelihood in, the original likihood also
+
+195
+00:22:39,669 --> 00:22:49,130
+because at this point the approximation is tight, and we are maximizing it. So now again
+
+196
+00:22:49,130 --> 00:22:55,470
+the at the next step, the E step will ensure that the lower bound that you calculate, the
+
+197
+00:22:55,470 --> 00:22:59,460
+green curve, will be tight.
+
+198
+00:22:59,460 --> 00:23:06,730
+And once again you maximize it, you will get a value somewhere here, any way here, and
+
+199
+00:23:06,730 --> 00:23:11,750
+the next value of theta is again going to increase the likelihood because every time
+
+200
+00:23:11,750 --> 00:23:18,470
+you are, at each step the E step will ensure that you get a proper lower bound and you
+
+201
+00:23:18,470 --> 00:23:25,129
+always get to the, you always make sure that it is tight because of the choice of the distribution
+
+202
+00:23:25,129 --> 00:23:34,190
+of q that we take at each step.
+
+203
+00:23:34,190 --> 00:23:35,889
+Sorry.
+
+204
+00:23:35,889 --> 00:23:42,080
+Yeah because what if we get to the saddle point. The likelihood curve need not always
+
+205
+00:23:42,080 --> 00:23:49,669
+be like this right. So for example, the likelihood value can be something like this.
+
+206
+00:23:49,669 --> 00:23:59,630
+You can suppose, suppose it goes like this, then how, at this point it is not guaranteed
+
+207
+00:23:59,630 --> 00:24:12,450
+to go up that way. It will just be here in this region. So the usual problem with optimization.
+
+208
+00:24:12,450 --> 00:24:15,889
+So we can say, now we can do this formally.
+
+209
+00:24:15,889 --> 00:24:22,059
+We at the M plus 1, M plus first round, we have some parameters. That’s the log likelihood
+
+210
+00:24:22,059 --> 00:24:29,529
+of those parameters. And we know that Q function is lower bound. We proved it for any q, any
+
+211
+00:24:29,529 --> 00:24:37,909
+choice of the distribution, a small q. And then this Q value was chosen by the pervious
+
+212
+00:24:37,909 --> 00:24:44,679
+iterations M step. So this equality follows. This is the maximum value of Q which maximizes
+
+213
+00:24:44,679 --> 00:24:51,160
+the, maximum over all parameters curly theta. And then this by definition is greater than
+
+214
+00:24:51,160 --> 00:24:59,490
+any Q here, and because this E step bond is tight, we get that this is equal to the logarithm,
+
+215
+00:24:59,490 --> 00:25:07,419
+equal to the likelihood in the previous step, which is just the likelihood of the previous
+
+216
+00:25:07,419 --> 00:25:11,919
+step.
+
+217
+00:25:11,919 --> 00:25:16,429
+Okay.
+
+218
+00:25:16,429 --> 00:25:26,960
+So any questions? Now is this clear, why it is increasing the likelihood at each point,
+
+219
+00:25:26,960 --> 00:25:37,669
+at each iteration. Alright. So now, so that covers the basics of EM. Now let us look at
+
+220
+00:25:37,669 --> 00:25:43,659
+some strange cases.
+
+221
+00:25:43,659 --> 00:25:51,429
+Sometimes what happens is when you are running EM, you tend to get very strange solutions
+
+222
+00:25:51,429 --> 00:25:57,340
+and this could be one of the reasons. So I am going to motivate this mathematically.
+
+223
+00:25:57,340 --> 00:26:06,490
+So suppose you take your log likelihood for the, that you want to maximize and you set,
+
+224
+00:26:06,490 --> 00:26:10,929
+now suppose you have two components, okay. It does not matter.
+
+225
+00:26:10,929 --> 00:26:16,280
+So take one of the components and set mu 1 the mean to be equal to x1, one of the data
+
+226
+00:26:16,280 --> 00:26:26,509
+points, and set Sigma 1 to be equal to some diagonal matrix of dimensionality p, and take
+
+227
+00:26:26,509 --> 00:26:32,690
+some pi 1. So this can be just split into two parts. We are looking at just one Gaussian
+
+228
+00:26:32,690 --> 00:26:40,799
+here, and when you plug in these values you essentially get this expression. Now what
+
+229
+00:26:40,799 --> 00:26:48,999
+happens if sigma 1 square, the variance tends to 0? This likelihood essentially tends to
+
+230
+00:26:48,999 --> 00:26:56,390
+infinity, I mean this total likelihood, because this value goes to infinity, right.
+
+231
+00:26:56,390 --> 00:27:04,490
+So this is a problem in general with maximum likelihood solutions. Your, the likelihood
+
+232
+00:27:04,490 --> 00:27:09,450
+will tend to infinity although the fit is really bad.
+
+233
+00:27:09,450 --> 00:27:14,090
+This looks like… So the pictorial representation is something like this. What you are doing
+
+234
+00:27:14,090 --> 00:27:20,149
+is you are taking two Gaussians and you are fitting just one data point with one Gaussian,
+
+235
+00:27:20,149 --> 00:27:29,340
+and the other Gaussian is fitting the rest of the data points. So this is, in most real
+
+236
+00:27:29,340 --> 00:27:35,760
+life cases this is not a good thing to do, because yeah, it’s very unlikely that the
+
+237
+00:27:35,760 --> 00:27:40,240
+data has been generated by two Gaussians like this, one data point from one Gaussian and
+
+238
+00:27:40,240 --> 00:27:44,240
+the rest from the other Gaussian, right.
+
+239
+00:27:44,240 --> 00:27:49,679
+So any… So when you try to do this with just a single Gaussian, do you think you will
+
+240
+00:27:49,679 --> 00:27:57,019
+get this problem? Why?
+
+241
+00:27:57,019 --> 00:28:10,610
+Yeah, but suppose you have, suppose I give you, I take uni-dimensional case, and I fit
+
+242
+00:28:10,610 --> 00:28:18,749
+this one Gaussian here. This, it is, there will be a nonzero probability of a point coming
+
+243
+00:28:18,749 --> 00:28:39,840
+from somewhere here, right. You know this is the mean. So intuitively we would think
+
+244
+00:28:39,840 --> 00:28:46,249
+that the blue Gaussian is what might have generated this data with so much variance,
+
+245
+00:28:46,249 --> 00:28:47,970
+right.
+
+246
+00:28:47,970 --> 00:28:56,770
+But there is a nonzero probability that the data has been generated from such a Gaussian.
+
+247
+00:28:56,770 --> 00:29:02,140
+So why will we not have this problem there?
+
+248
+00:29:02,140 --> 00:29:09,710
+Yeah, so the maximum likelihood solution will never give you this. Maximum likelihood solution
+
+249
+00:29:09,710 --> 00:29:16,390
+is most likely to give you something like this, right. When you work out the likelihood,
+
+250
+00:29:16,390 --> 00:29:21,559
+the likelihood for the pink Gaussian is definitely going to be lesser than the likelihood for
+
+251
+00:29:21,559 --> 00:29:22,779
+this, right.
+
+252
+00:29:22,779 --> 00:29:29,951
+And again this is just due to the mathematical form of the Gaussian mixture. So this, because
+
+253
+00:29:29,951 --> 00:29:34,769
+of the summation this is really happening, because it is possible that you can fit the
+
+254
+00:29:34,769 --> 00:29:41,330
+data like that in a way that the likelihood goes to infinity.
+
+255
+00:29:41,330 --> 00:29:49,630
+So how do you deal with this? The simplest way in a frequentist framework is to just
+
+256
+00:29:49,630 --> 00:29:55,450
+keep, when you are running EM, you check whether it is happening or not and if you, if it is
+
+257
+00:29:55,450 --> 00:30:00,179
+happening then you just reinitialize the parameters, you keep trying to detect such collapsing
+
+258
+00:30:00,179 --> 00:30:06,710
+components and try to do it. And in general actually it is better to restart EM several
+
+259
+00:30:06,710 --> 00:30:14,070
+times, because EM is, as you know it can get stuck at a fixed point or a saddle point.
+
+260
+00:30:14,070 --> 00:30:19,460
+So with different initialization parameters you can get much better solutions as we saw
+
+261
+00:30:19,460 --> 00:30:22,029
+in this simulation as well.
+
+262
+00:30:22,029 --> 00:30:27,600
+The bayesian solution is to take priors, right. You take priors on each of the parameters
+
+263
+00:30:27,600 --> 00:30:32,230
+and it turns out you can work out the math and see, that the expectation, the E step
+
+264
+00:30:32,230 --> 00:30:40,039
+remains the same and the only difference necessary is the additional term in the M step that
+
+265
+00:30:40,039 --> 00:30:51,710
+we need to maximize, and this usually solves the problem by choosing right priors.
+
+266
+00:30:51,710 --> 00:30:56,909
+So now it’s come to finding K. Till now we have assumed that we know the number of
+
+267
+00:30:56,909 --> 00:31:00,690
+components. And how do we find K?
+
+268
+00:31:00,690 --> 00:31:08,830
+This is, there is no really good solution to finding K, and what statisticians usually
+
+269
+00:31:08,830 --> 00:31:14,009
+prefer and what works well in practice is to generate many candidate models. You look
+
+270
+00:31:14,009 --> 00:31:19,070
+at the data and you assume that okay, there can’t be lesser than 3 components here,
+
+271
+00:31:19,070 --> 00:31:24,269
+there can’t be more than 12 components here. So let us run EM for all these different values
+
+272
+00:31:24,269 --> 00:31:35,470
+of K and you choose that K which minimizes some criterion, okay. And this, there are
+
+273
+00:31:35,470 --> 00:31:41,419
+different criteria that people have discussed. For example, it is something like the regularization
+
+274
+00:31:41,419 --> 00:31:44,960
+that you do in another models. You basically penalize high values of K.
+
+275
+00:31:44,960 --> 00:31:50,940
+So the AIC, Akaike information criterion is this, this is just the log likelihood plus
+
+276
+00:31:50,940 --> 00:31:56,659
+k. So minimizing this will give you the least number of components which can explain the
+
+277
+00:31:56,659 --> 00:32:07,249
+data well, okay. There is a bayesian information criterion which uses k logn similar general
+
+278
+00:32:07,249 --> 00:32:13,669
+idea. And then there are other approaches for finding K which are bayesian nonparametric
+
+279
+00:32:13,669 --> 00:32:21,929
+approaches where you assume some Dirichlet process priors and then the method itself
+
+280
+00:32:21,929 --> 00:32:31,450
+automatically estimates K, right.
+
+281
+00:32:31,450 --> 00:32:38,009
+So the algorithm that we discussed in that form was given in 1977. So you can imagine
+
+282
+00:32:38,009 --> 00:32:41,929
+that a lot of work has been done on EM since 1977.
+
+283
+00:32:41,929 --> 00:32:48,359
+There are lot of different kinds of EM algorithms. There are online versions that work on large
+
+284
+00:32:48,359 --> 00:32:56,029
+streaming data sets. Like I said EM is designed to find local maximum. So there are annealed
+
+285
+00:32:56,029 --> 00:33:01,239
+versions that increases the chances of finding global maximum. The simplest solution is random
+
+286
+00:33:01,239 --> 00:33:08,120
+restarts but annealing does something more. Variation, so sometimes, so in the case of
+
+287
+00:33:08,120 --> 00:33:12,870
+Gaussian we saw that the E step and the M steps, they were computationally tractable,
+
+288
+00:33:12,870 --> 00:33:16,509
+we could derive analytical formulas for these.
+
+289
+00:33:16,509 --> 00:33:22,009
+But in a lot of cases… If there is time I can show one. We will see that they are
+
+290
+00:33:22,009 --> 00:33:26,470
+not computationally tractable and sometimes you need to do additional things. So there
+
+291
+00:33:26,470 --> 00:33:31,470
+are variational versions of EM, there are stochastic versions of EM, Monte Carlo version
+
+292
+00:33:31,470 --> 00:33:36,429
+where you have intractable E steps. There is something call generalized EM which was
+
+293
+00:33:36,429 --> 00:33:43,309
+one of the earliest algorithms where you have computationally intractable M steps.
+
+294
+00:33:43,309 --> 00:33:48,149
+Then when we have sequential parameters, dependent parameters, then there are other versions
+
+295
+00:33:48,149 --> 00:33:57,929
+of EM. And in general EM is quite slow, right. So your, each step within EM, within the iteration
+
+296
+00:33:57,929 --> 00:34:03,539
+is computationally not very expensive, but convergence is usually very slow. And it’s
+
+297
+00:34:03,539 --> 00:34:09,040
+especially slow when you have lots of missing data or lots of latent variables to infer,
+
+298
+00:34:09,040 --> 00:34:18,450
+okay. So there are many approaches to deal with it - these Aitken acceleration techniques
+
+299
+00:34:18,450 --> 00:34:25,970
+over relaxed EM and so on. So to summarize, like what I said.
+
+300
+00:34:25,970 --> 00:34:31,440
+The major advantage of EM is that it monotonically increases the likelihood, it guarantees that.
+
+301
+00:34:31,440 --> 00:34:39,240
+If you take any distribution, any mixture model or anything, any likelihood computation
+
+302
+00:34:39,240 --> 00:34:44,110
+where there are hidden variables or latent variables and you apply EM and if you follow
+
+303
+00:34:44,110 --> 00:34:49,380
+the formulas carefully you will guarantee that the likelihood is increased except at
+
+304
+00:34:49,380 --> 00:34:50,630
+fixed points.
+
+305
+00:34:50,630 --> 00:34:55,820
+And it is usually numerically very stable compared to other techniques like gradient
+
+306
+00:34:55,820 --> 00:35:00,890
+descent. It is easily implemented, and the interesting thing is that many problems can
+
+307
+00:35:00,890 --> 00:35:04,290
+be modeled as incomplete data problems. We saw that in the case of Gaussian mixture,
+
+308
+00:35:04,290 --> 00:35:11,340
+there is no missing data in the beginning but we assume the latent variables to be missing.
+
+309
+00:35:11,340 --> 00:35:16,690
+The disadvantages as I mentioned is slow convergence and there is no guarantees of finding global
+
+310
+00:35:16,690 --> 00:35:25,590
+maximum, and the steps may be analytically intractable, okay.
+
+311
+00:35:25,590 --> 00:35:35,110
+Yeah, so the two standard references have very nice explanation for EM, and there are
+
+312
+00:35:35,110 --> 00:35:39,620
+very nice tutorials also available. Matrix Cookbook you should be familiar with to get
+
+313
+00:35:39,620 --> 00:35:44,430
+all your matrix derivatives, and this is these standard reference if you want to go really
+
+314
+00:35:44,430 --> 00:35:58,010
+deep into EM - McLachlan and Krishnan’s book on EM, the whole book is on EM algorithm.
+
+315
+00:35:58,010 --> 00:36:02,160
+The EM can always solve it but it not maybe able to solve well. That’s the… There
+
+316
+00:36:02,160 --> 00:36:18,320
+is lots of missing data then usually the, it does not give good results.
+
+317
+00:36:18,320 --> 00:36:26,610
+Right, so there is some, there is lot of work on, so these estimates that you are getting
+
+318
+00:36:26,610 --> 00:36:30,810
+you may need to, you may sometimes want to know how good those estimates are. Right,
+
+319
+00:36:30,810 --> 00:36:35,880
+so you want to get these standard errors on those estimates. So there is, so in fact that
+
+320
+00:36:35,880 --> 00:36:40,320
+is one of the flaws of EM. It does not automatically give you that but there are methods to deal
+
+321
+00:36:40,320 --> 00:36:45,380
+with that. For example, there are some bootstrap methods that can give you estimates of the
+
+322
+00:36:45,380 --> 00:36:52,730
+error that you, error estimates for the estimated parameters.
+
+323
+00:36:52,730 --> 00:37:09,450
+Yeah, they are also guessed. So that is something you have to guess based on the data that you
+
+324
+00:37:09,450 --> 00:37:15,180
+have. So if you take the standard R packages like “mclust” or something like that they
+
+325
+00:37:15,180 --> 00:37:20,630
+usually have some default parameters - 2 and 12 or something like that but then you can
+
+326
+00:37:20,630 --> 00:37:24,880
+set them. So when “mclust” runs and gives you, like what I showed in this stimulation,
+
+327
+00:37:24,880 --> 00:37:29,670
+when it runs and tries to find the parameters, it runs it for all those different values
+
+328
+00:37:29,670 --> 00:37:34,320
+of K and takes the best one, best one with respect to the likelihood, okay.
+
+329
+00:37:34,320 --> 00:37:42,030
+So it will be a good exercise I think, like if you take some different distribution, take
+
+330
+00:37:42,030 --> 00:37:46,160
+something like Bernoulli, some very simple distribution and work out the math. It will
+
+331
+00:37:46,160 --> 00:37:54,940
+be quite nice to see how it works out, and yeah, even the other thing that I did not
+
+332
+00:37:54,940 --> 00:38:03,970
+work out here, this part is also quite simple to do. Yeah. Assume that there is a prior
+
+333
+00:38:03,970 --> 00:38:15,580
+and see how it works out. But the general idea is clear, right? Okay.

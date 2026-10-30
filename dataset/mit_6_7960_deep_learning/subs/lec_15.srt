@@ -1,0 +1,7139 @@
+1
+00:00:00,500 --> 00:00:02,436
+[SQUEAKING]
+
+2
+00:00:02,436 --> 00:00:04,372
+[RUSTLING]
+
+3
+00:00:04,372 --> 00:00:07,760
+[CLICKING]
+
+4
+00:00:12,600 --> 00:00:15,160
+PHILLIP ISOLA: We're going to continue on today and this week
+
+5
+00:00:15,160 --> 00:00:17,000
+with generative models.
+
+6
+00:00:17,000 --> 00:00:23,200
+So today will be on variational autoencoders.
+
+7
+00:00:23,200 --> 00:00:24,840
+And we're going to give a perspective
+
+8
+00:00:24,840 --> 00:00:27,440
+that generative modeling and representation learning
+
+9
+00:00:27,440 --> 00:00:29,320
+are very tightly coupled.
+
+10
+00:00:29,320 --> 00:00:31,833
+If you can solve the generative modeling problem,
+
+11
+00:00:31,833 --> 00:00:34,000
+it should help you solve the representation learning
+
+12
+00:00:34,000 --> 00:00:35,337
+problem and vice versa.
+
+13
+00:00:35,337 --> 00:00:36,920
+And variational autoencoders are going
+
+14
+00:00:36,920 --> 00:00:38,587
+to be one model that really puts the two
+
+15
+00:00:38,587 --> 00:00:42,880
+ideas together and solves them both at the same time.
+
+16
+00:00:42,880 --> 00:00:45,120
+And this lecture is a little bit different
+
+17
+00:00:45,120 --> 00:00:47,080
+than some of the last few, in that
+
+18
+00:00:47,080 --> 00:00:49,440
+rather than covering a lot of different topics
+
+19
+00:00:49,440 --> 00:00:51,500
+in some superficial level of detail,
+
+20
+00:00:51,500 --> 00:00:53,180
+we're going to just go deep on VAEs,
+
+21
+00:00:53,180 --> 00:00:55,480
+on variational autoencoders.
+
+22
+00:00:55,480 --> 00:00:57,480
+And we'll also talk a little bit about the types
+
+23
+00:00:57,480 --> 00:00:58,840
+of representations that are learned
+
+24
+00:00:58,840 --> 00:01:00,715
+by generative models at the end and this idea
+
+25
+00:01:00,715 --> 00:01:01,740
+of disentanglement.
+
+26
+00:01:04,319 --> 00:01:07,005
+So this is a picture I've shown a few different times
+
+27
+00:01:07,005 --> 00:01:08,880
+throughout all of the representation learning
+
+28
+00:01:08,880 --> 00:01:11,680
+and generative modeling lectures in this class.
+
+29
+00:01:11,680 --> 00:01:14,840
+It's how I like to think about the two problems, where
+
+30
+00:01:14,840 --> 00:01:17,400
+representation learning is going from raw data
+
+31
+00:01:17,400 --> 00:01:22,120
+to some nicer, structured, abstracted representation.
+
+32
+00:01:22,120 --> 00:01:25,040
+And generative modeling is going from a nice, simple, abstracted
+
+33
+00:01:25,040 --> 00:01:28,160
+representation to data.
+
+34
+00:01:28,160 --> 00:01:29,960
+And I've said that these two things can
+
+35
+00:01:29,960 --> 00:01:33,480
+be kind of thought of as inverses to some degree, not
+
+36
+00:01:33,480 --> 00:01:36,920
+necessarily inverses in the sense of a mathematical function
+
+37
+00:01:36,920 --> 00:01:40,600
+inverse because the direction from data to embeddings
+
+38
+00:01:40,600 --> 00:01:42,840
+is many to one, and the direction from embeddings
+
+39
+00:01:42,840 --> 00:01:44,300
+to data might be one to many.
+
+40
+00:01:44,300 --> 00:01:46,980
+It might be stochastic, so it's more like a stochastic inverse,
+
+41
+00:01:46,980 --> 00:01:49,520
+but they kind of operate in opposite directions.
+
+42
+00:01:49,520 --> 00:01:51,280
+And in this lecture, we're going to see
+
+43
+00:01:51,280 --> 00:01:57,655
+a model that explicitly models both directions simultaneously.
+
+44
+00:01:57,655 --> 00:01:59,280
+So representation learning mapping data
+
+45
+00:01:59,280 --> 00:02:01,600
+to abstract representations, generative modeling,
+
+46
+00:02:01,600 --> 00:02:03,120
+mapping abstract representations,
+
+47
+00:02:03,120 --> 00:02:06,240
+like a text instruction for example to data,
+
+48
+00:02:06,240 --> 00:02:09,280
+so make an image from some text.
+
+49
+00:02:09,280 --> 00:02:15,000
+So the perspective that we're going to look at today
+
+50
+00:02:15,000 --> 00:02:19,440
+is going to be generative models as transformations
+
+51
+00:02:19,440 --> 00:02:21,160
+from one probability distribution
+
+52
+00:02:21,160 --> 00:02:24,600
+to another probability distribution.
+
+53
+00:02:24,600 --> 00:02:27,540
+So we'll have a prior distribution,
+
+54
+00:02:27,540 --> 00:02:32,800
+which will be the noise that we talked about last class.
+
+55
+00:02:32,800 --> 00:02:34,348
+So the prior distribution is usually
+
+56
+00:02:34,348 --> 00:02:36,140
+something that is very simple in structure.
+
+57
+00:02:36,140 --> 00:02:38,057
+And we're going to map that prior distribution
+
+58
+00:02:38,057 --> 00:02:41,420
+to a complicated data distribution.
+
+59
+00:02:41,420 --> 00:02:43,360
+So we'll always have our latent variables
+
+60
+00:02:43,360 --> 00:02:46,240
+or our noise space z, which is often going to be Gaussian,
+
+61
+00:02:46,240 --> 00:02:48,720
+indicated by a cartoon here as a circle
+
+62
+00:02:48,720 --> 00:02:51,120
+because it's something that is meant to be simple.
+
+63
+00:02:51,120 --> 00:02:53,560
+If it's actually a normal distribution, then
+
+64
+00:02:53,560 --> 00:02:56,950
+in high dimensions, that will be roughly a soap bubble.
+
+65
+00:02:56,950 --> 00:02:58,200
+That's the way to think of it.
+
+66
+00:02:58,200 --> 00:03:01,600
+Most of the probability density of a Gaussian in high dimensions
+
+67
+00:03:01,600 --> 00:03:04,038
+is right near the surface of the hypersphere,
+
+68
+00:03:04,038 --> 00:03:06,580
+and the data distribution will be something more complicated.
+
+69
+00:03:06,580 --> 00:03:08,497
+And so we're going to find a mapping from data
+
+70
+00:03:08,497 --> 00:03:09,740
+that lives in this space.
+
+71
+00:03:09,740 --> 00:03:11,720
+And according to this distribution,
+
+72
+00:03:11,720 --> 00:03:14,493
+we're going to geometrically push and pull it around,
+
+73
+00:03:14,493 --> 00:03:16,160
+which is what the layers of a neural net
+
+74
+00:03:16,160 --> 00:03:19,080
+do until we get it into this shape.
+
+75
+00:03:19,080 --> 00:03:21,720
+So remember those diagrams I showed before
+
+76
+00:03:21,720 --> 00:03:23,580
+of the distribution of input data points,
+
+77
+00:03:23,580 --> 00:03:25,288
+going layer by layer and getting remapped
+
+78
+00:03:25,288 --> 00:03:26,600
+into a new distribution.
+
+79
+00:03:26,600 --> 00:03:29,440
+This is like a cartoon version of that diagram.
+
+80
+00:03:29,440 --> 00:03:31,540
+So data is x.
+
+81
+00:03:31,540 --> 00:03:34,747
+Latent variables are z.
+
+82
+00:03:34,747 --> 00:03:36,580
+And in the representation learning lectures,
+
+83
+00:03:36,580 --> 00:03:37,788
+we looked at this direction--
+
+84
+00:03:37,788 --> 00:03:39,280
+I think I used the same cartoons.
+
+85
+00:03:39,280 --> 00:03:42,960
+So we had a mapping f, which we called the encoder from data
+
+86
+00:03:42,960 --> 00:03:44,572
+to representations.
+
+87
+00:03:44,572 --> 00:03:46,280
+And in the generative modeling direction,
+
+88
+00:03:46,280 --> 00:03:50,200
+it will be a mapping from representations to data.
+
+89
+00:03:50,200 --> 00:03:55,370
+And we'll call the function that generates the data a generator
+
+90
+00:03:55,370 --> 00:03:57,130
+g.
+
+91
+00:03:57,130 --> 00:04:03,210
+So g is a mapping from z to x And f is a mapping from x to z.
+
+92
+00:04:03,210 --> 00:04:05,248
+So these are sometimes called generators.
+
+93
+00:04:05,248 --> 00:04:06,790
+Other times, they're called decoders.
+
+94
+00:04:06,790 --> 00:04:09,570
+So we have an encoder that maps data
+
+95
+00:04:09,570 --> 00:04:12,450
+to representation a decoder that maps representation to data.
+
+96
+00:04:15,058 --> 00:04:16,350
+So we've seen that a few times.
+
+97
+00:04:16,350 --> 00:04:18,017
+Now let's put these two things together.
+
+98
+00:04:18,017 --> 00:04:21,930
+It looks like they're basically solving related problems.
+
+99
+00:04:21,930 --> 00:04:24,130
+And one model that puts these two things together
+
+100
+00:04:24,130 --> 00:04:25,470
+is, of course, the autoencoder.
+
+101
+00:04:25,470 --> 00:04:27,590
+Maybe you already kind of noticed that.
+
+102
+00:04:27,590 --> 00:04:30,630
+So an autoencoder maps from data to some vector space,
+
+103
+00:04:30,630 --> 00:04:32,650
+low-dimensional representation z.
+
+104
+00:04:32,650 --> 00:04:36,290
+And then it decodes that vector back into the data in such a way
+
+105
+00:04:36,290 --> 00:04:39,850
+that you can reconstruct the data itself.
+
+106
+00:04:39,850 --> 00:04:43,730
+So the second half of the autoencoder, the decoder,
+
+107
+00:04:43,730 --> 00:04:46,210
+it's doing functionally basically what
+
+108
+00:04:46,210 --> 00:04:49,610
+we've described a generator, a generative model, as doing.
+
+109
+00:04:49,610 --> 00:04:53,850
+So the second half of the autoencoder, the decoder,
+
+110
+00:04:53,850 --> 00:04:59,330
+is a mapping from some z vector to data.
+
+111
+00:04:59,330 --> 00:05:02,570
+And now the question is, can we use that decoder
+
+112
+00:05:02,570 --> 00:05:04,410
+as a generative model, as a generator,
+
+113
+00:05:04,410 --> 00:05:07,950
+to sample new random photos?
+
+114
+00:05:07,950 --> 00:05:09,850
+In order to do that, we need to be
+
+115
+00:05:09,850 --> 00:05:12,610
+able to first sample a z vector and then
+
+116
+00:05:12,610 --> 00:05:15,130
+decode it into an image.
+
+117
+00:05:15,130 --> 00:05:18,290
+So the first question for you to think about--
+
+118
+00:05:18,290 --> 00:05:22,387
+what is the issue with this formulation?
+
+119
+00:05:22,387 --> 00:05:22,970
+That's better.
+
+120
+00:05:22,970 --> 00:05:24,770
+I don't know why that happened.
+
+121
+00:05:24,770 --> 00:05:30,090
+So we have a mapping from z to data X.
+
+122
+00:05:30,090 --> 00:05:32,750
+And to sample a new random photo from the decoder,
+
+123
+00:05:32,750 --> 00:05:35,730
+we would first have to sample a new random z vector.
+
+124
+00:05:35,730 --> 00:05:38,370
+So what's the difficulty here?
+
+125
+00:05:38,370 --> 00:05:39,610
+How would I do that?
+
+126
+00:05:39,610 --> 00:05:41,130
+Anyone can think about what would
+
+127
+00:05:41,130 --> 00:05:44,830
+be difficult about sampling from some distribution over z.
+
+128
+00:05:47,770 --> 00:05:49,530
+Yeah, let's go here.
+
+129
+00:05:49,530 --> 00:05:50,830
+AUDIENCE: What distribution?
+
+130
+00:05:50,830 --> 00:05:51,650
+PHILLIP ISOLA: What distribution?
+
+131
+00:05:51,650 --> 00:05:52,990
+I never told you what z is.
+
+132
+00:05:52,990 --> 00:05:55,690
+Yeah, in the back, I think I saw a hand.
+
+133
+00:05:55,690 --> 00:05:58,450
+Right, how do you know what is the distribution
+
+134
+00:05:58,450 --> 00:06:01,450
+over the encodings of an autoencoder?
+
+135
+00:06:01,450 --> 00:06:02,550
+So that's the problem.
+
+136
+00:06:02,550 --> 00:06:05,130
+So typically, an autoencoder will learn a mapping
+
+137
+00:06:05,130 --> 00:06:08,270
+to some distribution, some set of embeddings.
+
+138
+00:06:08,270 --> 00:06:11,850
+But there's no guarantee that set of embeddings
+
+139
+00:06:11,850 --> 00:06:13,690
+is going to form a simpler shape or easier
+
+140
+00:06:13,690 --> 00:06:18,570
+to sample from distribution than the original data itself.
+
+141
+00:06:18,570 --> 00:06:24,050
+So the problem is, I can decode z vectors that
+
+142
+00:06:24,050 --> 00:06:26,950
+are corresponding to the data that I trained on.
+
+143
+00:06:26,950 --> 00:06:30,190
+So if I have f of x, where x is a real data point,
+
+144
+00:06:30,190 --> 00:06:33,050
+I can decode that by doing g of f of x.
+
+145
+00:06:33,050 --> 00:06:36,290
+But I don't know how to sample new valid f's of x.
+
+146
+00:06:36,290 --> 00:06:40,030
+It might be some weird distribution full of holes.
+
+147
+00:06:40,030 --> 00:06:43,530
+And if I go to a point that has never been trained,
+
+148
+00:06:43,530 --> 00:06:45,610
+it's never been observed via f of x,
+
+149
+00:06:45,610 --> 00:06:48,570
+then I won't know how to decode that.
+
+150
+00:06:48,570 --> 00:06:51,010
+So the whole point of a variational autoencoder
+
+151
+00:06:51,010 --> 00:06:54,410
+is to fix this problem is to make it so that the latent
+
+152
+00:06:54,410 --> 00:06:56,290
+space, the encodings of an autoencoder,
+
+153
+00:06:56,290 --> 00:06:58,710
+form a simple distribution that you can sample from.
+
+154
+00:06:58,710 --> 00:07:01,170
+That's all of the math and algorithms
+
+155
+00:07:01,170 --> 00:07:04,010
+that we'll develop in this lecture are going to be simply
+
+156
+00:07:04,010 --> 00:07:07,090
+to do that, simply to make it so that this becomes
+
+157
+00:07:07,090 --> 00:07:10,570
+a sample from distribution.
+
+158
+00:07:10,570 --> 00:07:15,170
+So we're going to go through VAEs
+
+159
+00:07:15,170 --> 00:07:16,590
+from a few different perspectives.
+
+160
+00:07:16,590 --> 00:07:21,558
+We're going to build up the kind of mechanistic intuition
+
+161
+00:07:21,558 --> 00:07:22,350
+of what's going on.
+
+162
+00:07:22,350 --> 00:07:24,142
+But we'll also look at the theoretical kind
+
+163
+00:07:24,142 --> 00:07:28,010
+of probabilistic modeling way of motivating these things,
+
+164
+00:07:28,010 --> 00:07:33,530
+and try to understand at least some of the layers of analysis
+
+165
+00:07:33,530 --> 00:07:34,613
+that I'm going to provide.
+
+166
+00:07:34,613 --> 00:07:36,822
+So it might be that you get lost in some of the math,
+
+167
+00:07:36,822 --> 00:07:38,630
+but then always remember to pop back out.
+
+168
+00:07:38,630 --> 00:07:40,672
+So the first perspective I want you to understand
+
+169
+00:07:40,672 --> 00:07:45,210
+is that a VAE is an autoencoder with one change, which
+
+170
+00:07:45,210 --> 00:07:49,020
+is that rather than the encoder mapping to a complicated shape,
+
+171
+00:07:49,020 --> 00:07:50,270
+it will map to a simple shape.
+
+172
+00:07:50,270 --> 00:07:52,230
+It will map to a Gaussian.
+
+173
+00:07:52,230 --> 00:07:54,130
+So a VAE is just an autoencoder that
+
+174
+00:07:54,130 --> 00:07:57,290
+maps where f maps to a Gaussian, and that
+
+175
+00:07:57,290 --> 00:07:59,490
+means that I can sample new images by sampling
+
+176
+00:07:59,490 --> 00:08:01,930
+from a Gaussian and running the Gaussian
+
+177
+00:08:01,930 --> 00:08:03,630
+random vectors through decoder.
+
+178
+00:08:03,630 --> 00:08:06,030
+That's the first level of understanding of a VAE.
+
+179
+00:08:09,050 --> 00:08:09,930
+Question?
+
+180
+00:08:09,930 --> 00:08:13,770
+AUDIENCE: Is the reason that we want the latent space to be
+
+181
+00:08:13,770 --> 00:08:15,730
+Gaussian specifically because it makes
+
+182
+00:08:15,730 --> 00:08:17,910
+it better to generate models?
+
+183
+00:08:17,910 --> 00:08:20,050
+Or is this an intrinsic good [? of having the ?]
+
+184
+00:08:20,050 --> 00:08:21,730
+representation space or something?
+
+185
+00:08:21,730 --> 00:08:23,730
+PHILLIP ISOLA: Yes, so why do we want the latent
+
+186
+00:08:23,730 --> 00:08:24,872
+space to be Gaussian?
+
+187
+00:08:24,872 --> 00:08:27,330
+So the level of understanding that I want you to have right
+
+188
+00:08:27,330 --> 00:08:30,350
+now is that if the latent space were Gaussian,
+
+189
+00:08:30,350 --> 00:08:32,370
+you could sample from it, and then it becomes
+
+190
+00:08:32,370 --> 00:08:33,630
+a generative model sample.
+
+191
+00:08:33,630 --> 00:08:37,450
+A Gaussian from z, decode, becomes an image.
+
+192
+00:08:37,450 --> 00:08:43,730
+Now you also asked, is it that a Gaussian is a better--
+
+193
+00:08:43,730 --> 00:08:45,730
+that leads to better representations?
+
+194
+00:08:45,730 --> 00:08:48,313
+If I just want to think of this from a representation learning
+
+195
+00:08:48,313 --> 00:08:51,350
+angle, is mapping to a Gaussian distribution a good idea?
+
+196
+00:08:51,350 --> 00:08:54,670
+And that's also true, but it's a little bit more subtle.
+
+197
+00:08:54,670 --> 00:08:58,790
+So we'll get to that toward the end.
+
+198
+00:08:58,790 --> 00:09:01,670
+So VAEs are great representation learners and great generative
+
+199
+00:09:01,670 --> 00:09:03,670
+models, or they're good at both of those things.
+
+200
+00:09:03,670 --> 00:09:06,170
+That's why we're getting to them after we've already
+
+201
+00:09:06,170 --> 00:09:09,490
+covered basic representation learning and basic generative
+
+202
+00:09:09,490 --> 00:09:12,330
+modeling because the VAE puts both of them together.
+
+203
+00:09:12,330 --> 00:09:15,435
+And it encompasses all the models we've seen.
+
+204
+00:09:15,435 --> 00:09:17,810
+And many of the models we've seen, like diffusion models,
+
+205
+00:09:17,810 --> 00:09:20,770
+can be cast as a certain kind of VAE
+
+206
+00:09:20,770 --> 00:09:22,790
+or autoencoders or a degenerate VAE.
+
+207
+00:09:22,790 --> 00:09:24,210
+So VAEs are kind of--
+
+208
+00:09:24,210 --> 00:09:26,090
+they're the pinnacle of generative modeling
+
+209
+00:09:26,090 --> 00:09:28,810
+and representation learning.
+
+210
+00:09:28,810 --> 00:09:32,430
+But in practice, they're not as popular
+
+211
+00:09:32,430 --> 00:09:34,430
+these days as diffusion models and other things.
+
+212
+00:09:34,430 --> 00:09:36,055
+But mathematically, they're a framework
+
+213
+00:09:36,055 --> 00:09:39,470
+that encompasses almost everything that we've seen.
+
+214
+00:09:39,470 --> 00:09:44,405
+So what is the probability interpretation of a VAE?
+
+215
+00:09:44,405 --> 00:09:46,030
+So now we're going to take a step back,
+
+216
+00:09:46,030 --> 00:09:47,910
+and we're going to talk about mixtures of Gaussians
+
+217
+00:09:47,910 --> 00:09:49,730
+because it turns out, variational autoencoders
+
+218
+00:09:49,730 --> 00:09:51,147
+are fitting a mixture of Gaussians
+
+219
+00:09:51,147 --> 00:09:53,008
+to a data distribution.
+
+220
+00:09:53,008 --> 00:09:55,550
+So a mixture of Gaussians-- so what is a mixture of Gaussian?
+
+221
+00:09:55,550 --> 00:09:57,050
+Well, we talked about--
+
+222
+00:09:57,050 --> 00:09:58,430
+we've seen Gaussians.
+
+223
+00:09:58,430 --> 00:10:01,930
+So a Gaussian fit to data with a max
+
+224
+00:10:01,930 --> 00:10:03,690
+likelihood objective is just going
+
+225
+00:10:03,690 --> 00:10:06,250
+to be a density model where we try
+
+226
+00:10:06,250 --> 00:10:08,990
+to increase the density that we apply to where the data lives.
+
+227
+00:10:08,990 --> 00:10:11,888
+So there'll be a gradient that pushes up the density here.
+
+228
+00:10:11,888 --> 00:10:13,430
+And the parameters are just the mean.
+
+229
+00:10:13,430 --> 00:10:15,930
+And the variance will shift around the mean and the variance
+
+230
+00:10:15,930 --> 00:10:18,410
+of this Gaussian until we get maximum likelihood applied
+
+231
+00:10:18,410 --> 00:10:19,230
+to the data points.
+
+232
+00:10:19,230 --> 00:10:22,410
+And that's what we learned about last Thursday.
+
+233
+00:10:22,410 --> 00:10:24,130
+So that's one Gaussian.
+
+234
+00:10:24,130 --> 00:10:26,410
+A mixture of Gaussians is just, well,
+
+235
+00:10:26,410 --> 00:10:29,930
+in order to model a complicated distribution that does not
+
+236
+00:10:29,930 --> 00:10:32,090
+have a Gaussian shape, I can use a bunch
+
+237
+00:10:32,090 --> 00:10:35,130
+of Gaussian distributions and sum them up.
+
+238
+00:10:35,130 --> 00:10:37,435
+So a Gaussian is like a little-- think of it
+
+239
+00:10:37,435 --> 00:10:38,310
+like a little circle.
+
+240
+00:10:38,310 --> 00:10:40,643
+I mean, it could be an ellipse, but most of this lecture
+
+241
+00:10:40,643 --> 00:10:42,760
+will just assume isotropic Gaussians,
+
+242
+00:10:42,760 --> 00:10:46,800
+which means that the covariance is 1 or is the identity,
+
+243
+00:10:46,800 --> 00:10:47,860
+in fact.
+
+244
+00:10:47,860 --> 00:10:50,540
+So we're going to assume, just for simplicity,
+
+245
+00:10:50,540 --> 00:10:53,160
+that there's no ellipsoids or covariance structure.
+
+246
+00:10:53,160 --> 00:10:55,500
+It's just circles.
+
+247
+00:10:55,500 --> 00:10:58,860
+You can always turn these into ellipses, but in the pictures,
+
+248
+00:10:58,860 --> 00:10:59,880
+I'll just draw circles.
+
+249
+00:10:59,880 --> 00:11:02,540
+So what does it look like to have a mixture of Gaussians that
+
+250
+00:11:02,540 --> 00:11:04,780
+is fit to some distribution, like this funny shape
+
+251
+00:11:04,780 --> 00:11:07,040
+that I was coloring in blue on the previous slides?
+
+252
+00:11:07,040 --> 00:11:08,040
+It just looks like this.
+
+253
+00:11:08,040 --> 00:11:10,020
+I'm going to say I can approximate that shape
+
+254
+00:11:10,020 --> 00:11:11,503
+with a bunch of circles.
+
+255
+00:11:11,503 --> 00:11:13,920
+If the circles are small enough and I have enough of them,
+
+256
+00:11:13,920 --> 00:11:16,980
+then I can approximate any shape.
+
+257
+00:11:16,980 --> 00:11:19,210
+So probably, you could prove--
+
+258
+00:11:19,210 --> 00:11:21,460
+I haven't thought through this, but probably a mixture
+
+259
+00:11:21,460 --> 00:11:23,620
+of Gaussians can, to arbitrary precision,
+
+260
+00:11:23,620 --> 00:11:27,560
+approximate any density, something like that.
+
+261
+00:11:27,560 --> 00:11:29,680
+So here's what the mathematical model is.
+
+262
+00:11:29,680 --> 00:11:35,380
+It's just a mixture, so a sum, with weightings w.
+
+263
+00:11:35,380 --> 00:11:37,725
+I think, in traditional models, these would be positive.
+
+264
+00:11:37,725 --> 00:11:40,100
+But you can imagine these being negative or positive more
+
+265
+00:11:40,100 --> 00:11:41,340
+generally.
+
+266
+00:11:41,340 --> 00:11:45,580
+And every component is going to be a Gaussian, a little blip
+
+267
+00:11:45,580 --> 00:11:48,820
+of Gaussian probability centered at a mean, mu,
+
+268
+00:11:48,820 --> 00:11:51,940
+and covariance, sigma.
+
+269
+00:11:51,940 --> 00:11:55,060
+So the mean of the first mixture component
+
+270
+00:11:55,060 --> 00:11:57,940
+is here and the covariance is--
+
+271
+00:11:57,940 --> 00:11:59,660
+in this case, it's just isotropic two
+
+272
+00:11:59,660 --> 00:12:00,760
+dimensional Gaussian.
+
+273
+00:12:00,760 --> 00:12:03,140
+So we're just going to have a covariance
+
+274
+00:12:03,140 --> 00:12:04,475
+is equal to the variance.
+
+275
+00:12:04,475 --> 00:12:06,600
+It's just one number that characterizes that shape.
+
+276
+00:12:06,600 --> 00:12:10,100
+It's the radius of that circle.
+
+277
+00:12:10,100 --> 00:12:12,380
+So that's the mixture of Gaussians.
+
+278
+00:12:12,380 --> 00:12:14,300
+And the parameters of the mixture of Gaussians
+
+279
+00:12:14,300 --> 00:12:17,980
+are the mixing weights, w, the means
+
+280
+00:12:17,980 --> 00:12:20,300
+and the variances, the covariances
+
+281
+00:12:20,300 --> 00:12:22,563
+of all of the Gaussians in the mixture.
+
+282
+00:12:22,563 --> 00:12:23,980
+And in general, in high dimensions
+
+283
+00:12:23,980 --> 00:12:27,748
+the covariance will be d by d dimensional matrix,
+
+284
+00:12:27,748 --> 00:12:29,540
+where d is the dimensionality, and the mean
+
+285
+00:12:29,540 --> 00:12:32,060
+will be a d-dimensional vector.
+
+286
+00:12:32,060 --> 00:12:36,385
+So VAEs are a mixture of Gaussians.
+
+287
+00:12:36,385 --> 00:12:37,760
+But they're not just any mixture.
+
+288
+00:12:37,760 --> 00:12:40,340
+They're actually an infinite mixture of Gaussians.
+
+289
+00:12:40,340 --> 00:12:42,600
+So mixture of Gaussians is a classical model.
+
+290
+00:12:42,600 --> 00:12:43,980
+That kind of new thing with a VAE
+
+291
+00:12:43,980 --> 00:12:47,180
+is it's an infinite mixture of Gaussians.
+
+292
+00:12:47,180 --> 00:12:53,560
+So how could I parameterize an infinite mixture of Gaussians?
+
+293
+00:12:53,560 --> 00:12:55,820
+So a mixture of Gaussians--
+
+294
+00:12:55,820 --> 00:12:58,980
+I have weight, so that's one parameter.
+
+295
+00:12:58,980 --> 00:12:59,580
+I have mean.
+
+296
+00:12:59,580 --> 00:13:00,500
+That's d parameters.
+
+297
+00:13:00,500 --> 00:13:02,443
+And covariance-- that's d squared parameters.
+
+298
+00:13:02,443 --> 00:13:03,360
+And I have k of those.
+
+299
+00:13:03,360 --> 00:13:07,780
+So I have d squared times k plus times k plus parameters
+
+300
+00:13:07,780 --> 00:13:11,140
+to specify k Gaussians.
+
+301
+00:13:11,140 --> 00:13:12,820
+So to specify infinite Gaussians,
+
+302
+00:13:12,820 --> 00:13:15,820
+I need infinite parameters.
+
+303
+00:13:15,820 --> 00:13:17,880
+So clearly, that's not going to work,
+
+304
+00:13:17,880 --> 00:13:21,900
+that explicit parameterization of infinite mixture components.
+
+305
+00:13:21,900 --> 00:13:25,780
+So there's a really cool trick for parameterizing
+
+306
+00:13:25,780 --> 00:13:29,220
+an infinite mixture with a finite number of parameters.
+
+307
+00:13:29,220 --> 00:13:31,700
+And that is to parameterize that infinite mixture
+
+308
+00:13:31,700 --> 00:13:34,040
+as a mapping from some underlying base
+
+309
+00:13:34,040 --> 00:13:40,300
+continuous distribution to mixture components via function
+
+310
+00:13:40,300 --> 00:13:42,820
+g that has a finite set of parameters.
+
+311
+00:13:42,820 --> 00:13:46,380
+And in this course, g will be a neural network.
+
+312
+00:13:46,380 --> 00:13:49,180
+But in fact, a VAE doesn't have to have anything
+
+313
+00:13:49,180 --> 00:13:52,220
+to do with neural networks. g could be any type of mapping.
+
+314
+00:13:52,220 --> 00:13:55,500
+But in this course and in traditional literature,
+
+315
+00:13:55,500 --> 00:13:58,180
+VAEs are always using neural nets.
+
+316
+00:14:00,900 --> 00:14:03,882
+But yeah, really, you could apply this to other models, too.
+
+317
+00:14:03,882 --> 00:14:04,840
+So here's how it works.
+
+318
+00:14:04,840 --> 00:14:05,600
+We have pz.
+
+319
+00:14:05,600 --> 00:14:07,900
+This is a unit Gaussian distribution.
+
+320
+00:14:07,900 --> 00:14:11,420
+We sample a random vector from that space.
+
+321
+00:14:11,420 --> 00:14:16,220
+We pass it through our generator or decoder g.
+
+322
+00:14:16,220 --> 00:14:18,860
+And that outputs a number, which we
+
+323
+00:14:18,860 --> 00:14:23,220
+will interpret as the mean of one of my infinite mixture
+
+324
+00:14:23,220 --> 00:14:24,580
+components.
+
+325
+00:14:24,580 --> 00:14:27,660
+So I'll index the mean with this symbol mu,
+
+326
+00:14:27,660 --> 00:14:31,020
+and we'll have the neural network g or the function g
+
+327
+00:14:31,020 --> 00:14:32,760
+actually also output the variance.
+
+328
+00:14:32,760 --> 00:14:34,380
+So it'll output a set of numbers,
+
+329
+00:14:34,380 --> 00:14:37,500
+a d, a d-dimensional vector for the mean,
+
+330
+00:14:37,500 --> 00:14:41,740
+and a d-squared-dimensional vector for the covariance
+
+331
+00:14:41,740 --> 00:14:44,740
+or, in this example, two numbers for the mean and maybe one
+
+332
+00:14:44,740 --> 00:14:47,140
+number to characterize the covariance because it's
+
+333
+00:14:47,140 --> 00:14:50,500
+an isotropic Gaussian.
+
+334
+00:14:50,500 --> 00:14:54,120
+So if I sample different points in the z space,
+
+335
+00:14:54,120 --> 00:14:58,400
+I will end up parameterizing different Gaussians.
+
+336
+00:14:58,400 --> 00:15:01,940
+And because z is continuous, I can sample any point
+
+337
+00:15:01,940 --> 00:15:04,740
+on a continuum, and I can thereby
+
+338
+00:15:04,740 --> 00:15:07,380
+get an infinite number of possible or continuous
+
+339
+00:15:07,380 --> 00:15:12,060
+possible set of Gaussian mixture components.
+
+340
+00:15:12,060 --> 00:15:14,560
+And g just has weights and biases.
+
+341
+00:15:14,560 --> 00:15:15,780
+It's a neural net.
+
+342
+00:15:15,780 --> 00:15:18,780
+So that's a finite number of parameters
+
+343
+00:15:18,780 --> 00:15:21,660
+to model an infinite mixture.
+
+344
+00:15:26,820 --> 00:15:28,660
+So this has parameters theta.
+
+345
+00:15:28,660 --> 00:15:33,780
+And now we have fit some weird complicated distribution
+
+346
+00:15:33,780 --> 00:15:37,660
+with an infinite mixture parameterized by a neural net
+
+347
+00:15:37,660 --> 00:15:39,560
+with weights and biases theta.
+
+348
+00:15:42,600 --> 00:15:47,300
+So what is the density implied by this mapping?
+
+349
+00:15:47,300 --> 00:15:50,140
+So it's going to be not a sum because we
+
+350
+00:15:50,140 --> 00:15:51,400
+have a continuous space.
+
+351
+00:15:51,400 --> 00:15:53,260
+So we have to switch to a continuous math
+
+352
+00:15:53,260 --> 00:15:57,980
+and use integrals, so the probability of some data point
+
+353
+00:15:57,980 --> 00:15:58,480
+x.
+
+354
+00:15:58,480 --> 00:16:02,500
+So the distribution over x implied by this model
+
+355
+00:16:02,500 --> 00:16:06,640
+is going to be an integral over all of my mixture components.
+
+356
+00:16:06,640 --> 00:16:08,140
+Each mixture component is just going
+
+357
+00:16:08,140 --> 00:16:10,580
+to be a normal distribution, a Gaussian,
+
+358
+00:16:10,580 --> 00:16:12,820
+with mean given by the neural net
+
+359
+00:16:12,820 --> 00:16:15,140
+and variance given by the neural net.
+
+360
+00:16:15,140 --> 00:16:18,220
+That will place a little blip of density over x.
+
+361
+00:16:18,220 --> 00:16:24,200
+And my total probability will just be marginalizing over z,
+
+362
+00:16:24,200 --> 00:16:25,200
+so integrating over z.
+
+363
+00:16:25,200 --> 00:16:27,200
+So here's the finite set of Gaussian.
+
+364
+00:16:27,200 --> 00:16:29,320
+It's the sum over my mixture components.
+
+365
+00:16:29,320 --> 00:16:31,860
+But now I have an infinite set of mixture components.
+
+366
+00:16:31,860 --> 00:16:33,980
+And I'm going to take the integral
+
+367
+00:16:33,980 --> 00:16:35,480
+over all of those components.
+
+368
+00:16:35,480 --> 00:16:37,560
+And that integral is over z space.
+
+369
+00:16:42,320 --> 00:16:44,580
+So this is the infinite mixture of Gaussian model.
+
+370
+00:16:44,580 --> 00:16:47,560
+These are the weights. pz is my prior distribution.
+
+371
+00:16:47,560 --> 00:16:49,360
+It's usually just a unit Gaussian.
+
+372
+00:16:49,360 --> 00:16:51,740
+And think of that the weights of the mixture components.
+
+373
+00:16:51,740 --> 00:16:53,657
+And then these are all the mixture components.
+
+374
+00:16:53,657 --> 00:16:55,020
+And it's an integral.
+
+375
+00:16:55,020 --> 00:16:58,980
+Any questions about that?
+
+376
+00:16:58,980 --> 00:17:01,020
+So this is the probability model that underlies
+
+377
+00:17:01,020 --> 00:17:03,420
+VAEs for a Gaussian VAE.
+
+378
+00:17:03,420 --> 00:17:05,065
+You can actually have non-Gaussian.
+
+379
+00:17:05,065 --> 00:17:06,440
+So you could have other mixtures.
+
+380
+00:17:06,440 --> 00:17:08,315
+It doesn't have to be a mixture of Gaussians.
+
+381
+00:17:08,315 --> 00:17:10,807
+It could be a mixture of Laplace distributions
+
+382
+00:17:10,807 --> 00:17:12,640
+or Poisson distributions, whatever you want.
+
+383
+00:17:12,640 --> 00:17:14,098
+So it doesn't have to be Gaussians.
+
+384
+00:17:14,098 --> 00:17:16,060
+But usually, we'll work with Gaussians.
+
+385
+00:17:16,060 --> 00:17:18,435
+AUDIENCE: Is this a convolution, or is that the wrong way
+
+386
+00:17:18,435 --> 00:17:19,060
+to look at it?
+
+387
+00:17:19,060 --> 00:17:20,435
+PHILLIP ISOLA: Is it convolution?
+
+388
+00:17:20,435 --> 00:17:24,619
+I suppose it could be interpreted as convolution.
+
+389
+00:17:24,619 --> 00:17:27,880
+Like you're convolving over z-space with--
+
+390
+00:17:32,377 --> 00:17:34,710
+yeah, I'm not sure that's the most useful way of looking
+
+391
+00:17:34,710 --> 00:17:36,252
+at it, but you could probably cast it
+
+392
+00:17:36,252 --> 00:17:38,030
+as convolution in some sense.
+
+393
+00:17:38,030 --> 00:17:38,910
+Yeah.
+
+394
+00:17:38,910 --> 00:17:42,030
+OK, so I think it's easier to think
+
+395
+00:17:42,030 --> 00:17:45,350
+of it as marginal likelihood and marginalizing over some latent
+
+396
+00:17:45,350 --> 00:17:47,830
+variables, so that's what we'll see on this slide.
+
+397
+00:17:47,830 --> 00:17:50,390
+So we're going to understand the z-variable--
+
+398
+00:17:50,390 --> 00:17:52,510
+the z-space as being latent variables that
+
+399
+00:17:52,510 --> 00:17:55,670
+describe all the attributes of the generated data,
+
+400
+00:17:55,670 --> 00:18:01,010
+but in an abstract fashion, and all those latent variables,
+
+401
+00:18:01,010 --> 00:18:03,670
+we'll hope that they have a simple distribution.
+
+402
+00:18:03,670 --> 00:18:08,070
+And they'll be unit Gaussians in the VAE, but in the example
+
+403
+00:18:08,070 --> 00:18:09,950
+I gave last class, I said that I could
+
+404
+00:18:09,950 --> 00:18:11,750
+write a Python program that will take noise
+
+405
+00:18:11,750 --> 00:18:14,130
+from simple distributions and generate images,
+
+406
+00:18:14,130 --> 00:18:16,110
+and these simple distributions are
+
+407
+00:18:16,110 --> 00:18:17,930
+my distribution over the latent variables,
+
+408
+00:18:17,930 --> 00:18:20,070
+and they have interpretations.
+
+409
+00:18:20,070 --> 00:18:22,705
+So the graphical model-- if you've
+
+410
+00:18:22,705 --> 00:18:25,330
+done probability with graphical models it would look like this.
+
+411
+00:18:25,330 --> 00:18:27,270
+We sample a z, and then condition on the z.
+
+412
+00:18:27,270 --> 00:18:29,787
+We sample an x, we only observe the x.
+
+413
+00:18:29,787 --> 00:18:31,370
+The latent variables are not observed.
+
+414
+00:18:31,370 --> 00:18:34,790
+Our data modeling problem is to fit a distribution
+
+415
+00:18:34,790 --> 00:18:40,430
+over x that is represented as a mapping from some underlying
+
+416
+00:18:40,430 --> 00:18:41,750
+variable z.
+
+417
+00:18:41,750 --> 00:18:42,770
+But we don't observe z.
+
+418
+00:18:42,770 --> 00:18:45,350
+We have to maybe infer z from x.
+
+419
+00:18:45,350 --> 00:18:46,110
+OK.
+
+420
+00:18:46,110 --> 00:18:48,150
+So the generator will be-- think of that
+
+421
+00:18:48,150 --> 00:18:50,750
+as a conditional distribution, the probability over x
+
+422
+00:18:50,750 --> 00:18:54,110
+given some setting of the latent variables.
+
+423
+00:18:54,110 --> 00:19:04,110
+And if I want to model the likelihood of a data point x,
+
+424
+00:19:04,110 --> 00:19:07,750
+I can integrate over my latent variables z.
+
+425
+00:19:07,750 --> 00:19:11,190
+So this is just marginalization from probability.
+
+426
+00:19:11,190 --> 00:19:14,170
+Px given z times pz is px and z.
+
+427
+00:19:14,170 --> 00:19:18,150
+Then if I integrate over z, then by the rules of probability,
+
+428
+00:19:18,150 --> 00:19:20,590
+I get px.
+
+429
+00:19:20,590 --> 00:19:21,090
+OK.
+
+430
+00:19:21,090 --> 00:19:23,330
+So this is called-- this is-- the likelihood
+
+431
+00:19:23,330 --> 00:19:26,163
+the probability that the model p theta places on the data
+
+432
+00:19:26,163 --> 00:19:27,830
+is called the likelihood, and I'm trying
+
+433
+00:19:27,830 --> 00:19:29,050
+to do max likelihood learning.
+
+434
+00:19:29,050 --> 00:19:30,758
+So I want to find the probability model p
+
+435
+00:19:30,758 --> 00:19:34,070
+theta that maximizes the likelihood of the data that
+
+436
+00:19:34,070 --> 00:19:36,230
+assigns the most density to the data.
+
+437
+00:19:36,230 --> 00:19:37,950
+And to compute the likelihood, I have
+
+438
+00:19:37,950 --> 00:19:41,030
+to marginalize over my unobserved latent variables.
+
+439
+00:19:41,030 --> 00:19:43,648
+So sometimes we call this marginal likelihood.
+
+440
+00:19:43,648 --> 00:19:45,190
+So a latent variable model, I'm going
+
+441
+00:19:45,190 --> 00:19:48,430
+to fit it to data by maximizing the marginal likelihood that it
+
+442
+00:19:48,430 --> 00:19:50,750
+assigns to data when I marginalize over all the latent
+
+443
+00:19:50,750 --> 00:19:52,310
+variables.
+
+444
+00:19:52,310 --> 00:19:54,310
+Because for a given data point, there
+
+445
+00:19:54,310 --> 00:19:56,657
+might-- to make it high probability,
+
+446
+00:19:56,657 --> 00:19:58,990
+there might be a lot of different settings of the latent
+
+447
+00:19:58,990 --> 00:20:02,190
+variable that can give it some plausible-- like,
+
+448
+00:20:02,190 --> 00:20:04,430
+a high probability.
+
+449
+00:20:04,430 --> 00:20:06,830
+OK.
+
+450
+00:20:06,830 --> 00:20:10,510
+OK, so here is the entire objective function
+
+451
+00:20:10,510 --> 00:20:13,630
+and hypothesis space of a variational autoencoder,
+
+452
+00:20:13,630 --> 00:20:17,930
+or in this case, just an infinite Gaussian mixture model,
+
+453
+00:20:17,930 --> 00:20:20,350
+and the variational autoencoder can be--
+
+454
+00:20:20,350 --> 00:20:23,730
+is one type of approach that uses this model.
+
+455
+00:20:23,730 --> 00:20:27,230
+So the objective function is going
+
+456
+00:20:27,230 --> 00:20:30,170
+to be to do maximum likelihood.
+
+457
+00:20:30,170 --> 00:20:32,710
+So I'm going to maximize the likelihood that my model places
+
+458
+00:20:32,710 --> 00:20:34,870
+on the data.
+
+459
+00:20:34,870 --> 00:20:36,665
+And the hypothesis space is going
+
+460
+00:20:36,665 --> 00:20:38,290
+to be an infinite mixture of Gaussians.
+
+461
+00:20:38,290 --> 00:20:43,110
+So I'm going to try to find the means and the variances
+
+462
+00:20:43,110 --> 00:20:46,650
+and the weights of Gaussians in an infinite mixture,
+
+463
+00:20:46,650 --> 00:20:48,330
+and to parameterize an infinite mixture,
+
+464
+00:20:48,330 --> 00:20:51,790
+I'm going to parameterize a mapping
+
+465
+00:20:51,790 --> 00:20:58,350
+from some underlying prior space z to the data space x
+
+466
+00:20:58,350 --> 00:21:01,950
+via the math that we just looked at on the last few slides.
+
+467
+00:21:01,950 --> 00:21:03,110
+OK.
+
+468
+00:21:03,110 --> 00:21:04,530
+So this is marginal likelihood.
+
+469
+00:21:04,530 --> 00:21:06,830
+I'm marginalizing over the latent variables z.
+
+470
+00:21:06,830 --> 00:21:12,010
+And the likelihood term for px given z is going to be Gaussian,
+
+471
+00:21:12,010 --> 00:21:15,910
+and the prior term for pz is going to be unit Gaussian,
+
+472
+00:21:15,910 --> 00:21:18,310
+mapping from unit Gaussian to complicated data
+
+473
+00:21:18,310 --> 00:21:21,870
+distribution in that fashion.
+
+474
+00:21:21,870 --> 00:21:24,130
+And this model is going to give me two things.
+
+475
+00:21:24,130 --> 00:21:28,250
+It's going to give me both a density-- that's the main thing.
+
+476
+00:21:28,250 --> 00:21:30,710
+I'm trying to learn the parameters theta that
+
+477
+00:21:30,710 --> 00:21:33,990
+will define this density function that maps from x
+
+478
+00:21:33,990 --> 00:21:36,670
+to non-negative numbers.
+
+479
+00:21:36,670 --> 00:21:38,670
+And it will actually also give me
+
+480
+00:21:38,670 --> 00:21:41,410
+a very easy way of sampling from that density.
+
+481
+00:21:41,410 --> 00:21:43,110
+So it gives me those two things.
+
+482
+00:21:43,110 --> 00:21:48,130
+So in order to sample from this density, I can do the following.
+
+483
+00:21:48,130 --> 00:21:51,150
+I first sample a random unit Gaussian.
+
+484
+00:21:51,150 --> 00:21:55,590
+So that's sampling my z vector, And then I decode it through g.
+
+485
+00:21:55,590 --> 00:21:56,130
+OK.
+
+486
+00:21:56,130 --> 00:21:58,550
+So in order to create a sample x,
+
+487
+00:21:58,550 --> 00:22:03,830
+I first sample a random unit Gaussian z.
+
+488
+00:22:03,830 --> 00:22:05,710
+Or, in fact, this sampler that's written here
+
+489
+00:22:05,710 --> 00:22:10,890
+is just going to be the mapping p of x given z.
+
+490
+00:22:10,890 --> 00:22:13,870
+So it's going to say given some z, how
+
+491
+00:22:13,870 --> 00:22:18,590
+do I draw a sample over the possible x's that
+
+492
+00:22:18,590 --> 00:22:21,230
+follow the density px given z?
+
+493
+00:22:21,230 --> 00:22:28,750
+So I will take my z, and I will have my neural network predict
+
+494
+00:22:28,750 --> 00:22:31,390
+what is the mean of the mixture component,
+
+495
+00:22:31,390 --> 00:22:35,350
+and then I will transform--
+
+496
+00:22:35,350 --> 00:22:38,390
+I will take a sample with some variance
+
+497
+00:22:38,390 --> 00:22:42,490
+by multiplying my variance by a unit Gaussian.
+
+498
+00:22:42,490 --> 00:22:46,150
+So this is just a way to sample from a Gaussian
+
+499
+00:22:46,150 --> 00:22:48,830
+whose mean is g of mu and whose variance
+
+500
+00:22:48,830 --> 00:22:53,590
+is g sigma by transforming a sample from a unit Gaussian.
+
+501
+00:22:56,110 --> 00:22:58,750
+So x will be distributed as normal distribution
+
+502
+00:22:58,750 --> 00:23:05,310
+whose mean is g of mu and whose variance is g of sigma.
+
+503
+00:23:05,310 --> 00:23:07,100
+OK.
+
+504
+00:23:07,100 --> 00:23:10,830
+So the difficulty here--
+
+505
+00:23:10,830 --> 00:23:11,410
+let's see.
+
+506
+00:23:14,490 --> 00:23:14,990
+Sorry.
+
+507
+00:23:14,990 --> 00:23:17,030
+The variance is sigma squared.
+
+508
+00:23:17,030 --> 00:23:20,290
+I suppose sigma is the standard deviation, not the variance.
+
+509
+00:23:20,290 --> 00:23:22,090
+I always mix up those two.
+
+510
+00:23:22,090 --> 00:23:23,830
+OK.
+
+511
+00:23:23,830 --> 00:23:27,070
+So, yeah, the variance--
+
+512
+00:23:27,070 --> 00:23:28,750
+did I get this right?
+
+513
+00:23:28,750 --> 00:23:31,090
+Variance is square of standard deviation.
+
+514
+00:23:31,090 --> 00:23:32,110
+OK, yeah.
+
+515
+00:23:32,110 --> 00:23:38,690
+So the difficulty here is this term right here.
+
+516
+00:23:38,690 --> 00:23:41,750
+So if I want to maximize the likelihood that my model assigns
+
+517
+00:23:41,750 --> 00:23:43,830
+to the data, well, the likelihood
+
+518
+00:23:43,830 --> 00:23:45,670
+is written as an integral.
+
+519
+00:23:45,670 --> 00:23:48,550
+So if I were to try to solve this with back-propagation
+
+520
+00:23:48,550 --> 00:23:51,750
+or something like that, that means that every time I'm
+
+521
+00:23:51,750 --> 00:23:54,430
+going to perturb my parameters to place more probability, more
+
+522
+00:23:54,430 --> 00:23:58,550
+likelihood on the data, I would have to compute this integral.
+
+523
+00:23:58,550 --> 00:24:01,990
+And this would be incredibly expensive.
+
+524
+00:24:01,990 --> 00:24:05,690
+So we don't even have a closed form for that integral,
+
+525
+00:24:05,690 --> 00:24:09,110
+so we would compute that integral by approximating it
+
+526
+00:24:09,110 --> 00:24:10,710
+with a set of samples by approximating
+
+527
+00:24:10,710 --> 00:24:11,810
+the integral somehow.
+
+528
+00:24:11,810 --> 00:24:13,650
+To get a good approximation to an integral,
+
+529
+00:24:13,650 --> 00:24:17,370
+I need to maybe take a lot of samples over z.
+
+530
+00:24:17,370 --> 00:24:21,640
+And this means that every time I'm
+
+531
+00:24:21,640 --> 00:24:25,040
+going to run my model forward, see
+
+532
+00:24:25,040 --> 00:24:26,940
+what density it places in my data,
+
+533
+00:24:26,940 --> 00:24:29,382
+I actually have to run it forward a lot, a lot of times
+
+534
+00:24:29,382 --> 00:24:30,840
+because look at the neural network,
+
+535
+00:24:30,840 --> 00:24:32,660
+and g appears inside the integral,
+
+536
+00:24:32,660 --> 00:24:35,480
+so to get a good approximation to the likelihood
+
+537
+00:24:35,480 --> 00:24:37,560
+my model places on the data, I have
+
+538
+00:24:37,560 --> 00:24:42,160
+to run my neural network forward as many times as necessary
+
+539
+00:24:42,160 --> 00:24:45,480
+to approximate this integral, which might be a lot of times.
+
+540
+00:24:45,480 --> 00:24:48,680
+So one step of backprop is running my neural network
+
+541
+00:24:48,680 --> 00:24:51,600
+forward many, many, many times to get
+
+542
+00:24:51,600 --> 00:24:53,780
+a good estimate of this integral,
+
+543
+00:24:53,780 --> 00:24:55,880
+and then I still have to backprop that.
+
+544
+00:24:55,880 --> 00:24:56,380
+OK.
+
+545
+00:24:56,380 --> 00:24:59,460
+So this integral is difficult to calculate.
+
+546
+00:24:59,460 --> 00:25:03,680
+It's an intractable integral, so what am I going to do?
+
+547
+00:25:03,680 --> 00:25:04,360
+Oh.
+
+548
+00:25:04,360 --> 00:25:06,560
+And just notation-wise, there's something
+
+549
+00:25:06,560 --> 00:25:09,365
+that you might encounter in the literature, which
+
+550
+00:25:09,365 --> 00:25:11,240
+is called the reparameterization trick, which
+
+551
+00:25:11,240 --> 00:25:12,320
+just refers to this.
+
+552
+00:25:12,320 --> 00:25:18,120
+In order to take a sample from this distribution, px given
+
+553
+00:25:18,120 --> 00:25:21,400
+z, which is a normal distribution,
+
+554
+00:25:21,400 --> 00:25:23,720
+it suffices to take a sample from a unit Gaussian
+
+555
+00:25:23,720 --> 00:25:25,800
+and transform it by offsetting it by the mean
+
+556
+00:25:25,800 --> 00:25:29,000
+and then multiplying it by the variance.
+
+557
+00:25:29,000 --> 00:25:30,880
+OK.
+
+558
+00:25:30,880 --> 00:25:34,600
+So then x is just a deterministic function
+
+559
+00:25:34,600 --> 00:25:37,360
+of g with the only stochasticity coming
+
+560
+00:25:37,360 --> 00:25:41,700
+in through this unit Gaussian noise inserted in the side.
+
+561
+00:25:41,700 --> 00:25:43,320
+It's just a little trick.
+
+562
+00:25:43,320 --> 00:25:44,560
+AUDIENCE: Just to clarify.
+
+563
+00:25:44,560 --> 00:25:48,560
+So you say a variance because only sigma squared, is it
+
+564
+00:25:48,560 --> 00:25:49,580
+standard deviation?
+
+565
+00:25:49,580 --> 00:25:50,440
+PHILLIP ISOLA: Yeah.
+
+566
+00:25:50,440 --> 00:25:54,960
+Sorry, I got mixed up in the terminology.
+
+567
+00:25:54,960 --> 00:25:57,980
+So sigma is the standard deviation,
+
+568
+00:25:57,980 --> 00:25:59,500
+sigma squared is the variance.
+
+569
+00:25:59,500 --> 00:26:01,780
+And, yeah, apologies for mixing up those terms.
+
+570
+00:26:01,780 --> 00:26:03,040
+AUDIENCE: So is this--
+
+571
+00:26:03,040 --> 00:26:05,620
+it should be standard deviation or is this a typo,
+
+572
+00:26:05,620 --> 00:26:07,600
+it should be sigma squared?
+
+573
+00:26:07,600 --> 00:26:09,760
+PHILLIP ISOLA: No, I believe that it
+
+574
+00:26:09,760 --> 00:26:13,520
+should be multiplied by the standard deviation, yeah.
+
+575
+00:26:13,520 --> 00:26:15,660
+I think this is not a typo, it's just I misspoke.
+
+576
+00:26:18,180 --> 00:26:18,680
+OK.
+
+577
+00:26:18,680 --> 00:26:19,722
+Anybody can confirm that?
+
+578
+00:26:19,722 --> 00:26:22,040
+That's the proper way to transform a unit Gaussian
+
+579
+00:26:22,040 --> 00:26:24,100
+into a Gaussian with some variance?
+
+580
+00:26:24,100 --> 00:26:24,900
+OK, good.
+
+581
+00:26:24,900 --> 00:26:26,760
+So you multiply by the standard deviation.
+
+582
+00:26:26,760 --> 00:26:28,320
+Square root of the variance.
+
+583
+00:26:28,320 --> 00:26:30,440
+OK.
+
+584
+00:26:30,440 --> 00:26:31,480
+OK.
+
+585
+00:26:31,480 --> 00:26:35,580
+So that's the problem that we're trying to solve,
+
+586
+00:26:35,580 --> 00:26:39,160
+and the rest of the VAE trickery is going to be,
+
+587
+00:26:39,160 --> 00:26:43,440
+how do you calculate this integral in an efficient manner?
+
+588
+00:26:43,440 --> 00:26:45,640
+So you could pause here and you could say you
+
+589
+00:26:45,640 --> 00:26:47,820
+understand what VAEs are doing.
+
+590
+00:26:47,820 --> 00:26:52,520
+They're modeling the-- they're maximizing the data likelihood
+
+591
+00:26:52,520 --> 00:26:55,800
+by fitting an infinite mixture of Gaussians to the data
+
+592
+00:26:55,800 --> 00:26:59,280
+and doing optimization to increase the probability we
+
+593
+00:26:59,280 --> 00:27:01,680
+place on x with respect to the parameters theta, which
+
+594
+00:27:01,680 --> 00:27:04,443
+are the weights and biases of the neural network g.
+
+595
+00:27:04,443 --> 00:27:05,860
+That's one layer of understanding.
+
+596
+00:27:05,860 --> 00:27:08,318
+But then there's this integral-- so the rest of the lecture
+
+597
+00:27:08,318 --> 00:27:12,320
+is actually how do we approximate that integral.
+
+598
+00:27:12,320 --> 00:27:14,560
+OK.
+
+599
+00:27:14,560 --> 00:27:16,880
+OK, so I'm going to use the notation
+
+600
+00:27:16,880 --> 00:27:22,520
+L to represent the objective function, which is the data log
+
+601
+00:27:22,520 --> 00:27:23,720
+likelihood.
+
+602
+00:27:23,720 --> 00:27:27,060
+So L is equal to this equation down here.
+
+603
+00:27:27,060 --> 00:27:32,220
+So that equation is the marginal likelihood--
+
+604
+00:27:32,220 --> 00:27:35,000
+so it's going to be the probability of x given z times
+
+605
+00:27:35,000 --> 00:27:37,600
+z integrated over z is px.
+
+606
+00:27:37,600 --> 00:27:39,732
+Log of px is the log likelihood.
+
+607
+00:27:39,732 --> 00:27:41,440
+I'm trying to maximize the log likelihood
+
+608
+00:27:41,440 --> 00:27:43,520
+my model places on the data.
+
+609
+00:27:43,520 --> 00:27:47,860
+And this outer sum over n data points is going to be-- well,
+
+610
+00:27:47,860 --> 00:27:48,540
+my training set.
+
+611
+00:27:48,540 --> 00:27:51,040
+I'm going to be fitting my model to a training
+
+612
+00:27:51,040 --> 00:27:53,640
+set of n observations.
+
+613
+00:27:53,640 --> 00:27:55,240
+So maybe I have n photographs and I
+
+614
+00:27:55,240 --> 00:27:57,120
+want to learn a generative model of them.
+
+615
+00:27:57,120 --> 00:28:02,000
+So I-- since this is log likelihood, when
+
+616
+00:28:02,000 --> 00:28:05,300
+I have multiple different data points,
+
+617
+00:28:05,300 --> 00:28:08,800
+I maximize the joint probability by maximizing the sum
+
+618
+00:28:08,800 --> 00:28:11,660
+over the log probabilities.
+
+619
+00:28:11,660 --> 00:28:14,440
+OK, so this is the objective function
+
+620
+00:28:14,440 --> 00:28:20,040
+for maximizing the likelihood using a mixture of Gaussians.
+
+621
+00:28:20,040 --> 00:28:21,810
+OK.
+
+622
+00:28:21,810 --> 00:28:24,440
+So I'm now going to introduce a series of tricks--
+
+623
+00:28:24,440 --> 00:28:28,020
+I think around three tricks for approximating this integral.
+
+624
+00:28:28,020 --> 00:28:31,200
+So the first trick is going to be the most vanilla trick
+
+625
+00:28:31,200 --> 00:28:33,985
+that we use all the time, which is to approximate an integral I
+
+626
+00:28:33,985 --> 00:28:34,860
+can use some sample--
+
+627
+00:28:34,860 --> 00:28:36,520
+I can use sampling in some form.
+
+628
+00:28:36,520 --> 00:28:38,120
+And the nice thing about this integral
+
+629
+00:28:38,120 --> 00:28:41,620
+is it's actually in the form of an expectation.
+
+630
+00:28:41,620 --> 00:28:44,520
+So this marginal likelihood, marginalizing over the latent
+
+631
+00:28:44,520 --> 00:28:49,080
+variables, is equal to the expectation
+
+632
+00:28:49,080 --> 00:28:52,360
+of how much likelihood probability density
+
+633
+00:28:52,360 --> 00:28:57,760
+I place on x for each z in expectation over random samples
+
+634
+00:28:57,760 --> 00:29:01,360
+from the prior pz.
+
+635
+00:29:01,360 --> 00:29:04,140
+So that's the definition of expectation.
+
+636
+00:29:04,140 --> 00:29:08,320
+It's an integral with--
+
+637
+00:29:08,320 --> 00:29:10,180
+if I sample from this distribution,
+
+638
+00:29:10,180 --> 00:29:13,960
+it goes outside the expectation, this is just a definition.
+
+639
+00:29:13,960 --> 00:29:15,880
+OK.
+
+640
+00:29:15,880 --> 00:29:19,880
+So, how do we approximate expectations?
+
+641
+00:29:19,880 --> 00:29:22,960
+You can approximate expectations by simply taking a finite set
+
+642
+00:29:22,960 --> 00:29:26,160
+of samples and averaging them.
+
+643
+00:29:26,160 --> 00:29:29,160
+That's the trick that comes up all the time in math.
+
+644
+00:29:29,160 --> 00:29:31,160
+If I have an expectation, I approximate it
+
+645
+00:29:31,160 --> 00:29:34,800
+with a Monte Carlo estimate, which is a set of samples,
+
+646
+00:29:34,800 --> 00:29:36,520
+and then I take the average, as opposed
+
+647
+00:29:36,520 --> 00:29:39,280
+to having to compute the entire integral.
+
+648
+00:29:39,280 --> 00:29:42,360
+As M goes to infinity, this becomes--
+
+649
+00:29:42,360 --> 00:29:44,900
+this is an unbiased estimator of that integral.
+
+650
+00:29:44,900 --> 00:29:49,120
+So as M goes to infinity, then I get a perfect estimate.
+
+651
+00:29:49,120 --> 00:29:50,860
+OK, so how do I do that?
+
+652
+00:29:50,860 --> 00:29:53,740
+I sample from my prior, which is unit Gaussian.
+
+653
+00:29:53,740 --> 00:29:54,340
+That's easy.
+
+654
+00:29:54,340 --> 00:29:57,240
+We can sample unit Gaussian vectors.
+
+655
+00:29:57,240 --> 00:30:01,840
+And then I sum up and take the average of the density
+
+656
+00:30:01,840 --> 00:30:05,300
+that the model places over x for each z.
+
+657
+00:30:05,300 --> 00:30:08,700
+And remember that px given z is a very simple distribution.
+
+658
+00:30:08,700 --> 00:30:11,600
+That's just a Gaussian distribution.
+
+659
+00:30:11,600 --> 00:30:12,940
+That was here.
+
+660
+00:30:12,940 --> 00:30:15,880
+So px given z is just a Gaussian distribution parametrized
+
+661
+00:30:15,880 --> 00:30:19,040
+by my neural net output mean and variance.
+
+662
+00:30:19,040 --> 00:30:20,540
+OK.
+
+663
+00:30:20,540 --> 00:30:22,540
+So this is trick number one.
+
+664
+00:30:22,540 --> 00:30:24,520
+And now that we have done that trick,
+
+665
+00:30:24,520 --> 00:30:25,773
+we actually can train this.
+
+666
+00:30:25,773 --> 00:30:27,440
+I can actually write PyTorch and do this
+
+667
+00:30:27,440 --> 00:30:28,857
+because I got rid of the integral,
+
+668
+00:30:28,857 --> 00:30:31,100
+I don't know how to write integrals in PyTorch.
+
+669
+00:30:31,100 --> 00:30:33,640
+But now I've got it into a form where
+
+670
+00:30:33,640 --> 00:30:35,040
+we can write it in PyTorch.
+
+671
+00:30:35,040 --> 00:30:39,500
+Everything is just countable, discrete math.
+
+672
+00:30:39,500 --> 00:30:44,080
+So I approximated the integral with an average over average
+
+673
+00:30:44,080 --> 00:30:46,633
+over M samples from my prior, and I
+
+674
+00:30:46,633 --> 00:30:48,800
+looked at how much probability each of those samples
+
+675
+00:30:48,800 --> 00:30:49,940
+places on my data.
+
+676
+00:30:49,940 --> 00:30:53,240
+I add it all up.
+
+677
+00:30:53,240 --> 00:30:57,220
+And then I will-- it's a log probability,
+
+678
+00:30:57,220 --> 00:31:03,080
+so I'm trying to estimate log of p theta x.
+
+679
+00:31:03,080 --> 00:31:06,010
+So log of-- this is p theta x.
+
+680
+00:31:06,010 --> 00:31:09,010
+This is my approximation to p theta x.
+
+681
+00:31:09,010 --> 00:31:14,490
+And then I will be-- my total probability over all my training
+
+682
+00:31:14,490 --> 00:31:18,530
+data points is a sum over the n data points,
+
+683
+00:31:18,530 --> 00:31:20,530
+and I'm going to try to find the parameters that
+
+684
+00:31:20,530 --> 00:31:25,030
+maximize the probability I place over all of my data points.
+
+685
+00:31:25,030 --> 00:31:25,530
+OK.
+
+686
+00:31:29,870 --> 00:31:30,370
+Ah.
+
+687
+00:31:30,370 --> 00:31:31,650
+I see-- I think I--
+
+688
+00:31:31,650 --> 00:31:32,150
+no.
+
+689
+00:31:32,150 --> 00:31:33,067
+Oh yeah, this is fine.
+
+690
+00:31:33,067 --> 00:31:36,050
+OK, good.
+
+691
+00:31:36,050 --> 00:31:39,450
+Yeah no, I think actually, I think there's a typo here.
+
+692
+00:31:39,450 --> 00:31:44,450
+So that 1 over M should be inside the log, I suppose.
+
+693
+00:31:44,450 --> 00:31:47,410
+Yeah, that's probably an important typo.
+
+694
+00:31:47,410 --> 00:31:47,950
+OK.
+
+695
+00:31:47,950 --> 00:31:50,330
+So log 1 over M.
+
+696
+00:31:50,330 --> 00:31:53,070
+So there's a lot of equations in this lecture,
+
+697
+00:31:53,070 --> 00:31:56,030
+so be sure to try to go through and think about them yourself,
+
+698
+00:31:56,030 --> 00:31:58,470
+and there might be typos.
+
+699
+00:31:58,470 --> 00:32:01,010
+So exercise for you to solve.
+
+700
+00:32:01,010 --> 00:32:02,590
+OK, so what does that look like?
+
+701
+00:32:02,590 --> 00:32:06,890
+So here is actually a colab that's running this optimization
+
+702
+00:32:06,890 --> 00:32:10,330
+to fit a mixture of Gaussians to this data
+
+703
+00:32:10,330 --> 00:32:11,650
+distribution on the right.
+
+704
+00:32:11,650 --> 00:32:13,942
+And rather than showing random samples-- so rather than
+
+705
+00:32:13,942 --> 00:32:15,810
+randomly sampling from the prior pz,
+
+706
+00:32:15,810 --> 00:32:20,010
+I'm sampling along a grid of points just for visualization.
+
+707
+00:32:20,010 --> 00:32:23,730
+So we can say, for this z, that maps to a Gaussian
+
+708
+00:32:23,730 --> 00:32:24,705
+at this location.
+
+709
+00:32:24,705 --> 00:32:27,330
+Now at initialization, which is the frame that you're currently
+
+710
+00:32:27,330 --> 00:32:30,030
+seeing, I've initialized the neural networks
+
+711
+00:32:30,030 --> 00:32:33,970
+so the weights are near 0, and so the Gaussians-- all
+
+712
+00:32:33,970 --> 00:32:37,130
+the mixture components are mapping to around 0.
+
+713
+00:32:37,130 --> 00:32:40,170
+OK, so here's what it looks like when you train this system.
+
+714
+00:32:40,170 --> 00:32:44,570
+So the different points in z-space
+
+715
+00:32:44,570 --> 00:32:47,270
+learn to map to different parts of the data distribution,
+
+716
+00:32:47,270 --> 00:32:49,030
+so they cover the data distribution,
+
+717
+00:32:49,030 --> 00:32:51,690
+they maximize this likelihood.
+
+718
+00:32:51,690 --> 00:32:53,070
+OK, so that's what it looks like.
+
+719
+00:32:53,070 --> 00:32:59,090
+This is SGD on the equation above OK.
+
+720
+00:32:59,090 --> 00:33:00,370
+Yeah, question?
+
+721
+00:33:00,370 --> 00:33:03,498
+AUDIENCE: Why don't we multiply by the probability of z?
+
+722
+00:33:03,498 --> 00:33:05,290
+PHILLIP ISOLA: Why don't we multiply by it?
+
+723
+00:33:05,290 --> 00:33:06,430
+Yeah, great question.
+
+724
+00:33:06,430 --> 00:33:08,790
+So that's just because of how expectation works.
+
+725
+00:33:08,790 --> 00:33:14,410
+So expectation is defined as this integral,
+
+726
+00:33:14,410 --> 00:33:18,830
+and the probability z comes in through the sampling procedure.
+
+727
+00:33:18,830 --> 00:33:21,690
+So higher probability samples, according to z,
+
+728
+00:33:21,690 --> 00:33:24,010
+will be overrepresented in this sum, so don't
+
+729
+00:33:24,010 --> 00:33:25,270
+need to double-weight them.
+
+730
+00:33:25,270 --> 00:33:27,810
+Yeah, that's why.
+
+731
+00:33:27,810 --> 00:33:30,050
+AUDIENCE: I was just a little confused on how are you
+
+732
+00:33:30,050 --> 00:33:32,333
+computing p theta of x given z.
+
+733
+00:33:32,333 --> 00:33:33,250
+You said it was just--
+
+734
+00:33:33,250 --> 00:33:34,750
+I mean, like, on the previous slide,
+
+735
+00:33:34,750 --> 00:33:39,450
+it's like a normal distribution with a mean and standard
+
+736
+00:33:39,450 --> 00:33:41,890
+deviation or variance provided by the forward pass
+
+737
+00:33:41,890 --> 00:33:43,210
+through your model.
+
+738
+00:33:43,210 --> 00:33:45,450
+So then do you just draw a sample
+
+739
+00:33:45,450 --> 00:33:47,530
+from the normal distribution defined
+
+740
+00:33:47,530 --> 00:33:49,348
+by the parameters that your neural net--
+
+741
+00:33:49,348 --> 00:33:51,890
+PHILLIP ISOLA: You don't-- so you don't have to draw a sample
+
+742
+00:33:51,890 --> 00:33:55,630
+because this thing has a closed-form analytical form.
+
+743
+00:33:55,630 --> 00:34:03,250
+So what is n of x with mu and sigma as your--
+
+744
+00:34:03,250 --> 00:34:06,930
+or sigma squared, let's say, as your mean and your variance?
+
+745
+00:34:06,930 --> 00:34:11,090
+This is equal to some normalization times e
+
+746
+00:34:11,090 --> 00:34:17,429
+to the negative x minus mu over 2 sigma squared.
+
+747
+00:34:17,429 --> 00:34:21,330
+That's just the analytical form of the density, yeah.
+
+748
+00:34:21,330 --> 00:34:24,850
+So this thing here is just shorthand
+
+749
+00:34:24,850 --> 00:34:27,929
+for some exponential of the difference from the mean divided
+
+750
+00:34:27,929 --> 00:34:29,290
+by the variance.
+
+751
+00:34:29,290 --> 00:34:30,989
+AUDIENCE: In the approximation step,
+
+752
+00:34:30,989 --> 00:34:32,842
+how does the error scale with M?
+
+753
+00:34:32,842 --> 00:34:34,550
+PHILLIP ISOLA: In the approximation step,
+
+754
+00:34:34,550 --> 00:34:35,883
+how does the error scale with M?
+
+755
+00:34:35,883 --> 00:34:36,850
+I don't know.
+
+756
+00:34:36,850 --> 00:34:38,610
+That's a great question.
+
+757
+00:34:38,610 --> 00:34:43,350
+So I think that it's going to depend on, yeah,
+
+758
+00:34:43,350 --> 00:34:46,489
+the data and the parametric form of p and all
+
+759
+00:34:46,489 --> 00:34:49,170
+these different things, but I would just say,
+
+760
+00:34:49,170 --> 00:34:52,110
+that's like a good question to do some analysis on,
+
+761
+00:34:52,110 --> 00:34:54,489
+and I'm sure people have--
+
+762
+00:34:54,489 --> 00:34:58,330
+in general, how do Monte Carlo estimators scale with respect
+
+763
+00:34:58,330 --> 00:35:01,310
+to the number of samples?
+
+764
+00:35:01,310 --> 00:35:04,090
+And there's probably some classical results,
+
+765
+00:35:04,090 --> 00:35:05,030
+I don't remember.
+
+766
+00:35:05,030 --> 00:35:07,230
+Yeah.
+
+767
+00:35:07,230 --> 00:35:07,730
+OK.
+
+768
+00:35:10,370 --> 00:35:13,290
+Yeah?
+
+769
+00:35:13,290 --> 00:35:14,170
+OK.
+
+770
+00:35:14,170 --> 00:35:16,833
+So, that's all all well and good.
+
+771
+00:35:16,833 --> 00:35:19,250
+So actually, I'm going to ask a question related to that--
+
+772
+00:35:19,250 --> 00:35:23,720
+how many samples do you need to get a good approximation?
+
+773
+00:35:23,720 --> 00:35:25,470
+So I'll come to your question in a second.
+
+774
+00:35:25,470 --> 00:35:27,970
+So how many samples do you need to get a good approximation?
+
+775
+00:35:27,970 --> 00:35:30,530
+So this worked.
+
+776
+00:35:30,530 --> 00:35:31,910
+Do we need any more tricks?
+
+777
+00:35:31,910 --> 00:35:33,050
+Is this enough?
+
+778
+00:35:33,050 --> 00:35:36,670
+So here, I took some number of samples--
+
+779
+00:35:36,670 --> 00:35:37,750
+let's say M is like 100--
+
+780
+00:35:37,750 --> 00:35:39,730
+I don't remember the exact number.
+
+781
+00:35:39,730 --> 00:35:42,530
+Well, what's going to happen as I
+
+782
+00:35:42,530 --> 00:35:45,612
+scale my latent dimensionality?
+
+783
+00:35:45,612 --> 00:35:47,570
+And I'm going to need a high-dimensional latent
+
+784
+00:35:47,570 --> 00:35:49,210
+space in order to be an effective model
+
+785
+00:35:49,210 --> 00:35:50,810
+of a high-dimensional data space.
+
+786
+00:35:50,810 --> 00:35:53,570
+So for two-dimensional distributions like shown here,
+
+787
+00:35:53,570 --> 00:35:57,010
+it turns out that I can just sample 100 of these samples M
+
+788
+00:35:57,010 --> 00:36:00,890
+and get a good fit to my data distribution.
+
+789
+00:36:00,890 --> 00:36:03,758
+But for high-dimensional data, I need a high-dimensional latent
+
+790
+00:36:03,758 --> 00:36:05,550
+space-- or higher-dimensional latent space.
+
+791
+00:36:05,550 --> 00:36:09,010
+So let's say that my z vectors are hundreds dimensional.
+
+792
+00:36:09,010 --> 00:36:11,810
+Do you think 100 samples M are going to be a good approximation
+
+793
+00:36:11,810 --> 00:36:13,830
+to the integral over this 100-dimensional space?
+
+794
+00:36:13,830 --> 00:36:15,850
+What do you think?
+
+795
+00:36:15,850 --> 00:36:17,910
+Thumbs up if you think it will be OK?
+
+796
+00:36:17,910 --> 00:36:18,410
+OK, no.
+
+797
+00:36:18,410 --> 00:36:19,790
+Thumbs down if you think it won't be OK?
+
+798
+00:36:19,790 --> 00:36:20,670
+Yeah, thumbs down.
+
+799
+00:36:20,670 --> 00:36:22,110
+OK, so why?
+
+800
+00:36:22,110 --> 00:36:24,090
+How many samples, roughly, would you
+
+801
+00:36:24,090 --> 00:36:28,010
+say you need to have a good approximation to an integral
+
+802
+00:36:28,010 --> 00:36:32,450
+over a D-dimensional space?
+
+803
+00:36:32,450 --> 00:36:36,050
+This kind of gets at your question, I think.
+
+804
+00:36:36,050 --> 00:36:38,530
+Yeah, in the back.
+
+805
+00:36:38,530 --> 00:36:40,990
+AUDIENCE: Responding to his question, your question,
+
+806
+00:36:40,990 --> 00:36:45,130
+the Monte Carlo estimator has variance 1 over M,
+
+807
+00:36:45,130 --> 00:36:46,850
+so it goes down to square root--
+
+808
+00:36:46,850 --> 00:36:48,070
+1 over square root of M.
+
+809
+00:36:48,070 --> 00:36:48,450
+PHILLIP ISOLA: Excellent.
+
+810
+00:36:48,450 --> 00:36:49,150
+OK, thank you.
+
+811
+00:36:49,150 --> 00:36:51,250
+Monte Carlo estimator has variance 1 over M.
+
+812
+00:36:51,250 --> 00:36:52,750
+AUDIENCE: Nominally non-dimensional,
+
+813
+00:36:52,750 --> 00:36:55,202
+but in practice, somewhat dimensional.
+
+814
+00:36:55,202 --> 00:36:56,910
+PHILLIP ISOLA: Nominally not dimensional,
+
+815
+00:36:56,910 --> 00:36:58,370
+so actually, there's no dependence
+
+816
+00:36:58,370 --> 00:37:00,930
+on the dimensionality D, I guess, but in practice, there
+
+817
+00:37:00,930 --> 00:37:01,570
+is.
+
+818
+00:37:01,570 --> 00:37:03,070
+OK.
+
+819
+00:37:03,070 --> 00:37:06,850
+So I'll say that my rough intuition would be that you
+
+820
+00:37:06,850 --> 00:37:08,310
+need exponential samples.
+
+821
+00:37:08,310 --> 00:37:13,170
+In order to cover a D-dimensional space--
+
+822
+00:37:13,170 --> 00:37:15,090
+and each dimension is going to be--
+
+823
+00:37:15,090 --> 00:37:16,507
+you're going to have to fill it up
+
+824
+00:37:16,507 --> 00:37:19,390
+with another fixed set of samples,
+
+825
+00:37:19,390 --> 00:37:21,730
+so you should have something exponentially more samples
+
+826
+00:37:21,730 --> 00:37:23,530
+to cover a D-dimensional space.
+
+827
+00:37:23,530 --> 00:37:26,857
+But yeah, formally I'm not sure what--
+
+828
+00:37:26,857 --> 00:37:28,190
+so actually, how does that work?
+
+829
+00:37:28,190 --> 00:37:30,410
+I'm interested.
+
+830
+00:37:30,410 --> 00:37:31,170
+Yeah.
+
+831
+00:37:31,170 --> 00:37:33,010
+Central limit theorem?
+
+832
+00:37:33,010 --> 00:37:33,730
+AUDIENCE: Yeah.
+
+833
+00:37:33,730 --> 00:37:34,657
+The classical result.
+
+834
+00:37:34,657 --> 00:37:35,490
+PHILLIP ISOLA: Yeah.
+
+835
+00:37:38,170 --> 00:37:40,370
+OK.
+
+836
+00:37:40,370 --> 00:37:43,082
+OK, well--
+
+837
+00:37:43,082 --> 00:37:44,050
+[INTERPOSING VOICES]
+
+838
+00:37:44,050 --> 00:37:46,010
+AUDIENCE: --multiple dimensions [INAUDIBLE]
+
+839
+00:37:46,010 --> 00:37:47,510
+AUDIENCE: Yeah, [? it can happen. ?]
+
+840
+00:37:47,510 --> 00:37:49,530
+We end up with a multi-dimensional Gaussian
+
+841
+00:37:49,530 --> 00:37:54,100
+as your limit, and that has a multi-dimensional variance.
+
+842
+00:37:54,100 --> 00:37:56,780
+And then if you want to calculate the error of that
+
+843
+00:37:56,780 --> 00:38:00,320
+instead of variance, I think exponential, as I mentioned,
+
+844
+00:38:00,320 --> 00:38:02,540
+is exactly correct.
+
+845
+00:38:02,540 --> 00:38:05,060
+PHILLIP ISOLA: I think it's exponential in dimension--
+
+846
+00:38:05,060 --> 00:38:07,620
+so there should be some term in terms of--
+
+847
+00:38:07,620 --> 00:38:10,780
+the number of samples you need to get some quality of fit
+
+848
+00:38:10,780 --> 00:38:12,360
+should depend on the dimension.
+
+849
+00:38:12,360 --> 00:38:13,640
+I think it's exponential in dimension,
+
+850
+00:38:13,640 --> 00:38:15,182
+but there's probably more to discuss,
+
+851
+00:38:15,182 --> 00:38:16,700
+maybe we can take that offline.
+
+852
+00:38:16,700 --> 00:38:19,060
+But I'll just say that in practice, this
+
+853
+00:38:19,060 --> 00:38:22,020
+doesn't work in high dimensions, and I
+
+854
+00:38:22,020 --> 00:38:24,375
+think it's because you need exponentially more samples
+
+855
+00:38:24,375 --> 00:38:27,000
+to get a good approximation to the integral in high dimensions,
+
+856
+00:38:27,000 --> 00:38:29,042
+but we should talk about that more offline to see
+
+857
+00:38:29,042 --> 00:38:30,580
+if that's really true.
+
+858
+00:38:30,580 --> 00:38:31,420
+OK.
+
+859
+00:38:31,420 --> 00:38:34,620
+So, the next trick of the VAE is we're not
+
+860
+00:38:34,620 --> 00:38:36,700
+going to just sample randomly, we're
+
+861
+00:38:36,700 --> 00:38:37,960
+going to sample intelligently.
+
+862
+00:38:37,960 --> 00:38:40,703
+We're not going to just do naive Monte Carlo approximation
+
+863
+00:38:40,703 --> 00:38:42,620
+to the integral, we're going to do a much more
+
+864
+00:38:42,620 --> 00:38:44,820
+intelligent approximation to the integral,
+
+865
+00:38:44,820 --> 00:38:48,000
+and that one is going to be called importance sampling.
+
+866
+00:38:48,000 --> 00:38:48,500
+OK.
+
+867
+00:38:48,500 --> 00:38:50,600
+So what is the idea of importance sampling?
+
+868
+00:38:50,600 --> 00:38:52,380
+The idea is that let's say that I
+
+869
+00:38:52,380 --> 00:38:55,580
+want to estimate the likelihood that my model places
+
+870
+00:38:55,580 --> 00:38:59,100
+on some data point x, that little x up there.
+
+871
+00:38:59,100 --> 00:39:02,460
+OK, what I'm going to do with importance sampling is say,
+
+872
+00:39:02,460 --> 00:39:05,580
+I could say that that's the expectation of px given
+
+873
+00:39:05,580 --> 00:39:07,700
+z with respect--
+
+874
+00:39:07,700 --> 00:39:10,580
+taking expectation over z.
+
+875
+00:39:10,580 --> 00:39:13,220
+And I could randomly sample the z's to calculate that
+
+876
+00:39:13,220 --> 00:39:15,540
+expectation.
+
+877
+00:39:15,540 --> 00:39:18,100
+But what will happen if I randomly sample the z's?
+
+878
+00:39:18,100 --> 00:39:21,580
+Then almost every single px given
+
+879
+00:39:21,580 --> 00:39:25,180
+z for most of the z's will place nearly zero probability
+
+880
+00:39:25,180 --> 00:39:27,100
+on that data point x.
+
+881
+00:39:27,100 --> 00:39:31,760
+Most of these mixture components don't lie near the data point x.
+
+882
+00:39:31,760 --> 00:39:33,260
+Just in practice, this is what might
+
+883
+00:39:33,260 --> 00:39:35,593
+happen if I've spread out these mixture components to be
+
+884
+00:39:35,593 --> 00:39:38,220
+a good fit to the data density.
+
+885
+00:39:38,220 --> 00:39:40,920
+OK, so the observation is that with random sampling,
+
+886
+00:39:40,920 --> 00:39:42,860
+maybe I have to take around 7 samples
+
+887
+00:39:42,860 --> 00:39:45,540
+to get one Gaussian component that's near x,
+
+888
+00:39:45,540 --> 00:39:48,180
+and almost all the other components are adding 0--
+
+889
+00:39:48,180 --> 00:39:50,020
+roughly 0, so it's like this.
+
+890
+00:39:50,020 --> 00:39:54,720
+p of x is equal to the average of px given one sample plus px
+
+891
+00:39:54,720 --> 00:39:57,280
+given the next sample plus px given the next sample,
+
+892
+00:39:57,280 --> 00:40:00,100
+but most of these px given a sample are 0.
+
+893
+00:40:00,100 --> 00:40:02,920
+So almost all the terms are nearly 0 except for the sample
+
+894
+00:40:02,920 --> 00:40:03,420
+that--
+
+895
+00:40:03,420 --> 00:40:07,140
+except for the z's that map to Gaussians that place
+
+896
+00:40:07,140 --> 00:40:10,540
+high density over this x.
+
+897
+00:40:10,540 --> 00:40:13,180
+So in this expectation, most of the terms
+
+898
+00:40:13,180 --> 00:40:17,620
+are going to be 0 for any given point x.
+
+899
+00:40:17,620 --> 00:40:19,860
+So we can exploit that by just trying to say,
+
+900
+00:40:19,860 --> 00:40:22,260
+let me only take the sample z2, and that
+
+901
+00:40:22,260 --> 00:40:26,100
+will be a good approximation to this expectation.
+
+902
+00:40:26,100 --> 00:40:27,500
+And this is called--
+
+903
+00:40:27,500 --> 00:40:29,660
+this is the idea behind importance sampling.
+
+904
+00:40:29,660 --> 00:40:33,340
+So in order to approximate this expectation, which
+
+905
+00:40:33,340 --> 00:40:38,260
+is that integral, I can simply multiply by q--
+
+906
+00:40:38,260 --> 00:40:43,840
+by another density q, and I can multiply by qz divided by qz--
+
+907
+00:40:43,840 --> 00:40:47,860
+so qz divided by qz will be 1 as long as qz is non-zero
+
+908
+00:40:47,860 --> 00:40:50,120
+everywhere, which is just a technical condition,
+
+909
+00:40:50,120 --> 00:40:52,740
+we need to make sure it has support everywhere.
+
+910
+00:40:52,740 --> 00:40:55,460
+OK, so then I can--
+
+911
+00:40:55,460 --> 00:40:56,180
+that's valid.
+
+912
+00:40:56,180 --> 00:40:57,958
+So I'm just multiplying by 1.
+
+913
+00:40:57,958 --> 00:40:59,500
+But the interesting thing here is now
+
+914
+00:40:59,500 --> 00:41:01,620
+this appears as an expectation with respect
+
+915
+00:41:01,620 --> 00:41:05,820
+to z samples from qz as opposed to z samples from pz.
+
+916
+00:41:05,820 --> 00:41:09,700
+And if qz is a distribution which
+
+917
+00:41:09,700 --> 00:41:16,460
+has placed high density only on the z's that actually contribute
+
+918
+00:41:16,460 --> 00:41:19,780
+to the sum that actually have high probability of the data
+
+919
+00:41:19,780 --> 00:41:23,100
+under that z, high px given z, then this
+
+920
+00:41:23,100 --> 00:41:26,860
+will be an expectation which requires fewer samples
+
+921
+00:41:26,860 --> 00:41:33,180
+to get a good estimate of the true integral.
+
+922
+00:41:33,180 --> 00:41:36,120
+OK, so this is called importance sampling.
+
+923
+00:41:36,120 --> 00:41:38,820
+I'm sampling from a distribution that gives more importance
+
+924
+00:41:38,820 --> 00:41:43,220
+to the points that matter.
+
+925
+00:41:43,220 --> 00:41:45,500
+OK, so I won't prove this, but I'll just
+
+926
+00:41:45,500 --> 00:41:50,980
+assert that the optimal distribution
+
+927
+00:41:50,980 --> 00:41:53,400
+to sample from for performing this estimation.
+
+928
+00:41:53,400 --> 00:41:56,580
+In a certain sense, I think the distribution that
+
+929
+00:41:56,580 --> 00:42:01,460
+minimizes the variance over my estimator of this expectation,
+
+930
+00:42:01,460 --> 00:42:09,260
+is to sample z's from exactly the density p Z given x.
+
+931
+00:42:09,260 --> 00:42:10,393
+OK.
+
+932
+00:42:10,393 --> 00:42:11,560
+So what does that look like?
+
+933
+00:42:11,560 --> 00:42:18,600
+So it's like if I knew p Z given x, it's like, here's x.
+
+934
+00:42:18,600 --> 00:42:20,980
+So given x, these are the Z's, let's say, that
+
+935
+00:42:20,980 --> 00:42:22,778
+place high probability on x.
+
+936
+00:42:22,778 --> 00:42:25,320
+It's a distribution-- it might be a complicated distribution,
+
+937
+00:42:25,320 --> 00:42:27,420
+but most of the density-- like, this
+
+938
+00:42:27,420 --> 00:42:32,660
+is the high-density region of p Z given x, is in a small region.
+
+939
+00:42:32,660 --> 00:42:34,640
+And if I could simply sample from those points,
+
+940
+00:42:34,640 --> 00:42:38,260
+it would suffice to get a good estimate of what
+
+941
+00:42:38,260 --> 00:42:40,258
+would happen if I had sampled from everywhere
+
+942
+00:42:40,258 --> 00:42:42,300
+because most other points will place zero density
+
+943
+00:42:42,300 --> 00:42:44,860
+and they just won't contribute to that integral--
+
+944
+00:42:44,860 --> 00:42:47,380
+or roughly zero density.
+
+945
+00:42:47,380 --> 00:42:49,580
+OK.
+
+946
+00:42:49,580 --> 00:42:52,580
+OK, so importance sampling is like now I just sample once
+
+947
+00:42:52,580 --> 00:42:55,540
+from this distribution and I get as good an estimate
+
+948
+00:42:55,540 --> 00:42:58,440
+as having sampled seven times with random sampling.
+
+949
+00:43:01,180 --> 00:43:03,360
+OK, so here's the entire transformation.
+
+950
+00:43:03,360 --> 00:43:06,780
+I'm going to estimate the likelihood that my model places
+
+951
+00:43:06,780 --> 00:43:09,340
+on the data via this expectation,
+
+952
+00:43:09,340 --> 00:43:12,780
+but I'm going to switch it to this other expectation
+
+953
+00:43:12,780 --> 00:43:16,760
+where-- these two expectations are exactly equal to each other.
+
+954
+00:43:16,760 --> 00:43:20,300
+That's because these two integrals
+
+955
+00:43:20,300 --> 00:43:23,340
+are exactly equal to each other if q has
+
+956
+00:43:23,340 --> 00:43:26,780
+non-zero support everywhere.
+
+957
+00:43:26,780 --> 00:43:31,100
+But this one can be approximated with a Monte Carlo set of--
+
+958
+00:43:31,100 --> 00:43:33,220
+a Monte Carlo approximation to this--
+
+959
+00:43:33,220 --> 00:43:36,420
+expectation is going to be a better estimate, lower
+
+960
+00:43:36,420 --> 00:43:38,960
+variance than this expectation.
+
+961
+00:43:41,700 --> 00:43:44,390
+OK.
+
+962
+00:43:44,390 --> 00:43:47,330
+So here's an importance sampling.
+
+963
+00:43:47,330 --> 00:43:51,550
+Random sampling, I take random samples from z-- from pz.
+
+964
+00:43:51,550 --> 00:43:53,707
+And most of them don't contribute to the sum.
+
+965
+00:43:53,707 --> 00:43:55,790
+Importance sampling, I only sample from the points
+
+966
+00:43:55,790 --> 00:43:56,970
+that contribute to the sum.
+
+967
+00:43:56,970 --> 00:44:00,350
+I only sample from the points that the model
+
+968
+00:44:00,350 --> 00:44:04,190
+thinks will place high probability on x.
+
+969
+00:44:04,190 --> 00:44:06,230
+So the probability of z given x is the points
+
+970
+00:44:06,230 --> 00:44:08,670
+that the model thinks are the z's that will
+
+971
+00:44:08,670 --> 00:44:12,130
+place high probability on x.
+
+972
+00:44:12,130 --> 00:44:12,630
+OK.
+
+973
+00:44:18,030 --> 00:44:18,730
+Great.
+
+974
+00:44:18,730 --> 00:44:24,550
+So, if I knew p Z given x, then this would be what I want to do.
+
+975
+00:44:24,550 --> 00:44:28,550
+I just sample from p Z given x and I get a better approximation
+
+976
+00:44:28,550 --> 00:44:33,170
+to that integral, and this will then work in high dimensions
+
+977
+00:44:33,170 --> 00:44:35,670
+because for high dimensions, the volume is exponential in D,
+
+978
+00:44:35,670 --> 00:44:40,590
+but the area of z-space that actually maps to any given point
+
+979
+00:44:40,590 --> 00:44:45,450
+x might be very small under a particular model p.
+
+980
+00:44:45,450 --> 00:44:45,950
+OK.
+
+981
+00:44:45,950 --> 00:44:48,950
+But the problem is, I don't know p Z given
+
+982
+00:44:48,950 --> 00:44:51,050
+x that might be another complicated distribution,
+
+983
+00:44:51,050 --> 00:44:52,550
+and I now have to come up with a way
+
+984
+00:44:52,550 --> 00:44:55,190
+of modeling that distribution.
+
+985
+00:44:55,190 --> 00:44:56,210
+So here's how you do it.
+
+986
+00:44:56,210 --> 00:45:00,550
+The next step in the VAE-- the third trick is you're
+
+987
+00:45:00,550 --> 00:45:04,602
+going to try to model or predict the optimal sampling
+
+988
+00:45:04,602 --> 00:45:06,310
+distribution, the sampling distribution p
+
+989
+00:45:06,310 --> 00:45:08,293
+Z given x given x.
+
+990
+00:45:08,293 --> 00:45:09,710
+You're going to train a model that
+
+991
+00:45:09,710 --> 00:45:13,910
+will take x as input and output a density over Z,
+
+992
+00:45:13,910 --> 00:45:17,050
+and that will be a model of p Z given x.
+
+993
+00:45:17,050 --> 00:45:18,550
+OK, so now we get to where it starts
+
+994
+00:45:18,550 --> 00:45:19,530
+to look like an autoencoder.
+
+995
+00:45:19,530 --> 00:45:22,110
+It probably didn't look at all like an autoencoder until now,
+
+996
+00:45:22,110 --> 00:45:23,318
+but what does that look like?
+
+997
+00:45:23,318 --> 00:45:24,510
+That's an encoder.
+
+998
+00:45:24,510 --> 00:45:31,390
+That's a mapping from x to a distribution over z-space.
+
+999
+00:45:31,390 --> 00:45:34,310
+So our model of--
+
+1000
+00:45:34,310 --> 00:45:40,310
+our model, which we'll call q, which is trying to approximate p
+
+1001
+00:45:40,310 --> 00:45:44,070
+theta Z given x, so we're going to try to approximate that
+
+1002
+00:45:44,070 --> 00:45:47,470
+with another prediction called q.
+
+1003
+00:45:47,470 --> 00:45:52,310
+That density is going to be, just for simplicity, modeled
+
+1004
+00:45:52,310 --> 00:45:53,410
+also as a Gaussian.
+
+1005
+00:45:53,410 --> 00:45:55,230
+So we're going to take our x, we're
+
+1006
+00:45:55,230 --> 00:45:57,710
+going to try to predict what part of z-space
+
+1007
+00:45:57,710 --> 00:46:01,710
+would p place high probability on x.
+
+1008
+00:46:01,710 --> 00:46:06,910
+So for what part of z-space is px given z high probability?
+
+1009
+00:46:06,910 --> 00:46:10,310
+We're going to predict that by modeling
+
+1010
+00:46:10,310 --> 00:46:12,570
+a distribution over z-space.
+
+1011
+00:46:12,570 --> 00:46:14,510
+And we're going to make that a Gaussian.
+
+1012
+00:46:14,510 --> 00:46:17,050
+It will be-- we'll take our neural network f,
+
+1013
+00:46:17,050 --> 00:46:19,830
+it will output a mean and a variance, or maybe a covariance
+
+1014
+00:46:19,830 --> 00:46:24,750
+if we wish, and that will be our model for pz given
+
+1015
+00:46:24,750 --> 00:46:26,410
+x, and that model is called q.
+
+1016
+00:46:26,410 --> 00:46:28,110
+And q has parameters psi, which is
+
+1017
+00:46:28,110 --> 00:46:33,130
+a new set of weights and biases of this encoder function.
+
+1018
+00:46:33,130 --> 00:46:33,630
+OK.
+
+1019
+00:46:36,790 --> 00:46:37,310
+OK.
+
+1020
+00:46:37,310 --> 00:46:40,370
+So, now we're going to get to the full picture.
+
+1021
+00:46:40,370 --> 00:46:42,010
+So we have these two pieces.
+
+1022
+00:46:42,010 --> 00:46:45,310
+We have the decoder function, which
+
+1023
+00:46:45,310 --> 00:46:47,933
+is this probability model-- probability of x given z,
+
+1024
+00:46:47,933 --> 00:46:49,350
+and we have this encoder function,
+
+1025
+00:46:49,350 --> 00:46:51,610
+probability of z given x.
+
+1026
+00:46:51,610 --> 00:46:53,830
+We're going to put them together now.
+
+1027
+00:46:53,830 --> 00:46:59,230
+So how am I going to actually write down
+
+1028
+00:46:59,230 --> 00:47:02,230
+the objective function for the encoder?
+
+1029
+00:47:02,230 --> 00:47:04,810
+So the objective, we're going to say we want it--
+
+1030
+00:47:04,810 --> 00:47:10,950
+we want the encoder to model a distribution pz given x,
+
+1031
+00:47:10,950 --> 00:47:12,830
+and it's going to model that distribution
+
+1032
+00:47:12,830 --> 00:47:15,430
+with another distribution parameterized
+
+1033
+00:47:15,430 --> 00:47:17,490
+by mean and variance that defines a Gaussian,
+
+1034
+00:47:17,490 --> 00:47:18,940
+and that's going to be qz given x.
+
+1035
+00:47:18,940 --> 00:47:21,190
+And we're going to try to make those two distributions
+
+1036
+00:47:21,190 --> 00:47:21,650
+the same.
+
+1037
+00:47:21,650 --> 00:47:23,567
+So we're going to use the KL divergence to try
+
+1038
+00:47:23,567 --> 00:47:26,090
+to minimize the difference between those two distributions.
+
+1039
+00:47:26,090 --> 00:47:29,830
+Just a particular divergence measure of how different
+
+1040
+00:47:29,830 --> 00:47:32,710
+our two distributions, we want to make them the same.
+
+1041
+00:47:32,710 --> 00:47:35,610
+OK, so this is our objective for the problem of the encoder.
+
+1042
+00:47:35,610 --> 00:47:38,708
+The problem of encoder is to minimize Jq.
+
+1043
+00:47:38,708 --> 00:47:40,750
+Actually, I think I have a negative sign, so it's
+
+1044
+00:47:40,750 --> 00:47:42,950
+going to be to maximize Jq.
+
+1045
+00:47:42,950 --> 00:47:47,510
+So I'm just going to rewrite the KL divergence.
+
+1046
+00:47:47,510 --> 00:47:49,990
+There's a little bit of algebra that you'll probably
+
+1047
+00:47:49,990 --> 00:47:52,870
+want to look at in more detail on your own time,
+
+1048
+00:47:52,870 --> 00:47:56,590
+but this is one way of writing out the definition of KL
+
+1049
+00:47:56,590 --> 00:47:57,510
+divergence.
+
+1050
+00:47:57,510 --> 00:48:02,510
+It's going to be, yeah, this equation.
+
+1051
+00:48:02,510 --> 00:48:06,910
+It's going to be in-expectation sampling from the density
+
+1052
+00:48:06,910 --> 00:48:12,630
+that q Z given x all of these terms.
+
+1053
+00:48:12,630 --> 00:48:14,170
+OK.
+
+1054
+00:48:14,170 --> 00:48:21,470
+So the learning problem for q is to maximize--
+
+1055
+00:48:21,470 --> 00:48:24,030
+to minimize the KL divergence or maximize the negative KL
+
+1056
+00:48:24,030 --> 00:48:24,930
+divergence.
+
+1057
+00:48:24,930 --> 00:48:27,190
+So this is the learning problem for q.
+
+1058
+00:48:27,190 --> 00:48:30,590
+It's trying to predict the distribution over latent
+
+1059
+00:48:30,590 --> 00:48:33,175
+variables that will explain a given data point x.
+
+1060
+00:48:33,175 --> 00:48:34,550
+We call that inference sometimes,
+
+1061
+00:48:34,550 --> 00:48:39,110
+infer the latent variables that explain the data x.
+
+1062
+00:48:39,110 --> 00:48:40,630
+I can take this equation and I can
+
+1063
+00:48:40,630 --> 00:48:44,350
+notice that if I'm maximizing with respect to the parameters
+
+1064
+00:48:44,350 --> 00:48:46,890
+of q, well, the parameters of q don't appear in this term,
+
+1065
+00:48:46,890 --> 00:48:48,590
+so I'm going to just remove that term.
+
+1066
+00:48:48,590 --> 00:48:52,050
+They don't affect the maximization problem,
+
+1067
+00:48:52,050 --> 00:48:54,910
+they don't affect the arg max over the parameters psi,
+
+1068
+00:48:54,910 --> 00:48:57,070
+the parameters of the encoder.
+
+1069
+00:48:57,070 --> 00:49:00,810
+So now-- and we'll use this term a little bit later,
+
+1070
+00:49:00,810 --> 00:49:03,130
+but this equation here will be J,
+
+1071
+00:49:03,130 --> 00:49:05,350
+it will come back in a minute.
+
+1072
+00:49:05,350 --> 00:49:10,350
+OK, so for our learning problem for q is to optimize this.
+
+1073
+00:49:10,350 --> 00:49:13,750
+And this is an expectation, so I could optimize that again
+
+1074
+00:49:13,750 --> 00:49:18,910
+by just taking a Monte Carlo estimate to the expectation
+
+1075
+00:49:18,910 --> 00:49:21,990
+by sampling a bunch of different z's and taking
+
+1076
+00:49:21,990 --> 00:49:27,950
+the average over all of the values within the expectation.
+
+1077
+00:49:27,950 --> 00:49:28,700
+OK.
+
+1078
+00:49:32,684 --> 00:49:36,030
+So that's the learning problem for q,
+
+1079
+00:49:36,030 --> 00:49:39,350
+which is parameterized by a neural network f.
+
+1080
+00:49:39,350 --> 00:49:41,910
+Map from x to an inferred distribution
+
+1081
+00:49:41,910 --> 00:49:46,050
+over latent variables that can explain x.
+
+1082
+00:49:46,050 --> 00:49:47,993
+OK, the learning problem for p-- this
+
+1083
+00:49:47,993 --> 00:49:49,410
+was our original learning problem.
+
+1084
+00:49:49,410 --> 00:49:52,470
+We wanted to learn a generative model parameterized
+
+1085
+00:49:52,470 --> 00:49:58,110
+by a neural net g where g places Gaussian probability
+
+1086
+00:49:58,110 --> 00:50:03,030
+over the data space x, and g defines an infinite mixture
+
+1087
+00:50:03,030 --> 00:50:05,190
+of Gaussians by mapping from-- by taking
+
+1088
+00:50:05,190 --> 00:50:08,510
+an integral over all possible points in z-space.
+
+1089
+00:50:08,510 --> 00:50:11,390
+OK, so for a learning problem for p,
+
+1090
+00:50:11,390 --> 00:50:15,670
+what I'm going to call Jp, is to find the parameters theta that
+
+1091
+00:50:15,670 --> 00:50:19,430
+maximize the likelihood that my model places on the data,
+
+1092
+00:50:19,430 --> 00:50:21,950
+and with importance sampling, that
+
+1093
+00:50:21,950 --> 00:50:24,750
+means I'm going to sample from my importance sampling
+
+1094
+00:50:24,750 --> 00:50:28,470
+distribution q, which we learned the optimal importance sampling
+
+1095
+00:50:28,470 --> 00:50:31,270
+distribution q up here, we know that it should be pz given x,
+
+1096
+00:50:31,270 --> 00:50:33,240
+but we're just going to try to learn z
+
+1097
+00:50:33,240 --> 00:50:36,760
+given x by fitting a distribution q to pz given x.
+
+1098
+00:50:36,760 --> 00:50:38,760
+And this is, then, my importance sampling
+
+1099
+00:50:38,760 --> 00:50:40,560
+for estimating the integral that defines
+
+1100
+00:50:40,560 --> 00:50:43,160
+the likelihood of the data under the parameters theta
+
+1101
+00:50:43,160 --> 00:50:45,840
+of my model neural net g.
+
+1102
+00:50:45,840 --> 00:50:46,800
+OK.
+
+1103
+00:50:46,800 --> 00:50:50,920
+So I know there's a lot of terms in math going on.
+
+1104
+00:50:50,920 --> 00:50:54,120
+This might take you time to work through step by step.
+
+1105
+00:50:54,120 --> 00:50:58,240
+All of this derivation is in the reading for today,
+
+1106
+00:50:58,240 --> 00:51:01,238
+so these slides follow that almost exactly.
+
+1107
+00:51:01,238 --> 00:51:02,780
+And additionally, in the problem set,
+
+1108
+00:51:02,780 --> 00:51:04,822
+you'll get to work through some of this yourself,
+
+1109
+00:51:04,822 --> 00:51:06,840
+so hopefully you'll enjoy that.
+
+1110
+00:51:06,840 --> 00:51:10,040
+But I know this is a little more mathematically notation-heavy
+
+1111
+00:51:10,040 --> 00:51:12,080
+than some of the other lectures.
+
+1112
+00:51:12,080 --> 00:51:12,830
+OK.
+
+1113
+00:51:12,830 --> 00:51:15,300
+So now putting everything together,
+
+1114
+00:51:15,300 --> 00:51:18,400
+there's one little final step, which
+
+1115
+00:51:18,400 --> 00:51:25,160
+is, it turns out that if we approximate log of expectation
+
+1116
+00:51:25,160 --> 00:51:27,220
+by taking sample like a Monte Carlo estimate--
+
+1117
+00:51:27,220 --> 00:51:31,680
+by taking samples from the thing that we're taking
+
+1118
+00:51:31,680 --> 00:51:34,580
+the expectation over, if we do a Monte Carlo estimate of this
+
+1119
+00:51:34,580 --> 00:51:36,372
+and then we take log of that, it turns out,
+
+1120
+00:51:36,372 --> 00:51:39,245
+that's a biased estimator of log of expectation.
+
+1121
+00:51:39,245 --> 00:51:41,120
+So Monte Carlo estimate of log of expectation
+
+1122
+00:51:41,120 --> 00:51:42,820
+is a biased estimator, and we don't really want that.
+
+1123
+00:51:42,820 --> 00:51:45,195
+We want it to be the case that as samples go to infinity,
+
+1124
+00:51:45,195 --> 00:51:47,880
+we get the true answer, and that won't be the case here.
+
+1125
+00:51:47,880 --> 00:51:49,755
+So we're going to do this little trick, which
+
+1126
+00:51:49,755 --> 00:51:53,128
+is that we're going to pull the log inside the expectation
+
+1127
+00:51:53,128 --> 00:51:55,420
+so that then we just have expectation of some function,
+
+1128
+00:51:55,420 --> 00:51:57,800
+and then a Monte Carlo estimate of that expectation
+
+1129
+00:51:57,800 --> 00:52:01,240
+is an unbiased estimator of that expectation.
+
+1130
+00:52:01,240 --> 00:52:01,740
+OK.
+
+1131
+00:52:01,740 --> 00:52:04,720
+So we're allowed to do that by Jensen's inequality that
+
+1132
+00:52:04,720 --> 00:52:07,760
+says log of e of some function is
+
+1133
+00:52:07,760 --> 00:52:10,880
+equal-- is greater than or equal to expectation
+
+1134
+00:52:10,880 --> 00:52:14,120
+of log of that function.
+
+1135
+00:52:14,120 --> 00:52:16,060
+So this is just an identity, again, from--
+
+1136
+00:52:16,060 --> 00:52:18,060
+a lot of you will have seen Jensen's inequality.
+
+1137
+00:52:18,060 --> 00:52:20,440
+It comes up a lot when you're working with probabilities.
+
+1138
+00:52:20,440 --> 00:52:23,160
+And now what we have is that this
+
+1139
+00:52:23,160 --> 00:52:26,400
+is going to be a lower bound to our objective J.
+
+1140
+00:52:26,400 --> 00:52:27,900
+So this is a lower bound.
+
+1141
+00:52:27,900 --> 00:52:29,820
+I can rewrite it-- so I take the log,
+
+1142
+00:52:29,820 --> 00:52:31,660
+I move around the terms a little bit.
+
+1143
+00:52:31,660 --> 00:52:34,440
+This is just rewriting some algebra.
+
+1144
+00:52:34,440 --> 00:52:40,000
+And this thing here is called the evidence lower bound.
+
+1145
+00:52:40,000 --> 00:52:41,052
+It's called the ELBO.
+
+1146
+00:52:41,052 --> 00:52:42,760
+So you'll come across this term if you're
+
+1147
+00:52:42,760 --> 00:52:45,040
+working in VAEs or other types of what
+
+1148
+00:52:45,040 --> 00:52:47,160
+we call variational inference.
+
+1149
+00:52:47,160 --> 00:52:50,460
+And it's a lower bound to the thing we actually care about,
+
+1150
+00:52:50,460 --> 00:52:53,398
+which is the likelihood of the data under the model.
+
+1151
+00:52:53,398 --> 00:52:55,440
+And it's a lower bound due to Jensen's inequality
+
+1152
+00:52:55,440 --> 00:52:56,880
+on this line.
+
+1153
+00:52:56,880 --> 00:53:00,360
+And this is something that is now--
+
+1154
+00:53:00,360 --> 00:53:02,520
+we can approximate this expectation as an--
+
+1155
+00:53:02,520 --> 00:53:06,520
+or this expectation with samples and it'll
+
+1156
+00:53:06,520 --> 00:53:08,420
+be an unbiased estimator of that value.
+
+1157
+00:53:08,420 --> 00:53:10,795
+So we're going to have an unbiased estimator of the lower
+
+1158
+00:53:10,795 --> 00:53:12,880
+bound, we can maximize the lower bound
+
+1159
+00:53:12,880 --> 00:53:15,380
+on the likelihood the model applies to the data,
+
+1160
+00:53:15,380 --> 00:53:17,040
+and this will learn a model that places
+
+1161
+00:53:17,040 --> 00:53:18,760
+high likelihood on the data.
+
+1162
+00:53:18,760 --> 00:53:26,040
+Maximizing the lower bound will increase my objective J. OK.
+
+1163
+00:53:26,040 --> 00:53:29,000
+So evidence-- like, this is the evidence
+
+1164
+00:53:29,000 --> 00:53:33,597
+that the model provides for the data.
+
+1165
+00:53:33,597 --> 00:53:35,680
+Anyway, yeah, don't worry about the name too much,
+
+1166
+00:53:35,680 --> 00:53:37,720
+but it's called the evidence lower-bound,
+
+1167
+00:53:37,720 --> 00:53:39,360
+it's just terminology, ELBO.
+
+1168
+00:53:39,360 --> 00:53:39,860
+OK.
+
+1169
+00:53:39,860 --> 00:53:46,000
+So it comes in two terms that both have intuitive form,
+
+1170
+00:53:46,000 --> 00:53:47,820
+and I'll get to those on the next slide.
+
+1171
+00:53:47,820 --> 00:53:50,960
+But the interesting thing is, once we have written things
+
+1172
+00:53:50,960 --> 00:53:54,440
+in this form, what you can notice, if you go back a slide,
+
+1173
+00:53:54,440 --> 00:53:56,680
+is that this objective is actually
+
+1174
+00:53:56,680 --> 00:54:02,220
+exactly equal to the objective that we had for q.
+
+1175
+00:54:02,220 --> 00:54:06,340
+So q appears over here in this KL term.
+
+1176
+00:54:06,340 --> 00:54:07,340
+So what is this saying?
+
+1177
+00:54:07,340 --> 00:54:10,560
+This is saying that in order to learn
+
+1178
+00:54:10,560 --> 00:54:15,060
+the parameters of the encoder that give me the best importance
+
+1179
+00:54:15,060 --> 00:54:18,320
+sampling distribution for estimating
+
+1180
+00:54:18,320 --> 00:54:22,720
+the likelihood the decoder places on the data,
+
+1181
+00:54:22,720 --> 00:54:27,960
+it actually works out that I can just
+
+1182
+00:54:27,960 --> 00:54:31,240
+maximize this evidence lower bound
+
+1183
+00:54:31,240 --> 00:54:36,520
+with respect to the encoder and decoder parameters jointly.
+
+1184
+00:54:36,520 --> 00:54:38,020
+OK.
+
+1185
+00:54:38,020 --> 00:54:43,600
+So, the VAE objective now can be written in this form
+
+1186
+00:54:43,600 --> 00:54:45,760
+as maximizing this lower bound to the thing
+
+1187
+00:54:45,760 --> 00:54:48,280
+we actually care about, and I can approximate that
+
+1188
+00:54:48,280 --> 00:54:52,200
+with sampling, and it will be an unbiased estimator of all
+
+1189
+00:54:52,200 --> 00:54:54,600
+of these expectations and integrals.
+
+1190
+00:54:54,600 --> 00:54:55,585
+It has two terms.
+
+1191
+00:54:55,585 --> 00:54:57,960
+It has the first term, which is how much probability does
+
+1192
+00:54:57,960 --> 00:55:00,400
+the model place on the data?
+
+1193
+00:55:00,400 --> 00:55:02,040
+And another term, which is, well, I
+
+1194
+00:55:02,040 --> 00:55:03,720
+was estimating how much probability
+
+1195
+00:55:03,720 --> 00:55:06,400
+the model places on the data with respect to the wrong--
+
+1196
+00:55:06,400 --> 00:55:08,420
+not actually taking samples over all of z-space,
+
+1197
+00:55:08,420 --> 00:55:10,080
+but with taking samples with respect
+
+1198
+00:55:10,080 --> 00:55:11,717
+to this other distribution.
+
+1199
+00:55:11,717 --> 00:55:13,300
+So I have to somehow account for that,
+
+1200
+00:55:13,300 --> 00:55:16,300
+so I'll penalize the difference between this other distribution
+
+1201
+00:55:16,300 --> 00:55:18,380
+in my prior, the unit Gaussian pz.
+
+1202
+00:55:21,280 --> 00:55:22,030
+OK.
+
+1203
+00:55:22,030 --> 00:55:24,600
+So this term's coming out because I
+
+1204
+00:55:24,600 --> 00:55:26,340
+had to multiply by this ratio.
+
+1205
+00:55:26,340 --> 00:55:29,200
+How much different are my samples
+
+1206
+00:55:29,200 --> 00:55:32,360
+under pz from my samples under qz?
+
+1207
+00:55:32,360 --> 00:55:35,960
+OK, so that pops out into this term here.
+
+1208
+00:55:35,960 --> 00:55:39,640
+So now, the encoder is trying to make these things as
+
+1209
+00:55:39,640 --> 00:55:41,560
+similar as possible, and the decoder
+
+1210
+00:55:41,560 --> 00:55:44,280
+is trying to just learn parameters theta that
+
+1211
+00:55:44,280 --> 00:55:48,100
+will maximize the probability placed on the data.
+
+1212
+00:55:50,960 --> 00:55:53,410
+OK.
+
+1213
+00:55:53,410 --> 00:55:56,200
+So here's the picture.
+
+1214
+00:55:56,200 --> 00:55:58,280
+I'm going to start with a data point x.
+
+1215
+00:55:58,280 --> 00:55:59,880
+I will encode it.
+
+1216
+00:55:59,880 --> 00:56:02,500
+That will define a distribution over my latent space.
+
+1217
+00:56:02,500 --> 00:56:04,680
+I'll take a sample from that distribution, that's
+
+1218
+00:56:04,680 --> 00:56:07,880
+one important sample, for estimating the probability
+
+1219
+00:56:07,880 --> 00:56:09,305
+of my model places on the data.
+
+1220
+00:56:09,305 --> 00:56:10,680
+And then I'll decode that and see
+
+1221
+00:56:10,680 --> 00:56:13,800
+what probability the model did place on the data.
+
+1222
+00:56:13,800 --> 00:56:16,320
+That's one important sampling step
+
+1223
+00:56:16,320 --> 00:56:20,160
+of approximating the lower bound to the probability
+
+1224
+00:56:20,160 --> 00:56:23,640
+that my model places on the data.
+
+1225
+00:56:23,640 --> 00:56:25,040
+OK.
+
+1226
+00:56:25,040 --> 00:56:27,520
+So, now we come back to autoencoder.
+
+1227
+00:56:27,520 --> 00:56:30,300
+A lot of math, but at the end of the day,
+
+1228
+00:56:30,300 --> 00:56:31,880
+the VAE is a very simple model that
+
+1229
+00:56:31,880 --> 00:56:33,288
+looks just like an autoencoder.
+
+1230
+00:56:33,288 --> 00:56:35,080
+So here's how it looks like an autoencoder.
+
+1231
+00:56:35,080 --> 00:56:39,520
+We start with data point x, we encode it, we get mean mu z
+
+1232
+00:56:39,520 --> 00:56:42,720
+and variance sigma squared z.
+
+1233
+00:56:42,720 --> 00:56:47,940
+We then take a sample from the distribution q Z given x.
+
+1234
+00:56:47,940 --> 00:56:51,260
+So taking a sample, that means we're just going to add noise.
+
+1235
+00:56:51,260 --> 00:56:54,880
+So remember that mu z plus unit Gaussian epsilon
+
+1236
+00:56:54,880 --> 00:56:59,160
+times standard deviation for the encoded
+
+1237
+00:56:59,160 --> 00:57:02,520
+point x-- so sigma z is going to be the standard deviation
+
+1238
+00:57:02,520 --> 00:57:05,200
+of the encoded point x.
+
+1239
+00:57:05,200 --> 00:57:08,120
+This is one sample from a normal distribution centered
+
+1240
+00:57:08,120 --> 00:57:11,160
+at mu z with variance sigma z squared.
+
+1241
+00:57:11,160 --> 00:57:13,680
+OK, I think I'm getting the squared versus not squared term
+
+1242
+00:57:13,680 --> 00:57:15,640
+correct now.
+
+1243
+00:57:15,640 --> 00:57:20,430
+So, that is one sample, for importance sampling,
+
+1244
+00:57:20,430 --> 00:57:26,010
+for estimating the density that my model will place on the data.
+
+1245
+00:57:26,010 --> 00:57:28,770
+So then I will decode that to observe,
+
+1246
+00:57:28,770 --> 00:57:30,250
+under a normal distribution, what
+
+1247
+00:57:30,250 --> 00:57:32,490
+is the probability that my model placed on that data
+
+1248
+00:57:32,490 --> 00:57:33,865
+for that mixture component, which
+
+1249
+00:57:33,865 --> 00:57:36,570
+is a good approximation to the entire integral.
+
+1250
+00:57:36,570 --> 00:57:38,650
+OK, so remember the normal distribution is just
+
+1251
+00:57:38,650 --> 00:57:43,170
+an analytical form, so I can calculate how much probability
+
+1252
+00:57:43,170 --> 00:57:47,410
+g placed on the data point x.
+
+1253
+00:57:47,410 --> 00:57:49,250
+OK, so this looks just like an autoencoder
+
+1254
+00:57:49,250 --> 00:57:52,890
+except one step, which is this noise I added in the latent
+
+1255
+00:57:52,890 --> 00:57:54,670
+space.
+
+1256
+00:57:54,670 --> 00:57:56,190
+Otherwise, it's just encode-decode,
+
+1257
+00:57:56,190 --> 00:57:59,170
+but I added a little bit of noise to the latent space
+
+1258
+00:57:59,170 --> 00:58:00,430
+because that's my sampling.
+
+1259
+00:58:00,430 --> 00:58:02,530
+That's necessary because I'm sampling
+
+1260
+00:58:02,530 --> 00:58:05,530
+to approximate this expectation.
+
+1261
+00:58:05,530 --> 00:58:07,410
+OK, so here's the two terms of the ELBO
+
+1262
+00:58:07,410 --> 00:58:09,890
+that I talked about before.
+
+1263
+00:58:09,890 --> 00:58:14,510
+The first term, it looks like a reconstruction error.
+
+1264
+00:58:14,510 --> 00:58:15,270
+Why?
+
+1265
+00:58:15,270 --> 00:58:18,730
+Because p theta x given z is going
+
+1266
+00:58:18,730 --> 00:58:27,770
+to be a normal distribution over x centered at a mean, which
+
+1267
+00:58:27,770 --> 00:58:32,190
+is the decoded g theta of z.
+
+1268
+00:58:32,190 --> 00:58:35,230
+So a normal distribution over x is just going to be-- a log
+
+1269
+00:58:35,230 --> 00:58:37,510
+normal distribution will be just the squared error.
+
+1270
+00:58:37,510 --> 00:58:40,330
+If I take log of e to the negative squared distance,
+
+1271
+00:58:40,330 --> 00:58:43,050
+it's just negative squared distance.
+
+1272
+00:58:43,050 --> 00:58:49,010
+So how different is my decoded point from my input observation
+
+1273
+00:58:49,010 --> 00:58:50,450
+x?
+
+1274
+00:58:50,450 --> 00:58:53,850
+That's this likelihood term.
+
+1275
+00:58:53,850 --> 00:58:56,348
+And these other terms over here are just--
+
+1276
+00:58:56,348 --> 00:58:57,890
+because the Gaussian distribution has
+
+1277
+00:58:57,890 --> 00:58:59,890
+to be normalized, and the variance
+
+1278
+00:58:59,890 --> 00:59:02,770
+appears in the normalization, and dividing by 2 sigma squared
+
+1279
+00:59:02,770 --> 00:59:04,970
+is just also part of the definition of the Gaussian
+
+1280
+00:59:04,970 --> 00:59:07,730
+probability.
+
+1281
+00:59:07,730 --> 00:59:12,450
+So just for simplicity, imagine that we're going to model--
+
+1282
+00:59:12,450 --> 00:59:14,850
+we're going to use a VAE where we won't actually
+
+1283
+00:59:14,850 --> 00:59:17,977
+model the covariance or even the variance of the Gaussians.
+
+1284
+00:59:17,977 --> 00:59:19,310
+This is a valid modeling choice.
+
+1285
+00:59:19,310 --> 00:59:23,635
+So I could just fix my circles to have radius 1.
+
+1286
+00:59:23,635 --> 00:59:25,010
+I can say I'm going to try to fit
+
+1287
+00:59:25,010 --> 00:59:26,730
+an infinite mixture of Gaussians where
+
+1288
+00:59:26,730 --> 00:59:29,070
+I don't get to change the variance of the circles,
+
+1289
+00:59:29,070 --> 00:59:31,487
+but I'm still going to try to find the max likelihood fit.
+
+1290
+00:59:31,487 --> 00:59:33,450
+That's a perfectly valid modeling choice.
+
+1291
+00:59:33,450 --> 00:59:36,110
+And if I did that, then sigma becomes 1,
+
+1292
+00:59:36,110 --> 00:59:38,570
+and these terms all become constant.
+
+1293
+00:59:38,570 --> 00:59:41,650
+And then you can see that really, all I would be doing
+
+1294
+00:59:41,650 --> 00:59:46,130
+is trying to minimize the difference between my data point
+
+1295
+00:59:46,130 --> 00:59:49,170
+x and encode-decode of the data point x.
+
+1296
+00:59:49,170 --> 00:59:52,010
+So then it would be exactly the autoencoder objective
+
+1297
+00:59:52,010 --> 00:59:54,930
+of minimizing the mean squared error between my reconstructions
+
+1298
+00:59:54,930 --> 00:59:58,010
+and my input observation.
+
+1299
+00:59:58,010 --> 01:00:02,150
+So VAEs often will also model the variance of this Gaussian,
+
+1300
+01:00:02,150 --> 01:00:03,890
+but vanilla autoencoders don't really
+
+1301
+01:00:03,890 --> 01:00:05,348
+model the variance of the Gaussian,
+
+1302
+01:00:05,348 --> 01:00:08,890
+they just kind of implicitly set it to be constant.
+
+1303
+01:00:08,890 --> 01:00:11,050
+OK.
+
+1304
+01:00:11,050 --> 01:00:14,470
+OK, the other term, the KL, is saying, well,
+
+1305
+01:00:14,470 --> 01:00:19,430
+I need my q Z given x distribution.
+
+1306
+01:00:19,430 --> 01:00:21,830
+I want it to be close to a unit Gaussian.
+
+1307
+01:00:21,830 --> 01:00:26,650
+So we say that the posterior of the inference direction
+
+1308
+01:00:26,650 --> 01:00:31,390
+should be near the prior pz So what is this?
+
+1309
+01:00:31,390 --> 01:00:33,702
+This term also has a very simple interpretation.
+
+1310
+01:00:33,702 --> 01:00:34,910
+So here's what it looks like.
+
+1311
+01:00:34,910 --> 01:00:38,530
+This is the KL-- this is the KL divergence between two
+
+1312
+01:00:38,530 --> 01:00:39,470
+Gaussians.
+
+1313
+01:00:39,470 --> 01:00:41,970
+So luckily, the KL divergence between two Gaussians
+
+1314
+01:00:41,970 --> 01:00:45,710
+has a closed form, an analytical form, and it looks like that.
+
+1315
+01:00:45,710 --> 01:00:50,210
+So remember, this is the KL divergence between the Gaussian
+
+1316
+01:00:50,210 --> 01:00:55,490
+defined by q Z given x and the prior Gaussian, which
+
+1317
+01:00:55,490 --> 01:00:56,750
+is a unit Gaussian.
+
+1318
+01:00:56,750 --> 01:00:59,010
+So this is the KL divergence with respect to--
+
+1319
+01:00:59,010 --> 01:01:03,230
+between a Gaussian that has mean mu and variance sigma squared,
+
+1320
+01:01:03,230 --> 01:01:06,930
+and a unit Gaussian that has mean 0 and variance 1.
+
+1321
+01:01:06,930 --> 01:01:07,430
+OK.
+
+1322
+01:01:07,430 --> 01:01:09,050
+It has this form.
+
+1323
+01:01:09,050 --> 01:01:11,710
+In the readings, we posted the original VAE paper,
+
+1324
+01:01:11,710 --> 01:01:14,890
+and in the appendix, there's a nice derivation of that form.
+
+1325
+01:01:14,890 --> 01:01:16,223
+OK, so what does this look like?
+
+1326
+01:01:16,223 --> 01:01:17,973
+Well, let's, again, imagine that we're not
+
+1327
+01:01:17,973 --> 01:01:19,410
+going to model the variance, we're
+
+1328
+01:01:19,410 --> 01:01:22,910
+just going to set the variance to be one constant.
+
+1329
+01:01:22,910 --> 01:01:27,490
+We're only going to get to update our neural net to improve
+
+1330
+01:01:27,490 --> 01:01:29,130
+the density by changing the means
+
+1331
+01:01:29,130 --> 01:01:31,410
+that it places over the data.
+
+1332
+01:01:31,410 --> 01:01:34,470
+OK, so these terms would then can be ignored, they go away,
+
+1333
+01:01:34,470 --> 01:01:35,503
+this is just a constant.
+
+1334
+01:01:35,503 --> 01:01:36,170
+So what is that?
+
+1335
+01:01:36,170 --> 01:01:43,270
+That's going to be I want to minimize the means.
+
+1336
+01:01:43,270 --> 01:01:45,610
+So basically, if all these terms are constant,
+
+1337
+01:01:45,610 --> 01:01:47,930
+one half is just a scaling, in order
+
+1338
+01:01:47,930 --> 01:01:52,390
+to increase the evidence lower bound,
+
+1339
+01:01:52,390 --> 01:01:54,630
+in order to place higher probability on the data,
+
+1340
+01:01:54,630 --> 01:01:57,255
+increase the lower bound to the likelihood I place on the data,
+
+1341
+01:01:57,255 --> 01:02:00,850
+I'm going to try to decrease the means.
+
+1342
+01:02:00,850 --> 01:02:02,810
+So all of this term is saying is squash
+
+1343
+01:02:02,810 --> 01:02:06,410
+the means toward the origin.
+
+1344
+01:02:06,410 --> 01:02:09,112
+So I'm going to try to reconstruct my data-- that's
+
+1345
+01:02:09,112 --> 01:02:11,570
+the first term, that's the data reconstruction term, that's
+
+1346
+01:02:11,570 --> 01:02:12,550
+an autoencoder.
+
+1347
+01:02:12,550 --> 01:02:15,530
+And I have one extra term, which is just do that in a way
+
+1348
+01:02:15,530 --> 01:02:19,450
+where all of the encodings are near the origin.
+
+1349
+01:02:19,450 --> 01:02:20,630
+So what does that look like?
+
+1350
+01:02:20,630 --> 01:02:22,710
+That means that this funny shape that I could have gotten,
+
+1351
+01:02:22,710 --> 01:02:23,710
+this is an autoencoder--
+
+1352
+01:02:23,710 --> 01:02:26,450
+I just encode, I decode, I minimize reconstruction,
+
+1353
+01:02:26,450 --> 01:02:29,350
+I might get an arbitrarily complicated latent space.
+
+1354
+01:02:29,350 --> 01:02:32,410
+In fact, here, if my latent space is two-dimensional
+
+1355
+01:02:32,410 --> 01:02:35,125
+on this cartoon, I could just have f be the identity,
+
+1356
+01:02:35,125 --> 01:02:37,250
+and then my latent space has exactly the same shape
+
+1357
+01:02:37,250 --> 01:02:39,770
+as my input data space.
+
+1358
+01:02:39,770 --> 01:02:41,250
+If g and f are both the identity,
+
+1359
+01:02:41,250 --> 01:02:43,790
+it's just, like, I encode to the same shape,
+
+1360
+01:02:43,790 --> 01:02:46,170
+I decode back to the same shape.
+
+1361
+01:02:46,170 --> 01:02:49,270
+That would satisfy the reconstruction error,
+
+1362
+01:02:49,270 --> 01:02:53,190
+but it wouldn't be a very good representation of the data,
+
+1363
+01:02:53,190 --> 01:02:56,330
+it would just be the raw data itself once again.
+
+1364
+01:02:56,330 --> 01:02:58,970
+So the variational autoencoder simply
+
+1365
+01:02:58,970 --> 01:03:00,730
+says, no, you've got to squish that latent
+
+1366
+01:03:00,730 --> 01:03:02,310
+space toward the origin.
+
+1367
+01:03:06,230 --> 01:03:08,963
+So this means that in a normal autoencoder,
+
+1368
+01:03:08,963 --> 01:03:11,130
+I need to make sure the dimensionality of the latent
+
+1369
+01:03:11,130 --> 01:03:13,450
+space is low so that I'm doing compression and forcing
+
+1370
+01:03:13,450 --> 01:03:14,990
+it to do something non-trivial.
+
+1371
+01:03:14,990 --> 01:03:18,155
+In a variational autoencoder, it helps to have a low-dimensional
+
+1372
+01:03:18,155 --> 01:03:20,530
+latent space, but it's less critical because there's this
+
+1373
+01:03:20,530 --> 01:03:24,090
+other term, this KL term, which is trying to compress
+
+1374
+01:03:24,090 --> 01:03:27,290
+the distribution toward 0--
+
+1375
+01:03:27,290 --> 01:03:29,650
+compress all the means towards 0.
+
+1376
+01:03:29,650 --> 01:03:32,010
+And equivalently, we can understand
+
+1377
+01:03:32,010 --> 01:03:37,010
+that to be, I'm trying to make the distribution of encodings z
+
+1378
+01:03:37,010 --> 01:03:38,560
+have the shape of a unit Gaussian,
+
+1379
+01:03:38,560 --> 01:03:40,810
+but when I'm not modeling the variance that just means
+
+1380
+01:03:40,810 --> 01:03:43,410
+squishing the means towards 0.
+
+1381
+01:03:43,410 --> 01:03:44,290
+OK.
+
+1382
+01:03:44,290 --> 01:03:45,990
+So I just squish everything down.
+
+1383
+01:03:45,990 --> 01:03:47,830
+Why does it not collapse to a single point?
+
+1384
+01:03:47,830 --> 01:03:48,930
+So what do you think?
+
+1385
+01:03:48,930 --> 01:03:51,927
+If I'm trying to squish the means towards 0,
+
+1386
+01:03:51,927 --> 01:03:53,510
+why don't they just all collapse to 0?
+
+1387
+01:03:53,510 --> 01:03:55,570
+What do you think?
+
+1388
+01:03:55,570 --> 01:03:56,390
+What prevents that?
+
+1389
+01:03:56,390 --> 01:03:56,890
+Yeah?
+
+1390
+01:04:00,050 --> 01:04:01,190
+I think I heard an answer.
+
+1391
+01:04:01,190 --> 01:04:01,690
+No?
+
+1392
+01:04:01,690 --> 01:04:03,290
+AUDIENCE: Would it push everything to 0?
+
+1393
+01:04:03,290 --> 01:04:04,630
+PHILLIP ISOLA: If you push everything to 0--
+
+1394
+01:04:04,630 --> 01:04:05,530
+AUDIENCE: That's trivial.
+
+1395
+01:04:05,530 --> 01:04:06,270
+PHILLIP ISOLA: It's trivial.
+
+1396
+01:04:06,270 --> 01:04:08,480
+And what will happen to the reconstruction?
+
+1397
+01:04:08,480 --> 01:04:09,520
+AUDIENCE: You cannot.
+
+1398
+01:04:09,520 --> 01:04:10,120
+PHILLIP ISOLA: You cannot.
+
+1399
+01:04:10,120 --> 01:04:10,620
+Yeah.
+
+1400
+01:04:10,620 --> 01:04:11,660
+So that's the tension.
+
+1401
+01:04:11,660 --> 01:04:13,220
+We're going to try to push everything
+
+1402
+01:04:13,220 --> 01:04:17,340
+to 0, that's this term if I'm not modeling the variance.
+
+1403
+01:04:17,340 --> 01:04:20,380
+But I also need to satisfy this term, which says that you better
+
+1404
+01:04:20,380 --> 01:04:22,580
+be able to reconstruct your input point,
+
+1405
+01:04:22,580 --> 01:04:25,078
+and if everything goes to 0, then there's ambiguity.
+
+1406
+01:04:25,078 --> 01:04:26,620
+So in order to reconstruct the input,
+
+1407
+01:04:26,620 --> 01:04:28,515
+I need to to preserve information.
+
+1408
+01:04:28,515 --> 01:04:29,640
+I can't compress too much--
+
+1409
+01:04:29,640 --> 01:04:31,483
+I can't squish everything down too much,
+
+1410
+01:04:31,483 --> 01:04:32,900
+so you want to spread out in order
+
+1411
+01:04:32,900 --> 01:04:34,763
+to be able to reconstruct the data.
+
+1412
+01:04:34,763 --> 01:04:36,180
+And that's the fundamental tension
+
+1413
+01:04:36,180 --> 01:04:37,700
+of the variational autoencoder.
+
+1414
+01:04:37,700 --> 01:04:40,680
+Pushes everything toward the 0, creates this compact shape.
+
+1415
+01:04:40,680 --> 01:04:43,190
+It's like I have some Play-Doh, and I'm
+
+1416
+01:04:43,190 --> 01:04:44,940
+trying to squish it down, but there's also
+
+1417
+01:04:44,940 --> 01:04:46,690
+this physical force which is preventing it
+
+1418
+01:04:46,690 --> 01:04:48,140
+from going to a black hole.
+
+1419
+01:04:48,140 --> 01:04:50,940
+It's like, no, no, I don't want to do that because I
+
+1420
+01:04:50,940 --> 01:04:53,220
+need to still be able to know where I came from
+
+1421
+01:04:53,220 --> 01:04:54,580
+to reconstruct the data.
+
+1422
+01:04:54,580 --> 01:04:55,320
+It's like that.
+
+1423
+01:04:55,320 --> 01:04:57,278
+I'm pressing it down, but there's some tension.
+
+1424
+01:04:57,278 --> 01:04:59,180
+Eventually it gets to this unit shape,
+
+1425
+01:04:59,180 --> 01:05:01,480
+and that's what the math works out to.
+
+1426
+01:05:01,480 --> 01:05:02,980
+So here's what that looks like.
+
+1427
+01:05:02,980 --> 01:05:05,620
+So now here, I'm showing the encoder mapping
+
+1428
+01:05:05,620 --> 01:05:06,680
+at initialization.
+
+1429
+01:05:06,680 --> 01:05:09,780
+The neural net is initialized with weights and biases that
+
+1430
+01:05:09,780 --> 01:05:12,380
+are near 0, so everything maps to 0.
+
+1431
+01:05:12,380 --> 01:05:13,480
+And then the decoder.
+
+1432
+01:05:13,480 --> 01:05:17,340
+So initially, all of my mixture components are near 0.
+
+1433
+01:05:17,340 --> 01:05:19,340
+And here's what it looks like to train.
+
+1434
+01:05:19,340 --> 01:05:22,940
+So what you'll notice is I'm giving--
+
+1435
+01:05:22,940 --> 01:05:26,693
+I'm getting a good coverage over the data distribution.
+
+1436
+01:05:26,693 --> 01:05:28,360
+That's my infinite mixture of Gaussians,
+
+1437
+01:05:28,360 --> 01:05:30,027
+but I'm visualizing it with a finite set
+
+1438
+01:05:30,027 --> 01:05:31,820
+of samples along this grid.
+
+1439
+01:05:31,820 --> 01:05:33,740
+And what is the encoder doing?
+
+1440
+01:05:33,740 --> 01:05:38,260
+It's like, I want to spread out these Gaussians so
+
+1441
+01:05:38,260 --> 01:05:42,020
+that if I go from x to z and reconstruct,
+
+1442
+01:05:42,020 --> 01:05:44,620
+I'll know where I came from, I'll have enough information,
+
+1443
+01:05:44,620 --> 01:05:49,040
+but I also want to be near the unit sphere, unit Gaussian.
+
+1444
+01:05:49,040 --> 01:05:51,340
+So this tension will make it pop out
+
+1445
+01:05:51,340 --> 01:05:53,238
+and then squish back together.
+
+1446
+01:05:53,238 --> 01:05:54,780
+And you can think of this almost like
+
+1447
+01:05:54,780 --> 01:05:55,960
+some sphere-packing problem.
+
+1448
+01:05:55,960 --> 01:05:57,793
+There's probably some interesting connection
+
+1449
+01:05:57,793 --> 01:06:00,200
+to a geometric way of understanding this,
+
+1450
+01:06:00,200 --> 01:06:02,180
+that if you have a bunch of spheres
+
+1451
+01:06:02,180 --> 01:06:03,940
+and you want to fit them all into--
+
+1452
+01:06:03,940 --> 01:06:05,960
+you want to make them not overlap.
+
+1453
+01:06:05,960 --> 01:06:07,680
+If they overlap, what's the problem?
+
+1454
+01:06:07,680 --> 01:06:08,980
+That means there's ambiguity.
+
+1455
+01:06:08,980 --> 01:06:11,860
+If two different data points map to the same point,
+
+1456
+01:06:11,860 --> 01:06:14,280
+or overlapping Gaussians, then there's ambiguity,
+
+1457
+01:06:14,280 --> 01:06:16,560
+you don't know which one it came from, and you can't reconstruct.
+
+1458
+01:06:16,560 --> 01:06:18,280
+So it's like, you don't want them to overlap too much,
+
+1459
+01:06:18,280 --> 01:06:20,322
+but you want them to squish down at the same time
+
+1460
+01:06:20,322 --> 01:06:21,460
+and there's this tension.
+
+1461
+01:06:21,460 --> 01:06:23,002
+And then the solution is that they'll
+
+1462
+01:06:23,002 --> 01:06:26,480
+spread out to evenly tile the unit Gaussian.
+
+1463
+01:06:31,020 --> 01:06:31,780
+OK.
+
+1464
+01:06:31,780 --> 01:06:33,620
+So here's what the densities look like if I plot them
+
+1465
+01:06:33,620 --> 01:06:34,280
+as a heat map.
+
+1466
+01:06:34,280 --> 01:06:35,960
+So remember, these are the Gaussian components,
+
+1467
+01:06:35,960 --> 01:06:37,335
+but actually, they're continuous.
+
+1468
+01:06:37,335 --> 01:06:39,240
+They're little blips of Gaussian probability.
+
+1469
+01:06:39,240 --> 01:06:41,032
+So here's what it looks like as a heat map,
+
+1470
+01:06:41,032 --> 01:06:42,780
+it really did learn a good density model.
+
+1471
+01:06:42,780 --> 01:06:45,240
+And here's the density over the latent space,
+
+1472
+01:06:45,240 --> 01:06:47,660
+it becomes kind of a unit Gaussian in two dimensions.
+
+1473
+01:06:47,660 --> 01:06:48,820
+That looks like just--
+
+1474
+01:06:48,820 --> 01:06:51,400
+like a little blip of bell-shaped probability.
+
+1475
+01:06:53,940 --> 01:06:57,620
+OK, so VAE is really just three tricks--
+
+1476
+01:06:57,620 --> 01:07:00,580
+approximate an infinite mixture with samples,
+
+1477
+01:07:00,580 --> 01:07:02,667
+sample efficiently by not just sampling at random,
+
+1478
+01:07:02,667 --> 01:07:04,500
+but with importance samples-- so approximate
+
+1479
+01:07:04,500 --> 01:07:07,300
+with important samples, and predict
+
+1480
+01:07:07,300 --> 01:07:10,220
+the optimal important samples to take the optimal importance
+
+1481
+01:07:10,220 --> 01:07:12,420
+sampling distribution with another neural network,
+
+1482
+01:07:12,420 --> 01:07:14,128
+and then jointly optimize the whole thing
+
+1483
+01:07:14,128 --> 01:07:17,380
+and it looks like an autoencoder.
+
+1484
+01:07:17,380 --> 01:07:19,380
+OK.
+
+1485
+01:07:19,380 --> 01:07:22,818
+So in case some of that was a little bit too abstract,
+
+1486
+01:07:22,818 --> 01:07:24,860
+I just wanted to give you the step by step, like,
+
+1487
+01:07:24,860 --> 01:07:27,027
+what would you write in PyTorch to make this happen?
+
+1488
+01:07:27,027 --> 01:07:29,380
+It's actually very simple.
+
+1489
+01:07:29,380 --> 01:07:31,940
+So to optimize a VAE, I'll sample a data
+
+1490
+01:07:31,940 --> 01:07:34,660
+point x from my training set--
+
+1491
+01:07:34,660 --> 01:07:36,040
+or maybe a batch of data points.
+
+1492
+01:07:36,040 --> 01:07:39,220
+I'll encode the data with a forward pass through my encoder.
+
+1493
+01:07:39,220 --> 01:07:41,280
+For each data point that's been encoded,
+
+1494
+01:07:41,280 --> 01:07:45,320
+I'll add some noise to my encoding.
+
+1495
+01:07:45,320 --> 01:07:47,780
+That's my important sample.
+
+1496
+01:07:47,780 --> 01:07:50,952
+Then I'll decode the data by passing it through the decoder.
+
+1497
+01:07:50,952 --> 01:07:52,660
+It'll compute the losses, which will just
+
+1498
+01:07:52,660 --> 01:07:55,980
+be the squared error and the KL term.
+
+1499
+01:07:55,980 --> 01:07:59,060
+And then that will give me a scalar loss
+
+1500
+01:07:59,060 --> 01:08:01,420
+value at the end of the day, and I'll just backprop
+
+1501
+01:08:01,420 --> 01:08:04,740
+through that computation graph.
+
+1502
+01:08:04,740 --> 01:08:06,948
+And typically for the VAE, even though I would really
+
+1503
+01:08:06,948 --> 01:08:08,573
+want to take a lot of important samples
+
+1504
+01:08:08,573 --> 01:08:10,880
+to get a better estimate, usually people just take one.
+
+1505
+01:08:10,880 --> 01:08:16,140
+They do forward one sample, decode backward, and that
+
+1506
+01:08:16,140 --> 01:08:17,520
+seems to be sufficient.
+
+1507
+01:08:17,520 --> 01:08:18,020
+Yeah?
+
+1508
+01:08:18,020 --> 01:08:20,020
+AUDIENCE: How do you backprop through sampling?
+
+1509
+01:08:20,020 --> 01:08:21,600
+PHILLIP ISOLA: So that's why that reparametrize.
+
+1510
+01:08:21,600 --> 01:08:22,640
+How do you backprop through sampling?
+
+1511
+01:08:22,640 --> 01:08:24,473
+That's why that reparameterization trick was
+
+1512
+01:08:24,473 --> 01:08:26,687
+important, because the stochastic element comes
+
+1513
+01:08:26,687 --> 01:08:28,979
+in through the side of the graph and you don't actually
+
+1514
+01:08:28,979 --> 01:08:31,300
+have to backprop through that sampling procedure.
+
+1515
+01:08:31,300 --> 01:08:31,899
+Yeah.
+
+1516
+01:08:31,899 --> 01:08:34,316
+You're just backdropping through the mean and the variance
+
+1517
+01:08:34,316 --> 01:08:36,420
+of a distribution, and the actual noise
+
+1518
+01:08:36,420 --> 01:08:40,660
+is coming through the side and doesn't affect the optimization.
+
+1519
+01:08:40,660 --> 01:08:42,180
+A question in the back.
+
+1520
+01:08:42,180 --> 01:08:44,100
+AUDIENCE: In practice, is it important to get
+
+1521
+01:08:44,100 --> 01:08:48,300
+the variance inside the latent, like sigmas,
+
+1522
+01:08:48,300 --> 01:08:49,520
+from the neural network?
+
+1523
+01:08:49,520 --> 01:08:53,029
+Or does it also work to just have always the same one?
+
+1524
+01:08:53,029 --> 01:08:54,779
+Because it would be natural to think like,
+
+1525
+01:08:54,779 --> 01:08:56,279
+oh, we should just do an autoencoder
+
+1526
+01:08:56,279 --> 01:08:57,540
+and you just noise it.
+
+1527
+01:08:57,540 --> 01:09:01,048
+Some things will be smoother than the representation,
+
+1528
+01:09:01,048 --> 01:09:03,340
+but maybe it doesn't matter to have different variances
+
+1529
+01:09:03,340 --> 01:09:04,160
+for different--
+
+1530
+01:09:04,160 --> 01:09:04,993
+PHILLIP ISOLA: Yeah.
+
+1531
+01:09:04,993 --> 01:09:06,319
+So great, yeah, good question.
+
+1532
+01:09:06,319 --> 01:09:08,600
+The question is, for the encoder,
+
+1533
+01:09:08,600 --> 01:09:13,340
+is it important that the noise you're adding actually
+
+1534
+01:09:13,340 --> 01:09:17,620
+is dependent on the variance predicted by the neural net?
+
+1535
+01:09:17,620 --> 01:09:19,540
+So you're kind of asking, for q Z
+
+1536
+01:09:19,540 --> 01:09:21,979
+given x, which you're modeling, would it
+
+1537
+01:09:21,979 --> 01:09:25,700
+suffice to just model the mean and the variance
+
+1538
+01:09:25,700 --> 01:09:27,779
+to be 1 or some constant?
+
+1539
+01:09:27,779 --> 01:09:32,020
+And I think, indeed, oftentimes you
+
+1540
+01:09:32,020 --> 01:09:33,760
+can get away with those types of things.
+
+1541
+01:09:33,760 --> 01:09:35,540
+Like, you can just take an autoencoder,
+
+1542
+01:09:35,540 --> 01:09:38,520
+add a little noise to the latent space and do nothing else,
+
+1543
+01:09:38,520 --> 01:09:40,020
+and it might be fine.
+
+1544
+01:09:40,020 --> 01:09:43,380
+Or maybe you add this KL penalty to say, take an autoencoder,
+
+1545
+01:09:43,380 --> 01:09:45,500
+penalize the means for being far from the origin,
+
+1546
+01:09:45,500 --> 01:09:49,420
+and add a little noise, and it'll give you a VAE
+
+1547
+01:09:49,420 --> 01:09:51,260
+and it might be fine.
+
+1548
+01:09:51,260 --> 01:09:54,002
+But your mileage will vary, and you can always also
+
+1549
+01:09:54,002 --> 01:09:56,460
+not model these things with Gaussians, but more complicated
+
+1550
+01:09:56,460 --> 01:09:57,460
+distributions.
+
+1551
+01:09:57,460 --> 01:09:59,280
+So there's a lot of variations on this,
+
+1552
+01:09:59,280 --> 01:10:03,017
+but the simplest vanilla version might be good enough.
+
+1553
+01:10:03,017 --> 01:10:04,600
+And I think it captures the full idea.
+
+1554
+01:10:04,600 --> 01:10:06,017
+Like, the simplest vanilla version
+
+1555
+01:10:06,017 --> 01:10:08,500
+is just smooth out the latent space
+
+1556
+01:10:08,500 --> 01:10:13,060
+and make it dense by penalizing the encodings from being far
+
+1557
+01:10:13,060 --> 01:10:15,980
+from the origin, and smooth it out by adding some noise
+
+1558
+01:10:15,980 --> 01:10:20,120
+so that it has finite information capacity,
+
+1559
+01:10:20,120 --> 01:10:23,700
+it can't overfit or have too complicated a decoding mapping.
+
+1560
+01:10:23,700 --> 01:10:24,200
+OK.
+
+1561
+01:10:24,200 --> 01:10:26,900
+Anyway, more to say about that.
+
+1562
+01:10:26,900 --> 01:10:27,700
+Yeah, question?
+
+1563
+01:10:27,700 --> 01:10:30,340
+AUDIENCE: Is there a reason why pushing the latent variable
+
+1564
+01:10:30,340 --> 01:10:34,387
+distribution to 0 is better other than mathematics?
+
+1565
+01:10:34,387 --> 01:10:35,220
+PHILLIP ISOLA: Yeah.
+
+1566
+01:10:35,220 --> 01:10:35,920
+So, right.
+
+1567
+01:10:35,920 --> 01:10:38,700
+So why is pushing the latent variable distribution to 0
+
+1568
+01:10:38,700 --> 01:10:39,200
+better.
+
+1569
+01:10:39,200 --> 01:10:47,020
+So it comes out as that is what KL divergence between a unit
+
+1570
+01:10:47,020 --> 01:10:49,360
+Gaussian and another Gaussian will do.
+
+1571
+01:10:52,020 --> 01:10:53,540
+But I think more intuitively, it's
+
+1572
+01:10:53,540 --> 01:10:55,790
+just-- it's this kind of sphere-packing an idea
+
+1573
+01:10:55,790 --> 01:11:02,990
+that I want it to be the case that every single point
+
+1574
+01:11:02,990 --> 01:11:05,170
+in z-space, if I sample from that point,
+
+1575
+01:11:05,170 --> 01:11:09,470
+it will lead to a valid image or a valid decoded data point x.
+
+1576
+01:11:09,470 --> 01:11:11,750
+And if I don't pack things in, if I
+
+1577
+01:11:11,750 --> 01:11:15,030
+don't squish all the means towards 0,
+
+1578
+01:11:15,030 --> 01:11:16,950
+then there might be gaps.
+
+1579
+01:11:16,950 --> 01:11:22,213
+So, like here, there might be these gaps.
+
+1580
+01:11:22,213 --> 01:11:24,630
+At the end of the optimization, there's a little gap here.
+
+1581
+01:11:24,630 --> 01:11:27,047
+That might-- I mean, this is only a finite set of samples,
+
+1582
+01:11:27,047 --> 01:11:29,750
+but maybe there's no--
+
+1583
+01:11:29,750 --> 01:11:32,110
+these data points here, like, they
+
+1584
+01:11:32,110 --> 01:11:34,470
+can't be reconstructed at all.
+
+1585
+01:11:34,470 --> 01:11:36,950
+Or equivalently on this direction,
+
+1586
+01:11:36,950 --> 01:11:40,842
+if there's gaps here, if these means all went out
+
+1587
+01:11:40,842 --> 01:11:43,050
+to infinity-- so it's like, oh, I have high capacity,
+
+1588
+01:11:43,050 --> 01:11:44,870
+I can memorize everything, they're
+
+1589
+01:11:44,870 --> 01:11:47,245
+going to go out to infinity, so they'll all be infinitely
+
+1590
+01:11:47,245 --> 01:11:49,750
+far apart, and then I can more easily
+
+1591
+01:11:49,750 --> 01:11:52,650
+decode where they came from-- there's no overlap at all,
+
+1592
+01:11:52,650 --> 01:11:54,830
+it's like perfectly information-preserving,
+
+1593
+01:11:54,830 --> 01:11:57,470
+it's invertible, well, that wouldn't be good because there'd
+
+1594
+01:11:57,470 --> 01:11:58,470
+be all these gaps.
+
+1595
+01:11:58,470 --> 01:12:00,930
+Where if I now take a sample from my z-space,
+
+1596
+01:12:00,930 --> 01:12:02,170
+I might end up in a gap.
+
+1597
+01:12:02,170 --> 01:12:04,650
+That's never-- so the decoder has never seen that sample
+
+1598
+01:12:04,650 --> 01:12:07,573
+and it will not know what data point to reconstruct.
+
+1599
+01:12:07,573 --> 01:12:08,990
+So you want there to be no gaps so
+
+1600
+01:12:08,990 --> 01:12:11,070
+that any point you sample in that z-space
+
+1601
+01:12:11,070 --> 01:12:17,190
+will map to a valid data point x according to your distribution
+
+1602
+01:12:17,190 --> 01:12:18,330
+of training points x.
+
+1603
+01:12:18,330 --> 01:12:18,830
+OK.
+
+1604
+01:12:18,830 --> 01:12:22,750
+That's the intuition I have.
+
+1605
+01:12:22,750 --> 01:12:25,490
+OK, so in the last five or 10 minutes,
+
+1606
+01:12:25,490 --> 01:12:29,190
+I want to talk about what kinds of representations
+
+1607
+01:12:29,190 --> 01:12:33,030
+are learned by a VAE and other generative models.
+
+1608
+01:12:33,030 --> 01:12:40,350
+And so we're going to go back to this example here,
+
+1609
+01:12:40,350 --> 01:12:42,750
+and we're going to ask, are the latent
+
+1610
+01:12:42,750 --> 01:12:46,710
+variables z that the VAE learns actually
+
+1611
+01:12:46,710 --> 01:12:48,440
+related to what I gave as an intuition?
+
+1612
+01:12:48,440 --> 01:12:50,190
+I said I could write a Python program that
+
+1613
+01:12:50,190 --> 01:12:53,030
+takes a normal distribution, maps it
+
+1614
+01:12:53,030 --> 01:12:54,870
+to grass color; a Bernoulli distribution,
+
+1615
+01:12:54,870 --> 01:12:56,950
+maps it to the turns of the river.
+
+1616
+01:12:56,950 --> 01:12:59,750
+Well, is that what actually happens
+
+1617
+01:12:59,750 --> 01:13:04,070
+when I train a model without hand-defining it?
+
+1618
+01:13:04,070 --> 01:13:08,150
+OK, so I will take my data, I'll learn my encoder and my decoder.
+
+1619
+01:13:08,150 --> 01:13:11,830
+My decoder can generate samples, and this is a good generative
+
+1620
+01:13:11,830 --> 01:13:13,270
+model of my data.
+
+1621
+01:13:13,270 --> 01:13:15,090
+But now let's look at the encoder.
+
+1622
+01:13:15,090 --> 01:13:17,150
+Is the encoder separately useful?
+
+1623
+01:13:17,150 --> 01:13:20,910
+Is a VAE a good representation learner?
+
+1624
+01:13:20,910 --> 01:13:23,450
+OK, so we'll visualize it like this.
+
+1625
+01:13:23,450 --> 01:13:25,990
+We're going to take our latent space
+
+1626
+01:13:25,990 --> 01:13:30,470
+and we're going to move in axis line directions in the latent
+
+1627
+01:13:30,470 --> 01:13:34,830
+space and see what images those map to.
+
+1628
+01:13:34,830 --> 01:13:38,910
+OK, so if I move along one axis of latent space,
+
+1629
+01:13:38,910 --> 01:13:41,550
+it ends up causing this kind of smooth variation
+
+1630
+01:13:41,550 --> 01:13:45,390
+in the output space where the curvature of the river changes.
+
+1631
+01:13:45,390 --> 01:13:48,750
+If I move along another dimension of latent space,
+
+1632
+01:13:48,750 --> 01:13:50,950
+it ends up changing the color of the grass.
+
+1633
+01:13:50,950 --> 01:13:52,310
+Oh, sorry.
+
+1634
+01:13:52,310 --> 01:13:54,230
+OK.
+
+1635
+01:13:54,230 --> 01:14:00,670
+So, indeed, my learned latent distribution
+
+1636
+01:14:00,670 --> 01:14:04,890
+ends up having different dimensions in latent space
+
+1637
+01:14:04,890 --> 01:14:10,750
+controlling different types of visual variation on this data.
+
+1638
+01:14:10,750 --> 01:14:12,870
+And those types of visual variation
+
+1639
+01:14:12,870 --> 01:14:21,350
+actually do relate to the underlying parameters that
+
+1640
+01:14:21,350 --> 01:14:23,370
+define causally how the data was generated.
+
+1641
+01:14:23,370 --> 01:14:25,510
+Like, there is a causal process, a Python program
+
+1642
+01:14:25,510 --> 01:14:29,950
+I wrote that takes these attributes and turns them
+
+1643
+01:14:29,950 --> 01:14:32,310
+into rivers and grass and so forth.
+
+1644
+01:14:32,310 --> 01:14:35,230
+And one of those attributes is the grass color
+
+1645
+01:14:35,230 --> 01:14:36,370
+is a normal distribution.
+
+1646
+01:14:36,370 --> 01:14:39,390
+So there's one dimension of the latent space
+
+1647
+01:14:39,390 --> 01:14:42,770
+that generated the data that should control grass color,
+
+1648
+01:14:42,770 --> 01:14:44,750
+and the VAE actually recovers that.
+
+1649
+01:14:44,750 --> 01:14:47,830
+So it identifies that true factor of--
+
+1650
+01:14:47,830 --> 01:14:50,070
+that true causal factor in the data.
+
+1651
+01:14:50,070 --> 01:14:53,037
+OK, but this is not always going to be the case.
+
+1652
+01:14:53,037 --> 01:14:55,370
+The other factor of variation that I'm showing you here,
+
+1653
+01:14:55,370 --> 01:14:56,870
+which is the curvature of the river,
+
+1654
+01:14:56,870 --> 01:15:00,470
+actually does not correspond to any of the underlying
+
+1655
+01:15:00,470 --> 01:15:02,210
+variables in my Python code.
+
+1656
+01:15:02,210 --> 01:15:04,630
+Because the Python code took a vector of Bernoulli coin
+
+1657
+01:15:04,630 --> 01:15:07,430
+flips to determine the shape of the river,
+
+1658
+01:15:07,430 --> 01:15:11,510
+and there was no single variable, no Gaussian variable
+
+1659
+01:15:11,510 --> 01:15:14,930
+that defined the overall shape of the river,
+
+1660
+01:15:14,930 --> 01:15:16,730
+it was just a sequence of Bernoulli steps.
+
+1661
+01:15:16,730 --> 01:15:20,310
+But somehow, the VAE learned this abstracted, intuitive
+
+1662
+01:15:20,310 --> 01:15:21,210
+physics of the world.
+
+1663
+01:15:21,210 --> 01:15:23,252
+It didn't actually learn the physics of the world
+
+1664
+01:15:23,252 --> 01:15:25,350
+that I wrote in Python to generate this data,
+
+1665
+01:15:25,350 --> 01:15:27,763
+it came up with this abstracted abstraction,
+
+1666
+01:15:27,763 --> 01:15:30,430
+which is that there should be a factor of variation in this data
+
+1667
+01:15:30,430 --> 01:15:32,630
+that controls the curvature of the river that's
+
+1668
+01:15:32,630 --> 01:15:34,150
+a good explanation.
+
+1669
+01:15:34,150 --> 01:15:37,570
+So a VAE, like other representation learners,
+
+1670
+01:15:37,570 --> 01:15:41,990
+can learn different independent factors of variation
+
+1671
+01:15:41,990 --> 01:15:45,550
+that affect the primary independent--
+
+1672
+01:15:45,550 --> 01:15:48,853
+it can learn different latent variables, different dimensions
+
+1673
+01:15:48,853 --> 01:15:51,270
+of latent space that control different independent factors
+
+1674
+01:15:51,270 --> 01:15:53,430
+of variation-- we call that disentanglement,
+
+1675
+01:15:53,430 --> 01:15:55,430
+that if I vary the river or curvature dimension,
+
+1676
+01:15:55,430 --> 01:15:57,680
+it does not affect the color, and if I vary the color,
+
+1677
+01:15:57,680 --> 01:15:59,870
+it does not affect the river curvature dimension.
+
+1678
+01:15:59,870 --> 01:16:02,430
+This is a disentangled representation
+
+1679
+01:16:02,430 --> 01:16:03,910
+where there's independent--
+
+1680
+01:16:03,910 --> 01:16:06,845
+independence between the effects of those two factors,
+
+1681
+01:16:06,845 --> 01:16:08,470
+but those two factors don't necessarily
+
+1682
+01:16:08,470 --> 01:16:12,070
+map on to actually the causal mechanisms underlying
+
+1683
+01:16:12,070 --> 01:16:14,030
+how this world was defined.
+
+1684
+01:16:14,030 --> 01:16:17,150
+They might be more abstracted from it.
+
+1685
+01:16:17,150 --> 01:16:17,830
+OK.
+
+1686
+01:16:17,830 --> 01:16:20,510
+So VAEs are not the only models that
+
+1687
+01:16:20,510 --> 01:16:23,270
+have this property of learning organized latent spaces that
+
+1688
+01:16:23,270 --> 01:16:26,270
+are good maps or good representations of the world.
+
+1689
+01:16:26,270 --> 01:16:29,950
+In fact, this is an example of a GAN, and it does--
+
+1690
+01:16:29,950 --> 01:16:31,810
+has just the same types of properties.
+
+1691
+01:16:31,810 --> 01:16:38,550
+So we covered GANs very briefly last lecture, and it's not--
+
+1692
+01:16:38,550 --> 01:16:42,690
+GANs didn't have any encoder that maps from data to latents.
+
+1693
+01:16:42,690 --> 01:16:44,790
+So VAEs do have an encoder, they can go from data
+
+1694
+01:16:44,790 --> 01:16:48,470
+to the representation of the data in this disentangled space.
+
+1695
+01:16:48,470 --> 01:16:50,470
+Again, doesn't have that, but nonetheless,
+
+1696
+01:16:50,470 --> 01:16:54,390
+the latent variables, if you sample random latent variables
+
+1697
+01:16:54,390 --> 01:16:56,512
+or sample along a grid of latent variables,
+
+1698
+01:16:56,512 --> 01:16:58,470
+they do show that they actually model structure
+
+1699
+01:16:58,470 --> 01:17:00,630
+in a similar way to the VAE.
+
+1700
+01:17:00,630 --> 01:17:04,510
+And here's just an example from a model called BigGAN where
+
+1701
+01:17:04,510 --> 01:17:06,532
+there's one direction in latent space
+
+1702
+01:17:06,532 --> 01:17:08,990
+that controls the orientation of the bird and one direction
+
+1703
+01:17:08,990 --> 01:17:11,830
+that controls the background color.
+
+1704
+01:17:11,830 --> 01:17:13,510
+And you'll see this over and over again.
+
+1705
+01:17:13,510 --> 01:17:15,590
+In all the types of generative models
+
+1706
+01:17:15,590 --> 01:17:21,190
+that we have talked about, there are some kind
+
+1707
+01:17:21,190 --> 01:17:24,070
+of latent variables usually, like in diffusion models, maybe
+
+1708
+01:17:24,070 --> 01:17:26,390
+the noise.
+
+1709
+01:17:26,390 --> 01:17:28,350
+Or there are other intermediate variables
+
+1710
+01:17:28,350 --> 01:17:31,030
+like the activations of the network as it processes--
+
+1711
+01:17:31,030 --> 01:17:33,650
+as a decoder processes the data.
+
+1712
+01:17:33,650 --> 01:17:35,150
+The activations on some layer, I can
+
+1713
+01:17:35,150 --> 01:17:37,910
+look at directions in that activation space.
+
+1714
+01:17:37,910 --> 01:17:42,350
+And these tend to learn structured representations
+
+1715
+01:17:42,350 --> 01:17:42,910
+of the data.
+
+1716
+01:17:42,910 --> 01:17:47,200
+That is the mechanism by which the model can fit to the world
+
+1717
+01:17:47,200 --> 01:17:47,820
+effectively.
+
+1718
+01:17:47,820 --> 01:17:51,432
+It has to learn some kind of factors that can parsimoniously
+
+1719
+01:17:51,432 --> 01:17:52,140
+explain the data.
+
+1720
+01:17:52,140 --> 01:17:54,307
+If it only has so much capacity, so many dimensions,
+
+1721
+01:17:54,307 --> 01:17:56,993
+this is a kind of somehow pops out
+
+1722
+01:17:56,993 --> 01:17:59,160
+that this is a good representation of the world that
+
+1723
+01:17:59,160 --> 01:18:03,320
+allows you to generate photos that maximize likelihood.
+
+1724
+01:18:03,320 --> 01:18:04,160
+OK.
+
+1725
+01:18:04,160 --> 01:18:07,920
+So generative modeling forces you to explain the world.
+
+1726
+01:18:07,920 --> 01:18:13,400
+Explaining the world is done well by actually capturing
+
+1727
+01:18:13,400 --> 01:18:16,040
+independent components and things that we
+
+1728
+01:18:16,040 --> 01:18:18,100
+have physical names for, like background color,
+
+1729
+01:18:18,100 --> 01:18:19,820
+but sometimes things are more abstracted,
+
+1730
+01:18:19,820 --> 01:18:23,060
+like low-frequency curvature of the river.
+
+1731
+01:18:27,160 --> 01:18:31,760
+Yeah, this one maybe just a kind of fun visualization to end on.
+
+1732
+01:18:31,760 --> 01:18:35,280
+This is, again, that same map.
+
+1733
+01:18:35,280 --> 01:18:37,200
+And here, I'm coloring the input points
+
+1734
+01:18:37,200 --> 01:18:40,080
+according to their coordinates within this space.
+
+1735
+01:18:40,080 --> 01:18:42,240
+And here's what happens as I train it.
+
+1736
+01:18:42,240 --> 01:18:47,160
+So what you can see is that this thing
+
+1737
+01:18:47,160 --> 01:18:52,440
+gets-- the points in this space get remapped to the sphere,
+
+1738
+01:18:52,440 --> 01:18:54,500
+but not like in a disorganized way.
+
+1739
+01:18:54,500 --> 01:18:56,420
+It's smooth, it's a smooth map.
+
+1740
+01:18:56,420 --> 01:18:59,295
+And that's kind of why--
+
+1741
+01:18:59,295 --> 01:19:00,920
+it's meant to give an intuition for how
+
+1742
+01:19:00,920 --> 01:19:04,120
+these dimensions of the latent space
+
+1743
+01:19:04,120 --> 01:19:07,260
+might map to smooth properties of the input space,
+
+1744
+01:19:07,260 --> 01:19:08,880
+because on this simple example, all
+
+1745
+01:19:08,880 --> 01:19:10,840
+it's really doing is squishing the thing down.
+
+1746
+01:19:10,840 --> 01:19:12,340
+But there's also an important point,
+
+1747
+01:19:12,340 --> 01:19:16,300
+which is that it didn't quite fill this gap here.
+
+1748
+01:19:16,300 --> 01:19:18,760
+And if it really was going to squish it into a sphere,
+
+1749
+01:19:18,760 --> 01:19:21,040
+a Gaussian, then it should fill that.
+
+1750
+01:19:21,040 --> 01:19:23,687
+And you'll see this when you're training generative models,
+
+1751
+01:19:23,687 --> 01:19:26,020
+that in the latent space, things will be smooth and nice
+
+1752
+01:19:26,020 --> 01:19:27,720
+and there will be a seam because it's
+
+1753
+01:19:27,720 --> 01:19:30,160
+like you're mapping this complicated topology
+
+1754
+01:19:30,160 --> 01:19:33,400
+onto a sphere, and you're going to have cuts and seams,
+
+1755
+01:19:33,400 --> 01:19:34,580
+and you see it right here.
+
+1756
+01:19:34,580 --> 01:19:36,520
+So if you're navigating through VAE latent
+
+1757
+01:19:36,520 --> 01:19:39,400
+space or diffusion model activation space
+
+1758
+01:19:39,400 --> 01:19:41,342
+on some layer of the network, you'll
+
+1759
+01:19:41,342 --> 01:19:42,800
+come across these weird jumps where
+
+1760
+01:19:42,800 --> 01:19:44,300
+it's smooth moves, nice variation,
+
+1761
+01:19:44,300 --> 01:19:46,640
+and then suddenly it switches to a different category,
+
+1762
+01:19:46,640 --> 01:19:49,260
+and that's what's going on here.
+
+1763
+01:19:49,260 --> 01:19:49,760
+OK.
+
+1764
+01:19:49,760 --> 01:19:51,240
+Also, these tendrils.
+
+1765
+01:19:51,240 --> 01:19:53,980
+Like, you can't-- this is all smooth transformations.
+
+1766
+01:19:53,980 --> 01:19:54,940
+How do you cut?
+
+1767
+01:19:54,940 --> 01:19:59,640
+You can't really cut, so you get this tendril of probability.
+
+1768
+01:19:59,640 --> 01:20:01,450
+OK, so these are the models that we've
+
+1769
+01:20:01,450 --> 01:20:02,700
+seen in the last two lectures.
+
+1770
+01:20:02,700 --> 01:20:03,720
+We covered a lot.
+
+1771
+01:20:03,720 --> 01:20:07,040
+So we talked about a bunch.
+
+1772
+01:20:07,040 --> 01:20:09,820
+I'd say I think the most popular right now is diffusion models.
+
+1773
+01:20:09,820 --> 01:20:11,760
+The most complete, like full picture,
+
+1774
+01:20:11,760 --> 01:20:13,640
+that encompasses everything is VAEs.
+
+1775
+01:20:13,640 --> 01:20:15,683
+The most cute and fun is GANs.
+
+1776
+01:20:15,683 --> 01:20:17,600
+The ones that are popular in language modeling
+
+1777
+01:20:17,600 --> 01:20:18,675
+is autoregressive.
+
+1778
+01:20:18,675 --> 01:20:20,300
+And they all have different trade-offs.
+
+1779
+01:20:20,300 --> 01:20:22,508
+Some of them have latent variables that are explicit,
+
+1780
+01:20:22,508 --> 01:20:23,160
+some don't.
+
+1781
+01:20:23,160 --> 01:20:25,540
+Some give you a density or energy function, some don't.
+
+1782
+01:20:25,540 --> 01:20:27,873
+And some give you a way of sampling efficiently and some
+
+1783
+01:20:27,873 --> 01:20:28,680
+don't.
+
+1784
+01:20:28,680 --> 01:20:31,480
+So that's for your own reference to review.
+
+1785
+01:20:31,480 --> 01:20:33,590
+OK, thank you.

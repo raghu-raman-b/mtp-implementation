@@ -1,0 +1,559 @@
+1
+00:00:11,030 --> 00:00:23,000
+Okay, so that leads us into some things to talk about.
+
+2
+00:00:23,000 --> 00:00:36,560
+I am going to talk about evaluation measures for a bit today so there is maybe like a little bit
+
+3
+00:00:36,560 --> 00:00:40,730
+of hodgepodge class okay, I am going to talk about a few things which do not really fit
+
+4
+00:00:40,730 --> 00:00:45,980
+into a bigger theme right, so for as far as evaluation is concerned we have spoken about
+
+5
+00:00:45,980 --> 00:00:55,580
+some very standard think so far right, so in classification we talk about come on give me
+
+6
+00:00:55,580 --> 00:01:03,560
+something yeah ,what would be the evaluation measure in classification, miss classification
+
+7
+00:01:03,560 --> 00:01:18,860
+error then cross entropy then Gini index okay. Gini index is not a evaluation measure right, Gini
+
+8
+00:01:18,860 --> 00:01:21,410
+index is more of a parameter selection mechanism right,
+
+9
+00:01:21,410 --> 00:01:29,120
+I can after and finish the classification I can actually compute some kind of a deviance right,
+
+10
+00:01:29,120 --> 00:01:34,280
+and I can say okay this method giving me better deviance then that method and things like that or
+
+11
+00:01:34,280 --> 00:01:38,600
+the same thing for 0 1 error I can use squared error right squared error right, squared error
+
+12
+00:01:38,600 --> 00:01:54,070
+of your thing to a target variable and anything else can I use, penalties in what sense, okay.
+
+13
+00:01:54,070 --> 00:01:58,960
+So there are a couple of things that we had to be careful about here, so there is something which I
+
+14
+00:01:58,960 --> 00:02:05,680
+optimize right, to get to what I want right and there is something which I use for evaluating
+
+15
+00:02:05,680 --> 00:02:12,460
+what I finally get if you limit ourselves to the classify supervised learning scenario right
+
+16
+00:02:12,460 --> 00:02:15,430
+we are not even started unsupervised learning limit yourself to supervised learning scenario
+
+17
+00:02:15,430 --> 00:02:23,530
+more often than not what we really want to evaluate ourselves with is the performance
+
+18
+00:02:23,530 --> 00:02:32,650
+on the entire data distribution right, so I have some distribution of data right, I do not know the
+
+19
+00:02:32,650 --> 00:02:39,580
+distribution apriori it derive go back to the very first class we started talking about something
+
+20
+00:02:39,580 --> 00:02:45,520
+serious I mean not the one with the pictures right, the one with the Greek in it, right.
+
+21
+00:02:45,520 --> 00:02:54,070
+So in that class we talked about that being an underlying data distribution right, and that we
+
+22
+00:02:54,070 --> 00:02:57,970
+did not know about this data distribution the only way we know anything about this data distribution
+
+23
+00:02:57,970 --> 00:03:06,430
+is through training data points, right is through the samples that are given to us right, so there
+
+24
+00:03:06,430 --> 00:03:22,790
+is an underlying so we had this distribution so what I am really interested in is finding out when
+
+25
+00:03:22,790 --> 00:03:32,570
+you give me a classifier how well it is performing with respect to this distribution, right.
+
+26
+00:03:32,570 --> 00:03:40,190
+So in that sense how well it is performing I am not really interested in figuring out the square
+
+27
+00:03:40,190 --> 00:03:44,090
+the ridge regression loss or anything like that right so I am using that to come up with a single
+
+28
+00:03:44,090 --> 00:03:48,380
+classifier, but at the end of the day when I am looking at how well this classifier is performing
+
+29
+00:03:48,380 --> 00:03:53,090
+with respect to the underlying distribution I have certain measures, so one of them is the 01 loss,
+
+30
+00:03:53,090 --> 00:03:57,650
+so I do not care how we arrived with the classifier right I just want to look at the
+
+31
+00:03:57,650 --> 00:04:02,540
+01 loss and then I can do that right, that 01 loss gives me the miss classification error, right.
+
+32
+00:04:02,540 --> 00:04:08,030
+So ideally that is the evaluation measure that you should be using okay, so sometimes
+
+33
+00:04:08,030 --> 00:04:11,900
+what people do because they are optimizing a different objective function they choose
+
+34
+00:04:11,900 --> 00:04:16,520
+slightly different evaluation measures that may can make their method look better right,
+
+35
+00:04:17,300 --> 00:04:21,200
+so squared error could be one evaluation measure, if you are doing classification 01
+
+36
+00:04:21,200 --> 00:04:27,980
+losses the measure that you should be looking at if you are doing regression while little
+
+37
+00:04:27,980 --> 00:04:33,170
+tricky but square error is the most widely accepted measure for looking at regression.
+
+38
+00:04:33,170 --> 00:04:37,070
+But then you can look at other things also like deviance and other things you can use it for
+
+39
+00:04:37,070 --> 00:05:03,670
+classification right, but having said that how do I estimate it is easier for me to write classifier
+
+40
+00:05:03,670 --> 00:05:08,830
+or I will pick one I am going to pick classifier but some of what I talk about now works for
+
+41
+00:05:08,830 --> 00:05:21,190
+regression as well right, and how do I estimate the true performance of the classifier, so what
+
+42
+00:05:21,190 --> 00:05:28,240
+do I mean by that, I give you a sample data right I give you some sample drawn from P(x,y) right.
+
+43
+00:05:28,240 --> 00:05:35,290
+So based on the training that I that is all the information I have right, and I can use some of
+
+44
+00:05:35,290 --> 00:05:41,680
+the data for training. I see find the parameters so how do I find out how good these parameters
+
+45
+00:05:41,680 --> 00:05:48,940
+are or how good is my there are two questions to ask right, so the first question is how good are
+
+46
+00:05:48,940 --> 00:05:56,620
+my parameters that I have found okay, the second question to ask is how good is the method that I
+
+47
+00:05:56,620 --> 00:06:01,210
+use for finding the parameters is if you give me a slightly different data will I perform better
+
+48
+00:06:01,210 --> 00:06:05,710
+or worse right, how will I perform right. So I need to know something about the technique
+
+49
+00:06:05,710 --> 00:06:09,850
+right, suppose I am proposing a new technique and I want you to go use it on your data later
+
+50
+00:06:09,850 --> 00:06:14,980
+on right, but I should convince you that you can use it on whatever data you have right, so that
+
+51
+00:06:14,980 --> 00:06:19,510
+means I have to convince you that my technique is good for finding the parameters this is the two
+
+52
+00:06:19,510 --> 00:06:24,310
+things here for a given set of parameters I have to figure out how good they are right, and I also
+
+53
+00:06:24,310 --> 00:06:30,280
+need to tell you how good my overall mechanism for finding these parameters are, right.
+
+54
+00:06:30,280 --> 00:06:43,360
+So for a given set of parameters how do you find out how good they are, on the training data I said
+
+55
+00:06:43,360 --> 00:06:53,050
+good enough on the testing data, cross-validated okay, so if you okay, so we will get to this thing
+
+56
+00:06:53,050 --> 00:07:03,490
+right, so one thing if we spoke about earlier was to split the data into train and test right,
+
+57
+00:07:09,730 --> 00:07:17,110
+so if I estimate parameters on the training data again write it on the test data that will give you
+
+58
+00:07:17,110 --> 00:07:22,300
+some performance, okay is that a good estimate of the true performance of the classifier.
+
+59
+00:07:22,300 --> 00:07:37,330
+Why not, Test data might not be independent of the training data okay, the training data may be
+
+60
+00:07:37,330 --> 00:07:52,900
+biased I met a wharf the model then you are doomed right, no, that is actually a very, very valid
+
+61
+00:07:52,900 --> 00:08:03,010
+point in fact that is something which you will face in real life right, but the assumption mostly
+
+62
+00:08:03,010 --> 00:08:09,640
+we make in theory is that the training data that is given to you is a sufficiently representative
+
+63
+00:08:09,640 --> 00:08:15,070
+data of the true distribution okay, that is not the case then you are doomed anyway, right.
+
+64
+00:08:15,070 --> 00:08:25,210
+So you assume that it is the, so in real life that happens what do you do, in real life that
+
+65
+00:08:25,210 --> 00:08:28,630
+happens okay mean you cannot avoid it, you cannot just say okay, I am assuming it is a
+
+66
+00:08:28,630 --> 00:08:32,920
+properly representative sample of the underlying distribution then what do you do in that case,
+
+67
+00:08:32,920 --> 00:08:43,420
+come on he is telling that you are not sample the entire range of P(x,y) so what is exactly
+
+68
+00:08:43,420 --> 00:08:48,670
+so figure out where you are deficient right, so sometimes the most obvious thing is what
+
+69
+00:08:48,670 --> 00:08:53,020
+you have to do, we have to sample more right. But then do not blindly sample I mean of course
+
+70
+00:08:53,020 --> 00:08:58,000
+you blindly sample you may actually return the same samples from whatever region you already
+
+71
+00:08:58,000 --> 00:09:02,200
+have right, so what you should do is you should be more careful in how we do the sampling so you can
+
+72
+00:09:02,200 --> 00:09:07,540
+use this is where you try to understand what the data is all about right, so you try to understand
+
+73
+00:09:07,540 --> 00:09:11,710
+how the data is distributed the data that is given to you is distributed and figure out if there are
+
+74
+00:09:11,710 --> 00:09:17,170
+parts of the input space which you believe we are important but are not covered in the data right,
+
+75
+00:09:17,170 --> 00:09:25,650
+go and try to sample from that region, right. So there are the different names for this okay,
+
+76
+00:09:25,650 --> 00:09:33,990
+so one popular thing that people call this why this call, is called active learning,
+
+77
+00:09:33,990 --> 00:09:40,920
+because I actively I am asking you for samples so I am not passively learning from the samples
+
+78
+00:09:40,920 --> 00:09:44,940
+that were given to me okay, the learning algorithm comes back and says hey I want
+
+79
+00:09:44,940 --> 00:09:50,280
+to know more about this part of the state space give me some samples from there right, I want to
+
+80
+00:09:50,280 --> 00:09:53,100
+know more about this part of the input space give me so this is called active learning methods.
+
+81
+00:09:53,100 --> 00:10:01,020
+So your question this valid point of this discussion is yeah, one train one test is
+
+82
+00:10:01,020 --> 00:10:07,920
+usually not a good idea right, so what do you do there are two things which you can do we
+
+83
+00:10:07,920 --> 00:10:13,860
+can try to get multiple training sets from their data right, you can try to get multiple training
+
+84
+00:10:13,860 --> 00:10:26,280
+sets from the data and try to so nobody is asking the obvious why are you getting multiple training
+
+85
+00:10:26,280 --> 00:10:37,590
+sets from the data why not one large training set, okay why not pull everything together
+
+86
+00:10:37,590 --> 00:11:00,120
+and then create one large training set. Yeah, close yeah, so I will have to spend a whole
+
+87
+00:11:00,120 --> 00:11:04,170
+week on weak classifiers right so we will come to that right, so it is a see that is one very,
+
+88
+00:11:04,170 --> 00:11:10,680
+very amazing property that will look at later which probably the next class and later means
+
+89
+00:11:10,680 --> 00:11:21,090
+pretty soon, on how you can take a lot of not so good classifiers right, which are just better
+
+90
+00:11:21,090 --> 00:11:25,500
+than random of course it has to be better than random right, it cannot be worse than random
+
+91
+00:11:25,500 --> 00:11:31,620
+so classifies that are just better than random and give you an accuracy of 51 percent okay.
+
+92
+00:11:31,620 --> 00:11:38,460
+So in the two class problem that is just better than random okay, I can take classifies at giving
+
+93
+00:11:38,460 --> 00:11:47,790
+accuracy 51% and they can produce arbitrarily powerful classifiers okay, it is an amazing,
+
+94
+00:11:47,790 --> 00:11:54,840
+amazing insight that came about a couple of may decade and a half ago now maybe do not I
+
+95
+00:11:54,840 --> 00:12:01,620
+am old more than two decades ago right, and it is one the girdle price and things like
+
+96
+00:12:01,620 --> 00:12:07,080
+that is it an amazingly wonderful inside and we will talk about that right.
+
+97
+00:12:07,080 --> 00:12:12,750
+So that completely revolutionized machine learning once right, people then started
+
+98
+00:12:12,750 --> 00:12:18,150
+saying so I really did not, do not have to build this super optimized classifier I can
+
+99
+00:12:18,150 --> 00:12:27,090
+build a lot of this almost moronic classifiers but the operational word is almost right,
+
+100
+00:12:27,090 --> 00:12:33,540
+I have a lot of them right, I have a lot of them and I will be able to do really well.
+
+101
+00:12:33,540 --> 00:12:40,230
+In fact in many, many applications that we have worked on right in real life where I
+
+102
+00:12:40,230 --> 00:12:45,900
+have worked on with real data, I find it very hard to beat these kinds of classifiers you
+
+103
+00:12:45,900 --> 00:12:50,280
+can think of whatever optimal classifier you want to come up with right, but beating these
+
+104
+00:12:50,280 --> 00:12:56,040
+kind of groups of weak classifiers is actually very hard in practice alright so we will talk
+
+105
+00:12:56,040 --> 00:13:00,810
+about that but no, that is not what I meant here I still have a point to make, right.
+
+106
+00:13:00,810 --> 00:13:21,180
+So yeah, so even if you do one large training set, to do one large one train one large test set
+
+107
+00:13:21,180 --> 00:13:32,520
+right, you can get away with it provided largest large enough right, provided large is something
+
+108
+00:13:32,520 --> 00:13:39,780
+that is dense in your input space right, if the large is so large that you essentially plaster
+
+109
+00:13:39,780 --> 00:13:46,080
+your entire input space right, so any point in the input space if a pick there will be one point
+
+110
+00:13:46,080 --> 00:13:51,870
+very close by in the training set that is what we mean by dense I mean there is an actual more
+
+111
+00:13:51,870 --> 00:13:57,330
+mathematical characterization of dense. But if my training data is really dense in
+
+112
+00:13:58,500 --> 00:14:04,530
+the input space then it is fine right, then I can get away with just doing one sample like one very
+
+113
+00:14:04,530 --> 00:14:08,940
+large sample, but usually what is going to happen is you are not going to get such a large sample,
+
+114
+00:14:08,940 --> 00:14:16,050
+so you are going to get a much smaller sample than that and therefore if you just use one
+
+115
+00:14:16,050 --> 00:14:21,360
+sample and try to make an estimate okay, then the variance people remember what
+
+116
+00:14:21,360 --> 00:14:34,500
+is the variance of the estimate, we talked about this again no, no that is unstable I
+
+117
+00:14:34,500 --> 00:14:45,450
+am talking about variance yeah sorry, on data of similar the size we train a lot of models on data
+
+118
+00:14:45,450 --> 00:14:49,290
+of similar size the parameter estimation I am going to make will be varying a lot right.
+
+119
+00:14:49,290 --> 00:14:56,520
+So it turns out that instead of doing one sample and then trying to train this if I take many,
+
+120
+00:14:56,520 --> 00:15:03,720
+many samples right and then find the parameters on these samples individually right, and then take
+
+121
+00:15:03,720 --> 00:15:10,530
+an average of those okay, turns out I can show that the variance will be lower in that case then
+
+122
+00:15:10,530 --> 00:15:15,100
+what is the variance you are talking about the variance in the parameter that we are estimating,
+
+123
+00:15:15,100 --> 00:15:29,700
+okay and what is the parameter we are talking about estimating here so here is the point
+
+124
+00:15:29,700 --> 00:15:32,700
+where I am going to confuse all of you. But the parameter I am talking about estimating
+
+125
+00:15:32,700 --> 00:15:39,630
+here is the error is the miss classification error right, so I have the classifier right, what I am
+
+126
+00:15:39,630 --> 00:15:43,320
+trying to measure is a miss classification error and that is what we have the whole discussion was
+
+127
+00:15:43,320 --> 00:15:48,300
+all about I am trying to estimate the miss classification error right, so what I do is
+
+128
+00:15:48,300 --> 00:15:54,030
+I start off with many samples of data right and on each sample I train a classifier separately
+
+129
+00:15:54,030 --> 00:15:59,490
+again then I look at how the performance is on the test data and then take an average of all
+
+130
+00:15:59,490 --> 00:16:06,750
+these performances and then I can tell you okay, if you give me a new data new set of data I expect
+
+131
+00:16:06,750 --> 00:16:14,940
+to make this much error on the test data. I am trying to figure out what the performance
+
+132
+00:16:14,940 --> 00:16:24,030
+of the algorithm would be on a unseen train later I remember I was telling you I want to know how
+
+133
+00:16:24,030 --> 00:16:28,410
+good my algorithm is right, so this way I can estimate the performance of the algorithm on the
+
+134
+00:16:28,410 --> 00:16:52,550
+unseen data right. so there are many ways in which you can generate this, the many ways in as you can
+
+135
+00:16:52,550 --> 00:17:06,170
+melt this multiple training data sets right, so many of these or I have strong roots in statistics
+
+136
+00:17:06,170 --> 00:17:14,870
+and were typically designed in errors where the amount of data available to you was small, right.
+
+137
+00:17:14,870 --> 00:17:21,170
+The amount of data available was small and we are trying to see how you can fake multiple data sets
+
+138
+00:17:21,170 --> 00:17:32,450
+with a small amount of data okay, so the first technique is known as bootstrap okay.
+
+139
+00:17:32,450 --> 00:17:37,580
+So bootstrap is actually a very powerful statistical technique it is used in a
+
+140
+00:17:37,580 --> 00:17:41,420
+variety of different places we will come back to another use of bootstrap a little later.

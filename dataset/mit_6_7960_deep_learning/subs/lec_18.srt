@@ -1,0 +1,7299 @@
+1
+00:00:00,000 --> 00:00:01,955
+[SQUEAKING]
+
+2
+00:00:01,955 --> 00:00:04,380
+[RUSTLING]
+
+3
+00:00:04,380 --> 00:00:06,805
+[CLICKING]
+
+4
+00:00:12,970 --> 00:00:14,220
+SARA BEERY: Let's get started.
+
+5
+00:00:18,080 --> 00:00:22,520
+So today, we're going to kick off the first of a little two
+
+6
+00:00:22,520 --> 00:00:25,520
+lecture mini series on transfer learning,
+
+7
+00:00:25,520 --> 00:00:30,220
+specifically how we think about taking information that
+
+8
+00:00:30,220 --> 00:00:31,720
+might have been learned from a model
+
+9
+00:00:31,720 --> 00:00:37,420
+and then transferring it to some new task, some new challenge,
+
+10
+00:00:37,420 --> 00:00:38,660
+maybe some new distribution.
+
+11
+00:00:38,660 --> 00:00:42,440
+We talked about distribution shifts last week.
+
+12
+00:00:42,440 --> 00:00:46,920
+So at a high level, the idea of transfer learning
+
+13
+00:00:46,920 --> 00:00:51,000
+is that you want to try to learn even if you
+
+14
+00:00:51,000 --> 00:00:53,240
+don't have very much data.
+
+15
+00:00:53,240 --> 00:00:57,040
+And so we've tried to structure this framing of transfer
+
+16
+00:00:57,040 --> 00:01:00,272
+learning into these different sub areas.
+
+17
+00:01:00,272 --> 00:01:02,480
+So first, we're going to talk about how you can maybe
+
+18
+00:01:02,480 --> 00:01:05,319
+transfer knowledge from a machine learning model
+
+19
+00:01:05,319 --> 00:01:08,880
+that you have about the mapping from inputs to outputs.
+
+20
+00:01:08,880 --> 00:01:11,418
+And so within that, we're going to talk about fine-tuning,
+
+21
+00:01:11,418 --> 00:01:12,960
+and then we'll also talk a little bit
+
+22
+00:01:12,960 --> 00:01:15,960
+about domain adaptation.
+
+23
+00:01:15,960 --> 00:01:17,960
+And then we'll talk about transferring knowledge
+
+24
+00:01:17,960 --> 00:01:20,860
+about the outputs, and so in that case,
+
+25
+00:01:20,860 --> 00:01:23,522
+we're going to be discussing knowledge distillation.
+
+26
+00:01:23,522 --> 00:01:25,480
+And then we're going to be talking a little bit
+
+27
+00:01:25,480 --> 00:01:29,040
+about foundation models and maybe what this new paradigm is
+
+28
+00:01:29,040 --> 00:01:31,920
+in terms of transfer learning, kind of introducing
+
+29
+00:01:31,920 --> 00:01:35,200
+this idea of in-context learning or prompting
+
+30
+00:01:35,200 --> 00:01:39,560
+as a mechanism for transfer learning by just asking.
+
+31
+00:01:39,560 --> 00:01:43,920
+And then next Tuesday, we're going to finish this up
+
+32
+00:01:43,920 --> 00:01:46,960
+with one further discussion of how we might transfer knowledge
+
+33
+00:01:46,960 --> 00:01:49,680
+about the inputs of the data.
+
+34
+00:01:49,680 --> 00:01:53,820
+So why deep learning?
+
+35
+00:01:53,820 --> 00:01:56,040
+This is a slide from Andrew Ng, who, of course,
+
+36
+00:01:56,040 --> 00:02:01,280
+I think has a very, very famous lecture series on deep learning.
+
+37
+00:02:01,280 --> 00:02:05,080
+And here, he essentially is pointing out
+
+38
+00:02:05,080 --> 00:02:08,680
+that deep learning might be different from older
+
+39
+00:02:08,680 --> 00:02:12,840
+or standard learning algorithms specifically in terms
+
+40
+00:02:12,840 --> 00:02:15,080
+of how it scales with the amount of data
+
+41
+00:02:15,080 --> 00:02:16,580
+that you have to train on.
+
+42
+00:02:16,580 --> 00:02:19,480
+It might be a little bit hard to see with the lights as they are.
+
+43
+00:02:19,480 --> 00:02:23,380
+But essentially, the idea is that many learning algorithms,
+
+44
+00:02:23,380 --> 00:02:25,343
+older learning algorithms, saturate.
+
+45
+00:02:25,343 --> 00:02:26,760
+With some amount of data, you just
+
+46
+00:02:26,760 --> 00:02:29,200
+don't see performance continuing to improve.
+
+47
+00:02:29,200 --> 00:02:34,120
+But we have really not seen that type of saturation
+
+48
+00:02:34,120 --> 00:02:36,400
+as we scale the amount of data that we're giving
+
+49
+00:02:36,400 --> 00:02:38,400
+these deep learning algorithms.
+
+50
+00:02:38,400 --> 00:02:41,000
+And next Thursday, you guys will have a lecture
+
+51
+00:02:41,000 --> 00:02:42,800
+from Phil around some of these scaling
+
+52
+00:02:42,800 --> 00:02:45,000
+laws, these relationships that people
+
+53
+00:02:45,000 --> 00:02:47,160
+are starting to learn about the scale
+
+54
+00:02:47,160 --> 00:02:50,560
+of the number of parameters, the amount of available data.
+
+55
+00:02:50,560 --> 00:02:59,270
+But one kind of high level analysis that was done
+
+56
+00:02:59,270 --> 00:03:02,030
+seemed to suggest that with the current capacity of machine
+
+57
+00:03:02,030 --> 00:03:08,950
+learning models we have, we basically have far more capacity
+
+58
+00:03:08,950 --> 00:03:10,030
+than data.
+
+59
+00:03:10,030 --> 00:03:13,670
+So essentially, the idea that there's a lot more room
+
+60
+00:03:13,670 --> 00:03:15,970
+to scale on the data dimension still
+
+61
+00:03:15,970 --> 00:03:18,430
+before we're really hitting the capacity of our largest
+
+62
+00:03:18,430 --> 00:03:20,830
+deep learning models.
+
+63
+00:03:20,830 --> 00:03:25,070
+And that's talking about billion data point data sets, things
+
+64
+00:03:25,070 --> 00:03:27,790
+that are on the order of scale of the entire internet.
+
+65
+00:03:27,790 --> 00:03:31,710
+We're still not hitting the actual computational capacity
+
+66
+00:03:31,710 --> 00:03:32,770
+of these models.
+
+67
+00:03:35,310 --> 00:03:41,190
+So few-shot learning is the idea that you can maybe learn even
+
+68
+00:03:41,190 --> 00:03:43,990
+if you have very little data.
+
+69
+00:03:43,990 --> 00:03:47,670
+So it turns out that humans are shockingly good at this.
+
+70
+00:03:47,670 --> 00:03:51,310
+We're really good at recognizing patterns and translating them
+
+71
+00:03:51,310 --> 00:03:54,030
+even to things that we've never seen.
+
+72
+00:03:54,030 --> 00:03:58,750
+So here, if I tell you that symbol up at the top is a dax--
+
+73
+00:03:58,750 --> 00:03:59,670
+these are made up.
+
+74
+00:03:59,670 --> 00:04:00,490
+This isn't real.
+
+75
+00:04:00,490 --> 00:04:02,550
+But if I tell you that's a dax, can you guys
+
+76
+00:04:02,550 --> 00:04:05,250
+tell me which of the ones below is also a dax?
+
+77
+00:04:09,110 --> 00:04:09,870
+Yeah.
+
+78
+00:04:09,870 --> 00:04:12,330
+AUDIENCE: Second row, second from the right?
+
+79
+00:04:12,330 --> 00:04:13,530
+SARA BEERY: Second row, second from the right.
+
+80
+00:04:13,530 --> 00:04:14,010
+Yeah.
+
+81
+00:04:14,010 --> 00:04:14,510
+Right?
+
+82
+00:04:14,510 --> 00:04:17,630
+It looks like a dax.
+
+83
+00:04:17,630 --> 00:04:19,029
+OK.
+
+84
+00:04:19,029 --> 00:04:20,829
+What about this?
+
+85
+00:04:20,829 --> 00:04:24,950
+Which on the bottom is an example of the same concept
+
+86
+00:04:24,950 --> 00:04:26,470
+as the item in the box?
+
+87
+00:04:26,470 --> 00:04:27,330
+Someone else.
+
+88
+00:04:30,390 --> 00:04:31,070
+Yeah.
+
+89
+00:04:31,070 --> 00:04:34,243
+AUDIENCE: Second row, first to the right.
+
+90
+00:04:34,243 --> 00:04:34,910
+SARA BEERY: Yes.
+
+91
+00:04:34,910 --> 00:04:36,970
+So those are both Segways, right?
+
+92
+00:04:36,970 --> 00:04:41,110
+But then this kind of begs this interesting question,
+
+93
+00:04:41,110 --> 00:04:44,970
+because there's potentially ambiguity here.
+
+94
+00:04:44,970 --> 00:04:46,770
+If you only have this single example,
+
+95
+00:04:46,770 --> 00:04:49,510
+and you're telling me which is the same, what you made
+
+96
+00:04:49,510 --> 00:04:51,630
+was the guess that was probably most
+
+97
+00:04:51,630 --> 00:04:55,590
+similar because the orientation of the wheels and the structure.
+
+98
+00:04:55,590 --> 00:04:59,170
+But maybe the thing I was looking for was instead,
+
+99
+00:04:59,170 --> 00:05:00,590
+actually, I wanted you to tell me
+
+100
+00:05:00,590 --> 00:05:03,570
+all the things that had two wheels instead of four or one.
+
+101
+00:05:03,570 --> 00:05:05,910
+And so one of the things that's challenging when you're
+
+102
+00:05:05,910 --> 00:05:09,990
+doing this few-shot learning type of scenario
+
+103
+00:05:09,990 --> 00:05:12,830
+is with less data, it can be harder
+
+104
+00:05:12,830 --> 00:05:15,110
+to understand without ambiguity what
+
+105
+00:05:15,110 --> 00:05:18,590
+the boundaries of maybe the categories of interest are.
+
+106
+00:05:18,590 --> 00:05:22,710
+So if I'd showed you three examples, one was a Segway,
+
+107
+00:05:22,710 --> 00:05:25,090
+one was a scooter, and one was a bicycle,
+
+108
+00:05:25,090 --> 00:05:28,730
+and I said, OK, find me the ones that are also in this category,
+
+109
+00:05:28,730 --> 00:05:31,850
+it would have been much easier for you to understand,
+
+110
+00:05:31,850 --> 00:05:33,990
+OK, she's looking for things with two wheels.
+
+111
+00:05:33,990 --> 00:05:36,305
+Or at some different level of granularity,
+
+112
+00:05:36,305 --> 00:05:38,930
+maybe I was trying to just learn wheeled things, in which case,
+
+113
+00:05:38,930 --> 00:05:41,222
+I might need to have, again, more diverse examples that
+
+114
+00:05:41,222 --> 00:05:44,710
+cover the space of the concept I want to learn.
+
+115
+00:05:44,710 --> 00:05:49,190
+So few-shot learning really is just this idea
+
+116
+00:05:49,190 --> 00:05:54,150
+that we can learn to maybe generalize
+
+117
+00:05:54,150 --> 00:05:59,630
+from our past lived experience how to recognize similarity
+
+118
+00:05:59,630 --> 00:06:03,390
+and patterns in a useful way.
+
+119
+00:06:03,390 --> 00:06:06,910
+So up until this point, a lot of what
+
+120
+00:06:06,910 --> 00:06:09,468
+we've talked about with deep learning
+
+121
+00:06:09,468 --> 00:06:11,510
+is, essentially, you're going to have a data set,
+
+122
+00:06:11,510 --> 00:06:14,253
+and you start with an empty slate.
+
+123
+00:06:14,253 --> 00:06:15,670
+And then you're essentially trying
+
+124
+00:06:15,670 --> 00:06:20,110
+to learn some physical rules, some concepts, some dimensions
+
+125
+00:06:20,110 --> 00:06:24,910
+of similarity that are useful for a specific task.
+
+126
+00:06:24,910 --> 00:06:31,030
+But what humans do instead, when they try to learn something new,
+
+127
+00:06:31,030 --> 00:06:34,430
+is we really have a lot of prior knowledge coming
+
+128
+00:06:34,430 --> 00:06:37,550
+from our experience in the world.
+
+129
+00:06:37,550 --> 00:06:39,990
+From the time that we're incredibly young,
+
+130
+00:06:39,990 --> 00:06:43,050
+we're physically embodied in the world,
+
+131
+00:06:43,050 --> 00:06:46,630
+learning about concepts like physics, like structure.
+
+132
+00:06:46,630 --> 00:06:49,110
+We're learning through the entirety of our education
+
+133
+00:06:49,110 --> 00:06:50,960
+and just in our experience, in our lives,
+
+134
+00:06:50,960 --> 00:06:53,700
+how to think about these measures of similarity
+
+135
+00:06:53,700 --> 00:06:54,780
+and difference.
+
+136
+00:06:54,780 --> 00:06:58,260
+And different people can have different mental models
+
+137
+00:06:58,260 --> 00:06:59,040
+of the world.
+
+138
+00:06:59,040 --> 00:07:01,980
+This actually comes up a lot currently
+
+139
+00:07:01,980 --> 00:07:04,100
+when you're thinking about scaling large scale
+
+140
+00:07:04,100 --> 00:07:08,540
+data labeling, that, actually, if you're getting data labeled
+
+141
+00:07:08,540 --> 00:07:10,420
+from people from different cultures,
+
+142
+00:07:10,420 --> 00:07:12,420
+they might actually have different mental models
+
+143
+00:07:12,420 --> 00:07:14,480
+than the one that you intend in your culture.
+
+144
+00:07:14,480 --> 00:07:17,660
+So there's this idea of, my mental model
+
+145
+00:07:17,660 --> 00:07:20,500
+is based on some prior, and we don't necessarily know--
+
+146
+00:07:20,500 --> 00:07:23,060
+or there really isn't a concept of which mental model
+
+147
+00:07:23,060 --> 00:07:25,820
+of the world is correct.
+
+148
+00:07:25,820 --> 00:07:27,900
+But these mental models are built,
+
+149
+00:07:27,900 --> 00:07:30,660
+and they kind of capture representations
+
+150
+00:07:30,660 --> 00:07:34,020
+of things, kind of models we have of how the world operates,
+
+151
+00:07:34,020 --> 00:07:35,700
+maybe different skills.
+
+152
+00:07:35,700 --> 00:07:39,180
+And that means that we're basing anything
+
+153
+00:07:39,180 --> 00:07:42,360
+we learn on top of a bunch of prior knowledge,
+
+154
+00:07:42,360 --> 00:07:44,020
+basically like systems that are really
+
+155
+00:07:44,020 --> 00:07:46,335
+well posed to learn new things.
+
+156
+00:07:46,335 --> 00:07:48,460
+And actually, a lot of what you're doing in college
+
+157
+00:07:48,460 --> 00:07:50,620
+is learning how to learn.
+
+158
+00:07:50,620 --> 00:07:53,820
+You're learning how to learn new things efficiently.
+
+159
+00:07:53,820 --> 00:07:57,540
+And so there's this question of, how can we
+
+160
+00:07:57,540 --> 00:08:00,020
+give deep learning models or deep networks
+
+161
+00:08:00,020 --> 00:08:03,500
+similar access to prior knowledge?
+
+162
+00:08:03,500 --> 00:08:06,620
+And so a very, very simple way to do that
+
+163
+00:08:06,620 --> 00:08:11,960
+is just pretrain them on other tasks or on prior tasks.
+
+164
+00:08:11,960 --> 00:08:16,020
+So the idea that you can send your neural network to school,
+
+165
+00:08:16,020 --> 00:08:19,003
+and you can try to get it to learn how to learn,
+
+166
+00:08:19,003 --> 00:08:20,420
+and the way that you might do that
+
+167
+00:08:20,420 --> 00:08:23,940
+is maybe training on a huge amount of data
+
+168
+00:08:23,940 --> 00:08:26,020
+with some other set of categories that might not
+
+169
+00:08:26,020 --> 00:08:28,187
+be the thing you're really explicitly interested in,
+
+170
+00:08:28,187 --> 00:08:31,700
+but it's things that you have data for at scale.
+
+171
+00:08:31,700 --> 00:08:33,659
+And then you can use some mechanism
+
+172
+00:08:33,659 --> 00:08:35,740
+to transfer that knowledge from the pretained net
+
+173
+00:08:35,740 --> 00:08:38,140
+so that you can solve new tasks.
+
+174
+00:08:38,140 --> 00:08:41,700
+And so one view of this idea of learning
+
+175
+00:08:41,700 --> 00:08:43,460
+from little data or transfer learning
+
+176
+00:08:43,460 --> 00:08:45,580
+is actually the point of deep learning
+
+177
+00:08:45,580 --> 00:08:48,820
+is to enable us to be able to do this type of problem solving
+
+178
+00:08:48,820 --> 00:08:50,260
+with little data.
+
+179
+00:08:50,260 --> 00:08:52,980
+So you're trying to learn these representations,
+
+180
+00:08:52,980 --> 00:08:57,080
+these models that have a good sense of what's useful.
+
+181
+00:08:57,080 --> 00:09:01,420
+What is a good thing to build on top of if we want to learn?
+
+182
+00:09:01,420 --> 00:09:03,500
+So that's kind of the motivation for talking
+
+183
+00:09:03,500 --> 00:09:06,420
+about transfer learning, right?
+
+184
+00:09:06,420 --> 00:09:10,140
+So when we think about a model in general,
+
+185
+00:09:10,140 --> 00:09:12,340
+usually, we have some big system,
+
+186
+00:09:12,340 --> 00:09:13,780
+and it will map some set of inputs
+
+187
+00:09:13,780 --> 00:09:18,420
+to some set of outputs in some very fun, complex, nonlinear
+
+188
+00:09:18,420 --> 00:09:21,060
+way.
+
+189
+00:09:21,060 --> 00:09:26,640
+But we're thinking about, what actually are we transferring?
+
+190
+00:09:26,640 --> 00:09:30,420
+And so you can think about transferring
+
+191
+00:09:30,420 --> 00:09:33,800
+some knowledge about the relationship, for example,
+
+192
+00:09:33,800 --> 00:09:35,658
+from the inputs to the outputs.
+
+193
+00:09:35,658 --> 00:09:37,700
+You could also think about transferring knowledge
+
+194
+00:09:37,700 --> 00:09:38,520
+in different ways.
+
+195
+00:09:38,520 --> 00:09:40,340
+We can think about transferring knowledge
+
+196
+00:09:40,340 --> 00:09:42,640
+about biases in a model.
+
+197
+00:09:42,640 --> 00:09:45,880
+You can think about transferring knowledge about an optimizer,
+
+198
+00:09:45,880 --> 00:09:46,940
+perhaps.
+
+199
+00:09:46,940 --> 00:09:49,540
+How do we optimize models?
+
+200
+00:09:49,540 --> 00:09:51,900
+We can think about maybe transferring knowledge
+
+201
+00:09:51,900 --> 00:09:55,780
+about potential error modes or ethical risks
+
+202
+00:09:55,780 --> 00:09:58,700
+or societal implications of models.
+
+203
+00:09:58,700 --> 00:10:02,380
+So we'll really be focusing on pretty simple mechanisms
+
+204
+00:10:02,380 --> 00:10:04,140
+to think about knowledge transfer,
+
+205
+00:10:04,140 --> 00:10:06,180
+but I do think that there's a lot of more
+
+206
+00:10:06,180 --> 00:10:11,780
+broad sets of transfer or this idea of sharing information
+
+207
+00:10:11,780 --> 00:10:14,540
+in a valuable way that are really not understood
+
+208
+00:10:14,540 --> 00:10:15,320
+or not solved.
+
+209
+00:10:15,320 --> 00:10:19,300
+So one thing that we still haven't really
+
+210
+00:10:19,300 --> 00:10:22,380
+figured out how to do is building
+
+211
+00:10:22,380 --> 00:10:27,020
+an agent that's able to actually learn some intrinsic motivation
+
+212
+00:10:27,020 --> 00:10:30,540
+about how to explore in the world, which then could be
+
+213
+00:10:30,540 --> 00:10:33,140
+transferred to a new agent, which would let them explore
+
+214
+00:10:33,140 --> 00:10:33,880
+more efficiently.
+
+215
+00:10:33,880 --> 00:10:37,140
+This idea of transferring motivation
+
+216
+00:10:37,140 --> 00:10:38,740
+within a robotic agent.
+
+217
+00:10:38,740 --> 00:10:41,500
+So there's a lot of ways that we have
+
+218
+00:10:41,500 --> 00:10:45,380
+these kind of brute force knowledge transfer mechanisms
+
+219
+00:10:45,380 --> 00:10:46,600
+that we'll talk about.
+
+220
+00:10:46,600 --> 00:10:48,540
+But I think there's a lot of space
+
+221
+00:10:48,540 --> 00:10:51,700
+still to explore in the machine learning research arena, just
+
+222
+00:10:51,700 --> 00:10:54,820
+in terms of the best ways to try to share information
+
+223
+00:10:54,820 --> 00:10:56,260
+and transfer knowledge.
+
+224
+00:10:56,260 --> 00:10:57,060
+Yeah?
+
+225
+00:10:57,060 --> 00:11:00,260
+AUDIENCE: How much of that is limited--
+
+226
+00:11:00,260 --> 00:11:04,100
+my very basic understanding of some of the challenges in, say,
+
+227
+00:11:04,100 --> 00:11:06,860
+reinforcement learning is that it's
+
+228
+00:11:06,860 --> 00:11:09,100
+more of an issue of sample efficiency.
+
+229
+00:11:09,100 --> 00:11:12,900
+And thinking back to 2012, one of the breakthroughs
+
+230
+00:11:12,900 --> 00:11:14,800
+wasn't really that the algorithms changed,
+
+231
+00:11:14,800 --> 00:11:17,900
+but just that they finally got it [INAUDIBLE] GPU,
+
+232
+00:11:17,900 --> 00:11:21,260
+and it sped up the training process.
+
+233
+00:11:21,260 --> 00:11:24,460
+How much do people think that the bottleneck
+
+234
+00:11:24,460 --> 00:11:27,300
+is the algorithm or the ideas around how
+
+235
+00:11:27,300 --> 00:11:30,060
+to do this versus just we're not computationally
+
+236
+00:11:30,060 --> 00:11:31,932
+efficient enough?
+
+237
+00:11:31,932 --> 00:11:33,640
+SARA BEERY: So the question is basically,
+
+238
+00:11:33,640 --> 00:11:35,848
+what's the bottleneck in terms of knowledge transfer?
+
+239
+00:11:35,848 --> 00:11:37,860
+Is it fundamentally algorithmic, or might it
+
+240
+00:11:37,860 --> 00:11:42,110
+be related to, instead, computational efficiency?
+
+241
+00:11:42,110 --> 00:11:44,610
+And you brought up a really great example of essentially
+
+242
+00:11:44,610 --> 00:11:48,170
+how figuring out how to use GPUs effectively
+
+243
+00:11:48,170 --> 00:11:50,112
+was a huge breakthrough in terms of progress
+
+244
+00:11:50,112 --> 00:11:52,570
+across many different areas of deep learning, reinforcement
+
+245
+00:11:52,570 --> 00:11:56,930
+learning being one of them, but basically anything else as well.
+
+246
+00:11:56,930 --> 00:11:58,670
+I think it's a little bit of everything.
+
+247
+00:11:58,670 --> 00:12:00,590
+And this question of sample efficiency,
+
+248
+00:12:00,590 --> 00:12:05,010
+I would not say that we have good algorithms
+
+249
+00:12:05,010 --> 00:12:08,130
+for sampling data efficiently or for learning
+
+250
+00:12:08,130 --> 00:12:09,990
+from that sample data efficiently.
+
+251
+00:12:09,990 --> 00:12:11,950
+I mean, we have algorithms that do it,
+
+252
+00:12:11,950 --> 00:12:16,130
+but I feel like there's a lot of room to improve.
+
+253
+00:12:16,130 --> 00:12:17,210
+Cool.
+
+254
+00:12:17,210 --> 00:12:19,050
+So we're first going to talk a little bit
+
+255
+00:12:19,050 --> 00:12:22,202
+about this idea of transferring knowledge from the mapping,
+
+256
+00:12:22,202 --> 00:12:24,410
+so essentially, transferring knowledge from the model
+
+257
+00:12:24,410 --> 00:12:25,350
+you've learned itself.
+
+258
+00:12:25,350 --> 00:12:28,930
+How you go from inputs to useful outputs?
+
+259
+00:12:28,930 --> 00:12:32,630
+So a simple example of this would be something like, OK.
+
+260
+00:12:32,630 --> 00:12:39,050
+I have a lot of data on music with associated genres,
+
+261
+00:12:39,050 --> 00:12:44,450
+and the idea being that being able to recognize a genre
+
+262
+00:12:44,450 --> 00:12:46,450
+is potentially useful.
+
+263
+00:12:46,450 --> 00:12:49,090
+It's teaching models something about the structure
+
+264
+00:12:49,090 --> 00:12:52,593
+of music, something about what makes different songs similar.
+
+265
+00:12:52,593 --> 00:12:54,010
+Two things being of the same genre
+
+266
+00:12:54,010 --> 00:12:56,530
+argues that they might be similar in some way.
+
+267
+00:12:56,530 --> 00:13:00,090
+And then maybe what you want to then adapt or transfer
+
+268
+00:13:00,090 --> 00:13:01,930
+that knowledge to is something where
+
+269
+00:13:01,930 --> 00:13:05,050
+you have a lot less data that specifically predicting,
+
+270
+00:13:05,050 --> 00:13:08,690
+let's say, your individual preferences for songs.
+
+271
+00:13:08,690 --> 00:13:11,570
+So maybe you can do genre recognition
+
+272
+00:13:11,570 --> 00:13:15,010
+on the entire cadre of music on Spotify.
+
+273
+00:13:15,010 --> 00:13:18,570
+And then if you actually want to learn
+
+274
+00:13:18,570 --> 00:13:21,590
+how to predict what songs you're likely to enjoy,
+
+275
+00:13:21,590 --> 00:13:23,650
+that you're going to prefer, you might only
+
+276
+00:13:23,650 --> 00:13:25,382
+have a much smaller set of data, which
+
+277
+00:13:25,382 --> 00:13:27,090
+is all the songs you've ever listened to,
+
+278
+00:13:27,090 --> 00:13:30,090
+which is, of course, not even close to all the songs
+
+279
+00:13:30,090 --> 00:13:31,890
+that exist.
+
+280
+00:13:31,890 --> 00:13:35,250
+And then the actual testing would then be taking
+
+281
+00:13:35,250 --> 00:13:39,250
+of fine-tuned model-- you can see they have this f prime--
+
+282
+00:13:39,250 --> 00:13:41,373
+and using it to actually predict on new music
+
+283
+00:13:41,373 --> 00:13:42,790
+whether you're going to it or not.
+
+284
+00:13:42,790 --> 00:13:44,957
+And then-- I don't know-- see, do you like the music
+
+285
+00:13:44,957 --> 00:13:47,490
+that it's suggesting for you?
+
+286
+00:13:47,490 --> 00:13:51,930
+And so this is kind of that broad, simple thing in terms
+
+287
+00:13:51,930 --> 00:13:54,850
+of what we call fine-tuning.
+
+288
+00:13:54,850 --> 00:13:57,730
+And at a very high level, it's that you're
+
+289
+00:13:57,730 --> 00:14:01,010
+pretaining your network, your set of weights and biases,
+
+290
+00:14:01,010 --> 00:14:04,930
+on some task that's a pretaining task.
+
+291
+00:14:04,930 --> 00:14:07,730
+And that will result in some parameters for your model, W
+
+292
+00:14:07,730 --> 00:14:09,530
+and b, weights and biases.
+
+293
+00:14:09,530 --> 00:14:11,530
+Then you initialize a second network
+
+294
+00:14:11,530 --> 00:14:15,130
+with some or all of W and b, and so there's
+
+295
+00:14:15,130 --> 00:14:18,090
+these kind of interesting question
+
+296
+00:14:18,090 --> 00:14:22,770
+of how much knowledge about the mapping you want to transfer.
+
+297
+00:14:22,770 --> 00:14:25,970
+So usually, maybe the very final layer of a model, that's
+
+298
+00:14:25,970 --> 00:14:29,090
+going to be pretty specific to the pretaining task.
+
+299
+00:14:29,090 --> 00:14:31,810
+So often, it doesn't really make sense, especially
+
+300
+00:14:31,810 --> 00:14:34,730
+if the output shape is not the same.
+
+301
+00:14:34,730 --> 00:14:38,970
+You cut that off, you add some different final layer on,
+
+302
+00:14:38,970 --> 00:14:42,850
+but maybe, you really only want those early layer features
+
+303
+00:14:42,850 --> 00:14:43,630
+to be captured.
+
+304
+00:14:43,630 --> 00:14:45,790
+And so you actually let the model--
+
+305
+00:14:45,790 --> 00:14:51,490
+you initialize it with less of the initial model.
+
+306
+00:14:51,490 --> 00:14:54,290
+And then you think about training that second network
+
+307
+00:14:54,290 --> 00:14:55,835
+on some task b.
+
+308
+00:14:55,835 --> 00:14:58,210
+And so now, you'll get some slightly adjusted parameters,
+
+309
+00:14:58,210 --> 00:15:00,010
+W prime and b prime.
+
+310
+00:15:00,010 --> 00:15:07,410
+And the idea is then you have this learned representation that
+
+311
+00:15:07,410 --> 00:15:10,990
+is essentially an encoder, and that's what we're transferring.
+
+312
+00:15:10,990 --> 00:15:13,570
+So you're taking the representation learned
+
+313
+00:15:13,570 --> 00:15:16,690
+from the initial model that's encoding something
+
+314
+00:15:16,690 --> 00:15:20,810
+useful about your data, and then you're transferring that
+
+315
+00:15:20,810 --> 00:15:22,610
+and then learning how to make use
+
+316
+00:15:22,610 --> 00:15:25,650
+of that useful representation on something downstream.
+
+317
+00:15:25,650 --> 00:15:27,690
+And we'll talk a little bit about some
+
+318
+00:15:27,690 --> 00:15:30,370
+of these different empirical choices
+
+319
+00:15:30,370 --> 00:15:33,490
+you can make here around how much you
+
+320
+00:15:33,490 --> 00:15:37,370
+let the model adapt, how much you
+
+321
+00:15:37,370 --> 00:15:39,610
+let it change from the initial representation.
+
+322
+00:15:39,610 --> 00:15:42,770
+But empirically, actually, as long as the types of input data
+
+323
+00:15:42,770 --> 00:15:44,470
+are similar-- so images and images,
+
+324
+00:15:44,470 --> 00:15:47,130
+for example-- what we often find is
+
+325
+00:15:47,130 --> 00:15:50,155
+that a lot of the structure in the models,
+
+326
+00:15:50,155 --> 00:15:51,530
+like weights and biases, actually
+
+327
+00:15:51,530 --> 00:15:54,690
+stays the same, particularly in those early layers
+
+328
+00:15:54,690 --> 00:15:56,410
+after you've done the fine-tuning.
+
+329
+00:15:56,410 --> 00:15:58,890
+So even if you haven't explicitly constrained the model
+
+330
+00:15:58,890 --> 00:16:01,490
+not to change that very much, what you can do
+
+331
+00:16:01,490 --> 00:16:04,507
+is keep a learning rate low or freeze some of the network.
+
+332
+00:16:04,507 --> 00:16:06,090
+But if you don't do that, you actually
+
+333
+00:16:06,090 --> 00:16:08,050
+find that a lot of the structure will
+
+334
+00:16:08,050 --> 00:16:10,810
+stay the same, which does seem to argue that some of that
+
+335
+00:16:10,810 --> 00:16:12,750
+is just universal in some sense.
+
+336
+00:16:12,750 --> 00:16:19,050
+It's universally useful for, let's say, images or audio.
+
+337
+00:16:19,050 --> 00:16:22,633
+So we previously saw a very specific case
+
+338
+00:16:22,633 --> 00:16:25,050
+when we were talking about similarity-based representation
+
+339
+00:16:25,050 --> 00:16:28,670
+learning where we talked about self-supervised pretaining.
+
+340
+00:16:28,670 --> 00:16:32,790
+So here, with this self-supervised pretaining,
+
+341
+00:16:32,790 --> 00:16:36,680
+we're not necessarily explicitly or directly training
+
+342
+00:16:36,680 --> 00:16:38,960
+the model to do something we might care about.
+
+343
+00:16:38,960 --> 00:16:41,880
+Instead, we're just training the model to learn something
+
+344
+00:16:41,880 --> 00:16:44,400
+about data similarity.
+
+345
+00:16:44,400 --> 00:16:46,040
+And then that ends up--
+
+346
+00:16:46,040 --> 00:16:48,960
+it has been shown-- to be quite useful for training
+
+347
+00:16:48,960 --> 00:16:51,440
+representations that are good for downstream tasks we might
+
+348
+00:16:51,440 --> 00:16:52,052
+care about.
+
+349
+00:16:52,052 --> 00:16:53,760
+And one of the main benefits of this type
+
+350
+00:16:53,760 --> 00:16:56,040
+of self-supervised pretaining is the fact
+
+351
+00:16:56,040 --> 00:17:00,200
+that, because it doesn't require labels for data,
+
+352
+00:17:00,200 --> 00:17:04,579
+it's making that pretaining on a lot of data-- like a lot, a lot,
+
+353
+00:17:04,579 --> 00:17:05,440
+a lot of data.
+
+354
+00:17:05,440 --> 00:17:08,560
+The amount of data that exists without any specific label
+
+355
+00:17:08,560 --> 00:17:13,040
+is much larger than any of labeled or clean data set.
+
+356
+00:17:13,040 --> 00:17:16,523
+So here, you think about contrastive pretaining
+
+357
+00:17:16,523 --> 00:17:18,440
+and then maybe you're going to test it on some
+
+358
+00:17:18,440 --> 00:17:21,119
+of new recognition task.
+
+359
+00:17:21,119 --> 00:17:25,325
+But instead, you could think about fine-tuning a model, which
+
+360
+00:17:25,325 --> 00:17:27,200
+is how you take those initial representations
+
+361
+00:17:27,200 --> 00:17:29,440
+and transfer them to then actually learn
+
+362
+00:17:29,440 --> 00:17:32,280
+how to do that new recognition task.
+
+363
+00:17:32,280 --> 00:17:32,815
+OK.
+
+364
+00:17:32,815 --> 00:17:35,440
+So now, I'm going to get into a couple pretty simple but pretty
+
+365
+00:17:35,440 --> 00:17:38,400
+practical considerations.
+
+366
+00:17:38,400 --> 00:17:43,560
+So what if you're pretaining on some images,
+
+367
+00:17:43,560 --> 00:17:46,360
+and you're predicting whether they're wheat or corn?
+
+368
+00:17:46,360 --> 00:17:52,080
+And then now, we want to fine tune our model.
+
+369
+00:17:52,080 --> 00:17:57,360
+But now, we have an x prime and a y prime that are not the same.
+
+370
+00:17:57,360 --> 00:17:59,960
+So essentially, we have a model, and our initial model
+
+371
+00:17:59,960 --> 00:18:02,760
+was trained on images that are RGB.
+
+372
+00:18:02,760 --> 00:18:06,560
+And it was trained to predict two categories as the output.
+
+373
+00:18:06,560 --> 00:18:08,720
+And now, the model we actually want
+
+374
+00:18:08,720 --> 00:18:12,720
+is going to actually take in images that are just grayscale.
+
+375
+00:18:12,720 --> 00:18:14,840
+So we only have a single dimension,
+
+376
+00:18:14,840 --> 00:18:18,760
+and we want to predict on outputs that
+
+377
+00:18:18,760 --> 00:18:21,160
+have an additional category.
+
+378
+00:18:21,160 --> 00:18:23,440
+So the structure of the model itself
+
+379
+00:18:23,440 --> 00:18:25,560
+is actually a bit different.
+
+380
+00:18:25,560 --> 00:18:27,360
+Essentially, if you're changing either
+
+381
+00:18:27,360 --> 00:18:30,920
+your input dimension or your output dimension or both.
+
+382
+00:18:30,920 --> 00:18:36,480
+So one kind of very simple mechanism that you can do
+
+383
+00:18:36,480 --> 00:18:38,800
+is you can add kind of like a glue
+
+384
+00:18:38,800 --> 00:18:43,400
+into the model, which is just a way
+
+385
+00:18:43,400 --> 00:18:47,200
+to transfer data through to get it into the right format.
+
+386
+00:18:47,200 --> 00:18:48,980
+So then when you're doing your pretaining,
+
+387
+00:18:48,980 --> 00:18:50,840
+if you know that your downstream task is not
+
+388
+00:18:50,840 --> 00:18:54,040
+going to have necessarily the same structure,
+
+389
+00:18:54,040 --> 00:18:58,400
+you define these new z's, which are maybe models,
+
+390
+00:18:58,400 --> 00:19:02,180
+or even just like a few simple layers, fully connected layers,
+
+391
+00:19:02,180 --> 00:19:05,280
+what have you, that enable us to then
+
+392
+00:19:05,280 --> 00:19:09,880
+map each input and output to the same dimensionality.
+
+393
+00:19:09,880 --> 00:19:12,120
+And so you would do this where you need it, right?
+
+394
+00:19:12,120 --> 00:19:14,680
+If you still are going to have RGB images,
+
+395
+00:19:14,680 --> 00:19:17,720
+but then all you're doing is adding one more output
+
+396
+00:19:17,720 --> 00:19:20,360
+dimension, well, then one thing you can do
+
+397
+00:19:20,360 --> 00:19:23,940
+is you can take the final output layer of your initial model,
+
+398
+00:19:23,940 --> 00:19:26,080
+and you can learn some reprojection to project it
+
+399
+00:19:26,080 --> 00:19:27,220
+into more dimensions.
+
+400
+00:19:27,220 --> 00:19:29,080
+Or you can do what I talked about sooner,
+
+401
+00:19:29,080 --> 00:19:32,280
+and you can consider this z to be
+
+402
+00:19:32,280 --> 00:19:35,120
+like that final mapping from your representation,
+
+403
+00:19:35,120 --> 00:19:38,380
+that encoder, to the number of categories you want to predict.
+
+404
+00:19:38,380 --> 00:19:41,000
+And then you can just swap that out and maybe learn
+
+405
+00:19:41,000 --> 00:19:44,740
+some different one that's now in this new model.
+
+406
+00:19:44,740 --> 00:19:46,452
+So you're just essentially defining
+
+407
+00:19:46,452 --> 00:19:48,160
+points within the structure of your model
+
+408
+00:19:48,160 --> 00:19:50,040
+that give you a bit of flexibility.
+
+409
+00:19:50,040 --> 00:19:52,900
+So now, this f1 goes to f1 prime.
+
+410
+00:19:52,900 --> 00:19:54,600
+Those will be different from each other.
+
+411
+00:19:54,600 --> 00:19:55,535
+f3 goes to f3 prime.
+
+412
+00:19:55,535 --> 00:19:57,160
+Those will be different from each other
+
+413
+00:19:57,160 --> 00:19:59,285
+in terms of their structure, like the actual number
+
+414
+00:19:59,285 --> 00:20:01,720
+of layers, weights, or size.
+
+415
+00:20:01,720 --> 00:20:03,680
+But then the f2 can stay the same.
+
+416
+00:20:03,680 --> 00:20:05,500
+So the vast majority of the structure,
+
+417
+00:20:05,500 --> 00:20:08,480
+you're not actually changing.
+
+418
+00:20:08,480 --> 00:20:11,160
+And this actually comes up quite a lot,
+
+419
+00:20:11,160 --> 00:20:14,360
+particularly for some types of data that have maybe more input
+
+420
+00:20:14,360 --> 00:20:15,180
+dimensions.
+
+421
+00:20:15,180 --> 00:20:17,840
+So most image models are pretained
+
+422
+00:20:17,840 --> 00:20:21,240
+on things like ImageNet, or these days, LAION,
+
+423
+00:20:21,240 --> 00:20:23,830
+where you have huge amounts of RGB data.
+
+424
+00:20:23,830 --> 00:20:26,080
+But then say you're someone who's working in robotics,
+
+425
+00:20:26,080 --> 00:20:30,950
+and you have RGB-D. You have this additional depth dimension.
+
+426
+00:20:30,950 --> 00:20:34,830
+It's often true that you can still get a lot of value
+
+427
+00:20:34,830 --> 00:20:39,270
+in doing transfer learning from models trained without depth,
+
+428
+00:20:39,270 --> 00:20:42,550
+but now, you have to figure out how to add this additional depth
+
+429
+00:20:42,550 --> 00:20:44,935
+dimension during your fine-tuning effectively.
+
+430
+00:20:44,935 --> 00:20:46,310
+And so often, the way people will
+
+431
+00:20:46,310 --> 00:20:49,710
+do that is they just learn some of additional encoding
+
+432
+00:20:49,710 --> 00:20:52,450
+that takes that and maps it into three dimensions.
+
+433
+00:20:52,450 --> 00:20:54,450
+Or sometimes, depending on how much data
+
+434
+00:20:54,450 --> 00:20:56,950
+you have, whether you can really learn that type of mapping,
+
+435
+00:20:56,950 --> 00:21:02,310
+you do some of strange, just very simple model
+
+436
+00:21:02,310 --> 00:21:05,090
+of how to transform one input dimension into another.
+
+437
+00:21:05,090 --> 00:21:07,750
+So if you're working with very high scale hyperspectral
+
+438
+00:21:07,750 --> 00:21:09,630
+satellite data, and you have models
+
+439
+00:21:09,630 --> 00:21:11,890
+that are pretained with three channel inputs,
+
+440
+00:21:11,890 --> 00:21:14,990
+sometimes, people will just run something like PCA
+
+441
+00:21:14,990 --> 00:21:19,590
+and take the principal components, the three most
+
+442
+00:21:19,590 --> 00:21:21,190
+informative principal components,
+
+443
+00:21:21,190 --> 00:21:23,282
+over all those hyperspectral bands,
+
+444
+00:21:23,282 --> 00:21:24,990
+and use that as their three channel input
+
+445
+00:21:24,990 --> 00:21:29,870
+when they're fine-tuning because the ability to actually learn
+
+446
+00:21:29,870 --> 00:21:33,350
+all of those 380 different input layers effectively is,
+
+447
+00:21:33,350 --> 00:21:36,485
+one, computationally very expensive, and two,
+
+448
+00:21:36,485 --> 00:21:38,110
+if you don't have a lot of data, that's
+
+449
+00:21:38,110 --> 00:21:39,610
+a lot of parameters to learn.
+
+450
+00:21:39,610 --> 00:21:42,030
+And so that can be tricky.
+
+451
+00:21:42,030 --> 00:21:42,830
+Yeah.
+
+452
+00:21:42,830 --> 00:21:45,550
+AUDIENCE: So we're talking about adding or changing
+
+453
+00:21:45,550 --> 00:21:48,270
+the stacks and the [INAUDIBLE].
+
+454
+00:21:48,270 --> 00:21:51,550
+Do you ever add stuff into this dimension for fine-tuning,
+
+455
+00:21:51,550 --> 00:21:53,227
+or is that just--
+
+456
+00:21:53,227 --> 00:21:54,310
+SARA BEERY: In the width--
+
+457
+00:21:54,310 --> 00:21:56,310
+so the input size would change?
+
+458
+00:21:56,310 --> 00:21:59,710
+AUDIENCE: Basically, say if you had f2,
+
+459
+00:21:59,710 --> 00:22:05,070
+adding additional channels to be parallel to f2.
+
+460
+00:22:05,070 --> 00:22:06,550
+SARA BEERY: Like concatenating?
+
+461
+00:22:06,550 --> 00:22:07,402
+AUDIENCE: Kind of.
+
+462
+00:22:07,402 --> 00:22:08,110
+SARA BEERY: Yeah.
+
+463
+00:22:08,110 --> 00:22:10,990
+I mean, so definitely, a lot of these models
+
+464
+00:22:10,990 --> 00:22:13,230
+will assume some of fixed input size.
+
+465
+00:22:13,230 --> 00:22:15,750
+And then, say, maybe you want to train the model on a bigger
+
+466
+00:22:15,750 --> 00:22:16,408
+input size.
+
+467
+00:22:16,408 --> 00:22:17,950
+That's another way that you can think
+
+468
+00:22:17,950 --> 00:22:19,990
+about building this little f1 that
+
+469
+00:22:19,990 --> 00:22:22,070
+will take a larger input size image
+
+470
+00:22:22,070 --> 00:22:24,710
+and then learn how to get it to that smaller input size
+
+471
+00:22:24,710 --> 00:22:28,350
+that the pretained model was trained on.
+
+472
+00:22:28,350 --> 00:22:29,833
+But I think the only way to think
+
+473
+00:22:29,833 --> 00:22:31,750
+about changing the width dimension is in terms
+
+474
+00:22:31,750 --> 00:22:33,292
+of the spatial extent, right?
+
+475
+00:22:33,292 --> 00:22:35,250
+AUDIENCE: So just in terms of input and output,
+
+476
+00:22:35,250 --> 00:22:39,127
+not in terms of the throughput of the pretained models.
+
+477
+00:22:39,127 --> 00:22:40,710
+SARA BEERY: Oh, you mean like actually
+
+478
+00:22:40,710 --> 00:22:42,850
+changing the structure of the model itself?
+
+479
+00:22:42,850 --> 00:22:45,282
+AUDIENCE: I guess like stacking on top of [INAUDIBLE].
+
+480
+00:22:45,282 --> 00:22:45,990
+SARA BEERY: Yeah.
+
+481
+00:22:45,990 --> 00:22:48,490
+I mean, so one of the things we're trying to get across here
+
+482
+00:22:48,490 --> 00:22:51,270
+is that you can treat these things as modular building
+
+483
+00:22:51,270 --> 00:22:52,490
+blocks, right?
+
+484
+00:22:52,490 --> 00:22:55,510
+And so you can take a building block that someone else has
+
+485
+00:22:55,510 --> 00:22:58,250
+built and then stick it in.
+
+486
+00:22:58,250 --> 00:22:59,830
+And then you have to figure out what
+
+487
+00:22:59,830 --> 00:23:02,150
+blocks you need to add to the system
+
+488
+00:23:02,150 --> 00:23:04,990
+to maybe get that building block to be useful for you.
+
+489
+00:23:04,990 --> 00:23:08,430
+But the point being that a really well-trained building
+
+490
+00:23:08,430 --> 00:23:11,310
+block-- if that analogy still is making sense.
+
+491
+00:23:11,310 --> 00:23:13,850
+A really well-trained building block is still useful,
+
+492
+00:23:13,850 --> 00:23:16,950
+and it's maybe worth coming up with this modular structure that
+
+493
+00:23:16,950 --> 00:23:20,750
+will make that work for your problem.
+
+494
+00:23:20,750 --> 00:23:22,965
+But as soon as you start actually trying to mess
+
+495
+00:23:22,965 --> 00:23:24,590
+with that building block, like changing
+
+496
+00:23:24,590 --> 00:23:26,330
+the weights and the biases within that block,
+
+497
+00:23:26,330 --> 00:23:27,250
+it gets more complicated.
+
+498
+00:23:27,250 --> 00:23:28,850
+There are people who look at doing it,
+
+499
+00:23:28,850 --> 00:23:31,303
+and actually, the entire area of model compression
+
+500
+00:23:31,303 --> 00:23:33,470
+is kind of changing that structure by removing stuff
+
+501
+00:23:33,470 --> 00:23:34,490
+to make it more efficient.
+
+502
+00:23:34,490 --> 00:23:36,365
+And we'll talk a little bit about that later.
+
+503
+00:23:36,365 --> 00:23:39,150
+In terms of adding more stuff, I don't know.
+
+504
+00:23:39,150 --> 00:23:41,290
+I haven't seen a lot of work in that space,
+
+505
+00:23:41,290 --> 00:23:43,415
+but I think as soon as you start adding more stuff,
+
+506
+00:23:43,415 --> 00:23:45,030
+the value of the pretaining starts
+
+507
+00:23:45,030 --> 00:23:47,990
+to go away, if that makes sense, because then you've
+
+508
+00:23:47,990 --> 00:23:51,910
+changed the structure of the mathematical formulas.
+
+509
+00:23:51,910 --> 00:23:53,950
+Cool.
+
+510
+00:23:53,950 --> 00:23:57,870
+So essentially, we're just trying to figure out
+
+511
+00:23:57,870 --> 00:23:59,730
+how to make things useful.
+
+512
+00:23:59,730 --> 00:24:05,270
+And so in practice, we'll essentially just learn mappings
+
+513
+00:24:05,270 --> 00:24:09,495
+for any new stuff we add to make this work for our data.
+
+514
+00:24:09,495 --> 00:24:11,870
+And so those new things would need to be then initialized
+
+515
+00:24:11,870 --> 00:24:14,790
+from scratch, but that's a lot less parameters
+
+516
+00:24:14,790 --> 00:24:17,790
+that need to be learned from scratch than if you're going end
+
+517
+00:24:17,790 --> 00:24:20,950
+to end from scratch, starting from that blank slate.
+
+518
+00:24:20,950 --> 00:24:23,730
+And if you really don't have much data,
+
+519
+00:24:23,730 --> 00:24:26,650
+you can also think about copying weights for that initialization.
+
+520
+00:24:26,650 --> 00:24:29,750
+So for example, in that RGB-D case,
+
+521
+00:24:29,750 --> 00:24:31,590
+sometimes what people will do is they
+
+522
+00:24:31,590 --> 00:24:33,950
+will take the RGB channels that were learned
+
+523
+00:24:33,950 --> 00:24:35,550
+from the original model, and then
+
+524
+00:24:35,550 --> 00:24:37,390
+they'll staple on an additional channel,
+
+525
+00:24:37,390 --> 00:24:41,950
+and they'll initialize it with, for example, just
+
+526
+00:24:41,950 --> 00:24:46,070
+the blue channel parameters, with the idea that maybe there's
+
+527
+00:24:46,070 --> 00:24:49,350
+some value in what's been learned for another channel that
+
+528
+00:24:49,350 --> 00:24:51,110
+might still be transferable.
+
+529
+00:24:51,110 --> 00:24:56,690
+Again, this is all kind of-- no one really knows.
+
+530
+00:24:56,690 --> 00:25:01,710
+No has a perfect set of heuristics
+
+531
+00:25:01,710 --> 00:25:05,150
+for, if this is your data, this is the best thing to do.
+
+532
+00:25:05,150 --> 00:25:06,550
+And this is really where the idea
+
+533
+00:25:06,550 --> 00:25:08,590
+of designing a benchmark for your data
+
+534
+00:25:08,590 --> 00:25:11,150
+set where you understand how to do comparison
+
+535
+00:25:11,150 --> 00:25:13,130
+across some of these different choices
+
+536
+00:25:13,130 --> 00:25:15,787
+so you can try things and see how they're affecting
+
+537
+00:25:15,787 --> 00:25:17,870
+performance of your model-- that's where it starts
+
+538
+00:25:17,870 --> 00:25:19,250
+to become really important.
+
+539
+00:25:19,250 --> 00:25:23,520
+Because most of the time, if it's some custom problem,
+
+540
+00:25:23,520 --> 00:25:25,020
+some little dimension of the system
+
+541
+00:25:25,020 --> 00:25:27,160
+will probably be somewhat customizable.
+
+542
+00:25:27,160 --> 00:25:31,820
+And it's hard to say what's the best structure for a system
+
+543
+00:25:31,820 --> 00:25:35,700
+without actually doing some testing.
+
+544
+00:25:35,700 --> 00:25:39,540
+So one of the issues is that if you only
+
+545
+00:25:39,540 --> 00:25:44,420
+have a little bit of data, and you let the entire model train,
+
+546
+00:25:44,420 --> 00:25:49,180
+and you train it until that loss is all the way saturated--
+
+547
+00:25:49,180 --> 00:25:51,580
+we don't have anything else we can learn--
+
+548
+00:25:51,580 --> 00:25:54,220
+we run into that catastrophic forgetting problem
+
+549
+00:25:54,220 --> 00:25:56,580
+again, that thing we talked about a bit
+
+550
+00:25:56,580 --> 00:25:58,582
+when we were talking about sequences, where it's
+
+551
+00:25:58,582 --> 00:26:01,040
+like, somehow, the thing we learned from the original data,
+
+552
+00:26:01,040 --> 00:26:02,480
+we learned too long ago.
+
+553
+00:26:02,480 --> 00:26:04,900
+The model's weights get changed too much,
+
+554
+00:26:04,900 --> 00:26:08,620
+and you essentially lose capacity.
+
+555
+00:26:08,620 --> 00:26:12,660
+So this definitely happens more with smaller models
+
+556
+00:26:12,660 --> 00:26:15,540
+than big models, interestingly.
+
+557
+00:26:15,540 --> 00:26:18,500
+But in order to avoid kind of overfitting
+
+558
+00:26:18,500 --> 00:26:21,660
+on a really small amount of data for your specific task,
+
+559
+00:26:21,660 --> 00:26:24,500
+there are a few different mechanisms
+
+560
+00:26:24,500 --> 00:26:28,060
+that people use to try to strike that right balance, learning
+
+561
+00:26:28,060 --> 00:26:30,620
+enough about the new task that you can specialize while not
+
+562
+00:26:30,620 --> 00:26:34,980
+forgetting too much about this general useful representation.
+
+563
+00:26:34,980 --> 00:26:36,620
+And so a couple of things.
+
+564
+00:26:36,620 --> 00:26:39,720
+You can think about freezing most of the network.
+
+565
+00:26:39,720 --> 00:26:42,260
+So basically saying, I just want to keep
+
+566
+00:26:42,260 --> 00:26:44,460
+most of this model exactly the same,
+
+567
+00:26:44,460 --> 00:26:46,838
+and only training, for example, the final layers or so,
+
+568
+00:26:46,838 --> 00:26:48,380
+those initial things at the beginning
+
+569
+00:26:48,380 --> 00:26:50,700
+that you need to have that are new.
+
+570
+00:26:50,700 --> 00:26:53,040
+You can explicitly use really small learning rates.
+
+571
+00:26:53,040 --> 00:26:54,707
+So basically, just not letting the model
+
+572
+00:26:54,707 --> 00:26:57,860
+move too much in any direction at any training step.
+
+573
+00:26:57,860 --> 00:27:00,020
+You can use what's called early stopping, which
+
+574
+00:27:00,020 --> 00:27:01,980
+is-- essentially, you use a validation set,
+
+575
+00:27:01,980 --> 00:27:05,060
+and you make a decision about which model weights
+
+576
+00:27:05,060 --> 00:27:07,980
+to keep based on the best performance on your validation
+
+577
+00:27:07,980 --> 00:27:10,980
+set with the idea that, essentially, you just haven't
+
+578
+00:27:10,980 --> 00:27:14,060
+let the model train too much, so you stopped it
+
+579
+00:27:14,060 --> 00:27:17,780
+before it can forget too much about the original pretext task.
+
+580
+00:27:17,780 --> 00:27:20,920
+Or another mechanism-- and one that tends to work pretty well,
+
+581
+00:27:20,920 --> 00:27:23,503
+though, of course, there's some complications in terms of data
+
+582
+00:27:23,503 --> 00:27:26,380
+balance that you have to strike, so sampling effectively--
+
+583
+00:27:26,380 --> 00:27:30,140
+is to just continue to train on the original data as well.
+
+584
+00:27:30,140 --> 00:27:33,460
+So essentially, if you have access to the original training
+
+585
+00:27:33,460 --> 00:27:36,420
+data, then as you're fine-tuning, continuing
+
+586
+00:27:36,420 --> 00:27:39,140
+to add some of that pretext or some of that original training
+
+587
+00:27:39,140 --> 00:27:40,220
+data is good.
+
+588
+00:27:40,220 --> 00:27:41,960
+But of course, there's a complexity here,
+
+589
+00:27:41,960 --> 00:27:45,060
+which is, all right, but if you have different input
+
+590
+00:27:45,060 --> 00:27:48,460
+types and different goals, this becomes harder and harder to do.
+
+591
+00:27:48,460 --> 00:27:50,508
+If you were doing contrastive pretaining,
+
+592
+00:27:50,508 --> 00:27:52,300
+and now, you're trying to do classification
+
+593
+00:27:52,300 --> 00:27:54,480
+on top of those representations, still
+
+594
+00:27:54,480 --> 00:27:56,980
+continuing to have the contrastive pretaining is
+
+595
+00:27:56,980 --> 00:27:59,980
+a little bit more complicated.
+
+596
+00:27:59,980 --> 00:28:03,572
+But a lot of these choices, like these types of things,
+
+597
+00:28:03,572 --> 00:28:05,780
+assume that you have some sort of good representative
+
+598
+00:28:05,780 --> 00:28:07,860
+validation set, that your benchmark is well
+
+599
+00:28:07,860 --> 00:28:09,300
+posed for your task.
+
+600
+00:28:09,300 --> 00:28:11,020
+This might not always be possible,
+
+601
+00:28:11,020 --> 00:28:14,540
+where you might see distribution shift going forward.
+
+602
+00:28:14,540 --> 00:28:16,740
+And so it really does become quite
+
+603
+00:28:16,740 --> 00:28:20,980
+important to think about measuring relative performance
+
+604
+00:28:20,980 --> 00:28:24,620
+as close as possible to your representative problem.
+
+605
+00:28:24,620 --> 00:28:27,860
+If you want to actually use the model on some data,
+
+606
+00:28:27,860 --> 00:28:31,420
+defining measuring progress is just
+
+607
+00:28:31,420 --> 00:28:34,020
+difficult and complicated and important.
+
+608
+00:28:34,020 --> 00:28:37,462
+And this is-- now, I'm going to be on a soapbox a little bit.
+
+609
+00:28:37,462 --> 00:28:39,420
+But one of the things that drives me absolutely
+
+610
+00:28:39,420 --> 00:28:41,060
+crazy about modern machine learning
+
+611
+00:28:41,060 --> 00:28:43,340
+is that we're obsessed with the idea of bolded numbers
+
+612
+00:28:43,340 --> 00:28:44,620
+and tables.
+
+613
+00:28:44,620 --> 00:28:46,780
+And so this kind of begs the question
+
+614
+00:28:46,780 --> 00:28:48,620
+that you can represent everything
+
+615
+00:28:48,620 --> 00:28:52,220
+about what a model does with one single number that
+
+616
+00:28:52,220 --> 00:28:55,540
+captures every dimension of importance to that model.
+
+617
+00:28:55,540 --> 00:28:57,740
+And I don't think that's true.
+
+618
+00:28:57,740 --> 00:28:59,240
+I think we need nuance.
+
+619
+00:28:59,240 --> 00:29:01,820
+And honestly, usually, people will--
+
+620
+00:29:01,820 --> 00:29:02,840
+this is bad behavior.
+
+621
+00:29:02,840 --> 00:29:05,923
+People will pick the metric that their model does best on.
+
+622
+00:29:05,923 --> 00:29:07,840
+They're like, oh, this makes us look the best,
+
+623
+00:29:07,840 --> 00:29:10,080
+so we're just going to show that one in our paper,
+
+624
+00:29:10,080 --> 00:29:11,830
+and we're not going to talk about the fact
+
+625
+00:29:11,830 --> 00:29:14,740
+that for some of these other metrics, we don't do as well.
+
+626
+00:29:14,740 --> 00:29:17,380
+I really love it in a machine learning paper when people
+
+627
+00:29:17,380 --> 00:29:19,380
+are honest about their flaws.
+
+628
+00:29:19,380 --> 00:29:21,680
+Where you're like, hey, all right.
+
+629
+00:29:21,680 --> 00:29:24,320
+We see some really great progress in these sections.
+
+630
+00:29:24,320 --> 00:29:26,580
+And then you have a really nice limitations section
+
+631
+00:29:26,580 --> 00:29:30,100
+that's realistic and captures the dimensions
+
+632
+00:29:30,100 --> 00:29:33,620
+of where there still is space to make progress.
+
+633
+00:29:33,620 --> 00:29:35,120
+Maybe it's just personal preference,
+
+634
+00:29:35,120 --> 00:29:36,920
+but I'm a little bit allergic to salesmanship,
+
+635
+00:29:36,920 --> 00:29:38,545
+so I don't like it when I read a paper,
+
+636
+00:29:38,545 --> 00:29:41,540
+and I'm like, I don't know, man.
+
+637
+00:29:41,540 --> 00:29:43,935
+I think you're sweeping some stuff under the rug.
+
+638
+00:29:43,935 --> 00:29:46,560
+Essentially, you do not want me to be your reviewer number two.
+
+639
+00:29:50,640 --> 00:29:51,140
+Yeah.
+
+640
+00:29:51,140 --> 00:29:53,060
+OK.
+
+641
+00:29:53,060 --> 00:29:55,560
+So we'd like to avoid forgetting the general representation,
+
+642
+00:29:55,560 --> 00:29:57,020
+and here's some engineering hacks
+
+643
+00:29:57,020 --> 00:29:59,300
+that you can take if you want to try and do that.
+
+644
+00:29:59,300 --> 00:30:02,660
+But then there's also this other kind of area of research
+
+645
+00:30:02,660 --> 00:30:05,480
+that's specifically-- it's called domain adaptation.
+
+646
+00:30:05,480 --> 00:30:08,300
+And the idea here is that maybe you have some source domain,
+
+647
+00:30:08,300 --> 00:30:10,340
+and you have a target domain, and then
+
+648
+00:30:10,340 --> 00:30:13,430
+you want to learn to do well on your target domain,
+
+649
+00:30:13,430 --> 00:30:15,690
+but you also want to essentially make sure
+
+650
+00:30:15,690 --> 00:30:19,290
+that the representation spaces of the source and target domain
+
+651
+00:30:19,290 --> 00:30:20,970
+are well aligned.
+
+652
+00:30:20,970 --> 00:30:22,810
+And this shows up a lot when you have
+
+653
+00:30:22,810 --> 00:30:24,810
+these types of distribution shift problems
+
+654
+00:30:24,810 --> 00:30:26,490
+that we talked about before.
+
+655
+00:30:26,490 --> 00:30:29,832
+But it also can be used for different types of fine-tuning.
+
+656
+00:30:29,832 --> 00:30:31,290
+Essentially, one of the motivations
+
+657
+00:30:31,290 --> 00:30:35,090
+here is that maybe if you force these feature spaces to be
+
+658
+00:30:35,090 --> 00:30:42,330
+well aligned generally, that you can learn usefully how to map--
+
+659
+00:30:42,330 --> 00:30:44,470
+learn that mapping with much less data.
+
+660
+00:30:44,470 --> 00:30:47,490
+And one way that people do this is they actually--
+
+661
+00:30:47,490 --> 00:30:52,210
+they learn how to get the model from the source domain
+
+662
+00:30:52,210 --> 00:30:54,730
+to the outputs, and then they try
+
+663
+00:30:54,730 --> 00:30:57,890
+to learn a projection or a mapping from the target domain
+
+664
+00:30:57,890 --> 00:30:58,950
+to the source domain.
+
+665
+00:30:58,950 --> 00:31:01,850
+So you basically are learning how to map into the domain space
+
+666
+00:31:01,850 --> 00:31:05,370
+where you had a lot of data, and then you can use the same model
+
+667
+00:31:05,370 --> 00:31:07,513
+to actually do your prediction.
+
+668
+00:31:07,513 --> 00:31:08,930
+And there's lots of different ways
+
+669
+00:31:08,930 --> 00:31:11,090
+to try to force these representation spaces to be
+
+670
+00:31:11,090 --> 00:31:15,250
+aligned, but one kind of large set of them
+
+671
+00:31:15,250 --> 00:31:17,170
+takes an adversarial approach.
+
+672
+00:31:17,170 --> 00:31:21,610
+So here, you have both source and target data during training.
+
+673
+00:31:21,610 --> 00:31:26,170
+And while you're training for every input,
+
+674
+00:31:26,170 --> 00:31:29,090
+you want to predict the category you care about,
+
+675
+00:31:29,090 --> 00:31:31,370
+and you also want to predict the domain
+
+676
+00:31:31,370 --> 00:31:34,330
+that it came from, something about the distribution.
+
+677
+00:31:34,330 --> 00:31:38,530
+So a classic example of a data set in this domain adaptation
+
+678
+00:31:38,530 --> 00:31:44,090
+space is the data set of different types
+
+679
+00:31:44,090 --> 00:31:46,330
+of technological hardware.
+
+680
+00:31:46,330 --> 00:31:48,990
+But one data set is from Amazon, and one is from eBay.
+
+681
+00:31:48,990 --> 00:31:51,330
+So you can think that, OK, the way that people
+
+682
+00:31:51,330 --> 00:31:53,763
+take pictures for Amazon are very nice and clean,
+
+683
+00:31:53,763 --> 00:31:55,930
+and then the way people are taking pictures for eBay
+
+684
+00:31:55,930 --> 00:31:58,267
+is maybe like on their messy desk.
+
+685
+00:31:58,267 --> 00:31:59,850
+And so there, what you're trying to do
+
+686
+00:31:59,850 --> 00:32:02,390
+is you're trying to predict, what kind of computer is it?
+
+687
+00:32:02,390 --> 00:32:03,878
+And is it from Amazon or eBay?
+
+688
+00:32:03,878 --> 00:32:05,670
+And then this is where it gets adversarial.
+
+689
+00:32:05,670 --> 00:32:08,570
+What they do is they flip the gradient
+
+690
+00:32:08,570 --> 00:32:10,890
+from the domain predictor.
+
+691
+00:32:10,890 --> 00:32:12,450
+So you're essentially trying to train
+
+692
+00:32:12,450 --> 00:32:14,770
+the model to be as good as possible
+
+693
+00:32:14,770 --> 00:32:18,530
+at predicting the category, while being as bad as possible
+
+694
+00:32:18,530 --> 00:32:21,370
+at predicting the domain, which tries to force, essentially,
+
+695
+00:32:21,370 --> 00:32:25,515
+the representations across the two domains to align.
+
+696
+00:32:25,515 --> 00:32:26,890
+And then the interesting thing is
+
+697
+00:32:26,890 --> 00:32:30,250
+you can extend this to where you might not actually
+
+698
+00:32:30,250 --> 00:32:35,070
+have category data for the source and the target.
+
+699
+00:32:35,070 --> 00:32:38,130
+So maybe you had a bunch of category data for the source,
+
+700
+00:32:38,130 --> 00:32:40,050
+and now, all you have for the target domain
+
+701
+00:32:40,050 --> 00:32:42,250
+is just the knowledge of what domain it came from.
+
+702
+00:32:42,250 --> 00:32:44,490
+You can think about trying to still
+
+703
+00:32:44,490 --> 00:32:47,130
+keep really good at predicting the category,
+
+704
+00:32:47,130 --> 00:32:50,050
+but be really bad at predicting which domain it's from.
+
+705
+00:32:50,050 --> 00:32:52,450
+And the hope is that there, even if you only
+
+706
+00:32:52,450 --> 00:32:55,710
+have a very limited amount of labeled data in your target,
+
+707
+00:32:55,710 --> 00:32:57,690
+or even sometimes none, you might still
+
+708
+00:32:57,690 --> 00:32:59,130
+be able to learn something useful
+
+709
+00:32:59,130 --> 00:33:01,490
+that helps you find the right categories in that target
+
+710
+00:33:01,490 --> 00:33:03,610
+domain.
+
+711
+00:33:03,610 --> 00:33:05,570
+And then this is kind of expanded
+
+712
+00:33:05,570 --> 00:33:08,410
+into this whole area of unsupervised domain adaptation,
+
+713
+00:33:08,410 --> 00:33:12,010
+where here the idea is you might have data, but no labels
+
+714
+00:33:12,010 --> 00:33:13,970
+from the target domain.
+
+715
+00:33:13,970 --> 00:33:16,250
+So now, it's like you want to make a model that's
+
+716
+00:33:16,250 --> 00:33:19,210
+as good as possible on some set of data,
+
+717
+00:33:19,210 --> 00:33:22,370
+but you don't necessarily have any training labels.
+
+718
+00:33:22,370 --> 00:33:23,750
+Now, why would we have that?
+
+719
+00:33:23,750 --> 00:33:28,050
+So here's an example, actually from our own research,
+
+720
+00:33:28,050 --> 00:33:29,948
+where we have a bunch of labeled source data.
+
+721
+00:33:29,948 --> 00:33:31,490
+In this case, the labeled source data
+
+722
+00:33:31,490 --> 00:33:36,178
+is sonar images or sonar video from rivers with fish.
+
+723
+00:33:36,178 --> 00:33:37,970
+And we're trying to count all the fish that
+
+724
+00:33:37,970 --> 00:33:40,512
+are swimming upstream so we can make good sustainable fishing
+
+725
+00:33:40,512 --> 00:33:41,650
+policies.
+
+726
+00:33:41,650 --> 00:33:46,490
+And we have some rivers where we have a bunch of labeled data,
+
+727
+00:33:46,490 --> 00:33:49,092
+but we want this to work on any river.
+
+728
+00:33:49,092 --> 00:33:51,050
+Or if something changes about the river or they
+
+729
+00:33:51,050 --> 00:33:52,800
+move the sensor, we want it to still work,
+
+730
+00:33:52,800 --> 00:33:54,930
+even though there's that distribution shift.
+
+731
+00:33:54,930 --> 00:33:56,650
+And so here, what we're trying to do
+
+732
+00:33:56,650 --> 00:34:00,190
+is learn from labeled source data and unlabeled target data
+
+733
+00:34:00,190 --> 00:34:02,890
+how get a model to work better on the target.
+
+734
+00:34:02,890 --> 00:34:04,670
+So how have people done this in the past?
+
+735
+00:34:04,670 --> 00:34:08,679
+Well, so the very, very simple version of this would be,
+
+736
+00:34:08,679 --> 00:34:10,719
+you take your target data set, you run it
+
+737
+00:34:10,719 --> 00:34:13,199
+through a model that's been pretained on source,
+
+738
+00:34:13,199 --> 00:34:15,020
+and then you maybe just calibrate it.
+
+739
+00:34:15,020 --> 00:34:16,770
+You pick some threshold where you say, OK.
+
+740
+00:34:16,770 --> 00:34:20,679
+Any prediction over this, we're going to treat as ground truth.
+
+741
+00:34:20,679 --> 00:34:25,040
+So that's one way to transfer knowledge.
+
+742
+00:34:25,040 --> 00:34:27,880
+You just use a model from a different domain
+
+743
+00:34:27,880 --> 00:34:29,000
+and hope it works.
+
+744
+00:34:29,000 --> 00:34:31,920
+It turns out it doesn't usually work very well.
+
+745
+00:34:31,920 --> 00:34:34,639
+So this kind of motivated this idea-- and this
+
+746
+00:34:34,639 --> 00:34:37,239
+is a mechanism to do distillation, which we'll talk
+
+747
+00:34:37,239 --> 00:34:39,480
+about a little bit more later.
+
+748
+00:34:39,480 --> 00:34:43,880
+But what if, instead, we make a new model, that we're
+
+749
+00:34:43,880 --> 00:34:45,639
+going to call a student model, and we're
+
+750
+00:34:45,639 --> 00:34:47,800
+going to use those predictions on the target
+
+751
+00:34:47,800 --> 00:34:50,315
+data as weak supervision?
+
+752
+00:34:50,315 --> 00:34:52,440
+So we'll use the predictions that our model trained
+
+753
+00:34:52,440 --> 00:34:55,120
+on the source data gives, and then we'll
+
+754
+00:34:55,120 --> 00:34:59,120
+try to train a model to predict the same thing.
+
+755
+00:34:59,120 --> 00:35:01,280
+And the idea here is that maybe your student model
+
+756
+00:35:01,280 --> 00:35:03,680
+is able to learned something useful
+
+757
+00:35:03,680 --> 00:35:07,628
+that is better than just taking those raw predictions.
+
+758
+00:35:07,628 --> 00:35:08,420
+And this does work.
+
+759
+00:35:08,420 --> 00:35:11,360
+You get small gains, sometimes, over just the original source
+
+760
+00:35:11,360 --> 00:35:12,440
+predictions.
+
+761
+00:35:12,440 --> 00:35:14,360
+But this threshold is really, really
+
+762
+00:35:14,360 --> 00:35:17,400
+finicky and hard to calibrate, right?
+
+763
+00:35:17,400 --> 00:35:21,280
+So people started adding in other bells and whistles.
+
+764
+00:35:21,280 --> 00:35:24,860
+One thing is you use EMA, an Exponential Moving Average,
+
+765
+00:35:24,860 --> 00:35:27,720
+to try to regularize the way that the weights change
+
+766
+00:35:27,720 --> 00:35:29,640
+within the student and teacher model,
+
+767
+00:35:29,640 --> 00:35:34,080
+so you let the teacher model itself also update slower.
+
+768
+00:35:34,080 --> 00:35:37,240
+And then, finally, you can also introduce additional training
+
+769
+00:35:37,240 --> 00:35:38,600
+on the source data.
+
+770
+00:35:38,600 --> 00:35:41,280
+So there, maybe you're letting your student model
+
+771
+00:35:41,280 --> 00:35:44,460
+learn from the source data and from the target data.
+
+772
+00:35:44,460 --> 00:35:46,740
+And then you can add in a bunch of fancy stuff,
+
+773
+00:35:46,740 --> 00:35:49,840
+like instead of explicitly taking
+
+774
+00:35:49,840 --> 00:35:51,300
+the predictions with a threshold,
+
+775
+00:35:51,300 --> 00:35:52,740
+you can use a softmax.
+
+776
+00:35:52,740 --> 00:35:55,040
+You can use a distillation loss so that you're
+
+777
+00:35:55,040 --> 00:35:57,340
+learning to, instead of match the prediction,
+
+778
+00:35:57,340 --> 00:36:00,080
+match the distribution over the outputs.
+
+779
+00:36:00,080 --> 00:36:02,400
+And you can try to use some explicit feature
+
+780
+00:36:02,400 --> 00:36:04,180
+alignment between source and target,
+
+781
+00:36:04,180 --> 00:36:06,013
+so that's like basically trying to make sure
+
+782
+00:36:06,013 --> 00:36:08,720
+that the features are overlapping as much as possible.
+
+783
+00:36:08,720 --> 00:36:10,720
+Lots of fancy tricks here.
+
+784
+00:36:10,720 --> 00:36:13,400
+Kind of complicated.
+
+785
+00:36:13,400 --> 00:36:15,760
+We essentially wanted to point out
+
+786
+00:36:15,760 --> 00:36:18,520
+that these components are essentially
+
+787
+00:36:18,520 --> 00:36:20,040
+the main components that people use
+
+788
+00:36:20,040 --> 00:36:25,720
+to do this type of distribution, unsupervised domain adaptation.
+
+789
+00:36:25,720 --> 00:36:29,120
+And the point here is that basically every modern domain
+
+790
+00:36:29,120 --> 00:36:32,360
+adaptation architecture is some combination of these components.
+
+791
+00:36:32,360 --> 00:36:36,840
+And so if you can centralize and unify the ways
+
+792
+00:36:36,840 --> 00:36:40,520
+that people are actually doing these experiments, what we found
+
+793
+00:36:40,520 --> 00:36:43,080
+is that you can often be more optimal
+
+794
+00:36:43,080 --> 00:36:45,720
+than any previous approach.
+
+795
+00:36:45,720 --> 00:36:50,040
+And so these methods, many of them
+
+796
+00:36:50,040 --> 00:36:52,220
+can be quite effective in certain scenarios.
+
+797
+00:36:52,220 --> 00:36:55,980
+Of course, certain scenarios is a big interesting thing there.
+
+798
+00:36:55,980 --> 00:36:58,440
+They're almost never as effective as having labeled
+
+799
+00:36:58,440 --> 00:36:59,860
+data for your source domain.
+
+800
+00:36:59,860 --> 00:37:02,440
+So if you just have labels, that's better.
+
+801
+00:37:02,440 --> 00:37:04,080
+But if you don't have labels, you
+
+802
+00:37:04,080 --> 00:37:06,400
+can actually start to get pretty close to performance
+
+803
+00:37:06,400 --> 00:37:10,040
+if you do have labeled data if you
+
+804
+00:37:10,040 --> 00:37:12,460
+build these things carefully.
+
+805
+00:37:12,460 --> 00:37:15,020
+And some intuition as to why that way might be
+
+806
+00:37:15,020 --> 00:37:17,263
+is that, essentially, the model is
+
+807
+00:37:17,263 --> 00:37:19,680
+able to learn something about the statistics of the target
+
+808
+00:37:19,680 --> 00:37:21,920
+domain that's useful.
+
+809
+00:37:21,920 --> 00:37:24,200
+You're shifting the weights towards being
+
+810
+00:37:24,200 --> 00:37:26,520
+representative on those new statistics.
+
+811
+00:37:26,520 --> 00:37:27,520
+Yeah?
+
+812
+00:37:27,520 --> 00:37:31,160
+AUDIENCE: How can you measure how the performance of this
+
+813
+00:37:31,160 --> 00:37:32,360
+when deployed--
+
+814
+00:37:32,360 --> 00:37:35,200
+if you deploy it in a field that you actually
+
+815
+00:37:35,200 --> 00:37:38,000
+don't have the labels of anything,
+
+816
+00:37:38,000 --> 00:37:39,872
+how do you know your models did well?
+
+817
+00:37:39,872 --> 00:37:40,580
+SARA BEERY: Yeah.
+
+818
+00:37:40,580 --> 00:37:41,883
+This is a really great point.
+
+819
+00:37:41,883 --> 00:37:43,800
+I think it's actually the elephant in the room
+
+820
+00:37:43,800 --> 00:37:46,200
+for most of the domain adaptation literature
+
+821
+00:37:46,200 --> 00:37:48,760
+is that they almost always are demonstrating performance
+
+822
+00:37:48,760 --> 00:37:51,080
+in their bold number in their table
+
+823
+00:37:51,080 --> 00:37:54,640
+on labeled validation data for the target domain.
+
+824
+00:37:54,640 --> 00:37:56,340
+But this kind of begs the question,
+
+825
+00:37:56,340 --> 00:37:59,160
+if you have to label data to do model selection
+
+826
+00:37:59,160 --> 00:38:01,140
+and determine what mechanism works best,
+
+827
+00:38:01,140 --> 00:38:03,700
+why don't you just use that labeled data for training?
+
+828
+00:38:06,880 --> 00:38:07,380
+Yeah.
+
+829
+00:38:07,380 --> 00:38:11,420
+I mean, I think it's kind of one of these interesting questions.
+
+830
+00:38:11,420 --> 00:38:13,520
+And also, if you did have some training data,
+
+831
+00:38:13,520 --> 00:38:15,960
+how does that kind of fit into this system?
+
+832
+00:38:15,960 --> 00:38:20,120
+But yeah, I do think that in the literature in this space,
+
+833
+00:38:20,120 --> 00:38:23,945
+one of the big missing pieces is that you still
+
+834
+00:38:23,945 --> 00:38:26,320
+aren't very good at doing this if you don't have anything
+
+835
+00:38:26,320 --> 00:38:32,320
+to select the best model or calibrate it in any way at all.
+
+836
+00:38:32,320 --> 00:38:32,840
+Cool.
+
+837
+00:38:32,840 --> 00:38:33,640
+Yeah?
+
+838
+00:38:33,640 --> 00:38:35,600
+AUDIENCE: I guess following up on that, I mean,
+
+839
+00:38:35,600 --> 00:38:39,880
+isn't the point to reduce costs and time because you
+
+840
+00:38:39,880 --> 00:38:42,760
+can use bigger data sets that are available?
+
+841
+00:38:42,760 --> 00:38:47,020
+SARA BEERY: So reducing costs and time are is valuable here.
+
+842
+00:38:47,020 --> 00:38:49,040
+So maybe one dimension is you're trying
+
+843
+00:38:49,040 --> 00:38:51,920
+to reduce the amount of human input
+
+844
+00:38:51,920 --> 00:38:54,180
+you need to get a model to work well.
+
+845
+00:38:54,180 --> 00:38:56,320
+But I think probably a better motivated scenario
+
+846
+00:38:56,320 --> 00:38:59,150
+for a lot of these is places where we do not
+
+847
+00:38:59,150 --> 00:39:02,190
+have the right bandwidth to be able to actually get
+
+848
+00:39:02,190 --> 00:39:04,590
+the data to where a human could look at it easily.
+
+849
+00:39:04,590 --> 00:39:06,950
+So we use these domain adaptation models
+
+850
+00:39:06,950 --> 00:39:10,150
+on these rivers that are in the remote Arctic,
+
+851
+00:39:10,150 --> 00:39:14,090
+where the way for a human to get there is fly into Anchorage,
+
+852
+00:39:14,090 --> 00:39:17,110
+take a seaplane, hike.
+
+853
+00:39:17,110 --> 00:39:20,408
+It's just nontrivial to actually get to the sensor,
+
+854
+00:39:20,408 --> 00:39:22,950
+and we don't have the kind of satellite connectivity or power
+
+855
+00:39:22,950 --> 00:39:26,730
+that we would need to get the data to the cloud.
+
+856
+00:39:26,730 --> 00:39:29,270
+So if you have these strong resource constraints
+
+857
+00:39:29,270 --> 00:39:31,790
+on your system where you can't necessarily just have
+
+858
+00:39:31,790 --> 00:39:33,790
+a human easily label data, I think
+
+859
+00:39:33,790 --> 00:39:36,510
+that's where these types of models tend to make more sense.
+
+860
+00:39:36,510 --> 00:39:38,750
+Similarly, if you're-- I don't know--
+
+861
+00:39:38,750 --> 00:39:43,790
+doing navigation on the moon or deep sea, sometimes,
+
+862
+00:39:43,790 --> 00:39:46,270
+we just need models that hopefully can adapt
+
+863
+00:39:46,270 --> 00:39:47,570
+to a distribution.
+
+864
+00:39:47,570 --> 00:39:49,070
+But the problem is if you don't have
+
+865
+00:39:49,070 --> 00:39:51,670
+any kind of quality control going in,
+
+866
+00:39:51,670 --> 00:39:55,670
+anything like this that's kind of learning from data where we
+
+867
+00:39:55,670 --> 00:39:58,150
+don't have any of true labels, has
+
+868
+00:39:58,150 --> 00:40:00,070
+the potential, from a reinforcement learning
+
+869
+00:40:00,070 --> 00:40:03,715
+perspective, to veer off in some catastrophic way.
+
+870
+00:40:03,715 --> 00:40:05,590
+And so you can fall into these kind of cycles
+
+871
+00:40:05,590 --> 00:40:07,840
+where the model kind of gets worse and worse and worse
+
+872
+00:40:07,840 --> 00:40:09,612
+and worse.
+
+873
+00:40:09,612 --> 00:40:12,070
+And then the other question is, how much source data do you
+
+874
+00:40:12,070 --> 00:40:13,370
+still have to have access to?
+
+875
+00:40:13,370 --> 00:40:17,430
+So I think essentially, there's a lot of engineering components
+
+876
+00:40:17,430 --> 00:40:20,230
+to why you would want to do this and where it's actually
+
+877
+00:40:20,230 --> 00:40:24,330
+effective and what the value add is.
+
+878
+00:40:24,330 --> 00:40:24,830
+Yeah.
+
+879
+00:40:27,890 --> 00:40:32,210
+But I think there's also an interesting dimension here,
+
+880
+00:40:32,210 --> 00:40:36,310
+which is these types of domain adaptation approaches also
+
+881
+00:40:36,310 --> 00:40:39,870
+really benefit from the right starting point.
+
+882
+00:40:39,870 --> 00:40:42,270
+So you can almost think of this as a different mechanism
+
+883
+00:40:42,270 --> 00:40:45,150
+for fine-tuning, but the performance of these
+
+884
+00:40:45,150 --> 00:40:47,670
+is very, very heavily influenced by the performance
+
+885
+00:40:47,670 --> 00:40:49,270
+of the starting point model.
+
+886
+00:40:49,270 --> 00:40:50,950
+So it's almost complementary in terms
+
+887
+00:40:50,950 --> 00:40:54,270
+of trying to build the most generalizable model, the most
+
+888
+00:40:54,270 --> 00:40:56,390
+useful general representation.
+
+889
+00:40:56,390 --> 00:40:58,270
+And then this is maybe a mechanism
+
+890
+00:40:58,270 --> 00:41:00,830
+to fine-tune if you have a lot of data that doesn't have
+
+891
+00:41:00,830 --> 00:41:03,710
+labels, instead of maybe a little bit of data
+
+892
+00:41:03,710 --> 00:41:06,110
+that does have labels.
+
+893
+00:41:06,110 --> 00:41:07,430
+Cool.
+
+894
+00:41:07,430 --> 00:41:10,790
+So next, I'm going to talk a little bit about how
+
+895
+00:41:10,790 --> 00:41:13,310
+we might try to transfer information or knowledge
+
+896
+00:41:13,310 --> 00:41:16,830
+about the outputs of a model.
+
+897
+00:41:16,830 --> 00:41:20,550
+So if you recall before, we talked
+
+898
+00:41:20,550 --> 00:41:22,670
+about how you train a classifier with something
+
+899
+00:41:22,670 --> 00:41:24,910
+like cross entropy.
+
+900
+00:41:24,910 --> 00:41:27,910
+So here, we have some model.
+
+901
+00:41:27,910 --> 00:41:30,130
+We have an input, x.
+
+902
+00:41:30,130 --> 00:41:32,630
+We have some output, y, which is the ground
+
+903
+00:41:32,630 --> 00:41:34,750
+truth for that model-- or y is the output
+
+904
+00:41:34,750 --> 00:41:36,190
+prediction for that model.
+
+905
+00:41:36,190 --> 00:41:38,330
+So maybe there's a bunch of different categories,
+
+906
+00:41:38,330 --> 00:41:44,310
+and the one that has the largest prediction score or logit score
+
+907
+00:41:44,310 --> 00:41:45,560
+is cat.
+
+908
+00:41:45,560 --> 00:41:47,310
+And maybe, it's taken a softmax, actually,
+
+909
+00:41:47,310 --> 00:41:49,870
+because it's going from 0 to 1, so this is maybe
+
+910
+00:41:49,870 --> 00:41:51,350
+our prediction score.
+
+911
+00:41:51,350 --> 00:41:52,910
+And then the ground truth is going
+
+912
+00:41:52,910 --> 00:41:58,390
+to be some one hot encoded label, where we say, all right.
+
+913
+00:41:58,390 --> 00:42:01,550
+The true label for this input, x, is cat.
+
+914
+00:42:01,550 --> 00:42:04,070
+And then we use cross entropy loss
+
+915
+00:42:04,070 --> 00:42:08,110
+that basically tries to get our model
+
+916
+00:42:08,110 --> 00:42:10,390
+to predict a distribution that's as close as
+
+917
+00:42:10,390 --> 00:42:13,270
+possible to this ground truth distribution, which is just 1
+
+918
+00:42:13,270 --> 00:42:17,150
+for cat and 0 for everything else.
+
+919
+00:42:17,150 --> 00:42:19,190
+So you could argue that this is also kind
+
+920
+00:42:19,190 --> 00:42:21,870
+of a teacher and a student.
+
+921
+00:42:21,870 --> 00:42:27,030
+So here, the teacher is the difference between the ground
+
+922
+00:42:27,030 --> 00:42:31,070
+truth and our prediction, and the student is kind of the way
+
+923
+00:42:31,070 --> 00:42:33,350
+that we're capturing that distance.
+
+924
+00:42:33,350 --> 00:42:37,550
+And so the idea of knowledge distillation is essentially,
+
+925
+00:42:37,550 --> 00:42:41,630
+now, we have some big pretained model.
+
+926
+00:42:41,630 --> 00:42:43,770
+We're going to assume that model is fixed.
+
+927
+00:42:43,770 --> 00:42:47,510
+So we have this little lock on here, so it's a locked model.
+
+928
+00:42:47,510 --> 00:42:53,510
+And then we want to learn some student where-- so now, we
+
+929
+00:42:53,510 --> 00:42:57,710
+go from x to y teacher, and we have a model that
+
+930
+00:42:57,710 --> 00:43:00,150
+goes from x to y student.
+
+931
+00:43:00,150 --> 00:43:04,310
+And then the way that we try to get this model to distill
+
+932
+00:43:04,310 --> 00:43:09,190
+is we want the difference or the distance between the teacher
+
+933
+00:43:09,190 --> 00:43:12,230
+model's predictions and the student's model's predictions
+
+934
+00:43:12,230 --> 00:43:14,430
+to be as close as possible.
+
+935
+00:43:14,430 --> 00:43:18,070
+So now, maybe your teacher model has this distribution,
+
+936
+00:43:18,070 --> 00:43:20,170
+and maybe it's predicting that cat is quite high,
+
+937
+00:43:20,170 --> 00:43:22,253
+but it's also predicting that tiger is quite high.
+
+938
+00:43:22,253 --> 00:43:26,790
+So now, when we're actually training our student model,
+
+939
+00:43:26,790 --> 00:43:30,590
+we want it to similarly match that distribution.
+
+940
+00:43:30,590 --> 00:43:34,390
+Now, does anyone have any intuition as to why this might
+
+941
+00:43:34,390 --> 00:43:38,590
+be useful, why it might be useful to train a model
+
+942
+00:43:38,590 --> 00:43:40,910
+to match a distribution of predictions
+
+943
+00:43:40,910 --> 00:43:43,470
+as opposed to just a ground truth?
+
+944
+00:43:43,470 --> 00:43:44,350
+Yeah.
+
+945
+00:43:44,350 --> 00:43:47,362
+AUDIENCE: Maybe the new model is smaller and quicker.
+
+946
+00:43:47,362 --> 00:43:48,070
+SARA BEERY: Yeah.
+
+947
+00:43:48,070 --> 00:43:50,500
+So maybe it's a way to get a new model that's
+
+948
+00:43:50,500 --> 00:43:52,720
+smaller, can be more computationally efficient,
+
+949
+00:43:52,720 --> 00:43:55,860
+and can learn the same thing.
+
+950
+00:43:55,860 --> 00:43:58,700
+Anyone have any intuition about why actually it
+
+951
+00:43:58,700 --> 00:44:04,380
+might be valuable to match the distribution of the outputs?
+
+952
+00:44:04,380 --> 00:44:05,360
+Maybe someone new.
+
+953
+00:44:05,360 --> 00:44:06,900
+Yeah.
+
+954
+00:44:06,900 --> 00:44:09,100
+AUDIENCE: If there's a cat and a tiger [INAUDIBLE]
+
+955
+00:44:09,100 --> 00:44:10,440
+example are kind of similar.
+
+956
+00:44:10,440 --> 00:44:12,190
+SARA BEERY: Yeah, exactly.
+
+957
+00:44:12,190 --> 00:44:13,440
+AUDIENCE: [INAUDIBLE] animals.
+
+958
+00:44:13,440 --> 00:44:16,540
+Maybe a dog's more similar than the monkey.
+
+959
+00:44:16,540 --> 00:44:18,400
+[INAUDIBLE] a little bit to the dog.
+
+960
+00:44:18,400 --> 00:44:20,842
+It'll give it some more information.
+
+961
+00:44:20,842 --> 00:44:22,300
+SARA BEERY: Yeah, so that's exactly
+
+962
+00:44:22,300 --> 00:44:23,508
+the answer I was looking for.
+
+963
+00:44:23,508 --> 00:44:25,900
+It's giving the model some information
+
+964
+00:44:25,900 --> 00:44:28,260
+about the similarity.
+
+965
+00:44:28,260 --> 00:44:30,900
+So here, cats and tigers are maybe similar,
+
+966
+00:44:30,900 --> 00:44:33,740
+but it's not just the similarity of the category set,
+
+967
+00:44:33,740 --> 00:44:39,920
+it's the similarity of what's recognizable in a given input.
+
+968
+00:44:39,920 --> 00:44:44,420
+So if you have an image of a cat, but it's an orange cat,
+
+969
+00:44:44,420 --> 00:44:47,060
+and it's in tall grass, you could
+
+970
+00:44:47,060 --> 00:44:50,180
+see how a model would say, hey, that's pretty
+
+971
+00:44:50,180 --> 00:44:53,140
+similar to a lot of the data I've seen of tigers.
+
+972
+00:44:53,140 --> 00:44:55,780
+And so now, what you're teaching the model is not just,
+
+973
+00:44:55,780 --> 00:44:57,880
+this is a cat, you're teaching it,
+
+974
+00:44:57,880 --> 00:45:01,020
+this is a cat that looks a little bit like a tiger.
+
+975
+00:45:01,020 --> 00:45:03,300
+And that might actually be useful context
+
+976
+00:45:03,300 --> 00:45:06,660
+for a model in terms of learning more than just
+
+977
+00:45:06,660 --> 00:45:10,980
+a set of separable categories.
+
+978
+00:45:10,980 --> 00:45:16,500
+And so there's another kind of interesting point
+
+979
+00:45:16,500 --> 00:45:19,220
+here that I think is important to raise that's not just about
+
+980
+00:45:19,220 --> 00:45:25,220
+efficiency but is about the modern era of many closed source
+
+981
+00:45:25,220 --> 00:45:26,460
+models.
+
+982
+00:45:26,460 --> 00:45:30,260
+So if you have access to the outputs of a model,
+
+983
+00:45:30,260 --> 00:45:33,180
+its predictive scores, but not the model
+
+984
+00:45:33,180 --> 00:45:37,020
+itself, you could arguably learn a model
+
+985
+00:45:37,020 --> 00:45:40,527
+that can match the predictive scores of a given output.
+
+986
+00:45:40,527 --> 00:45:42,860
+And this is maybe one of the reasons that a lot of those
+
+987
+00:45:42,860 --> 00:45:44,460
+closed source models don't actually
+
+988
+00:45:44,460 --> 00:45:49,860
+give you output predictions over the whole category set.
+
+989
+00:45:49,860 --> 00:45:50,620
+Cool.
+
+990
+00:45:50,620 --> 00:45:53,020
+So now, you can essentially think
+
+991
+00:45:53,020 --> 00:45:55,080
+about doing standard cross entropy,
+
+992
+00:45:55,080 --> 00:45:58,460
+but instead of cross entropy being to that binary category,
+
+993
+00:45:58,460 --> 00:46:02,580
+it's just between the teacher and the student outputs.
+
+994
+00:46:02,580 --> 00:46:05,840
+And so exactly like what you said before--
+
+995
+00:46:05,840 --> 00:46:07,300
+you guys are great here--
+
+996
+00:46:07,300 --> 00:46:08,780
+the label you get for every input
+
+997
+00:46:08,780 --> 00:46:11,260
+might be more informative than just the ground truth
+
+998
+00:46:11,260 --> 00:46:14,420
+class, and so this soft target is telling you
+
+999
+00:46:14,420 --> 00:46:19,140
+something about the similarity and what things look like.
+
+1000
+00:46:19,140 --> 00:46:20,182
+So this is a fun example.
+
+1001
+00:46:20,182 --> 00:46:22,348
+It's not just saying this is a dog, but it's saying,
+
+1002
+00:46:22,348 --> 00:46:24,460
+this is a dog that looks a little bit like a cat,
+
+1003
+00:46:24,460 --> 00:46:26,720
+and it looks very different from a bear.
+
+1004
+00:46:26,720 --> 00:46:29,580
+And so maybe that's telling you oh, it's a small dog.
+
+1005
+00:46:29,580 --> 00:46:33,940
+It's-- I don't know-- one of those little yappy dogs.
+
+1006
+00:46:33,940 --> 00:46:36,640
+So this original introductory paper,
+
+1007
+00:46:36,640 --> 00:46:39,320
+which is one of Jeff Hinton's, shows
+
+1008
+00:46:39,320 --> 00:46:43,220
+that you might actually get lower training accuracy when
+
+1009
+00:46:43,220 --> 00:46:45,020
+training this way, but you end up
+
+1010
+00:46:45,020 --> 00:46:50,660
+getting higher test accuracy on this speech recognition task.
+
+1011
+00:46:50,660 --> 00:46:53,740
+And so the other interesting thing
+
+1012
+00:46:53,740 --> 00:46:56,500
+is if these soft targets have really high entropy,
+
+1013
+00:46:56,500 --> 00:46:58,860
+they're giving a lot more information per training case
+
+1014
+00:46:58,860 --> 00:46:59,960
+than hard targets.
+
+1015
+00:46:59,960 --> 00:47:02,192
+And they have a lot less variance in the gradient
+
+1016
+00:47:02,192 --> 00:47:03,900
+between training cases-- is another thing
+
+1017
+00:47:03,900 --> 00:47:05,500
+that they showed in this paper.
+
+1018
+00:47:05,500 --> 00:47:08,300
+And so a small model can often be
+
+1019
+00:47:08,300 --> 00:47:12,240
+trained on a lot less data than the original model
+
+1020
+00:47:12,240 --> 00:47:14,180
+while using a much higher learning rate
+
+1021
+00:47:14,180 --> 00:47:17,140
+when you're doing this type of distillation.
+
+1022
+00:47:17,140 --> 00:47:21,840
+But it's not just something you can use to make a smaller model.
+
+1023
+00:47:21,840 --> 00:47:24,140
+You can also think about learning from a distillation
+
+1024
+00:47:24,140 --> 00:47:26,620
+perspective across modalities.
+
+1025
+00:47:26,620 --> 00:47:29,660
+So here, maybe you have a teacher
+
+1026
+00:47:29,660 --> 00:47:34,960
+that learns to predict categories from an RGB image,
+
+1027
+00:47:34,960 --> 00:47:37,980
+and then you have a student that only has access to depth.
+
+1028
+00:47:37,980 --> 00:47:41,520
+So this might be useful if you have labeled data for RGB,
+
+1029
+00:47:41,520 --> 00:47:45,490
+but you don't necessarily have labeled data for depth.
+
+1030
+00:47:45,490 --> 00:47:50,250
+And so another example of this cross-modal distillation
+
+1031
+00:47:50,250 --> 00:47:53,530
+is this model called SoundNet where
+
+1032
+00:47:53,530 --> 00:47:59,090
+they have waveforms and unlabeled video,
+
+1033
+00:47:59,090 --> 00:48:02,370
+and then they essentially are doing object distributions
+
+1034
+00:48:02,370 --> 00:48:05,250
+and scene distributions, and then they're
+
+1035
+00:48:05,250 --> 00:48:08,370
+learning distillation across both.
+
+1036
+00:48:08,370 --> 00:48:10,290
+There's another interesting version
+
+1037
+00:48:10,290 --> 00:48:13,610
+of distillation from a computational complexity
+
+1038
+00:48:13,610 --> 00:48:16,570
+perspective where you can actually distill
+
+1039
+00:48:16,570 --> 00:48:18,150
+the results of an ensemble.
+
+1040
+00:48:18,150 --> 00:48:23,530
+So often, we find that, even in the modern era,
+
+1041
+00:48:23,530 --> 00:48:26,050
+ensembles over lots of models are often
+
+1042
+00:48:26,050 --> 00:48:29,970
+more predictive than any single model.
+
+1043
+00:48:29,970 --> 00:48:32,650
+One of the arguments for this is kind of a classical one, which
+
+1044
+00:48:32,650 --> 00:48:37,370
+is that every model is going to hopefully make
+
+1045
+00:48:37,370 --> 00:48:40,050
+the same correct answers more often than they
+
+1046
+00:48:40,050 --> 00:48:43,250
+make the same mistakes.
+
+1047
+00:48:43,250 --> 00:48:45,210
+And so here, what you can think about
+
+1048
+00:48:45,210 --> 00:48:47,090
+is maybe you have an ensemble that's really
+
+1049
+00:48:47,090 --> 00:48:50,042
+great ensemble, an ensemble of three different models,
+
+1050
+00:48:50,042 --> 00:48:51,750
+but they're all kind of expensive to run,
+
+1051
+00:48:51,750 --> 00:48:53,450
+and you don't really want to be running three models all
+
+1052
+00:48:53,450 --> 00:48:54,290
+the time.
+
+1053
+00:48:54,290 --> 00:48:57,370
+So you can think about explicitly taking
+
+1054
+00:48:57,370 --> 00:48:59,370
+that ensemble of model outputs and then
+
+1055
+00:48:59,370 --> 00:49:03,090
+trying to distill a model that matches the distribution
+
+1056
+00:49:03,090 --> 00:49:04,530
+of your ensemble.
+
+1057
+00:49:04,530 --> 00:49:06,450
+And again, each model is imperfect
+
+1058
+00:49:06,450 --> 00:49:08,050
+in different random ways.
+
+1059
+00:49:08,050 --> 00:49:10,300
+Errors cancel each other out, and the truth is shared.
+
+1060
+00:49:10,300 --> 00:49:11,717
+Of course, this isn't always true,
+
+1061
+00:49:11,717 --> 00:49:13,130
+because sometimes, we have biases
+
+1062
+00:49:13,130 --> 00:49:15,213
+in models that are learned from our data that will
+
+1063
+00:49:15,213 --> 00:49:16,810
+be consistent for every model.
+
+1064
+00:49:16,810 --> 00:49:18,810
+So the thing you're not going to get out of this
+
+1065
+00:49:18,810 --> 00:49:21,770
+is something that's really good at the types of corner cases
+
+1066
+00:49:21,770 --> 00:49:26,170
+that every single model in your ensemble gets incorrect.
+
+1067
+00:49:26,170 --> 00:49:30,890
+But it can be much more efficient.
+
+1068
+00:49:30,890 --> 00:49:32,250
+Cool.
+
+1069
+00:49:32,250 --> 00:49:35,530
+So what if you don't just want to distill the outputs,
+
+1070
+00:49:35,530 --> 00:49:37,650
+but you also want to capture and distill something
+
+1071
+00:49:37,650 --> 00:49:40,070
+about the knowledge of the representation itself?
+
+1072
+00:49:40,070 --> 00:49:43,390
+So you might want to, for example,
+
+1073
+00:49:43,390 --> 00:49:46,490
+match the embeddings at some intermediate point
+
+1074
+00:49:46,490 --> 00:49:49,650
+within your model using contrastive training.
+
+1075
+00:49:49,650 --> 00:49:53,390
+So as opposed to just matching the logits or the output scores,
+
+1076
+00:49:53,390 --> 00:49:57,530
+you can actually think about distillation specifically using
+
+1077
+00:49:57,530 --> 00:50:01,530
+contrastive learning but where you want to actually supervise
+
+1078
+00:50:01,530 --> 00:50:04,635
+embeddings internal to the model to be
+
+1079
+00:50:04,635 --> 00:50:06,010
+kind of invariant to some viewing
+
+1080
+00:50:06,010 --> 00:50:08,770
+transformation, for example.
+
+1081
+00:50:08,770 --> 00:50:10,770
+So that viewing transformation-- we
+
+1082
+00:50:10,770 --> 00:50:13,150
+talked about rotation invariance, et cetera, before--
+
+1083
+00:50:13,150 --> 00:50:15,050
+but another version of viewing transformation
+
+1084
+00:50:15,050 --> 00:50:18,370
+could be the different views of that representation
+
+1085
+00:50:18,370 --> 00:50:21,150
+from the teacher, which is a big network, versus the student,
+
+1086
+00:50:21,150 --> 00:50:22,430
+which is a small network.
+
+1087
+00:50:22,430 --> 00:50:22,930
+Yeah?
+
+1088
+00:50:22,930 --> 00:50:24,722
+AUDIENCE: So in practice, when you see this
+
+1089
+00:50:24,722 --> 00:50:26,850
+and what you were talking about earlier,
+
+1090
+00:50:26,850 --> 00:50:31,282
+how much smaller than the teacher is the student model?
+
+1091
+00:50:31,282 --> 00:50:31,990
+SARA BEERY: Yeah.
+
+1092
+00:50:31,990 --> 00:50:33,650
+That's an interesting question.
+
+1093
+00:50:33,650 --> 00:50:37,330
+In practice, how much smaller than the teacher is the student?
+
+1094
+00:50:37,330 --> 00:50:42,210
+So again, in my experience, it kind of depends on the data
+
+1095
+00:50:42,210 --> 00:50:44,810
+that you're trying to get the model to work well on
+
+1096
+00:50:44,810 --> 00:50:47,950
+and how complex it is, how complex the task is.
+
+1097
+00:50:47,950 --> 00:50:51,207
+So how small you can get a model to be and still be useful
+
+1098
+00:50:51,207 --> 00:50:53,290
+often is really directly related to the complexity
+
+1099
+00:50:53,290 --> 00:50:56,072
+of the information you're trying to model.
+
+1100
+00:50:56,072 --> 00:50:57,530
+And there's a lot of different ways
+
+1101
+00:50:57,530 --> 00:50:59,810
+that people try to get small models.
+
+1102
+00:50:59,810 --> 00:51:02,790
+If you want a machine learning model to work on your phone,
+
+1103
+00:51:02,790 --> 00:51:04,730
+it just has to be smaller.
+
+1104
+00:51:04,730 --> 00:51:06,670
+You're not going to put it on an H200--
+
+1105
+00:51:06,670 --> 00:51:10,330
+an H200 scale model on your phone.
+
+1106
+00:51:10,330 --> 00:51:13,190
+But so people use distillation to make small models,
+
+1107
+00:51:13,190 --> 00:51:15,850
+but they also have a lot of other mechanisms for getting
+
+1108
+00:51:15,850 --> 00:51:18,690
+models to be small, things like model compression
+
+1109
+00:51:18,690 --> 00:51:21,610
+or quantization, for example, that are doing things--
+
+1110
+00:51:21,610 --> 00:51:24,990
+or pruning, even just explicitly removing weights from a model--
+
+1111
+00:51:24,990 --> 00:51:26,990
+and trying to get the model to work pretty well.
+
+1112
+00:51:26,990 --> 00:51:30,090
+And then a lot of times, methods that work quite well in terms
+
+1113
+00:51:30,090 --> 00:51:32,090
+of getting really small models to be really good
+
+1114
+00:51:32,090 --> 00:51:34,770
+are some combination of all of the above.
+
+1115
+00:51:34,770 --> 00:51:40,530
+So do some pruning, maybe do some distillation, et cetera.
+
+1116
+00:51:40,530 --> 00:51:41,570
+Yeah.
+
+1117
+00:51:41,570 --> 00:51:43,690
+AUDIENCE: Is that basically related to how
+
+1118
+00:51:43,690 --> 00:51:49,250
+we see cloud Gemini that have different sizes of model--
+
+1119
+00:51:49,250 --> 00:51:53,530
+is that the result of the techniques you talk about?
+
+1120
+00:51:53,530 --> 00:51:56,690
+SARA BEERY: So you were asking about
+
+1121
+00:51:56,690 --> 00:51:59,603
+if you see these different sizes of models from some
+
+1122
+00:51:59,603 --> 00:52:00,770
+of these foundation models--
+
+1123
+00:52:00,770 --> 00:52:02,978
+for example, the Gemini model, or some of the OpenAI,
+
+1124
+00:52:02,978 --> 00:52:07,010
+like ChatGPT models-- why they have different sizes
+
+1125
+00:52:07,010 --> 00:52:09,370
+and whether it's actually using distillation
+
+1126
+00:52:09,370 --> 00:52:11,410
+versus just training those models from scratch
+
+1127
+00:52:11,410 --> 00:52:12,890
+at that size.
+
+1128
+00:52:12,890 --> 00:52:16,890
+They don't tell me their trade secrets, so I don't know.
+
+1129
+00:52:16,890 --> 00:52:18,450
+But I will say the reason that you
+
+1130
+00:52:18,450 --> 00:52:22,570
+see these different models put out versions that are small
+
+1131
+00:52:22,570 --> 00:52:25,370
+versus big is because they know that different downstream use
+
+1132
+00:52:25,370 --> 00:52:28,010
+cases will have access to different resources.
+
+1133
+00:52:28,010 --> 00:52:31,250
+Often, it's kind of like-- the big models are better
+
+1134
+00:52:31,250 --> 00:52:33,930
+than the small models, but you use the biggest model
+
+1135
+00:52:33,930 --> 00:52:37,540
+you can afford where afford might be a physical constraint,
+
+1136
+00:52:37,540 --> 00:52:42,960
+it might be a monetary constraint, speed.
+
+1137
+00:52:42,960 --> 00:52:44,560
+Cool.
+
+1138
+00:52:44,560 --> 00:52:45,300
+Anyway, cool.
+
+1139
+00:52:45,300 --> 00:52:48,380
+So here, instead of thinking about rotations or whatever,
+
+1140
+00:52:48,380 --> 00:52:50,040
+the two different views that we want
+
+1141
+00:52:50,040 --> 00:52:51,760
+to be similar in this contrastive way
+
+1142
+00:52:51,760 --> 00:52:54,400
+are maybe intermediate representations
+
+1143
+00:52:54,400 --> 00:52:56,680
+from two different models, and then the idea
+
+1144
+00:52:56,680 --> 00:53:00,400
+is that you try to get this student to output embeddings
+
+1145
+00:53:00,400 --> 00:53:02,840
+or output a representation for input data
+
+1146
+00:53:02,840 --> 00:53:06,280
+that's similar to the teacher's representation.
+
+1147
+00:53:06,280 --> 00:53:12,400
+And there's this cool thing that you can see in the logit space.
+
+1148
+00:53:12,400 --> 00:53:16,560
+So specifically, if you train these--
+
+1149
+00:53:16,560 --> 00:53:19,840
+do this representation distillation,
+
+1150
+00:53:19,840 --> 00:53:24,480
+and you look at the correlation coefficients between the class
+
+1151
+00:53:24,480 --> 00:53:27,800
+output logits-- so essentially, the student's logits minus
+
+1152
+00:53:27,800 --> 00:53:29,640
+the teacher's logits-- on CIFAR10,
+
+1153
+00:53:29,640 --> 00:53:32,280
+these hundred classes by hundred classes--
+
+1154
+00:53:32,280 --> 00:53:36,360
+you can see that you get this much, much cleaner behavior when
+
+1155
+00:53:36,360 --> 00:53:39,760
+you do this kind of contrastive representation
+
+1156
+00:53:39,760 --> 00:53:43,960
+distillation versus just doing standard knowledge distillation.
+
+1157
+00:53:43,960 --> 00:53:44,720
+Cool.
+
+1158
+00:53:44,720 --> 00:53:48,400
+So talking again about speed, compression versus distillation.
+
+1159
+00:53:48,400 --> 00:53:52,240
+So there are a lot of different mechanisms for trying
+
+1160
+00:53:52,240 --> 00:53:54,400
+to make models small.
+
+1161
+00:53:54,400 --> 00:53:56,360
+So both compression and distillation
+
+1162
+00:53:56,360 --> 00:53:59,200
+will give you smaller models with similar accuracy
+
+1163
+00:53:59,200 --> 00:54:01,240
+to large ones.
+
+1164
+00:54:01,240 --> 00:54:04,442
+Distillation will use SGD to train a smaller model
+
+1165
+00:54:04,442 --> 00:54:06,400
+to match the characteristics of a large one, so
+
+1166
+00:54:06,400 --> 00:54:07,920
+stochastic gradient descent.
+
+1167
+00:54:07,920 --> 00:54:12,520
+That process of training can be computationally expensive.
+
+1168
+00:54:12,520 --> 00:54:16,015
+Compression, using maybe pruning or quantization
+
+1169
+00:54:16,015 --> 00:54:17,640
+to try to reduce the computational cost
+
+1170
+00:54:17,640 --> 00:54:20,925
+of a large model, that can be much more efficient
+
+1171
+00:54:20,925 --> 00:54:22,300
+from a computational perspective.
+
+1172
+00:54:22,300 --> 00:54:25,280
+So sometimes, people want to use compression
+
+1173
+00:54:25,280 --> 00:54:28,280
+over distillation just because of the speed
+
+1174
+00:54:28,280 --> 00:54:32,120
+or the computational cost of training.
+
+1175
+00:54:32,120 --> 00:54:37,320
+So here is an example from a pretty classic work called
+
+1176
+00:54:37,320 --> 00:54:40,720
+optimal brain compression that's essentially doing
+
+1177
+00:54:40,720 --> 00:54:42,775
+both quantization and pruning.
+
+1178
+00:54:42,775 --> 00:54:44,400
+And here, they're kind of getting a bit
+
+1179
+00:54:44,400 --> 00:54:46,120
+of the best of both worlds.
+
+1180
+00:54:46,120 --> 00:54:50,440
+So pruning is super computationally efficient
+
+1181
+00:54:50,440 --> 00:54:53,400
+because you're just deleting stuff.
+
+1182
+00:54:53,400 --> 00:54:56,960
+Quantization can be a little bit more expensive
+
+1183
+00:54:56,960 --> 00:54:59,792
+and can also explicitly have some components that
+
+1184
+00:54:59,792 --> 00:55:02,000
+feel similar to distillation because you're basically
+
+1185
+00:55:02,000 --> 00:55:05,520
+trying to say, I want intermediate representations
+
+1186
+00:55:05,520 --> 00:55:07,840
+to be similar.
+
+1187
+00:55:07,840 --> 00:55:09,760
+And so here, they might come up with some
+
+1188
+00:55:09,760 --> 00:55:13,120
+of interesting combination of a mask
+
+1189
+00:55:13,120 --> 00:55:17,920
+where you're kind of getting efficient, global optimal
+
+1190
+00:55:17,920 --> 00:55:21,320
+compression in some way, but without it actually being
+
+1191
+00:55:21,320 --> 00:55:22,880
+computationally expensive.
+
+1192
+00:55:22,880 --> 00:55:25,820
+Why do you want compression that isn't computationally expensive?
+
+1193
+00:55:25,820 --> 00:55:29,200
+Again, because it's cool if you can actually directly compress
+
+1194
+00:55:29,200 --> 00:55:31,818
+a model on something like a device.
+
+1195
+00:55:31,818 --> 00:55:33,360
+So maybe you don't want to have to do
+
+1196
+00:55:33,360 --> 00:55:34,568
+the compression on the cloud.
+
+1197
+00:55:34,568 --> 00:55:37,640
+You actually need to do the compression on the edge.
+
+1198
+00:55:37,640 --> 00:55:41,040
+And then you can actually get things to be even smaller
+
+1199
+00:55:41,040 --> 00:55:45,040
+and maintain accuracy if you let them specialize
+
+1200
+00:55:45,040 --> 00:55:48,220
+to a specific distribution while you're compressing them.
+
+1201
+00:55:48,220 --> 00:55:50,485
+So maybe you have a large scale generalist model,
+
+1202
+00:55:50,485 --> 00:55:52,360
+and what you need is a small scale specialist
+
+1203
+00:55:52,360 --> 00:55:56,760
+model-- so for example, a model that only knows about sharks.
+
+1204
+00:55:56,760 --> 00:55:59,320
+We were able to show that you can really
+
+1205
+00:55:59,320 --> 00:56:03,740
+increase the quantization, the amount that you can remove,
+
+1206
+00:56:03,740 --> 00:56:06,240
+and maintain accuracy if you're letting the model specialize
+
+1207
+00:56:06,240 --> 00:56:06,920
+as well.
+
+1208
+00:56:06,920 --> 00:56:08,905
+And that seems pretty intuitive.
+
+1209
+00:56:08,905 --> 00:56:10,280
+If you don't need to keep as much
+
+1210
+00:56:10,280 --> 00:56:14,520
+of the original information, you can make the model much smaller.
+
+1211
+00:56:14,520 --> 00:56:16,160
+Cool.
+
+1212
+00:56:16,160 --> 00:56:23,200
+So towards the end, we're going to dig into foundation models.
+
+1213
+00:56:23,200 --> 00:56:27,040
+So foundation models is a term that
+
+1214
+00:56:27,040 --> 00:56:32,950
+was coined by the computer science department of Stanford.
+
+1215
+00:56:32,950 --> 00:56:35,950
+And essentially, it's just trying
+
+1216
+00:56:35,950 --> 00:56:41,910
+to make a semantic concept for this idea
+
+1217
+00:56:41,910 --> 00:56:47,070
+of really useful transfer learning models, the idea
+
+1218
+00:56:47,070 --> 00:56:51,230
+that you have some models that are so generally
+
+1219
+00:56:51,230 --> 00:56:55,990
+useful that they end up being really effective for a bunch
+
+1220
+00:56:55,990 --> 00:56:57,990
+of different downstream tasks.
+
+1221
+00:56:57,990 --> 00:57:03,630
+And I think you can put different foundation
+
+1222
+00:57:03,630 --> 00:57:06,430
+models in different buckets, I would say.
+
+1223
+00:57:06,430 --> 00:57:09,070
+There's some foundation models that are fundamentally
+
+1224
+00:57:09,070 --> 00:57:13,950
+representation learning models where then the question is,
+
+1225
+00:57:13,950 --> 00:57:17,150
+essentially, do you need to fine-tune at all
+
+1226
+00:57:17,150 --> 00:57:18,670
+to make the model useful?
+
+1227
+00:57:18,670 --> 00:57:22,750
+And I would say as foundation models become
+
+1228
+00:57:22,750 --> 00:57:28,270
+more and more general, you need to fine-tune them less and less,
+
+1229
+00:57:28,270 --> 00:57:32,550
+because maybe the set of things that you are interested in
+
+1230
+00:57:32,550 --> 00:57:35,310
+is more likely to be within the very, very
+
+1231
+00:57:35,310 --> 00:57:38,630
+broad distribution that's covered by that original model.
+
+1232
+00:57:38,630 --> 00:57:43,590
+And mostly, if a model doesn't need to be fine-tuned,
+
+1233
+00:57:43,590 --> 00:57:46,310
+it becomes more accessible.
+
+1234
+00:57:46,310 --> 00:57:50,430
+So this is kind of the power of something like ChatGPT
+
+1235
+00:57:50,430 --> 00:57:52,710
+or something like CLIP or something
+
+1236
+00:57:52,710 --> 00:57:57,250
+like some of these large scale foundational generative models,
+
+1237
+00:57:57,250 --> 00:57:59,470
+for example, like image generation,
+
+1238
+00:57:59,470 --> 00:58:02,510
+is that to be useful for any given end
+
+1239
+00:58:02,510 --> 00:58:04,870
+user for the vast majority of things
+
+1240
+00:58:04,870 --> 00:58:06,590
+that people are kind of interested in,
+
+1241
+00:58:06,590 --> 00:58:08,990
+they don't need to be retrained.
+
+1242
+00:58:08,990 --> 00:58:11,230
+They're kind of usable off the shelf.
+
+1243
+00:58:11,230 --> 00:58:13,630
+And maybe one way you could think about foundation models
+
+1244
+00:58:13,630 --> 00:58:16,390
+is like their use is directly related
+
+1245
+00:58:16,390 --> 00:58:20,830
+to what percent of the things people want to do,
+
+1246
+00:58:20,830 --> 00:58:23,270
+this model can do off the shelf without any
+
+1247
+00:58:23,270 --> 00:58:26,070
+of specialized training.
+
+1248
+00:58:26,070 --> 00:58:26,870
+Cool.
+
+1249
+00:58:26,870 --> 00:58:28,510
+And I like this quote.
+
+1250
+00:58:28,510 --> 00:58:32,572
+I think this either came from Phil or Bill.
+
+1251
+00:58:32,572 --> 00:58:35,030
+"If I have seen further, it is by standing on the shoulders
+
+1252
+00:58:35,030 --> 00:58:35,650
+of Giants."
+
+1253
+00:58:35,650 --> 00:58:37,670
+It's a quote by Newton.
+
+1254
+00:58:37,670 --> 00:58:41,310
+And this is a fun painting.
+
+1255
+00:58:41,310 --> 00:58:45,150
+Blind Orion Searching for the Rising Sun by Poussin.
+
+1256
+00:58:45,150 --> 00:58:49,110
+But I think the idea here is that the bigger the foundation,
+
+1257
+00:58:49,110 --> 00:58:54,950
+maybe the further up we get as a starting point.
+
+1258
+00:58:54,950 --> 00:58:59,230
+So what does this really mean?
+
+1259
+00:58:59,230 --> 00:59:02,430
+Well, so this is a plot from OpenAI,
+
+1260
+00:59:02,430 --> 00:59:04,790
+and it's only going up to 2018.
+
+1261
+00:59:04,790 --> 00:59:06,350
+I should get a newer version of this
+
+1262
+00:59:06,350 --> 00:59:10,430
+that captures how big these models have gotten since.
+
+1263
+00:59:10,430 --> 00:59:13,430
+But it's really just tracking the fact that--
+
+1264
+00:59:13,430 --> 00:59:14,930
+note that this is on a log scale,
+
+1265
+00:59:14,930 --> 00:59:17,110
+so we're really seeing exponential growth
+
+1266
+00:59:17,110 --> 00:59:20,110
+in the size of models over time.
+
+1267
+00:59:20,110 --> 00:59:22,950
+This is the amount of compute.
+
+1268
+00:59:22,950 --> 00:59:25,990
+So going from AlexNet to the AlphaGo model back in 2018 was
+
+1269
+00:59:25,990 --> 00:59:31,030
+a 300,000 times increase in compute.
+
+1270
+00:59:31,030 --> 00:59:32,830
+And now, some of the models we use
+
+1271
+00:59:32,830 --> 00:59:36,610
+are in the billions and trillions of parameters.
+
+1272
+00:59:36,610 --> 00:59:40,510
+So again, much, much more.
+
+1273
+00:59:40,510 --> 00:59:42,810
+And these models tend to be quite generalizable.
+
+1274
+00:59:42,810 --> 00:59:47,710
+These very large models are much more generally useful.
+
+1275
+00:59:47,710 --> 00:59:53,430
+I think there's some interesting kind of dimensions here.
+
+1276
+00:59:53,430 --> 00:59:57,150
+So one thing is if you look at just computing power usage over
+
+1277
+00:59:57,150 --> 00:59:59,950
+time-- so this one goes up to 2021--
+
+1278
+00:59:59,950 --> 01:00:03,910
+you can see that academia and even academia industry
+
+1279
+01:00:03,910 --> 01:00:06,350
+collaboration, that computational power
+
+1280
+01:00:06,350 --> 01:00:09,590
+use is staying about the same.
+
+1281
+01:00:09,590 --> 01:00:14,550
+But industry, that's starting to scale pretty significantly.
+
+1282
+01:00:14,550 --> 01:00:19,150
+So you could consider this a, who is building
+
+1283
+01:00:19,150 --> 01:00:20,730
+these bigger and bigger models?
+
+1284
+01:00:20,730 --> 01:00:24,790
+And definitely, I think industry is a--
+
+1285
+01:00:24,790 --> 01:00:29,070
+well, they're often the only people who can afford it.
+
+1286
+01:00:29,070 --> 01:00:33,270
+And I do just want to raise--
+
+1287
+01:00:33,270 --> 01:00:37,750
+because it's something that I feel really strongly about--
+
+1288
+01:00:37,750 --> 01:00:40,190
+that these foundation models aren't free.
+
+1289
+01:00:40,190 --> 01:00:43,350
+So they're definitely not free from the sense of--
+
+1290
+01:00:43,350 --> 01:00:47,350
+the companies are paying a ton in compute and in power
+
+1291
+01:00:47,350 --> 01:00:52,190
+and in water usage to be able to train them.
+
+1292
+01:00:52,190 --> 01:00:54,070
+Microsoft, I think, announced that they're
+
+1293
+01:00:54,070 --> 01:00:57,270
+spending $80 billion next year on compute.
+
+1294
+01:00:57,270 --> 01:01:00,270
+So that's a lot of money.
+
+1295
+01:01:00,270 --> 01:01:02,705
+That's not something that nonindustry is going
+
+1296
+01:01:02,705 --> 01:01:03,830
+to be able to keep up with.
+
+1297
+01:01:03,830 --> 01:01:05,310
+A lot of that is that Microsoft is actually
+
+1298
+01:01:05,310 --> 01:01:07,060
+the ones who are running a lot of the data
+
+1299
+01:01:07,060 --> 01:01:09,130
+centers that then other groups like OpenAI use.
+
+1300
+01:01:11,790 --> 01:01:13,670
+But these also have a cost for us
+
+1301
+01:01:13,670 --> 01:01:16,710
+as a society in terms of their climate cost.
+
+1302
+01:01:16,710 --> 01:01:19,980
+So this is from a paper that was looking at estimating the carbon
+
+1303
+01:01:19,980 --> 01:01:24,100
+footprint of one 176 billion parameter language
+
+1304
+01:01:24,100 --> 01:01:27,060
+model from Microsoft.
+
+1305
+01:01:27,060 --> 01:01:30,180
+And they were looking at the entire--
+
+1306
+01:01:30,180 --> 01:01:31,160
+they were saying, OK.
+
+1307
+01:01:31,160 --> 01:01:33,740
+If we go from the entire scope of the climate
+
+1308
+01:01:33,740 --> 01:01:37,180
+cost of this model, that would include things like raw material
+
+1309
+01:01:37,180 --> 01:01:40,340
+extraction, so mining, the manufacturing
+
+1310
+01:01:40,340 --> 01:01:44,800
+costs of the materials, the equipment manufacturing, model
+
+1311
+01:01:44,800 --> 01:01:48,340
+training, model deployment, and disposal and end
+
+1312
+01:01:48,340 --> 01:01:50,318
+of life of all of those hardware components--
+
+1313
+01:01:50,318 --> 01:01:51,860
+they were only focused on these three
+
+1314
+01:01:51,860 --> 01:01:53,940
+in the middle, so manufacturing, model training,
+
+1315
+01:01:53,940 --> 01:01:55,700
+and model deployment.
+
+1316
+01:01:55,700 --> 01:01:59,340
+And what they found was a huge factor, specifically
+
+1317
+01:01:59,340 --> 01:02:02,380
+in the power consumption and how that relates
+
+1318
+01:02:02,380 --> 01:02:06,100
+to carbon emissions, is the sustainability of the data
+
+1319
+01:02:06,100 --> 01:02:08,420
+centers' energy sources.
+
+1320
+01:02:08,420 --> 01:02:12,460
+So even much smaller models can have a much, much higher carbon
+
+1321
+01:02:12,460 --> 01:02:17,060
+emission if they're being trained on data centers that
+
+1322
+01:02:17,060 --> 01:02:19,500
+are not renewable power.
+
+1323
+01:02:19,500 --> 01:02:22,300
+And I actually think that one of the benefits
+
+1324
+01:02:22,300 --> 01:02:26,100
+of this compute boom has been the increased focus
+
+1325
+01:02:26,100 --> 01:02:28,340
+on renewable energy and sustainable
+
+1326
+01:02:28,340 --> 01:02:31,240
+power within data centers from these companies
+
+1327
+01:02:31,240 --> 01:02:35,400
+because it's really well motivated by their bottom line.
+
+1328
+01:02:35,400 --> 01:02:38,900
+They're paying a lot of money for this.
+
+1329
+01:02:38,900 --> 01:02:42,020
+But the climate cost of these emissions
+
+1330
+01:02:42,020 --> 01:02:43,860
+is something that they are not necessarily
+
+1331
+01:02:43,860 --> 01:02:45,040
+going to foot the bill for.
+
+1332
+01:02:45,040 --> 01:02:48,880
+And to put this into scale, I mean,
+
+1333
+01:02:48,880 --> 01:02:50,765
+I think power usage and electricity
+
+1334
+01:02:50,765 --> 01:02:52,140
+is one big dimension, but I think
+
+1335
+01:02:52,140 --> 01:02:55,020
+water use is another really important dimension.
+
+1336
+01:02:55,020 --> 01:02:57,540
+I think it was GPT-3--
+
+1337
+01:02:57,540 --> 01:03:00,740
+was trained mostly at data centers in the state of Iowa.
+
+1338
+01:03:00,740 --> 01:03:04,460
+And the water use in the state went up by 700%
+
+1339
+01:03:04,460 --> 01:03:06,900
+while they were training the models.
+
+1340
+01:03:06,900 --> 01:03:08,540
+I read an estimate recently that said
+
+1341
+01:03:08,540 --> 01:03:12,260
+that about 50 queries to ChatGPT is a bottle of water.
+
+1342
+01:03:12,260 --> 01:03:16,140
+And so if we think about, now, resource access globally,
+
+1343
+01:03:16,140 --> 01:03:20,460
+we already know that we are running out of water.
+
+1344
+01:03:20,460 --> 01:03:23,940
+And now, having these models-- and who
+
+1345
+01:03:23,940 --> 01:03:26,900
+is benefiting from them being successful?
+
+1346
+01:03:26,900 --> 01:03:30,180
+And then what that means about global society and access
+
+1347
+01:03:30,180 --> 01:03:35,020
+to really necessary resources like water is complicated.
+
+1348
+01:03:35,020 --> 01:03:36,460
+Yeah.
+
+1349
+01:03:36,460 --> 01:03:38,220
+AUDIENCE: Just for people who may
+
+1350
+01:03:38,220 --> 01:03:41,647
+be not aware, is the water consumption like--
+
+1351
+01:03:41,647 --> 01:03:42,480
+SARA BEERY: Cooling.
+
+1352
+01:03:42,480 --> 01:03:43,230
+AUDIENCE: Cooling.
+
+1353
+01:03:43,230 --> 01:03:44,930
+And then is that water-- let's say--
+
+1354
+01:03:44,930 --> 01:03:47,180
+I assume they're not using-- although maybe they are--
+
+1355
+01:03:47,180 --> 01:03:49,700
+potable water on the way in.
+
+1356
+01:03:49,700 --> 01:03:53,060
+Does it become unpotable when you use it for cooling?
+
+1357
+01:03:53,060 --> 01:03:56,120
+It sounds like it's bad.
+
+1358
+01:03:56,120 --> 01:03:58,235
+You're not getting the water back.
+
+1359
+01:03:58,235 --> 01:03:58,860
+SARA BEERY: No.
+
+1360
+01:03:58,860 --> 01:04:02,060
+Usually-- I mean, I think there's a lot of, actually,
+
+1361
+01:04:02,060 --> 01:04:04,940
+research now into, can we do this type of cooling
+
+1362
+01:04:04,940 --> 01:04:07,500
+with seawater, for example?
+
+1363
+01:04:07,500 --> 01:04:09,940
+Or what are the effects of running this water
+
+1364
+01:04:09,940 --> 01:04:14,740
+through these cooling systems on the portability of the water?
+
+1365
+01:04:14,740 --> 01:04:16,540
+I'm not going to speak to that because this
+
+1366
+01:04:16,540 --> 01:04:18,700
+is outside of the scope of my understanding
+
+1367
+01:04:18,700 --> 01:04:24,060
+of these mechanical engineering systems or thermal and hydro.
+
+1368
+01:04:24,060 --> 01:04:28,300
+But I will say, I think that there's a booming cottage
+
+1369
+01:04:28,300 --> 01:04:30,020
+industry of researchers who are trying
+
+1370
+01:04:30,020 --> 01:04:34,020
+to figure out how to make data centers less climate intensive.
+
+1371
+01:04:34,020 --> 01:04:35,900
+But I'm also sure that all of you
+
+1372
+01:04:35,900 --> 01:04:40,780
+know that we are vastly outstripping our capacity
+
+1373
+01:04:40,780 --> 01:04:43,900
+in terms of things like power.
+
+1374
+01:04:43,900 --> 01:04:46,220
+It's been very big in the news that Google
+
+1375
+01:04:46,220 --> 01:04:47,740
+is considering reopening Three Mile
+
+1376
+01:04:47,740 --> 01:04:49,820
+Island to power data centers.
+
+1377
+01:04:49,820 --> 01:04:53,020
+So we're thinking about moving back to nuclear power
+
+1378
+01:04:53,020 --> 01:04:56,660
+just to keep up with the AI hunger of this.
+
+1379
+01:04:56,660 --> 01:05:02,420
+And from an ethical dimension, it does get complicated,
+
+1380
+01:05:02,420 --> 01:05:11,380
+because the scale of resources being used versus who actually
+
+1381
+01:05:11,380 --> 01:05:14,220
+is benefiting is a bit messy.
+
+1382
+01:05:14,220 --> 01:05:16,900
+And I think a lot of groups or a lot of companies
+
+1383
+01:05:16,900 --> 01:05:20,540
+would have you believe that these foundation models are
+
+1384
+01:05:20,540 --> 01:05:23,820
+so beneficial to society that it's necessary.
+
+1385
+01:05:23,820 --> 01:05:28,660
+But I am less clear on that.
+
+1386
+01:05:28,660 --> 01:05:31,180
+And one of the things that I want--
+
+1387
+01:05:31,180 --> 01:05:38,900
+I want the option for a climate friendly search to come back.
+
+1388
+01:05:38,900 --> 01:05:41,148
+I don't want Google to run AI models every time
+
+1389
+01:05:41,148 --> 01:05:42,440
+I'm trying to Google something.
+
+1390
+01:05:42,440 --> 01:05:43,940
+I don't really need the description.
+
+1391
+01:05:43,940 --> 01:05:46,220
+I would love to have an opt in that says no, I
+
+1392
+01:05:46,220 --> 01:05:47,485
+want to go back to MapReduce.
+
+1393
+01:05:47,485 --> 01:05:49,360
+That was much less computationally expensive.
+
+1394
+01:05:49,360 --> 01:05:51,180
+Can you please give me the dumber search
+
+1395
+01:05:51,180 --> 01:05:53,010
+that's more climate friendly?
+
+1396
+01:05:53,010 --> 01:05:54,760
+So I've been talking to people about that.
+
+1397
+01:05:54,760 --> 01:05:57,020
+Maybe we'll start to see it.
+
+1398
+01:05:57,020 --> 01:05:58,100
+Yeah.
+
+1399
+01:05:58,100 --> 01:06:01,020
+AUDIENCE: Is there any-- on that same kind of line--
+
+1400
+01:06:01,020 --> 01:06:05,700
+any kind of research on how much time, like a compute time,
+
+1401
+01:06:05,700 --> 01:06:08,780
+[INAUDIBLE]?
+
+1402
+01:06:08,780 --> 01:06:11,970
+When I use Google, I have to google 10 things
+
+1403
+01:06:11,970 --> 01:06:13,330
+before I get the answer.
+
+1404
+01:06:13,330 --> 01:06:18,410
+But ChatGPT, I ask it once, and it gives me all the information.
+
+1405
+01:06:18,410 --> 01:06:21,210
+SARA BEERY: So the question is basically
+
+1406
+01:06:21,210 --> 01:06:23,930
+the time versus computational trade
+
+1407
+01:06:23,930 --> 01:06:30,370
+off if you query ChatGPT once versus Google
+
+1408
+01:06:30,370 --> 01:06:32,450
+searching 10 different things.
+
+1409
+01:06:32,450 --> 01:06:34,410
+I don't know.
+
+1410
+01:06:34,410 --> 01:06:34,910
+Yeah.
+
+1411
+01:06:34,910 --> 01:06:35,452
+I don't know.
+
+1412
+01:06:35,452 --> 01:06:41,090
+I think it depends also on how these things are architectured
+
+1413
+01:06:41,090 --> 01:06:45,770
+in terms of things like global similarity search.
+
+1414
+01:06:45,770 --> 01:06:48,490
+It also is, how good are you at using Google?
+
+1415
+01:06:51,530 --> 01:06:53,650
+Yeah.
+
+1416
+01:06:53,650 --> 01:06:55,730
+The thing I would really love to see
+
+1417
+01:06:55,730 --> 01:06:58,610
+is more transparency about all of this
+
+1418
+01:06:58,610 --> 01:07:00,250
+from the side of companies.
+
+1419
+01:07:00,250 --> 01:07:02,730
+What actually is the computational cost relative
+
+1420
+01:07:02,730 --> 01:07:04,410
+of these different things?
+
+1421
+01:07:04,410 --> 01:07:06,710
+And a lot of companies are looking at, for example,
+
+1422
+01:07:06,710 --> 01:07:10,650
+making use of these different sizes of models
+
+1423
+01:07:10,650 --> 01:07:14,290
+and getting really creative about routing queries
+
+1424
+01:07:14,290 --> 01:07:17,783
+to the less expensive models instead of the bigger ones,
+
+1425
+01:07:17,783 --> 01:07:18,950
+unless they're more complex.
+
+1426
+01:07:18,950 --> 01:07:21,770
+How do you be efficient with it?
+
+1427
+01:07:21,770 --> 01:07:23,690
+But yeah, I think--
+
+1428
+01:07:23,690 --> 01:07:24,570
+yeah.
+
+1429
+01:07:24,570 --> 01:07:29,190
+I think there's a lot of room to improve still.
+
+1430
+01:07:29,190 --> 01:07:29,690
+Cool.
+
+1431
+01:07:29,690 --> 01:07:31,710
+So what does it take to train one of these models?
+
+1432
+01:07:31,710 --> 01:07:33,150
+These are, again, a little bit out of date.
+
+1433
+01:07:33,150 --> 01:07:34,590
+We have much bigger models now.
+
+1434
+01:07:34,590 --> 01:07:37,990
+But Dalle-2 required 650 million training examples,
+
+1435
+01:07:37,990 --> 01:07:39,890
+semi-curated text to image pairs.
+
+1436
+01:07:39,890 --> 01:07:44,650
+GPT-3 cost estimated around $4.6 million to train once.
+
+1437
+01:07:44,650 --> 01:07:46,450
+I'm sure you guys can imagine that we
+
+1438
+01:07:46,450 --> 01:07:47,970
+don't train these models once.
+
+1439
+01:07:47,970 --> 01:07:50,070
+We have to do some hyperparameter searching.
+
+1440
+01:07:50,070 --> 01:07:53,610
+There's like some differences in comparison.
+
+1441
+01:07:53,610 --> 01:07:55,710
+The PaLM model had 67 authors.
+
+1442
+01:07:55,710 --> 01:07:58,390
+That's 67 engineers working on this.
+
+1443
+01:07:58,390 --> 01:08:01,050
+The numbers are increasing.
+
+1444
+01:08:01,050 --> 01:08:06,010
+But the argument, I guess, is these numbers
+
+1445
+01:08:06,010 --> 01:08:07,730
+might be small if we think of the result
+
+1446
+01:08:07,730 --> 01:08:09,570
+as foundational infrastructure.
+
+1447
+01:08:09,570 --> 01:08:11,930
+So if you compare this maybe to the cost of building
+
+1448
+01:08:11,930 --> 01:08:16,390
+an interstate highway system, or the cost of developing OS X,
+
+1449
+01:08:16,390 --> 01:08:17,890
+maybe there's different ways that we
+
+1450
+01:08:17,890 --> 01:08:20,710
+should be thinking about what the cost is
+
+1451
+01:08:20,710 --> 01:08:23,550
+if this is going to be fundamentally infrastructure
+
+1452
+01:08:23,550 --> 01:08:27,090
+that is foundational.
+
+1453
+01:08:27,090 --> 01:08:31,210
+And one of the motivations for that perspective is that if we
+
+1454
+01:08:31,210 --> 01:08:37,149
+look at scaling, as you go up in these different sizes of models,
+
+1455
+01:08:37,149 --> 01:08:40,830
+and you look at the number of model parameters,
+
+1456
+01:08:40,830 --> 01:08:44,450
+and you look at some metric of performance on a bunch
+
+1457
+01:08:44,450 --> 01:08:47,529
+of different tasks-- so 58 different tasks--
+
+1458
+01:08:47,529 --> 01:08:49,850
+what you start to see is that you really
+
+1459
+01:08:49,850 --> 01:08:53,810
+don't start to see model performance get significantly
+
+1460
+01:08:53,810 --> 01:08:56,752
+better, where maybe it's, quote, unquote,
+
+1461
+01:08:56,752 --> 01:08:58,210
+working as well as an average human
+
+1462
+01:08:58,210 --> 01:09:01,290
+on some set of these tasks, until you have
+
+1463
+01:09:01,290 --> 01:09:04,850
+much, much larger model sizes.
+
+1464
+01:09:04,850 --> 01:09:06,950
+My argument would be, OK.
+
+1465
+01:09:06,950 --> 01:09:08,609
+Now, let's do research into efficiency
+
+1466
+01:09:08,609 --> 01:09:10,662
+to get these back down.
+
+1467
+01:09:10,662 --> 01:09:12,370
+So what does that actually mean if you're
+
+1468
+01:09:12,370 --> 01:09:13,750
+thinking about learning foundation models?
+
+1469
+01:09:13,750 --> 01:09:15,229
+So one, you have tons of data.
+
+1470
+01:09:15,229 --> 01:09:16,510
+You have some learner.
+
+1471
+01:09:16,510 --> 01:09:18,677
+And then you're generating all these different types
+
+1472
+01:09:18,677 --> 01:09:23,170
+of models that, in many cases, are kind of ready to use.
+
+1473
+01:09:23,170 --> 01:09:27,569
+So now, you want to use or adapt those foundations
+
+1474
+01:09:27,569 --> 01:09:30,810
+with little or no data to solve new problems.
+
+1475
+01:09:30,810 --> 01:09:33,729
+So you now might have some adapter, which
+
+1476
+01:09:33,729 --> 01:09:35,753
+maybe could be something like an AI agent,
+
+1477
+01:09:35,753 --> 01:09:38,170
+or it could just be something that's quite simple, where--
+
+1478
+01:09:38,170 --> 01:09:38,670
+OK.
+
+1479
+01:09:38,670 --> 01:09:39,870
+We just pull in CLIP.
+
+1480
+01:09:39,870 --> 01:09:41,189
+We have little to no data.
+
+1481
+01:09:41,189 --> 01:09:43,569
+You use your adapter, and you generate some app.
+
+1482
+01:09:43,569 --> 01:09:49,330
+And I would argue that this is a lot of the most recent set
+
+1483
+01:09:49,330 --> 01:09:52,890
+of startups in Silicon Valley have been some version of this,
+
+1484
+01:09:52,890 --> 01:09:55,298
+this "just ask" mentality, where it's like, OK.
+
+1485
+01:09:55,298 --> 01:09:57,090
+We take one of these large language models,
+
+1486
+01:09:57,090 --> 01:09:58,923
+and then we come up with a really clever way
+
+1487
+01:09:58,923 --> 01:10:01,610
+to ask it to do stuff for us.
+
+1488
+01:10:01,610 --> 01:10:04,450
+And it's not really machine learning anymore.
+
+1489
+01:10:04,450 --> 01:10:07,680
+It then turns into this kind of new paradigm of research
+
+1490
+01:10:07,680 --> 01:10:10,960
+that people call prompt engineering.
+
+1491
+01:10:10,960 --> 01:10:12,380
+So what does this maybe look like?
+
+1492
+01:10:12,380 --> 01:10:15,480
+So here, you have something like GPT-3
+
+1493
+01:10:15,480 --> 01:10:16,980
+at a very, very surface level.
+
+1494
+01:10:16,980 --> 01:10:20,060
+It's trained autoregressively to predict the next character,
+
+1495
+01:10:20,060 --> 01:10:23,520
+so colorless green ideas sleep, furiously.
+
+1496
+01:10:23,520 --> 01:10:26,400
+So now, the adapter, again, becomes this idea
+
+1497
+01:10:26,400 --> 01:10:27,580
+of prompt engineering.
+
+1498
+01:10:27,580 --> 01:10:29,080
+So you say, OK.
+
+1499
+01:10:29,080 --> 01:10:30,180
+Here's a review.
+
+1500
+01:10:30,180 --> 01:10:32,820
+Now, you tell it to fill in the blanks.
+
+1501
+01:10:32,820 --> 01:10:35,160
+The sentiment in this review is blank.
+
+1502
+01:10:35,160 --> 01:10:37,500
+And it will fill in the blanks and tell you positive.
+
+1503
+01:10:37,500 --> 01:10:41,280
+And I'm sure many of us have played with the capabilities
+
+1504
+01:10:41,280 --> 01:10:42,280
+of these models.
+
+1505
+01:10:42,280 --> 01:10:43,560
+They are shockingly good.
+
+1506
+01:10:43,560 --> 01:10:45,280
+They get better all the time.
+
+1507
+01:10:45,280 --> 01:10:47,080
+You can ask it dumb stuff like, what
+
+1508
+01:10:47,080 --> 01:10:49,320
+are the top 10 dishes at a specific restaurant
+
+1509
+01:10:49,320 --> 01:10:50,400
+in Cambridge?
+
+1510
+01:10:50,400 --> 01:10:52,520
+And it will give you a list of dishes
+
+1511
+01:10:52,520 --> 01:10:55,460
+and rank them based on who knows what?
+
+1512
+01:10:58,200 --> 01:11:00,920
+If you say, OK.
+
+1513
+01:11:00,920 --> 01:11:04,920
+Here's a list of primary numbers, and ask it to continue,
+
+1514
+01:11:04,920 --> 01:11:07,743
+it will continue that list of primary numbers.
+
+1515
+01:11:07,743 --> 01:11:09,160
+This is where it gets interesting,
+
+1516
+01:11:09,160 --> 01:11:10,760
+because depending on who you talk to,
+
+1517
+01:11:10,760 --> 01:11:14,120
+it's either learning complex patterns
+
+1518
+01:11:14,120 --> 01:11:16,960
+and learning to mathematically reproduce them,
+
+1519
+01:11:16,960 --> 01:11:18,940
+or it's learning to do pattern matching.
+
+1520
+01:11:18,940 --> 01:11:20,980
+It's essentially just a kernel machine,
+
+1521
+01:11:20,980 --> 01:11:23,520
+and you've just given it everything
+
+1522
+01:11:23,520 --> 01:11:24,960
+it's potentially ever going to see
+
+1523
+01:11:24,960 --> 01:11:28,040
+in terms of its training data.
+
+1524
+01:11:28,040 --> 01:11:30,120
+And you can also think about what people
+
+1525
+01:11:30,120 --> 01:11:32,240
+call in-context learning.
+
+1526
+01:11:32,240 --> 01:11:36,310
+So here, that kind of outer loop,
+
+1527
+01:11:36,310 --> 01:11:38,560
+which is like learning via stochastic gradient descent
+
+1528
+01:11:38,560 --> 01:11:41,960
+during supervised pretaining, then the inner loop is just
+
+1529
+01:11:41,960 --> 01:11:44,880
+this in-context learning where you essentially say,
+
+1530
+01:11:44,880 --> 01:11:48,720
+here's some examples of what I'd like you to do, and then
+
+1531
+01:11:48,720 --> 01:11:52,440
+ask it to continue to do them.
+
+1532
+01:11:52,440 --> 01:11:55,900
+And this kind of starts to feel flavored, like meta-learning,
+
+1533
+01:11:55,900 --> 01:11:58,760
+which we'll talk about a bit more on Tuesday.
+
+1534
+01:11:58,760 --> 01:12:01,240
+And you can also think about its ability to extrapolate.
+
+1535
+01:12:01,240 --> 01:12:05,200
+So here, you show a bunch of elephants that are counting up,
+
+1536
+01:12:05,200 --> 01:12:06,580
+its icons, or whatever.
+
+1537
+01:12:06,580 --> 01:12:08,240
+And then you ask it, OK.
+
+1538
+01:12:08,240 --> 01:12:14,160
+Starting with these four cases, count, and it will do so.
+
+1539
+01:12:14,160 --> 01:12:17,360
+Or it can do things like translate
+
+1540
+01:12:17,360 --> 01:12:21,280
+and translate just from a few examples of English and Spanish.
+
+1541
+01:12:21,280 --> 01:12:24,340
+But again, what is the model actually doing under the hood?
+
+1542
+01:12:24,340 --> 01:12:27,160
+Is it learning something, or is it
+
+1543
+01:12:27,160 --> 01:12:28,600
+finding the right kind of pattern
+
+1544
+01:12:28,600 --> 01:12:30,920
+to match within its training data?
+
+1545
+01:12:30,920 --> 01:12:33,160
+So what does it actually do?
+
+1546
+01:12:33,160 --> 01:12:36,480
+How do we actually do good prompting?
+
+1547
+01:12:36,480 --> 01:12:39,360
+It turns out that handcrafting good prompts can
+
+1548
+01:12:39,360 --> 01:12:41,120
+be really tricky, and these models
+
+1549
+01:12:41,120 --> 01:12:44,400
+are incredibly brittle to prompting.
+
+1550
+01:12:44,400 --> 01:12:53,400
+So you can give it a different template and ask it very simple
+
+1551
+01:12:53,400 --> 01:12:54,400
+things.
+
+1552
+01:12:54,400 --> 01:12:55,920
+And the behavior of the system will
+
+1553
+01:12:55,920 --> 01:13:02,760
+be really sensitive to how the question is asked.
+
+1554
+01:13:02,760 --> 01:13:04,837
+And there's a funny--
+
+1555
+01:13:04,837 --> 01:13:06,920
+someone said that it was a little bit like working
+
+1556
+01:13:06,920 --> 01:13:09,520
+with a genie in a lamp.
+
+1557
+01:13:09,520 --> 01:13:12,660
+You're like, if you asked the genie for no pain on Earth,
+
+1558
+01:13:12,660 --> 01:13:14,520
+it might kill everybody.
+
+1559
+01:13:14,520 --> 01:13:18,480
+You have to be very careful about doing
+
+1560
+01:13:18,480 --> 01:13:19,740
+this type of prompting.
+
+1561
+01:13:19,740 --> 01:13:21,680
+And then one of the things that people do
+
+1562
+01:13:21,680 --> 01:13:23,140
+is they think about ensembling.
+
+1563
+01:13:23,140 --> 01:13:25,700
+OK, we'll prompt the model with a bunch of different things,
+
+1564
+01:13:25,700 --> 01:13:27,367
+and then we'll ensemble the predictions.
+
+1565
+01:13:27,367 --> 01:13:31,240
+Of course, that's really computationally expensive.
+
+1566
+01:13:31,240 --> 01:13:33,000
+So there's a bunch of research now into,
+
+1567
+01:13:33,000 --> 01:13:36,960
+how do we actually prompt these foundation models effectively?
+
+1568
+01:13:36,960 --> 01:13:40,720
+One is this idea of soft prompting, which basically looks
+
+1569
+01:13:40,720 --> 01:13:45,840
+at trying to optimize some of small continuous task-specific
+
+1570
+01:13:45,840 --> 01:13:50,280
+vector, like encoding, while the language or the model parameters
+
+1571
+01:13:50,280 --> 01:13:51,260
+are frozen.
+
+1572
+01:13:51,260 --> 01:13:54,240
+So here, it's like you have some objective.
+
+1573
+01:13:54,240 --> 01:13:57,705
+It's now kind of back to the normal learning framework,
+
+1574
+01:13:57,705 --> 01:13:59,080
+but we're essentially just trying
+
+1575
+01:13:59,080 --> 01:14:03,920
+to find the optimal words to use as the input to the model.
+
+1576
+01:14:03,920 --> 01:14:07,000
+And so this paper specifically looks at fine-tuning
+
+1577
+01:14:07,000 --> 01:14:10,640
+these input embeddings, these little specializer tokens,
+
+1578
+01:14:10,640 --> 01:14:12,740
+that get prepended to your input task,
+
+1579
+01:14:12,740 --> 01:14:15,360
+and then they help you optimize the result
+
+1580
+01:14:15,360 --> 01:14:16,760
+for some task at hand.
+
+1581
+01:14:16,760 --> 01:14:18,840
+So the tokens might be somewhat gibberish,
+
+1582
+01:14:18,840 --> 01:14:20,372
+but they're really good at finding
+
+1583
+01:14:20,372 --> 01:14:22,080
+the place in the distribution, or helping
+
+1584
+01:14:22,080 --> 01:14:24,620
+the model do that pattern matching
+
+1585
+01:14:24,620 --> 01:14:28,800
+so that it gets you close to something that's effective.
+
+1586
+01:14:28,800 --> 01:14:35,680
+There's also this idea of standard prompting, which
+
+1587
+01:14:35,680 --> 01:14:38,448
+is like, here's a question and an answer,
+
+1588
+01:14:38,448 --> 01:14:39,740
+and then here's a new question.
+
+1589
+01:14:39,740 --> 01:14:41,480
+And then you ask the model to answer.
+
+1590
+01:14:41,480 --> 01:14:44,200
+And then what chain-of-thought prompting does
+
+1591
+01:14:44,200 --> 01:14:47,680
+is it essentially demonstrates an answer that
+
+1592
+01:14:47,680 --> 01:14:49,440
+has reasoning in it.
+
+1593
+01:14:49,440 --> 01:14:51,780
+So you basically tell the model that when you answer,
+
+1594
+01:14:51,780 --> 01:14:54,880
+you want it to answer with logic,
+
+1595
+01:14:54,880 --> 01:14:57,000
+and it's more likely that it will give you
+
+1596
+01:14:57,000 --> 01:14:58,450
+an answer that has some logic.
+
+1597
+01:14:58,450 --> 01:15:00,590
+And then it's been shown that the answer is
+
+1598
+01:15:00,590 --> 01:15:02,110
+more likely to be right.
+
+1599
+01:15:02,110 --> 01:15:05,430
+There's also really dumb stuff you can do, which is like, OK,
+
+1600
+01:15:05,430 --> 01:15:06,770
+you are very smart.
+
+1601
+01:15:06,770 --> 01:15:09,070
+And then ask it a question.
+
+1602
+01:15:09,070 --> 01:15:11,290
+Tell the model, you're a scientist.
+
+1603
+01:15:11,290 --> 01:15:14,403
+Now, tell me-- which is really funny.
+
+1604
+01:15:14,403 --> 01:15:17,070
+And it's one of the reasons that people start anthropomorphizing
+
+1605
+01:15:17,070 --> 01:15:17,630
+these things.
+
+1606
+01:15:17,630 --> 01:15:20,950
+It's like, why do you need to give it compliments?
+
+1607
+01:15:20,950 --> 01:15:23,910
+But actually, I think it's really
+
+1608
+01:15:23,910 --> 01:15:26,223
+about finding the right part of the distribution.
+
+1609
+01:15:26,223 --> 01:15:28,390
+You want to find the part of the distribution that's
+
+1610
+01:15:28,390 --> 01:15:32,190
+learned from text, that's maybe from scientists, and maybe more
+
+1611
+01:15:32,190 --> 01:15:33,610
+likely to be correct.
+
+1612
+01:15:33,610 --> 01:15:35,610
+Anyway, this type of chain-of-thought prompting,
+
+1613
+01:15:35,610 --> 01:15:39,270
+we're telling it how to answer, was
+
+1614
+01:15:39,270 --> 01:15:45,090
+shown to be better using than standard prompting by a lot
+
+1615
+01:15:45,090 --> 01:15:47,110
+and better than the prior best on these types
+
+1616
+01:15:47,110 --> 01:15:50,390
+of math word problems.
+
+1617
+01:15:50,390 --> 01:15:54,310
+And then CLIP is also a foundation model.
+
+1618
+01:15:54,310 --> 01:15:55,790
+And so this is contrastive learning
+
+1619
+01:15:55,790 --> 01:15:58,870
+where you're learning semantic similarity between text
+
+1620
+01:15:58,870 --> 01:15:59,930
+and images.
+
+1621
+01:15:59,930 --> 01:16:01,430
+And so one thing you could do is you
+
+1622
+01:16:01,430 --> 01:16:04,410
+could treat this CLIP model as a representation learning model.
+
+1623
+01:16:04,410 --> 01:16:08,110
+So the adapter could be a linear classifier built
+
+1624
+01:16:08,110 --> 01:16:09,530
+on top of this image encodings.
+
+1625
+01:16:09,530 --> 01:16:12,810
+And they have shown that you can do that.
+
+1626
+01:16:12,810 --> 01:16:16,230
+So this is the number of labeled images per category.
+
+1627
+01:16:16,230 --> 01:16:20,150
+But you can also think of it as an adapter where, now, you
+
+1628
+01:16:20,150 --> 01:16:21,710
+just ask.
+
+1629
+01:16:21,710 --> 01:16:26,190
+So instead of saying, let's do some fine-tuning
+
+1630
+01:16:26,190 --> 01:16:31,470
+over the set of categories I care about, you can just say,
+
+1631
+01:16:31,470 --> 01:16:36,070
+find me the text that is most similar to this image that's
+
+1632
+01:16:36,070 --> 01:16:38,290
+of the form a photo of a-- whatever.
+
+1633
+01:16:38,290 --> 01:16:44,990
+And this is where this stuff gets really weird.
+
+1634
+01:16:44,990 --> 01:16:50,230
+Because if you say, OK, you have the text embedding of a photo
+
+1635
+01:16:50,230 --> 01:16:54,710
+of a dog versus the text embedding of photo of dog,
+
+1636
+01:16:54,710 --> 01:16:57,230
+those will be different enough that it will massively change
+
+1637
+01:16:57,230 --> 01:16:59,870
+the performance of this kind of zero-shot "just ask"
+
+1638
+01:16:59,870 --> 01:17:02,070
+categorization on CLIP.
+
+1639
+01:17:02,070 --> 01:17:06,270
+So they are very, very brittle.
+
+1640
+01:17:06,270 --> 01:17:09,750
+But you can also now think about, OK.
+
+1641
+01:17:09,750 --> 01:17:11,657
+I'm going to encode a sketch of a banana,
+
+1642
+01:17:11,657 --> 01:17:13,490
+and I'm going to encode a photo of a banana.
+
+1643
+01:17:13,490 --> 01:17:14,850
+And I'm going to show it this.
+
+1644
+01:17:14,850 --> 01:17:16,350
+And I'm going to say, which one has
+
+1645
+01:17:16,350 --> 01:17:20,070
+the closest cosine similarity in that joint text image embedding
+
+1646
+01:17:20,070 --> 01:17:20,770
+space?
+
+1647
+01:17:20,770 --> 01:17:23,690
+And that will tell me which one it matches more closely.
+
+1648
+01:17:23,690 --> 01:17:26,830
+So this is more like a sketch of a banana
+
+1649
+01:17:26,830 --> 01:17:29,630
+than it is like a photo of banana.
+
+1650
+01:17:29,630 --> 01:17:31,270
+One of the interesting things--
+
+1651
+01:17:31,270 --> 01:17:34,790
+we've been working on some of this text-based query
+
+1652
+01:17:34,790 --> 01:17:37,370
+for large image databases for iNaturalist,
+
+1653
+01:17:37,370 --> 01:17:40,950
+which is a really large photo repository of species data.
+
+1654
+01:17:40,950 --> 01:17:46,650
+And these CLIP models are very good at simple concepts,
+
+1655
+01:17:46,650 --> 01:17:49,350
+but they're really bad at composition.
+
+1656
+01:17:49,350 --> 01:17:53,490
+So they're good at ors, and they're bad at ands,
+
+1657
+01:17:53,490 --> 01:17:54,527
+if that makes sense.
+
+1658
+01:17:54,527 --> 01:17:56,110
+And one of the reasons for that is you
+
+1659
+01:17:56,110 --> 01:17:58,190
+can think of these encodings as almost a bit
+
+1660
+01:17:58,190 --> 01:17:59,670
+like a bag of words.
+
+1661
+01:17:59,670 --> 01:18:05,110
+So if you say, I want to find photos of a juvenile bald eagle,
+
+1662
+01:18:05,110 --> 01:18:07,030
+it will find photos of juvenile things
+
+1663
+01:18:07,030 --> 01:18:08,690
+and photos of bald eagles.
+
+1664
+01:18:08,690 --> 01:18:11,350
+But it's not necessarily going to prioritize photos that
+
+1665
+01:18:11,350 --> 01:18:14,190
+are juvenile and bald eagle.
+
+1666
+01:18:14,190 --> 01:18:15,830
+So that type of compositional querying
+
+1667
+01:18:15,830 --> 01:18:17,790
+is a whole other area of research
+
+1668
+01:18:17,790 --> 01:18:20,470
+trying to make these models better at compositions.
+
+1669
+01:18:20,470 --> 01:18:23,390
+And there was a really fun paper in the last year or so
+
+1670
+01:18:23,390 --> 01:18:25,750
+that was teaching CLIP to say no.
+
+1671
+01:18:25,750 --> 01:18:27,550
+This is also really bad at-- if I
+
+1672
+01:18:27,550 --> 01:18:30,030
+say not a photo of a bald eagle, it
+
+1673
+01:18:30,030 --> 01:18:32,090
+would just find a bunch of photos of bald eagles.
+
+1674
+01:18:32,090 --> 01:18:34,090
+It's bad at the negation.
+
+1675
+01:18:34,090 --> 01:18:34,590
+Cool.
+
+1676
+01:18:34,590 --> 01:18:37,630
+So can you think about prompting in other modalities, too,
+
+1677
+01:18:37,630 --> 01:18:38,890
+which is actually kind of fun.
+
+1678
+01:18:38,890 --> 01:18:40,790
+It's just a bit of a psychological trick.
+
+1679
+01:18:40,790 --> 01:18:43,710
+So here's this idea of CLIP prompting.
+
+1680
+01:18:43,710 --> 01:18:46,268
+So instead of modifying the text encoder, saying, OK,
+
+1681
+01:18:46,268 --> 01:18:48,310
+here's some different possible text descriptions,
+
+1682
+01:18:48,310 --> 01:18:51,670
+like finding matches, you can also
+
+1683
+01:18:51,670 --> 01:18:53,990
+look at mechanisms to modify the image
+
+1684
+01:18:53,990 --> 01:18:56,455
+encoder with a visual prompt.
+
+1685
+01:18:56,455 --> 01:18:57,830
+So here, this is an example where
+
+1686
+01:18:57,830 --> 01:19:01,310
+they've learned this optimal kind of border thing
+
+1687
+01:19:01,310 --> 01:19:03,670
+that they put on the image.
+
+1688
+01:19:03,670 --> 01:19:06,537
+And it's kind of similar to adversarial noise.
+
+1689
+01:19:06,537 --> 01:19:08,370
+We learned about learning adversarial noise,
+
+1690
+01:19:08,370 --> 01:19:11,770
+but this is now like learning beneficial noise.
+
+1691
+01:19:11,770 --> 01:19:13,310
+It's like, what's the thing that you
+
+1692
+01:19:13,310 --> 01:19:16,150
+can add to your image that will maximize
+
+1693
+01:19:16,150 --> 01:19:20,270
+the likelihood that this CLIP model will properly
+
+1694
+01:19:20,270 --> 01:19:22,550
+map the correct category?
+
+1695
+01:19:22,550 --> 01:19:23,790
+Which is fascinating.
+
+1696
+01:19:23,790 --> 01:19:26,750
+So given a fixed model, you can learn from a data
+
+1697
+01:19:26,750 --> 01:19:28,397
+set, what can you add?
+
+1698
+01:19:28,397 --> 01:19:30,230
+What types of noise can you add to the image
+
+1699
+01:19:30,230 --> 01:19:31,710
+to actually make the model better
+
+1700
+01:19:31,710 --> 01:19:36,670
+at recognizing dogs versus other things?
+
+1701
+01:19:36,670 --> 01:19:38,910
+And this is noise that helps, no matter
+
+1702
+01:19:38,910 --> 01:19:42,710
+what the input image is, for some fixed data set, domain,
+
+1703
+01:19:42,710 --> 01:19:43,330
+or paradigm.
+
+1704
+01:19:43,330 --> 01:19:45,750
+So you have some training data, and you're basically
+
+1705
+01:19:45,750 --> 01:19:49,500
+finding some constrained set of noise
+
+1706
+01:19:49,500 --> 01:19:52,280
+where, if you add that noise to any image,
+
+1707
+01:19:52,280 --> 01:19:53,780
+it maximally improves the prediction
+
+1708
+01:19:53,780 --> 01:19:55,500
+for the correct class.
+
+1709
+01:19:55,500 --> 01:19:57,060
+Kind of trippy, right?
+
+1710
+01:19:57,060 --> 01:19:57,992
+It's cool.
+
+1711
+01:19:57,992 --> 01:19:59,700
+But really, what it's saying is something
+
+1712
+01:19:59,700 --> 01:20:04,860
+weird about the underlying statistics of the model itself.
+
+1713
+01:20:04,860 --> 01:20:10,213
+So here, it's almost like you're adversarially reprogramming
+
+1714
+01:20:10,213 --> 01:20:12,380
+the model, so you can also think about learning them
+
+1715
+01:20:12,380 --> 01:20:15,420
+in an adversarial way where it's like, you find this thing you
+
+1716
+01:20:15,420 --> 01:20:18,540
+can add to images that will make it maximally wrong in this CLIP
+
+1717
+01:20:18,540 --> 01:20:21,380
+embedding space.
+
+1718
+01:20:21,380 --> 01:20:24,380
+And this is a really weird version of this.
+
+1719
+01:20:24,380 --> 01:20:28,980
+So here, this was an experiment where they basically
+
+1720
+01:20:28,980 --> 01:20:31,300
+took a bunch of satellite imagery,
+
+1721
+01:20:31,300 --> 01:20:35,220
+and they found that adding a single bright pink pixel--
+
+1722
+01:20:35,220 --> 01:20:36,720
+I don't know if you guys can see it.
+
+1723
+01:20:36,720 --> 01:20:41,460
+It's up there, this one little pink pixel.
+
+1724
+01:20:41,460 --> 01:20:44,900
+They found that if they add a single pink pixel
+
+1725
+01:20:44,900 --> 01:20:48,100
+to every single satellite image in the same place,
+
+1726
+01:20:48,100 --> 01:20:49,880
+it improves performance by a lot.
+
+1727
+01:20:52,420 --> 01:20:57,420
+AUDIENCE: Is that-- I mean, did they check if, in the training
+
+1728
+01:20:57,420 --> 01:21:01,220
+data set for this model, it statistically was--
+
+1729
+01:21:01,220 --> 01:21:03,360
+I guess you're saying it's for every class.
+
+1730
+01:21:03,360 --> 01:21:05,100
+SARA BEERY: For every class.
+
+1731
+01:21:05,100 --> 01:21:08,720
+But I mean, if you have a fixed model and a fixed data set,
+
+1732
+01:21:08,720 --> 01:21:10,580
+then you can figure out, what is--
+
+1733
+01:21:10,580 --> 01:21:13,100
+in this particular constraint, I think they were saying,
+
+1734
+01:21:13,100 --> 01:21:15,620
+we want to add a single pixel-- we
+
+1735
+01:21:15,620 --> 01:21:18,740
+want to change a single pixel value to a specific color,
+
+1736
+01:21:18,740 --> 01:21:20,420
+find the optimal version.
+
+1737
+01:21:20,420 --> 01:21:25,620
+And weirdly, it gives a 3% boost in accuracy
+
+1738
+01:21:25,620 --> 01:21:27,460
+across all the categories.
+
+1739
+01:21:27,460 --> 01:21:28,020
+Anyway.
+
+1740
+01:21:28,020 --> 01:21:30,700
+So I think that this type of work--
+
+1741
+01:21:30,700 --> 01:21:32,557
+this is not saying the best thing
+
+1742
+01:21:32,557 --> 01:21:34,140
+to do to make these models work really
+
+1743
+01:21:34,140 --> 01:21:36,360
+well is do one of these weird tricks like this.
+
+1744
+01:21:36,360 --> 01:21:40,260
+I think it's more enlightening about what the heck
+
+1745
+01:21:40,260 --> 01:21:43,260
+these models are learning, how fragile and complex
+
+1746
+01:21:43,260 --> 01:21:47,020
+the statistical representations are.
+
+1747
+01:21:47,020 --> 01:21:49,460
+And you can think about this adaptation happening
+
+1748
+01:21:49,460 --> 01:21:52,220
+on the inputs, on the mapping, or on the outputs, this type
+
+1749
+01:21:52,220 --> 01:21:54,420
+of prompt-based adaptation.
+
+1750
+01:21:54,420 --> 01:21:57,860
+So you can take these pretained models,
+
+1751
+01:21:57,860 --> 01:21:59,740
+and you can do fine-tuning.
+
+1752
+01:21:59,740 --> 01:22:02,220
+You can take pretained models, and you can just
+
+1753
+01:22:02,220 --> 01:22:05,280
+learn some linear layer that does some reprojection.
+
+1754
+01:22:05,280 --> 01:22:07,020
+Or you can try and do this type of visual
+
+1755
+01:22:07,020 --> 01:22:10,460
+prompting where you're explicitly adding something
+
+1756
+01:22:10,460 --> 01:22:13,420
+to the top of an image, and then now, it's
+
+1757
+01:22:13,420 --> 01:22:15,700
+getting a better prediction.
+
+1758
+01:22:15,700 --> 01:22:18,260
+And there's a bunch of interesting stuff
+
+1759
+01:22:18,260 --> 01:22:21,380
+where people show that you can do this visual prompt tuning
+
+1760
+01:22:21,380 --> 01:22:25,380
+for these really large models that can be useful even when
+
+1761
+01:22:25,380 --> 01:22:28,280
+the model weights or the logits are not available.
+
+1762
+01:22:28,280 --> 01:22:29,820
+It's kind of like distillation.
+
+1763
+01:22:29,820 --> 01:22:31,385
+If you just add things to the input,
+
+1764
+01:22:31,385 --> 01:22:33,260
+see what the output is, you don't need access
+
+1765
+01:22:33,260 --> 01:22:36,700
+to the underlying model to find this type of visual prompting
+
+1766
+01:22:36,700 --> 01:22:38,880
+that's valuable.
+
+1767
+01:22:38,880 --> 01:22:40,380
+And then there's another fun version
+
+1768
+01:22:40,380 --> 01:22:46,380
+of this, which is like fill in the blank style tuning.
+
+1769
+01:22:46,380 --> 01:22:47,980
+So basically, these people figured out
+
+1770
+01:22:47,980 --> 01:22:54,700
+how to get an image foundation model to do segmentation
+
+1771
+01:22:54,700 --> 01:22:56,720
+via in-context prompting.
+
+1772
+01:22:56,720 --> 01:22:59,180
+So they made these little grids of images
+
+1773
+01:22:59,180 --> 01:23:02,180
+where they would show an image with an example
+
+1774
+01:23:02,180 --> 01:23:05,180
+of a segmentation mask for a class, and then another image,
+
+1775
+01:23:05,180 --> 01:23:07,720
+and then have this empty area.
+
+1776
+01:23:07,720 --> 01:23:10,180
+And then they would use an inpainting foundation model
+
+1777
+01:23:10,180 --> 01:23:14,780
+to get it to prompt you to do segmentation,
+
+1778
+01:23:14,780 --> 01:23:17,440
+even without being explicitly trained to do segmentation.
+
+1779
+01:23:17,440 --> 01:23:19,982
+And then they showed this for many different types of things.
+
+1780
+01:23:19,982 --> 01:23:22,140
+So edge detection, colorization, inpainting.
+
+1781
+01:23:22,140 --> 01:23:24,660
+You're essentially asking these models--
+
+1782
+01:23:24,660 --> 01:23:26,780
+you're prompting them with, here's
+
+1783
+01:23:26,780 --> 01:23:30,640
+an example of what I want with one case,
+
+1784
+01:23:30,640 --> 01:23:33,380
+and then it's just giving you the kind of correct label
+
+1785
+01:23:33,380 --> 01:23:37,700
+across a bunch of different possible downstream types
+
+1786
+01:23:37,700 --> 01:23:39,060
+of categories.
+
+1787
+01:23:39,060 --> 01:23:44,530
+So these foundation models really have a lot of capacity,
+
+1788
+01:23:44,530 --> 01:23:46,410
+and there's so many creative ways
+
+1789
+01:23:46,410 --> 01:23:48,570
+that we can try to harness that capacity that I
+
+1790
+01:23:48,570 --> 01:23:50,747
+think people have looked at.
+
+1791
+01:23:50,747 --> 01:23:52,330
+And there's some interesting resources
+
+1792
+01:23:52,330 --> 01:23:54,490
+if you guys are interested.
+
+1793
+01:23:54,490 --> 01:23:56,630
+So in the last minute-- sorry.
+
+1794
+01:23:56,630 --> 01:23:58,890
+We're kind of running late today.
+
+1795
+01:23:58,890 --> 01:24:00,730
+Combining foundation models.
+
+1796
+01:24:00,730 --> 01:24:04,070
+So you can learn foundation models and adapt them,
+
+1797
+01:24:04,070 --> 01:24:05,850
+but you can also think about taking
+
+1798
+01:24:05,850 --> 01:24:07,490
+these combinations of foundation models
+
+1799
+01:24:07,490 --> 01:24:08,865
+and building things that are kind
+
+1800
+01:24:08,865 --> 01:24:11,470
+of nonmodular on top of, again, these building blocks.
+
+1801
+01:24:11,470 --> 01:24:14,370
+So you want to do something that's text to image.
+
+1802
+01:24:14,370 --> 01:24:17,110
+You can take VQGAN and CLIP.
+
+1803
+01:24:17,110 --> 01:24:19,410
+You can plug pretained models together.
+
+1804
+01:24:19,410 --> 01:24:20,872
+I think we showed this early on.
+
+1805
+01:24:20,872 --> 01:24:22,330
+And so this is really just thinking
+
+1806
+01:24:22,330 --> 01:24:24,050
+about plugging these different image foundation
+
+1807
+01:24:24,050 --> 01:24:24,830
+models together.
+
+1808
+01:24:24,830 --> 01:24:26,670
+You have some image generator.
+
+1809
+01:24:26,670 --> 01:24:30,250
+You have a CLIP model that's got this similarity foundations
+
+1810
+01:24:30,250 --> 01:24:33,150
+and semantic meaning between text and images.
+
+1811
+01:24:33,150 --> 01:24:36,370
+And then you can do something optimize this little embedding
+
+1812
+01:24:36,370 --> 01:24:38,730
+vector, this latent space vector,
+
+1813
+01:24:38,730 --> 01:24:43,770
+to get an image that maximally matches that text prompt.
+
+1814
+01:24:43,770 --> 01:24:49,650
+And there's a bunch of recent work on this text-based image
+
+1815
+01:24:49,650 --> 01:24:51,930
+generation.
+
+1816
+01:24:51,930 --> 01:24:54,650
+And Dalle-2 is a good example of that, where, essentially, they
+
+1817
+01:24:54,650 --> 01:24:57,250
+have a CLIP objective, and then they also
+
+1818
+01:24:57,250 --> 01:25:00,410
+have this prior that helps them do decoding slightly more
+
+1819
+01:25:00,410 --> 01:25:01,690
+efficiently.
+
+1820
+01:25:01,690 --> 01:25:02,210
+Cool.
+
+1821
+01:25:02,210 --> 01:25:04,510
+So today, we talked about learning with little data,
+
+1822
+01:25:04,510 --> 01:25:08,450
+transferring knowledge, about the mapping, the outputs,
+
+1823
+01:25:08,450 --> 01:25:10,370
+and a bit about foundation models.
+
+1824
+01:25:10,370 --> 01:25:13,210
+We'll follow up on Tuesday.
+
+1825
+01:25:13,210 --> 01:25:19,200
+And don't be too sad, but think twice about ChatGPT.

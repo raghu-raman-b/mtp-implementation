@@ -1,0 +1,1107 @@
+1
+00:00:00,000 --> 00:00:28,250
+Right, so I want to talk to you about the interesting idea known as gradient boosting.
+
+2
+00:00:28,250 --> 00:00:52,880
+So all of you remember what boosting is about right. What is boosting? What is bagging? Boosting
+
+3
+00:00:54,880 --> 00:01:03,760
+yeah, so boosting is specifically a stage wise process where at every stage you try to boost
+
+4
+00:01:03,760 --> 00:01:10,000
+the classifier from the previous state says that the error is minimized right,
+
+5
+00:01:10,000 --> 00:01:13,270
+error is reduce not necessarily minimize, but the error is reduced right.
+
+6
+00:01:13,270 --> 00:01:18,160
+So that is a characteristic of boosting, so at every stage you have to look at the errors from
+
+7
+00:01:18,160 --> 00:01:22,750
+the previous stage and you are trying to reduce that right. So we looked at ADABOOST right,
+
+8
+00:01:22,750 --> 00:01:26,710
+one of the most popular boosting algorithms. And then I told you that ADABOOST uses
+
+9
+00:01:26,710 --> 00:01:34,240
+exponential loss and that it is related to the logistic loss, and so you can actually use the
+
+10
+00:01:34,240 --> 00:01:41,680
+logistic loss function and derive a boosting algorithm which is called logit boost right.
+
+11
+00:01:41,680 --> 00:01:47,290
+But it is very similar properties to ADABOOST, but ADABOOST is more popular especially from
+
+12
+00:01:47,290 --> 00:01:51,610
+analysis point of view and things like this, because it is not really nice properties okay.
+
+13
+00:01:51,610 --> 00:01:57,460
+There is yet another approach to boosting that is gaining a lot of currency recently it is called
+
+14
+00:01:57,460 --> 00:02:06,370
+a gradient boosting, at not well recently would mean in the last decade or so right, compared to
+
+15
+00:02:06,370 --> 00:02:12,310
+ADABOOST which is several decades old right. So sometimes they even call it gradient boosted
+
+16
+00:02:12,310 --> 00:02:20,320
+decision trees right, gradient boosted decision trees, because you use this
+
+17
+00:02:20,320 --> 00:02:27,850
+specifically in conjunction with trees right. And in fact in many applications now gradient
+
+18
+00:02:27,850 --> 00:02:34,960
+boosted trees are actually getting hard to beat right. And so, we just reintroduced
+
+19
+00:02:34,960 --> 00:02:56,920
+some notations that you might have forgotten right. So I is an identity function which is
+
+20
+00:02:56,920 --> 00:03:05,410
+1 if X belongs to Rj is 0 otherwise right. And so, this is summing over all regions so R1
+
+21
+00:03:05,410 --> 00:03:12,040
+to 2 RJ and gamma j is essentially the output I am going to produce if x lies in RG right,
+
+22
+00:03:12,040 --> 00:03:29,080
+this is the regression tree thinks. So what is my theta here it is all the RJ is the specification
+
+23
+00:03:29,080 --> 00:03:36,430
+of the RJ and the gamma j is for each of those region. So that is my theta. And typically we
+
+24
+00:03:36,430 --> 00:04:06,220
+pick some loss function if it is regression it is going to be squared loss and then right.
+
+25
+00:04:06,220 --> 00:04:11,290
+So I look at the loss incurred when the actual output is gamma I and the output I am giving
+
+26
+00:04:11,290 --> 00:04:16,990
+you is gamma J, so for all data points X that belong to a region RJ the output will be gamma J,
+
+27
+00:04:16,990 --> 00:04:20,140
+so this is essentially the loss there and sum this over all regions and this
+
+28
+00:04:20,140 --> 00:04:25,630
+is the recap, just recapping the decision trees for you right. And then we looked at greedy
+
+29
+00:04:25,630 --> 00:04:31,900
+methods for finding RJ right, and given an RJ we knew how to fit gamma J right, so given that
+
+30
+00:04:31,900 --> 00:04:37,660
+we looked at some greedy search methods right. So you can do, you can do boosting with trees also
+
+31
+00:04:37,660 --> 00:04:41,320
+just like you did boosting with other classifiers you can do boosting with trees right. So
+
+32
+00:05:11,050 --> 00:05:14,920
+I have M trees so essentially it is taken some of the output of all the
+
+33
+00:05:14,920 --> 00:05:19,660
+M trees that gives me my boosted tree right, remember that I mean this is
+
+34
+00:05:19,660 --> 00:05:27,340
+not a single tree okay it is now a forest, then I have a correction of
+
+35
+00:05:27,340 --> 00:05:32,080
+trees a collection of trees is a forest right. So it is actually a forest, so I basically do that
+
+36
+00:05:32,080 --> 00:06:26,620
+and the difference here is can people at the back see this right. So this is essentially when I find
+
+37
+00:06:26,620 --> 00:06:34,390
+the parameters for the mth tree right, so I am going to look at the classifier or the predictor
+
+38
+00:06:34,390 --> 00:06:41,980
+that is formed by the first M minus 1 trees right. And then I am going to find that tree okay,
+
+39
+00:06:41,980 --> 00:06:48,940
+whose output I will add to this predictor right and you search for computing the loss right.
+
+40
+00:06:48,940 --> 00:06:55,060
+So for every data point in my training data right I look at the way I look at the output produced by
+
+41
+00:06:55,060 --> 00:07:02,380
+the M minus 1 stage 3, I look at the value that is added by the mth tree so this is the output
+
+42
+00:07:02,380 --> 00:07:06,400
+produced by the mth tree I look at the value added by the mth tree to that right. And then I will
+
+43
+00:07:06,400 --> 00:07:14,650
+compute the loss function okay make sense yeah. So the basic area is that every point this is just
+
+44
+00:07:14,650 --> 00:07:19,690
+forward stage wise addition that we like whatever we did before introducing boosting right that is
+
+45
+00:07:19,690 --> 00:07:27,640
+exactly that. So now this becomes boosting because I am explicitly trying to figure out what the
+
+46
+00:07:27,640 --> 00:07:34,240
+residual error is from here okay, and trying to adjust for the residual error using my tree the
+
+47
+00:07:34,240 --> 00:07:40,120
+new tree I am learning right. So when will it be the residual error, when it is a regression
+
+48
+00:07:40,120 --> 00:07:48,010
+task and squared error is my metric right. So and the loss function is squared error right,
+
+49
+00:07:48,010 --> 00:07:52,780
+and I am so trying to solve the regression problem right, then essentially what I will
+
+50
+00:07:52,780 --> 00:07:58,600
+have to do here is take the residual error. So whatever the tree does not explain the M minus
+
+51
+00:07:58,600 --> 00:08:04,510
+1 stage tree whatever that does not explained, so that error I will have to explain using this
+
+52
+00:08:04,510 --> 00:08:10,090
+right. So if you think about what we are doing here, so you will first build one tree to predict
+
+53
+00:08:10,090 --> 00:08:15,370
+your output as best as possible right. The predictor function as best as possible
+
+54
+00:08:15,370 --> 00:08:19,810
+will build a tree, then what you will do is okay you will take the residual of that,
+
+55
+00:08:19,810 --> 00:08:26,050
+build another tree that predicts the residual as well as possible and add the output to this
+
+56
+00:08:26,050 --> 00:08:32,290
+okay. And then take the combined thing find the residual of that build the third tree which will
+
+57
+00:08:32,290 --> 00:08:38,650
+predict the residual and add it back to this and so on so forth, you just keep doing this right.
+
+58
+00:08:38,650 --> 00:08:43,450
+So that is essentially what boosting increase means, so you still not come to the gradient
+
+59
+00:08:43,450 --> 00:08:47,830
+boosting part okay. So finally it will look very similar to what I am telling you now,
+
+60
+00:08:47,830 --> 00:08:55,240
+but we have still not come to that part yet right. So as with regular decision tree
+
+61
+00:08:55,240 --> 00:09:02,680
+learning given the RJ's right finding the gamma J’s is easy given the RJ’s finding the gamma
+
+62
+00:09:02,680 --> 00:09:11,410
+J’s is easy right. But the problem is finding the RJ's in general it becomes a little tricky
+
+63
+00:09:11,410 --> 00:09:16,210
+finding the region's becomes a little tricky, because I have to take into account the other
+
+64
+00:09:16,210 --> 00:09:22,060
+tree's output also right, in general right. But I am talking about squared error it is very
+
+65
+00:09:22,060 --> 00:09:27,303
+easy, because things nicely decouple right when I am talking about squared error I do
+
+66
+00:09:27,302 --> 00:09:34,930
+not have to worry about FM-1 after I compute the residual right. The residual could have
+
+67
+00:09:34,930 --> 00:09:38,290
+been generated by any classifier any regress righty, it does not have I do not even have to
+
+68
+00:09:38,290 --> 00:09:43,510
+worry about the fact what generated the residual was actually a tree right, I do not have to worry
+
+69
+00:09:43,510 --> 00:09:48,160
+about it, all I need is just the residual. The residual then becomes any function right,
+
+70
+00:09:48,160 --> 00:09:54,340
+so with squared error boosting becomes just like learning a series of decision trees,
+
+71
+00:09:55,360 --> 00:09:58,600
+nothing special about it. But if you have other kinds of loss functions then we will
+
+72
+00:09:58,600 --> 00:10:10,380
+have to worry about how to accommodate it, but at least in this case of squared error loss
+
+73
+00:10:37,610 --> 00:10:41,000
+okay.
+
+74
+00:10:52,860 --> 00:11:09,570
+So that is essentially your target function right, and what will be the γ hat that you will need
+
+75
+00:11:09,570 --> 00:11:41,880
+just be the average residual error in the Jth region right. Any questions, so in fact there
+
+76
+00:11:41,880 --> 00:11:53,310
+is another case where it becomes simple which is essentially, so for two class problems and
+
+77
+00:12:05,780 --> 00:12:19,400
+exponential loss functions what you think we get, it becomes exactly the same as doing ADABOOST with
+
+78
+00:12:19,400 --> 00:12:26,750
+trees okay, the two class problems. But, so it turns out there are tricky
+
+79
+00:12:26,750 --> 00:12:30,560
+things here right, so if there is if it is a multi-class problem okay then things do not
+
+80
+00:12:30,560 --> 00:12:36,020
+decouple as nicely. So if you have two class problems and your loss function is exponential
+
+81
+00:12:36,020 --> 00:12:41,420
+loss okay you can show that this is essentially the same the computation that we are trying to
+
+82
+00:12:41,420 --> 00:12:45,830
+do here right that minimization everything that we are trying to do here essentially reduce to
+
+83
+00:12:45,830 --> 00:12:50,840
+the same solution that you get if you did the ADABOOST derivation on decision trees okay.
+
+84
+00:12:50,840 --> 00:12:56,750
+But these are the two cases where this thing simplifies that for example, if you are trying
+
+85
+00:12:56,750 --> 00:13:02,720
+to use deviance as a loss function then things do not decouple this easily okay. So these are
+
+86
+00:13:02,720 --> 00:13:18,550
+things that you have to keep in mind, so this is one part this is essentially telling you how to
+
+87
+00:13:18,550 --> 00:13:28,600
+do boosting with trees the regular way okay. So let us look at something else now, so I suppose
+
+88
+00:13:28,600 --> 00:13:42,280
+I have some I have some differentiable loss function some loss function which is
+
+89
+00:13:42,280 --> 00:13:49,450
+which I can take the derivative of right. So if I want to do, so if you want to take
+
+90
+00:13:49,450 --> 00:13:54,160
+a numerical approach to optimizing this kind of a loss function typically what will I end
+
+91
+00:13:54,160 --> 00:14:01,420
+up doing I will start off with some guests for a solution right take the gradient of the loss
+
+92
+00:14:01,420 --> 00:14:06,820
+function with respect to the parameters at that solution point we will number gradient
+
+93
+00:14:06,820 --> 00:14:10,060
+descent right. Then I will compute the gradient and then I will move in the opposite direction
+
+94
+00:14:10,060 --> 00:14:13,810
+of the gradient then I will move a small step in the opposite direction of the gradient go
+
+95
+00:14:13,810 --> 00:14:18,100
+to a new place and compute the gradient again and then move again and so on so forth until
+
+96
+00:14:18,100 --> 00:14:23,980
+I converge to the right answer right. So if you think about what this is doing
+
+97
+00:14:23,980 --> 00:14:29,680
+this is something like okay take initial solution okay, then I add another solution
+
+98
+00:14:29,680 --> 00:14:36,280
+to it which is essentially the gradient times something then I add something more to it,
+
+99
+00:14:36,280 --> 00:14:40,930
+so I will add something so essentially the solution I am computing finally this is a
+
+100
+00:14:40,930 --> 00:14:47,050
+sequence of additions that they have done on the basic solution I started off with right.
+
+101
+00:14:47,050 --> 00:14:51,970
+So even though one way of thinking about it is at every point I give you a parameter vector,
+
+102
+00:14:51,970 --> 00:14:57,580
+but the parameter vector itself is composed of a sequence of additions. So I can think of it
+
+103
+00:14:57,580 --> 00:15:02,080
+as first starting off with initial guess for my parameters, then adding something more to it,
+
+104
+00:15:02,080 --> 00:15:05,410
+then adding something more to it, then adding something more to it, and adding something more
+
+105
+00:15:05,410 --> 00:15:09,220
+to it, till I come to the final answer right. So that is one way of thinking about it,
+
+106
+00:15:09,220 --> 00:15:27,100
+so let us try and write this down a little formally. So now I am going to see what I can do
+
+107
+00:15:27,100 --> 00:15:31,630
+about this f is for the time being ignore the tree constraints I will come back to the trees later,
+
+108
+00:15:31,630 --> 00:15:58,610
+time being let us ignore the tree constraints right. So what I really need is, so just when I
+
+109
+00:15:58,610 --> 00:16:02,270
+am trying to do this in a numerical fashion I am just operating with a single data set right.
+
+110
+00:16:02,270 --> 00:16:20,870
+So when I say f what I really have looking at is a point in RN, so what does that mean let f
+
+111
+00:16:20,870 --> 00:16:25,670
+really means okay what is the value of F at X1, what is the value of F at X2, X3, X4 all the way
+
+112
+00:16:25,670 --> 00:16:31,460
+up till Xn so when I impose constraints on F, then I will be restricting the kind of vectors
+
+113
+00:16:31,460 --> 00:16:36,350
+I will see. But in general when I am talking about F in this context I just mean like an
+
+114
+00:16:36,350 --> 00:16:44,930
+n-dimensional vector right. So you can think of it as a point in n dimensional space right.
+
+115
+00:16:44,930 --> 00:16:51,800
+So typically what you do is you start off with some solution right Ftheta you start off with
+
+116
+00:16:51,800 --> 00:17:21,330
+some solution let us call it H0 right. So you can think of it like this I start somewhere here
+
+117
+00:17:21,330 --> 00:17:28,500
+that is my Ftheta right. And then, I compute the gradient and move in the opposite direction right,
+
+118
+00:17:28,500 --> 00:17:34,800
+so I take a small step in this direction so I come here that gives me a new set of parameters
+
+119
+00:17:34,800 --> 00:17:41,670
+right. So this is one theta, this is another set of theta and this will give me another F right.
+
+120
+00:17:41,670 --> 00:17:46,230
+But instead of saying that this will give me another F, so I am going to say that okay this
+
+121
+00:17:46,230 --> 00:17:53,880
+is one F, then I add something to it right, so that gives me the second F. So what I am
+
+122
+00:17:53,880 --> 00:17:59,400
+actually computing in every step is the amount that I add to the previous solution to derive my
+
+123
+00:17:59,400 --> 00:18:06,030
+new solution okay. So I am calculating theta and F here, so what I have here is theta corresponding
+
+124
+00:18:06,030 --> 00:18:14,430
+to every theta I have here there will be a F right corresponding to every parameter setting I will
+
+125
+00:18:14,430 --> 00:18:19,020
+have that will be output vector F right, when I change theta this values will change right.
+
+126
+00:18:19,020 --> 00:18:25,470
+So when I am here I have one solution right, so when I want to go to here that essentially means
+
+127
+00:18:25,470 --> 00:18:30,840
+that whatever F vector I have here I will have to change each of those coordinates by some value
+
+128
+00:18:30,840 --> 00:18:40,680
+so that I will end up here right, those values I change the coordinates by it is my H vector right,
+
+129
+00:18:40,680 --> 00:18:59,490
+is it clear what we are doing here. So what is the normal mechanism by which we will
+
+130
+00:18:59,490 --> 00:19:09,900
+do this right, so I have been using the same example so far right, so steepest descent
+
+131
+00:19:09,900 --> 00:19:14,220
+is something that will pop up right even the other ways of doing this optimization right.
+
+132
+00:19:14,220 --> 00:19:18,270
+But steepest descent is the one that we are all familiar with the one that I have been using as
+
+133
+00:19:18,270 --> 00:20:05,990
+an example here so far right. Since I have not chosen any arbitrary parameterizations to form
+
+134
+00:20:05,990 --> 00:20:11,060
+a theta right for the F, I have not chosen any parameterization theta or anything right.
+
+135
+00:20:11,060 --> 00:20:18,140
+So the parameters of F are the output set each one of the input points see the way I
+
+136
+00:20:18,140 --> 00:20:22,280
+characterize my function F is looking at okay, what will be the value of F at X1, what will be
+
+137
+00:20:22,280 --> 00:20:26,360
+the value of F at X2 and so on so forth right, I do not have any other parameterization for
+
+138
+00:20:26,360 --> 00:20:32,030
+it. So instead of finding your delL by del theta you actually find that I am writing it as delL
+
+139
+00:20:32,030 --> 00:20:44,000
+by delF okay. So F(xi) is essentially the output of F at Xi and what is F here, it is Fm minus 1,
+
+140
+00:20:44,000 --> 00:20:52,940
+because I am determining the M stage I am looking at the m-1 guess for my function right.
+
+141
+00:20:52,940 --> 00:20:58,700
+So the steepest descent direction would be saying that okay, so Gm is the direction in which you
+
+142
+00:20:58,700 --> 00:21:04,910
+have to move, because that gives me the direction in which the or rather minus Gm is the direction
+
+143
+00:21:04,910 --> 00:21:11,630
+I have to move, because that gives the direction of steepest descent. And ρm gives me the step size
+
+144
+00:21:11,630 --> 00:21:16,880
+I have to take in that direction how larger step I can take in the direction. So how is flow I am
+
+145
+00:21:16,880 --> 00:21:36,620
+determined you should look very familiar right. This is exactly how we did the ADABOOST
+
+146
+00:21:36,620 --> 00:21:49,400
+derivation. Now people are think about it really ADABOOST derivation like this yes, we did go
+
+147
+00:21:49,400 --> 00:21:55,190
+back and think about it okay. So very similar not exactly the same thing, but very, very similar the
+
+148
+00:21:55,190 --> 00:21:59,960
+exact the same steps that we did right we first found out which way we have to change it right,
+
+149
+00:21:59,960 --> 00:22:04,370
+and then we found out what the step size should be, and the way we did it was okay,
+
+150
+00:22:04,370 --> 00:22:08,510
+I have already have a classified till M minus 1 stage okay, what should I do at the M stage.
+
+151
+00:22:09,410 --> 00:22:13,730
+So as to minimize the error, so this is exactly what we did the idea behind each of the steps
+
+152
+00:22:13,730 --> 00:22:19,130
+are same the mechanics might have been slightly different right. So once I get this then I do
+
+153
+00:22:31,200 --> 00:22:47,885
+okay, right is it clear people are doing so far right. So whatever we are trying to do right,
+
+154
+00:22:47,885 --> 00:22:53,020
+is nothing so there are two different parts here okay, if you people are getting confused so the
+
+155
+00:22:53,020 --> 00:22:59,350
+first part here talked about boosting trees okay, the second part here talks about taking
+
+156
+00:22:59,350 --> 00:23:04,495
+some differentiable loss function and trying to do some kind of a stage wise process on it okay.
+
+157
+00:23:04,495 --> 00:23:10,540
+Now I just took your normal gradient descent procedure and told you that you can think of it
+
+158
+00:23:10,540 --> 00:23:16,870
+as a stage wise process, I guess like we did with boosting we can think of it this additive model
+
+159
+00:23:16,870 --> 00:23:26,800
+right. So whatever you will learn here right, so now the thing is how we connect up the two will
+
+160
+00:23:26,800 --> 00:23:31,060
+somehow account for that later. I do not want to erase anything from the board because what we are
+
+161
+00:23:31,060 --> 00:23:35,320
+doing right now is connecting the two parts right. So I do not want a erase anything from the board,
+
+162
+00:23:35,320 --> 00:23:39,010
+so you can see both that and this well we are looking at this right.
+
+163
+00:23:39,010 --> 00:24:07,550
+So far so Gm, Gm is some kind of an unconstrained maximal descent direction I do not have any
+
+164
+00:24:07,550 --> 00:24:13,250
+constraints on f for anything else right what is the maximal descent direction and essentially get
+
+165
+00:24:13,250 --> 00:24:21,320
+Gm. So now what we are going to do is to say that hey, all of this is nice, but I would really like
+
+166
+00:24:21,320 --> 00:24:26,810
+some parametric forms for what I am doing right otherwise things become too complicated. So what
+
+167
+00:24:26,810 --> 00:24:36,890
+I am going to do is I am going to fit a tree. So what I want to know is Gm right, so if you
+
+168
+00:24:36,890 --> 00:24:41,300
+think about it, so I really need to compute Gm and instead of doing this in this arbitrary
+
+169
+00:24:41,300 --> 00:24:47,810
+unconstrained form I am going to build a tree that approximates Gm as closely as possible
+
+170
+00:25:26,600 --> 00:25:30,080
+okay. So you should note something here what is it you should not,
+
+171
+00:25:40,340 --> 00:25:49,520
+so for all this while I have been very carefully writing L for the loss function well I am trying
+
+172
+00:25:49,520 --> 00:25:55,580
+to keep this as generic as possible right. But here I wrote a squared error loss function,
+
+173
+00:26:00,620 --> 00:26:05,030
+because it does not matter what is the problem that I am trying to solve,
+
+174
+00:26:05,030 --> 00:26:13,130
+it does not matter what this loss function is okay, because what I am trying to solve
+
+175
+00:26:13,130 --> 00:26:20,300
+now is trying to approximate a vector I trying to approximate a direction right
+
+176
+00:26:20,300 --> 00:26:29,060
+by a tree essentially I am always solving a regression problem here right. So if you
+
+177
+00:26:29,060 --> 00:26:36,200
+think about it Gim is going to be some kind of a vector right Gim will be some kind of
+
+178
+00:26:36,200 --> 00:26:41,060
+a vector all I am trying to do is predict the value of that vector component right.
+
+179
+00:26:41,060 --> 00:26:48,140
+So I am just doing regression regardless of whether my original problem was a
+
+180
+00:26:48,140 --> 00:26:54,590
+classification problem or a regression problem or what not, I could use any loss function here and
+
+181
+00:26:54,590 --> 00:26:58,910
+I could use any loss function here this is the crucial difference you should appreciate right,
+
+182
+00:26:58,910 --> 00:27:04,310
+for the actual or actually solving the problem that I could be using a different loss function
+
+183
+00:27:04,310 --> 00:27:16,280
+here okay. But when I am building the Mth stage decision tree all I will be doing is regression,
+
+184
+00:27:16,280 --> 00:27:23,180
+because all I need to predict is what is that particular gradient descent direction
+
+185
+00:27:23,180 --> 00:27:39,960
+for that input value Xi right. So this is what I am going to do,
+
+186
+00:27:39,960 --> 00:27:47,130
+how am I going to go about doing this. Well it depends on what this loss function is okay,
+
+187
+00:27:47,130 --> 00:28:22,430
+so is this loss function, so if the problem I am solving is a regression,
+
+188
+00:28:35,690 --> 00:28:45,860
+this is what I am solving, this is the squared error loss function okay, this is not this okay,
+
+189
+00:28:45,860 --> 00:28:53,990
+this is that. So if this L is squared error okay, then what do I get here is essentially
+
+190
+00:28:53,990 --> 00:29:10,790
+what is this, give this is Gm essentially the gradient of the loss with respect F(xi) right,
+
+191
+00:29:10,790 --> 00:29:17,750
+the gradient of this with respect to F(xi) is essentially the residual Yi minus F(xi) right.
+
+192
+00:29:17,750 --> 00:29:25,670
+So this is basically minus Gm if you would think correct. So now what happens if I am doing
+
+193
+00:29:25,670 --> 00:29:35,690
+regression with squared error loss function and I am trying to do this gradient boosting right. So
+
+194
+00:29:35,690 --> 00:29:40,190
+I am trying to build a new tree that predicts the direction of the gradient what do I end up doing,
+
+195
+00:29:40,190 --> 00:29:52,310
+I end up predicting this is the residual right. So I end up predicting the residual and here what
+
+196
+00:29:52,310 --> 00:29:58,520
+we said, if you are doing the squared error loss pick the tree that best predicts the residual.
+
+197
+00:29:58,520 --> 00:30:05,870
+So that was derived from just the basics of boosting regular boosting. Well here I am
+
+198
+00:30:05,870 --> 00:30:11,540
+talking about a technique that can do boosting on trees regardless of what is the underlying
+
+199
+00:30:11,540 --> 00:30:16,850
+loss function right, but it does boosting using trees okay. So that is a cool thing
+
+200
+00:30:16,850 --> 00:30:23,300
+about gradient boosting right, so you always are solving a regression problem as far as the
+
+201
+00:30:23,300 --> 00:30:28,130
+tree is concerned, and solving regulation problems using trees is very easy right,
+
+202
+00:30:28,130 --> 00:30:31,790
+your solving regression problems using tree is always regardless of this loss function.
+
+203
+00:30:31,790 --> 00:30:39,380
+If you remember when we are deriving this boosting update I said squared error and for two class
+
+204
+00:30:39,380 --> 00:30:46,070
+exponential loss the boosting form is easy right. But now if you busy doing the gradient formulation
+
+205
+00:30:46,070 --> 00:30:52,130
+of it okay regardless of what you are doing with the loss function you can still do boosting with
+
+206
+00:30:52,130 --> 00:30:56,630
+trees. So that is why gradient boosting decision trees have become very popular now, because you
+
+207
+00:30:56,630 --> 00:31:00,800
+can do all kinds of cool stuff with it. So what about this
+
+208
+00:31:24,930 --> 00:31:37,950
+right, and suppose you are doing classification let us take deviance as the loss function right,
+
+209
+00:31:37,950 --> 00:31:45,180
+we will remember deviance, we looked at deviance multiple times right, and turns out that.
+
+210
+00:32:00,350 --> 00:32:09,710
+So what is this, if the ith class is Gk, then it will be 1 minus that the data point Xi is in class
+
+211
+00:32:09,710 --> 00:32:15,200
+K, the probability of data point Xk belonging to class K. So it will be 1 minus that, and if the
+
+212
+00:32:15,200 --> 00:32:23,690
+actual class is not K right, then it will be minus probability of Xi belonging to class K okay.
+
+213
+00:32:23,690 --> 00:32:39,950
+So this is like the ith component of it, so ith component of my Gi okay. So again what I
+
+214
+00:32:39,950 --> 00:32:46,880
+have to do, I have to take this expression plug it in here and do regression again,
+
+215
+00:32:46,880 --> 00:32:54,200
+I will take this expression plug it in here and do regression right. So all you need to do is
+
+216
+00:32:54,200 --> 00:33:02,240
+figure out what is the derivative of your loss function with respect here F(xi) right, and then
+
+217
+00:33:02,240 --> 00:33:06,890
+once you find out the derivative you just do the regression with respect to that for each stage
+
+218
+00:33:06,890 --> 00:33:31,620
+in your decision tree okay. So what will be my gammaj this is gammaj, such gamma, gamma jm, what
+
+219
+00:33:31,620 --> 00:33:41,670
+will be gamma jm? So earlier we said it will be just the average residual error in Rjm right.
+
+220
+00:33:41,670 --> 00:33:50,430
+So in this case it is going to be so once I have found out what the actual regions are right,
+
+221
+00:33:50,430 --> 00:33:54,900
+once I have found out what the region. So this is going to give me the regions right,
+
+222
+00:33:54,900 --> 00:34:44,860
+so once I find out what the actual regions are I will do the following. So what have we done
+
+223
+00:34:44,860 --> 00:34:57,510
+here okay. So earlier when we are finding out the, when we are building decision trees right,
+
+224
+00:34:57,510 --> 00:35:01,920
+so the way we found out the regions right. If you remember the way we found out the regions
+
+225
+00:35:01,920 --> 00:35:09,480
+was we postulated a split point right, and then for that split point we figure out
+
+226
+00:35:09,480 --> 00:35:14,550
+what is the best γ in both half of the tree right, and then we took a value for that,
+
+227
+00:35:14,550 --> 00:35:19,110
+and then we kept looking at all the possible split points right, the splitting variables and
+
+228
+00:35:19,110 --> 00:35:24,300
+split points for all the possible combinations and for each one of them we evaluated what the
+
+229
+00:35:24,300 --> 00:35:30,420
+resulting residual error would be right. And based on that we pick the split point,
+
+230
+00:35:30,420 --> 00:35:36,210
+so here we are doing something different when we are splitting picking the split point right,
+
+231
+00:35:36,210 --> 00:35:41,310
+we are going to pick the split point such that the residual error in predicting the gradient
+
+232
+00:35:41,310 --> 00:35:49,590
+is minimized right. I am only predicting the gradient here, the residual error in predicting
+
+233
+00:35:49,590 --> 00:35:54,750
+the gradient is minimized. But when I finally decide what is the output that I am going to
+
+234
+00:35:54,750 --> 00:36:01,410
+give in each of the final regions right. So in the regular decision tree building
+
+235
+00:36:01,410 --> 00:36:04,860
+by the time I come to that point I would have already solved the optimization problem right.
+
+236
+00:36:04,860 --> 00:36:08,850
+So I know what is the solution that I have to give and it is the one same thing which I use
+
+237
+00:36:08,850 --> 00:36:13,650
+for splitting criteria. But in this case when I finally give the outputs I am going to look
+
+238
+00:36:13,650 --> 00:36:23,430
+at the loss function right of data points that fall in that region look at what is
+
+239
+00:36:23,430 --> 00:36:30,090
+already existing that is Fm-1 of Xi right. And look at what I need to add to bring up the
+
+240
+00:36:30,090 --> 00:36:36,480
+output, so that the loss is minimized. So whatever is the loss function, so when I am doing the loss
+
+241
+00:36:36,480 --> 00:36:41,130
+function here I will no longer be using the squared loss I will be using one of these,
+
+242
+00:36:41,130 --> 00:36:45,270
+I mean this is quite loss I could be using the absolute gloss or I could be using deviance or
+
+243
+00:36:45,270 --> 00:36:50,100
+whatever is the measurement that I want right, I will use this loss function the
+
+244
+00:36:50,100 --> 00:36:54,750
+loss function I use there, I will use that here in order to figure out the outputs okay.
+
+245
+00:36:54,750 --> 00:37:00,180
+So you let this sink in a little bit, so it is actually a pretty cool idea right. So I
+
+246
+00:37:00,180 --> 00:37:05,910
+have somehow come up with a mechanism where I can use decision trees in a very powerful way,
+
+247
+00:37:05,910 --> 00:37:12,120
+because finding regions while I do regression is very easy with decision trees, because we know how
+
+248
+00:37:12,120 --> 00:37:15,990
+to use squared loss and there are lots of tricks and optimizations that you can do when you are
+
+249
+00:37:15,990 --> 00:37:19,440
+searching through with square loss right. Now we looked at some of them, but there are
+
+250
+00:37:19,440 --> 00:37:23,040
+many other things that you could do so what I am going to do is for all my tree growing
+
+251
+00:37:23,040 --> 00:37:30,510
+part right I am just going to use the regression trick right, and I finally have to give an output
+
+252
+00:37:30,510 --> 00:37:35,550
+at that point I will use whatever is the true loss function I want right, that is why it is
+
+253
+00:37:35,550 --> 00:37:42,390
+called gradient boosting. So I use the gradient at every point to boost my performance right.
+
+254
+00:37:42,390 --> 00:37:51,360
+So the way I fit my, so if we think about it this might not necessarily be the most ideal way of
+
+255
+00:37:51,360 --> 00:38:07,620
+doing things why is that right. So if I want to predict gammajm hat that truly minimizes forget
+
+256
+00:38:07,620 --> 00:38:12,810
+about the Rj's right, that truly minimizes the loss function I might want to actually split the
+
+257
+00:38:12,810 --> 00:38:18,960
+space in a different way right. But I amusing the gradient information to split the space,
+
+258
+00:38:18,960 --> 00:38:23,460
+then whatever splits I get whatever regions I get by using the gradient
+
+259
+00:38:23,460 --> 00:38:30,450
+information I am using the same regions in order to reduce the error also right.
+
+260
+00:38:30,450 --> 00:38:37,590
+It is fine as long as I am unconstrained right, as soon as you put in the constraints of trees it is
+
+261
+00:38:37,590 --> 00:38:43,770
+not entirely clear that the tree that you want for getting the representing the best γhat is the tree
+
+262
+00:38:43,770 --> 00:38:55,740
+that you want for representing the best GM it is a very, very subtle point you have to think about it
+
+263
+00:38:55,740 --> 00:39:03,600
+a little bit. But more often than not it turns out to be fine okay, but there is really no guarantee
+
+264
+00:39:03,600 --> 00:39:11,880
+that the best three for predicting GM is the best three for representing your gamma’s okay.
+
+265
+00:39:11,880 --> 00:39:18,090
+That is two slightly different things, but still it turns out to be fine right. So all of this
+
+266
+00:39:18,090 --> 00:39:22,530
+discussion collapses if you move to L being the residual, I mean the squared error right,
+
+267
+00:39:22,530 --> 00:39:26,400
+L is squared error everything looks the same you already solve it here is a very easy thing to do.
+
+268
+00:39:26,400 --> 00:39:31,290
+But what I want to point out is, it essentially the same squared error mechanism you can build
+
+269
+00:39:31,290 --> 00:39:35,370
+boosted trees for any loss function that you want, it can be regression, it can be classification.
+
+270
+00:39:35,370 --> 00:39:40,470
+So whatever it is you can build a decision tree. So one thing that you have to be careful about
+
+271
+00:39:40,470 --> 00:39:47,400
+is that you do not over fit the things any time right. So you have to be careful about not over
+
+272
+00:39:47,400 --> 00:39:54,090
+fitting the data, because you are only working with the n data points always right, you can build
+
+273
+00:39:54,090 --> 00:40:00,540
+a very complex tree that will try to over fit the gradient for just the training data right.
+
+274
+00:40:00,540 --> 00:40:05,160
+So that is not a good idea, so try to keep your tree down complexity of your tree down.
+
+275
+00:40:05,160 --> 00:40:09,360
+In fact quite often people choose the size of the tree a priori. And then,
+
+276
+00:40:09,360 --> 00:40:12,750
+you might actually end up adding more trees than necessary because he chose too small a tree,
+
+277
+00:40:13,260 --> 00:40:18,840
+but at least you will avoid over fitting right. And so that is it for gradient boosting.

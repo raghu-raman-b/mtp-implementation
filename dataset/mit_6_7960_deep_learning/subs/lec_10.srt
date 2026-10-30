@@ -1,0 +1,6191 @@
+1
+00:00:00,500 --> 00:00:02,464
+[SQUEAKING]
+
+2
+00:00:02,464 --> 00:00:03,937
+[RUSTLING]
+
+3
+00:00:03,937 --> 00:00:07,374
+[CLICKING]
+
+4
+00:00:13,580 --> 00:00:15,000
+SARA BEERY: So today, we're going
+
+5
+00:00:15,000 --> 00:00:18,760
+to be doing our last of this mini series
+
+6
+00:00:18,760 --> 00:00:21,000
+on machine learning architectures or deep learning
+
+7
+00:00:21,000 --> 00:00:22,560
+architectures.
+
+8
+00:00:22,560 --> 00:00:26,320
+So previously, we talked about CNNs, GNNs, things
+
+9
+00:00:26,320 --> 00:00:27,420
+like transformers.
+
+10
+00:00:27,420 --> 00:00:29,800
+And today, we're going to be introducing
+
+11
+00:00:29,800 --> 00:00:33,300
+the concepts of memory and sequence modeling.
+
+12
+00:00:33,300 --> 00:00:36,440
+And we have seen different types of ways to model sequences
+
+13
+00:00:36,440 --> 00:00:36,980
+in the past.
+
+14
+00:00:36,980 --> 00:00:41,320
+We talked about 3D CNNs that have time or transformers that
+
+15
+00:00:41,320 --> 00:00:42,960
+have a sense of time.
+
+16
+00:00:42,960 --> 00:00:46,560
+But today, we're going to be introducing a new class of types
+
+17
+00:00:46,560 --> 00:00:50,760
+of models that handle memory and sequences in a different way.
+
+18
+00:00:50,760 --> 00:00:53,400
+And this will be the first class of architectures
+
+19
+00:00:53,400 --> 00:00:55,720
+that we talk about that's actually,
+
+20
+00:00:55,720 --> 00:00:57,800
+quote, unquote, Turing complete.
+
+21
+00:00:57,800 --> 00:01:00,580
+So this is actually the most general framework
+
+22
+00:01:00,580 --> 00:01:04,099
+of the architectures that we're going to be introducing.
+
+23
+00:01:04,099 --> 00:01:07,620
+So we'll first motivate again why
+
+24
+00:01:07,620 --> 00:01:10,780
+we think we might want to model sequences, model
+
+25
+00:01:10,780 --> 00:01:13,780
+something like time or order.
+
+26
+00:01:13,780 --> 00:01:17,900
+And then we'll talk about how we might use CNNs for sequences.
+
+27
+00:01:17,900 --> 00:01:20,260
+We'll introduce the concept of an RNN,
+
+28
+00:01:20,260 --> 00:01:22,460
+or Recurrent Neural Network.
+
+29
+00:01:22,460 --> 00:01:26,460
+And then we'll go through an extension or a specific subset
+
+30
+00:01:26,460 --> 00:01:28,600
+of RNNs called LSTMs.
+
+31
+00:01:28,600 --> 00:01:31,460
+That stands for Long Short-Term Memory.
+
+32
+00:01:31,460 --> 00:01:33,620
+And these actually seek to specifically avoid
+
+33
+00:01:33,620 --> 00:01:38,340
+one of the common issues with RNNs, which is forgetting.
+
+34
+00:01:38,340 --> 00:01:41,180
+And then we'll introduce the idea of sequence modeling
+
+35
+00:01:41,180 --> 00:01:43,780
+and long memory and start talking about some things
+
+36
+00:01:43,780 --> 00:01:45,580
+like autoregression.
+
+37
+00:01:45,580 --> 00:01:53,100
+So if I look at this-- this is a single frame from a video--
+
+38
+00:01:53,100 --> 00:01:55,660
+there's a lot of things that computer vision can understand
+
+39
+00:01:55,660 --> 00:01:58,360
+from this frame alone.
+
+40
+00:01:58,360 --> 00:02:02,200
+So where for example-- and our human brains kind
+
+41
+00:02:02,200 --> 00:02:03,500
+do the same thing.
+
+42
+00:02:03,500 --> 00:02:05,960
+So if you look at just this frame,
+
+43
+00:02:05,960 --> 00:02:08,860
+can anyone tell me what this is a picture of?
+
+44
+00:02:12,640 --> 00:02:14,245
+Anything?
+
+45
+00:02:14,245 --> 00:02:15,338
+AUDIENCE: Kids playing.
+
+46
+00:02:15,338 --> 00:02:16,380
+SARA BEERY: Kids playing.
+
+47
+00:02:16,380 --> 00:02:18,000
+Yeah.
+
+48
+00:02:18,000 --> 00:02:20,020
+And maybe they're playing in a classroom.
+
+49
+00:02:20,020 --> 00:02:22,020
+So you can understand something about the scene.
+
+50
+00:02:22,020 --> 00:02:24,907
+This looks like maybe a kindergarten classroom.
+
+51
+00:02:24,907 --> 00:02:27,240
+We have computer vision models that can understand stuff
+
+52
+00:02:27,240 --> 00:02:29,880
+like objects that are seen in that single frame--
+
+53
+00:02:29,880 --> 00:02:32,720
+television, person, chair.
+
+54
+00:02:32,720 --> 00:02:35,380
+And we can start doing things like question answering,
+
+55
+00:02:35,380 --> 00:02:38,100
+talking about specific attributes of those objects.
+
+56
+00:02:38,100 --> 00:02:39,800
+What color is the chair?
+
+57
+00:02:39,800 --> 00:02:41,990
+That chair is red.
+
+58
+00:02:41,990 --> 00:02:44,240
+But so far, none of the things that we've talked about
+
+59
+00:02:44,240 --> 00:02:47,620
+have really explicitly tried to understand, for example,
+
+60
+00:02:47,620 --> 00:02:49,880
+relationships between things and how we
+
+61
+00:02:49,880 --> 00:02:51,760
+might predict into the future.
+
+62
+00:02:51,760 --> 00:02:55,400
+So for example, what will the girl do next?
+
+63
+00:02:55,400 --> 00:02:58,390
+That's something that from this given frame--
+
+64
+00:02:58,390 --> 00:03:01,270
+I don't know-- probably we have some ideas
+
+65
+00:03:01,270 --> 00:03:04,830
+about different possibilities, but we might not even know,
+
+66
+00:03:04,830 --> 00:03:06,970
+because we also rely on temporal signal.
+
+67
+00:03:06,970 --> 00:03:10,230
+We rely on context and information.
+
+68
+00:03:10,230 --> 00:03:12,590
+But if we watch this video, and we
+
+69
+00:03:12,590 --> 00:03:15,230
+get to the point of that frame, we
+
+70
+00:03:15,230 --> 00:03:18,570
+can guess what's going to happen.
+
+71
+00:03:18,570 --> 00:03:21,550
+[CHUCKLING]
+
+72
+00:03:21,550 --> 00:03:24,910
+So I don't know if any of you have ever
+
+73
+00:03:24,910 --> 00:03:27,390
+had this experience of a chair being pulled out
+
+74
+00:03:27,390 --> 00:03:30,750
+from underneath you, and it's incredibly disorienting when
+
+75
+00:03:30,750 --> 00:03:34,150
+something is not how you expect it might go.
+
+76
+00:03:34,150 --> 00:03:36,750
+But watching this video, there hits a point
+
+77
+00:03:36,750 --> 00:03:38,910
+in the video where we're pretty sure that the kind
+
+78
+00:03:38,910 --> 00:03:41,410
+of likely thing, which is that the girl sits in the chair,
+
+79
+00:03:41,410 --> 00:03:43,850
+is not going to happen because the guys moved the chair.
+
+80
+00:03:43,850 --> 00:03:45,550
+There's these complex relationships
+
+81
+00:03:45,550 --> 00:03:48,110
+between the actions.
+
+82
+00:03:48,110 --> 00:03:50,150
+And then things like predicting she's
+
+83
+00:03:50,150 --> 00:03:54,070
+going to fall, that she believes that the chair is there,
+
+84
+00:03:54,070 --> 00:03:57,410
+why she believes that the chair is there, whether you guys are
+
+85
+00:03:57,410 --> 00:03:59,730
+going to laugh at it.
+
+86
+00:03:59,730 --> 00:04:04,850
+And so all of this is really very complex and nuanced
+
+87
+00:04:04,850 --> 00:04:07,970
+understanding about the scenes, the objects, and things
+
+88
+00:04:07,970 --> 00:04:10,850
+like intent, which we could argue
+
+89
+00:04:10,850 --> 00:04:13,010
+about whether these machine learning models
+
+90
+00:04:13,010 --> 00:04:15,730
+that model sequences are really getting at understanding
+
+91
+00:04:15,730 --> 00:04:17,290
+things like human intent.
+
+92
+00:04:17,290 --> 00:04:21,410
+But they do start to try to get at this sense of what
+
+93
+00:04:21,410 --> 00:04:23,890
+is going to happen next.
+
+94
+00:04:23,890 --> 00:04:26,590
+So sequences can be a lot of things.
+
+95
+00:04:26,590 --> 00:04:28,890
+We talked previously when we introduced
+
+96
+00:04:28,890 --> 00:04:34,450
+CNNs about the idea of adding a temporal dimension to things
+
+97
+00:04:34,450 --> 00:04:35,108
+like images.
+
+98
+00:04:35,108 --> 00:04:36,150
+So now, you have a video.
+
+99
+00:04:36,150 --> 00:04:41,830
+This might be pictures from an Italian city square over time.
+
+100
+00:04:41,830 --> 00:04:44,530
+You can also think about sequences of language.
+
+101
+00:04:44,530 --> 00:04:46,850
+"An evening stroll through a city square"
+
+102
+00:04:46,850 --> 00:04:49,170
+is a sequence of words.
+
+103
+00:04:49,170 --> 00:04:51,870
+Or you could think about sequences of audio signal.
+
+104
+00:04:51,870 --> 00:04:55,230
+Me saying "an evening stroll through a city square"
+
+105
+00:04:55,230 --> 00:04:57,950
+is a sequence.
+
+106
+00:04:57,950 --> 00:05:00,368
+And looking back again at the architecture
+
+107
+00:05:00,368 --> 00:05:01,910
+that we've gotten very familiar with,
+
+108
+00:05:01,910 --> 00:05:04,390
+convolutional neural networks, we
+
+109
+00:05:04,390 --> 00:05:07,750
+can extend those into the space-time dimension
+
+110
+00:05:07,750 --> 00:05:10,170
+and make like a space-time cube.
+
+111
+00:05:10,170 --> 00:05:12,990
+And again, here, we're showing this in three dimensions
+
+112
+00:05:12,990 --> 00:05:14,930
+to be for simplicity.
+
+113
+00:05:14,930 --> 00:05:17,312
+But actually, it's really four dimensions.
+
+114
+00:05:17,312 --> 00:05:19,270
+We're extending this fourth temporal dimension,
+
+115
+00:05:19,270 --> 00:05:22,670
+because we have multiple inputs of red, green, and blue for each
+
+116
+00:05:22,670 --> 00:05:24,623
+of those dimensions.
+
+117
+00:05:24,623 --> 00:05:26,790
+And then time just becomes another spatial dimension
+
+118
+00:05:26,790 --> 00:05:27,990
+in that tensor.
+
+119
+00:05:27,990 --> 00:05:31,150
+So now, you have a 4D tensor instead of a 2D tensor.
+
+120
+00:05:31,150 --> 00:05:34,630
+And so now, when we're thinking about how we might actually
+
+121
+00:05:34,630 --> 00:05:37,310
+try to represent time, there's different ways
+
+122
+00:05:37,310 --> 00:05:40,890
+that we can think about capturing time within this cube.
+
+123
+00:05:40,890 --> 00:05:44,750
+And one interesting way that you can model temporal structure
+
+124
+00:05:44,750 --> 00:05:47,030
+can be something like taking a slice
+
+125
+00:05:47,030 --> 00:05:48,870
+through that space-time cube.
+
+126
+00:05:48,870 --> 00:05:53,370
+So this is what it looks like if you build this new image that
+
+127
+00:05:53,370 --> 00:05:56,770
+takes a single horizontal pixel slice
+
+128
+00:05:56,770 --> 00:05:59,290
+and then runs that through time.
+
+129
+00:05:59,290 --> 00:06:00,990
+So what are we looking at here?
+
+130
+00:06:00,990 --> 00:06:03,810
+What are these stripes likely to be?
+
+131
+00:06:03,810 --> 00:06:05,370
+AUDIENCE: People walking.
+
+132
+00:06:05,370 --> 00:06:08,170
+SARA BEERY: Yeah, people walking, and walking
+
+133
+00:06:08,170 --> 00:06:09,930
+at different angles to the camera
+
+134
+00:06:09,930 --> 00:06:13,450
+or with different trajectories or different speeds.
+
+135
+00:06:13,450 --> 00:06:16,368
+Or you could also think about taking a vertical slice
+
+136
+00:06:16,368 --> 00:06:16,910
+through time.
+
+137
+00:06:16,910 --> 00:06:22,450
+So now, this is showing, for a given position horizontally
+
+138
+00:06:22,450 --> 00:06:25,370
+or vertically in the frame, who is going through that position
+
+139
+00:06:25,370 --> 00:06:26,070
+first.
+
+140
+00:06:26,070 --> 00:06:28,650
+Interestingly, even from a very long time ago,
+
+141
+00:06:28,650 --> 00:06:32,330
+they started modeling images like this for the Olympics
+
+142
+00:06:32,330 --> 00:06:35,530
+when they were trying to figure out who was the first person
+
+143
+00:06:35,530 --> 00:06:36,750
+to go across the finish line.
+
+144
+00:06:36,750 --> 00:06:38,250
+If you take the finish line, and you
+
+145
+00:06:38,250 --> 00:06:40,870
+make that a single pixel element,
+
+146
+00:06:40,870 --> 00:06:43,530
+you can see exactly what pixel crosses first,
+
+147
+00:06:43,530 --> 00:06:47,388
+and that represents the person who won the race.
+
+148
+00:06:47,388 --> 00:06:48,930
+And so there's lots of different ways
+
+149
+00:06:48,930 --> 00:06:51,538
+you can think about representing or modeling time.
+
+150
+00:06:51,538 --> 00:06:53,830
+And then if you actually want to think about how you do
+
+151
+00:06:53,830 --> 00:06:59,230
+convolutions in time, if we take a very simple 1D perspective
+
+152
+00:06:59,230 --> 00:07:02,030
+of this-- so now, imagine we're just talking about this scalar
+
+153
+00:07:02,030 --> 00:07:03,368
+perspective.
+
+154
+00:07:03,368 --> 00:07:04,910
+Then, what you would do is you would,
+
+155
+00:07:04,910 --> 00:07:07,430
+similar to before, learn some weight
+
+156
+00:07:07,430 --> 00:07:10,250
+matrix over some given fixed time window.
+
+157
+00:07:10,250 --> 00:07:14,550
+So in this case, three elements in that sequence.
+
+158
+00:07:14,550 --> 00:07:18,390
+And then you can think of this as a sequence-to-sequence model.
+
+159
+00:07:18,390 --> 00:07:20,950
+So instead of before, where we took an image or something,
+
+160
+00:07:20,950 --> 00:07:23,150
+and we would run this across the image
+
+161
+00:07:23,150 --> 00:07:25,470
+in these different patches, and then
+
+162
+00:07:25,470 --> 00:07:28,190
+you were constrained by the structure of the image,
+
+163
+00:07:28,190 --> 00:07:31,450
+here actually, now, you can run this in time.
+
+164
+00:07:31,450 --> 00:07:35,350
+So now, you're taking input from these three different positions
+
+165
+00:07:35,350 --> 00:07:38,330
+in the sequence, and you're generating an output position.
+
+166
+00:07:38,330 --> 00:07:42,430
+Now, you could slide that, and you could slide it arbitrarily
+
+167
+00:07:42,430 --> 00:07:43,430
+long.
+
+168
+00:07:43,430 --> 00:07:46,310
+You can take any arbitrary length sequence
+
+169
+00:07:46,310 --> 00:07:49,230
+and you can generate an arbitrary length sequence.
+
+170
+00:07:49,230 --> 00:07:52,160
+So these convolutions in time, they're not constrained.
+
+171
+00:07:52,160 --> 00:07:54,660
+I mean, they're only constrained by the length of your input
+
+172
+00:07:54,660 --> 00:07:55,200
+sequence.
+
+173
+00:07:55,200 --> 00:07:57,380
+And you can imagine that if you had something
+
+174
+00:07:57,380 --> 00:08:00,380
+like a static camera that was taking video of this classroom
+
+175
+00:08:00,380 --> 00:08:02,380
+continuously, that you could just
+
+176
+00:08:02,380 --> 00:08:04,520
+keep running these convolutions in time,
+
+177
+00:08:04,520 --> 00:08:06,140
+and there wouldn't necessarily be
+
+178
+00:08:06,140 --> 00:08:08,460
+a point where you needed to stop or were constrained
+
+179
+00:08:08,460 --> 00:08:11,700
+by the architecture itself.
+
+180
+00:08:11,700 --> 00:08:15,860
+Now, if you consider something like more dimensions,
+
+181
+00:08:15,860 --> 00:08:20,860
+things like these RGB videos or add even additional dimensions
+
+182
+00:08:20,860 --> 00:08:24,020
+in that RGB channel, something like MRI that captures 3D
+
+183
+00:08:24,020 --> 00:08:27,260
+volumes over time, or hyperspectral satellite images
+
+184
+00:08:27,260 --> 00:08:33,140
+that can have something like 384 different bands,
+
+185
+00:08:33,140 --> 00:08:35,679
+you can continue to think about these convolutions,
+
+186
+00:08:35,679 --> 00:08:38,820
+but now where time is potentially this infinitely long
+
+187
+00:08:38,820 --> 00:08:41,419
+dimension.
+
+188
+00:08:41,419 --> 00:08:47,380
+And if you're doing this, then what we discover both
+
+189
+00:08:47,380 --> 00:08:50,400
+empirically-- and also it kind of makes sense intuitively--
+
+190
+00:08:50,400 --> 00:08:55,560
+is that as that time sequence becomes arbitrarily long,
+
+191
+00:08:55,560 --> 00:08:57,360
+it's hard for our memories of what
+
+192
+00:08:57,360 --> 00:09:00,600
+happened at the beginning of the sequence to persist.
+
+193
+00:09:00,600 --> 00:09:05,040
+And one of the reasons for this with a convolutional approach
+
+194
+00:09:05,040 --> 00:09:07,300
+is the following.
+
+195
+00:09:07,300 --> 00:09:12,640
+So here, say we have our temporal convolution,
+
+196
+00:09:12,640 --> 00:09:14,420
+and it's taking in some input.
+
+197
+00:09:14,420 --> 00:09:16,540
+We're showing the scalar version,
+
+198
+00:09:16,540 --> 00:09:20,200
+but for the sake of intuition, this
+
+199
+00:09:20,200 --> 00:09:23,600
+is a picture of my cat Frank, who
+
+200
+00:09:23,600 --> 00:09:26,120
+is the cutest cat in the world.
+
+201
+00:09:26,120 --> 00:09:30,560
+And so say I'm walking around my house taking a video.
+
+202
+00:09:30,560 --> 00:09:32,740
+And I start at this point in time.
+
+203
+00:09:32,740 --> 00:09:34,400
+And then I go forward.
+
+204
+00:09:34,400 --> 00:09:37,592
+And now, in the future, I have again--
+
+205
+00:09:37,592 --> 00:09:39,800
+remember, because it's convolution-- that same weight
+
+206
+00:09:39,800 --> 00:09:40,800
+matrix.
+
+207
+00:09:40,800 --> 00:09:43,920
+And now, I want to understand what's in here.
+
+208
+00:09:43,920 --> 00:09:46,120
+But the thing is I don't really have,
+
+209
+00:09:46,120 --> 00:09:49,420
+from this fixed time window, any inputs
+
+210
+00:09:49,420 --> 00:09:50,760
+coming from the beginning.
+
+211
+00:09:50,760 --> 00:09:53,520
+I've only got the window that I can look at.
+
+212
+00:09:53,520 --> 00:09:55,980
+And so, based on the information I have--
+
+213
+00:09:55,980 --> 00:09:59,180
+well, maybe I look at this and I predict
+
+214
+00:09:59,180 --> 00:10:02,380
+tiger, because it's orange and it's outside,
+
+215
+00:10:02,380 --> 00:10:05,980
+and cats are usually indoors.
+
+216
+00:10:05,980 --> 00:10:10,180
+So the idea of something like memory
+
+217
+00:10:10,180 --> 00:10:14,900
+or trying to extend what we forget, move beyond these fixed
+
+218
+00:10:14,900 --> 00:10:15,980
+time windows--
+
+219
+00:10:15,980 --> 00:10:18,880
+is to try to capture that context,
+
+220
+00:10:18,880 --> 00:10:20,800
+be able to remember what you saw in the past.
+
+221
+00:10:20,800 --> 00:10:23,300
+So here then, maybe you'd have some memory unit,
+
+222
+00:10:23,300 --> 00:10:25,240
+and that would actually give you some context,
+
+223
+00:10:25,240 --> 00:10:26,860
+give you some information.
+
+224
+00:10:26,860 --> 00:10:28,655
+Since I'm walking around my house,
+
+225
+00:10:28,655 --> 00:10:30,280
+it's unlikely I'm going to see a tiger.
+
+226
+00:10:30,280 --> 00:10:34,940
+But I did see Frank before, so it's maybe still Frank.
+
+227
+00:10:34,940 --> 00:10:38,460
+And so this type of identification
+
+228
+00:10:38,460 --> 00:10:39,980
+with the context of what you've seen
+
+229
+00:10:39,980 --> 00:10:43,900
+in the past from the same, for example, sequence
+
+230
+00:10:43,900 --> 00:10:46,580
+is really the intuition or the motivation
+
+231
+00:10:46,580 --> 00:10:48,280
+behind the development of what we
+
+232
+00:10:48,280 --> 00:10:51,520
+call recurrent neural networks, so these RNNs.
+
+233
+00:10:51,520 --> 00:10:55,280
+So transformers, CNNs, everything so far
+
+234
+00:10:55,280 --> 00:10:58,180
+mostly had of fixed window in time.
+
+235
+00:10:58,180 --> 00:11:01,320
+There was transformers these days--
+
+236
+00:11:01,320 --> 00:11:04,320
+we can talk about that context window is getting very, very
+
+237
+00:11:04,320 --> 00:11:07,320
+large, but it's still fixed.
+
+238
+00:11:07,320 --> 00:11:11,383
+But a recurrent neural network makes that infinite.
+
+239
+00:11:11,383 --> 00:11:12,800
+And the way that it does it is you
+
+240
+00:11:12,800 --> 00:11:16,800
+introduce the idea of a hidden unit.
+
+241
+00:11:16,800 --> 00:11:20,560
+So now, you have-- for example, from this convolution
+
+242
+00:11:20,560 --> 00:11:23,060
+you send-- you run your model through the convolution.
+
+243
+00:11:23,060 --> 00:11:25,000
+You get some value.
+
+244
+00:11:25,000 --> 00:11:30,360
+And then you learn a way to take that value, that hidden unit,
+
+245
+00:11:30,360 --> 00:11:32,280
+and predict the output.
+
+246
+00:11:32,280 --> 00:11:34,240
+But you also take that hidden unit,
+
+247
+00:11:34,240 --> 00:11:37,440
+and you send it forward in time to the next time step.
+
+248
+00:11:37,440 --> 00:11:41,040
+So here, now, as you're convolving through time,
+
+249
+00:11:41,040 --> 00:11:44,360
+you're actually taking in both that new temporal input
+
+250
+00:11:44,360 --> 00:11:46,730
+and your memory from the past.
+
+251
+00:11:49,590 --> 00:11:52,070
+So here, if we want to look at this in a little bit
+
+252
+00:11:52,070 --> 00:11:54,870
+more detail, again, just thinking of everything as
+
+253
+00:11:54,870 --> 00:11:58,990
+scalars just because it's really easy to visualize this way.
+
+254
+00:11:58,990 --> 00:12:02,137
+So a version of a scalar temporal prediction problem
+
+255
+00:12:02,137 --> 00:12:04,470
+might be something like predicting temperature in Boston
+
+256
+00:12:04,470 --> 00:12:06,350
+tomorrow.
+
+257
+00:12:06,350 --> 00:12:09,950
+So here, now, what you're doing is
+
+258
+00:12:09,950 --> 00:12:13,250
+you're representing time as some of discrete sequence,
+
+259
+00:12:13,250 --> 00:12:16,870
+though you can apply these to continual sequences.
+
+260
+00:12:16,870 --> 00:12:19,110
+And the next hidden state-- so now,
+
+261
+00:12:19,110 --> 00:12:21,670
+we have our inputs running through some model
+
+262
+00:12:21,670 --> 00:12:23,150
+to get some hidden state.
+
+263
+00:12:23,150 --> 00:12:25,070
+And then we send this output, and we also
+
+264
+00:12:25,070 --> 00:12:27,910
+send that hidden state one time step forward.
+
+265
+00:12:27,910 --> 00:12:31,390
+So here, it's as you're kind of running this through,
+
+266
+00:12:31,390 --> 00:12:36,470
+what we do is we say your next hidden state is represented
+
+267
+00:12:36,470 --> 00:12:38,910
+by some function f that will depend
+
+268
+00:12:38,910 --> 00:12:42,550
+on the previous hidden state and the current input.
+
+269
+00:12:42,550 --> 00:12:46,090
+And then that f, that function, that's shared over time.
+
+270
+00:12:46,090 --> 00:12:50,430
+So that function is, again, fixed over time.
+
+271
+00:12:50,430 --> 00:12:54,030
+The way that we push information forward is fixed over time,
+
+272
+00:12:54,030 --> 00:12:56,530
+and that's something that gets learned.
+
+273
+00:12:56,530 --> 00:12:59,610
+And it's independent of time what that function is.
+
+274
+00:12:59,610 --> 00:13:04,250
+And then similarly, we'll have learned some function g that
+
+275
+00:13:04,250 --> 00:13:07,450
+will map from our hidden state to our output prediction
+
+276
+00:13:07,450 --> 00:13:09,210
+for any given time step.
+
+277
+00:13:09,210 --> 00:13:12,010
+And that's also going to be shared over time.
+
+278
+00:13:12,010 --> 00:13:18,290
+And so here, you'll note that this is the first time we're not
+
+279
+00:13:18,290 --> 00:13:19,670
+seeing a DAG.
+
+280
+00:13:19,670 --> 00:13:22,310
+This is not a Directed Acyclic Graph.
+
+281
+00:13:22,310 --> 00:13:22,990
+We have a loop.
+
+282
+00:13:22,990 --> 00:13:24,090
+We have a cycle.
+
+283
+00:13:24,090 --> 00:13:27,090
+Because you're going from that hidden state to the hidden state
+
+284
+00:13:27,090 --> 00:13:29,010
+again.
+
+285
+00:13:29,010 --> 00:13:30,030
+And that's recurrent.
+
+286
+00:13:30,030 --> 00:13:33,730
+And so you can write this recurrent function
+
+287
+00:13:33,730 --> 00:13:35,610
+for what your hidden state will be,
+
+288
+00:13:35,610 --> 00:13:37,770
+that some function of your previous hidden state
+
+289
+00:13:37,770 --> 00:13:40,370
+and your current input beta.
+
+290
+00:13:40,370 --> 00:13:42,570
+And then again your output function
+
+291
+00:13:42,570 --> 00:13:47,750
+is going to be g mapped from your hidden state.
+
+292
+00:13:47,750 --> 00:13:50,430
+I think it's a little easier to interpret
+
+293
+00:13:50,430 --> 00:13:52,670
+when you think about the computation being unrolled,
+
+294
+00:13:52,670 --> 00:13:56,190
+because then, actually, for any given time point,
+
+295
+00:13:56,190 --> 00:13:58,330
+it's still a directed graph.
+
+296
+00:13:58,330 --> 00:14:01,590
+It's just that you have this recurrence loop.
+
+297
+00:14:01,590 --> 00:14:05,962
+So again, this is the simplest version of this.
+
+298
+00:14:05,962 --> 00:14:07,670
+So now, you assume all of those functions
+
+299
+00:14:07,670 --> 00:14:09,310
+are linear layers, which we're very
+
+300
+00:14:09,310 --> 00:14:10,950
+familiar with at this point.
+
+301
+00:14:10,950 --> 00:14:12,670
+So now, what you're learning is you're
+
+302
+00:14:12,670 --> 00:14:19,008
+learning u, which is mapping your input to the next point.
+
+303
+00:14:19,008 --> 00:14:20,550
+You're learning some v that's mapping
+
+304
+00:14:20,550 --> 00:14:24,700
+your previous hidden state in as well, and you combine them.
+
+305
+00:14:24,700 --> 00:14:26,950
+And then you're learning v that maps your hidden state
+
+306
+00:14:26,950 --> 00:14:29,710
+to the output.
+
+307
+00:14:29,710 --> 00:14:33,210
+And so now, here, you have something like this right.
+
+308
+00:14:33,210 --> 00:14:37,070
+You'll have some non-linearities in there in the simplest form.
+
+309
+00:14:37,070 --> 00:14:40,670
+So your new hidden state is just non-linearity applied
+
+310
+00:14:40,670 --> 00:14:44,130
+on top of w times the previous hidden state,
+
+311
+00:14:44,130 --> 00:14:46,770
+plus u times your input data at the current time
+
+312
+00:14:46,770 --> 00:14:49,290
+point, plus some bias term.
+
+313
+00:14:49,290 --> 00:14:51,410
+And then similarly, the output again
+
+314
+00:14:51,410 --> 00:14:56,570
+is some other nonlinearity times V
+
+315
+00:14:56,570 --> 00:14:59,850
+plus the current hidden state plus a different bias term.
+
+316
+00:14:59,850 --> 00:15:07,170
+So if I got rid of W here, what would this be called--
+
+317
+00:15:07,170 --> 00:15:09,670
+if I got rid of the kind of recurrence dimension,
+
+318
+00:15:09,670 --> 00:15:13,090
+if we were just looking at that mapping between the input
+
+319
+00:15:13,090 --> 00:15:13,950
+and the output?
+
+320
+00:15:19,370 --> 00:15:22,350
+I mean, since it's scalars, it's a little silly.
+
+321
+00:15:22,350 --> 00:15:24,510
+I mean, it's like a one-dimensional convolution.
+
+322
+00:15:24,510 --> 00:15:26,470
+But imagine if you extend these beyond scalars.
+
+323
+00:15:26,470 --> 00:15:28,890
+It starts looking a little bit like that multi-layer perceptron
+
+324
+00:15:28,890 --> 00:15:30,230
+that we're very familiar with.
+
+325
+00:15:30,230 --> 00:15:33,890
+So the only difference here is that recurrence
+
+326
+00:15:33,890 --> 00:15:37,530
+that's actually sending this information forward over time.
+
+327
+00:15:37,530 --> 00:15:39,190
+And really, I think, the point here
+
+328
+00:15:39,190 --> 00:15:40,690
+is that the hidden state is intended
+
+329
+00:15:40,690 --> 00:15:45,950
+to capture the most relevant historical information.
+
+330
+00:15:45,950 --> 00:15:50,550
+And what we're learning in W is how
+
+331
+00:15:50,550 --> 00:15:53,350
+do we actually understand what is relevant?
+
+332
+00:15:53,350 --> 00:15:56,070
+What do we need to keep?
+
+333
+00:15:56,070 --> 00:15:58,670
+And of course, this can be extended to be deep.
+
+334
+00:15:58,670 --> 00:16:01,090
+You don't need to only have a single hidden state.
+
+335
+00:16:01,090 --> 00:16:03,930
+You can actually stack a bunch of these on top of each other--
+
+336
+00:16:03,930 --> 00:16:08,550
+have many, many different hidden states, hidden layers.
+
+337
+00:16:08,550 --> 00:16:12,210
+And then, now, these could be any dimensional tensor.
+
+338
+00:16:12,210 --> 00:16:14,653
+And there are many, many, many works
+
+339
+00:16:14,653 --> 00:16:16,070
+that have looked at different ways
+
+340
+00:16:16,070 --> 00:16:19,910
+to structure these deep recurrent neural networks.
+
+341
+00:16:19,910 --> 00:16:22,310
+But how do we do backprop if we don't have a DAG?
+
+342
+00:16:22,310 --> 00:16:24,616
+Oh, yeah?
+
+343
+00:16:24,616 --> 00:16:28,950
+AUDIENCE: So the recurrence step-- how many time
+
+344
+00:16:28,950 --> 00:16:29,830
+steps do you have?
+
+345
+00:16:29,830 --> 00:16:32,670
+So you're unrolling it, but how do you know when to stop?
+
+346
+00:16:32,670 --> 00:16:34,350
+SARA BEERY: To infinity and beyond.
+
+347
+00:16:34,350 --> 00:16:35,510
+AUDIENCE: Yeah.
+
+348
+00:16:35,510 --> 00:16:37,130
+Is it a hyperparameter?
+
+349
+00:16:37,130 --> 00:16:39,580
+Is it something that gets learned in the network
+
+350
+00:16:39,580 --> 00:16:43,010
+to see what's the optimal number of these--
+
+351
+00:16:43,010 --> 00:16:44,760
+SARA BEERY: So the way this is structured,
+
+352
+00:16:44,760 --> 00:16:46,900
+it doesn't have a sense of stop.
+
+353
+00:16:46,900 --> 00:16:49,680
+I mean, it'll just stop when you stop doing it.
+
+354
+00:16:49,680 --> 00:16:51,432
+Like, when you stop putting in input data,
+
+355
+00:16:51,432 --> 00:16:52,640
+I guess that's when it stops.
+
+356
+00:16:52,640 --> 00:16:54,420
+But there isn't a sense in this model
+
+357
+00:16:54,420 --> 00:16:57,580
+necessarily, as it's structured, that has an end.
+
+358
+00:16:57,580 --> 00:16:59,940
+Because you have that weight that's
+
+359
+00:16:59,940 --> 00:17:03,360
+passing the previous hidden unit into the next one.
+
+360
+00:17:03,360 --> 00:17:06,319
+So if you don't give it a next step, I guess that's the end.
+
+361
+00:17:06,319 --> 00:17:09,140
+But it doesn't know what's stopping it.
+
+362
+00:17:09,140 --> 00:17:12,619
+AUDIENCE: In practice, are you-- is your input like a sequence,
+
+363
+00:17:12,619 --> 00:17:16,460
+or are you feeding it in one-by-one?
+
+364
+00:17:16,460 --> 00:17:19,300
+SARA BEERY: I mean, it depends on the problem.
+
+365
+00:17:19,300 --> 00:17:22,980
+I mean, if you're using these types of RNNs
+
+366
+00:17:22,980 --> 00:17:27,200
+to do something like model video or model audio clips,
+
+367
+00:17:27,200 --> 00:17:28,540
+they probably have an end.
+
+368
+00:17:28,540 --> 00:17:31,260
+So you just stop running them when you get to the end.
+
+369
+00:17:31,260 --> 00:17:34,640
+But you could also think of it in a continual way,
+
+370
+00:17:34,640 --> 00:17:37,582
+like maybe you're continuing to get temperature data every day,
+
+371
+00:17:37,582 --> 00:17:39,540
+and every day you predict the next temperature,
+
+372
+00:17:39,540 --> 00:17:42,180
+and that's going to go until the world ends.
+
+373
+00:17:45,145 --> 00:17:46,020
+Does that make sense?
+
+374
+00:17:46,020 --> 00:17:46,540
+Yeah?
+
+375
+00:17:46,540 --> 00:17:48,040
+AUDIENCE: How does this architecture
+
+376
+00:17:48,040 --> 00:17:50,240
+capture the infinite life of the memory?
+
+377
+00:17:50,240 --> 00:17:53,520
+Because in a way, it seems like a Markov chain.
+
+378
+00:17:53,520 --> 00:17:56,240
+It only depends on the previous state.
+
+379
+00:17:56,240 --> 00:17:59,040
+SARA BEERY: So the question was, how does this architecture
+
+380
+00:17:59,040 --> 00:18:02,420
+capture memory throughout that very long infinite length,
+
+381
+00:18:02,420 --> 00:18:05,240
+because that hidden state only depends on the previous state?
+
+382
+00:18:05,240 --> 00:18:06,680
+So it's recurrent.
+
+383
+00:18:06,680 --> 00:18:09,085
+So this state only depends on the previous state.
+
+384
+00:18:09,085 --> 00:18:11,460
+But the previous state depended on the state before that.
+
+385
+00:18:11,460 --> 00:18:13,835
+And the previous state depended on the state before that.
+
+386
+00:18:13,835 --> 00:18:17,320
+So you are capturing in every single hidden unit
+
+387
+00:18:17,320 --> 00:18:19,240
+as far back as you have.
+
+388
+00:18:19,240 --> 00:18:22,360
+But we'll talk about how even though that's theoretically
+
+389
+00:18:22,360 --> 00:18:24,640
+true, that this construction actually
+
+390
+00:18:24,640 --> 00:18:28,360
+makes it really difficult to learn things across very, very
+
+391
+00:18:28,360 --> 00:18:33,840
+long time horizons, mostly because you have some limited
+
+392
+00:18:33,840 --> 00:18:34,647
+capacity there.
+
+393
+00:18:34,647 --> 00:18:36,480
+And then we'll also talk about actually some
+
+394
+00:18:36,480 --> 00:18:39,320
+of the mathematical limitations of this formulation.
+
+395
+00:18:39,320 --> 00:18:42,000
+But yes, great question.
+
+396
+00:18:42,000 --> 00:18:42,500
+Cool.
+
+397
+00:18:42,500 --> 00:18:44,460
+So how do you do backprop if we have
+
+398
+00:18:44,460 --> 00:18:47,340
+a DAG-- if we don't have a DAG?
+
+399
+00:18:47,340 --> 00:18:49,860
+So the simple, practical thing-- historically,
+
+400
+00:18:49,860 --> 00:18:52,260
+this was something that really tripped people up.
+
+401
+00:18:52,260 --> 00:18:54,620
+Backprop is intended for feedforward networks,
+
+402
+00:18:54,620 --> 00:18:57,020
+and now we have loops.
+
+403
+00:18:57,020 --> 00:19:00,260
+But the hack is you just decide when
+
+404
+00:19:00,260 --> 00:19:03,860
+you're training what your fixed time window that you're going
+
+405
+00:19:03,860 --> 00:19:06,580
+to propagate back through is.
+
+406
+00:19:06,580 --> 00:19:11,220
+And now, you unroll it through that time window.
+
+407
+00:19:11,220 --> 00:19:13,775
+So you'd say, guess what?
+
+408
+00:19:13,775 --> 00:19:15,400
+My time window is going to be this far.
+
+409
+00:19:15,400 --> 00:19:18,700
+I'm going to go from V back to x0.
+
+410
+00:19:18,700 --> 00:19:20,823
+And then, now, you've unrolled it.
+
+411
+00:19:20,823 --> 00:19:22,740
+And of course, you have some shared parameters
+
+412
+00:19:22,740 --> 00:19:24,260
+in that network, but it's actually
+
+413
+00:19:24,260 --> 00:19:28,220
+now, again, a directed acyclic graph, because we're
+
+414
+00:19:28,220 --> 00:19:29,780
+stopping the point where you're going
+
+415
+00:19:29,780 --> 00:19:31,980
+to keep going back forever.
+
+416
+00:19:31,980 --> 00:19:34,620
+And so here, you can actually just-- again,
+
+417
+00:19:34,620 --> 00:19:36,480
+if you're going to try to calculate
+
+418
+00:19:36,480 --> 00:19:44,760
+the influence on that output, d of xout with respect to d of xin
+
+419
+00:19:44,760 --> 00:19:48,600
+over from 0 to time t, you can do that
+
+420
+00:19:48,600 --> 00:19:54,080
+by just sending now through this directed acyclic graph back
+
+421
+00:19:54,080 --> 00:19:57,880
+to that zeroth element just by unrolling
+
+422
+00:19:57,880 --> 00:20:00,480
+as far as you want to unroll.
+
+423
+00:20:00,480 --> 00:20:03,660
+And that's a parameter that you would select or tune.
+
+424
+00:20:03,660 --> 00:20:08,520
+How far are you going to send your backpropagation?
+
+425
+00:20:08,520 --> 00:20:10,440
+And then once you've unrolled it,
+
+426
+00:20:10,440 --> 00:20:12,320
+and you've kind of decided on this fixed time
+
+427
+00:20:12,320 --> 00:20:14,280
+window during training, then you can just
+
+428
+00:20:14,280 --> 00:20:16,240
+use the same chain rule.
+
+429
+00:20:16,240 --> 00:20:19,760
+And you can calculate what that gradient is going to be.
+
+430
+00:20:19,760 --> 00:20:21,200
+And the interesting thing here is
+
+431
+00:20:21,200 --> 00:20:24,800
+it does limit maybe how well we might learn things
+
+432
+00:20:24,800 --> 00:20:27,960
+further back in time because, of course,
+
+433
+00:20:27,960 --> 00:20:30,618
+the information is still available.
+
+434
+00:20:30,618 --> 00:20:32,160
+At inference time, you're still going
+
+435
+00:20:32,160 --> 00:20:34,160
+to have that previous information getting passed
+
+436
+00:20:34,160 --> 00:20:35,600
+through or getting encoded.
+
+437
+00:20:35,600 --> 00:20:38,340
+But if you only trained the model to send signal back
+
+438
+00:20:38,340 --> 00:20:41,100
+to a given fixed time window, you
+
+439
+00:20:41,100 --> 00:20:43,060
+could see how intuitively it might
+
+440
+00:20:43,060 --> 00:20:48,340
+teach you to only capture some of limited
+
+441
+00:20:48,340 --> 00:20:50,580
+temporal window of information.
+
+442
+00:20:50,580 --> 00:20:56,300
+Now, in practice, there's also other complexities
+
+443
+00:20:56,300 --> 00:20:59,760
+as we increase that time window in terms of what that means.
+
+444
+00:20:59,760 --> 00:21:00,260
+Yeah?
+
+445
+00:21:00,260 --> 00:21:03,340
+AUDIENCE: [INAUDIBLE] increase the time window, is it then
+
+446
+00:21:03,340 --> 00:21:07,220
+harder to predict if you only use a couple of inputs
+
+447
+00:21:07,220 --> 00:21:09,580
+at inference time?
+
+448
+00:21:09,580 --> 00:21:10,772
+SARA BEERY: Oh, interesting.
+
+449
+00:21:10,772 --> 00:21:12,980
+So the question, which I think is an interesting one,
+
+450
+00:21:12,980 --> 00:21:18,740
+is if you've trained this model using backprop over maybe a time
+
+451
+00:21:18,740 --> 00:21:25,180
+window of 20, now if you only have a sequence of three inputs,
+
+452
+00:21:25,180 --> 00:21:28,240
+is that actually limiting your ability to do it shorter?
+
+453
+00:21:28,240 --> 00:21:32,820
+So potentially no, because this is just
+
+454
+00:21:32,820 --> 00:21:38,610
+looking at one component of that gradient.
+
+455
+00:21:38,610 --> 00:21:43,770
+But actually, if we think about this, you--
+
+456
+00:21:43,770 --> 00:21:47,130
+so this gradient is also going to be--
+
+457
+00:21:47,130 --> 00:21:50,990
+this is just the input of that on that,
+
+458
+00:21:50,990 --> 00:21:53,170
+and that's like the end of that time limit.
+
+459
+00:21:53,170 --> 00:21:56,730
+But in practice, you would also do everything up
+
+460
+00:21:56,730 --> 00:21:58,030
+to this time point.
+
+461
+00:21:58,030 --> 00:22:00,210
+And we'll go through that in the next couple slides.
+
+462
+00:22:00,210 --> 00:22:02,953
+So you would still be getting that signal from everything
+
+463
+00:22:02,953 --> 00:22:04,870
+within the time window that you're looking at,
+
+464
+00:22:04,870 --> 00:22:07,510
+not just going back to the farthest point.
+
+465
+00:22:07,510 --> 00:22:11,410
+Which makes sense, because it might be much more
+
+466
+00:22:11,410 --> 00:22:14,490
+helpful to have some of those more frequent, more
+
+467
+00:22:14,490 --> 00:22:17,190
+recent gradients than maybe the further ones.
+
+468
+00:22:17,190 --> 00:22:18,290
+Yeah?
+
+469
+00:22:18,290 --> 00:22:20,790
+AUDIENCE: To go along that point, for this example,
+
+470
+00:22:20,790 --> 00:22:24,250
+would it be like if xin is today's temperature,
+
+471
+00:22:24,250 --> 00:22:27,550
+xout is six days in advance temperature.
+
+472
+00:22:27,550 --> 00:22:30,570
+But we are actually inherently predicting
+
+473
+00:22:30,570 --> 00:22:34,597
+one day, two day, three day, four day, five day to get there.
+
+474
+00:22:34,597 --> 00:22:36,430
+SARA BEERY: Yeah, so what we're showing here
+
+475
+00:22:36,430 --> 00:22:38,890
+is just the fact that if you do unroll this,
+
+476
+00:22:38,890 --> 00:22:40,973
+that now you do have this directed graph again.
+
+477
+00:22:40,973 --> 00:22:43,390
+But then like in practice, essentially, what you're saying
+
+478
+00:22:43,390 --> 00:22:45,430
+is you would only take the gradients up
+
+479
+00:22:45,430 --> 00:22:48,050
+to t minus whatever x0 was.
+
+480
+00:22:48,050 --> 00:22:50,485
+So this is like 1, 2, 3, 4, 5, 6.
+
+481
+00:22:50,485 --> 00:22:52,110
+So you'd only be taking those gradients
+
+482
+00:22:52,110 --> 00:22:54,230
+over a sequence of six.
+
+483
+00:22:54,230 --> 00:22:57,810
+And then, now, for the next point you'd shift it right.
+
+484
+00:22:57,810 --> 00:22:59,330
+So now, you'd only go to x1.
+
+485
+00:22:59,330 --> 00:23:00,747
+And then for the next point, you'd
+
+486
+00:23:00,747 --> 00:23:02,350
+only send gradients from x2.
+
+487
+00:23:02,350 --> 00:23:03,830
+So you have some fixed time window
+
+488
+00:23:03,830 --> 00:23:06,410
+that you're unrolling that you actually accept gradient--
+
+489
+00:23:06,410 --> 00:23:09,170
+you calculate gradients over.
+
+490
+00:23:09,170 --> 00:23:09,670
+Yeah?
+
+491
+00:23:09,670 --> 00:23:11,630
+AUDIENCE: The idea that the truncated time
+
+492
+00:23:11,630 --> 00:23:14,645
+window is some approximation of an infinite time window?
+
+493
+00:23:14,645 --> 00:23:16,770
+SARA BEERY: I think that's a reasonable assumption.
+
+494
+00:23:16,770 --> 00:23:18,630
+So the question was is that fixed time
+
+495
+00:23:18,630 --> 00:23:20,070
+window a reasonable approximation
+
+496
+00:23:20,070 --> 00:23:21,710
+of an infinite time window?
+
+497
+00:23:21,710 --> 00:23:23,830
+I would say it's maybe a bit of both.
+
+498
+00:23:23,830 --> 00:23:26,330
+So again, I'll walk through it in a sec,
+
+499
+00:23:26,330 --> 00:23:29,590
+but basically, with this formulation, the longer time
+
+500
+00:23:29,590 --> 00:23:32,250
+window you have, the harder it is for information
+
+501
+00:23:32,250 --> 00:23:35,930
+to actually make it that far with these weights.
+
+502
+00:23:35,930 --> 00:23:38,730
+So at some point, actually, extending the time window
+
+503
+00:23:38,730 --> 00:23:42,550
+is probably, by construction here, not super beneficial.
+
+504
+00:23:46,130 --> 00:23:46,630
+Yes?
+
+505
+00:23:46,630 --> 00:23:48,047
+AUDIENCE: I wonder, is there a way
+
+506
+00:23:48,047 --> 00:23:49,810
+to optimize what's the time window you
+
+507
+00:23:49,810 --> 00:23:51,070
+need for a specific task?
+
+508
+00:23:51,070 --> 00:23:52,903
+Or is it just--
+
+509
+00:23:52,903 --> 00:23:54,570
+SARA BEERY: Well, it's a hyperparameter.
+
+510
+00:23:54,570 --> 00:23:57,090
+So when you look at the literature for this,
+
+511
+00:23:57,090 --> 00:24:00,930
+people would ablate that hyperparameter, for example.
+
+512
+00:24:00,930 --> 00:24:04,228
+And I think sometimes, it might be something
+
+513
+00:24:04,228 --> 00:24:06,770
+that you could actually bring some domain knowledge to decide
+
+514
+00:24:06,770 --> 00:24:09,030
+what actually makes sense here.
+
+515
+00:24:11,890 --> 00:24:14,270
+So a few conceptual things.
+
+516
+00:24:14,270 --> 00:24:20,170
+If you are going to unroll this, remember that function
+
+517
+00:24:20,170 --> 00:24:22,570
+that maps the hidden states forward through time
+
+518
+00:24:22,570 --> 00:24:25,250
+is fixed over time.
+
+519
+00:24:25,250 --> 00:24:28,690
+So those W's are shared.
+
+520
+00:24:28,690 --> 00:24:31,690
+So now, what does that mean for backprop?
+
+521
+00:24:31,690 --> 00:24:35,070
+So we have this sequence of videos.
+
+522
+00:24:35,070 --> 00:24:39,510
+Now, the loss is going to end up being
+
+523
+00:24:39,510 --> 00:24:42,710
+the sum of the losses from each of those predicted
+
+524
+00:24:42,710 --> 00:24:45,990
+frames over some sequence.
+
+525
+00:24:45,990 --> 00:24:48,070
+And to optimize, you want to learn
+
+526
+00:24:48,070 --> 00:24:52,230
+how you would change W, U, and V so
+
+527
+00:24:52,230 --> 00:25:00,310
+that the sum of the kind of loss over that sequence is minimized.
+
+528
+00:25:00,310 --> 00:25:01,930
+This is how we do gradient descent.
+
+529
+00:25:01,930 --> 00:25:04,530
+But you want it for the entire sequence within, I guess,
+
+530
+00:25:04,530 --> 00:25:07,110
+the time window that you're considering.
+
+531
+00:25:07,110 --> 00:25:09,890
+So we want to figure out how we want to change all of these.
+
+532
+00:25:09,890 --> 00:25:14,270
+But of course, W is, again, shared over time.
+
+533
+00:25:14,270 --> 00:25:18,070
+So we have to do backprop over shared parameters.
+
+534
+00:25:18,070 --> 00:25:21,670
+So we're going to sum up all of these individual losses.
+
+535
+00:25:21,670 --> 00:25:24,510
+And now, we're going to be passing this gradient back.
+
+536
+00:25:24,510 --> 00:25:27,870
+And now, does anyone remember what
+
+537
+00:25:27,870 --> 00:25:31,260
+it looks like when we have these backprop over shared parameters?
+
+538
+00:25:31,260 --> 00:25:34,340
+Because here, we have the loss is all
+
+539
+00:25:34,340 --> 00:25:36,780
+getting summed up, the gradients all coming down.
+
+540
+00:25:36,780 --> 00:25:39,580
+And then there's this kind of waterfall backwards where those
+
+541
+00:25:39,580 --> 00:25:42,100
+gradients are passing through all the W's.
+
+542
+00:25:42,100 --> 00:25:44,940
+So does anyone remember what we do when we're taking gradients
+
+543
+00:25:44,940 --> 00:25:46,400
+over shared parameters?
+
+544
+00:25:50,020 --> 00:25:51,540
+It's been a couple of weeks.
+
+545
+00:25:51,540 --> 00:25:53,820
+Does this look familiar to anybody?
+
+546
+00:25:53,820 --> 00:25:57,340
+Yeah, so here, there's this idea that if you
+
+547
+00:25:57,340 --> 00:25:59,020
+had shared parameters, and they're
+
+548
+00:25:59,020 --> 00:26:01,340
+being shared throughout a network,
+
+549
+00:26:01,340 --> 00:26:04,500
+that it's actually the same as branching structure
+
+550
+00:26:04,500 --> 00:26:06,660
+in a directed acyclic graph.
+
+551
+00:26:06,660 --> 00:26:09,620
+And so when you're doing a gradient-- when you're
+
+552
+00:26:09,620 --> 00:26:12,040
+taking the gradient over this branching structure,
+
+553
+00:26:12,040 --> 00:26:15,500
+you're actually just summing the gradients for the parameter
+
+554
+00:26:15,500 --> 00:26:17,700
+each time that parameter occurs.
+
+555
+00:26:17,700 --> 00:26:19,340
+So for that W, we're going to just
+
+556
+00:26:19,340 --> 00:26:22,420
+be summing those gradients over every single element
+
+557
+00:26:22,420 --> 00:26:25,300
+that we have that W in.
+
+558
+00:26:25,300 --> 00:26:25,940
+Cool.
+
+559
+00:26:25,940 --> 00:26:29,260
+So here, we have W in all of these places,
+
+560
+00:26:29,260 --> 00:26:31,280
+and now we have this branching structure.
+
+561
+00:26:31,280 --> 00:26:33,520
+And then when we're calculating the change
+
+562
+00:26:33,520 --> 00:26:36,120
+in that loss with respect to W, it's
+
+563
+00:26:36,120 --> 00:26:39,920
+the sum over the change in the loss, the gradients from each
+
+564
+00:26:39,920 --> 00:26:41,540
+of those.
+
+565
+00:26:41,540 --> 00:26:42,040
+Cool.
+
+566
+00:26:42,040 --> 00:26:45,360
+And the nice thing is, if you're using something like PyTorch,
+
+567
+00:26:45,360 --> 00:26:47,320
+this will happen automatically in autograd
+
+568
+00:26:47,320 --> 00:26:50,200
+as long as you don't do deep copies, as long as you're
+
+569
+00:26:50,200 --> 00:26:52,860
+pointing to the actual by reference
+
+570
+00:26:52,860 --> 00:26:54,800
+that actual variable, then autograd
+
+571
+00:26:54,800 --> 00:26:58,040
+handles this kind of summing over
+
+572
+00:26:58,040 --> 00:27:00,640
+the gradients within the thing reasonably well.
+
+573
+00:27:00,640 --> 00:27:02,720
+So make sure you're not doing deep copies,
+
+574
+00:27:02,720 --> 00:27:06,200
+and it all works out pretty nicely.
+
+575
+00:27:06,200 --> 00:27:09,200
+And then I think another point is you're
+
+576
+00:27:09,200 --> 00:27:10,940
+summing over the past inputs.
+
+577
+00:27:10,940 --> 00:27:13,645
+So if you're calculating the loss with respect to this one,
+
+578
+00:27:13,645 --> 00:27:15,020
+you're summing over all of those.
+
+579
+00:27:15,020 --> 00:27:16,978
+If you're calculating with respect to this one,
+
+580
+00:27:16,978 --> 00:27:19,840
+it's only over the ones previous to it, et cetera, et cetera,
+
+581
+00:27:19,840 --> 00:27:23,120
+because that's only going in one direction.
+
+582
+00:27:23,120 --> 00:27:29,380
+Any other questions about backpropagation through an RNN?
+
+583
+00:27:29,380 --> 00:27:31,780
+Cool, let's move on.
+
+584
+00:27:31,780 --> 00:27:37,240
+So problem of long-range dependencies.
+
+585
+00:27:37,240 --> 00:27:40,220
+We talked about, well, as this time window starts
+
+586
+00:27:40,220 --> 00:27:42,100
+to stretch towards infinity, it seems
+
+587
+00:27:42,100 --> 00:27:45,060
+like it would be hard for this thing to remember.
+
+588
+00:27:45,060 --> 00:27:48,300
+Why not set your time window to infinity?
+
+589
+00:27:48,300 --> 00:27:50,340
+Why not remember everything?
+
+590
+00:27:50,340 --> 00:27:55,720
+So it turns out, first, memory size will grow with that t.
+
+591
+00:27:55,720 --> 00:27:58,140
+So if you need to use some of infinitely long sequence
+
+592
+00:27:58,140 --> 00:28:01,500
+as an input, that means it takes up a lot more memory.
+
+593
+00:28:01,500 --> 00:28:05,020
+And that time and memory is non-parametric.
+
+594
+00:28:05,020 --> 00:28:06,900
+There's not like a finite set of parameters
+
+595
+00:28:06,900 --> 00:28:10,660
+we can use to model infinite time.
+
+596
+00:28:10,660 --> 00:28:13,940
+RNNs make like a Markov assumption,
+
+597
+00:28:13,940 --> 00:28:17,340
+which is to say that the future hidden state only
+
+598
+00:28:17,340 --> 00:28:20,580
+depends on the immediate preceding hidden state.
+
+599
+00:28:20,580 --> 00:28:23,700
+So we say, it's recurrent, but we only
+
+600
+00:28:23,700 --> 00:28:26,960
+depend on just the immediate hidden state before that.
+
+601
+00:28:26,960 --> 00:28:29,277
+And then by putting the right information
+
+602
+00:28:29,277 --> 00:28:31,360
+into that hidden state, you can model dependencies
+
+603
+00:28:31,360 --> 00:28:33,560
+that are arbitrarily far apart in theory,
+
+604
+00:28:33,560 --> 00:28:37,120
+because the model learns with W how
+
+605
+00:28:37,120 --> 00:28:39,000
+to keep the relevant information,
+
+606
+00:28:39,000 --> 00:28:42,080
+or at least that's the hope.
+
+607
+00:28:42,080 --> 00:28:46,600
+So here, what you're saying is, actually, in order
+
+608
+00:28:46,600 --> 00:28:48,920
+to capture those long range dependencies,
+
+609
+00:28:48,920 --> 00:28:51,400
+we have to propagate that information
+
+610
+00:28:51,400 --> 00:28:55,800
+through a very long chain of dependencies.
+
+611
+00:28:55,800 --> 00:29:00,680
+And this ends up being a bit difficult.
+
+612
+00:29:00,680 --> 00:29:08,480
+So let's walk through this-- this very big chalk.
+
+613
+00:29:08,480 --> 00:29:11,680
+So for simplicity, just to walk through what the math looks
+
+614
+00:29:11,680 --> 00:29:14,300
+like, we're going to assume we don't have any non-linearities,
+
+615
+00:29:14,300 --> 00:29:17,200
+and all the bias terms are set to 0.
+
+616
+00:29:17,200 --> 00:29:21,760
+So say we have h sub 1.
+
+617
+00:29:21,760 --> 00:29:25,060
+And that's going to be equal to, like we said before, W
+
+618
+00:29:25,060 --> 00:29:32,340
+of H sub 0 plus U of X sub 1.
+
+619
+00:29:32,340 --> 00:29:33,520
+So H sub 1.
+
+620
+00:29:33,520 --> 00:29:35,333
+The hidden state at that first step
+
+621
+00:29:35,333 --> 00:29:37,500
+is going to be equal to the weights times the hidden
+
+622
+00:29:37,500 --> 00:29:40,580
+state of the previous step plus these weights
+
+623
+00:29:40,580 --> 00:29:42,540
+times the new input.
+
+624
+00:29:42,540 --> 00:29:45,020
+Now, if we write out what this recurrence looks like-- now,
+
+625
+00:29:45,020 --> 00:29:47,020
+if we say H sub 2, now that's going
+
+626
+00:29:47,020 --> 00:30:00,860
+to be equal to W of W of H sub 0 plus U of X sub 1 plus U of X
+
+627
+00:30:00,860 --> 00:30:01,640
+sub 2.
+
+628
+00:30:01,640 --> 00:30:05,020
+So what do you notice here?
+
+629
+00:30:05,020 --> 00:30:08,980
+Now, we have a W squared term essentially.
+
+630
+00:30:08,980 --> 00:30:12,460
+And so now, if you do it for another time step,
+
+631
+00:30:12,460 --> 00:30:16,660
+you're going to have W cubed, et cetera, all the way up to W
+
+632
+00:30:16,660 --> 00:30:19,540
+to the N.
+
+633
+00:30:19,540 --> 00:30:23,290
+So if you have this quadratic relationship with your weights
+
+634
+00:30:23,290 --> 00:30:28,250
+matrix, what happens for values in that weight
+
+635
+00:30:28,250 --> 00:30:29,550
+matrix that are small?
+
+636
+00:30:32,450 --> 00:30:34,030
+They'll go to 0.
+
+637
+00:30:34,030 --> 00:30:37,890
+And anything in that weight matrix that's big
+
+638
+00:30:37,890 --> 00:30:39,450
+will be infinite.
+
+639
+00:30:39,450 --> 00:30:41,730
+So what happens is in order for this
+
+640
+00:30:41,730 --> 00:30:45,330
+to be stable at all during training,
+
+641
+00:30:45,330 --> 00:30:46,970
+all the values kind of need to be
+
+642
+00:30:46,970 --> 00:30:51,090
+close to 1, which means it's kind of hard to capture really
+
+643
+00:30:51,090 --> 00:30:52,770
+variable information in there.
+
+644
+00:30:52,770 --> 00:30:55,150
+And then additionally, no matter what,
+
+645
+00:30:55,150 --> 00:30:57,330
+even if you're just a little bit below 1,
+
+646
+00:30:57,330 --> 00:30:58,930
+when you go to infinity, it will go
+
+647
+00:30:58,930 --> 00:31:04,250
+to 0 because you have this sort of exponential relationship.
+
+648
+00:31:04,250 --> 00:31:06,090
+And so what this means is, often,
+
+649
+00:31:06,090 --> 00:31:08,330
+that old observations in a recurrent neural network
+
+650
+00:31:08,330 --> 00:31:13,130
+are forgotten, and that the stochastic gradients
+
+651
+00:31:13,130 --> 00:31:14,888
+become really high variance.
+
+652
+00:31:14,888 --> 00:31:16,930
+And you can either have these vanishing gradients
+
+653
+00:31:16,930 --> 00:31:18,730
+or exploding gradients.
+
+654
+00:31:18,730 --> 00:31:24,610
+And so this is why we started to look towards LSTMs.
+
+655
+00:31:24,610 --> 00:31:25,110
+Yeah?
+
+656
+00:31:25,110 --> 00:31:26,670
+AUDIENCE: So a couple lectures ago,
+
+657
+00:31:26,670 --> 00:31:28,430
+we talked about the spectral norm
+
+658
+00:31:28,430 --> 00:31:32,210
+and using that to normalize weights and activations.
+
+659
+00:31:32,210 --> 00:31:35,390
+So I'm wondering, would that fix this problem?
+
+660
+00:31:35,390 --> 00:31:38,030
+And if not, why not?
+
+661
+00:31:38,030 --> 00:31:40,230
+SARA BEERY: So the question was, we previously
+
+662
+00:31:40,230 --> 00:31:42,950
+talked about the spectral norm And using
+
+663
+00:31:42,950 --> 00:31:46,270
+that as a way to try to mitigate things like these vanishing
+
+664
+00:31:46,270 --> 00:31:48,870
+and exploding gradients.
+
+665
+00:31:48,870 --> 00:31:53,030
+So you could try to build something in here that
+
+666
+00:31:53,030 --> 00:31:57,710
+would try to normalize these weights so
+
+667
+00:31:57,710 --> 00:32:06,270
+that they would be, again, close to 1, essentially, or not
+
+668
+00:32:06,270 --> 00:32:07,810
+go to infinity or not.
+
+669
+00:32:07,810 --> 00:32:11,230
+But this function is--
+
+670
+00:32:11,230 --> 00:32:15,270
+like, this part here, the fact that because of the recurrence
+
+671
+00:32:15,270 --> 00:32:17,510
+relationship, you're taking an exponential
+
+672
+00:32:17,510 --> 00:32:20,810
+in the weights matrix.
+
+673
+00:32:20,810 --> 00:32:23,822
+You could take a spectral norm over that exponential,
+
+674
+00:32:23,822 --> 00:32:26,030
+but you're still going to take the exponential first.
+
+675
+00:32:26,030 --> 00:32:28,785
+So that might help you with the exploding gradients problem,
+
+676
+00:32:28,785 --> 00:32:31,410
+but it's not going to change the fact that the small things are
+
+677
+00:32:31,410 --> 00:32:33,050
+going to go to 0.
+
+678
+00:32:33,050 --> 00:32:34,250
+Does that make sense?
+
+679
+00:32:34,250 --> 00:32:34,990
+Yeah, cool.
+
+680
+00:32:37,930 --> 00:32:39,130
+And actually, if you--
+
+681
+00:32:39,130 --> 00:32:42,210
+I thought this was kind of a fun blog post
+
+682
+00:32:42,210 --> 00:32:43,810
+that specifically takes--
+
+683
+00:32:43,810 --> 00:32:45,830
+it's from a control theory professor,
+
+684
+00:32:45,830 --> 00:32:50,930
+but they're looking at stability analysis in recursion.
+
+685
+00:32:50,930 --> 00:32:53,890
+And so if anyone's interested in the different ways
+
+686
+00:32:53,890 --> 00:32:56,850
+that people think about what makes things stable or not
+
+687
+00:32:56,850 --> 00:33:00,390
+stable in a system if you have recursion,
+
+688
+00:33:00,390 --> 00:33:04,770
+I thought this was kind of a nice blog post.
+
+689
+00:33:04,770 --> 00:33:05,390
+Yes?
+
+690
+00:33:05,390 --> 00:33:08,090
+AUDIENCE: So you said gradients can explode or vanish.
+
+691
+00:33:08,090 --> 00:33:11,930
+Do they both correspond to old memories being forgotten?
+
+692
+00:33:11,930 --> 00:33:14,810
+And also as a follow-up, isn't it not a terrible thing
+
+693
+00:33:14,810 --> 00:33:19,390
+that old memories are forgotten, because that's what humans do?
+
+694
+00:33:19,390 --> 00:33:22,110
+SARA BEERY: So the question is, if you have exploding
+
+695
+00:33:22,110 --> 00:33:23,790
+and vanishing, do they both correspond
+
+696
+00:33:23,790 --> 00:33:25,350
+to memories of being forgotten?
+
+697
+00:33:25,350 --> 00:33:27,590
+And no, the exploding ones correspond
+
+698
+00:33:27,590 --> 00:33:30,990
+to unstable training, which we also don't really want.
+
+699
+00:33:30,990 --> 00:33:34,150
+And the vanishing ones would be old memories being forgotten.
+
+700
+00:33:34,150 --> 00:33:38,190
+And then do we actually want to remember things
+
+701
+00:33:38,190 --> 00:33:39,490
+over long time horizons?
+
+702
+00:33:39,490 --> 00:33:42,550
+And that's kind of the universal question-- do we need this?
+
+703
+00:33:42,550 --> 00:33:49,230
+And I would say that there are definitely cases where we don't.
+
+704
+00:33:49,230 --> 00:33:51,930
+And then there maybe are some cases where we do.
+
+705
+00:33:51,930 --> 00:33:56,150
+So an example might be--
+
+706
+00:33:56,150 --> 00:33:57,830
+think about temperature.
+
+707
+00:33:57,830 --> 00:34:00,850
+So we have these daily cycles of temperature.
+
+708
+00:34:00,850 --> 00:34:03,408
+So we'd like to remember that the temperature got warmer
+
+709
+00:34:03,408 --> 00:34:05,450
+in the middle of the day than at night yesterday.
+
+710
+00:34:05,450 --> 00:34:06,710
+So if we're looking at predicting temperature
+
+711
+00:34:06,710 --> 00:34:08,670
+on some of fine-grained horizon, you'd
+
+712
+00:34:08,670 --> 00:34:11,333
+want to be able to remember at least periodically a day back.
+
+713
+00:34:11,333 --> 00:34:13,750
+But then also you have these yearly cycles of temperature,
+
+714
+00:34:13,750 --> 00:34:16,672
+where it's hotter in the summer and cooler in the winter.
+
+715
+00:34:16,672 --> 00:34:18,630
+So maybe if you're trying to model temperature,
+
+716
+00:34:18,630 --> 00:34:21,350
+you also want to have this yearly dependency.
+
+717
+00:34:21,350 --> 00:34:23,570
+And then you have things like these weather cycles,
+
+718
+00:34:23,570 --> 00:34:25,510
+like El Niño, that happen every seven years.
+
+719
+00:34:25,510 --> 00:34:27,949
+And so depending on what you're trying to model,
+
+720
+00:34:27,949 --> 00:34:29,730
+there may actually be a lot of value
+
+721
+00:34:29,730 --> 00:34:31,889
+in the longer and longer term memory
+
+722
+00:34:31,889 --> 00:34:34,810
+if there's signal in more and more time scale.
+
+723
+00:34:34,810 --> 00:34:35,710
+Does that make sense?
+
+724
+00:34:38,409 --> 00:34:38,909
+Cool.
+
+725
+00:34:38,909 --> 00:34:41,929
+So this is why we introduced LSTMs,
+
+726
+00:34:41,929 --> 00:34:44,210
+which is to try to deal with forgetting,
+
+727
+00:34:44,210 --> 00:34:46,534
+to try to deal with this vanishing gradient problem.
+
+728
+00:34:46,534 --> 00:34:48,409
+And the reason the vanishing gradient problem
+
+729
+00:34:48,409 --> 00:34:51,650
+is more of a problem than the unstable exploding gradients
+
+730
+00:34:51,650 --> 00:34:54,989
+is exactly like what this guy over here mentioned.
+
+731
+00:34:54,989 --> 00:34:57,610
+There are things we can do to try to force--
+
+732
+00:34:57,610 --> 00:34:59,450
+to take normalization over the gradients
+
+733
+00:34:59,450 --> 00:35:01,610
+to keep them from exploding-- different ways
+
+734
+00:35:01,610 --> 00:35:04,310
+that we can constrain it, or regularize it, or clip it.
+
+735
+00:35:04,310 --> 00:35:09,530
+But we can't do that when things go to 0.
+
+736
+00:35:09,530 --> 00:35:17,280
+So LSTMs are essentially designed so that the default
+
+737
+00:35:17,280 --> 00:35:20,040
+behavior is to not forget.
+
+738
+00:35:20,040 --> 00:35:23,400
+And then you have to learn to forget.
+
+739
+00:35:23,400 --> 00:35:25,100
+And so the default is the identity.
+
+740
+00:35:25,100 --> 00:35:27,360
+You're biased to not forget anything.
+
+741
+00:35:27,360 --> 00:35:29,860
+And then you learn what to forget,
+
+742
+00:35:29,860 --> 00:35:32,360
+kind of like garbage collection-- what to throw away.
+
+743
+00:35:32,360 --> 00:35:35,640
+So that you can add new stuff.
+
+744
+00:35:35,640 --> 00:35:38,480
+And so if you look at this-- so this
+
+745
+00:35:38,480 --> 00:35:42,580
+is kind of like the standard recurrent neural network.
+
+746
+00:35:42,580 --> 00:35:44,280
+We have some non-linearity.
+
+747
+00:35:44,280 --> 00:35:46,160
+This is kind of a simplified version
+
+748
+00:35:46,160 --> 00:35:48,220
+where it looks like we're sending in the inputs.
+
+749
+00:35:48,220 --> 00:35:50,100
+There's a function here that's mapping this in.
+
+750
+00:35:50,100 --> 00:35:51,660
+And then we're sending out some hidden state,
+
+751
+00:35:51,660 --> 00:35:53,200
+but then there'd be some function mapping that
+
+752
+00:35:53,200 --> 00:35:54,100
+to the output.
+
+753
+00:35:54,100 --> 00:35:56,560
+We're just only looking at the hidden layer
+
+754
+00:35:56,560 --> 00:35:58,960
+component of this model.
+
+755
+00:35:58,960 --> 00:36:03,200
+And so what an LSTM does is it builds a little memory
+
+756
+00:36:03,200 --> 00:36:07,760
+controller that decides what to save and what to delete.
+
+757
+00:36:07,760 --> 00:36:10,420
+And it turns out this is still Turing complete.
+
+758
+00:36:10,420 --> 00:36:12,780
+And it's actually very close to a Turing machine.
+
+759
+00:36:12,780 --> 00:36:14,820
+It's kind of like that idea of a hidden tape
+
+760
+00:36:14,820 --> 00:36:16,940
+that you can read to or write from.
+
+761
+00:36:16,940 --> 00:36:20,180
+And so now, every single one of these functions
+
+762
+00:36:20,180 --> 00:36:22,700
+that maps us from our inputs to what
+
+763
+00:36:22,700 --> 00:36:25,660
+the next hidden state should be has this little controller
+
+764
+00:36:25,660 --> 00:36:27,340
+built in.
+
+765
+00:36:27,340 --> 00:36:29,860
+And so let's go through the different components
+
+766
+00:36:29,860 --> 00:36:31,300
+of this thing.
+
+767
+00:36:31,300 --> 00:36:34,540
+So first, we have this cell state C. This is a new thing
+
+768
+00:36:34,540 --> 00:36:36,500
+that we're introducing for an LSTM.
+
+769
+00:36:36,500 --> 00:36:39,380
+And this is kind of the tape in the Turing machine.
+
+770
+00:36:39,380 --> 00:36:42,900
+And this cell state is what gets modulated by the part that
+
+771
+00:36:42,900 --> 00:36:46,420
+decides what to forget and what to add.
+
+772
+00:36:46,420 --> 00:36:51,620
+So then we'll have some function, f of t.
+
+773
+00:36:51,620 --> 00:36:56,460
+And this function you'll operate over,
+
+774
+00:36:56,460 --> 00:36:59,900
+applying your previous weights to the previous hidden state,
+
+775
+00:36:59,900 --> 00:37:03,220
+and your current state, and then your biases.
+
+776
+00:37:03,220 --> 00:37:07,100
+And that is going to be non-linearized
+
+777
+00:37:07,100 --> 00:37:08,400
+by something like a sigmoid.
+
+778
+00:37:08,400 --> 00:37:10,580
+So if it's large, it goes to 1.
+
+779
+00:37:10,580 --> 00:37:12,820
+And if it's small, it goes to 0.
+
+780
+00:37:12,820 --> 00:37:15,880
+And so now, if you're taking this thing--
+
+781
+00:37:15,880 --> 00:37:20,200
+now, if you multiply by 0-- so if this value ends up
+
+782
+00:37:20,200 --> 00:37:23,240
+being small coming out of the function,
+
+783
+00:37:23,240 --> 00:37:25,460
+then it's telling you forget this thing.
+
+784
+00:37:28,280 --> 00:37:30,480
+So what you want to do is give high values
+
+785
+00:37:30,480 --> 00:37:33,600
+to things you want to remember and low values
+
+786
+00:37:33,600 --> 00:37:35,840
+to things you want to forget.
+
+787
+00:37:35,840 --> 00:37:38,480
+So that's like what this component of the LCM
+
+788
+00:37:38,480 --> 00:37:42,760
+is in charge of, deciding what to remember and what to forget.
+
+789
+00:37:42,760 --> 00:37:47,400
+And then each element of that cell state, essentially
+
+790
+00:37:47,400 --> 00:37:49,553
+because of the way that we're using
+
+791
+00:37:49,553 --> 00:37:51,220
+a sigmoid and not something like a ReLU,
+
+792
+00:37:51,220 --> 00:37:53,960
+which would be unbounded, is-- it's essentially
+
+793
+00:37:53,960 --> 00:37:56,120
+the identity function with some masking of what
+
+794
+00:37:56,120 --> 00:37:59,120
+we want to forget.
+
+795
+00:37:59,120 --> 00:38:02,560
+So then there's this next component.
+
+796
+00:38:02,560 --> 00:38:04,400
+And this one is determining which
+
+797
+00:38:04,400 --> 00:38:08,160
+indices we want to write to and what to write.
+
+798
+00:38:08,160 --> 00:38:13,420
+So now, we have essentially this i
+
+799
+00:38:13,420 --> 00:38:16,380
+that is used to determine basically which indices
+
+800
+00:38:16,380 --> 00:38:17,460
+we're going to write to.
+
+801
+00:38:17,460 --> 00:38:21,780
+And then the C of t is going to be
+
+802
+00:38:21,780 --> 00:38:25,240
+how that information kind of gets added to the cell state.
+
+803
+00:38:29,220 --> 00:38:34,580
+And then, finally, we need to do the actual forgetting.
+
+804
+00:38:34,580 --> 00:38:38,100
+And so this is where this comes in.
+
+805
+00:38:38,100 --> 00:38:40,300
+What's quite different is, for the first time now,
+
+806
+00:38:40,300 --> 00:38:43,020
+we have these multiplicative relationships right.
+
+807
+00:38:43,020 --> 00:38:44,280
+So you're multiplying.
+
+808
+00:38:44,280 --> 00:38:45,863
+You're taking the previous cell state,
+
+809
+00:38:45,863 --> 00:38:47,500
+and you're multiplying it by this f sub
+
+810
+00:38:47,500 --> 00:38:50,060
+t, which is going to be kind of either ones or 0's, or very
+
+811
+00:38:50,060 --> 00:38:51,300
+close to.
+
+812
+00:38:51,300 --> 00:38:54,780
+And then so now that's kind of updating the cell
+
+813
+00:38:54,780 --> 00:38:55,920
+state in the first place.
+
+814
+00:38:55,920 --> 00:38:59,440
+And then you're going to add this new information.
+
+815
+00:38:59,440 --> 00:39:04,020
+So you now have this i sub t multiplied by the new cell state
+
+816
+00:39:04,020 --> 00:39:04,820
+C sub t.
+
+817
+00:39:04,820 --> 00:39:07,500
+So in this case, it's removing information
+
+818
+00:39:07,500 --> 00:39:10,570
+and adding information.
+
+819
+00:39:10,570 --> 00:39:14,130
+So now, after you've actually updated that information
+
+820
+00:39:14,130 --> 00:39:16,250
+in the cell state, now we're going
+
+821
+00:39:16,250 --> 00:39:19,530
+to decide what gets output to the next hidden state.
+
+822
+00:39:19,530 --> 00:39:21,970
+It's not mathematically similar, but we just
+
+823
+00:39:21,970 --> 00:39:26,410
+learned about transformers right where we have the keys,
+
+824
+00:39:26,410 --> 00:39:27,930
+queries, and values.
+
+825
+00:39:27,930 --> 00:39:31,350
+So in that case, when we talk about this value projection,
+
+826
+00:39:31,350 --> 00:39:34,370
+these value matrix, that's kind of telling you
+
+827
+00:39:34,370 --> 00:39:36,970
+how you should output that next state
+
+828
+00:39:36,970 --> 00:39:40,830
+or how you should output the output of that thing.
+
+829
+00:39:40,830 --> 00:39:47,457
+And this feels to me, on vibes, kind of like values.
+
+830
+00:39:47,457 --> 00:39:49,290
+You've updated the cell states' information,
+
+831
+00:39:49,290 --> 00:39:53,250
+and now you want to say, how do we take that and update it
+
+832
+00:39:53,250 --> 00:39:55,970
+to the next hidden state?
+
+833
+00:39:55,970 --> 00:39:59,130
+And then note-- so we have now--
+
+834
+00:39:59,130 --> 00:40:01,010
+we have both these hidden states, which
+
+835
+00:40:01,010 --> 00:40:02,410
+are getting passed through.
+
+836
+00:40:02,410 --> 00:40:05,143
+But we also have that ticker tape, that cell state, that's
+
+837
+00:40:05,143 --> 00:40:06,310
+also getting passed through.
+
+838
+00:40:06,310 --> 00:40:09,470
+So there's kind of two things going on.
+
+839
+00:40:09,470 --> 00:40:10,710
+Cool.
+
+840
+00:40:10,710 --> 00:40:12,390
+So really, this important point--
+
+841
+00:40:12,390 --> 00:40:16,670
+the important thing that this has beyond that vanilla RNN
+
+842
+00:40:16,670 --> 00:40:19,550
+is the fact that you have almost this gating functionality that's
+
+843
+00:40:19,550 --> 00:40:22,710
+provided by multiplicative updates to the cell state,
+
+844
+00:40:22,710 --> 00:40:24,830
+where now we explicitly learn what to remember
+
+845
+00:40:24,830 --> 00:40:26,310
+and what to forget.
+
+846
+00:40:26,310 --> 00:40:28,350
+And then you multiply by 1, so you
+
+847
+00:40:28,350 --> 00:40:30,270
+have this identity instead of multiplying
+
+848
+00:40:30,270 --> 00:40:33,230
+by yourself, which removes the vanishing and exploding
+
+849
+00:40:33,230 --> 00:40:33,770
+gradients.
+
+850
+00:40:33,770 --> 00:40:36,230
+We no longer have that exponential.
+
+851
+00:40:36,230 --> 00:40:38,230
+Instead, you're only ever going to do something
+
+852
+00:40:38,230 --> 00:40:41,330
+like the identity or remove it and add something new.
+
+853
+00:40:45,090 --> 00:40:46,647
+Because the default is the identity,
+
+854
+00:40:46,647 --> 00:40:48,230
+it's kind of like a skipped connection
+
+855
+00:40:48,230 --> 00:40:50,570
+or a residual connection in a ResNet.
+
+856
+00:40:50,570 --> 00:40:52,870
+You have this component where you could just
+
+857
+00:40:52,870 --> 00:40:54,910
+learn, throughout this entire thing,
+
+858
+00:40:54,910 --> 00:40:57,610
+to only ever send the identity--
+
+859
+00:40:57,610 --> 00:41:01,790
+just send the same information forward all the time.
+
+860
+00:41:01,790 --> 00:41:02,910
+Awesome.
+
+861
+00:41:02,910 --> 00:41:05,070
+Any other questions about LSTMs?
+
+862
+00:41:05,070 --> 00:41:07,910
+This part is a little fiddly, so definitely
+
+863
+00:41:07,910 --> 00:41:13,090
+feel free to go back through or visit this really nice blog post
+
+864
+00:41:13,090 --> 00:41:14,970
+that we pulled some of these visualizations
+
+865
+00:41:14,970 --> 00:41:16,970
+from, from Chris Olah.
+
+866
+00:41:16,970 --> 00:41:17,650
+Yeah?
+
+867
+00:41:17,650 --> 00:41:19,570
+AUDIENCE: It's, element-wise, multiplication
+
+868
+00:41:19,570 --> 00:41:22,090
+for the hidden state.
+
+869
+00:41:22,090 --> 00:41:23,155
+Is that correct?
+
+870
+00:41:23,155 --> 00:41:24,530
+SARA BEERY: So the multiplication
+
+871
+00:41:24,530 --> 00:41:27,630
+is basically like you're learning this gating function f
+
+872
+00:41:27,630 --> 00:41:29,570
+that's telling you what to forget.
+
+873
+00:41:29,570 --> 00:41:31,450
+And then you're learning this i that's
+
+874
+00:41:31,450 --> 00:41:35,510
+telling you like what new information to add back in.
+
+875
+00:41:35,510 --> 00:41:37,873
+And so those two things are going to be multiplied in.
+
+876
+00:41:37,873 --> 00:41:39,290
+And they're going to be multiplied
+
+877
+00:41:39,290 --> 00:41:44,610
+in element-wise in your C depending on what the size of C
+
+878
+00:41:44,610 --> 00:41:45,110
+is.
+
+879
+00:41:48,490 --> 00:41:49,228
+Yeah?
+
+880
+00:41:49,228 --> 00:41:49,895
+AUDIENCE: Sorry.
+
+881
+00:41:49,895 --> 00:41:51,312
+Sorry if you've already said this.
+
+882
+00:41:51,312 --> 00:41:53,390
+So it's going to be like an MLP or something?
+
+883
+00:41:53,390 --> 00:41:54,330
+SARA BEERY: Huh?
+
+884
+00:41:54,330 --> 00:41:56,050
+AUDIENCE: [INAUDIBLE] MLP or--
+
+885
+00:41:56,050 --> 00:42:02,290
+SARA BEERY: Oh, the sigmas are sigmoid functions--
+
+886
+00:42:02,290 --> 00:42:04,890
+literally sigmoid functions.
+
+887
+00:42:04,890 --> 00:42:06,730
+Yeah, and the reason that people often
+
+888
+00:42:06,730 --> 00:42:08,713
+use-- you could use another non-linearity,
+
+889
+00:42:08,713 --> 00:42:10,630
+but the reason you use a sigmoid function here
+
+890
+00:42:10,630 --> 00:42:13,030
+is because it's bounded between 0 and 1.
+
+891
+00:42:13,030 --> 00:42:15,990
+So you want large values to map to 1 and small values to map
+
+892
+00:42:15,990 --> 00:42:16,690
+to 0.
+
+893
+00:42:16,690 --> 00:42:20,063
+AUDIENCE: Oh, but the weight going to [INAUDIBLE] not
+
+894
+00:42:20,063 --> 00:42:20,730
+on the diagonal.
+
+895
+00:42:20,730 --> 00:42:22,030
+SARA BEERY: Yes.
+
+896
+00:42:22,030 --> 00:42:23,602
+AUDIENCE: Makes sense.
+
+897
+00:42:23,602 --> 00:42:26,310
+SARA BEERY: The question was, if the weights are on the diagonal,
+
+898
+00:42:26,310 --> 00:42:28,470
+and the answer is no.
+
+899
+00:42:28,470 --> 00:42:30,870
+Cool.
+
+900
+00:42:30,870 --> 00:42:32,510
+Let's talk about sequence models.
+
+901
+00:42:32,510 --> 00:42:36,310
+So we just talked about a bunch of different ways
+
+902
+00:42:36,310 --> 00:42:41,630
+that you can think about trying to model sequences.
+
+903
+00:42:41,630 --> 00:42:48,030
+But there's this new kid in town of what we
+
+904
+00:42:48,030 --> 00:42:50,710
+call an autoregressive model.
+
+905
+00:42:50,710 --> 00:42:53,350
+So previously, we said, we're going
+
+906
+00:42:53,350 --> 00:42:54,690
+to have some fixed time window.
+
+907
+00:42:54,690 --> 00:42:56,607
+We're going to be sending this memory forward.
+
+908
+00:42:56,607 --> 00:42:58,030
+Things could be infinitely long.
+
+909
+00:42:58,030 --> 00:42:59,910
+But the idea of an autoregressive model
+
+910
+00:42:59,910 --> 00:43:02,870
+is quite simple, and we've introduced them before.
+
+911
+00:43:02,870 --> 00:43:06,850
+So the idea is you have some beginning of a sequence,
+
+912
+00:43:06,850 --> 00:43:09,730
+and then you ask it to predict what comes next.
+
+913
+00:43:09,730 --> 00:43:12,410
+And then this is the autoregressive part.
+
+914
+00:43:12,410 --> 00:43:13,970
+You add that in.
+
+915
+00:43:13,970 --> 00:43:16,950
+And now, again, you ask to predict what comes next.
+
+916
+00:43:16,950 --> 00:43:22,670
+And this idea of continually predicting what's next,
+
+917
+00:43:22,670 --> 00:43:25,410
+predicting what's next, this is how
+
+918
+00:43:25,410 --> 00:43:29,530
+we think about doing modern generative AI.
+
+919
+00:43:29,530 --> 00:43:31,930
+A lot of these things like ChatGPT,
+
+920
+00:43:31,930 --> 00:43:33,850
+these language models will explicitly
+
+921
+00:43:33,850 --> 00:43:36,192
+be trained to be autoregressive.
+
+922
+00:43:36,192 --> 00:43:37,650
+So of course, there's no reason why
+
+923
+00:43:37,650 --> 00:43:39,850
+you can't take the same framework
+
+924
+00:43:39,850 --> 00:43:45,130
+and instead tell it to fill in the blanks or something.
+
+925
+00:43:45,130 --> 00:43:48,330
+So when you're actually training one
+
+926
+00:43:48,330 --> 00:43:51,850
+of these autoregressive models, you
+
+927
+00:43:51,850 --> 00:43:55,050
+might have a bunch of different examples of sentences,
+
+928
+00:43:55,050 --> 00:43:58,330
+and then the beginnings of sentences
+
+929
+00:43:58,330 --> 00:43:59,430
+and then the next word.
+
+930
+00:43:59,430 --> 00:44:01,570
+And so then the learner has to learn
+
+931
+00:44:01,570 --> 00:44:05,320
+from the beginning of a sentence what is the next word.
+
+932
+00:44:05,320 --> 00:44:08,480
+And then when you're actually sampling,
+
+933
+00:44:08,480 --> 00:44:10,960
+you would do something like send in some new beginning
+
+934
+00:44:10,960 --> 00:44:15,640
+of a sentence, and then use your predictor until you want to stop
+
+935
+00:44:15,640 --> 00:44:17,400
+or until the predictor decides to stop
+
+936
+00:44:17,400 --> 00:44:18,780
+to predict the next thing.
+
+937
+00:44:18,780 --> 00:44:19,480
+Yeah?
+
+938
+00:44:19,480 --> 00:44:23,780
+AUDIENCE: You mean you try-- predict something at time t?
+
+939
+00:44:23,780 --> 00:44:28,920
+I take that prediction and pass that through [INAUDIBLE]?
+
+940
+00:44:28,920 --> 00:44:31,560
+SARA BEERY: So now, you predict something at time t
+
+941
+00:44:31,560 --> 00:44:33,660
+And then you take that prediction,
+
+942
+00:44:33,660 --> 00:44:35,780
+and you add it to now what's your input.
+
+943
+00:44:35,780 --> 00:44:39,160
+So now, your input is everything up to t minus 1
+
+944
+00:44:39,160 --> 00:44:41,160
+and your prediction for t.
+
+945
+00:44:41,160 --> 00:44:44,240
+And then you ask it to predict t plus 1, and then you add it in.
+
+946
+00:44:44,240 --> 00:44:46,840
+AUDIENCE: And this is what you mean by sampling?
+
+947
+00:44:46,840 --> 00:44:48,340
+Is that why you used the word there?
+
+948
+00:44:48,340 --> 00:44:50,640
+SARA BEERY: Yeah, so then actually, the sampling part--
+
+949
+00:44:50,640 --> 00:44:52,348
+this is that's exactly what would happen.
+
+950
+00:44:52,348 --> 00:44:56,640
+You would send in as your input colorless, green, ideas, sleep.
+
+951
+00:44:56,640 --> 00:45:00,320
+Ask your predictor what comes next-- says furiously.
+
+952
+00:45:00,320 --> 00:45:02,080
+And then you would take that furiously,
+
+953
+00:45:02,080 --> 00:45:02,960
+and you could add it into.
+
+954
+00:45:02,960 --> 00:45:05,043
+And you could say, well, what if I said colorless,
+
+955
+00:45:05,043 --> 00:45:07,620
+green, ideas, sleep, furiously-- then what comes next?
+
+956
+00:45:07,620 --> 00:45:10,620
+So this is this idea of autoregression,
+
+957
+00:45:10,620 --> 00:45:12,893
+that you're using your predictions,
+
+958
+00:45:12,893 --> 00:45:15,060
+adding them to the input, and then predicting again,
+
+959
+00:45:15,060 --> 00:45:16,160
+and again, and again.
+
+960
+00:45:16,160 --> 00:45:19,700
+AUDIENCE: Is that [INAUDIBLE] Is that one
+
+961
+00:45:19,700 --> 00:45:24,180
+way you could evaluate an RNN-- just print out these samples
+
+962
+00:45:24,180 --> 00:45:25,757
+and see what it produces?
+
+963
+00:45:25,757 --> 00:45:27,340
+SARA BEERY: Yeah, so I mean, you could
+
+964
+00:45:27,340 --> 00:45:31,360
+think of using an RNN to predict the next word.
+
+965
+00:45:31,360 --> 00:45:34,980
+So your output would be what we think the next word might be.
+
+966
+00:45:34,980 --> 00:45:40,700
+But what an RNN doesn't have is this explicit loop back
+
+967
+00:45:40,700 --> 00:45:44,100
+where now that output from up to t plus 1
+
+968
+00:45:44,100 --> 00:45:48,045
+becomes the part of the input at the next time step.
+
+969
+00:45:48,045 --> 00:45:48,920
+Does that make sense?
+
+970
+00:45:48,920 --> 00:45:51,378
+So it's not innately something that you would do in an RNN,
+
+971
+00:45:51,378 --> 00:45:54,120
+but you could totally loop it around that way.
+
+972
+00:45:54,120 --> 00:45:56,400
+And kind of construct it.
+
+973
+00:45:56,400 --> 00:45:56,900
+Yeah?
+
+974
+00:45:56,900 --> 00:45:58,820
+AUDIENCE: So with this model, the predictor
+
+975
+00:45:58,820 --> 00:46:01,880
+outputs sort of a distribution, and then you
+
+976
+00:46:01,880 --> 00:46:05,640
+sample one element from this distribution, I guess.
+
+977
+00:46:05,640 --> 00:46:06,760
+But what if you--
+
+978
+00:46:06,760 --> 00:46:09,440
+[CHUCKLES]
+
+979
+00:46:09,440 --> 00:46:10,800
+SARA BEERY: Anyway, continue.
+
+980
+00:46:10,800 --> 00:46:13,720
+AUDIENCE: What if, instead of sampling one
+
+981
+00:46:13,720 --> 00:46:16,880
+and adding it to the input, what if you put the distribution
+
+982
+00:46:16,880 --> 00:46:18,775
+in the input?
+
+983
+00:46:18,775 --> 00:46:20,900
+SARA BEERY: Yeah, you're just begging the question.
+
+984
+00:46:20,900 --> 00:46:23,600
+We're about to get into the probability models.
+
+985
+00:46:23,600 --> 00:46:26,200
+But the question was basically what
+
+986
+00:46:26,200 --> 00:46:29,480
+we said-- what I just said was, you take the prediction,
+
+987
+00:46:29,480 --> 00:46:31,120
+and maybe that would be a distribution,
+
+988
+00:46:31,120 --> 00:46:33,120
+and you're picking the maximum, and then
+
+989
+00:46:33,120 --> 00:46:34,493
+you put that maximum in.
+
+990
+00:46:34,493 --> 00:46:36,160
+What if instead you put the distribution
+
+991
+00:46:36,160 --> 00:46:38,620
+of possible next options in?
+
+992
+00:46:38,620 --> 00:46:40,120
+And we'll talk about different ways
+
+993
+00:46:40,120 --> 00:46:41,700
+that people think about doing that.
+
+994
+00:46:44,760 --> 00:46:48,572
+So essentially, what we're talking about is--
+
+995
+00:46:48,572 --> 00:46:50,280
+or one way that you can think about doing
+
+996
+00:46:50,280 --> 00:46:55,220
+this is trying to learn some probability of the next word.
+
+997
+00:46:55,220 --> 00:47:00,480
+And you can take that and factorize the probability
+
+998
+00:47:00,480 --> 00:47:03,020
+of that joint distribution.
+
+999
+00:47:03,020 --> 00:47:04,660
+Basically, you're just reformulating
+
+1000
+00:47:04,660 --> 00:47:07,140
+the conditional distribution-- the probability
+
+1001
+00:47:07,140 --> 00:47:10,963
+of the next word given everything we've seen before.
+
+1002
+00:47:10,963 --> 00:47:12,880
+This is true for any probability distribution.
+
+1003
+00:47:12,880 --> 00:47:14,420
+You factorize them out, and you get
+
+1004
+00:47:14,420 --> 00:47:22,900
+something that's multiplicative and is somewhat still
+
+1005
+00:47:22,900 --> 00:47:24,940
+autoregressive, because you're taking
+
+1006
+00:47:24,940 --> 00:47:26,820
+the probability of every previous thing
+
+1007
+00:47:26,820 --> 00:47:28,740
+up until that point.
+
+1008
+00:47:28,740 --> 00:47:36,540
+So you can think of this-- the sequence models in transformers
+
+1009
+00:47:36,540 --> 00:47:39,180
+when we talked about it in the transformer lecture last week--
+
+1010
+00:47:39,180 --> 00:47:42,440
+as modeling for example, the probability of a sentence.
+
+1011
+00:47:42,440 --> 00:47:43,960
+And then that could be generative.
+
+1012
+00:47:43,960 --> 00:47:46,998
+So here what this looks like in practice.
+
+1013
+00:47:46,998 --> 00:47:49,540
+So say you're trying to look at the probability of "once upon
+
+1014
+00:47:49,540 --> 00:47:50,900
+a time."
+
+1015
+00:47:50,900 --> 00:47:52,940
+That's the same as the probability of "once--"
+
+1016
+00:47:52,940 --> 00:47:56,060
+the probability of starting with the first word "once--"
+
+1017
+00:47:56,060 --> 00:47:59,160
+times the probability of getting "upon,"
+
+1018
+00:47:59,160 --> 00:48:01,240
+given that your first word was "once,"
+
+1019
+00:48:01,240 --> 00:48:04,440
+times the probability that you'd get "a" given that you already
+
+1020
+00:48:04,440 --> 00:48:08,560
+had "once upon," and then, et cetera, et cetera.
+
+1021
+00:48:08,560 --> 00:48:12,880
+So this is how you would model the probability of given
+
+1022
+00:48:12,880 --> 00:48:16,853
+sentence-- the likelihood of a sentence.
+
+1023
+00:48:16,853 --> 00:48:20,800
+So what's a function that we could
+
+1024
+00:48:20,800 --> 00:48:24,920
+use that would map the probability of the next word
+
+1025
+00:48:24,920 --> 00:48:27,100
+given the previous word?
+
+1026
+00:48:29,680 --> 00:48:33,880
+Maybe some of the things that we've talked about in class--
+
+1027
+00:48:33,880 --> 00:48:35,420
+specifically the probability.
+
+1028
+00:48:43,760 --> 00:48:44,955
+Yeah, go ahead?
+
+1029
+00:48:44,955 --> 00:48:47,080
+AUDIENCE: [INAUDIBLE] regression or some deep thing
+
+1030
+00:48:47,080 --> 00:48:49,407
+going into logistic regression?
+
+1031
+00:48:49,407 --> 00:48:51,240
+SARA BEERY: So you said logistic regression.
+
+1032
+00:48:51,240 --> 00:48:51,990
+AUDIENCE: Softmax.
+
+1033
+00:48:51,990 --> 00:48:53,500
+SARA BEERY: A softmax-- oh, yeah.
+
+1034
+00:48:53,500 --> 00:48:55,200
+So softmax takes an input and then
+
+1035
+00:48:55,200 --> 00:48:57,080
+gives us something that might not
+
+1036
+00:48:57,080 --> 00:48:59,530
+be a probability distribution, but at least sums to 1.
+
+1037
+00:48:59,530 --> 00:49:04,790
+So what is one of the ways we frequently use the softmax?
+
+1038
+00:49:04,790 --> 00:49:05,668
+When we're doing--
+
+1039
+00:49:05,668 --> 00:49:06,710
+AUDIENCE: Classification.
+
+1040
+00:49:06,710 --> 00:49:07,835
+SARA BEERY: Classification.
+
+1041
+00:49:07,835 --> 00:49:08,990
+Yes, exactly.
+
+1042
+00:49:08,990 --> 00:49:12,130
+So we could just treat this as a next-word classifier.
+
+1043
+00:49:12,130 --> 00:49:14,190
+And we I think we talked in the hacker lecture
+
+1044
+00:49:14,190 --> 00:49:17,223
+about how a reasonable starting point for a lot of things
+
+1045
+00:49:17,223 --> 00:49:19,390
+is just being like, let's see if we can formulate it
+
+1046
+00:49:19,390 --> 00:49:21,430
+as a multi-class classifier.
+
+1047
+00:49:21,430 --> 00:49:24,410
+So here, then the input is "once upon a."
+
+1048
+00:49:24,410 --> 00:49:27,710
+And then you learn a next word classifier
+
+1049
+00:49:27,710 --> 00:49:29,910
+that would probably, by taking a softmax,
+
+1050
+00:49:29,910 --> 00:49:32,430
+give us some distribution over the
+
+1051
+00:49:32,430 --> 00:49:34,050
+likelihood of the next words.
+
+1052
+00:49:34,050 --> 00:49:39,470
+And so now, here, a standard multi-class classifier
+
+1053
+00:49:39,470 --> 00:49:41,030
+will use some neural net.
+
+1054
+00:49:41,030 --> 00:49:43,830
+That softmax will squish the outputs into a probability mass
+
+1055
+00:49:43,830 --> 00:49:45,990
+function.
+
+1056
+00:49:45,990 --> 00:49:48,150
+Non-negative vector sums to 1.
+
+1057
+00:49:48,150 --> 00:49:53,270
+And then you learn that by penalizing it via cross-entropy.
+
+1058
+00:49:53,270 --> 00:49:55,370
+So how would you map words to classes?
+
+1059
+00:49:55,370 --> 00:49:57,390
+How many classes would there be?
+
+1060
+00:50:00,010 --> 00:50:01,610
+Lots.
+
+1061
+00:50:01,610 --> 00:50:04,970
+So if you use words and u-- every possible word
+
+1062
+00:50:04,970 --> 00:50:07,650
+in the English language, which there are many more words
+
+1063
+00:50:07,650 --> 00:50:09,113
+in some other languages on Earth,
+
+1064
+00:50:09,113 --> 00:50:11,530
+and you represent all those words as 1-hot-vectors of size
+
+1065
+00:50:11,530 --> 00:50:15,010
+k, k would be about 100,000.
+
+1066
+00:50:15,010 --> 00:50:17,010
+And we know that multi-class classification
+
+1067
+00:50:17,010 --> 00:50:22,010
+starts to be a lot less easy to learn when the number of classes
+
+1068
+00:50:22,010 --> 00:50:23,350
+starts to scale quite large.
+
+1069
+00:50:23,350 --> 00:50:27,490
+So it is possible, for example, like we run some 100,000
+
+1070
+00:50:27,490 --> 00:50:30,270
+classifiers for species in iNaturalist.
+
+1071
+00:50:30,270 --> 00:50:33,690
+There's about 450,000 species currently in iNaturalist.
+
+1072
+00:50:33,690 --> 00:50:35,610
+We train classifiers for all of them,
+
+1073
+00:50:35,610 --> 00:50:39,450
+but you need a lot of data.
+
+1074
+00:50:39,450 --> 00:50:43,010
+And it can be quite unstable.
+
+1075
+00:50:43,010 --> 00:50:48,370
+So instead, another thing that you could do
+
+1076
+00:50:48,370 --> 00:50:53,890
+is you could represent every character as a class.
+
+1077
+00:50:53,890 --> 00:50:56,870
+So now, in the English language, the alphabet is 26.
+
+1078
+00:50:56,870 --> 00:50:58,950
+So now, we only have k equals 26.
+
+1079
+00:50:58,950 --> 00:51:01,910
+And that's a really reasonable set of classes.
+
+1080
+00:51:01,910 --> 00:51:05,190
+But the thing is, now your classification is fewer way,
+
+1081
+00:51:05,190 --> 00:51:07,665
+but the sequence prediction is a lot harder.
+
+1082
+00:51:07,665 --> 00:51:09,290
+You have to take a lot more time steps.
+
+1083
+00:51:09,290 --> 00:51:11,510
+There's a lot more predictions that you have to take.
+
+1084
+00:51:11,510 --> 00:51:16,810
+And it's pretty easy for these things to devolve over time.
+
+1085
+00:51:16,810 --> 00:51:21,990
+Imagine it starts spelling something weird, and then
+
+1086
+00:51:21,990 --> 00:51:24,470
+where are you going to go?
+
+1087
+00:51:24,470 --> 00:51:27,750
+So ideally, you'd want something somewhat in between.
+
+1088
+00:51:27,750 --> 00:51:31,630
+And it turns out, in practice, that what's kind of a sweet spot
+
+1089
+00:51:31,630 --> 00:51:39,470
+is this idea of byte pairs, which is 2 character pairs.
+
+1090
+00:51:39,470 --> 00:51:42,770
+And so now, you represent words.
+
+1091
+00:51:42,770 --> 00:51:46,310
+It's about 1,000-- 26 times 26, maybe plus a few more--
+
+1092
+00:51:46,310 --> 00:51:48,190
+of these byte pairs.
+
+1093
+00:51:48,190 --> 00:51:50,390
+These tokens of these two character pairs
+
+1094
+00:51:50,390 --> 00:51:53,870
+is quite frequent, even in the largest scale language
+
+1095
+00:51:53,870 --> 00:51:56,570
+models we have.
+
+1096
+00:51:56,570 --> 00:51:57,850
+Cool.
+
+1097
+00:51:57,850 --> 00:52:03,810
+So let's talk about then what this might look like.
+
+1098
+00:52:03,810 --> 00:52:07,770
+So you have this kind of probability, this classifier
+
+1099
+00:52:07,770 --> 00:52:10,050
+for the next step, basically.
+
+1100
+00:52:10,050 --> 00:52:13,730
+And then you send your output prediction forward.
+
+1101
+00:52:13,730 --> 00:52:15,670
+So one example of this--
+
+1102
+00:52:15,670 --> 00:52:19,610
+this is an example that's taking in some caffeine molecule.
+
+1103
+00:52:19,610 --> 00:52:21,890
+And then you have a model that's trying to output
+
+1104
+00:52:21,890 --> 00:52:24,690
+a description of that molecule.
+
+1105
+00:52:24,690 --> 00:52:27,630
+So maybe that would look something like stimulant--
+
+1106
+00:52:27,630 --> 00:52:33,090
+"a mild stimulant that enhances cognitive ability."
+
+1107
+00:52:33,090 --> 00:52:35,868
+So you use this caffeine molecule.
+
+1108
+00:52:35,868 --> 00:52:37,410
+You have some representation that you
+
+1109
+00:52:37,410 --> 00:52:41,830
+use to start your word generator somewhere,
+
+1110
+00:52:41,830 --> 00:52:43,550
+and then you would describe this.
+
+1111
+00:52:43,550 --> 00:52:46,530
+Maybe this we would call a molecule to text.
+
+1112
+00:52:46,530 --> 00:52:51,050
+So one way you could do this would be something like an LSTM.
+
+1113
+00:52:51,050 --> 00:52:53,850
+So now, you have your molecule.
+
+1114
+00:52:53,850 --> 00:52:55,600
+You run it through some GNN that gives you
+
+1115
+00:52:55,600 --> 00:52:57,475
+some representation of that molecule that you
+
+1116
+00:52:57,475 --> 00:53:00,035
+can use to condition on your starting point.
+
+1117
+00:53:00,035 --> 00:53:01,660
+Then, once you have the starting point,
+
+1118
+00:53:01,660 --> 00:53:05,980
+the LSTM is just predicting that next word at any given point.
+
+1119
+00:53:05,980 --> 00:53:11,240
+And you're taking the previous things into account.
+
+1120
+00:53:11,240 --> 00:53:15,960
+So if you're actually looking to train this, now,
+
+1121
+00:53:15,960 --> 00:53:19,280
+the training data is something like "a mild stimulant that
+
+1122
+00:53:19,280 --> 00:53:22,425
+enhances cognitive ability," end character-- stop predicting.
+
+1123
+00:53:22,425 --> 00:53:23,800
+So now, for the first time, we've
+
+1124
+00:53:23,800 --> 00:53:27,720
+introduced the idea of stopping when you're done.
+
+1125
+00:53:27,720 --> 00:53:29,840
+And then your outputs would maybe
+
+1126
+00:53:29,840 --> 00:53:33,560
+be some probability distribution or likelihood
+
+1127
+00:53:33,560 --> 00:53:35,968
+over those next words given the previous words.
+
+1128
+00:53:35,968 --> 00:53:37,760
+And then you could train it using something
+
+1129
+00:53:37,760 --> 00:53:39,343
+like a max likelihood objective, where
+
+1130
+00:53:39,343 --> 00:53:42,040
+you want to maximize the probability the model assigns
+
+1131
+00:53:42,040 --> 00:53:43,340
+to each target word.
+
+1132
+00:53:43,340 --> 00:53:47,560
+You want it to maximize the probability of the word that
+
+1133
+00:53:47,560 --> 00:53:49,260
+was actually in the sentence.
+
+1134
+00:53:55,740 --> 00:53:57,440
+So now, you have your targets.
+
+1135
+00:53:57,440 --> 00:54:00,135
+You 1-hot encode them, and then you can do something like
+
+1136
+00:54:00,135 --> 00:54:02,260
+maximizing cross-entropy, because now you have this
+
+1137
+00:54:02,260 --> 00:54:03,480
+multi-class classification.
+
+1138
+00:54:03,480 --> 00:54:06,580
+You can train it the same way we've trained things before.
+
+1139
+00:54:06,580 --> 00:54:09,380
+Now, one thing you might actually
+
+1140
+00:54:09,380 --> 00:54:11,700
+want to do in training-- currently,
+
+1141
+00:54:11,700 --> 00:54:14,180
+we're saying you would take your prediction,
+
+1142
+00:54:14,180 --> 00:54:17,500
+and then you would use that and send it forward
+
+1143
+00:54:17,500 --> 00:54:20,940
+to the next thing as the previous word.
+
+1144
+00:54:20,940 --> 00:54:22,480
+And you're learning from that.
+
+1145
+00:54:22,480 --> 00:54:24,340
+But actually, in training, often, we
+
+1146
+00:54:24,340 --> 00:54:27,700
+use something called teacher forcing, which is basically,
+
+1147
+00:54:27,700 --> 00:54:30,320
+even if you predict the wrong thing at a given time step,
+
+1148
+00:54:30,320 --> 00:54:34,100
+you enforce the correct word goes in as the input.
+
+1149
+00:54:34,100 --> 00:54:39,180
+So you actually send this in now and condition each next word
+
+1150
+00:54:39,180 --> 00:54:42,220
+prediction on the ground-truth preceding words instead
+
+1151
+00:54:42,220 --> 00:54:45,140
+of letting it devolve and then penalizing it
+
+1152
+00:54:45,140 --> 00:54:49,220
+for every mistake it made after it made its first mistake.
+
+1153
+00:54:49,220 --> 00:54:52,040
+And then at test time, what you would do
+
+1154
+00:54:52,040 --> 00:54:53,820
+is now you have your starting point,
+
+1155
+00:54:53,820 --> 00:54:56,445
+and then you're going to sample from the predicted distribution
+
+1156
+00:54:56,445 --> 00:54:57,480
+over those words.
+
+1157
+00:54:57,480 --> 00:54:59,418
+So for example, "a."
+
+1158
+00:54:59,418 --> 00:55:00,960
+Now, we do that autoregressive thing,
+
+1159
+00:55:00,960 --> 00:55:04,800
+where we send that in, and then we predict the next thing.
+
+1160
+00:55:04,800 --> 00:55:10,360
+"A strong stimulant that enhances cognitive ability."
+
+1161
+00:55:10,360 --> 00:55:16,320
+But here, you'll note that after "a," we weren't super sure what
+
+1162
+00:55:16,320 --> 00:55:17,340
+was likely next.
+
+1163
+00:55:17,340 --> 00:55:19,840
+And so the model predicted "strong."
+
+1164
+00:55:19,840 --> 00:55:25,620
+And it turns out that "strong" was exactly wrong.
+
+1165
+00:55:25,620 --> 00:55:28,540
+We said "mild" originally.
+
+1166
+00:55:28,540 --> 00:55:31,080
+And that actually is pretty different in terms
+
+1167
+00:55:31,080 --> 00:55:33,040
+of the meaning of that sentence.
+
+1168
+00:55:33,040 --> 00:55:34,562
+And so this is something where you
+
+1169
+00:55:34,562 --> 00:55:36,520
+have this autoregressive modeling-- if you make
+
+1170
+00:55:36,520 --> 00:55:39,240
+one mistake, then often, it can take you
+
+1171
+00:55:39,240 --> 00:55:41,000
+down a path in almost this tree where
+
+1172
+00:55:41,000 --> 00:55:43,000
+you make a lot of mistakes.
+
+1173
+00:55:43,000 --> 00:55:44,680
+And so one way that people handle
+
+1174
+00:55:44,680 --> 00:55:47,280
+that is they do something called beam search, where you
+
+1175
+00:55:47,280 --> 00:55:51,140
+essentially let the model choose top k like what it thinks
+
+1176
+00:55:51,140 --> 00:55:53,000
+are the k most likely things.
+
+1177
+00:55:53,000 --> 00:55:55,220
+And then from each of those you choose the k
+
+1178
+00:55:55,220 --> 00:55:56,680
+most likely things next.
+
+1179
+00:55:56,680 --> 00:55:58,820
+You fill out this entire tree, and then
+
+1180
+00:55:58,820 --> 00:56:02,757
+you calculate the probability of the entire path along the tree
+
+1181
+00:56:02,757 --> 00:56:04,340
+for each of them, and you pick the one
+
+1182
+00:56:04,340 --> 00:56:07,460
+that scores best overall.
+
+1183
+00:56:07,460 --> 00:56:10,300
+And so then the score is the model's confidence
+
+1184
+00:56:10,300 --> 00:56:13,940
+of the entire sentence along that tree.
+
+1185
+00:56:13,940 --> 00:56:18,220
+And there what we might learn is that actually maybe conditioned
+
+1186
+00:56:18,220 --> 00:56:22,260
+on the input that this correct path on the tree
+
+1187
+00:56:22,260 --> 00:56:24,900
+would score higher.
+
+1188
+00:56:24,900 --> 00:56:28,320
+And this type of approach for language modeling--
+
+1189
+00:56:28,320 --> 00:56:32,940
+lots of different deep things plus LSTM-flavored things put
+
+1190
+00:56:32,940 --> 00:56:37,860
+together to try to generate text or describe images or do VQA--
+
+1191
+00:56:37,860 --> 00:56:40,540
+this was really popular a few years ago.
+
+1192
+00:56:40,540 --> 00:56:45,340
+This was definitely kind the approach that people took
+
+1193
+00:56:45,340 --> 00:56:49,760
+2015-ish timeframe.
+
+1194
+00:56:49,760 --> 00:56:51,920
+Of course, I think today, what we see
+
+1195
+00:56:51,920 --> 00:56:55,360
+is often people will use transformers instead.
+
+1196
+00:56:55,360 --> 00:57:00,640
+And we can talk a bit about what that means.
+
+1197
+00:57:00,640 --> 00:57:01,600
+Yes?
+
+1198
+00:57:01,600 --> 00:57:04,600
+AUDIENCE: So suppose I'm only interested in predicting
+
+1199
+00:57:04,600 --> 00:57:07,080
+the third next word.
+
+1200
+00:57:07,080 --> 00:57:10,480
+For example, should I do it in an autoregressive way using
+
+1201
+00:57:10,480 --> 00:57:11,780
+the beam search and so on?
+
+1202
+00:57:11,780 --> 00:57:15,140
+Or should I use a model that only outputs the third word?
+
+1203
+00:57:15,140 --> 00:57:17,000
+Because it seems to me that there
+
+1204
+00:57:17,000 --> 00:57:20,208
+is some information in the two previous words that help you.
+
+1205
+00:57:20,208 --> 00:57:22,000
+SARA BEERY: I mean, I think that's probably
+
+1206
+00:57:22,000 --> 00:57:23,660
+a question that would depend.
+
+1207
+00:57:23,660 --> 00:57:25,280
+So the question was, what if I only
+
+1208
+00:57:25,280 --> 00:57:29,760
+care about predicting the word three ahead of where I am now.
+
+1209
+00:57:29,760 --> 00:57:32,320
+I don't care about the things in between.
+
+1210
+00:57:32,320 --> 00:57:34,290
+Should I still model all the things
+
+1211
+00:57:34,290 --> 00:57:36,040
+in between one step at a time, or should I
+
+1212
+00:57:36,040 --> 00:57:39,640
+try to learn a model that predicts three words in advance?
+
+1213
+00:57:39,640 --> 00:57:41,400
+I think my intuition aligns with yours
+
+1214
+00:57:41,400 --> 00:57:44,640
+that there's signal in those intermediate words
+
+1215
+00:57:44,640 --> 00:57:47,790
+that you would really want to propagate forward.
+
+1216
+00:57:47,790 --> 00:57:50,870
+And so probably I would not try to just guess from
+
+1217
+00:57:50,870 --> 00:57:54,230
+"a" what's the word three in advance without some context
+
+1218
+00:57:54,230 --> 00:57:55,730
+of what the intermediate words were.
+
+1219
+00:57:55,730 --> 00:57:58,550
+So I'd probably do this maybe with the beam search type thing.
+
+1220
+00:57:58,550 --> 00:58:00,630
+AUDIENCE: So then if I want to predict
+
+1221
+00:58:00,630 --> 00:58:03,110
+the temperature in the week, do I
+
+1222
+00:58:03,110 --> 00:58:07,922
+need for every day to say [INAUDIBLE]?
+
+1223
+00:58:07,922 --> 00:58:08,630
+SARA BEERY: Yeah.
+
+1224
+00:58:08,630 --> 00:58:11,390
+Well, these days a lot of temperature models
+
+1225
+00:58:11,390 --> 00:58:14,687
+are transformers with really large context windows.
+
+1226
+00:58:14,687 --> 00:58:16,270
+So you're actually sharing information
+
+1227
+00:58:16,270 --> 00:58:19,450
+across all the temperatures indeterminately.
+
+1228
+00:58:19,450 --> 00:58:22,988
+And we'll talk in a second about, when you're
+
+1229
+00:58:22,988 --> 00:58:25,030
+talking about these long range dependencies, what
+
+1230
+00:58:25,030 --> 00:58:27,590
+the trade-offs are when you're talking about using something
+
+1231
+00:58:27,590 --> 00:58:31,430
+like recursion, or even recursion with these memory
+
+1232
+00:58:31,430 --> 00:58:35,230
+controllers, versus using something like attention that
+
+1233
+00:58:35,230 --> 00:58:41,590
+potentially has easier ways of sharing information
+
+1234
+00:58:41,590 --> 00:58:44,130
+over long time horizons-- in more flexible ways,
+
+1235
+00:58:44,130 --> 00:58:48,250
+I guess is probably a better way to put it.
+
+1236
+00:58:48,250 --> 00:58:49,350
+Cool.
+
+1237
+00:58:49,350 --> 00:58:53,290
+So we talked previously about the fact
+
+1238
+00:58:53,290 --> 00:58:56,170
+that we want to recognize that this is
+
+1239
+00:58:56,170 --> 00:58:58,370
+Frank even when he's outside.
+
+1240
+00:58:58,370 --> 00:59:01,890
+And just to be clear, he only gets supervised outside time,
+
+1241
+00:59:01,890 --> 00:59:04,210
+because I'm a good naturalist, and I
+
+1242
+00:59:04,210 --> 00:59:07,890
+don't let my cat kill birds.
+
+1243
+00:59:07,890 --> 00:59:10,470
+But he gets supervised outside time on our balcony sometimes,
+
+1244
+00:59:10,470 --> 00:59:11,550
+and he loves it.
+
+1245
+00:59:11,550 --> 00:59:14,330
+And I want to recognize him out there.
+
+1246
+00:59:14,330 --> 00:59:20,450
+So here, say we had this concept of using a memory unit.
+
+1247
+00:59:20,450 --> 00:59:24,610
+So one thing you could do instead of passing memory
+
+1248
+00:59:24,610 --> 00:59:27,130
+forward as you went through the sequence
+
+1249
+00:59:27,130 --> 00:59:29,530
+is you could just let every single time
+
+1250
+00:59:29,530 --> 00:59:31,750
+step get a memory unit.
+
+1251
+00:59:31,750 --> 00:59:36,970
+You could just keep memories from every single point in time.
+
+1252
+00:59:36,970 --> 00:59:38,850
+And so then you would, instead of needing
+
+1253
+00:59:38,850 --> 00:59:41,370
+to figure out how to send the information forward
+
+1254
+00:59:41,370 --> 00:59:44,910
+in time in this constrained way, you could just directly link
+
+1255
+00:59:44,910 --> 00:59:47,190
+your old memories.
+
+1256
+00:59:47,190 --> 00:59:50,790
+And so there are methods that directly link old memories
+
+1257
+00:59:50,790 --> 00:59:52,790
+to future predictions.
+
+1258
+00:59:52,790 --> 00:59:56,270
+Things like temporal convolutions do this.
+
+1259
+00:59:56,270 --> 00:59:58,370
+Things like attention and transformers do this.
+
+1260
+00:59:58,370 --> 01:00:00,990
+And we talked a lot about those last lecture.
+
+1261
+01:00:00,990 --> 01:00:03,090
+And then there are also these memory networks
+
+1262
+01:00:03,090 --> 01:00:05,590
+that you guys could take a look at if you're interested that
+
+1263
+01:00:05,590 --> 01:00:10,030
+explicitly try to have these memory representations or units
+
+1264
+01:00:10,030 --> 01:00:12,550
+that you can access over time, maybe
+
+1265
+01:00:12,550 --> 01:00:15,830
+through a separate bank of memories.
+
+1266
+01:00:15,830 --> 01:00:17,990
+So if we're actually trying to model arbitrarily
+
+1267
+01:00:17,990 --> 01:00:20,532
+long sequences, we've talked about a couple of ways to do it.
+
+1268
+01:00:20,532 --> 01:00:23,070
+So we talked about recurrence where now you
+
+1269
+01:00:23,070 --> 01:00:25,530
+have these recurrent weights that are shared over time.
+
+1270
+01:00:25,530 --> 01:00:28,630
+And you have this cycle of where you're passing forward
+
+1271
+01:00:28,630 --> 01:00:30,510
+information over some time window.
+
+1272
+01:00:30,510 --> 01:00:32,510
+And the way that you pass that information could
+
+1273
+01:00:32,510 --> 01:00:34,050
+be just vanilla recursion.
+
+1274
+01:00:34,050 --> 01:00:35,330
+It be something like an LSTM.
+
+1275
+01:00:35,330 --> 01:00:37,630
+There's a lot more complicated ways to do it.
+
+1276
+01:00:37,630 --> 01:00:39,370
+We talked about convolution.
+
+1277
+01:00:39,370 --> 01:00:41,810
+You can model an arbitrarily long sequence of convolution.
+
+1278
+01:00:41,810 --> 01:00:44,432
+But now you have this fixed set of convolution weights.
+
+1279
+01:00:44,432 --> 01:00:45,890
+Those are shared over time, but you
+
+1280
+01:00:45,890 --> 01:00:48,290
+don't get to see anything outside of the time
+
+1281
+01:00:48,290 --> 01:00:50,730
+window of that convolution.
+
+1282
+01:00:50,730 --> 01:00:53,370
+And then the last thing we talk about is attention where, here,
+
+1283
+01:00:53,370 --> 01:00:54,970
+weights are dynamically determined
+
+1284
+01:00:54,970 --> 01:00:56,750
+as a function of the data.
+
+1285
+01:00:56,750 --> 01:01:01,170
+So you have this convolutional kernel with attention weights.
+
+1286
+01:01:01,170 --> 01:01:04,470
+So if you look at recurrence, that looks like this.
+
+1287
+01:01:04,470 --> 01:01:06,330
+You're passing that forward in time.
+
+1288
+01:01:06,330 --> 01:01:07,772
+Convolution looks like this.
+
+1289
+01:01:07,772 --> 01:01:09,230
+So you're getting that time window,
+
+1290
+01:01:09,230 --> 01:01:11,090
+but you're not passing it forward in time.
+
+1291
+01:01:11,090 --> 01:01:13,010
+And then attention will look something
+
+1292
+01:01:13,010 --> 01:01:18,330
+like this, where now the attention weights are
+
+1293
+01:01:18,330 --> 01:01:19,470
+a function of the data.
+
+1294
+01:01:19,470 --> 01:01:22,210
+So the way that you keep the information
+
+1295
+01:01:22,210 --> 01:01:26,690
+is dependent on the inputs, which is quite flexible.
+
+1296
+01:01:26,690 --> 01:01:29,390
+And then, of course, in all of these cases,
+
+1297
+01:01:29,390 --> 01:01:31,650
+you can have some sense of, at least the bottom two,
+
+1298
+01:01:31,650 --> 01:01:33,532
+of what this time window is.
+
+1299
+01:01:33,532 --> 01:01:35,490
+And the top one, we do talk about a time window
+
+1300
+01:01:35,490 --> 01:01:37,570
+for backprop.
+
+1301
+01:01:37,570 --> 01:01:40,383
+So this is interesting, because now,
+
+1302
+01:01:40,383 --> 01:01:42,050
+if you take these different approaches--
+
+1303
+01:01:42,050 --> 01:01:44,750
+if you use something like self-attention, or recurrence,
+
+1304
+01:01:44,750 --> 01:01:46,550
+or convolution--
+
+1305
+01:01:46,550 --> 01:01:52,990
+they're going to be different computational complexities based
+
+1306
+01:01:52,990 --> 01:01:56,830
+on the sequence length-- so how big your sequence is--
+
+1307
+01:01:56,830 --> 01:01:59,347
+the dimension of the representation,
+
+1308
+01:01:59,347 --> 01:02:01,430
+and then like the kernel size of your convolution,
+
+1309
+01:02:01,430 --> 01:02:02,930
+and the size of the neighborhood,
+
+1310
+01:02:02,930 --> 01:02:04,550
+I guess, if you're going to have some of restricted
+
+1311
+01:02:04,550 --> 01:02:06,383
+self-attention, like a window that's sliding
+
+1312
+01:02:06,383 --> 01:02:08,990
+instead of just self-attention over the entire string.
+
+1313
+01:02:08,990 --> 01:02:11,470
+And this is actually from that "Attention is All you Need"
+
+1314
+01:02:11,470 --> 01:02:11,850
+paper.
+
+1315
+01:02:11,850 --> 01:02:13,517
+And the name "Attention is All you Need"
+
+1316
+01:02:13,517 --> 01:02:17,530
+is actually really trying to say that we don't need memory.
+
+1317
+01:02:17,530 --> 01:02:19,750
+All we need is attention.
+
+1318
+01:02:19,750 --> 01:02:21,870
+And here, you can see that when you
+
+1319
+01:02:21,870 --> 01:02:23,370
+talk about the number of operations,
+
+1320
+01:02:23,370 --> 01:02:25,210
+the maximal length, the complexity,
+
+1321
+01:02:25,210 --> 01:02:28,510
+there's a lot of trade-offs here in terms of what's possible.
+
+1322
+01:02:28,510 --> 01:02:30,630
+But of course, with something like self-attention,
+
+1323
+01:02:30,630 --> 01:02:32,030
+you have this n squared.
+
+1324
+01:02:32,030 --> 01:02:34,350
+In terms of the length of the sequence,
+
+1325
+01:02:34,350 --> 01:02:36,250
+in terms of the complexity per layer,
+
+1326
+01:02:36,250 --> 01:02:38,190
+because you have to calculate the similarity
+
+1327
+01:02:38,190 --> 01:02:39,840
+of the entire sequence to itself.
+
+1328
+01:02:39,840 --> 01:02:41,340
+So if your sequence is length n, you
+
+1329
+01:02:41,340 --> 01:02:44,220
+need to calculate this n squared computation.
+
+1330
+01:02:44,220 --> 01:02:47,580
+And you can imagine that that can get really computationally
+
+1331
+01:02:47,580 --> 01:02:48,200
+exhaustive.
+
+1332
+01:02:48,200 --> 01:02:51,923
+It takes a lot of memory to store something like that large.
+
+1333
+01:02:51,923 --> 01:02:53,340
+So there's a bunch of methods that
+
+1334
+01:02:53,340 --> 01:02:55,980
+have been developed in recent years that try to figure out
+
+1335
+01:02:55,980 --> 01:03:01,700
+how to make even larger context window transformers given
+
+1336
+01:03:01,700 --> 01:03:02,980
+limited memory.
+
+1337
+01:03:02,980 --> 01:03:07,720
+And so these are things like efficiency from sparsification,
+
+1338
+01:03:07,720 --> 01:03:12,140
+so things like the Reformer, or Performers, or Linformers
+
+1339
+01:03:12,140 --> 01:03:14,880
+that are all different ways to try to decompose attention--
+
+1340
+01:03:14,880 --> 01:03:17,880
+do something like a low matrix approximation--
+
+1341
+01:03:17,880 --> 01:03:21,500
+a low rank matrix approximation to get that context window
+
+1342
+01:03:21,500 --> 01:03:25,180
+computation from big O of n squared to big O of n.
+
+1343
+01:03:25,180 --> 01:03:29,100
+Or things like the Reformer uses this quadratic dot product
+
+1344
+01:03:29,100 --> 01:03:33,780
+attention that uses local hashing to get it to n log n.
+
+1345
+01:03:33,780 --> 01:03:38,240
+And this is definitely something that people are quite interested
+
+1346
+01:03:38,240 --> 01:03:38,740
+in.
+
+1347
+01:03:38,740 --> 01:03:42,440
+But also frequently, this comes at the expense
+
+1348
+01:03:42,440 --> 01:03:43,920
+of a little bit of performance.
+
+1349
+01:03:43,920 --> 01:03:46,560
+And so if the trade off is performance
+
+1350
+01:03:46,560 --> 01:03:49,680
+versus computational efficiency, we just
+
+1351
+01:03:49,680 --> 01:03:53,560
+build GPUs with more memory.
+
+1352
+01:03:53,560 --> 01:03:55,760
+And then there's other ways that people try and look
+
+1353
+01:03:55,760 --> 01:03:58,000
+at even larger context transformers.
+
+1354
+01:03:58,000 --> 01:03:59,300
+So instead of-- yes?
+
+1355
+01:03:59,300 --> 01:04:02,100
+AUDIENCE: [INAUDIBLE] less performant but more efficient,
+
+1356
+01:04:02,100 --> 01:04:04,480
+can't you just use the extra time
+
+1357
+01:04:04,480 --> 01:04:06,520
+that you gain to train it [INAUDIBLE]
+
+1358
+01:04:06,520 --> 01:04:08,840
+and get a better prediction?
+
+1359
+01:04:08,840 --> 01:04:12,160
+SARA BEERY: So the question is, if it's less performant but more
+
+1360
+01:04:12,160 --> 01:04:14,680
+efficient, could you use the time on the GPU
+
+1361
+01:04:14,680 --> 01:04:16,158
+to train on more data?
+
+1362
+01:04:16,158 --> 01:04:18,700
+I don't think that's actually the choice that they're making.
+
+1363
+01:04:18,700 --> 01:04:20,825
+I think they're going to train on all the data they
+
+1364
+01:04:20,825 --> 01:04:25,560
+have with the biggest thing they have.
+
+1365
+01:04:25,560 --> 01:04:27,000
+[COUGHS]
+
+1366
+01:04:27,000 --> 01:04:29,578
+Sorry, guys.
+
+1367
+01:04:29,578 --> 01:04:31,120
+So another mechanism that people have
+
+1368
+01:04:31,120 --> 01:04:34,800
+used to try to increase the context window of transformers
+
+1369
+01:04:34,800 --> 01:04:39,060
+is this idea of local and global attention.
+
+1370
+01:04:39,060 --> 01:04:42,743
+So things like Transformer XL uses segment-level recurrence
+
+1371
+01:04:42,743 --> 01:04:44,660
+and then these very fancy positional encodings
+
+1372
+01:04:44,660 --> 01:04:46,740
+to increase the context window.
+
+1373
+01:04:46,740 --> 01:04:49,900
+Longformers scales with sequence length
+
+1374
+01:04:49,900 --> 01:04:53,140
+by deconstructing local and global attention.
+
+1375
+01:04:53,140 --> 01:04:54,780
+[COUGHS]
+
+1376
+01:04:54,780 --> 01:04:56,540
+Sorry.
+
+1377
+01:04:56,540 --> 01:05:00,177
+This is from Longformer, I believe, this figure
+
+1378
+01:05:00,177 --> 01:05:00,760
+at the bottom.
+
+1379
+01:05:00,760 --> 01:05:03,740
+So what you can see is that they're basically sparsifying
+
+1380
+01:05:03,740 --> 01:05:05,640
+that n by n computation.
+
+1381
+01:05:05,640 --> 01:05:09,240
+So the previous one was sparsifying via decomposition.
+
+1382
+01:05:09,240 --> 01:05:12,070
+This one is sparsifying via some of masking.
+
+1383
+01:05:12,070 --> 01:05:13,820
+But essentially, ways to try to figure out
+
+1384
+01:05:13,820 --> 01:05:17,120
+how you don't need to do n times n computations.
+
+1385
+01:05:20,830 --> 01:05:22,580
+And then another thing that was introduced
+
+1386
+01:05:22,580 --> 01:05:24,740
+to try to increase the context of transformers
+
+1387
+01:05:24,740 --> 01:05:29,460
+without needing to scale memory with n squared--
+
+1388
+01:05:29,460 --> 01:05:33,820
+was this idea that maybe something like a large GPT that
+
+1389
+01:05:33,820 --> 01:05:37,640
+will jointly model all the world's language and all
+
+1390
+01:05:37,640 --> 01:05:41,360
+the world's information could be broken down or decomposed
+
+1391
+01:05:41,360 --> 01:05:45,200
+into something that models just language, that's much more
+
+1392
+01:05:45,200 --> 01:05:48,560
+lightweight, with some of lookup table or memory
+
+1393
+01:05:48,560 --> 01:05:54,720
+bank that is able to let us do fact lookup in a database.
+
+1394
+01:05:54,720 --> 01:05:57,200
+And the other benefit of something like this
+
+1395
+01:05:57,200 --> 01:06:04,020
+is there's ways to, again, ensure factual validity.
+
+1396
+01:06:04,020 --> 01:06:07,280
+Because here, we're predicting what's likely,
+
+1397
+01:06:07,280 --> 01:06:09,373
+and it's learned based on the world's information.
+
+1398
+01:06:09,373 --> 01:06:11,040
+But you can't guarantee that it actually
+
+1399
+01:06:11,040 --> 01:06:12,980
+matches the truth of the world's information.
+
+1400
+01:06:12,980 --> 01:06:15,040
+Whereas if you keep the knowledge base,
+
+1401
+01:06:15,040 --> 01:06:18,180
+this kind of lookup of facts separate,
+
+1402
+01:06:18,180 --> 01:06:21,640
+then you can try to enforce that those facts are actually
+
+1403
+01:06:21,640 --> 01:06:24,460
+going to be true, that you won't have things like hallucinations.
+
+1404
+01:06:24,460 --> 01:06:28,520
+Of course, there's still some complexity there.
+
+1405
+01:06:28,520 --> 01:06:31,440
+And so this is like retrieval enhanced transformers,
+
+1406
+01:06:31,440 --> 01:06:32,440
+essentially--
+
+1407
+01:06:32,440 --> 01:06:34,480
+so things like this paper called retro.
+
+1408
+01:06:34,480 --> 01:06:36,430
+And this gives you this trillion token
+
+1409
+01:06:36,430 --> 01:06:38,110
+database that just gets stored in memory
+
+1410
+01:06:38,110 --> 01:06:41,870
+and gets accessed by your language model.
+
+1411
+01:06:41,870 --> 01:06:42,950
+Cool.
+
+1412
+01:06:42,950 --> 01:06:44,690
+So how far back can we go though?
+
+1413
+01:06:44,690 --> 01:06:46,050
+Is this actually a limitation?
+
+1414
+01:06:46,050 --> 01:06:48,190
+Do we need to decrease our context window
+
+1415
+01:06:48,190 --> 01:06:49,610
+for something like attention?
+
+1416
+01:06:49,610 --> 01:06:51,010
+How much memory do we need.
+
+1417
+01:06:51,010 --> 01:06:52,552
+And it kind of gets to this question,
+
+1418
+01:06:52,552 --> 01:06:55,910
+do we really care about modeling things
+
+1419
+01:06:55,910 --> 01:06:58,470
+at the beginning of Pride and Prejudice by the time
+
+1420
+01:06:58,470 --> 01:07:00,490
+you get to the last chapter?
+
+1421
+01:07:00,490 --> 01:07:02,825
+Do we care?
+
+1422
+01:07:02,825 --> 01:07:05,450
+And if you look at the attention window of some of these models
+
+1423
+01:07:05,450 --> 01:07:10,950
+as they've kind of scaled, BERT had 512 token attention--
+
+1424
+01:07:10,950 --> 01:07:12,830
+or context window.
+
+1425
+01:07:12,830 --> 01:07:14,950
+GPT-2 had 1,024.
+
+1426
+01:07:14,950 --> 01:07:17,470
+GPT-3 was 2,048.
+
+1427
+01:07:17,470 --> 01:07:20,990
+GPT-4 was, by default, 8,000, but they had a souped up version
+
+1428
+01:07:20,990 --> 01:07:23,990
+that could do 32,000.
+
+1429
+01:07:23,990 --> 01:07:27,290
+Anthropic has a model that has about 100K,
+
+1430
+01:07:27,290 --> 01:07:28,850
+so it's like 75,000 words.
+
+1431
+01:07:28,850 --> 01:07:32,150
+That's like two or three books worth of context.
+
+1432
+01:07:32,150 --> 01:07:36,370
+So if we can fit this in memory, do we need anything else?
+
+1433
+01:07:36,370 --> 01:07:43,370
+Well, one way that we might is how many people can afford H100s
+
+1434
+01:07:43,370 --> 01:07:47,450
+or whatever the best and brightest version of a GPU is?
+
+1435
+01:07:47,450 --> 01:07:50,090
+So from my perspective, I think figuring out
+
+1436
+01:07:50,090 --> 01:07:52,250
+when we actually need this much context,
+
+1437
+01:07:52,250 --> 01:07:55,170
+and how we should use it, and in what ways
+
+1438
+01:07:55,170 --> 01:07:59,410
+is valuable from the sense of efficiency and accessibility
+
+1439
+01:07:59,410 --> 01:08:00,970
+of these models.
+
+1440
+01:08:00,970 --> 01:08:05,530
+And this takes a lot of power, and it takes a lot of energy,
+
+1441
+01:08:05,530 --> 01:08:07,210
+and it's really slow to train.
+
+1442
+01:08:07,210 --> 01:08:10,450
+And so I think efficiency gains on in terms
+
+1443
+01:08:10,450 --> 01:08:12,850
+of how well we model time and how
+
+1444
+01:08:12,850 --> 01:08:15,250
+we think about what's needed to model in time, I think,
+
+1445
+01:08:15,250 --> 01:08:16,609
+are really valuable.
+
+1446
+01:08:16,609 --> 01:08:19,130
+And there's a nice paper-- it's maybe two years old now
+
+1447
+01:08:19,130 --> 01:08:20,850
+from Jitendra Malik's group-- that
+
+1448
+01:08:20,850 --> 01:08:23,990
+talks about when do we actually need long-term context?
+
+1449
+01:08:23,990 --> 01:08:25,970
+And they do this within the frame of reference
+
+1450
+01:08:25,970 --> 01:08:28,470
+of video action recognition.
+
+1451
+01:08:28,470 --> 01:08:31,490
+So if you have a video, how much temporal information
+
+1452
+01:08:31,490 --> 01:08:34,470
+do you actually need to recognize the action?
+
+1453
+01:08:34,470 --> 01:08:36,310
+And what they were pointing out--
+
+1454
+01:08:36,310 --> 01:08:39,510
+so they introduced this idea of a minimum certificate set, which
+
+1455
+01:08:39,510 --> 01:08:43,069
+is essentially the total amount of frames
+
+1456
+01:08:43,069 --> 01:08:46,590
+or little clips of a video that you need in terms of time
+
+1457
+01:08:46,590 --> 01:08:49,229
+to recognize an action accurately.
+
+1458
+01:08:49,229 --> 01:08:51,870
+And so here, if you have this entire video,
+
+1459
+01:08:51,870 --> 01:08:54,790
+and you want to recognize what's going on in the video,
+
+1460
+01:08:54,790 --> 01:08:58,390
+basically, how many of those frames of the video are needed?
+
+1461
+01:08:58,390 --> 01:09:02,229
+And that's the amount of context you really need.
+
+1462
+01:09:02,229 --> 01:09:07,029
+And what they showed was that most of the video action
+
+1463
+01:09:07,029 --> 01:09:08,630
+recognition benchmarks we actually
+
+1464
+01:09:08,630 --> 01:09:13,270
+study needed somewhere up to maybe like
+
+1465
+01:09:13,270 --> 01:09:15,310
+two seconds of context.
+
+1466
+01:09:15,310 --> 01:09:19,850
+We didn't need models that could handle three-hour long movies,
+
+1467
+01:09:19,850 --> 01:09:23,029
+because actually, the actions we cared about in our benchmarks
+
+1468
+01:09:23,029 --> 01:09:25,390
+were like two or three seconds.
+
+1469
+01:09:25,390 --> 01:09:27,550
+And so their point was that what we need
+
+1470
+01:09:27,550 --> 01:09:30,710
+is we need to develop benchmarks for things that actually need
+
+1471
+01:09:30,710 --> 01:09:34,090
+long term context in order to encourage the community to do
+
+1472
+01:09:34,090 --> 01:09:36,330
+work that shows benefit there.
+
+1473
+01:09:36,330 --> 01:09:38,090
+Because it's really hard for us to measure
+
+1474
+01:09:38,090 --> 01:09:41,290
+progress on something that we're just not measuring.
+
+1475
+01:09:41,290 --> 01:09:44,970
+And so they introduced some new EgoSchema benchmark
+
+1476
+01:09:44,970 --> 01:09:47,887
+that had certificate lengths of more like 100.
+
+1477
+01:09:47,887 --> 01:09:49,970
+But I think that this is an interesting point just
+
+1478
+01:09:49,970 --> 01:09:51,029
+from a meta perspective.
+
+1479
+01:09:51,029 --> 01:09:55,230
+It kind of tells us about how the benchmarks that we build,
+
+1480
+01:09:55,230 --> 01:09:58,810
+the ways that we model value, we model improvement in the machine
+
+1481
+01:09:58,810 --> 01:10:02,490
+learning space directly influence what we make progress
+
+1482
+01:10:02,490 --> 01:10:04,648
+on, because we want to optimize these benchmarks.
+
+1483
+01:10:04,648 --> 01:10:07,190
+And so if there's something that our benchmarks are missing--
+
+1484
+01:10:07,190 --> 01:10:08,490
+if there are gaps--
+
+1485
+01:10:08,490 --> 01:10:10,910
+that means that we don't know what we don't know.
+
+1486
+01:10:10,910 --> 01:10:12,477
+And so we might say, oh, well, we
+
+1487
+01:10:12,477 --> 01:10:14,810
+want to build these models that have really long context
+
+1488
+01:10:14,810 --> 01:10:15,310
+windows.
+
+1489
+01:10:15,310 --> 01:10:18,130
+But then they're just-- the more context windows we have,
+
+1490
+01:10:18,130 --> 01:10:19,790
+or the more temporal context we have,
+
+1491
+01:10:19,790 --> 01:10:21,590
+it's not really improving performance.
+
+1492
+01:10:21,590 --> 01:10:24,090
+Maybe it's because the benchmark we're measuring performance
+
+1493
+01:10:24,090 --> 01:10:29,290
+on just doesn't actually include anything that needs it.
+
+1494
+01:10:29,290 --> 01:10:32,070
+And then finally, I want to talk a little bit
+
+1495
+01:10:32,070 --> 01:10:34,510
+about just this different perspective
+
+1496
+01:10:34,510 --> 01:10:37,510
+on fast and slow memory.
+
+1497
+01:10:37,510 --> 01:10:40,258
+So here's one interesting thing.
+
+1498
+01:10:40,258 --> 01:10:42,550
+If you think about a neural network as something that's
+
+1499
+01:10:42,550 --> 01:10:48,270
+frozen, and you send data into it, then the activations
+
+1500
+01:10:48,270 --> 01:10:50,890
+that you get through that neural network,
+
+1501
+01:10:50,890 --> 01:10:53,050
+there's some statistic of that data point.
+
+1502
+01:10:53,050 --> 01:10:55,810
+You can think of them as like fast memory.
+
+1503
+01:10:58,950 --> 01:11:01,990
+So they're actually building you some representation
+
+1504
+01:11:01,990 --> 01:11:05,750
+that's very fast, that's kind of capturing memories of how
+
+1505
+01:11:05,750 --> 01:11:08,030
+that data is running through the network.
+
+1506
+01:11:08,030 --> 01:11:11,190
+Similarly, if you're learning the parameters
+
+1507
+01:11:11,190 --> 01:11:14,110
+of a network via training from a large data set,
+
+1508
+01:11:14,110 --> 01:11:18,350
+you can think of the theta, the actual parameter
+
+1509
+01:11:18,350 --> 01:11:21,910
+values in that network as representing some statistics
+
+1510
+01:11:21,910 --> 01:11:23,130
+of that training data.
+
+1511
+01:11:23,130 --> 01:11:26,350
+So in a way, those parameters in a deep net
+
+1512
+01:11:26,350 --> 01:11:30,580
+are slow memory of the training data.
+
+1513
+01:11:30,580 --> 01:11:31,760
+And this is interesting.
+
+1514
+01:11:31,760 --> 01:11:35,640
+So we can think of parameters are maybe slow memory.
+
+1515
+01:11:35,640 --> 01:11:38,740
+You're slowly building this memory of the entire training
+
+1516
+01:11:38,740 --> 01:11:39,740
+data set.
+
+1517
+01:11:39,740 --> 01:11:41,480
+And activations are fast memory.
+
+1518
+01:11:41,480 --> 01:11:45,900
+It's some statistics or some memory of some existing data
+
+1519
+01:11:45,900 --> 01:11:47,140
+point.
+
+1520
+01:11:47,140 --> 01:11:51,100
+But do we ever think about fast memory weights of a model,
+
+1521
+01:11:51,100 --> 01:11:54,340
+or slow memory activations of a model?
+
+1522
+01:11:54,340 --> 01:11:58,660
+And just as something to give you food for thought,
+
+1523
+01:11:58,660 --> 01:12:01,960
+there is this idea of hypernets that were released,
+
+1524
+01:12:01,960 --> 01:12:04,200
+which are nets that output weights of other nets.
+
+1525
+01:12:04,200 --> 01:12:08,300
+They're used as a version of neural architecture search.
+
+1526
+01:12:08,300 --> 01:12:12,100
+And so those weights are almost like a fast memory of the input
+
+1527
+01:12:12,100 --> 01:12:13,280
+data to that net.
+
+1528
+01:12:13,280 --> 01:12:16,660
+You're getting as the output of your network
+
+1529
+01:12:16,660 --> 01:12:18,900
+another network that's a set of weights.
+
+1530
+01:12:18,900 --> 01:12:21,420
+Or there are these ideas of codebooks.
+
+1531
+01:12:21,420 --> 01:12:25,580
+These actually use tensors of activations that are learned.
+
+1532
+01:12:25,580 --> 01:12:28,610
+So you're doing backprop to the activations themselves.
+
+1533
+01:12:28,610 --> 01:12:30,360
+And you could argue that these activations
+
+1534
+01:12:30,360 --> 01:12:35,800
+are kind of slow memory of the data set you're learning.
+
+1535
+01:12:35,800 --> 01:12:39,880
+So I think there's ways to flip the perspective a little bit
+
+1536
+01:12:39,880 --> 01:12:44,240
+and try to think about how we have
+
+1537
+01:12:44,240 --> 01:12:50,080
+memory that's stored in the weights, in the activations.
+
+1538
+01:12:50,080 --> 01:12:52,683
+What are the ways that we're representing
+
+1539
+01:12:52,683 --> 01:12:54,600
+what the data we're learning or the data we're
+
+1540
+01:12:54,600 --> 01:12:59,040
+actually using at any given point in time.
+
+1541
+01:12:59,040 --> 01:13:00,020
+Cool.
+
+1542
+01:13:00,020 --> 01:13:02,160
+Any other questions?
+
+1543
+01:13:02,160 --> 01:13:07,200
+Otherwise, I'll just leave you with another picture of Frank,
+
+1544
+01:13:07,200 --> 01:13:08,460
+who's the best cat ever.
+
+1545
+01:13:08,460 --> 01:13:11,816
+[APPLAUSE]
+
+1546
+01:13:13,580 --> 01:13:14,080
+Awesome.
+
+1547
+01:13:14,080 --> 01:13:15,580
+I'm happy to take questions up here.
+
+1548
+01:13:15,580 --> 01:13:18,270
+Otherwise, see you guys on Thursday.

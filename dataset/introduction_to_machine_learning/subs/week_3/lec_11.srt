@@ -1,0 +1,687 @@
+1
+00:00:00,000 --> 00:00:21,550
+Right, so it is called
+
+2
+00:00:21,550 --> 00:00:28,540
+forward stage wise selection where at each stage you do the following okay. Let me rephrase it,
+
+3
+00:00:28,540 --> 00:00:34,990
+on the first stage you do the following, so you pick the variable that is most correlated with
+
+4
+00:00:34,990 --> 00:00:42,040
+the output like you pick the variable that is most correlated with the output and then you
+
+5
+00:00:42,040 --> 00:00:51,370
+regress the output on that variable find the residual. Now what you do is pick the variable
+
+6
+00:00:51,370 --> 00:01:02,680
+that is most correlated with the residual okay, regress the residual on that variable okay.
+
+7
+00:01:02,680 --> 00:01:09,850
+Now add it to your predictor okay, so what is your predictor, you already had one variable
+
+8
+00:01:09,850 --> 00:01:13,960
+right then you had a coefficient for that variable which you got by their first regression. Now you
+
+9
+00:01:13,960 --> 00:01:18,070
+have a second variable and they have a coefficient for that variable which you got my regressing the
+
+10
+00:01:18,070 --> 00:01:22,390
+residual on this variable they essentially what you are trying to do is okay the first variable
+
+11
+00:01:22,390 --> 00:01:27,730
+make some prediction okay. The second variable is going to try to predict what the error is right,
+
+12
+00:01:27,730 --> 00:01:34,510
+so essentially now I will be adding the error to the prediction of the first variable. Did
+
+13
+00:01:34,510 --> 00:01:43,150
+that make sense? Right. So the first variable let us say that is the true output that I want right,
+
+14
+00:01:43,150 --> 00:01:49,660
+so the first variable will make a prediction saying that okay this is the actual fitted
+
+15
+00:01:49,660 --> 00:01:55,960
+value right, and this is the residual. What I am trying to do with the second variable
+
+16
+00:01:55,960 --> 00:02:02,080
+is actually to predict this gap right. So when I add the second variable with this
+
+17
+00:02:02,080 --> 00:02:06,370
+coefficient to the first variable, so what I am essentially doing is okay the first variable will
+
+18
+00:02:06,370 --> 00:02:11,030
+give this as the output, the second variable make some other prediction let us say that much so I
+
+19
+00:02:11,030 --> 00:02:16,480
+will add the two, so the new output will be that right. Now I still have a residual left right,
+
+20
+00:02:16,480 --> 00:02:21,340
+so then I will pick a third variable which is maximally correlated with this residual.
+
+21
+00:02:21,340 --> 00:02:29,480
+And now I add the output of all the three okay and then I get my new predictor okay, does it make
+
+22
+00:02:29,480 --> 00:02:34,850
+sense? So at every stage I find the residual whatever has not been predicted correctly by
+
+23
+00:02:34,850 --> 00:02:40,790
+the previous case stages right, whatever is the residual error after the previous case stages and
+
+24
+00:02:40,790 --> 00:02:46,940
+try to predict that using the new variable and essentially I find the direction which is most
+
+25
+00:02:46,940 --> 00:02:54,680
+correlated with this prediction and then I try to give you that okay, make sense? Right this is
+
+26
+00:02:54,680 --> 00:03:00,560
+called forward stage wise selection right. So what is the advantage of stage by selection?
+
+27
+00:03:23,590 --> 00:03:34,720
+Come on I asked a question I believe. Can you think of any advantage of this? sorry, neither
+
+28
+00:03:34,720 --> 00:03:39,190
+was I randomly picking a variable in the previous methods right, I was picking greedily that was
+
+29
+00:03:39,190 --> 00:03:49,780
+not random. No even in the previous case I only pick variables that gave me better fits right.
+
+30
+00:03:49,780 --> 00:03:55,960
+In fact I will tell you that it will probably converge faster in forward step wise selection
+
+31
+00:03:55,960 --> 00:04:00,340
+rather than forward stage wise okay. But there is another significant advantage
+
+32
+00:04:00,340 --> 00:04:08,860
+here if you just thought about the process of fitting the coefficients at every stage
+
+33
+00:04:08,860 --> 00:04:15,790
+I do a univariate regression right, at every stage I am just regressing the residual on
+
+34
+00:04:15,790 --> 00:04:21,010
+one variable right every stage it is a univariate regression right. In forward
+
+35
+00:04:21,010 --> 00:04:26,680
+stepwise selection so every stage I will add a new variable, but then I have to do a multivariate
+
+36
+00:04:26,680 --> 00:04:29,860
+regression, I have to do the regression all over again, I am not able to reuse the
+
+37
+00:04:29,860 --> 00:04:35,830
+coefficients from the previous step right. So when I add a new variable I basically now I
+
+38
+00:04:35,830 --> 00:04:40,480
+have k+1 variables and into a new regression with k+1 variables, but in this case what is
+
+39
+00:04:40,480 --> 00:04:45,820
+happening at every step stage I just have to do a linear regression I keep all the work that I
+
+40
+00:04:45,820 --> 00:04:50,620
+have done so far intact. So in fact since we are doing this only one at a time right I am,
+
+41
+00:04:50,620 --> 00:04:54,130
+so I am not even though I might have K variables in the system right.
+
+42
+00:04:54,130 --> 00:05:00,550
+But the coefficients I have for the K variables might not be the same K coefficients I would have
+
+43
+00:05:00,550 --> 00:05:05,290
+gotten, if it started with this K variables and did a linear regression on it okay. So
+
+44
+00:05:05,290 --> 00:05:10,240
+the coefficients could be different right, if I take those K variables and do linear regression
+
+45
+00:05:10,240 --> 00:05:15,970
+I will get a better fit rather than doing this stage wise fit. But we prefer to the
+
+46
+00:05:15,970 --> 00:05:21,610
+stage wise, because it saves us a lot of computation okay, makes sense.
+
+47
+00:05:21,610 --> 00:05:26,530
+Eventually everything will catch up and we will get the same kind of prediction at the end of it,
+
+48
+00:05:26,530 --> 00:05:33,430
+but you might end up adding a little bit more variables in this work, in this approach, but
+
+49
+00:05:33,430 --> 00:06:03,060
+that is fine right. So the next class of methods we will look at are called shrinkage methods.
+
+50
+00:06:06,120 --> 00:06:14,790
+The idea is to shrink some of the parameters to zero, it shrink them towards zero right.
+
+51
+00:06:14,790 --> 00:06:19,470
+So in the subset selection here essentially if you think about what we are doing all this variables
+
+52
+00:06:19,470 --> 00:06:26,550
+or all the variables that we did not select you have setting the coefficients to zero right. But
+
+53
+00:06:26,550 --> 00:06:32,580
+instead of doing an arbitrary greedy search or stage wise selection and so on so forth,
+
+54
+00:06:32,580 --> 00:06:37,470
+in shrinkage methods what we do is we come up with a proper optimization formulation
+
+55
+00:06:37,470 --> 00:06:44,520
+right which allows us to shrink the unnecessary coordinates okay.
+
+56
+00:06:44,520 --> 00:06:49,290
+Ideally you would like to shrink them all the way to zero, but there are problems in doing that, but
+
+57
+00:06:49,290 --> 00:06:53,220
+we will try to keep them as small as possible you can do some post-processing and then get rid of
+
+58
+00:06:53,220 --> 00:06:57,540
+really small coordinates and things like that. But we really like to shrink these coordinates right.
+
+59
+00:06:57,540 --> 00:07:03,300
+So this is fine from the prediction accuracy point of view right from the interpretability
+
+60
+00:07:03,300 --> 00:07:06,480
+point of view it still leaves a little bit to be desired, because you might have a lot of
+
+61
+00:07:06,480 --> 00:07:12,360
+coefficients with I mean a lot of variables with very small coefficients back in the system.
+
+62
+00:07:12,360 --> 00:07:20,100
+So it is still a little bit of a thing, but mathematically this is a much sounder method than
+
+63
+00:07:20,100 --> 00:07:26,640
+any of these things we have been talking about. And of course this is the soundest, but also
+
+64
+00:07:26,640 --> 00:07:48,250
+impossible right. So the first thing we look at it is called ridge regression the whole idea behind
+
+65
+00:07:48,250 --> 00:07:54,610
+all of this shrinkage methods is that you are going to have your usual objective function which
+
+66
+00:07:54,610 --> 00:08:01,630
+is what the sum squared error that you are going to try and minimize the sum squared error.
+
+67
+00:08:01,630 --> 00:08:11,830
+In addition you are going to impose a penalty on the size of the coefficients right. So you
+
+68
+00:08:11,830 --> 00:08:19,960
+want to reduce the error, but not at the cost of making some coefficient very large right.
+
+69
+00:08:20,560 --> 00:08:25,630
+You do not try and shrink the coefficients as much as possible, so what will happen is your
+
+70
+00:08:25,630 --> 00:08:34,330
+optimization procedure will try to find solutions which have as smaller coefficient as possible and
+
+71
+00:08:34,330 --> 00:08:49,300
+give you the similar kind of minimization in this squared error objective okay.
+
+72
+00:08:49,300 --> 00:08:53,860
+It is okay I will waste that much of the board I will write things here. So what is
+
+73
+00:08:53,860 --> 00:09:37,650
+your normal objective function right. So that is a normal objective function for finding their β,
+
+74
+00:09:37,650 --> 00:09:49,560
+and so your β hat is essentially this. So now what I am saying is,
+
+75
+00:09:50,160 --> 00:10:04,410
+let us not do this, but let us do this with the constraint right. So what is a constraint?
+
+76
+00:10:30,220 --> 00:10:37,120
+okay fairly straight forward I have added a squared norm constraint right.
+
+77
+00:10:37,120 --> 00:10:42,190
+So I am making, I am just saying that okay, so this is essentially we think about it is
+
+78
+00:10:42,190 --> 00:10:47,230
+L2 norm for my this thing, so I am taking the root I am just leaving it as a square
+
+79
+00:10:47,230 --> 00:10:51,400
+does not matter right. So it is like an L2 norm constraint for my data.
+
+80
+00:10:51,400 --> 00:11:01,690
+So I can make this into an unconstrained problem right.
+
+81
+00:11:28,650 --> 00:11:40,560
+Because λ has to be greater than zero. Why do I want the βs to be small okay good question
+
+82
+00:11:40,560 --> 00:11:49,230
+actually. So what we wanted to do was to make sure that you are reducing the variance of your
+
+83
+00:11:49,230 --> 00:11:54,030
+model right, so that is essentially what we are trying to do now, all the subsets selection was
+
+84
+00:11:54,030 --> 00:12:00,600
+we set the coefficient to zero, we said you have lot fewer parameters to estimate right.
+
+85
+00:12:00,600 --> 00:12:06,390
+So now what I am doing if I am by imposing the size constraint on the parameters right, the
+
+86
+00:12:06,390 --> 00:12:11,910
+size constraints on the variables I am actually reducing the range over which these variables
+
+87
+00:12:11,910 --> 00:12:19,470
+can actually move around okay. So if you think about it if I have moderately correlated input
+
+88
+00:12:19,470 --> 00:12:25,530
+variables or correlated or anti-correlated input variables, so let us say I have two variables
+
+89
+00:12:25,530 --> 00:12:34,590
+which x1 and x2 which are correlated okay. Now I can have a large β1 and a large negative
+
+90
+00:12:34,590 --> 00:12:41,700
+β2 okay that essentially will cancel out each other in terms of the predictions I am making,
+
+91
+00:12:41,700 --> 00:12:47,310
+because x1 and x2 are themselves correlated right. So I can actually make my β1 very
+
+92
+00:12:47,310 --> 00:12:52,590
+large and my β2 is largely negative right, so that it will just cancel out the actual
+
+93
+00:12:52,590 --> 00:12:57,060
+effects of the two variables right. So it essentially becomes a difference of β1,
+
+94
+00:12:57,060 --> 00:13:03,540
+β2 that actually matters right, not necessarily the difference in magnitude of β1 β2 that
+
+95
+00:13:03,540 --> 00:13:08,820
+matters not actually not the actual values. So in which case so I can basically have a large
+
+96
+00:13:08,820 --> 00:13:14,820
+class of models which will give me the same exact output right. So this makes my problem much harder
+
+97
+00:13:14,820 --> 00:13:21,390
+to control and then that increases the difficulty of the estimation problem right. But now we are
+
+98
+00:13:21,390 --> 00:13:26,160
+saying that no, no I cannot allow these things to become very large, then I am restricting the class
+
+99
+00:13:26,160 --> 00:13:30,840
+of models I am going to be looking at okay. So that is the reason why the decreasing size of β
+
+100
+00:13:30,840 --> 00:13:40,120
+helps yeah I did not explain this completely last name so thanks for asking the question right. So
+
+101
+00:13:40,120 --> 00:13:45,070
+we just have to make sure that our λ are positive we know that little so lagrange multipliers have
+
+102
+00:13:45,070 --> 00:13:51,070
+to be positive and so on so forth. So now I can go ahead and minimize this right. So a
+
+103
+00:13:51,070 --> 00:13:58,960
+couple of things which I want to point out now, so one thing is if you notice the penalty here,
+
+104
+00:13:58,960 --> 00:14:17,610
+so what do you notice about this. I am not including β0 right see the sum runs
+
+105
+00:14:17,610 --> 00:14:22,620
+from 1 to P it is not running from 0 to P also note that I actually explicitly wrote out β0 here
+
+106
+00:14:22,620 --> 00:14:28,380
+I did not squish it into the P+1 thing, because I am going to be treating β0 specially here mainly,
+
+107
+00:14:28,380 --> 00:14:40,710
+because if I penalize β0 then what will happen is if I move my data up right,
+
+108
+00:14:40,710 --> 00:14:48,015
+so let us say this is my X and Y axis and I have this is the data that I had right.
+
+109
+00:14:48,015 --> 00:14:55,200
+So now I have to fit that line through this right, it is a univariate regression problem
+
+110
+00:14:55,200 --> 00:15:02,820
+Y is my response and X is my input I have to fit a line right. But now the same data points okay,
+
+111
+00:15:02,820 --> 00:15:10,650
+if I shift them up right, so shifting up the data points is hard, so I will just shift the origin
+
+112
+00:15:10,650 --> 00:15:25,410
+okay. If I shift the origin what will happen if I penalize β0. So if you penalize β0 it will try
+
+113
+00:15:25,410 --> 00:15:32,670
+to keep this intercept small right, penalizing β0 will try to keep the intercept small.
+
+114
+00:15:32,670 --> 00:15:37,830
+So earlier when I had that right if you look at the fit it will pass very close
+
+115
+00:15:37,830 --> 00:15:42,480
+to the origin the intercept will be close to 0 right. Now when I shifted this it is going
+
+116
+00:15:42,480 --> 00:15:46,920
+to try and make the intercept small in stuff there is line just shifting the slope of the
+
+117
+00:15:46,920 --> 00:15:51,690
+line will change right. It is the same data it has just shifted up a little bit right,
+
+118
+00:15:51,690 --> 00:15:55,560
+so the slope of the line will change, so it will try to go through somewhere here.
+
+119
+00:15:55,560 --> 00:15:59,490
+So essentially earlier when the line would I mean like this right, now the line will become
+
+120
+00:15:59,490 --> 00:16:05,670
+like that because I am penalizing β0 right. So we do not want that to happen so just simple
+
+121
+00:16:05,670 --> 00:16:18,970
+shifts in the data should not change the fit right. So we do not penalize β0 right. Does it
+
+122
+00:16:18,970 --> 00:16:33,100
+make sense? And anyway we know what β0 should be do, you know what β0 should be right, it
+
+123
+00:16:33,100 --> 00:16:38,380
+should be the average of the outputs anyway. So one way which we can actually get rid of β0
+
+124
+00:16:38,380 --> 00:16:46,120
+from this optimization problem is to say that we will center the inputs right. So we will subtract
+
+125
+00:16:46,120 --> 00:16:52,600
+the average from the Yi’s and likewise we will subtract the averages from all the X’s okay.
+
+126
+00:16:52,600 --> 00:16:58,300
+So we will center the input, so we will make all the X variables centered on zero right. So
+
+127
+00:16:58,300 --> 00:17:02,830
+we will subtract the mean from all the X’s, we will subtract the mean from the Y's okay.
+
+128
+00:17:02,830 --> 00:17:06,820
+So this will give me a centered input okay, and then I will just do regression on this
+
+129
+00:17:06,820 --> 00:17:15,940
+centered input well there will be no β0 okay. So from now on when I write X it is a nxp matrix
+
+130
+00:17:15,940 --> 00:17:22,930
+where the input has been centered okay. So that way I do not have to worry about the,
+
+131
+00:17:22,930 --> 00:17:29,410
+so essentially what I have done here is I have taken my data from there okay, and shifted it
+
+132
+00:17:29,410 --> 00:17:37,570
+so that the fit whatever is the fit I am going to get will pass through the origin right.
+
+133
+00:17:37,570 --> 00:17:41,410
+So that is essentially what I have done I have taken the original data translated it,
+
+134
+00:17:41,410 --> 00:17:49,390
+so that whatever fit will pass through the origin okay. And I will go back and add
+
+135
+00:17:49,390 --> 00:18:31,520
+the β0 later to get any original fit does that make sense okay good. So matrix form
+
+136
+00:18:40,480 --> 00:18:58,770
+I write it like this, so you can minimize this take the derivative and set it to zero solve for
+
+137
+00:18:58,770 --> 00:19:30,790
+it you will get this. So here, so both my x and y are centered. So I subtracted the mean from Y,
+
+138
+00:19:30,790 --> 00:19:36,640
+I subtracted the mean from the columns of x so they are all centered here okay. So just
+
+139
+00:19:36,640 --> 00:19:41,680
+remember that and so once I get this centered values I can solve for it, this gives me the
+
+140
+00:19:41,680 --> 00:19:49,780
+β hat ridge for 1 to P right in the β0 I estimate as Ybar and that gives me the full solution okay,
+
+141
+00:19:49,780 --> 00:19:58,930
+is it fine? So one thing which I forgot to point out earlier you remember I had this variable T
+
+142
+00:19:58,930 --> 00:20:04,750
+here, there was upper bound on the, so I said subject to the constraint that it should not be
+
+143
+00:20:04,750 --> 00:20:11,650
+larger than T, the T has vanished yet, but you can show that this λ and the T are related right.
+
+144
+00:20:11,650 --> 00:20:17,320
+So it does not matter, so for every choice of T you have a choice of λ okay,
+
+145
+00:20:17,320 --> 00:20:21,460
+but typically what happens is you choose your appropriate lambda and then you work with it,
+
+146
+00:20:21,460 --> 00:20:32,290
+you do not worry about the T formulation okay. Any questions on this? So this tells you why this is
+
+147
+00:20:32,290 --> 00:20:41,920
+called ridge regression, because what they have done here is you essentially added a ridge to
+
+148
+00:20:41,920 --> 00:20:53,140
+your data matrix you take the XTX okay. And then you add a diagonal λ which is like adding a ridge
+
+149
+00:20:53,140 --> 00:20:59,530
+of size λ to the diagonal elements of XTX okay. So that is why it is called ridge regression.
+
+150
+00:20:59,530 --> 00:21:04,810
+So why are you doing this and can you see one advantage of doing this λi think here, sorry,
+
+151
+00:21:16,630 --> 00:21:21,580
+this whole thing becomes invertible right. So as well as I add the λi I am sure that
+
+152
+00:21:21,580 --> 00:21:27,640
+this is non-singular. And even if XTX was originally singular and adding λi makes
+
+153
+00:21:27,640 --> 00:21:32,290
+it nonsingular and it is invertible. In fact this was the original motivation
+
+154
+00:21:32,290 --> 00:21:41,860
+for ridge regression right, back in the I forget, in the 50s when people came up with
+
+155
+00:21:41,860 --> 00:21:48,370
+ridge regression the original motivation was XTX could be badly conditioned okay,
+
+156
+00:21:48,370 --> 00:21:53,620
+even if it is non singular we talked about this in the last class right. It could be that some
+
+157
+00:21:53,620 --> 00:21:58,300
+variables are so highly correlated. So even if the matrix is invertible numerically you
+
+158
+00:21:58,300 --> 00:22:03,070
+will get into problems right I told you that the residual might be so small right.
+
+159
+00:22:03,070 --> 00:22:08,500
+So when you try to fit the coefficients you will get into problems. So numerically the inversion
+
+160
+00:22:08,500 --> 00:22:13,840
+might be a problem right, even if the matrix is non-singular, but by adding this λi term to
+
+161
+00:22:13,840 --> 00:22:20,020
+it you make sure that it is invertible and by controlling the size of the λ you can make sure
+
+162
+00:22:20,020 --> 00:22:25,120
+that numerically also the problem is well behaved right. So that is the idea behind with original
+
+163
+00:22:25,120 --> 00:22:31,570
+motivation for ridge regression was essentially to make the problem first of all solvable right.
+
+164
+00:22:31,570 --> 00:22:38,320
+But then it then people went back and understood rigid regression in terms of shrinkage or variance
+
+165
+00:22:38,320 --> 00:22:45,220
+reduction. And since it makes it convenient for us to talk about a whole class of problems, shrinkage
+
+166
+00:22:45,220 --> 00:22:53,170
+problems right we motivate rigid regression from the view point of shrinkage as opposed to this
+
+167
+00:22:53,170 --> 00:23:07,860
+inversion problem right. Any questions, so I am going to encourage you to read the discussion that
+
+168
+00:23:07,860 --> 00:23:14,340
+follows rigid regression in the book right. It requires you to work out some things along
+
+169
+00:23:14,340 --> 00:23:20,250
+with the book you just cannot just sit there and passively read it okay, but then it draws
+
+170
+00:23:20,250 --> 00:23:25,350
+a lot more connections from ridge regression to a variety of other statistical properties about
+
+171
+00:23:25,350 --> 00:23:29,490
+the data which will be useful to know and I am going to make you read, I mean so go read it
+
+172
+00:23:29,490 --> 00:23:37,230
+I mean ask you questions on it later. So go and read the discussion okay. So the next thing.

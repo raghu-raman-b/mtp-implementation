@@ -1,0 +1,395 @@
+1
+00:00:11,030 --> 00:00:20,780
+We will continue looking at decision trees so like I said there is a little bit more about trees that
+
+2
+00:00:20,780 --> 00:00:28,940
+I wanted to look at and then we will actually do a, an example today of how to construct tree,
+
+3
+00:00:28,940 --> 00:00:36,380
+so starting from data set I will actually constructed decision tree right okay,
+
+4
+00:00:36,380 --> 00:00:41,300
+so we already looked at a couple of issues with regard to addition trees what are the
+
+5
+00:00:41,300 --> 00:00:52,070
+what are the things we looked at a well how will you we need to talk about that yet.
+
+6
+00:00:52,070 --> 00:00:58,610
+So when we look at how will you pick a cell a splitting attribute right what is the splitting
+
+7
+00:00:58,610 --> 00:01:03,050
+value in the splitting attribute, so how large you should go a tree right and how do you prune
+
+8
+00:01:03,050 --> 00:01:07,040
+it okay these are the issues that we looked at right whether several other questions that we
+
+9
+00:01:07,040 --> 00:01:13,400
+could ask right, so when we talk about splitting attributes and split points inherently we are
+
+10
+00:01:13,400 --> 00:01:23,240
+assuming that our attributes are continuously right. So that we can talk about a split point
+
+11
+00:01:23,240 --> 00:01:26,030
+right so what happens if I have categorical attributes.
+
+12
+00:01:34,090 --> 00:01:52,930
+So no categorical attributes things that take some discrete values right, so it could be things like
+
+13
+00:01:52,930 --> 00:02:03,400
+color red, blue and green, right or it could be things what you normally would believe our
+
+14
+00:02:03,400 --> 00:02:10,600
+continuous variables like age right but for a variety of reasons they have been recorded as
+
+15
+00:02:10,600 --> 00:02:19,600
+discrete values young, middle-aged old right, so most surveys and things like to if you look
+
+16
+00:02:19,600 --> 00:02:23,920
+at it when you answer these things you know they do not ask you for an exact age they ask you are
+
+17
+00:02:23,920 --> 00:02:29,590
+you lesser than 25 or in between 25 and 34 or greater than 35 or things like that right.
+
+18
+00:02:29,590 --> 00:02:36,460
+So somehow it is discretized either by for reasons of anonymization or for convenience or whatever
+
+19
+00:02:36,460 --> 00:02:43,450
+you end up discretizing the values right, so you quite a lot of circumstances in fact especially if
+
+20
+00:02:43,450 --> 00:02:51,460
+you are involving with the involved with medical domain right or with as kind of marketing kind of
+
+21
+00:02:51,460 --> 00:02:57,820
+a domain right you will end up having discrete attributes right, so in which case what is the
+
+22
+00:02:57,820 --> 00:03:15,430
+meaning of a split point, yeah I put this binary yes right suppose it is color right,
+
+23
+00:03:18,470 --> 00:03:33,110
+so we think about it if I have q right so that is a key part here think of q unordered values right
+
+24
+00:03:33,110 --> 00:03:38,480
+age itself has some kind of ordering in it. So I can still fake it you know I might have
+
+25
+00:03:38,480 --> 00:03:47,210
+only 3 different age entries but I can think of it young or middle-aged and old right young and
+
+26
+00:03:47,210 --> 00:03:51,320
+middle-aged or old right it does typically usually does not make sense to look at young
+
+27
+00:03:51,320 --> 00:03:56,480
+and old and middle-aged you know because it is I mean I can say you can fake it you can think
+
+28
+00:03:56,480 --> 00:04:01,610
+of it as a ordered attribute and then you can do this but suppose it is unordered right.
+
+29
+00:04:01,610 --> 00:04:07,670
+So essentially what you would really have to do is think of splitting the values into two
+
+30
+00:04:07,670 --> 00:04:14,900
+subsets, so like I said let us say take color as an example right I might have to put okay red,
+
+31
+00:04:14,900 --> 00:04:20,198
+blue and yellow into one group and green and I do not know give me a few more color names that
+
+32
+00:04:20,198 --> 00:04:26,450
+is about how I how much I know magenta, purple okay so all of this into another group right
+
+33
+00:04:26,450 --> 00:04:34,490
+and so like that right I have to figure out some way of splitting it into two okay, so how many
+
+34
+00:04:34,490 --> 00:04:56,430
+possible splits are there like that. I have q values to 2 power? good yeah,
+
+35
+00:04:56,430 --> 00:05:02,370
+right so that many possible combinations is not really not going to be feasible for me
+
+36
+00:05:02,370 --> 00:05:09,390
+to go over all of them in order to pick the split point right, so that is exactly what we
+
+37
+00:05:09,390 --> 00:05:13,380
+were doing right if you remember algorithm from the last class you are actually going over all
+
+38
+00:05:13,380 --> 00:05:18,150
+possible split points and we said there are only finitely many such possible split points because
+
+39
+00:05:18,150 --> 00:05:23,670
+we only have to look at n of them right but now you have to look at even though I have only n
+
+40
+00:05:23,670 --> 00:05:33,360
+values I mean n data points for training and I potentially have to look at 2q minus 1 split
+
+41
+00:05:33,360 --> 00:05:37,200
+points right. So that is not going to be feasible so there are
+
+42
+00:05:37,200 --> 00:05:43,380
+2 ways of handling this actually there are 3 ways of handling this the first one is if you have a we
+
+43
+00:05:51,240 --> 00:06:07,590
+have a 0 - 1 outcome basically that is what people would call a binary classification problem if you
+
+44
+00:06:07,590 --> 00:06:13,380
+have a binary classification problem you can do one clever trick what is it that you can do
+
+45
+00:06:20,430 --> 00:06:35,570
+any ideas no I do not want to explore the number of attributes right I am making it
+
+46
+00:06:35,570 --> 00:06:39,470
+some something very restricted here right I am looking at binary classification problems.
+
+47
+00:06:39,470 --> 00:06:46,880
+So says something that you can think of that you can do here, so what exactly are you looking at
+
+48
+00:06:46,880 --> 00:06:53,870
+when you are trying to find a split point what you are trying to do is trying to make sure that your
+
+49
+00:06:53,870 --> 00:07:00,350
+prediction right when I do it on one half versus other half is more accurate and the prediction I
+
+50
+00:07:00,350 --> 00:07:05,570
+did on the data as a whole before the split right so that is exactly what you are looking at from
+
+51
+00:07:05,570 --> 00:07:11,240
+the slip point trying to find a split point such that it is more accurate than the other right.
+
+52
+00:07:11,240 --> 00:07:16,400
+So what you can do essentially here is you can pick one of the classes let us say you pick
+
+53
+00:07:16,400 --> 00:07:23,060
+class one right let us say I have 5 predictors or I am sorry not yeah I have 5 predictors,
+
+54
+00:07:23,060 --> 00:07:28,730
+so predictors or this the unordered values right, so let us say I have 5
+
+55
+00:07:28,730 --> 00:07:33,590
+values for a particular thing let us say colors right red, blue, green, yellow,
+
+56
+00:07:33,590 --> 00:07:42,440
+magenta right as I say I have 5 colors, now what I will do is I will take red okay I look at all
+
+57
+00:07:42,440 --> 00:07:52,100
+the data points that have color red okay I will see what fraction of them or class one right.
+
+58
+00:07:52,100 --> 00:07:57,710
+Then I will take all data points that have color blue I will see what fraction of them
+
+59
+00:07:57,710 --> 00:08:08,060
+class one likewise for the other 3 colors it make sense so far I look at each color figure out what
+
+60
+00:08:08,060 --> 00:08:14,360
+fraction of that color that data points having that color or of class one now I will arrange
+
+61
+00:08:14,360 --> 00:08:22,820
+them in some order ascending order let us say of this probability when I say fraction it means
+
+62
+00:08:22,820 --> 00:08:27,410
+what fraction that is a probability that a data point having color red will be class one right
+
+63
+00:08:28,190 --> 00:08:32,120
+from the training data I shall ascend arrange it in ascending order of this probability.
+
+64
+00:08:32,120 --> 00:08:43,460
+Then I will just treat it like any other ordered variable and then I will split right does that
+
+65
+00:08:43,460 --> 00:08:50,690
+make sense, so why does this help us think about it a little bit right suppose I suppose I have
+
+66
+00:08:50,690 --> 00:09:05,180
+put it in some order right let us say that. So red has 0 .2 percent of the data having class
+
+67
+00:09:05,180 --> 00:09:27,800
+1 right let us say suppose something like this no need not be why should they be I am
+
+68
+00:09:27,800 --> 00:09:31,940
+just looking at each fraction of the data points with color red that were class 1 more than one
+
+69
+00:09:39,850 --> 00:09:47,170
+color no this one attribute that says color of the data point okay whatever is it the one attribute
+
+70
+00:09:47,170 --> 00:09:53,530
+that says color of the data point right. And that way that attribute can take 5 values red,
+
+71
+00:09:53,530 --> 00:10:00,520
+blue, green, yellow or magenta right suppose it is taken color red I look at what fraction
+
+72
+00:10:00,520 --> 00:10:06,910
+of those data points that have color red or of class one right suppose I find that
+
+73
+00:10:06,910 --> 00:10:11,230
+there are 10 data points that I have color red and two of them are of class 1 then it is 0.2,
+
+74
+00:10:11,230 --> 00:10:18,520
+so obviously so these numbers do not have to sum to 1, right because they are only for that right,
+
+75
+00:10:18,520 --> 00:10:30,940
+now we can tell me what is a good place to split this okay before somebody asked me a question
+
+76
+00:10:30,940 --> 00:10:52,500
+about what if it is exactly 0. 5 okay. There you go oh 0.2, 0.3, 0.4, 0.45 and
+
+77
+00:10:52,500 --> 00:11:14,490
+0.55 see how we go about doing the lot of one thing good point yeah so yeah,
+
+78
+00:11:14,490 --> 00:11:22,980
+so you know how to do this come on pick up pick a thing and tell me what you know the Gini index and
+
+79
+00:11:22,980 --> 00:11:29,520
+you know the you know Gini index or information gain or something like the right all of you know
+
+80
+00:11:29,520 --> 00:11:33,990
+that all miss classification error let us use miss classification error as the splitting criterion,
+
+81
+00:11:33,990 --> 00:11:43,110
+so for me to find an optimal split I do not really have to consider R and Y going to one part right
+
+82
+00:11:43,110 --> 00:11:51,600
+B, G and M going to the other side right. So it will either be here or here or here or here
+
+83
+00:11:51,600 --> 00:11:58,710
+or here I mean that is a really bad attribute to pick if it is here right, but it will only be left
+
+84
+00:11:58,710 --> 00:12:03,840
+to right all right, so these are the only subsets I need to consider I do not have to consider all
+
+85
+00:12:03,840 --> 00:12:10,440
+of the other subsets right it does not make sense you can intuitively see this here right,
+
+86
+00:12:10,440 --> 00:12:16,890
+so since this fraction of the class one keeps going up right, so either you break here or
+
+87
+00:12:16,890 --> 00:12:25,530
+here or here or here, so that is a heuristic for this right in fact with a little bit of thing
+
+88
+00:12:25,530 --> 00:12:33,450
+you can show that for two classes right. You will get the same optimal split right by
+
+89
+00:12:33,450 --> 00:12:44,010
+using this method as you would get by exhaustively searching through all the splits I am seeing too
+
+90
+00:12:44,010 --> 00:12:53,220
+many puzzle looks we did this decision trees day before yesterday if remember decision trees okay,
+
+91
+00:12:53,220 --> 00:12:57,840
+so split points if I have categorical attribute split points are going to be
+
+92
+00:12:57,840 --> 00:13:02,430
+like subsets of the values the attributes can take right, so a split points would be
+
+93
+00:13:02,430 --> 00:13:07,050
+okay do I consider our red and green to one side blue, yellow, magenta to the other side
+
+94
+00:13:07,680 --> 00:13:12,690
+that is good potentially a combination right. So in this case I am saying you do not have to
+
+95
+00:13:12,690 --> 00:13:17,430
+worry about all possible subsets all you need to do is after you have done an arrangement like this
+
+96
+00:13:17,430 --> 00:13:23,100
+okay wherever you choose to split depending on the criterion you are using so wherever you choose to
+
+97
+00:13:23,100 --> 00:13:28,230
+split right so everything to one side will form one subset ever thing the other side will form
+
+98
+00:13:28,230 --> 00:13:32,640
+another subset and these are the only subsets that you need to consider while you are trying to find
+
+99
+00:13:32,640 --> 00:13:42,660
+the optimal space you do not have to consider all the 2q minus 1 subsets okay fine.

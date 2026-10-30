@@ -1,0 +1,7387 @@
+1
+00:00:00,000 --> 00:00:01,970
+[SQUEAKING]
+
+2
+00:00:01,970 --> 00:00:03,930
+[RUSTLING]
+
+3
+00:00:03,930 --> 00:00:07,360
+[CLICKING]
+
+4
+00:00:13,060 --> 00:00:15,040
+SARA BEERY: So, today, we're going
+
+5
+00:00:15,040 --> 00:00:18,520
+to start off the first of a series of lectures
+
+6
+00:00:18,520 --> 00:00:21,400
+on machine learning architectures.
+
+7
+00:00:21,400 --> 00:00:27,760
+And so moving beyond the very vanilla architecture
+
+8
+00:00:27,760 --> 00:00:29,360
+we've been talking about so far, which
+
+9
+00:00:29,360 --> 00:00:31,480
+is the multilayer perceptron, and starting
+
+10
+00:00:31,480 --> 00:00:33,840
+to discuss different ways that we
+
+11
+00:00:33,840 --> 00:00:37,160
+can encode structure or essentially build hypotheses
+
+12
+00:00:37,160 --> 00:00:41,000
+about the space of models that we want to optimize over
+
+13
+00:00:41,000 --> 00:00:43,600
+directly into the architecture of the model
+
+14
+00:00:43,600 --> 00:00:46,320
+that we're going to optimize.
+
+15
+00:00:46,320 --> 00:00:48,540
+So what that's going to look like today-- first,
+
+16
+00:00:48,540 --> 00:00:51,760
+we're going to have a broader discussion about why
+
+17
+00:00:51,760 --> 00:00:53,560
+we want to build better architectures
+
+18
+00:00:53,560 --> 00:00:56,400
+and what makes an architecture better.
+
+19
+00:00:56,400 --> 00:00:59,000
+And then we're going to do a bit of a deep dive
+
+20
+00:00:59,000 --> 00:01:03,420
+on convolutional layers as one specific mechanism you can build
+
+21
+00:01:03,420 --> 00:01:05,820
+into an architecture, one that works particularly
+
+22
+00:01:05,820 --> 00:01:07,860
+well for grids.
+
+23
+00:01:07,860 --> 00:01:09,680
+And this might be a review for some of you,
+
+24
+00:01:09,680 --> 00:01:12,705
+but we're still going to spend some time on it.
+
+25
+00:01:12,705 --> 00:01:14,580
+Then we're going to talk a bit about pyramids
+
+26
+00:01:14,580 --> 00:01:16,900
+and the idea of receptive field.
+
+27
+00:01:16,900 --> 00:01:19,700
+Then I'm going to go through a bit of a high-level overview
+
+28
+00:01:19,700 --> 00:01:22,460
+of a bunch of different architectures
+
+29
+00:01:22,460 --> 00:01:24,580
+and architecture components that have
+
+30
+00:01:24,580 --> 00:01:28,780
+made up a lot of the progress in the last 10 years or so.
+
+31
+00:01:28,780 --> 00:01:32,140
+And then I'm going to finish with a first touch
+
+32
+00:01:32,140 --> 00:01:34,240
+on neural fields and positional encoding.
+
+33
+00:01:34,240 --> 00:01:36,380
+So we'll talk a lot more about this
+
+34
+00:01:36,380 --> 00:01:39,980
+when we get into lectures on transformers later on.
+
+35
+00:01:39,980 --> 00:01:44,100
+So this is what we've been talking about so far,
+
+36
+00:01:44,100 --> 00:01:46,500
+the multilayer perceptron.
+
+37
+00:01:46,500 --> 00:01:50,340
+So this is, at a high level, the building block
+
+38
+00:01:50,340 --> 00:01:52,740
+is this linear combination of neurons
+
+39
+00:01:52,740 --> 00:01:55,220
+or linear combination of inputs, a neuron
+
+40
+00:01:55,220 --> 00:01:57,540
+wise or a point-wise non-linearity and then
+
+41
+00:01:57,540 --> 00:01:59,640
+another linear combination.
+
+42
+00:01:59,640 --> 00:02:02,320
+And one of the benefits of this, like got described
+
+43
+00:02:02,320 --> 00:02:04,640
+in the last lecture, is the fact that it can--
+
+44
+00:02:04,640 --> 00:02:06,180
+it's a universal approximator.
+
+45
+00:02:06,180 --> 00:02:08,039
+You can build any model and prove
+
+46
+00:02:08,039 --> 00:02:12,560
+that you can build any model with this type of architecture.
+
+47
+00:02:12,560 --> 00:02:17,640
+Another benefit of a multi-layer perceptron is it's quite simple.
+
+48
+00:02:17,640 --> 00:02:19,320
+And one of the things this simplicity
+
+49
+00:02:19,320 --> 00:02:22,240
+gives you is the ability to write really elegant theory
+
+50
+00:02:22,240 --> 00:02:22,980
+about this model.
+
+51
+00:02:22,980 --> 00:02:24,160
+And this is one of the only models
+
+52
+00:02:24,160 --> 00:02:26,080
+that we actually have really elegant theory
+
+53
+00:02:26,080 --> 00:02:28,873
+for because the complexity is such
+
+54
+00:02:28,873 --> 00:02:30,540
+that we can make reasonable assumptions,
+
+55
+00:02:30,540 --> 00:02:35,240
+it maps well into our mathematical tool blocks.
+
+56
+00:02:35,240 --> 00:02:38,360
+And then another huge benefit of the multi-layer perceptron
+
+57
+00:02:38,360 --> 00:02:42,360
+is it's what we call embarrassingly parallel.
+
+58
+00:02:42,360 --> 00:02:45,600
+Essentially, this means that this type of architecture
+
+59
+00:02:45,600 --> 00:02:47,440
+can be really easily parallelized
+
+60
+00:02:47,440 --> 00:02:49,320
+in terms of computation, which means
+
+61
+00:02:49,320 --> 00:02:51,520
+we can make use of things like GPUs
+
+62
+00:02:51,520 --> 00:02:54,660
+that enable a lot of parallel multiplications.
+
+63
+00:02:54,660 --> 00:02:57,100
+So one obvious example of that is
+
+64
+00:02:57,100 --> 00:03:00,460
+that that neuron-wise or that point-wise non-linearity, that's
+
+65
+00:03:00,460 --> 00:03:03,340
+calculated independently for every single output
+
+66
+00:03:03,340 --> 00:03:04,520
+neuron of that first layer.
+
+67
+00:03:04,520 --> 00:03:06,437
+And so that can happen completely in parallel.
+
+68
+00:03:06,437 --> 00:03:09,300
+There's no dependence across the data points.
+
+69
+00:03:09,300 --> 00:03:13,300
+Another nice example is that linear combination of neurons,
+
+70
+00:03:13,300 --> 00:03:16,740
+that densely connected layer or that weight,
+
+71
+00:03:16,740 --> 00:03:19,900
+that can happen in parallel across a very large,
+
+72
+00:03:19,900 --> 00:03:21,740
+in some cases, batch of data.
+
+73
+00:03:21,740 --> 00:03:25,140
+That's done independently per data point.
+
+74
+00:03:25,140 --> 00:03:26,580
+So what are some of the bad things
+
+75
+00:03:26,580 --> 00:03:28,900
+about the multilayer perceptron?
+
+76
+00:03:28,900 --> 00:03:34,160
+So first one is that it has very weak inductive biases.
+
+77
+00:03:34,160 --> 00:03:38,640
+And so what we mean by this is that the model itself,
+
+78
+00:03:38,640 --> 00:03:40,120
+it's a universal approximator.
+
+79
+00:03:40,120 --> 00:03:43,420
+But there's not a lot of structure or intuition baked
+
+80
+00:03:43,420 --> 00:03:45,140
+into this model.
+
+81
+00:03:45,140 --> 00:03:48,820
+It doesn't assume much about the structure of the model
+
+82
+00:03:48,820 --> 00:03:51,860
+you want to learn coming out.
+
+83
+00:03:51,860 --> 00:03:53,820
+And so one of the things that implies
+
+84
+00:03:53,820 --> 00:03:57,520
+is that though you can use this model--
+
+85
+00:03:57,520 --> 00:04:01,000
+so you can use a multilayer perceptron to approximate any
+
+86
+00:04:01,000 --> 00:04:03,720
+of mathematical function.
+
+87
+00:04:03,720 --> 00:04:09,120
+It might be very difficult to do so given the data that you have.
+
+88
+00:04:09,120 --> 00:04:12,080
+It's very sample inefficient or data hungry.
+
+89
+00:04:12,080 --> 00:04:14,360
+This basically means that in order
+
+90
+00:04:14,360 --> 00:04:16,880
+to get this multilayer perceptron to learn maybe
+
+91
+00:04:16,880 --> 00:04:21,279
+a very complex function, you might require so much data
+
+92
+00:04:21,279 --> 00:04:22,960
+that it's not actually tractable,
+
+93
+00:04:22,960 --> 00:04:25,000
+like more data than exists on Earth to be
+
+94
+00:04:25,000 --> 00:04:27,160
+able to really generalize and robustly
+
+95
+00:04:27,160 --> 00:04:31,480
+learn a function with this particular architecture that
+
+96
+00:04:31,480 --> 00:04:33,440
+generalizes well.
+
+97
+00:04:33,440 --> 00:04:36,520
+And then another downside is that dense layers, those fully
+
+98
+00:04:36,520 --> 00:04:39,800
+connected layers, particularly if you want a model that's
+
+99
+00:04:39,800 --> 00:04:42,480
+very wide because maybe the function you need to approximate
+
+100
+00:04:42,480 --> 00:04:45,120
+is quite complex, those can be really expensive.
+
+101
+00:04:45,120 --> 00:04:48,960
+If your input data is an image, for example, a high resolution
+
+102
+00:04:48,960 --> 00:04:52,280
+image that you might take on your iPhone today,
+
+103
+00:04:52,280 --> 00:04:55,510
+then you need to flatten that out into one long vector.
+
+104
+00:04:55,510 --> 00:04:59,090
+That's going to be thousands of input dimensions and 1,000
+
+105
+00:04:59,090 --> 00:05:02,450
+by 1,000 multiplication in a dense way is a very expensive
+
+106
+00:05:02,450 --> 00:05:04,690
+computational cost.
+
+107
+00:05:04,690 --> 00:05:08,672
+So why use other architectures?
+
+108
+00:05:08,672 --> 00:05:11,130
+Well, one, we might want to address some of those downsides
+
+109
+00:05:11,130 --> 00:05:12,370
+that we talked about.
+
+110
+00:05:12,370 --> 00:05:18,330
+But let's take a meta view of this and zoom out a little.
+
+111
+00:05:18,330 --> 00:05:21,730
+So if this is the set of all possible mappings from X
+
+112
+00:05:21,730 --> 00:05:23,290
+to Y-- so this is like all functions
+
+113
+00:05:23,290 --> 00:05:26,690
+is contained in this little gray box.
+
+114
+00:05:26,690 --> 00:05:29,410
+And maybe this is the true solution we're trying to learn.
+
+115
+00:05:29,410 --> 00:05:36,010
+This is the correct model for our problem.
+
+116
+00:05:36,010 --> 00:05:40,290
+Then possibly given any data set that we're
+
+117
+00:05:40,290 --> 00:05:42,490
+going to learn from, that data set
+
+118
+00:05:42,490 --> 00:05:44,410
+will constrain the space a bit.
+
+119
+00:05:44,410 --> 00:05:47,810
+So not every model will fit the data
+
+120
+00:05:47,810 --> 00:05:50,170
+that we're using to learn the data.
+
+121
+00:05:50,170 --> 00:05:53,190
+And so now maybe you have this subset
+
+122
+00:05:53,190 --> 00:05:56,390
+of all mappings that actually fits your training data.
+
+123
+00:05:56,390 --> 00:05:58,270
+And then within that, based on something
+
+124
+00:05:58,270 --> 00:06:01,310
+about your optimization scheme, you learn some solution,
+
+125
+00:06:01,310 --> 00:06:03,113
+and it will be in that space.
+
+126
+00:06:03,113 --> 00:06:05,030
+It will fit the data, but it won't necessarily
+
+127
+00:06:05,030 --> 00:06:08,510
+be very close to the true solution.
+
+128
+00:06:08,510 --> 00:06:12,690
+So what would happen to this high-level diagram,
+
+129
+00:06:12,690 --> 00:06:15,630
+if we add more data?
+
+130
+00:06:15,630 --> 00:06:16,230
+Anyone?
+
+131
+00:06:16,230 --> 00:06:18,580
+What would happen?
+
+132
+00:06:18,580 --> 00:06:20,855
+Mm-hmm?
+
+133
+00:06:20,855 --> 00:06:22,310
+AUDIENCE: [INAUDIBLE]
+
+134
+00:06:23,447 --> 00:06:24,530
+SARA BEERY: Yeah, exactly.
+
+135
+00:06:24,530 --> 00:06:28,530
+So that green space, that'll get smaller.
+
+136
+00:06:28,530 --> 00:06:30,790
+There will be fewer models that fit all of the data
+
+137
+00:06:30,790 --> 00:06:31,930
+if we have more data.
+
+138
+00:06:31,930 --> 00:06:33,770
+So that's kind of nice.
+
+139
+00:06:33,770 --> 00:06:36,403
+So if you can add more data, then potentially you
+
+140
+00:06:36,403 --> 00:06:38,070
+shrink the space you're optimizing over,
+
+141
+00:06:38,070 --> 00:06:40,670
+and then you'll learn a maybe more optimal solution
+
+142
+00:06:40,670 --> 00:06:42,790
+or something that's closer to the true solution
+
+143
+00:06:42,790 --> 00:06:44,750
+because the space is different.
+
+144
+00:06:44,750 --> 00:06:48,230
+But what if you don't have more data?
+
+145
+00:06:48,230 --> 00:06:49,870
+That's not an option for you.
+
+146
+00:06:49,870 --> 00:06:55,210
+So then another alternative is to define a hypothesis space.
+
+147
+00:06:55,210 --> 00:06:58,170
+And this is adding some structure into the model itself.
+
+148
+00:06:58,170 --> 00:07:00,130
+And that hypothesis space is essentially
+
+149
+00:07:00,130 --> 00:07:03,810
+going to shine a spotlight on the space of all possible models
+
+150
+00:07:03,810 --> 00:07:06,150
+is the way we've kind of denoted it here.
+
+151
+00:07:06,150 --> 00:07:10,490
+But essentially, it's a stronger inductive bias or a stronger
+
+152
+00:07:10,490 --> 00:07:14,370
+prior over what we think the model is
+
+153
+00:07:14,370 --> 00:07:16,130
+going to take the form of.
+
+154
+00:07:16,130 --> 00:07:19,010
+And then if you have that intersection of the models that
+
+155
+00:07:19,010 --> 00:07:21,270
+fit the data and your inductive hypothesis,
+
+156
+00:07:21,270 --> 00:07:26,070
+then you might actually be able to use less data,
+
+157
+00:07:26,070 --> 00:07:28,690
+but still find a better architecture.
+
+158
+00:07:28,690 --> 00:07:31,210
+So the idea is if we can pin down
+
+159
+00:07:31,210 --> 00:07:33,610
+or if we can get closer to the true model
+
+160
+00:07:33,610 --> 00:07:36,255
+by either adding more data or by using
+
+161
+00:07:36,255 --> 00:07:37,630
+a more constrained architecture--
+
+162
+00:07:37,630 --> 00:07:39,755
+and you can imagine that the combination of the two
+
+163
+00:07:39,755 --> 00:07:40,810
+would be even better.
+
+164
+00:07:40,810 --> 00:07:42,950
+So more data helps.
+
+165
+00:07:42,950 --> 00:07:45,850
+Better architecture or stronger inductive bias helps.
+
+166
+00:07:45,850 --> 00:07:50,870
+And those two things combined is ideal.
+
+167
+00:07:50,870 --> 00:07:56,070
+So let's look at this from a very, very simplistic model.
+
+168
+00:07:56,070 --> 00:07:57,650
+This is a one-dimensional model.
+
+169
+00:07:57,650 --> 00:08:00,670
+It's a mapping of f of x, where x is a scalar.
+
+170
+00:08:00,670 --> 00:08:03,790
+So here if we use, for example--
+
+171
+00:08:03,790 --> 00:08:05,130
+these are true outputs.
+
+172
+00:08:05,130 --> 00:08:08,870
+If we use a 5-layer ReLU-net, so essentially densely connected
+
+173
+00:08:08,870 --> 00:08:13,270
+layers with point-wise ReLU-based activations.
+
+174
+00:08:13,270 --> 00:08:16,280
+And we fit that to a single data point.
+
+175
+00:08:16,280 --> 00:08:18,030
+Well, now the space of all possible models
+
+176
+00:08:18,030 --> 00:08:20,530
+that fit that data point is very, very large.
+
+177
+00:08:20,530 --> 00:08:23,590
+And the one that actually gets learned is just this flat line.
+
+178
+00:08:23,590 --> 00:08:26,950
+So that's not necessarily a very good learned solution.
+
+179
+00:08:26,950 --> 00:08:29,190
+As we start adding more data, you
+
+180
+00:08:29,190 --> 00:08:31,590
+can see that you maybe start to fit slightly
+
+181
+00:08:31,590 --> 00:08:35,049
+better in the region where we add data in the middle,
+
+182
+00:08:35,049 --> 00:08:36,850
+but it's still not a very good solution.
+
+183
+00:08:36,850 --> 00:08:38,887
+And then as you start to add a lot of data, what
+
+184
+00:08:38,887 --> 00:08:40,929
+you see on the right is you start getting really,
+
+185
+00:08:40,929 --> 00:08:43,510
+really nice fits in the distribution where
+
+186
+00:08:43,510 --> 00:08:46,630
+you have data, but you get really poor generalization
+
+187
+00:08:46,630 --> 00:08:48,210
+out of distribution.
+
+188
+00:08:48,210 --> 00:08:54,825
+And so the intuition here is really that model, hypothesis,
+
+189
+00:08:54,825 --> 00:08:56,450
+that hypothesis space you build, that's
+
+190
+00:08:56,450 --> 00:08:58,650
+really something that helps us generalize out
+
+191
+00:08:58,650 --> 00:09:01,010
+of the distribution of the data we have.
+
+192
+00:09:01,010 --> 00:09:04,570
+And so what if instead we had a really strong
+
+193
+00:09:04,570 --> 00:09:07,890
+prior over what the model was supposed to be?
+
+194
+00:09:07,890 --> 00:09:11,710
+So in this case, y equals ax plus sine bx squared.
+
+195
+00:09:11,710 --> 00:09:13,510
+That's very specific.
+
+196
+00:09:13,510 --> 00:09:16,730
+It turns out that it's exactly the correct model
+
+197
+00:09:16,730 --> 00:09:18,370
+for this function.
+
+198
+00:09:18,370 --> 00:09:20,850
+And you can see that if you only have a single data point,
+
+199
+00:09:20,850 --> 00:09:23,512
+that really good model is insufficient.
+
+200
+00:09:23,512 --> 00:09:24,970
+You still aren't able to figure out
+
+201
+00:09:24,970 --> 00:09:30,450
+where in that set of hypotheses the correct model is.
+
+202
+00:09:30,450 --> 00:09:33,110
+But even with very, very, very few data points,
+
+203
+00:09:33,110 --> 00:09:35,050
+we start getting a really nice fit.
+
+204
+00:09:35,050 --> 00:09:37,752
+And, actually, even when we add a lot more data points,
+
+205
+00:09:37,752 --> 00:09:39,210
+we get really strong generalization
+
+206
+00:09:39,210 --> 00:09:40,030
+out of distribution.
+
+207
+00:09:40,030 --> 00:09:41,410
+But the difference between those two in the middle
+
+208
+00:09:41,410 --> 00:09:42,970
+is actually not that big.
+
+209
+00:09:42,970 --> 00:09:45,890
+So we can get a really nice fit even with just a little bit
+
+210
+00:09:45,890 --> 00:09:52,950
+of data when we have the exact precise correct hypothesis.
+
+211
+00:09:52,950 --> 00:09:54,450
+And so that's what we're showing.
+
+212
+00:09:54,450 --> 00:09:56,990
+Architectures enable us to generalize outside the training
+
+213
+00:09:56,990 --> 00:09:58,230
+distribution.
+
+214
+00:09:58,230 --> 00:09:59,950
+And a good architecture is going to be
+
+215
+00:09:59,950 --> 00:10:03,650
+one that can represent the true function of the data
+
+216
+00:10:03,650 --> 00:10:05,250
+and then is otherwise minimal.
+
+217
+00:10:05,250 --> 00:10:07,350
+We want it to be easy to search over
+
+218
+00:10:07,350 --> 00:10:09,030
+via gradient-based learning.
+
+219
+00:10:09,030 --> 00:10:12,430
+We want it to be easy to parallelize, fast on GPU,
+
+220
+00:10:12,430 --> 00:10:14,190
+et cetera, et cetera.
+
+221
+00:10:14,190 --> 00:10:16,390
+And so here's a bit of a preview.
+
+222
+00:10:16,390 --> 00:10:18,230
+But it turns out that better architectures
+
+223
+00:10:18,230 --> 00:10:20,190
+can approximate important function
+
+224
+00:10:20,190 --> 00:10:21,710
+classes more efficiently.
+
+225
+00:10:21,710 --> 00:10:27,410
+So this is a result from a paper by another MIT professor,
+
+226
+00:10:27,410 --> 00:10:31,150
+Vincent Sitzmann, where they introduced this model over here
+
+227
+00:10:31,150 --> 00:10:33,990
+on the far right called SIREN.
+
+228
+00:10:33,990 --> 00:10:39,030
+And SIREN actually uses a sinusoidal activation space,
+
+229
+00:10:39,030 --> 00:10:41,410
+and that fits images more efficiently.
+
+230
+00:10:41,410 --> 00:10:43,210
+If anyone's taken signal processing,
+
+231
+00:10:43,210 --> 00:10:45,170
+this idea might be a bit familiar.
+
+232
+00:10:45,170 --> 00:10:47,870
+A Fourier basis is a good basis for representing images,
+
+233
+00:10:47,870 --> 00:10:50,650
+and the fundamental building blocks of Fourier basis
+
+234
+00:10:50,650 --> 00:10:52,290
+are sinusoids.
+
+235
+00:10:52,290 --> 00:10:54,930
+So if we take a look at what this is, if you look at ReLU-net
+
+236
+00:10:54,930 --> 00:10:57,130
+or a TanH-net or these different models
+
+237
+00:10:57,130 --> 00:10:58,470
+that are being compared here.
+
+238
+00:10:58,470 --> 00:11:00,303
+And we're going to look at how they actually
+
+239
+00:11:00,303 --> 00:11:02,650
+try to fit this specific image over time
+
+240
+00:11:02,650 --> 00:11:04,450
+by sampling pixels from that image
+
+241
+00:11:04,450 --> 00:11:07,890
+and then fitting that as the training data.
+
+242
+00:11:07,890 --> 00:11:09,610
+You can see that you start getting
+
+243
+00:11:09,610 --> 00:11:12,850
+a pretty good approximation from SIREN
+
+244
+00:11:12,850 --> 00:11:16,010
+much, much faster than you do from some of these other models.
+
+245
+00:11:16,010 --> 00:11:19,530
+And, of course, after sampling enough points,
+
+246
+00:11:19,530 --> 00:11:22,090
+eventually, all the models are getting
+
+247
+00:11:22,090 --> 00:11:24,070
+reasonably good at estimating.
+
+248
+00:11:24,070 --> 00:11:26,850
+But that SIREN model, it's a better hypothesis
+
+249
+00:11:26,850 --> 00:11:28,390
+to start with for the image space.
+
+250
+00:11:28,390 --> 00:11:31,690
+And so you get much more efficient convergence.
+
+251
+00:11:31,690 --> 00:11:34,270
+And so in this particular instance,
+
+252
+00:11:34,270 --> 00:11:36,950
+now instead of looking at a 5-layer ReLU-net,
+
+253
+00:11:36,950 --> 00:11:39,370
+we're going to look at a 5-layer sin-net where now those
+
+254
+00:11:39,370 --> 00:11:42,690
+activations, those nonlinear activations, are sinusoids.
+
+255
+00:11:42,690 --> 00:11:45,450
+And you can see here that with a single data point,
+
+256
+00:11:45,450 --> 00:11:47,590
+it still doesn't fit super well.
+
+257
+00:11:47,590 --> 00:11:49,870
+But even just with a couple data points,
+
+258
+00:11:49,870 --> 00:11:52,510
+we start seeing some periodicity that
+
+259
+00:11:52,510 --> 00:11:54,970
+maybe starts to match the periodicity in the function.
+
+260
+00:11:54,970 --> 00:11:56,610
+And even though we're not generalizing perfectly,
+
+261
+00:11:56,610 --> 00:11:58,230
+we're still seeing some periodicity
+
+262
+00:11:58,230 --> 00:12:00,990
+that seems to be moving more towards what
+
+263
+00:12:00,990 --> 00:12:02,130
+the true function is.
+
+264
+00:12:02,130 --> 00:12:06,470
+So why would you have that periodicity in the output space?
+
+265
+00:12:06,470 --> 00:12:08,010
+It's kind of an obvious question.
+
+266
+00:12:08,010 --> 00:12:09,522
+AUDIENCE: [INAUDIBLE] sine.
+
+267
+00:12:09,522 --> 00:12:10,730
+SARA BEERY: Yes, it's a sine.
+
+268
+00:12:10,730 --> 00:12:12,190
+Sines are periodic.
+
+269
+00:12:12,190 --> 00:12:14,310
+Very nice.
+
+270
+00:12:14,310 --> 00:12:17,870
+But so essentially, we've just added an inductive bias
+
+271
+00:12:17,870 --> 00:12:20,310
+in our model architecture that says that the distribution
+
+272
+00:12:20,310 --> 00:12:21,732
+should be periodic.
+
+273
+00:12:21,732 --> 00:12:23,190
+And then it tries to find solutions
+
+274
+00:12:23,190 --> 00:12:26,390
+that are periodic outside of the distribution where
+
+275
+00:12:26,390 --> 00:12:27,950
+we have training data.
+
+276
+00:12:27,950 --> 00:12:28,450
+Cool.
+
+277
+00:12:28,450 --> 00:12:30,950
+Any questions about this?
+
+278
+00:12:30,950 --> 00:12:33,450
+It's really just intended to build high-level intuition.
+
+279
+00:12:33,450 --> 00:12:33,950
+Yeah?
+
+280
+00:12:33,950 --> 00:12:36,430
+AUDIENCE: So I guess I'm wondering how constrained
+
+281
+00:12:36,430 --> 00:12:40,430
+is this to the number of pixels because the sinusoid period
+
+282
+00:12:40,430 --> 00:12:42,468
+seems like it would be affected by that one.
+
+283
+00:12:42,468 --> 00:12:44,760
+SARA BEERY: So one of the things with the Fourier basis
+
+284
+00:12:44,760 --> 00:12:47,960
+is that you are building out--
+
+285
+00:12:47,960 --> 00:12:51,440
+the basis assumes different periodicities of sine.
+
+286
+00:12:51,440 --> 00:12:53,400
+And so you're reconstructing the image
+
+287
+00:12:53,400 --> 00:12:55,200
+using different periodicities and weights
+
+288
+00:12:55,200 --> 00:12:56,700
+of the sinusoid function.
+
+289
+00:12:56,700 --> 00:12:58,862
+So that it handles some of the structure well.
+
+290
+00:12:58,862 --> 00:13:00,320
+And it's one of the reasons that we
+
+291
+00:13:00,320 --> 00:13:02,112
+can compress images really well with things
+
+292
+00:13:02,112 --> 00:13:04,480
+like the fast Fourier transform.
+
+293
+00:13:04,480 --> 00:13:06,166
+Yeah.
+
+294
+00:13:06,166 --> 00:13:07,060
+Cool.
+
+295
+00:13:07,060 --> 00:13:11,920
+So let's now talk about convolutional neural networks.
+
+296
+00:13:11,920 --> 00:13:15,320
+So here's an image.
+
+297
+00:13:15,320 --> 00:13:17,376
+What's in this image?
+
+298
+00:13:17,376 --> 00:13:18,744
+AUDIENCE: Birds.
+
+299
+00:13:18,744 --> 00:13:20,940
+SARA BEERY: Birds, OK.
+
+300
+00:13:20,940 --> 00:13:24,400
+So what else is in this image?
+
+301
+00:13:24,400 --> 00:13:25,200
+AUDIENCE: Sky.
+
+302
+00:13:25,200 --> 00:13:26,720
+SARA BEERY: Sky.
+
+303
+00:13:26,720 --> 00:13:29,407
+So if I had a whole image classifier, if I took this image
+
+304
+00:13:29,407 --> 00:13:31,240
+and I ran it through one of the models we've
+
+305
+00:13:31,240 --> 00:13:33,820
+talked about so far, what would we want it to say?
+
+306
+00:13:36,480 --> 00:13:39,666
+What's the category of this image?
+
+307
+00:13:39,666 --> 00:13:41,237
+AUDIENCE: Birds and sky.
+
+308
+00:13:41,237 --> 00:13:42,320
+SARA BEERY: Birds and sky.
+
+309
+00:13:42,320 --> 00:13:43,445
+I mean, that would be nice.
+
+310
+00:13:43,445 --> 00:13:45,820
+We haven't talked about multi-output classification,
+
+311
+00:13:45,820 --> 00:13:46,320
+though.
+
+312
+00:13:46,320 --> 00:13:46,820
+Yeah?
+
+313
+00:13:46,820 --> 00:13:47,640
+AUDIENCE: Nature.
+
+314
+00:13:47,640 --> 00:13:50,660
+SARA BEERY: Nature, yeah.
+
+315
+00:13:50,660 --> 00:13:51,543
+I love that answer.
+
+316
+00:13:51,543 --> 00:13:53,460
+So one of the things that's really interesting
+
+317
+00:13:53,460 --> 00:13:55,940
+is you can really see this trade-off between generality
+
+318
+00:13:55,940 --> 00:13:57,540
+and specificity.
+
+319
+00:13:57,540 --> 00:13:59,880
+And so, yeah, it's like, oh, well, that's too hard.
+
+320
+00:13:59,880 --> 00:14:03,460
+I'm just going to predict something coarser grained.
+
+321
+00:14:03,460 --> 00:14:06,640
+And that's a reasonable fallback.
+
+322
+00:14:06,640 --> 00:14:10,300
+So what I was trying to get at here is actually
+
+323
+00:14:10,300 --> 00:14:14,180
+for a lot of things we might want to understand in an image,
+
+324
+00:14:14,180 --> 00:14:17,640
+maybe a single category isn't sufficient information.
+
+325
+00:14:17,640 --> 00:14:20,520
+This could be flock of birds, for example.
+
+326
+00:14:20,520 --> 00:14:22,980
+I mean, maybe that's a category.
+
+327
+00:14:22,980 --> 00:14:25,620
+But really, it's just that a single label is usually
+
+328
+00:14:25,620 --> 00:14:29,340
+insufficient to represent the semantic concepts that
+
+329
+00:14:29,340 --> 00:14:30,400
+are captured in images.
+
+330
+00:14:30,400 --> 00:14:32,900
+And this is actually, in the grand scheme of things,
+
+331
+00:14:32,900 --> 00:14:34,000
+a pretty simple image.
+
+332
+00:14:34,000 --> 00:14:37,080
+I mean, think about this versus an image like of Times Square,
+
+333
+00:14:37,080 --> 00:14:39,960
+for example, how complex that image signals semantically
+
+334
+00:14:39,960 --> 00:14:41,400
+could be.
+
+335
+00:14:41,400 --> 00:14:44,687
+So if you were to take a picture, for example, from where
+
+336
+00:14:44,687 --> 00:14:47,020
+you're sitting, I don't know, out there in the audience,
+
+337
+00:14:47,020 --> 00:14:49,280
+think about what would you categorize that picture?
+
+338
+00:14:49,280 --> 00:14:50,740
+Is it lecture hall?
+
+339
+00:14:50,740 --> 00:14:51,700
+Is that students?
+
+340
+00:14:51,700 --> 00:14:53,400
+Is it projector?
+
+341
+00:14:53,400 --> 00:14:54,300
+Is it MIT?
+
+342
+00:14:54,300 --> 00:14:56,560
+It's all those things.
+
+343
+00:14:56,560 --> 00:14:58,920
+But so when we start to think about these more
+
+344
+00:14:58,920 --> 00:15:01,920
+complex semantic signals, and we'll
+
+345
+00:15:01,920 --> 00:15:05,400
+get into a lot more of this throughout the course,
+
+346
+00:15:05,400 --> 00:15:07,880
+one thing that starts to be more and more true
+
+347
+00:15:07,880 --> 00:15:14,320
+is that there's often maybe different categories
+
+348
+00:15:14,320 --> 00:15:17,440
+or different bits of information that are somewhat locally
+
+349
+00:15:17,440 --> 00:15:18,233
+constrained.
+
+350
+00:15:18,233 --> 00:15:20,400
+And so you can think about breaking down the problem
+
+351
+00:15:20,400 --> 00:15:22,317
+into something that actually looks at location
+
+352
+00:15:22,317 --> 00:15:24,680
+as well as semantics.
+
+353
+00:15:24,680 --> 00:15:26,560
+So one way that we could try to address
+
+354
+00:15:26,560 --> 00:15:29,880
+the fact that this image contains multiple things is we
+
+355
+00:15:29,880 --> 00:15:32,327
+could first subdivide the image into patches.
+
+356
+00:15:32,327 --> 00:15:34,660
+And then we could try to classify each patch separately.
+
+357
+00:15:34,660 --> 00:15:38,800
+So you could take this image, chop it up into little pieces,
+
+358
+00:15:38,800 --> 00:15:40,840
+and then maybe you have a classifier.
+
+359
+00:15:40,840 --> 00:15:44,620
+And now you send this patch to the classifier and it says bird.
+
+360
+00:15:44,620 --> 00:15:47,960
+And then you could run that classifier over the entire grid.
+
+361
+00:15:47,960 --> 00:15:50,140
+And you would take all those patches independently.
+
+362
+00:15:50,140 --> 00:15:51,580
+And you could then--
+
+363
+00:15:51,580 --> 00:15:52,360
+hey, bird.
+
+364
+00:15:52,360 --> 00:15:54,460
+This one is sky.
+
+365
+00:15:54,460 --> 00:15:59,220
+And you could densely populate that entire space
+
+366
+00:15:59,220 --> 00:16:04,380
+and get out the category per little block or little patch.
+
+367
+00:16:04,380 --> 00:16:06,780
+And so if we think about this and we
+
+368
+00:16:06,780 --> 00:16:08,820
+have some function that's going to crop this up
+
+369
+00:16:08,820 --> 00:16:13,960
+and map every patch to a category, in some way,
+
+370
+00:16:13,960 --> 00:16:17,600
+this is actually giving us an image output.
+
+371
+00:16:17,600 --> 00:16:19,520
+It's a bit like a low-resolution image.
+
+372
+00:16:19,520 --> 00:16:23,540
+It's got some spatial context, which is useful.
+
+373
+00:16:23,540 --> 00:16:26,460
+But there are a couple patches here
+
+374
+00:16:26,460 --> 00:16:28,420
+where the objects don't necessarily
+
+375
+00:16:28,420 --> 00:16:30,660
+fit super neatly inside them.
+
+376
+00:16:30,660 --> 00:16:33,500
+So I don't know, maybe this one over here
+
+377
+00:16:33,500 --> 00:16:36,240
+that's got like the tip of the bird's wing
+
+378
+00:16:36,240 --> 00:16:38,400
+just in that one edge of the patch.
+
+379
+00:16:38,400 --> 00:16:40,260
+It gets a little ambiguous.
+
+380
+00:16:40,260 --> 00:16:42,428
+Do you want that to be that patch,
+
+381
+00:16:42,428 --> 00:16:44,220
+that whole patch to be categorized as bird,
+
+382
+00:16:44,220 --> 00:16:45,460
+if there's any bird at all?
+
+383
+00:16:45,460 --> 00:16:47,252
+Do you want it to be-- what is the majority
+
+384
+00:16:47,252 --> 00:16:49,480
+of the pixels in the patch?
+
+385
+00:16:49,480 --> 00:16:52,660
+And so maybe we want a higher resolution output map.
+
+386
+00:16:52,660 --> 00:16:55,400
+We don't want to just know at this really coarse resolution.
+
+387
+00:16:55,400 --> 00:16:59,320
+We actually want a finer resolution of the output.
+
+388
+00:16:59,320 --> 00:17:00,880
+So one way you could do that is you
+
+389
+00:17:00,880 --> 00:17:03,160
+could use smaller and smaller patches.
+
+390
+00:17:03,160 --> 00:17:05,079
+But it turns out that as the patches get
+
+391
+00:17:05,079 --> 00:17:09,440
+smaller and at the far extreme, the patches are a single pixel.
+
+392
+00:17:09,440 --> 00:17:11,680
+From a single pixel, you don't have enough context
+
+393
+00:17:11,680 --> 00:17:14,880
+to determine what the semantic category is.
+
+394
+00:17:14,880 --> 00:17:16,800
+It's not easy to recognize content
+
+395
+00:17:16,800 --> 00:17:19,280
+as those patches get small.
+
+396
+00:17:19,280 --> 00:17:24,520
+So instead, the winning idea here
+
+397
+00:17:24,520 --> 00:17:25,960
+with convolutional neural networks
+
+398
+00:17:25,960 --> 00:17:31,840
+is we use large but overlapping patches.
+
+399
+00:17:31,840 --> 00:17:35,860
+The very high-level intuition behind all of this is that you
+
+400
+00:17:35,860 --> 00:17:39,420
+want context that's local to be--
+
+401
+00:17:39,420 --> 00:17:41,100
+you want to be able to look around
+
+402
+00:17:41,100 --> 00:17:44,300
+the pixel you're predicting at when you make a prediction,
+
+403
+00:17:44,300 --> 00:17:48,460
+but you also want to do this in a dense way.
+
+404
+00:17:48,460 --> 00:17:52,463
+So the way that would look is, OK, you have your patch size,
+
+405
+00:17:52,463 --> 00:17:54,880
+and that patch size is probably a parameter in your model.
+
+406
+00:17:54,880 --> 00:17:56,420
+You want to make sure that context window is
+
+407
+00:17:56,420 --> 00:17:57,795
+kind of big enough that you maybe
+
+408
+00:17:57,795 --> 00:18:00,380
+see the whole object of bird.
+
+409
+00:18:00,380 --> 00:18:02,280
+But then when you're actually predicting,
+
+410
+00:18:02,280 --> 00:18:05,940
+you're sliding this over as you go.
+
+411
+00:18:05,940 --> 00:18:08,980
+And then maybe you're only predicting, for example,
+
+412
+00:18:08,980 --> 00:18:12,140
+the object class of the center pixel but given the context
+
+413
+00:18:12,140 --> 00:18:15,100
+around that pixel.
+
+414
+00:18:15,100 --> 00:18:19,140
+And so now your training data would be that patch and then
+
+415
+00:18:19,140 --> 00:18:23,540
+the output category of that center pixel, for example.
+
+416
+00:18:23,540 --> 00:18:27,380
+And now, if you actually run this categorizer
+
+417
+00:18:27,380 --> 00:18:29,620
+over your entire image, you start
+
+418
+00:18:29,620 --> 00:18:33,320
+to get something that actually looks pretty cool.
+
+419
+00:18:33,320 --> 00:18:37,600
+That starts to look like, semantically, the boundaries
+
+420
+00:18:37,600 --> 00:18:39,980
+of one category and another.
+
+421
+00:18:39,980 --> 00:18:42,960
+And this problem of categorizing every pixel
+
+422
+00:18:42,960 --> 00:18:44,760
+instead of categorizing a whole image
+
+423
+00:18:44,760 --> 00:18:46,960
+is called semantic segmentation.
+
+424
+00:18:46,960 --> 00:18:50,040
+And here we're categorizing every pixel as one a set
+
+425
+00:18:50,040 --> 00:18:52,200
+of categories.
+
+426
+00:18:52,200 --> 00:18:53,420
+This can be extended.
+
+427
+00:18:53,420 --> 00:18:57,255
+And maybe we'll talk a bit later about instance segmentation,
+
+428
+00:18:57,255 --> 00:18:58,380
+which is a similar problem.
+
+429
+00:18:58,380 --> 00:19:01,320
+But now you want to identify unique instances of a given
+
+430
+00:19:01,320 --> 00:19:04,520
+category and capture them separately.
+
+431
+00:19:04,520 --> 00:19:09,800
+So now you have essentially the building blocks
+
+432
+00:19:09,800 --> 00:19:13,240
+of a convolutional neural network.
+
+433
+00:19:13,240 --> 00:19:15,800
+And one thing that's nice about this
+
+434
+00:19:15,800 --> 00:19:18,920
+is because you're processing each of these patches
+
+435
+00:19:18,920 --> 00:19:21,520
+independently and identically, that
+
+436
+00:19:21,520 --> 00:19:25,760
+means that the actual model itself is
+
+437
+00:19:25,760 --> 00:19:28,880
+invariant to translations of the input.
+
+438
+00:19:28,880 --> 00:19:32,440
+So this is an equivariant mapping essentially.
+
+439
+00:19:32,440 --> 00:19:34,660
+So since you're processing every single patch
+
+440
+00:19:34,660 --> 00:19:38,500
+in the same way, that means that it doesn't matter if the bird is
+
+441
+00:19:38,500 --> 00:19:42,260
+in the top corner, the center, the bottom left, those pixels
+
+442
+00:19:42,260 --> 00:19:44,940
+are still going to be categorized as bird.
+
+443
+00:19:44,940 --> 00:19:46,460
+And another way to think about this
+
+444
+00:19:46,460 --> 00:19:49,940
+is if you took your function and you applied it
+
+445
+00:19:49,940 --> 00:19:51,900
+to a translation of the input, it
+
+446
+00:19:51,900 --> 00:19:55,780
+would be the same as if you translated a function
+
+447
+00:19:55,780 --> 00:19:57,660
+of the original input.
+
+448
+00:19:57,660 --> 00:20:00,340
+And why would this maybe be a nice thing
+
+449
+00:20:00,340 --> 00:20:03,740
+to have for something like semantic segmentation?
+
+450
+00:20:03,740 --> 00:20:07,540
+Why does this make sense as an inductive bias or a hypothesis
+
+451
+00:20:07,540 --> 00:20:12,290
+for images and for categorizing like this?
+
+452
+00:20:12,290 --> 00:20:13,345
+Yeah?
+
+453
+00:20:13,345 --> 00:20:15,220
+AUDIENCE: Like the answer for each pixel kind
+
+454
+00:20:15,220 --> 00:20:18,120
+of corresponds to the [INAUDIBLE] next slide
+
+455
+00:20:18,120 --> 00:20:20,052
+[INAUDIBLE].
+
+456
+00:20:20,052 --> 00:20:21,260
+SARA BEERY: Yeah, yeah, yeah.
+
+457
+00:20:21,260 --> 00:20:27,140
+So the answer corresponds to that local context window.
+
+458
+00:20:27,140 --> 00:20:29,660
+Yeah, if you took an image of a bird
+
+459
+00:20:29,660 --> 00:20:32,760
+and then you moved that portion of the image corresponding
+
+460
+00:20:32,760 --> 00:20:35,360
+to a bird to a different part of the image or imagine
+
+461
+00:20:35,360 --> 00:20:37,480
+you were actually taking a photo and then you
+
+462
+00:20:37,480 --> 00:20:39,140
+shifted your camera a little bit,
+
+463
+00:20:39,140 --> 00:20:42,080
+the object you're taking a photo of is the same.
+
+464
+00:20:42,080 --> 00:20:46,920
+So there actually is this type of symmetry innate to categories
+
+465
+00:20:46,920 --> 00:20:48,020
+in the real world.
+
+466
+00:20:48,020 --> 00:20:49,520
+And this symmetry is something we've
+
+467
+00:20:49,520 --> 00:20:53,000
+built into our hypothesis space via the model structure.
+
+468
+00:20:53,000 --> 00:20:57,040
+And so, yeah, the world is somewhat translation invariant.
+
+469
+00:20:57,040 --> 00:21:00,345
+A bird should look the same no matter where it is in an image.
+
+470
+00:21:00,345 --> 00:21:01,720
+Of course, we're kind of glossing
+
+471
+00:21:01,720 --> 00:21:06,140
+over pose, which is a more complicated factor here.
+
+472
+00:21:06,140 --> 00:21:07,920
+But if you have something at the same pose
+
+473
+00:21:07,920 --> 00:21:09,840
+and you move it somewhere else, it still
+
+474
+00:21:09,840 --> 00:21:12,880
+maintains the same category.
+
+475
+00:21:12,880 --> 00:21:15,020
+So cool.
+
+476
+00:21:15,020 --> 00:21:19,720
+One possible version of this, of this model,
+
+477
+00:21:19,720 --> 00:21:24,240
+would be to compute a weighted sum of the pixels in each patch.
+
+478
+00:21:24,240 --> 00:21:27,000
+And then the weights of those that sum, that's
+
+479
+00:21:27,000 --> 00:21:28,260
+what we're going to learn.
+
+480
+00:21:28,260 --> 00:21:32,250
+And so if you do this, then essentially
+
+481
+00:21:32,250 --> 00:21:37,210
+that set of linear weights, W, is a convolutional kernel
+
+482
+00:21:37,210 --> 00:21:41,633
+that then we can apply to the entire image.
+
+483
+00:21:41,633 --> 00:21:44,050
+And so what does this mean/ What does this kind of concept
+
+484
+00:21:44,050 --> 00:21:47,730
+of convolution and a filter or a kernel?
+
+485
+00:21:47,730 --> 00:21:52,010
+So a convolution is a linear, shift-invariant transformation
+
+486
+00:21:52,010 --> 00:21:56,130
+of grid-structured input data.
+
+487
+00:21:56,130 --> 00:21:58,210
+And essentially, in signal processing,
+
+488
+00:21:58,210 --> 00:22:00,017
+convolution is a way that you do filtering.
+
+489
+00:22:00,017 --> 00:22:01,850
+So how many of you have taken, I don't know,
+
+490
+00:22:01,850 --> 00:22:04,770
+a signal processing class or learned signal processing
+
+491
+00:22:04,770 --> 00:22:06,710
+maybe in like an electrical engineering class?
+
+492
+00:22:06,710 --> 00:22:08,210
+Raise hands.
+
+493
+00:22:08,210 --> 00:22:12,730
+Cool, so a good number of you have seen this before.
+
+494
+00:22:12,730 --> 00:22:15,410
+And here, the filter or the weights
+
+495
+00:22:15,410 --> 00:22:19,027
+we use to take that linear weighted sum.
+
+496
+00:22:19,027 --> 00:22:21,610
+And then mathematically, if we want to structure that out here
+
+497
+00:22:21,610 --> 00:22:25,515
+at the bottom, the output for a given location
+
+498
+00:22:25,515 --> 00:22:26,890
+when applying the filter is going
+
+499
+00:22:26,890 --> 00:22:31,190
+to be some bias, plus a linear combination of the filter weight
+
+500
+00:22:31,190 --> 00:22:33,830
+for that coordinate times the pixel value for that
+
+501
+00:22:33,830 --> 00:22:35,390
+coordinate in the image, and then
+
+502
+00:22:35,390 --> 00:22:37,598
+summed over all the filter weights and all the pixels
+
+503
+00:22:37,598 --> 00:22:38,630
+in the patch.
+
+504
+00:22:38,630 --> 00:22:41,750
+So really what it's doing is for any given
+
+505
+00:22:41,750 --> 00:22:43,590
+filter-- like in this case, this filter
+
+506
+00:22:43,590 --> 00:22:46,550
+is kind of diffused all around, and then you
+
+507
+00:22:46,550 --> 00:22:49,870
+have something dark and something light.
+
+508
+00:22:49,870 --> 00:22:53,750
+So this filter is going to look for that pattern.
+
+509
+00:22:53,750 --> 00:22:56,610
+By look for, that's very anthropomorphized.
+
+510
+00:22:56,610 --> 00:22:59,710
+But you're going to produce maximum output
+
+511
+00:22:59,710 --> 00:23:01,950
+values when you have that same kind
+
+512
+00:23:01,950 --> 00:23:03,868
+of dark to light transition.
+
+513
+00:23:03,868 --> 00:23:05,410
+And so what that actually looks like,
+
+514
+00:23:05,410 --> 00:23:08,630
+if you run that filter over this image,
+
+515
+00:23:08,630 --> 00:23:11,510
+is you start to get something that's highlighting areas
+
+516
+00:23:11,510 --> 00:23:16,550
+in the image that match the filter the most, so
+
+517
+00:23:16,550 --> 00:23:17,970
+match it most closely.
+
+518
+00:23:17,970 --> 00:23:21,070
+So here we can see that we're getting really high values, so
+
+519
+00:23:21,070 --> 00:23:23,950
+the white values along the boundaries between dark
+
+520
+00:23:23,950 --> 00:23:24,710
+to light.
+
+521
+00:23:24,710 --> 00:23:26,810
+And we're actually getting really low values
+
+522
+00:23:26,810 --> 00:23:28,830
+along the boundaries from light to dark
+
+523
+00:23:28,830 --> 00:23:31,050
+because that's the place that's going to be maximally
+
+524
+00:23:31,050 --> 00:23:34,330
+opposite to that filter.
+
+525
+00:23:34,330 --> 00:23:36,810
+So in this particular case, what we've got
+
+526
+00:23:36,810 --> 00:23:39,770
+is a filter that's finding us horizontal edges
+
+527
+00:23:39,770 --> 00:23:42,810
+between dark and light values.
+
+528
+00:23:42,810 --> 00:23:43,590
+Any questions?
+
+529
+00:23:43,590 --> 00:23:44,690
+Yeah?
+
+530
+00:23:44,690 --> 00:23:46,330
+AUDIENCE: Can you explain [INAUDIBLE]
+
+531
+00:23:46,330 --> 00:23:48,662
+variance transformation in this context?
+
+532
+00:23:48,662 --> 00:23:49,370
+SARA BEERY: Yeah.
+
+533
+00:23:49,370 --> 00:23:55,570
+So, again, here if I took this image of a clownfish
+
+534
+00:23:55,570 --> 00:24:00,770
+and I shifted it over and I ran this convolutional filter
+
+535
+00:24:00,770 --> 00:24:04,810
+over it, the output would be this shifted over.
+
+536
+00:24:04,810 --> 00:24:07,050
+And so you could shift the input,
+
+537
+00:24:07,050 --> 00:24:08,353
+then apply the convolution.
+
+538
+00:24:08,353 --> 00:24:09,770
+Or you could apply the convolution
+
+539
+00:24:09,770 --> 00:24:12,312
+and then shift the output, and the results would be the same.
+
+540
+00:24:15,330 --> 00:24:19,610
+So now let's look at this from a more neural networky
+
+541
+00:24:19,610 --> 00:24:21,170
+perspective.
+
+542
+00:24:21,170 --> 00:24:22,910
+So this is a fully connected layer.
+
+543
+00:24:22,910 --> 00:24:24,750
+This is what we've seen so far.
+
+544
+00:24:24,750 --> 00:24:29,430
+And here all the outputs depend on all of the inputs.
+
+545
+00:24:29,430 --> 00:24:31,510
+And this can be quite computationally expensive
+
+546
+00:24:31,510 --> 00:24:33,750
+when things get very large.
+
+547
+00:24:33,750 --> 00:24:36,790
+Instead of a fully connected network,
+
+548
+00:24:36,790 --> 00:24:40,470
+a convolutional network is essentially a locally connected
+
+549
+00:24:40,470 --> 00:24:41,630
+network.
+
+550
+00:24:41,630 --> 00:24:45,950
+And so often we can assume that the output then of this model
+
+551
+00:24:45,950 --> 00:24:48,950
+is a local function of the input.
+
+552
+00:24:48,950 --> 00:24:52,270
+So here if we use the same weights
+
+553
+00:24:52,270 --> 00:24:56,870
+for these linear combinations, this w matrix,
+
+554
+00:24:56,870 --> 00:24:59,230
+if we use those weights the same regardless
+
+555
+00:24:59,230 --> 00:25:04,870
+of where that initial input values are coming from,
+
+556
+00:25:04,870 --> 00:25:08,170
+that gives us a convolutional neural network.
+
+557
+00:25:08,170 --> 00:25:10,310
+And the way that we actually denote that
+
+558
+00:25:10,310 --> 00:25:13,470
+is with this star operation for convolution.
+
+559
+00:25:13,470 --> 00:25:15,470
+If you have take signal processing,
+
+560
+00:25:15,470 --> 00:25:17,830
+actually, this is not quite the same definition
+
+561
+00:25:17,830 --> 00:25:20,490
+as familiarly used in signal processing for convolution.
+
+562
+00:25:20,490 --> 00:25:23,970
+Usually, it has like a flipped value.
+
+563
+00:25:23,970 --> 00:25:26,950
+But here when we talk about neural networks,
+
+564
+00:25:26,950 --> 00:25:29,337
+instead of calling this cross correlation, which
+
+565
+00:25:29,337 --> 00:25:31,670
+might be what it is in the signal processing literature,
+
+566
+00:25:31,670 --> 00:25:33,227
+we just call this convolution.
+
+567
+00:25:33,227 --> 00:25:35,310
+One of those reasons is because in these networks,
+
+568
+00:25:35,310 --> 00:25:37,190
+it's very easy to learn how to flip a sign,
+
+569
+00:25:37,190 --> 00:25:38,430
+so it doesn't matter so much.
+
+570
+00:25:38,430 --> 00:25:38,930
+Yeah?
+
+571
+00:25:38,930 --> 00:25:41,170
+AUDIENCE: Is it always a five-point star?
+
+572
+00:25:41,170 --> 00:25:44,250
+SARA BEERY: I mean, people do all sorts of stuff.
+
+573
+00:25:44,250 --> 00:25:46,730
+We are going to use a five-point star in our lectures
+
+574
+00:25:46,730 --> 00:25:49,010
+and in the notes.
+
+575
+00:25:49,010 --> 00:25:52,090
+I think it's kind of pretty.
+
+576
+00:25:52,090 --> 00:25:53,830
+So what does this actually look like?
+
+577
+00:25:53,830 --> 00:25:57,350
+So here we have this same linear combination of weights.
+
+578
+00:25:57,350 --> 00:26:00,202
+We're running it over the local structure.
+
+579
+00:26:00,202 --> 00:26:01,910
+And then you're taking that weighted sum.
+
+580
+00:26:01,910 --> 00:26:03,810
+And so the outputs for each of these values
+
+581
+00:26:03,810 --> 00:26:06,845
+are going to be corresponding to just that local input.
+
+582
+00:26:06,845 --> 00:26:08,970
+But it's going to be the same weights that are used
+
+583
+00:26:08,970 --> 00:26:10,870
+across the entire input vector.
+
+584
+00:26:13,450 --> 00:26:16,930
+And the nice thing with that thing
+
+585
+00:26:16,930 --> 00:26:20,370
+is that you get this, again, embarrassing parallelism
+
+586
+00:26:20,370 --> 00:26:26,750
+because now you can apply that same weight matrix across only
+
+587
+00:26:26,750 --> 00:26:29,050
+smaller patches of the input.
+
+588
+00:26:29,050 --> 00:26:30,790
+But you can do that in parallel.
+
+589
+00:26:30,790 --> 00:26:34,870
+And if you want to think about what
+
+590
+00:26:34,870 --> 00:26:39,150
+that looks like in this broader sense, if you're taking a fully
+
+591
+00:26:39,150 --> 00:26:43,090
+connected layer, that's the same as taking your input vector,
+
+592
+00:26:43,090 --> 00:26:46,390
+multiplying it by a dense weight matrix, where
+
+593
+00:26:46,390 --> 00:26:49,110
+every single one of those values matters.
+
+594
+00:26:49,110 --> 00:26:51,150
+And then that's how you get your output.
+
+595
+00:26:51,150 --> 00:26:53,670
+And now you could think about actually
+
+596
+00:26:53,670 --> 00:26:56,670
+a convolutional layer is the same.
+
+597
+00:26:56,670 --> 00:27:00,190
+But now the weight matrix has a very specific structure.
+
+598
+00:27:00,190 --> 00:27:02,770
+So instead of being dense, it's going to be very sparse.
+
+599
+00:27:02,770 --> 00:27:04,728
+So in this particular instance where we're only
+
+600
+00:27:04,728 --> 00:27:06,870
+looking at a sliding window of maybe three
+
+601
+00:27:06,870 --> 00:27:10,910
+elements of that input vector, those three elements
+
+602
+00:27:10,910 --> 00:27:14,530
+are going to be the only-- above and below that diagonal,
+
+603
+00:27:14,530 --> 00:27:17,167
+those are going to be the only components that have values,
+
+604
+00:27:17,167 --> 00:27:18,750
+and the values are going to be exactly
+
+605
+00:27:18,750 --> 00:27:22,330
+the same along the entire diagonal of that matrix.
+
+606
+00:27:22,330 --> 00:27:24,950
+And there's a special name for this type of matrix.
+
+607
+00:27:24,950 --> 00:27:28,890
+It's a specific form of a Toeplitz matrix.
+
+608
+00:27:28,890 --> 00:27:30,490
+And so one of the things that's cool
+
+609
+00:27:30,490 --> 00:27:33,650
+here is that it's essentially a constraint
+
+610
+00:27:33,650 --> 00:27:35,810
+on a standard linear layer.
+
+611
+00:27:35,810 --> 00:27:37,633
+And there are fewer parameters that
+
+612
+00:27:37,633 --> 00:27:39,050
+can be learned because you're just
+
+613
+00:27:39,050 --> 00:27:43,070
+learning essentially parameters for just that local structure.
+
+614
+00:27:43,070 --> 00:27:45,670
+So there's less of them, and they're going to be repeated.
+
+615
+00:27:45,670 --> 00:27:48,770
+And so that means you can have a lot less overfitting.
+
+616
+00:27:48,770 --> 00:27:51,533
+There's less open flexibility.
+
+617
+00:27:51,533 --> 00:27:53,950
+And you're building some nice constraints into the system.
+
+618
+00:27:53,950 --> 00:27:55,190
+You're making it equivariant.
+
+619
+00:27:55,190 --> 00:27:57,850
+You're making it translation invariant.
+
+620
+00:27:57,850 --> 00:28:00,330
+And then another nice benefit of this
+
+621
+00:28:00,330 --> 00:28:02,970
+is because this thing has this specific structure where
+
+622
+00:28:02,970 --> 00:28:04,790
+you have zeros almost everywhere,
+
+623
+00:28:04,790 --> 00:28:09,090
+except for just above and below the diagonal,
+
+624
+00:28:09,090 --> 00:28:12,970
+this can generalize to different input sizes
+
+625
+00:28:12,970 --> 00:28:16,190
+because you can take that same weight matrix
+
+626
+00:28:16,190 --> 00:28:17,230
+and you can scale it.
+
+627
+00:28:17,230 --> 00:28:18,630
+It's not going to change anything
+
+628
+00:28:18,630 --> 00:28:20,230
+about the model you've learned.
+
+629
+00:28:20,230 --> 00:28:22,390
+And so that means that convolutional layers
+
+630
+00:28:22,390 --> 00:28:24,390
+can be applied to arbitrarily sized
+
+631
+00:28:24,390 --> 00:28:26,670
+inputs, which generalizes beyond the training
+
+632
+00:28:26,670 --> 00:28:28,650
+data in a really nice way.
+
+633
+00:28:28,650 --> 00:28:31,350
+Whereas if you took an MLP and you applied it
+
+634
+00:28:31,350 --> 00:28:34,150
+to an image and then you tried to apply it to a larger image,
+
+635
+00:28:34,150 --> 00:28:35,610
+you couldn't do it.
+
+636
+00:28:35,610 --> 00:28:38,330
+This isn't something that you could apply to a larger image.
+
+637
+00:28:38,330 --> 00:28:40,950
+You just wouldn't have weights for some of that size.
+
+638
+00:28:40,950 --> 00:28:42,397
+And so one way to look at this is
+
+639
+00:28:42,397 --> 00:28:44,230
+like you could take that same filter that we
+
+640
+00:28:44,230 --> 00:28:46,970
+applied to the clownfish, and you could apply it to any image.
+
+641
+00:28:46,970 --> 00:28:49,830
+And you would always get out these edges,
+
+642
+00:28:49,830 --> 00:28:51,990
+these specific things.
+
+643
+00:28:51,990 --> 00:28:56,590
+So five kind of high-level views-- yeah?
+
+644
+00:28:56,590 --> 00:28:58,370
+AUDIENCE: If you go back just like before.
+
+645
+00:28:58,370 --> 00:28:59,230
+Yeah.
+
+646
+00:28:59,230 --> 00:29:03,390
+If you scale the matrix, does each pixel color
+
+647
+00:29:03,390 --> 00:29:05,430
+here correspond to one value?
+
+648
+00:29:05,430 --> 00:29:09,630
+SARA BEERY: So we talked about the weights,
+
+649
+00:29:09,630 --> 00:29:12,770
+so w1, w0, w minus 1.
+
+650
+00:29:12,770 --> 00:29:16,330
+So that's like if you're taking this from a vector perspective,
+
+651
+00:29:16,330 --> 00:29:18,890
+you want to look at the wait just before and just after.
+
+652
+00:29:18,890 --> 00:29:22,610
+That means that you're only going to have three values.
+
+653
+00:29:22,610 --> 00:29:24,610
+And those three values, if you transfer this
+
+654
+00:29:24,610 --> 00:29:26,330
+into a linear layer, those are going
+
+655
+00:29:26,330 --> 00:29:29,530
+to be the values above, along, and below the diagonal
+
+656
+00:29:29,530 --> 00:29:30,430
+for the whole matrix.
+
+657
+00:29:30,430 --> 00:29:32,930
+So you just take that and slide like the ladder
+
+658
+00:29:32,930 --> 00:29:34,150
+out along the diagonal.
+
+659
+00:29:34,150 --> 00:29:37,410
+It'd be the same, like that.
+
+660
+00:29:41,050 --> 00:29:41,570
+Cool.
+
+661
+00:29:41,570 --> 00:29:45,070
+So some different ways to think about convolution.
+
+662
+00:29:45,070 --> 00:29:49,230
+So, one, convolutional layers are equivariant to translation.
+
+663
+00:29:49,230 --> 00:29:51,430
+So this is a built-in hypothesis.
+
+664
+00:29:51,430 --> 00:29:55,430
+Two, convolutional layers enable patch processing.
+
+665
+00:29:55,430 --> 00:29:58,050
+It builds in explicit parallelism
+
+666
+00:29:58,050 --> 00:29:59,390
+into our computation.
+
+667
+00:29:59,390 --> 00:30:02,330
+It makes it computationally efficient.
+
+668
+00:30:02,330 --> 00:30:04,090
+Three, convolutional layers can be
+
+669
+00:30:04,090 --> 00:30:06,410
+thought of as kind of image filters, things
+
+670
+00:30:06,410 --> 00:30:10,090
+that are highlighting specific structures in the input data
+
+671
+00:30:10,090 --> 00:30:13,130
+in some useful way that's learned.
+
+672
+00:30:13,130 --> 00:30:16,420
+Or you can think of them as parameter sharing.
+
+673
+00:30:16,420 --> 00:30:19,340
+You're using the same parameters across the entire input
+
+674
+00:30:19,340 --> 00:30:22,620
+data in a computationally efficient way.
+
+675
+00:30:22,620 --> 00:30:25,140
+And the last point is you can think of them as a way
+
+676
+00:30:25,140 --> 00:30:28,380
+to process variable size tensors because you
+
+677
+00:30:28,380 --> 00:30:31,620
+have this built-in generalization across the input
+
+678
+00:30:31,620 --> 00:30:33,040
+size.
+
+679
+00:30:33,040 --> 00:30:35,660
+Cool.
+
+680
+00:30:35,660 --> 00:30:39,140
+So what happens when you stack convolutional layers?
+
+681
+00:30:39,140 --> 00:30:43,780
+So here what we've got is two sets of convolutional layers.
+
+682
+00:30:43,780 --> 00:30:46,300
+So, first, our input data comes in.
+
+683
+00:30:46,300 --> 00:30:48,300
+We have a first convolutional layer.
+
+684
+00:30:48,300 --> 00:30:50,140
+Then we have a non-linearity.
+
+685
+00:30:50,140 --> 00:30:52,540
+And then we have a second convolutional layer.
+
+686
+00:30:52,540 --> 00:30:54,780
+And it turns out that if you think of it this way,
+
+687
+00:30:54,780 --> 00:30:59,380
+actually then the entire CNN is a convolutional filter, but one
+
+688
+00:30:59,380 --> 00:31:00,780
+that's nonlinear.
+
+689
+00:31:00,780 --> 00:31:03,900
+So you can really think of this way.
+
+690
+00:31:03,900 --> 00:31:06,980
+And so here now this output depends only
+
+691
+00:31:06,980 --> 00:31:08,840
+on the local structure of that input.
+
+692
+00:31:08,840 --> 00:31:11,580
+And that function, even though it has that non-linearity
+
+693
+00:31:11,580 --> 00:31:15,380
+in the middle, is the same for anywhere,
+
+694
+00:31:15,380 --> 00:31:17,440
+any of these local patches in the input image.
+
+695
+00:31:17,440 --> 00:31:18,640
+Does this make sense?
+
+696
+00:31:18,640 --> 00:31:19,220
+Yeah?
+
+697
+00:31:19,220 --> 00:31:20,960
+AUDIENCE: Why is it [INAUDIBLE]?
+
+698
+00:31:24,620 --> 00:31:25,360
+SARA BEERY: Yeah.
+
+699
+00:31:25,360 --> 00:31:27,900
+So I'm just saying here in this particular instance,
+
+700
+00:31:27,900 --> 00:31:30,920
+assume now that you have a single convolutional layer,
+
+701
+00:31:30,920 --> 00:31:34,440
+a point-wise non-linearity just like we had for MLP, and then
+
+702
+00:31:34,440 --> 00:31:37,120
+another convolutional layer.
+
+703
+00:31:37,120 --> 00:31:39,080
+So since we said that a convolutional layer is
+
+704
+00:31:39,080 --> 00:31:41,420
+essentially a constrained version of a linear layer,
+
+705
+00:31:41,420 --> 00:31:43,520
+you can essentially take it the same way.
+
+706
+00:31:43,520 --> 00:31:45,840
+But the nice thing is that constrained version
+
+707
+00:31:45,840 --> 00:31:49,000
+of the linear layer, it maintains that local constraint
+
+708
+00:31:49,000 --> 00:31:53,160
+even as you start to stack layers.
+
+709
+00:31:53,160 --> 00:31:57,760
+But one thing that's very clear is as you're adding more depth,
+
+710
+00:31:57,760 --> 00:31:59,800
+you're increasing what we call the receptive
+
+711
+00:31:59,800 --> 00:32:01,480
+field of the output.
+
+712
+00:32:01,480 --> 00:32:04,420
+So you're adding more layers.
+
+713
+00:32:04,420 --> 00:32:06,960
+That means that the local patch that
+
+714
+00:32:06,960 --> 00:32:09,480
+corresponds to, for example, xL of j
+
+715
+00:32:09,480 --> 00:32:12,860
+is larger than the local patch of a single one
+
+716
+00:32:12,860 --> 00:32:14,980
+of those same layers because you're
+
+717
+00:32:14,980 --> 00:32:16,940
+taking an input from a larger size
+
+718
+00:32:16,940 --> 00:32:18,400
+and then you're doing that again.
+
+719
+00:32:18,400 --> 00:32:23,160
+And this is what we call a spatial pyramid, for example.
+
+720
+00:32:23,160 --> 00:32:23,660
+Yeah?
+
+721
+00:32:23,660 --> 00:32:26,090
+AUDIENCE: [INAUDIBLE]
+
+722
+00:32:26,090 --> 00:32:26,840
+SARA BEERY: Sorry.
+
+723
+00:32:26,840 --> 00:32:27,965
+Can you be a little louder?
+
+724
+00:32:27,965 --> 00:32:29,750
+AUDIENCE: [INAUDIBLE]
+
+725
+00:32:29,750 --> 00:32:30,860
+SARA BEERY: Oh yeah, yeah.
+
+726
+00:32:30,860 --> 00:32:33,860
+So the only reason this is nonlinear
+
+727
+00:32:33,860 --> 00:32:36,380
+is because there's a non-linearity in the middle.
+
+728
+00:32:36,380 --> 00:32:39,100
+So from between that first layer--
+
+729
+00:32:39,100 --> 00:32:41,220
+so you have this first convolutional layer,
+
+730
+00:32:41,220 --> 00:32:43,660
+and then see where you have those nodes in the middle.
+
+731
+00:32:43,660 --> 00:32:45,700
+What I'm saying is here we've applied
+
+732
+00:32:45,700 --> 00:32:48,060
+an activation, a nonlinear activation.
+
+733
+00:32:48,060 --> 00:32:49,560
+And then you have that second layer.
+
+734
+00:32:49,560 --> 00:32:51,352
+Maybe that's something that in future years
+
+735
+00:32:51,352 --> 00:32:53,040
+I'll just put that in the diagram
+
+736
+00:32:53,040 --> 00:32:54,593
+so you can see that non-linearity,
+
+737
+00:32:54,593 --> 00:32:55,760
+so it'd be a little clearer.
+
+738
+00:32:55,760 --> 00:32:59,500
+But I'm just saying it exists.
+
+739
+00:32:59,500 --> 00:33:01,440
+So now you have a convolutional filter,
+
+740
+00:33:01,440 --> 00:33:04,180
+but it's nonlinear because you have that nonlinear activation
+
+741
+00:33:04,180 --> 00:33:06,120
+that you've put in the middle.
+
+742
+00:33:06,120 --> 00:33:06,620
+Yeah?
+
+743
+00:33:06,620 --> 00:33:10,993
+AUDIENCE: What is it called when there's [INAUDIBLE] established
+
+744
+00:33:10,993 --> 00:33:13,160
+when you're pulling weights from previous dependents
+
+745
+00:33:13,160 --> 00:33:14,880
+and previous layers [INAUDIBLE]?
+
+746
+00:33:14,880 --> 00:33:19,000
+SARA BEERY: A receptive field is one term that people will use.
+
+747
+00:33:19,000 --> 00:33:21,640
+So if you're like increasing the receptive field of your model,
+
+748
+00:33:21,640 --> 00:33:23,140
+you can do that in a couple of ways.
+
+749
+00:33:23,140 --> 00:33:25,400
+You can make the original patch size,
+
+750
+00:33:25,400 --> 00:33:28,520
+input size larger, so the kernel size of the filter size
+
+751
+00:33:28,520 --> 00:33:31,060
+could get larger, or you can just add more depth.
+
+752
+00:33:31,060 --> 00:33:34,520
+And that will also increase the receptive field.
+
+753
+00:33:34,520 --> 00:33:35,240
+Yeah?
+
+754
+00:33:35,240 --> 00:33:37,040
+AUDIENCE: A couple slides back, you
+
+755
+00:33:37,040 --> 00:33:40,840
+represented acts as a vector.
+
+756
+00:33:40,840 --> 00:33:43,652
+So that's an image that's been flattened into a vector.
+
+757
+00:33:43,652 --> 00:33:44,360
+SARA BEERY: Yeah.
+
+758
+00:33:44,360 --> 00:33:46,068
+So right now, we're talking about vectors
+
+759
+00:33:46,068 --> 00:33:48,232
+because they're really clean and easy to look at.
+
+760
+00:33:48,232 --> 00:33:50,440
+But, yeah, you can essentially say, you take an image
+
+761
+00:33:50,440 --> 00:33:52,533
+and you flatten it out, though I think
+
+762
+00:33:52,533 --> 00:33:54,200
+it's a little more complicated than that
+
+763
+00:33:54,200 --> 00:33:57,320
+because you wouldn't take an image
+
+764
+00:33:57,320 --> 00:33:59,740
+and flatten it out and then apply convolution like this
+
+765
+00:33:59,740 --> 00:34:02,120
+because you would have this weird like stripe-wise
+
+766
+00:34:02,120 --> 00:34:02,700
+structure.
+
+767
+00:34:02,700 --> 00:34:05,880
+So, actually, we do take those convolutions in two dimensions.
+
+768
+00:34:05,880 --> 00:34:07,080
+Yeah?
+
+769
+00:34:07,080 --> 00:34:10,675
+AUDIENCE: In the second layer, would you use the same kernel?
+
+770
+00:34:10,675 --> 00:34:11,300
+SARA BEERY: No.
+
+771
+00:34:11,300 --> 00:34:12,967
+And that's why the colors are different.
+
+772
+00:34:12,967 --> 00:34:13,980
+I mean, you could.
+
+773
+00:34:13,980 --> 00:34:15,475
+But usually, we don't.
+
+774
+00:34:15,475 --> 00:34:17,100
+Those weights are learned, but they are
+
+775
+00:34:17,100 --> 00:34:18,600
+shared across the entire layer.
+
+776
+00:34:18,600 --> 00:34:19,968
+Yeah?
+
+777
+00:34:19,968 --> 00:34:22,260
+AUDIENCE: So just to make sure I understand [INAUDIBLE]
+
+778
+00:34:22,260 --> 00:34:27,260
+each weight matrix in each layer [INAUDIBLE]
+
+779
+00:34:27,260 --> 00:34:38,380
+except for the [INAUDIBLE] layers in our network in order
+
+780
+00:34:38,380 --> 00:34:41,778
+to represent the [INAUDIBLE].
+
+781
+00:34:41,778 --> 00:34:44,320
+SARA BEERY: So the question is like for each of these layers,
+
+782
+00:34:44,320 --> 00:34:46,260
+now that we have a convolutional layer,
+
+783
+00:34:46,260 --> 00:34:49,340
+they can be represented as that sparse matrix where you only
+
+784
+00:34:49,340 --> 00:34:51,219
+are looking along the diagonal.
+
+785
+00:34:51,219 --> 00:34:54,980
+We don't always necessarily actually compute it that way.
+
+786
+00:34:54,980 --> 00:34:56,800
+For efficiency or for parallelism,
+
+787
+00:34:56,800 --> 00:34:59,580
+often, we just really do compute it patch wise.
+
+788
+00:34:59,580 --> 00:35:03,820
+But your point was if you're now really restricting the search
+
+789
+00:35:03,820 --> 00:35:07,980
+space by only allowing like a few parameters per layer,
+
+790
+00:35:07,980 --> 00:35:10,920
+doesn't that mean that you would really struggle
+
+791
+00:35:10,920 --> 00:35:13,640
+to represent images or learn?
+
+792
+00:35:13,640 --> 00:35:16,980
+And the answer is yes.
+
+793
+00:35:16,980 --> 00:35:19,233
+And so that's why often with convolutional layers,
+
+794
+00:35:19,233 --> 00:35:21,400
+either we'll have quite a few different filters that
+
+795
+00:35:21,400 --> 00:35:23,525
+are happening in parallel, we'll get into it later,
+
+796
+00:35:23,525 --> 00:35:26,400
+or we add a lot more layers in a dense way.
+
+797
+00:35:26,400 --> 00:35:28,135
+But what we have found experimentally,
+
+798
+00:35:28,135 --> 00:35:29,760
+and there's some nice theory around it,
+
+799
+00:35:29,760 --> 00:35:33,400
+is that for things where this is [? an ?] [? appropriate ?]
+
+800
+00:35:33,400 --> 00:35:36,140
+inductive bias, you can learn more efficiently.
+
+801
+00:35:36,140 --> 00:35:39,060
+You get a better fit with less data.
+
+802
+00:35:39,060 --> 00:35:40,800
+Cool.
+
+803
+00:35:40,800 --> 00:35:43,240
+So what if we have color?
+
+804
+00:35:43,240 --> 00:35:45,820
+I mean, we're really taking a very image perspective here.
+
+805
+00:35:45,820 --> 00:35:47,987
+But essentially, what we're talking about with color
+
+806
+00:35:47,987 --> 00:35:51,180
+is multiple input channels, so not just spatial extent,
+
+807
+00:35:51,180 --> 00:35:55,080
+but you have a tensor that also has something like depth.
+
+808
+00:35:55,080 --> 00:35:58,780
+So if you have multi-channel inputs-- so say you do have RGB.
+
+809
+00:35:58,780 --> 00:36:00,920
+That's what we're showing here.
+
+810
+00:36:00,920 --> 00:36:04,040
+What you do to do convolution over multi-channel inputs
+
+811
+00:36:04,040 --> 00:36:08,020
+is you learn a different set of weights for each of those input
+
+812
+00:36:08,020 --> 00:36:08,840
+channels.
+
+813
+00:36:08,840 --> 00:36:13,340
+And then you sum over all of that to get the output value.
+
+814
+00:36:13,340 --> 00:36:16,380
+So you sum essentially over the convolutions
+
+815
+00:36:16,380 --> 00:36:19,020
+for each of the input channels to get the output value
+
+816
+00:36:19,020 --> 00:36:21,180
+you're summing per channel.
+
+817
+00:36:21,180 --> 00:36:25,060
+So now what that looks like is you
+
+818
+00:36:25,060 --> 00:36:28,920
+would still have a single output value for each filter.
+
+819
+00:36:28,920 --> 00:36:33,300
+But now the filter is going to have per channel weights that
+
+820
+00:36:33,300 --> 00:36:34,180
+are learned.
+
+821
+00:36:34,180 --> 00:36:37,880
+And you could arguably force them to be shared.
+
+822
+00:36:37,880 --> 00:36:41,180
+But often, we let them be separate.
+
+823
+00:36:41,180 --> 00:36:43,980
+What about multi-channel outputs?
+
+824
+00:36:43,980 --> 00:36:47,998
+So if instead of having just a single output
+
+825
+00:36:47,998 --> 00:36:49,540
+of your convolutional layer, you want
+
+826
+00:36:49,540 --> 00:36:51,957
+to have multiple channels of outputs,
+
+827
+00:36:51,957 --> 00:36:53,540
+here what you actually do is you learn
+
+828
+00:36:53,540 --> 00:36:58,620
+what we call a filter bank or a set of different output
+
+829
+00:36:58,620 --> 00:36:59,560
+convolutions.
+
+830
+00:36:59,560 --> 00:37:05,180
+So here instead of just learning a single linear layer,
+
+831
+00:37:05,180 --> 00:37:08,000
+you're going to learn two in parallel, and each of them
+
+832
+00:37:08,000 --> 00:37:11,320
+get to build their own output dimension.
+
+833
+00:37:11,320 --> 00:37:12,720
+And so now you have a filter bank
+
+834
+00:37:12,720 --> 00:37:14,920
+of let's say C different filters.
+
+835
+00:37:14,920 --> 00:37:17,240
+And you get a different output activation
+
+836
+00:37:17,240 --> 00:37:20,800
+for each of those filters from the same input data.
+
+837
+00:37:20,800 --> 00:37:22,380
+So then you can generalize this.
+
+838
+00:37:22,380 --> 00:37:24,680
+And generally, in most of our convolutional layers
+
+839
+00:37:24,680 --> 00:37:30,140
+in deep learning, we have multi-input and multi-output
+
+840
+00:37:30,140 --> 00:37:31,280
+functions.
+
+841
+00:37:31,280 --> 00:37:36,040
+And so here you'll have essentially your output
+
+842
+00:37:36,040 --> 00:37:38,560
+is going to have some number of dimensions
+
+843
+00:37:38,560 --> 00:37:41,560
+or some number of feature channels.
+
+844
+00:37:41,560 --> 00:37:45,000
+The input will have some number of input, dimensions or feature
+
+845
+00:37:45,000 --> 00:37:45,940
+channels.
+
+846
+00:37:45,940 --> 00:37:49,560
+And then you're going to have some number of filters
+
+847
+00:37:49,560 --> 00:37:52,760
+that you convolve with that input to get this output.
+
+848
+00:37:52,760 --> 00:37:54,600
+And the number of features that you have,
+
+849
+00:37:54,600 --> 00:37:58,440
+you're going to have the number of output dimensions, number
+
+850
+00:37:58,440 --> 00:38:01,280
+of features or filters.
+
+851
+00:38:01,280 --> 00:38:03,860
+Each of those filters is going to have some kernel size.
+
+852
+00:38:03,860 --> 00:38:07,210
+That's K here, so some of spatial dimensions.
+
+853
+00:38:07,210 --> 00:38:09,410
+And then for each of them, you're
+
+854
+00:38:09,410 --> 00:38:13,130
+going to have enough channels to match your input data.
+
+855
+00:38:13,130 --> 00:38:15,090
+So let me show a few more examples
+
+856
+00:38:15,090 --> 00:38:16,410
+of what this looks like.
+
+857
+00:38:16,410 --> 00:38:18,850
+So here's, for example, a bank of two filters
+
+858
+00:38:18,850 --> 00:38:21,970
+where you have multiple inputs and multiple outputs.
+
+859
+00:38:21,970 --> 00:38:24,510
+So here you have two input dimensions.
+
+860
+00:38:24,510 --> 00:38:28,970
+You've now learned this linear sum for your height
+
+861
+00:38:28,970 --> 00:38:32,850
+by width or this kernel size, which in this case
+
+862
+00:38:32,850 --> 00:38:35,210
+looks like 3 by 3.
+
+863
+00:38:35,210 --> 00:38:37,542
+So each of these sets of weights, F1 and F2,
+
+864
+00:38:37,542 --> 00:38:39,250
+those are learned separately, but they're
+
+865
+00:38:39,250 --> 00:38:42,010
+shared across the entire image.
+
+866
+00:38:42,010 --> 00:38:44,370
+And so what those feature maps might actually
+
+867
+00:38:44,370 --> 00:38:50,730
+look like, they get increasingly complex, I would say.
+
+868
+00:38:50,730 --> 00:38:54,210
+So here, this is your input.
+
+869
+00:38:54,210 --> 00:38:59,170
+This is using an AlexNet model, so a convolutional model.
+
+870
+00:38:59,170 --> 00:39:01,170
+Now you take that input.
+
+871
+00:39:01,170 --> 00:39:03,310
+After the first convolutional layer,
+
+872
+00:39:03,310 --> 00:39:06,070
+this is the number of feature banks that are learned
+
+873
+00:39:06,070 --> 00:39:08,990
+or output channels that are learned.
+
+874
+00:39:08,990 --> 00:39:14,710
+This initial input is convolved with this many different
+
+875
+00:39:14,710 --> 00:39:15,627
+convolutional filters.
+
+876
+00:39:15,627 --> 00:39:18,168
+And so now we're showing all of those different filters, what
+
+877
+00:39:18,168 --> 00:39:20,310
+actually activates when you send in this image.
+
+878
+00:39:20,310 --> 00:39:22,477
+And so you can see, I don't know, maybe some of them
+
+879
+00:39:22,477 --> 00:39:24,610
+are capturing things like certain types of edges,
+
+880
+00:39:24,610 --> 00:39:26,870
+certain types of structures.
+
+881
+00:39:26,870 --> 00:39:29,170
+And then after that second convolutional layer,
+
+882
+00:39:29,170 --> 00:39:32,790
+these things start to get maybe a little bit more complex.
+
+883
+00:39:32,790 --> 00:39:35,150
+They can often be quite difficult to interpret.
+
+884
+00:39:35,150 --> 00:39:38,310
+But every layer can be thought of as a set of C feature maps
+
+885
+00:39:38,310 --> 00:39:39,470
+or channels.
+
+886
+00:39:39,470 --> 00:39:42,270
+And every feature map is essentially
+
+887
+00:39:42,270 --> 00:39:43,787
+like structural representation.
+
+888
+00:39:43,787 --> 00:39:44,370
+It's an image.
+
+889
+00:39:44,370 --> 00:39:47,190
+It has height and width.
+
+890
+00:39:47,190 --> 00:39:47,830
+Yeah?
+
+891
+00:39:47,830 --> 00:39:50,750
+AUDIENCE: How do you ensure that each feature map is
+
+892
+00:39:50,750 --> 00:39:52,990
+uniquely different so that you have
+
+893
+00:39:52,990 --> 00:39:54,732
+a set of ones that can combine?
+
+894
+00:39:54,732 --> 00:39:56,190
+SARA BEERY: So how do you make sure
+
+895
+00:39:56,190 --> 00:39:58,830
+that all of the different feature maps are different?
+
+896
+00:39:58,830 --> 00:40:02,250
+So that's not actually something that's innately built in,
+
+897
+00:40:02,250 --> 00:40:05,730
+but one of the ways that people will do this
+
+898
+00:40:05,730 --> 00:40:09,930
+is through different types of regularization in the model,
+
+899
+00:40:09,930 --> 00:40:11,610
+so sometimes things like dropout that
+
+900
+00:40:11,610 --> 00:40:17,290
+tries to make sure that you don't make the model too brittle
+
+901
+00:40:17,290 --> 00:40:20,130
+or reliant on different things.
+
+902
+00:40:20,130 --> 00:40:24,370
+But usually, the model will learn each of them
+
+903
+00:40:24,370 --> 00:40:27,610
+uniquely because that gives it more capacity.
+
+904
+00:40:27,610 --> 00:40:30,210
+There's nothing in here forcing it to keep them all the same.
+
+905
+00:40:30,210 --> 00:40:35,410
+And so why would it not learn to maximize the types of variants
+
+906
+00:40:35,410 --> 00:40:38,050
+that it could have.
+
+907
+00:40:38,050 --> 00:40:40,450
+Depending on the data, and the architecture,
+
+908
+00:40:40,450 --> 00:40:43,170
+and your optimization, you can have feature collapse
+
+909
+00:40:43,170 --> 00:40:45,998
+sometimes where some stuff just gets ignored that you might not
+
+910
+00:40:45,998 --> 00:40:46,790
+want to be ignored.
+
+911
+00:40:46,790 --> 00:40:48,998
+And then you can try to build in different mechanisms
+
+912
+00:40:48,998 --> 00:40:50,810
+to make that not happen.
+
+913
+00:40:50,810 --> 00:40:54,810
+All right, so we're going to do like a simple little quiz.
+
+914
+00:40:54,810 --> 00:41:00,050
+So here's a layer.
+
+915
+00:41:00,050 --> 00:41:01,790
+We have this input.
+
+916
+00:41:01,790 --> 00:41:05,650
+It's three channels, so RGB by 128 by 128.
+
+917
+00:41:05,650 --> 00:41:08,390
+Very standard image size for an input.
+
+918
+00:41:08,390 --> 00:41:11,330
+And then we have a filter bank full of 3 by 3 filters.
+
+919
+00:41:11,330 --> 00:41:13,785
+So the spatial extent of those filters is 3 by 3.
+
+920
+00:41:13,785 --> 00:41:15,410
+This is often the way we talk about it.
+
+921
+00:41:15,410 --> 00:41:16,850
+So we're not talking about the channel dimensions.
+
+922
+00:41:16,850 --> 00:41:18,870
+We just talk about the spatial extent
+
+923
+00:41:18,870 --> 00:41:20,670
+of the size of the filters.
+
+924
+00:41:20,670 --> 00:41:25,710
+And then our output is 96 channels by 128
+
+925
+00:41:25,710 --> 00:41:28,150
+by 128, so by height and width.
+
+926
+00:41:28,150 --> 00:41:36,470
+So, first, how many parameters does each of those filters have/
+
+927
+00:41:36,470 --> 00:41:37,327
+AUDIENCE: 9.
+
+928
+00:41:37,327 --> 00:41:37,910
+SARA BEERY: 9.
+
+929
+00:41:37,910 --> 00:41:39,290
+So why 9?
+
+930
+00:41:39,290 --> 00:41:40,750
+AUDIENCE: It's 3 by 3.
+
+931
+00:41:40,750 --> 00:41:42,917
+SARA BEERY: But how many input channels did we have?
+
+932
+00:41:42,917 --> 00:41:45,430
+AUDIENCE: [INAUDIBLE]
+
+933
+00:41:45,430 --> 00:41:46,910
+SARA BEERY: All good.
+
+934
+00:41:46,910 --> 00:41:48,910
+Yeah.
+
+935
+00:41:48,910 --> 00:41:52,810
+Every single one of these filters has 27 parameters.
+
+936
+00:41:52,810 --> 00:41:54,970
+We put this in because it's a little confusing.
+
+937
+00:41:54,970 --> 00:41:57,150
+We talk about the filters being 3 by 3.
+
+938
+00:41:57,150 --> 00:41:58,930
+But the thing is when--
+
+939
+00:41:58,930 --> 00:42:00,230
+this is just convention.
+
+940
+00:42:00,230 --> 00:42:02,290
+When we talk about filter size, we often only
+
+941
+00:42:02,290 --> 00:42:04,305
+talk about the spatial extent of the filters.
+
+942
+00:42:04,305 --> 00:42:05,930
+And the assumption is we don't actually
+
+943
+00:42:05,930 --> 00:42:10,077
+convolve in channel space, though, of course, you could.
+
+944
+00:42:10,077 --> 00:42:11,910
+That's something you could totally build in.
+
+945
+00:42:11,910 --> 00:42:14,202
+So maybe you have something like a hyperspectral input.
+
+946
+00:42:14,202 --> 00:42:16,890
+You actually want convolution across the spectral bands.
+
+947
+00:42:16,890 --> 00:42:18,650
+You could build that into your model.
+
+948
+00:42:18,650 --> 00:42:26,170
+But standard, we often use independent per input channel
+
+949
+00:42:26,170 --> 00:42:27,530
+weights that are learned.
+
+950
+00:42:27,530 --> 00:42:30,970
+And so then we only talk about the spatial extent.
+
+951
+00:42:30,970 --> 00:42:33,710
+So the filter banks are 3 by 3.
+
+952
+00:42:33,710 --> 00:42:39,630
+Now how many filters are in our filter bank?
+
+953
+00:42:39,630 --> 00:42:40,508
+Yeah?
+
+954
+00:42:40,508 --> 00:42:41,050
+AUDIENCE: 96.
+
+955
+00:42:41,050 --> 00:42:43,450
+SARA BEERY: 96, exactly.
+
+956
+00:42:43,450 --> 00:42:48,170
+There are 96 outputs here, which means we get 96 filters.
+
+957
+00:42:48,170 --> 00:42:51,490
+And then each of those filters will have those 27 parameters.
+
+958
+00:42:51,490 --> 00:42:55,210
+So you're doing this-- for each of those 27 parameter input
+
+959
+00:42:55,210 --> 00:42:57,790
+filters, you're running those over the entire image,
+
+960
+00:42:57,790 --> 00:43:00,902
+and you are now taking a linear sum over all three
+
+961
+00:43:00,902 --> 00:43:03,110
+of those channels, and you're getting a single output
+
+962
+00:43:03,110 --> 00:43:03,770
+dimension.
+
+963
+00:43:03,770 --> 00:43:06,050
+And so if you have 96 output channels,
+
+964
+00:43:06,050 --> 00:43:08,950
+you need 96 different filters.
+
+965
+00:43:08,950 --> 00:43:10,640
+Nice.
+
+966
+00:43:10,640 --> 00:43:11,490
+Cool.
+
+967
+00:43:11,490 --> 00:43:19,530
+So high level, filter sizes, if you're mapping from some x of l,
+
+968
+00:43:19,530 --> 00:43:23,990
+so this current layer where you have C sub l channels
+
+969
+00:43:23,990 --> 00:43:27,350
+and then N by M output dimensions
+
+970
+00:43:27,350 --> 00:43:31,550
+and you're going to map to the next layer where you have some C
+
+971
+00:43:31,550 --> 00:43:34,230
+sub L plus 1 output dimensions and N
+
+972
+00:43:34,230 --> 00:43:37,190
+by M spatial dimensions and your filter
+
+973
+00:43:37,190 --> 00:43:41,310
+has spatial extent K1 by K2, then the number
+
+974
+00:43:41,310 --> 00:43:46,750
+of parameters per filter will be K1 times K2 times C sub l.
+
+975
+00:43:46,750 --> 00:43:49,310
+And then the number of filters will just be C sub l
+
+976
+00:43:49,310 --> 00:43:52,550
+plus 1, the number of output channels that you have.
+
+977
+00:43:52,550 --> 00:43:53,190
+Yeah?
+
+978
+00:43:53,190 --> 00:43:58,730
+AUDIENCE: So I [INAUDIBLE] square
+
+979
+00:43:58,730 --> 00:44:00,990
+filters when dealing with convolutions.
+
+980
+00:44:00,990 --> 00:44:03,930
+I'm just curious where you have rectangular filters
+
+981
+00:44:03,930 --> 00:44:05,530
+or [INAUDIBLE]?
+
+982
+00:44:05,530 --> 00:44:07,970
+SARA BEERY: Absolutely, normally, the filters
+
+983
+00:44:07,970 --> 00:44:08,690
+are square.
+
+984
+00:44:08,690 --> 00:44:10,390
+That is totally standard.
+
+985
+00:44:10,390 --> 00:44:11,930
+They don't have to be.
+
+986
+00:44:11,930 --> 00:44:15,530
+A convolution can be defined in a way that is not square.
+
+987
+00:44:15,530 --> 00:44:18,910
+But I would say normally we see square convolutions.
+
+988
+00:44:18,910 --> 00:44:20,470
+Yeah.
+
+989
+00:44:20,470 --> 00:44:22,290
+Cool.
+
+990
+00:44:22,290 --> 00:44:26,970
+So you have say your input image.
+
+991
+00:44:26,970 --> 00:44:30,010
+Now you're going to run it through a first layer.
+
+992
+00:44:30,010 --> 00:44:32,350
+So essentially, for each of your filters,
+
+993
+00:44:32,350 --> 00:44:36,950
+you have a red, a green, and a blue filter.
+
+994
+00:44:36,950 --> 00:44:38,150
+Those get applied.
+
+995
+00:44:38,150 --> 00:44:40,390
+And then you can think about, OK,
+
+996
+00:44:40,390 --> 00:44:43,645
+so now if you take just one of those filters, that's
+
+997
+00:44:43,645 --> 00:44:45,770
+going to give you just a single one of those output
+
+998
+00:44:45,770 --> 00:44:49,650
+maps in your feature maps at layer 1.
+
+999
+00:44:49,650 --> 00:44:51,050
+A single one of those output maps
+
+1000
+00:44:51,050 --> 00:44:54,870
+is going to correspond to one of those filters over RGB.
+
+1001
+00:44:54,870 --> 00:44:57,690
+And now if you run that a second layer,
+
+1002
+00:44:57,690 --> 00:45:00,150
+second convolutional layer, now you
+
+1003
+00:45:00,150 --> 00:45:03,050
+have layer 2, your whole sets of features.
+
+1004
+00:45:03,050 --> 00:45:05,290
+Now each of those are going to be-- instead of RGB,
+
+1005
+00:45:05,290 --> 00:45:09,110
+they're going to be across the entire set of feature maps
+
+1006
+00:45:09,110 --> 00:45:10,590
+in your first layer.
+
+1007
+00:45:10,590 --> 00:45:13,910
+But then one of the outputs after that will only
+
+1008
+00:45:13,910 --> 00:45:17,190
+correspond to a single one of those C2 filters.
+
+1009
+00:45:17,190 --> 00:45:19,670
+So you can see how the actual representation gets
+
+1010
+00:45:19,670 --> 00:45:23,110
+highly complex, highly quickly.
+
+1011
+00:45:23,110 --> 00:45:25,130
+Even just one or two layers of depth,
+
+1012
+00:45:25,130 --> 00:45:27,270
+when you have convolution, it can
+
+1013
+00:45:27,270 --> 00:45:30,050
+map really complex functions.
+
+1014
+00:45:32,710 --> 00:45:34,990
+So another thing that we often use
+
+1015
+00:45:34,990 --> 00:45:37,310
+when we're building convolutional neural networks
+
+1016
+00:45:37,310 --> 00:45:39,910
+is this idea of pooling.
+
+1017
+00:45:39,910 --> 00:45:44,650
+So here, what we have is we have this convolutional layer.
+
+1018
+00:45:44,650 --> 00:45:47,830
+So you have your convolutional weights, you have your bias,
+
+1019
+00:45:47,830 --> 00:45:50,790
+and then you have your point-wise non-linearity.
+
+1020
+00:45:50,790 --> 00:45:53,290
+But then one of the things that you can do
+
+1021
+00:45:53,290 --> 00:45:55,650
+is you can do what's called pooling over those output
+
+1022
+00:45:55,650 --> 00:45:56,310
+features.
+
+1023
+00:45:56,310 --> 00:45:57,730
+One of the reasons you might want to do that
+
+1024
+00:45:57,730 --> 00:45:59,813
+is because you can see that the dimensionality can
+
+1025
+00:45:59,813 --> 00:46:02,210
+get really large, really fast.
+
+1026
+00:46:02,210 --> 00:46:04,730
+And so one thing, very, very common thing,
+
+1027
+00:46:04,730 --> 00:46:07,410
+is something we call max pooling, where here you
+
+1028
+00:46:07,410 --> 00:46:12,850
+just take some local window and you just use the maximum value.
+
+1029
+00:46:12,850 --> 00:46:15,610
+And you use that to represent your output.
+
+1030
+00:46:15,610 --> 00:46:18,730
+Or you can also think about something like mean pooling.
+
+1031
+00:46:18,730 --> 00:46:20,930
+And here you're just taking the average
+
+1032
+00:46:20,930 --> 00:46:23,450
+over some smaller local window.
+
+1033
+00:46:23,450 --> 00:46:24,830
+So why do you want to do pooling?
+
+1034
+00:46:24,830 --> 00:46:26,497
+So one thing that's really nice about it
+
+1035
+00:46:26,497 --> 00:46:28,690
+is pooling across spatial locations
+
+1036
+00:46:28,690 --> 00:46:31,130
+gives you some stability.
+
+1037
+00:46:31,130 --> 00:46:39,050
+So for example, here, if you're taking the max over this window,
+
+1038
+00:46:39,050 --> 00:46:42,150
+you're still going to identify that there's an edge there.
+
+1039
+00:46:42,150 --> 00:46:47,250
+There's still this white value that will get passed through,
+
+1040
+00:46:47,250 --> 00:46:51,880
+and that will be stable as the inputs move.
+
+1041
+00:46:51,880 --> 00:46:55,100
+So you'll get a large response to something
+
+1042
+00:46:55,100 --> 00:46:56,560
+like an edge filter.
+
+1043
+00:46:56,560 --> 00:46:59,220
+Regardless of the exact position of that edge,
+
+1044
+00:46:59,220 --> 00:47:01,520
+you get some more stability in the outputs.
+
+1045
+00:47:07,220 --> 00:47:10,940
+And then sometimes we also will do pooling across channels.
+
+1046
+00:47:10,940 --> 00:47:12,860
+And one cool thing you can think about here
+
+1047
+00:47:12,860 --> 00:47:14,540
+is if you pool across feature channels
+
+1048
+00:47:14,540 --> 00:47:17,720
+where all the feature channels are looking for those edges
+
+1049
+00:47:17,720 --> 00:47:20,260
+but across different orientations of that edge
+
+1050
+00:47:20,260 --> 00:47:24,800
+filter, then you can get some new kinds of invariances.
+
+1051
+00:47:24,800 --> 00:47:27,420
+So for example, this would give you
+
+1052
+00:47:27,420 --> 00:47:30,740
+a filter that was finding edges and was
+
+1053
+00:47:30,740 --> 00:47:33,620
+invariant to the orientation of the edge.
+
+1054
+00:47:33,620 --> 00:47:36,540
+Seems nice.
+
+1055
+00:47:36,540 --> 00:47:37,460
+Cool.
+
+1056
+00:47:37,460 --> 00:47:42,240
+So now if we actually look at a lot of the time
+
+1057
+00:47:42,240 --> 00:47:44,380
+what computation and neural network looks like,
+
+1058
+00:47:44,380 --> 00:47:48,180
+a convolutional neural network, we will usually take an input,
+
+1059
+00:47:48,180 --> 00:47:51,660
+and then we will run it through stacks of this building block.
+
+1060
+00:47:51,660 --> 00:47:55,080
+And this building block is some computation
+
+1061
+00:47:55,080 --> 00:47:59,920
+over some set of filters, a nonlinear activation, so a ReLU,
+
+1062
+00:47:59,920 --> 00:48:01,640
+and then something like pooling.
+
+1063
+00:48:01,640 --> 00:48:05,200
+And then we'll repeat that over and over and over again.
+
+1064
+00:48:05,200 --> 00:48:08,457
+But this is a really large network
+
+1065
+00:48:08,457 --> 00:48:09,540
+that has a lot of density.
+
+1066
+00:48:09,540 --> 00:48:12,620
+And as we maybe add more feature channels as we keep going,
+
+1067
+00:48:12,620 --> 00:48:13,998
+this could get really big.
+
+1068
+00:48:13,998 --> 00:48:16,040
+So particularly, if you're trying to do something
+
+1069
+00:48:16,040 --> 00:48:19,400
+like classification, where the only thing you want to get out
+
+1070
+00:48:19,400 --> 00:48:22,420
+is a low rank representation of the input,
+
+1071
+00:48:22,420 --> 00:48:27,360
+just something like a word or a specific one hot encoding, here
+
+1072
+00:48:27,360 --> 00:48:30,300
+we actually often use something called downsampling,
+
+1073
+00:48:30,300 --> 00:48:32,320
+where we assume that we don't actually
+
+1074
+00:48:32,320 --> 00:48:37,320
+need that high-dimensional input structure at every dimension
+
+1075
+00:48:37,320 --> 00:48:38,300
+of the network.
+
+1076
+00:48:38,300 --> 00:48:40,500
+And so here, instead of just pooling,
+
+1077
+00:48:40,500 --> 00:48:42,640
+we might also downsample.
+
+1078
+00:48:42,640 --> 00:48:44,240
+And what that looks like--
+
+1079
+00:48:44,240 --> 00:48:47,440
+so here if you have pooling, you've now done something
+
+1080
+00:48:47,440 --> 00:48:51,720
+like your convolutional layer, your activation function,
+
+1081
+00:48:51,720 --> 00:48:53,860
+and then something like max pooling,
+
+1082
+00:48:53,860 --> 00:48:56,680
+then downsampling would look something like this.
+
+1083
+00:48:56,680 --> 00:48:59,940
+So maybe you would only keep some subset
+
+1084
+00:48:59,940 --> 00:49:03,140
+of those actual values.
+
+1085
+00:49:03,140 --> 00:49:05,700
+And then instead of doing the pooling across all of them,
+
+1086
+00:49:05,700 --> 00:49:10,180
+you can also just do just straight downsampling.
+
+1087
+00:49:10,180 --> 00:49:12,020
+And one way that you can actually
+
+1088
+00:49:12,020 --> 00:49:16,020
+do both pooling and downsampling together
+
+1089
+00:49:16,020 --> 00:49:19,100
+is through something called a strided operation.
+
+1090
+00:49:19,100 --> 00:49:21,940
+So this actually combines something like convolution
+
+1091
+00:49:21,940 --> 00:49:23,720
+or pooling and downsampling.
+
+1092
+00:49:23,720 --> 00:49:26,900
+And the way that it does that is instead of going and sliding
+
+1093
+00:49:26,900 --> 00:49:31,420
+your filter by a single pixel every single time, instead,
+
+1094
+00:49:31,420 --> 00:49:34,820
+you increase what we call the stride of the filter.
+
+1095
+00:49:34,820 --> 00:49:38,940
+So now you operate your convolution.
+
+1096
+00:49:38,940 --> 00:49:41,500
+And then instead of just moving one, you might move two
+
+1097
+00:49:41,500 --> 00:49:43,317
+or you might move five.
+
+1098
+00:49:43,317 --> 00:49:44,900
+In this particular example, here we're
+
+1099
+00:49:44,900 --> 00:49:46,880
+showing a stride that's quite big.
+
+1100
+00:49:46,880 --> 00:49:49,760
+Usually, for these models, we often
+
+1101
+00:49:49,760 --> 00:49:52,120
+have that stride be somewhat overlapping,
+
+1102
+00:49:52,120 --> 00:49:54,240
+so you don't want to lose any of the context
+
+1103
+00:49:54,240 --> 00:49:55,323
+from the original input.
+
+1104
+00:49:55,323 --> 00:49:57,740
+So we'll have that stride be something that's overlapping.
+
+1105
+00:49:57,740 --> 00:50:01,420
+But maybe your input kernel is like 7 by 7.
+
+1106
+00:50:01,420 --> 00:50:05,040
+Your stride might be 5, something like that.
+
+1107
+00:50:05,040 --> 00:50:11,960
+And so here you're combining that pooling, that convolution,
+
+1108
+00:50:11,960 --> 00:50:15,400
+and the downsampling into a single element.
+
+1109
+00:50:15,400 --> 00:50:17,880
+And you can also think about doing something that we
+
+1110
+00:50:17,880 --> 00:50:20,600
+call using a dilated filter.
+
+1111
+00:50:20,600 --> 00:50:22,520
+And essentially, all this is it's just
+
+1112
+00:50:22,520 --> 00:50:25,880
+a filter where we've set some of the values to 0 and baked that
+
+1113
+00:50:25,880 --> 00:50:27,240
+into our model.
+
+1114
+00:50:27,240 --> 00:50:30,515
+And this gives you a larger receptive field, so what
+
+1115
+00:50:30,515 --> 00:50:31,640
+I was talking about before.
+
+1116
+00:50:31,640 --> 00:50:34,120
+You get more information from a larger spatial context
+
+1117
+00:50:34,120 --> 00:50:36,620
+or spatial extent with fewer parameters.
+
+1118
+00:50:36,620 --> 00:50:37,860
+There's less flexibility.
+
+1119
+00:50:37,860 --> 00:50:39,580
+There's less parameters that are learned,
+
+1120
+00:50:39,580 --> 00:50:44,080
+but you're kind of getting that larger context window.
+
+1121
+00:50:44,080 --> 00:50:48,940
+And that's kind of a trade-off that you can optimize for.
+
+1122
+00:50:48,940 --> 00:50:50,220
+Yeah?
+
+1123
+00:50:50,220 --> 00:50:51,380
+AUDIENCE: Oh, sorry.
+
+1124
+00:50:51,380 --> 00:50:55,820
+So when you downsample, you cannot go back to the previous
+
+1125
+00:50:55,820 --> 00:50:59,160
+dimension to input dimension unless you give information
+
+1126
+00:50:59,160 --> 00:51:01,597
+across the network, right?
+
+1127
+00:51:01,597 --> 00:51:03,680
+SARA BEERY: We'll talk about that in a little bit.
+
+1128
+00:51:03,680 --> 00:51:05,940
+So the question was if you downsample,
+
+1129
+00:51:05,940 --> 00:51:08,220
+you can't get back to the original input dimension
+
+1130
+00:51:08,220 --> 00:51:10,880
+unless you add some more information.
+
+1131
+00:51:10,880 --> 00:51:12,940
+That's not necessarily true.
+
+1132
+00:51:12,940 --> 00:51:14,852
+But you might not do it very well.
+
+1133
+00:51:14,852 --> 00:51:16,560
+So we'll talk about that in a little bit.
+
+1134
+00:51:16,560 --> 00:51:18,140
+AUDIENCE: What are the current norms
+
+1135
+00:51:18,140 --> 00:51:25,685
+for when it's acceptable to use striding [INAUDIBLE]?
+
+1136
+00:51:25,685 --> 00:51:28,060
+SARA BEERY: What are the current norms for when you would
+
+1137
+00:51:28,060 --> 00:51:29,980
+or would not use a stride?
+
+1138
+00:51:29,980 --> 00:51:34,180
+So I would say that this search space of possible architectures
+
+1139
+00:51:34,180 --> 00:51:35,540
+is vast.
+
+1140
+00:51:35,540 --> 00:51:38,180
+And even if we only consider the building blocks
+
+1141
+00:51:38,180 --> 00:51:40,980
+we've talked about so far, which is like linear layers
+
+1142
+00:51:40,980 --> 00:51:42,980
+and convolutional layers--
+
+1143
+00:51:42,980 --> 00:51:45,100
+and then you can have varied input sizes,
+
+1144
+00:51:45,100 --> 00:51:46,860
+varied depth, various numbers of channels.
+
+1145
+00:51:46,860 --> 00:51:49,152
+All of a sudden, you already have a really large search
+
+1146
+00:51:49,152 --> 00:51:50,240
+space.
+
+1147
+00:51:50,240 --> 00:51:51,800
+There's entire fields of research
+
+1148
+00:51:51,800 --> 00:51:53,800
+called neural architecture search that actually
+
+1149
+00:51:53,800 --> 00:51:58,440
+specifically tried to optimize over the space of architectures
+
+1150
+00:51:58,440 --> 00:52:00,220
+to find the best possible solution.
+
+1151
+00:52:00,220 --> 00:52:03,720
+Pretty computationally expensive to actually train those.
+
+1152
+00:52:03,720 --> 00:52:08,840
+But I would say that one of the things that's kind of proven out
+
+1153
+00:52:08,840 --> 00:52:13,220
+in the literature over the last of maybe 10 years
+
+1154
+00:52:13,220 --> 00:52:15,000
+just experimentally is there seem
+
+1155
+00:52:15,000 --> 00:52:20,440
+to be some standards that seem to be trends that are long held.
+
+1156
+00:52:20,440 --> 00:52:22,940
+So for example, in the original AlexNet paper,
+
+1157
+00:52:22,940 --> 00:52:24,400
+the filters were quite big.
+
+1158
+00:52:24,400 --> 00:52:26,080
+They had pretty large spatial extent,
+
+1159
+00:52:26,080 --> 00:52:28,320
+and then there were less depth in the layers.
+
+1160
+00:52:28,320 --> 00:52:29,800
+One of the things that we've seen more and more
+
+1161
+00:52:29,800 --> 00:52:32,160
+is now we actually often see filters that are reasonably
+
+1162
+00:52:32,160 --> 00:52:37,080
+small, 7 or 5 spatial extent.
+
+1163
+00:52:37,080 --> 00:52:40,620
+But maybe then they're actually stacked quite deep.
+
+1164
+00:52:40,620 --> 00:52:43,400
+So then you end up with really large receptive fields,
+
+1165
+00:52:43,400 --> 00:52:48,140
+even though the initial filters were spatially quite small.
+
+1166
+00:52:48,140 --> 00:52:49,740
+And then with striding, again, it's
+
+1167
+00:52:49,740 --> 00:52:52,420
+just that trade off between the amount of computation
+
+1168
+00:52:52,420 --> 00:52:53,840
+and the receptive field.
+
+1169
+00:52:53,840 --> 00:52:57,182
+So there's different kind of optimality.
+
+1170
+00:52:57,182 --> 00:52:59,140
+One of the things you can do is you can go look
+
+1171
+00:52:59,140 --> 00:53:01,915
+at a bunch of the standard architectures,
+
+1172
+00:53:01,915 --> 00:53:04,040
+and often they'll have these architecture diagrams.
+
+1173
+00:53:04,040 --> 00:53:07,980
+You've seen them before probably where it's like the layer,
+
+1174
+00:53:07,980 --> 00:53:10,620
+and then it'll have just like a layer size for each thing.
+
+1175
+00:53:10,620 --> 00:53:13,420
+And you can look at, what are the similarities
+
+1176
+00:53:13,420 --> 00:53:15,640
+across the structures of these different models?
+
+1177
+00:53:15,640 --> 00:53:17,560
+AUDIENCE: Does the complexity of the picture matter at all,
+
+1178
+00:53:17,560 --> 00:53:19,060
+for example, the first example, you
+
+1179
+00:53:19,060 --> 00:53:22,620
+gave, which is Times Square versus the nature?
+
+1180
+00:53:22,620 --> 00:53:24,420
+SARA BEERY: Yeah, experimentally, yes.
+
+1181
+00:53:24,420 --> 00:53:29,580
+So if you have really non-complex pictures like CIFAR,
+
+1182
+00:53:29,580 --> 00:53:33,860
+for example, these 100 by 100 really simple photos,
+
+1183
+00:53:33,860 --> 00:53:38,780
+then the network itself often needs to be much less complex.
+
+1184
+00:53:38,780 --> 00:53:41,080
+If fine-grained feature details actually
+
+1185
+00:53:41,080 --> 00:53:42,800
+matter a lot, which happens for us a lot
+
+1186
+00:53:42,800 --> 00:53:45,060
+with the species images, for example,
+
+1187
+00:53:45,060 --> 00:53:46,560
+then one of the things that actually
+
+1188
+00:53:46,560 --> 00:53:48,840
+tends to matter more than almost anything else
+
+1189
+00:53:48,840 --> 00:53:51,160
+is the input image size that you use.
+
+1190
+00:53:51,160 --> 00:53:54,020
+So a lot of these models, the input image size,
+
+1191
+00:53:54,020 --> 00:53:55,960
+if you scale it up, then the computation
+
+1192
+00:53:55,960 --> 00:53:59,720
+scales up quite a lot with that.
+
+1193
+00:53:59,720 --> 00:54:02,607
+So we'll often downsample images to some smaller size
+
+1194
+00:54:02,607 --> 00:54:04,440
+before we run them through a network as part
+
+1195
+00:54:04,440 --> 00:54:05,720
+of the pre-processing.
+
+1196
+00:54:05,720 --> 00:54:08,877
+But we find that increasing the scale of that input image
+
+1197
+00:54:08,877 --> 00:54:10,960
+and then maybe downscaling some of the computation
+
+1198
+00:54:10,960 --> 00:54:12,260
+is sometimes a better trade-off.
+
+1199
+00:54:12,260 --> 00:54:14,218
+If you really care about fine-grained features,
+
+1200
+00:54:14,218 --> 00:54:16,920
+you don't want to lose that detail.
+
+1201
+00:54:16,920 --> 00:54:18,040
+Yeah?
+
+1202
+00:54:18,040 --> 00:54:20,480
+AUDIENCE: So normally, in signal processing,
+
+1203
+00:54:20,480 --> 00:54:24,540
+we're [INAUDIBLE] filters for a given purpose.
+
+1204
+00:54:24,540 --> 00:54:25,510
+[INAUDIBLE]
+
+1205
+00:54:28,800 --> 00:54:35,040
+And in this case, the weights, that would be [INAUDIBLE].
+
+1206
+00:54:35,040 --> 00:54:39,790
+You mentioned earlier the model will learn [INAUDIBLE].
+
+1207
+00:54:39,790 --> 00:54:41,850
+So how would you--
+
+1208
+00:54:41,850 --> 00:54:45,210
+or do we include inductive biases
+
+1209
+00:54:45,210 --> 00:54:47,210
+in how we train our models so that we
+
+1210
+00:54:47,210 --> 00:54:50,430
+can design our models to then do a certain purpose,
+
+1211
+00:54:50,430 --> 00:54:56,290
+no different than designing an [INAUDIBLE] for a signal?
+
+1212
+00:54:56,290 --> 00:54:57,723
+How does the model [INAUDIBLE]?
+
+1213
+00:54:57,723 --> 00:54:59,390
+SARA BEERY: Yeah, it's a great question.
+
+1214
+00:54:59,390 --> 00:55:02,030
+So the question was in signal processing,
+
+1215
+00:55:02,030 --> 00:55:06,030
+we're often very carefully handcrafting our filters
+
+1216
+00:55:06,030 --> 00:55:08,690
+so that they are capturing a certain dimension of the signal
+
+1217
+00:55:08,690 --> 00:55:11,370
+that we want to capture, whereas here we're
+
+1218
+00:55:11,370 --> 00:55:13,970
+talking about filters that are actually being learned.
+
+1219
+00:55:13,970 --> 00:55:15,510
+And what's the trade-off?
+
+1220
+00:55:15,510 --> 00:55:18,570
+When does it make sense to try to actually craft
+
+1221
+00:55:18,570 --> 00:55:22,490
+the filters to match our intuition about the problem?
+
+1222
+00:55:22,490 --> 00:55:25,490
+So what you're talking about is actually this massive paradigm
+
+1223
+00:55:25,490 --> 00:55:29,810
+shift that happened maybe 10, 15 years ago in the field where
+
+1224
+00:55:29,810 --> 00:55:34,610
+we went from most of the work was
+
+1225
+00:55:34,610 --> 00:55:38,248
+on what we called feature engineering in computer vision
+
+1226
+00:55:38,248 --> 00:55:40,790
+or in deep learning, where you would be building these really
+
+1227
+00:55:40,790 --> 00:55:44,750
+handcrafted structures that then you would combine together
+
+1228
+00:55:44,750 --> 00:55:48,390
+into some larger system that would recognize stuff.
+
+1229
+00:55:48,390 --> 00:55:51,490
+And when we started to see that filters,
+
+1230
+00:55:51,490 --> 00:55:54,370
+just like these models being learned end to end
+
+1231
+00:55:54,370 --> 00:55:58,630
+were more predictive, it was a bit of like a catastrophe
+
+1232
+00:55:58,630 --> 00:56:00,210
+emotionally for many researchers.
+
+1233
+00:56:00,210 --> 00:56:02,030
+Because you were like, no, like I
+
+1234
+00:56:02,030 --> 00:56:04,470
+spent my life learning how to craft these filters
+
+1235
+00:56:04,470 --> 00:56:06,570
+in this really specific way.
+
+1236
+00:56:06,570 --> 00:56:08,670
+I don't want to just cram a bunch of data
+
+1237
+00:56:08,670 --> 00:56:10,805
+through a structure and have that be learned
+
+1238
+00:56:10,805 --> 00:56:11,930
+and then have it be better.
+
+1239
+00:56:11,930 --> 00:56:16,950
+And it turns out that actually the trade-off often comes
+
+1240
+00:56:16,950 --> 00:56:18,630
+down to how much data you have.
+
+1241
+00:56:18,630 --> 00:56:21,450
+So if you don't have enough data to learn the filters,
+
+1242
+00:56:21,450 --> 00:56:26,430
+well, then more handcrafting, more knowledge, more inductive
+
+1243
+00:56:26,430 --> 00:56:30,270
+bias tends to be better because you actually
+
+1244
+00:56:30,270 --> 00:56:31,890
+can put more constraints on the system
+
+1245
+00:56:31,890 --> 00:56:33,950
+so that you can optimize better with less data.
+
+1246
+00:56:33,950 --> 00:56:37,450
+But if you're in a space where you can get huge amounts of data
+
+1247
+00:56:37,450 --> 00:56:40,690
+to learn from, often, we don't know as much
+
+1248
+00:56:40,690 --> 00:56:43,530
+as we think we know about what optimality might be in terms
+
+1249
+00:56:43,530 --> 00:56:45,530
+of the filters that are learned, especially when
+
+1250
+00:56:45,530 --> 00:56:47,738
+you think about-- it can be really intuitive to think
+
+1251
+00:56:47,738 --> 00:56:49,370
+about crafting a single filter.
+
+1252
+00:56:49,370 --> 00:56:54,530
+But how would you handcraft like the seventh convolutional layer
+
+1253
+00:56:54,530 --> 00:56:58,590
+in a 128 layer network for a single channel?
+
+1254
+00:56:58,590 --> 00:57:02,378
+It very rapidly gets to a place where the system is so complex
+
+1255
+00:57:02,378 --> 00:57:04,170
+that it's very difficult to build intuition
+
+1256
+00:57:04,170 --> 00:57:06,950
+about what it should be for us.
+
+1257
+00:57:06,950 --> 00:57:07,450
+Cool.
+
+1258
+00:57:10,970 --> 00:57:12,110
+So receptive fields.
+
+1259
+00:57:12,110 --> 00:57:14,170
+So one of the things we talked about
+
+1260
+00:57:14,170 --> 00:57:18,410
+is if you let of input size of the patch get too small,
+
+1261
+00:57:18,410 --> 00:57:20,290
+you maybe won't be able to actually identify
+
+1262
+00:57:20,290 --> 00:57:21,890
+the things you care about.
+
+1263
+00:57:21,890 --> 00:57:24,970
+So in this particular instance, say maybe the input
+
+1264
+00:57:24,970 --> 00:57:26,890
+patch is this entire bird.
+
+1265
+00:57:26,890 --> 00:57:30,930
+And then we're running it through convolutional network,
+
+1266
+00:57:30,930 --> 00:57:32,590
+ReLU, convolutional layer.
+
+1267
+00:57:32,590 --> 00:57:34,830
+And then we get some output.
+
+1268
+00:57:34,830 --> 00:57:37,090
+And that output for that patch is bird.
+
+1269
+00:57:37,090 --> 00:57:41,230
+So here what we would say is the receptive field
+
+1270
+00:57:41,230 --> 00:57:46,532
+of that x2 output is the input patch there.
+
+1271
+00:57:46,532 --> 00:57:47,990
+Because receptive field essentially
+
+1272
+00:57:47,990 --> 00:57:50,870
+just says what parts of the initial input
+
+1273
+00:57:50,870 --> 00:57:54,050
+have any influence on this part of the output.
+
+1274
+00:57:54,050 --> 00:57:55,470
+Because we're doing this in a way
+
+1275
+00:57:55,470 --> 00:57:57,170
+that's translation invariant.
+
+1276
+00:57:57,170 --> 00:58:00,510
+We're doing the same computation across different patches.
+
+1277
+00:58:00,510 --> 00:58:03,590
+Outside of that receptive field, this model
+
+1278
+00:58:03,590 --> 00:58:05,610
+doesn't have any input information.
+
+1279
+00:58:05,610 --> 00:58:08,110
+So if there was something just outside of that field of view
+
+1280
+00:58:08,110 --> 00:58:11,255
+that was really informative and it wasn't actually in here,
+
+1281
+00:58:11,255 --> 00:58:12,630
+then there's no way for the model
+
+1282
+00:58:12,630 --> 00:58:15,550
+to get information outside of that receptive field.
+
+1283
+00:58:15,550 --> 00:58:19,370
+You can also talk about the receptive field of input layers.
+
+1284
+00:58:19,370 --> 00:58:22,210
+So you can say, OK, like in this first layer,
+
+1285
+00:58:22,210 --> 00:58:24,510
+the receptive field of that component
+
+1286
+00:58:24,510 --> 00:58:28,550
+of the output of that first layer is that part of the input.
+
+1287
+00:58:28,550 --> 00:58:34,450
+And what that looks like-- as you pass through the network,
+
+1288
+00:58:34,450 --> 00:58:36,870
+you can think about looking at the activations,
+
+1289
+00:58:36,870 --> 00:58:40,370
+and you can see that they go from being very fine grained
+
+1290
+00:58:40,370 --> 00:58:42,110
+or very detailed in the early layers
+
+1291
+00:58:42,110 --> 00:58:46,130
+because maybe you're running them through convolutions
+
+1292
+00:58:46,130 --> 00:58:47,550
+that are much more local.
+
+1293
+00:58:47,550 --> 00:58:51,710
+And then as you get further out or further along in AlexNet,
+
+1294
+00:58:51,710 --> 00:58:54,410
+VGG 16, ResNet 18, what you start to see
+
+1295
+00:58:54,410 --> 00:58:59,010
+are feature activations that are kind of much more diffuse.
+
+1296
+00:58:59,010 --> 00:59:00,930
+And this has to do with that receptive field
+
+1297
+00:59:00,930 --> 00:59:03,690
+because now each one of these output dimensions
+
+1298
+00:59:03,690 --> 00:59:06,530
+is actually collecting really complex information
+
+1299
+00:59:06,530 --> 00:59:08,970
+and mapping it through a bunch of different layers
+
+1300
+00:59:08,970 --> 00:59:10,490
+from this input.
+
+1301
+00:59:10,490 --> 00:59:13,810
+So maybe you're getting output feature activations
+
+1302
+00:59:13,810 --> 00:59:18,130
+that are more semantically meaningful but less
+
+1303
+00:59:18,130 --> 00:59:24,370
+affected by subtle texture or variation in the initial input
+
+1304
+00:59:24,370 --> 00:59:26,130
+image possibly.
+
+1305
+00:59:26,130 --> 00:59:27,430
+Yeah?
+
+1306
+00:59:27,430 --> 00:59:31,967
+AUDIENCE: Similar computation to how you do Gaussian blurring?
+
+1307
+00:59:31,967 --> 00:59:33,550
+SARA BEERY: So the question is if it's
+
+1308
+00:59:33,550 --> 00:59:35,842
+similar in computation to how you do Gaussian blurring.
+
+1309
+00:59:38,550 --> 00:59:41,953
+I think at a high level, like the intuition
+
+1310
+00:59:41,953 --> 00:59:43,870
+is a little similar, but computationally, it's
+
+1311
+00:59:43,870 --> 00:59:45,070
+quite different.
+
+1312
+00:59:45,070 --> 00:59:45,790
+Yeah?
+
+1313
+00:59:45,790 --> 00:59:49,710
+AUDIENCE: In that last image, are those, 1, 6, and 8,
+
+1314
+00:59:49,710 --> 00:59:55,830
+are-- the ones on the right, are those the same pixel size
+
+1315
+00:59:55,830 --> 00:59:59,710
+as the initial inputs, or are they downsampled and you just
+
+1316
+00:59:59,710 --> 01:00:01,210
+resize them to all be the same?
+
+1317
+01:00:01,210 --> 01:00:02,630
+SARA BEERY: We've resized them all to be the same size.
+
+1318
+01:00:02,630 --> 01:00:04,880
+But it actually is very dependent on the architecture.
+
+1319
+01:00:04,880 --> 01:00:09,110
+So ResNets, the actual spatial extent, once you get to block 8
+
+1320
+01:00:09,110 --> 01:00:10,090
+is much lower.
+
+1321
+01:00:10,090 --> 01:00:13,990
+And then there's a lot more channels versus the AlexNet one.
+
+1322
+01:00:13,990 --> 01:00:14,850
+Yeah.
+
+1323
+01:00:14,850 --> 01:00:15,575
+Cool.
+
+1324
+01:00:15,575 --> 01:00:16,950
+So in the last little bit, I want
+
+1325
+01:00:16,950 --> 01:00:19,070
+to talk through at a pretty high level
+
+1326
+01:00:19,070 --> 01:00:21,830
+a bunch of these different high-level ideas, maybe some
+
+1327
+01:00:21,830 --> 01:00:25,110
+of these what one of you mentioned, some of these things
+
+1328
+01:00:25,110 --> 01:00:32,210
+that have tended to continue to be used over time.
+
+1329
+01:00:32,210 --> 01:00:35,570
+So we talked about one very, very classic version
+
+1330
+01:00:35,570 --> 01:00:37,170
+of a convolutional neural network
+
+1331
+01:00:37,170 --> 01:00:40,610
+is something like a classification network.
+
+1332
+01:00:40,610 --> 01:00:42,930
+And most classification networks have
+
+1333
+01:00:42,930 --> 01:00:44,510
+something like this structure.
+
+1334
+01:00:44,510 --> 01:00:48,410
+We'll have filters, some sort of point-wise non-linearity,
+
+1335
+01:00:48,410 --> 01:00:50,230
+and then some form of downsampling.
+
+1336
+01:00:50,230 --> 01:00:52,147
+And we run through a bunch of different layers
+
+1337
+01:00:52,147 --> 01:00:55,130
+like that to get out some of output classification.
+
+1338
+01:00:55,130 --> 01:00:59,210
+But another really common structure in using convolutions
+
+1339
+01:00:59,210 --> 01:01:03,610
+is what we call an encoder-decoder architecture.
+
+1340
+01:01:03,610 --> 01:01:06,410
+So here what you're doing is you're taking that input
+
+1341
+01:01:06,410 --> 01:01:09,970
+and you're doing convolution, non-linearity, subsampling
+
+1342
+01:01:09,970 --> 01:01:12,850
+or downsampling to get down to some very
+
+1343
+01:01:12,850 --> 01:01:16,690
+low dimensional representation, for example this z space vector.
+
+1344
+01:01:16,690 --> 01:01:19,350
+And then in the decoder component,
+
+1345
+01:01:19,350 --> 01:01:22,070
+you're going to take that low dimensional representation,
+
+1346
+01:01:22,070 --> 01:01:25,570
+and you're going to now do convolution non-linearity
+
+1347
+01:01:25,570 --> 01:01:27,170
+upsampling.
+
+1348
+01:01:27,170 --> 01:01:29,030
+So in that upsampling component, you're
+
+1349
+01:01:29,030 --> 01:01:31,790
+actually just increasing the spatial extent of each
+
+1350
+01:01:31,790 --> 01:01:33,190
+of the layers going forward.
+
+1351
+01:01:33,190 --> 01:01:37,830
+And the training signal here is you want the decoded output
+
+1352
+01:01:37,830 --> 01:01:42,710
+to match the encoded input as close as possible.
+
+1353
+01:01:42,710 --> 01:01:46,190
+Now this is also used.
+
+1354
+01:01:46,190 --> 01:01:48,270
+So this is used as one way to get
+
+1355
+01:01:48,270 --> 01:01:51,310
+a low-dimensional representation of an image.
+
+1356
+01:01:51,310 --> 01:01:54,110
+This type of encoder-decoder architecture, this
+
+1357
+01:01:54,110 --> 01:01:57,530
+is built into things like variational autoencoders.
+
+1358
+01:01:57,530 --> 01:02:00,590
+Masked autoencoders are increasingly widely used,
+
+1359
+01:02:00,590 --> 01:02:04,990
+though those use attention as opposed
+
+1360
+01:02:04,990 --> 01:02:08,270
+to convolution as a way to share information over space.
+
+1361
+01:02:12,003 --> 01:02:13,670
+You can take these different components,
+
+1362
+01:02:13,670 --> 01:02:14,795
+and you can break them out.
+
+1363
+01:02:14,795 --> 01:02:18,830
+So we talked about differential programming.
+
+1364
+01:02:18,830 --> 01:02:20,730
+If you train an encoder-decoder architecture,
+
+1365
+01:02:20,730 --> 01:02:23,470
+you could use the encoder to build some representation
+
+1366
+01:02:23,470 --> 01:02:24,330
+of input images.
+
+1367
+01:02:24,330 --> 01:02:27,810
+But you can also use the decoder to generate images.
+
+1368
+01:02:27,810 --> 01:02:29,890
+So these components can be used separately
+
+1369
+01:02:29,890 --> 01:02:32,028
+and can be valuable separately.
+
+1370
+01:02:32,028 --> 01:02:33,570
+But another way you might want to use
+
+1371
+01:02:33,570 --> 01:02:36,370
+this type of encoder-decoder structure of architecture
+
+1372
+01:02:36,370 --> 01:02:42,010
+would be to do something like get out semantic segmentation
+
+1373
+01:02:42,010 --> 01:02:46,157
+because you want an output space that has spatial extent,
+
+1374
+01:02:46,157 --> 01:02:48,490
+doesn't necessarily need to be the exact same resolution
+
+1375
+01:02:48,490 --> 01:02:50,530
+as the input, though it can be.
+
+1376
+01:02:50,530 --> 01:02:53,330
+But you want something that has a spatial structure
+
+1377
+01:02:53,330 --> 01:02:57,730
+in the output space as opposed to just like a single category.
+
+1378
+01:02:57,730 --> 01:03:01,410
+Now this seems nice.
+
+1379
+01:03:01,410 --> 01:03:06,030
+But it turns out that this is both a blessing and a curse,
+
+1380
+01:03:06,030 --> 01:03:07,370
+this bottleneck in the middle.
+
+1381
+01:03:07,370 --> 01:03:09,370
+It's forcing the model to learn something that's
+
+1382
+01:03:09,370 --> 01:03:12,210
+kind of semantically useful, but it also
+
+1383
+01:03:12,210 --> 01:03:15,890
+means that often it's not possible with an architecture
+
+1384
+01:03:15,890 --> 01:03:18,450
+that just has downsampling, then upsampling
+
+1385
+01:03:18,450 --> 01:03:21,850
+to get a really precise output that's
+
+1386
+01:03:21,850 --> 01:03:24,338
+the same size as the input because you've lost
+
+1387
+01:03:24,338 --> 01:03:25,630
+a lot of the spatial structure.
+
+1388
+01:03:25,630 --> 01:03:27,300
+You've lost a lot of the information
+
+1389
+01:03:27,300 --> 01:03:30,260
+about the fine-grained details in that spatial structure.
+
+1390
+01:03:30,260 --> 01:03:33,763
+And so an alternative would be to take an approach
+
+1391
+01:03:33,763 --> 01:03:36,180
+to doing image-to-image, like semantic segmentation, where
+
+1392
+01:03:36,180 --> 01:03:38,340
+you don't lose any spatial structure.
+
+1393
+01:03:38,340 --> 01:03:41,220
+So here you do convolution, ReLU, convolution, Softmax,
+
+1394
+01:03:41,220 --> 01:03:43,900
+is a very, very simple version of that.
+
+1395
+01:03:43,900 --> 01:03:46,400
+But every single one of these inputs,
+
+1396
+01:03:46,400 --> 01:03:48,700
+because you're keeping the entire dimension,
+
+1397
+01:03:48,700 --> 01:03:51,100
+this can be really computationally expensive.
+
+1398
+01:03:51,100 --> 01:03:54,420
+So the size of this model would be really huge.
+
+1399
+01:03:54,420 --> 01:03:57,060
+So to bridge and get the best of both worlds, where
+
+1400
+01:03:57,060 --> 01:04:00,680
+you're keeping a lot of the high-resolution structure
+
+1401
+01:04:00,680 --> 01:04:03,340
+but you're also building models that are computationally
+
+1402
+01:04:03,340 --> 01:04:05,060
+efficient and that are forced to learn
+
+1403
+01:04:05,060 --> 01:04:07,940
+something that's kind of semantically meaningful
+
+1404
+01:04:07,940 --> 01:04:09,485
+is the U-net.
+
+1405
+01:04:09,485 --> 01:04:10,860
+So probably many of you have seen
+
+1406
+01:04:10,860 --> 01:04:12,740
+this or different variations of this.
+
+1407
+01:04:12,740 --> 01:04:15,180
+But the big intuition here is we have
+
+1408
+01:04:15,180 --> 01:04:17,580
+what are called these skip connections
+
+1409
+01:04:17,580 --> 01:04:22,180
+across the different encoder and decoder structures
+
+1410
+01:04:22,180 --> 01:04:23,740
+of this architecture.
+
+1411
+01:04:23,740 --> 01:04:25,600
+So you actually have a connection
+
+1412
+01:04:25,600 --> 01:04:29,280
+that takes whatever the size is, and it just
+
+1413
+01:04:29,280 --> 01:04:34,280
+takes that via the identity and lets it be skipped over
+
+1414
+01:04:34,280 --> 01:04:35,560
+towards the output.
+
+1415
+01:04:35,560 --> 01:04:37,240
+And what this means is the model is not
+
+1416
+01:04:37,240 --> 01:04:40,680
+forced to explicitly try to shove
+
+1417
+01:04:40,680 --> 01:04:43,320
+a bunch of fine-grained spatial detail
+
+1418
+01:04:43,320 --> 01:04:46,360
+into some very low rank, non-spatially dimensional
+
+1419
+01:04:46,360 --> 01:04:48,600
+embedding, which is somewhat impossible.
+
+1420
+01:04:48,600 --> 01:04:52,120
+It's able to learn the semantic details through this information
+
+1421
+01:04:52,120 --> 01:04:55,280
+bottleneck, but then it also gets a lot of the spatial detail
+
+1422
+01:04:55,280 --> 01:04:57,560
+through those skipped connections.
+
+1423
+01:04:57,560 --> 01:04:58,900
+And this is really powerful.
+
+1424
+01:04:58,900 --> 01:05:00,460
+U-net is a really old architecture,
+
+1425
+01:05:00,460 --> 01:05:02,835
+and it is still one of the most widely used architectures
+
+1426
+01:05:02,835 --> 01:05:04,220
+for semantic segmentation.
+
+1427
+01:05:04,220 --> 01:05:09,200
+It's used all the time in things like remote sensing,
+
+1428
+01:05:09,200 --> 01:05:12,160
+like land cover mapping, for example.
+
+1429
+01:05:12,160 --> 01:05:14,320
+And this idea of a skipped connection, this
+
+1430
+01:05:14,320 --> 01:05:18,360
+actually is a really useful computational tool.
+
+1431
+01:05:18,360 --> 01:05:20,600
+And it's also one of the fundamental underpinnings
+
+1432
+01:05:20,600 --> 01:05:22,880
+of what we call the ResNet architecture.
+
+1433
+01:05:22,880 --> 01:05:25,820
+So ResNet was invented by Kaiming He, who is also
+
+1434
+01:05:25,820 --> 01:05:27,780
+a professor now here at MIT.
+
+1435
+01:05:27,780 --> 01:05:30,980
+And this architecture is amazing.
+
+1436
+01:05:30,980 --> 01:05:33,660
+We still use this all the time, and it's like 10 years
+
+1437
+01:05:33,660 --> 01:05:35,500
+old at this point.
+
+1438
+01:05:35,500 --> 01:05:38,740
+But really, one of the important things that was recognized
+
+1439
+01:05:38,740 --> 01:05:40,320
+is essentially--
+
+1440
+01:05:40,320 --> 01:05:42,580
+so one cool intuition about ResNet
+
+1441
+01:05:42,580 --> 01:05:45,200
+is every single layer has this skipped connection.
+
+1442
+01:05:45,200 --> 01:05:47,220
+So it has this identity pathway that
+
+1443
+01:05:47,220 --> 01:05:52,500
+lets you choose whether you want to run the input
+
+1444
+01:05:52,500 --> 01:05:57,060
+data through that layer or just skip it, just take this identity
+
+1445
+01:05:57,060 --> 01:06:00,300
+mapping and just pass it through to the next layer.
+
+1446
+01:06:00,300 --> 01:06:02,220
+So one kind of cool intuition about this
+
+1447
+01:06:02,220 --> 01:06:04,580
+is this actually means that this is
+
+1448
+01:06:04,580 --> 01:06:08,660
+a model that can learn something about its architecture.
+
+1449
+01:06:08,660 --> 01:06:10,760
+It can learn an optimal depth.
+
+1450
+01:06:10,760 --> 01:06:13,340
+Because you can essentially say, I
+
+1451
+01:06:13,340 --> 01:06:15,923
+want to just pass this through maybe three of these layers.
+
+1452
+01:06:15,923 --> 01:06:17,340
+And then the rest of the time, I'm
+
+1453
+01:06:17,340 --> 01:06:20,860
+just going to take these skip connections out to the output.
+
+1454
+01:06:20,860 --> 01:06:23,160
+And so then the model itself can implicitly
+
+1455
+01:06:23,160 --> 01:06:26,640
+learn the optimal depth for the task that you want to learn.
+
+1456
+01:06:26,640 --> 01:06:29,960
+So one kind of cool intuition, I think, about resonance
+
+1457
+01:06:29,960 --> 01:06:32,720
+is that they give the model the flexibility
+
+1458
+01:06:32,720 --> 01:06:35,560
+to learn something optimal about the architecture
+
+1459
+01:06:35,560 --> 01:06:38,800
+without needing to test out explicitly
+
+1460
+01:06:38,800 --> 01:06:42,080
+training a bunch of different architectures side by side.
+
+1461
+01:06:42,080 --> 01:06:44,920
+And these residual connections essentially
+
+1462
+01:06:44,920 --> 01:06:48,260
+are just x out equals function of x in,
+
+1463
+01:06:48,260 --> 01:06:51,840
+so mapping it through that layer plus the input dimension itself.
+
+1464
+01:06:51,840 --> 01:06:54,482
+And if you want to actually change the dimensionality,
+
+1465
+01:06:54,482 --> 01:06:56,440
+so you want to have something like downsampling
+
+1466
+01:06:56,440 --> 01:06:58,520
+within a ResNet, then you can also
+
+1467
+01:06:58,520 --> 01:07:02,440
+have another set of linear weights that downsamples in that
+
+1468
+01:07:02,440 --> 01:07:04,260
+skip connection.
+
+1469
+01:07:04,260 --> 01:07:05,460
+Cool.
+
+1470
+01:07:05,460 --> 01:07:08,460
+And this is a really, really powerful tool.
+
+1471
+01:07:08,460 --> 01:07:09,240
+Yeah?
+
+1472
+01:07:09,240 --> 01:07:11,160
+AUDIENCE: So with these skip connections,
+
+1473
+01:07:11,160 --> 01:07:14,560
+is the skip becoming another channel that's also like
+
+1474
+01:07:14,560 --> 01:07:18,160
+an output channel in the middle, or is it like actually choosing
+
+1475
+01:07:18,160 --> 01:07:27,380
+one or the other/
+
+1476
+01:07:27,380 --> 01:07:31,720
+SARA BEERY: So it's kind of choosing one or the other.
+
+1477
+01:07:34,300 --> 01:07:37,300
+So the residual connection is essentially--
+
+1478
+01:07:37,300 --> 01:07:42,723
+you assume that the output of your layer
+
+1479
+01:07:42,723 --> 01:07:44,640
+and the residual connection are the same size.
+
+1480
+01:07:44,640 --> 01:07:47,860
+And then you're just adding them together.
+
+1481
+01:07:47,860 --> 01:07:51,180
+But there's different implementations
+
+1482
+01:07:51,180 --> 01:07:54,840
+of this that will have some of learned weight.
+
+1483
+01:07:54,840 --> 01:07:57,900
+So, OK, maybe you learn to completely ignore that identity.
+
+1484
+01:07:57,900 --> 01:08:00,740
+That same type of skipped connection
+
+1485
+01:08:00,740 --> 01:08:04,300
+is also something that gets surfaced via self-attention
+
+1486
+01:08:04,300 --> 01:08:06,100
+in transformers, which we'll talk
+
+1487
+01:08:06,100 --> 01:08:08,040
+about more in the transformer architecture.
+
+1488
+01:08:08,040 --> 01:08:10,060
+But essentially, just this ability
+
+1489
+01:08:10,060 --> 01:08:14,500
+to learn how to combine information is valuable.
+
+1490
+01:08:14,500 --> 01:08:19,253
+If it is just an addition or a concatenation or however
+
+1491
+01:08:19,253 --> 01:08:20,920
+you want to do that skip connection, one
+
+1492
+01:08:20,920 --> 01:08:24,340
+of the cool things about linear layers or convolutional layers,
+
+1493
+01:08:24,340 --> 01:08:25,960
+which are constrained linear layers,
+
+1494
+01:08:25,960 --> 01:08:30,220
+is essentially even if you just add them together,
+
+1495
+01:08:30,220 --> 01:08:32,960
+there's some version of the next layer that could basically
+
+1496
+01:08:32,960 --> 01:08:37,560
+learn how to ignore certain dimensions, that input.
+
+1497
+01:08:37,560 --> 01:08:39,288
+But yeah.
+
+1498
+01:08:39,288 --> 01:08:41,080
+Like, for example, here, if you do actually
+
+1499
+01:08:41,080 --> 01:08:43,477
+want to change the dimensionality, that W layer,
+
+1500
+01:08:43,477 --> 01:08:45,060
+that could be learned to be all zeros.
+
+1501
+01:08:45,060 --> 01:08:47,200
+So you could just not keep any of that at all
+
+1502
+01:08:47,200 --> 01:08:50,499
+if that's what the model wants to learn.
+
+1503
+01:08:50,499 --> 01:08:52,080
+Cool.
+
+1504
+01:08:52,080 --> 01:08:55,319
+So far, we've talked about two-dimensional or
+
+1505
+01:08:55,319 --> 01:08:57,160
+three-dimensional grids.
+
+1506
+01:08:57,160 --> 01:08:59,120
+But one of the things that, of course, comes up
+
+1507
+01:08:59,120 --> 01:09:04,319
+all the time in the real world are additional dimensionalities.
+
+1508
+01:09:04,319 --> 01:09:07,000
+One really simple one is time.
+
+1509
+01:09:07,000 --> 01:09:09,700
+So here, if you think about convolutions in time,
+
+1510
+01:09:09,700 --> 01:09:11,920
+so maybe one version of this is you actually
+
+1511
+01:09:11,920 --> 01:09:14,920
+have just a single scalar valued input, maybe something
+
+1512
+01:09:14,920 --> 01:09:17,340
+like temperature at a temperature sensor.
+
+1513
+01:09:17,340 --> 01:09:19,783
+And then you can think about doing convolutions over time.
+
+1514
+01:09:19,783 --> 01:09:22,200
+So instead of doing convolutions over a spatial dimension,
+
+1515
+01:09:22,200 --> 01:09:24,580
+you could take convolutions over a temporal dimension
+
+1516
+01:09:24,580 --> 01:09:27,140
+and build some representation with time
+
+1517
+01:09:27,140 --> 01:09:29,979
+as one of the dimensions of that convolution.
+
+1518
+01:09:29,979 --> 01:09:32,700
+And now if you actually have something like video--
+
+1519
+01:09:32,700 --> 01:09:34,420
+so, for example, now you actually
+
+1520
+01:09:34,420 --> 01:09:36,993
+have an image with red, green, and blue channels.
+
+1521
+01:09:36,993 --> 01:09:38,660
+And then you have these different frames
+
+1522
+01:09:38,660 --> 01:09:40,899
+of an image over time.
+
+1523
+01:09:40,899 --> 01:09:44,580
+You can think about building like what
+
+1524
+01:09:44,580 --> 01:09:49,180
+we'll call another tensor representation or this block
+
+1525
+01:09:49,180 --> 01:09:53,359
+representation where you have the spatial extent.
+
+1526
+01:09:53,359 --> 01:09:57,260
+And here we're now using that third channel to represent time.
+
+1527
+01:09:57,260 --> 01:09:59,640
+But then you also have RGB for each of these.
+
+1528
+01:09:59,640 --> 01:10:02,300
+So it's actually a four dimensional input.
+
+1529
+01:10:02,300 --> 01:10:06,300
+And then you can think of building these 3D convolutions
+
+1530
+01:10:06,300 --> 01:10:10,780
+that actually convolve over space and time.
+
+1531
+01:10:10,780 --> 01:10:14,060
+And then your output would be maybe a lower dimensional
+
+1532
+01:10:14,060 --> 01:10:15,960
+representation that would actually
+
+1533
+01:10:15,960 --> 01:10:18,320
+have those space and time dimensions for each
+
+1534
+01:10:18,320 --> 01:10:20,120
+of your tensors.
+
+1535
+01:10:20,120 --> 01:10:21,658
+And this is a type of architecture.
+
+1536
+01:10:21,658 --> 01:10:24,200
+This type of 3D convolutions is often used when you're trying
+
+1537
+01:10:24,200 --> 01:10:27,880
+to do something like action recognition in video.
+
+1538
+01:10:27,880 --> 01:10:30,200
+Now, one thing that this gives you is it
+
+1539
+01:10:30,200 --> 01:10:33,280
+makes you shift invariant in time.
+
+1540
+01:10:33,280 --> 01:10:35,280
+But you can imagine actually that for some types
+
+1541
+01:10:35,280 --> 01:10:36,780
+of recognition tasks, you don't want
+
+1542
+01:10:36,780 --> 01:10:38,420
+to be shift invariant in time.
+
+1543
+01:10:38,420 --> 01:10:40,960
+You don't want like picking a cup up
+
+1544
+01:10:40,960 --> 01:10:43,600
+to be the same action as putting a cup down.
+
+1545
+01:10:43,600 --> 01:10:45,953
+And I mean, they're--
+
+1546
+01:10:45,953 --> 01:10:48,620
+ignoring the motion between, if you had a really low frame rate,
+
+1547
+01:10:48,620 --> 01:10:50,880
+if you had this frame and that frame,
+
+1548
+01:10:50,880 --> 01:10:52,980
+and then maybe you had that frame and this frame,
+
+1549
+01:10:52,980 --> 01:10:55,320
+you want the fact that one happened before the other
+
+1550
+01:10:55,320 --> 01:10:56,180
+to matter.
+
+1551
+01:10:56,180 --> 01:10:59,840
+That translation invariance is not something you always want.
+
+1552
+01:10:59,840 --> 01:11:02,300
+And so if you don't want to be shift invariant,
+
+1553
+01:11:02,300 --> 01:11:05,180
+there's a couple of different approaches that we can use.
+
+1554
+01:11:05,180 --> 01:11:07,940
+So one, use an architecture that's not shift invariant,
+
+1555
+01:11:07,940 --> 01:11:09,400
+so something like an MLP.
+
+1556
+01:11:09,400 --> 01:11:12,400
+There the position in time would actually matter.
+
+1557
+01:11:12,400 --> 01:11:14,740
+But like we said, these are it's quite difficult
+
+1558
+01:11:14,740 --> 01:11:17,180
+to get these MLPs to learn really complex functions
+
+1559
+01:11:17,180 --> 01:11:18,940
+of that almost infinite data.
+
+1560
+01:11:18,940 --> 01:11:23,220
+So another option, and one that is really shown to be a winner,
+
+1561
+01:11:23,220 --> 01:11:26,980
+is this idea of adding location information
+
+1562
+01:11:26,980 --> 01:11:29,300
+to the input to the convolutional filters
+
+1563
+01:11:29,300 --> 01:11:32,420
+through something that we call a positional encoding.
+
+1564
+01:11:32,420 --> 01:11:36,940
+So here what we do is you have your input signal.
+
+1565
+01:11:36,940 --> 01:11:40,600
+And then you also have this separate positional encoding,
+
+1566
+01:11:40,600 --> 01:11:42,280
+which is something you construct.
+
+1567
+01:11:42,280 --> 01:11:43,822
+This is not something that's learned.
+
+1568
+01:11:43,822 --> 01:11:46,220
+It's actually constructed and added to the input.
+
+1569
+01:11:46,220 --> 01:11:48,180
+And you learn an additional weight
+
+1570
+01:11:48,180 --> 01:11:50,180
+that incorporates that positional encoding
+
+1571
+01:11:50,180 --> 01:11:52,260
+as part of your convolution.
+
+1572
+01:11:52,260 --> 01:11:54,500
+And so there you're doing the same thing
+
+1573
+01:11:54,500 --> 01:11:56,600
+that you might with a normal convolutional layer,
+
+1574
+01:11:56,600 --> 01:11:58,475
+but you're adding this additional information
+
+1575
+01:11:58,475 --> 01:11:59,517
+from position.
+
+1576
+01:11:59,517 --> 01:12:01,100
+And so here we might want to introduce
+
+1577
+01:12:01,100 --> 01:12:04,860
+the concept of what gets sometimes called a neural field.
+
+1578
+01:12:04,860 --> 01:12:09,340
+So a field from physics, it can be a varying physical quantity
+
+1579
+01:12:09,340 --> 01:12:12,540
+of both spatial and temporal coordinates.
+
+1580
+01:12:12,540 --> 01:12:15,110
+And a neural field is a field that
+
+1581
+01:12:15,110 --> 01:12:19,773
+is parameterized maybe fully or in part by a neural network.
+
+1582
+01:12:19,773 --> 01:12:21,190
+So there's different ways that you
+
+1583
+01:12:21,190 --> 01:12:23,270
+can think about doing this and representing
+
+1584
+01:12:23,270 --> 01:12:24,950
+these neural fields.
+
+1585
+01:12:24,950 --> 01:12:27,910
+But one way to think about it-- so SIREN
+
+1586
+01:12:27,910 --> 01:12:30,630
+is an example of one of these neural fields, that model we
+
+1587
+01:12:30,630 --> 01:12:31,990
+talked about earlier.
+
+1588
+01:12:31,990 --> 01:12:33,630
+This is a convolutional neural network
+
+1589
+01:12:33,630 --> 01:12:37,930
+that's applied per pixel to map from a coordinate grid,
+
+1590
+01:12:37,930 --> 01:12:41,270
+so now the input is the positional encoding in an image,
+
+1591
+01:12:41,270 --> 01:12:42,750
+to a color.
+
+1592
+01:12:42,750 --> 01:12:46,550
+So you're actually learning to model a single image
+
+1593
+01:12:46,550 --> 01:12:49,870
+by learning a functional mapping from a position in the image
+
+1594
+01:12:49,870 --> 01:12:51,092
+to a color.
+
+1595
+01:12:51,092 --> 01:12:52,550
+And the way that they're doing that
+
+1596
+01:12:52,550 --> 01:12:54,810
+is through these sinusoidal things.
+
+1597
+01:12:54,810 --> 01:12:56,590
+And so here what you actually do is
+
+1598
+01:12:56,590 --> 01:12:59,010
+you take-- the input is actually just the position,
+
+1599
+01:12:59,010 --> 01:13:03,210
+so in some coordinate space, and these could be explicit.
+
+1600
+01:13:03,210 --> 01:13:04,970
+They could be batched up.
+
+1601
+01:13:04,970 --> 01:13:07,830
+Or they also could be continuous because the idea
+
+1602
+01:13:07,830 --> 01:13:12,010
+is that this is something that's mapping from some of position
+
+1603
+01:13:12,010 --> 01:13:12,750
+to an output.
+
+1604
+01:13:12,750 --> 01:13:17,610
+So now you run these inputs through a model
+
+1605
+01:13:17,610 --> 01:13:19,370
+that's just taking x and y.
+
+1606
+01:13:19,370 --> 01:13:24,010
+And then you're outputting the color of that value.
+
+1607
+01:13:24,010 --> 01:13:26,050
+And this can take continuous coordinates
+
+1608
+01:13:26,050 --> 01:13:29,890
+as input, which means that we can then do something
+
+1609
+01:13:29,890 --> 01:13:33,730
+like think about learning these functional
+
+1610
+01:13:33,730 --> 01:13:38,090
+representations of input space as opposed to only gridwise
+
+1611
+01:13:38,090 --> 01:13:39,610
+representations.
+
+1612
+01:13:39,610 --> 01:13:43,250
+And this idea is the fundamental underpinning
+
+1613
+01:13:43,250 --> 01:13:46,650
+of quite a popular architecture recently called
+
+1614
+01:13:46,650 --> 01:13:49,970
+NeRF, which is essentially a convolutional network applied
+
+1615
+01:13:49,970 --> 01:13:53,010
+to a map from a five-dimensional coordinate grid, which
+
+1616
+01:13:53,010 --> 01:13:56,170
+is a position and direction of the camera
+
+1617
+01:13:56,170 --> 01:13:57,730
+relative to the scene.
+
+1618
+01:13:57,730 --> 01:14:02,510
+And then it gives you an output of color and volumetric density.
+
+1619
+01:14:02,510 --> 01:14:06,330
+And this allows us to then actually generate
+
+1620
+01:14:06,330 --> 01:14:10,790
+what that same object would look like from different positions
+
+1621
+01:14:10,790 --> 01:14:13,590
+than what was in the original training data.
+
+1622
+01:14:13,590 --> 01:14:15,510
+So what that actually looks like is
+
+1623
+01:14:15,510 --> 01:14:17,990
+you can take some images of a scene
+
+1624
+01:14:17,990 --> 01:14:21,750
+and then generate these essentially walkthroughs
+
+1625
+01:14:21,750 --> 01:14:22,492
+of scenes.
+
+1626
+01:14:22,492 --> 01:14:24,950
+And these have actually gotten better and better over time.
+
+1627
+01:14:24,950 --> 01:14:26,750
+And one of the ways that this is really--
+
+1628
+01:14:26,750 --> 01:14:28,250
+one of the fundamental underpinnings
+
+1629
+01:14:28,250 --> 01:14:31,150
+of this idea of building these appropriate positional
+
+1630
+01:14:31,150 --> 01:14:32,670
+encodings.
+
+1631
+01:14:32,670 --> 01:14:34,350
+Cool.
+
+1632
+01:14:34,350 --> 01:14:36,430
+NeRFs are really fun to play with.
+
+1633
+01:14:36,430 --> 01:14:38,590
+Recently, some people at Woods Hole
+
+1634
+01:14:38,590 --> 01:14:41,430
+made a NeRF for under the sea that handles the way
+
+1635
+01:14:41,430 --> 01:14:42,770
+that light bends under water.
+
+1636
+01:14:42,770 --> 01:14:44,390
+Very neat.
+
+1637
+01:14:44,390 --> 01:14:47,990
+So concluding remarks here.
+
+1638
+01:14:47,990 --> 01:14:50,950
+Convolution is really just a fundamental operation
+
+1639
+01:14:50,950 --> 01:14:54,070
+for image processing or actually for processing anything
+
+1640
+01:14:54,070 --> 01:14:56,250
+that has some structure.
+
+1641
+01:14:56,250 --> 01:14:58,590
+So this might be something like time
+
+1642
+01:14:58,590 --> 01:15:04,010
+or even time, space, and multiple input dimensions.
+
+1643
+01:15:04,010 --> 01:15:05,950
+So say you wanted to use convolution
+
+1644
+01:15:05,950 --> 01:15:10,050
+over hyperspectral satellite imagery taken once
+
+1645
+01:15:10,050 --> 01:15:13,050
+a week from the entire Earth.
+
+1646
+01:15:13,050 --> 01:15:15,465
+Essentially, what it means is you're just chopping up
+
+1647
+01:15:15,465 --> 01:15:17,090
+the image into patches, and then you're
+
+1648
+01:15:17,090 --> 01:15:19,230
+applying the same function to each patch,
+
+1649
+01:15:19,230 --> 01:15:22,410
+but you're doing it through this slide and sum operation.
+
+1650
+01:15:22,410 --> 01:15:24,410
+And this concept appears in basically
+
+1651
+01:15:24,410 --> 01:15:26,270
+almost all modern architectures.
+
+1652
+01:15:26,270 --> 01:15:29,440
+It appears in CNNs, but also things like transformers,
+
+1653
+01:15:29,440 --> 01:15:31,690
+though then the patch-wise operation isn't necessarily
+
+1654
+01:15:31,690 --> 01:15:34,190
+convolution, use attention instead,
+
+1655
+01:15:34,190 --> 01:15:36,290
+things like NeRFs and more.
+
+1656
+01:15:36,290 --> 01:15:38,810
+So, today, we talked about building better architectures
+
+1657
+01:15:38,810 --> 01:15:39,930
+and why.
+
+1658
+01:15:39,930 --> 01:15:42,910
+We talked about convolutional layers, pyramids,
+
+1659
+01:15:42,910 --> 01:15:44,810
+and receptive fields.
+
+1660
+01:15:44,810 --> 01:15:46,690
+We went through at a very high level
+
+1661
+01:15:46,690 --> 01:15:48,450
+some of these different ideas that
+
+1662
+01:15:48,450 --> 01:15:50,663
+built out different types of architectures.
+
+1663
+01:15:50,663 --> 01:15:53,330
+And then we talked about neural fields and positional encodings,
+
+1664
+01:15:53,330 --> 01:15:55,622
+though we'll talk a lot more about positional encodings
+
+1665
+01:15:55,622 --> 01:15:57,890
+in the transformers lecture.
+
+1666
+01:15:57,890 --> 01:15:58,732
+Any final questions?
+
+1667
+01:15:58,732 --> 01:16:00,690
+And if you are going to leave during questions,
+
+1668
+01:16:00,690 --> 01:16:04,170
+just be quiet so that we can address them.
+
+1669
+01:16:04,170 --> 01:16:05,050
+Yeah?
+
+1670
+01:16:05,050 --> 01:16:07,693
+AUDIENCE: Could you use NeRFs or upscaling?
+
+1671
+01:16:07,693 --> 01:16:09,610
+SARA BEERY: Could you use NeRFs for upscaling?
+
+1672
+01:16:09,610 --> 01:16:10,110
+Yes.
+
+1673
+01:16:10,110 --> 01:16:11,212
+AUDIENCE: [INAUDIBLE]
+
+1674
+01:16:11,212 --> 01:16:12,170
+SARA BEERY: Yeah, yeah.
+
+1675
+01:16:12,170 --> 01:16:15,230
+So one of the ways that people have
+
+1676
+01:16:15,230 --> 01:16:18,305
+used NeRFs is to increase the resolution of, let's
+
+1677
+01:16:18,305 --> 01:16:19,930
+say, like a point cloud representation,
+
+1678
+01:16:19,930 --> 01:16:22,078
+not exactly like the original NeRFs architecture,
+
+1679
+01:16:22,078 --> 01:16:23,870
+but there's been adaptations of it that try
+
+1680
+01:16:23,870 --> 01:16:26,950
+to increase spatial resolution.
+
+1681
+01:16:26,950 --> 01:16:29,430
+Yeah.
+
+1682
+01:16:29,430 --> 01:16:32,190
+Any other questions?
+
+1683
+01:16:32,190 --> 01:16:33,270
+Yes?
+
+1684
+01:16:33,270 --> 01:16:34,850
+And then quiet, please, you guys.
+
+1685
+01:16:34,850 --> 01:16:35,810
+Thank you so much.
+
+1686
+01:16:35,810 --> 01:16:38,730
+AUDIENCE: [INAUDIBLE]
+
+1687
+01:16:40,666 --> 01:16:41,470
+SARA BEERY: Yeah.
+
+1688
+01:16:41,470 --> 01:16:45,470
+So something like strided convolutions,
+
+1689
+01:16:45,470 --> 01:16:48,470
+that's actually explicitly doing some form of pooling
+
+1690
+01:16:48,470 --> 01:16:51,550
+and downsampling together.
+
+1691
+01:16:51,550 --> 01:16:54,070
+So one way you could think about it is like pooling
+
+1692
+01:16:54,070 --> 01:16:57,410
+is essentially the same as running a convolutional layer.
+
+1693
+01:16:57,410 --> 01:16:59,050
+But now you're not learning weights.
+
+1694
+01:16:59,050 --> 01:17:03,950
+You're just taking, for example, like the maximum function
+
+1695
+01:17:03,950 --> 01:17:05,250
+or that average function.
+
+1696
+01:17:05,250 --> 01:17:06,833
+That's like that's the function that's
+
+1697
+01:17:06,833 --> 01:17:08,410
+applied on that local patch.
+
+1698
+01:17:08,410 --> 01:17:10,630
+So essentially, it's a constrained version,
+
+1699
+01:17:10,630 --> 01:17:13,010
+a nonlearned version of a convolutional layer.
+
+1700
+01:17:13,010 --> 01:17:14,050
+Yeah.
+
+1701
+01:17:14,050 --> 01:17:18,030
+AUDIENCE: And then downsampling is like [INAUDIBLE]?
+
+1702
+01:17:18,030 --> 01:17:20,350
+SARA BEERY: Yeah.
+
+1703
+01:17:20,350 --> 01:17:21,730
+Yes?
+
+1704
+01:17:21,730 --> 01:17:25,050
+AUDIENCE: Could you explain a little bit on the neural fields?
+
+1705
+01:17:25,050 --> 01:17:25,970
+[INAUDIBLE]?
+
+1706
+01:17:29,330 --> 01:17:30,770
+SARA BEERY: Yeah.
+
+1707
+01:17:30,770 --> 01:17:32,970
+So the way that you train it is you
+
+1708
+01:17:32,970 --> 01:17:35,490
+take a bunch of different images of a scene
+
+1709
+01:17:35,490 --> 01:17:36,670
+from different positions.
+
+1710
+01:17:36,670 --> 01:17:38,650
+So often, the training data for NeRFs
+
+1711
+01:17:38,650 --> 01:17:41,770
+will be someone taking a video, like walking around
+
+1712
+01:17:41,770 --> 01:17:43,530
+an object, for example.
+
+1713
+01:17:43,530 --> 01:17:46,250
+And now you have a bunch of examples where now you're
+
+1714
+01:17:46,250 --> 01:17:49,690
+going to estimate the relative position to the scene.
+
+1715
+01:17:49,690 --> 01:17:54,410
+And then now you can estimate the position and the direction
+
+1716
+01:17:54,410 --> 01:17:56,750
+from the input image.
+
+1717
+01:17:56,750 --> 01:17:59,330
+Now for any given point, that's your training data.
+
+1718
+01:17:59,330 --> 01:18:04,550
+And the output is the color of the image at that pixel.
+
+1719
+01:18:04,550 --> 01:18:10,350
+AUDIENCE: Is that generalizable, or is just used for picture
+
+1720
+01:18:10,350 --> 01:18:12,670
+to video only used for that?
+
+1721
+01:18:12,670 --> 01:18:15,150
+SARA BEERY: It can be used for a lot of different things.
+
+1722
+01:18:15,150 --> 01:18:18,970
+So I will say that only just recently, like last week,
+
+1723
+01:18:18,970 --> 01:18:21,510
+I saw the first kind of large-scale paper that was
+
+1724
+01:18:21,510 --> 01:18:26,510
+taking this concept of NeRF, which gives you this creation
+
+1725
+01:18:26,510 --> 01:18:28,283
+of video that you can interpolate between,
+
+1726
+01:18:28,283 --> 01:18:30,950
+and then actually trying to move that directly to something that
+
+1727
+01:18:30,950 --> 01:18:32,990
+was 3D modeling the scene.
+
+1728
+01:18:32,990 --> 01:18:36,690
+Because the output of NeRF is not a 3D model of the scene.
+
+1729
+01:18:36,690 --> 01:18:42,030
+It's what the image would look like taken from a different
+
+1730
+01:18:42,030 --> 01:18:45,250
+direction, which is not the same as a 3D model of the scene.
+
+1731
+01:18:45,250 --> 01:18:49,310
+And, actually, a lot of real-world applications we would
+
+1732
+01:18:49,310 --> 01:18:53,310
+like to actually be able to use sparse monocular image
+
+1733
+01:18:53,310 --> 01:18:56,120
+representations to get out a robust 3D model of the scene.
+
+1734
+01:18:56,120 --> 01:18:57,870
+And so they've just started to bring those
+
+1735
+01:18:57,870 --> 01:19:02,110
+two things together in recent work from Ben Mildenhall,
+
+1736
+01:19:02,110 --> 01:19:04,450
+I think, was the person.
+
+1737
+01:19:04,450 --> 01:19:07,910
+I will say these are also really not super robust.
+
+1738
+01:19:07,910 --> 01:19:10,170
+You need a lot of input data.
+
+1739
+01:19:10,170 --> 01:19:12,170
+So classical NeRF, like if you only
+
+1740
+01:19:12,170 --> 01:19:15,210
+have a few sparse images of a scene,
+
+1741
+01:19:15,210 --> 01:19:18,090
+it can be really hard to fit a NeRF appropriately.
+
+1742
+01:19:18,090 --> 01:19:21,250
+And the other thing is it works really well
+
+1743
+01:19:21,250 --> 01:19:23,710
+with stuff that is not moving.
+
+1744
+01:19:23,710 --> 01:19:28,050
+But if you try and do it with something like a waving tree
+
+1745
+01:19:28,050 --> 01:19:32,850
+because the actual thing itself won't-- the math
+
+1746
+01:19:32,850 --> 01:19:36,530
+doesn't necessarily optimize because the thing that
+
+1747
+01:19:36,530 --> 01:19:39,730
+you're taking images of is changing position over time.
+
+1748
+01:19:39,730 --> 01:19:41,870
+That makes it really hard to fit these models.
+
+1749
+01:19:41,870 --> 01:19:42,370
+Yeah.
+
+1750
+01:19:42,370 --> 01:19:42,850
+AUDIENCE: Thank you so much.
+
+1751
+01:19:42,850 --> 01:19:43,810
+SARA BEERY: Yeah.
+
+1752
+01:19:43,810 --> 01:19:44,312
+Yes?
+
+1753
+01:19:44,312 --> 01:19:45,770
+AUDIENCE: What about problems where
+
+1754
+01:19:45,770 --> 01:19:48,890
+the input is not just a picture, but a picture and constants
+
+1755
+01:19:48,890 --> 01:19:51,210
+like scalar numbers?
+
+1756
+01:19:51,210 --> 01:19:53,130
+[INAUDIBLE] contribute to how the picture
+
+1757
+01:19:53,130 --> 01:19:54,770
+should be understood.
+
+1758
+01:19:54,770 --> 01:19:57,850
+SARA BEERY: So maybe like additional metadata.
+
+1759
+01:19:57,850 --> 01:20:01,340
+So for example, I might have a picture and a GPS location
+
+1760
+01:20:01,340 --> 01:20:02,883
+where the picture was taken.
+
+1761
+01:20:02,883 --> 01:20:04,300
+So there's a lot of different ways
+
+1762
+01:20:04,300 --> 01:20:06,420
+that we try to incorporate that side information
+
+1763
+01:20:06,420 --> 01:20:08,848
+into these architectures.
+
+1764
+01:20:08,848 --> 01:20:10,640
+And you can see lots of different examples.
+
+1765
+01:20:10,640 --> 01:20:12,900
+But some really obvious stuff is you can just
+
+1766
+01:20:12,900 --> 01:20:15,520
+run your image through that first convolutional layer,
+
+1767
+01:20:15,520 --> 01:20:17,860
+and then you can have a separate type
+
+1768
+01:20:17,860 --> 01:20:21,820
+of convolution or representation of that positional encoding.
+
+1769
+01:20:21,820 --> 01:20:24,640
+And you can either concatenate it to the entire input image.
+
+1770
+01:20:24,640 --> 01:20:27,140
+You can introduce it slightly later in the network.
+
+1771
+01:20:27,140 --> 01:20:28,598
+There's a lot of different ways you
+
+1772
+01:20:28,598 --> 01:20:31,580
+can append additional information into the network
+
+1773
+01:20:31,580 --> 01:20:32,860
+during training.
+
+1774
+01:20:32,860 --> 01:20:33,740
+Yeah.
+
+1775
+01:20:33,740 --> 01:20:34,980
+Yeah.
+
+1776
+01:20:34,980 --> 01:20:36,380
+Cool.
+
+1777
+01:20:36,380 --> 01:20:37,120
+Thanks, guys.
+
+1778
+01:20:37,120 --> 01:20:38,260
+Oh yeah?
+
+1779
+01:20:38,260 --> 01:20:43,420
+AUDIENCE: When you say there's [INAUDIBLE] video,
+
+1780
+01:20:43,420 --> 01:20:47,420
+can you just add additional channels for each frame versus
+
+1781
+01:20:47,420 --> 01:20:49,860
+just doing a 3D convolution [INAUDIBLE]?
+
+1782
+01:20:52,577 --> 01:20:54,160
+SARA BEERY: Is there a big difference.
+
+1783
+01:20:54,160 --> 01:20:57,860
+So if you add if you add channels for all
+
+1784
+01:20:57,860 --> 01:21:01,040
+of the different frames in the video, essentially,
+
+1785
+01:21:01,040 --> 01:21:03,060
+that is 3D convolution.
+
+1786
+01:21:03,060 --> 01:21:05,560
+Yeah, because you're taking those channels
+
+1787
+01:21:05,560 --> 01:21:09,120
+and you're maybe running your patch-wise operation almost
+
+1788
+01:21:09,120 --> 01:21:10,475
+like a sliding window over time.
+
+1789
+01:21:10,475 --> 01:21:13,100
+AUDIENCE: Yeah, I guess like you don't add another [INAUDIBLE].
+
+1790
+01:21:17,760 --> 01:21:19,700
+SARA BEERY: So sorry, I'm a bit confused.
+
+1791
+01:21:19,700 --> 01:21:22,600
+So if you have an image model that's
+
+1792
+01:21:22,600 --> 01:21:26,920
+taking an RGB and height and width,
+
+1793
+01:21:26,920 --> 01:21:29,000
+now you take that image model and now you're
+
+1794
+01:21:29,000 --> 01:21:35,080
+just saying like stack it over the different frames.
+
+1795
+01:21:35,080 --> 01:21:38,200
+How would you not add another dimension
+
+1796
+01:21:38,200 --> 01:21:39,520
+if you have a time dimension?
+
+1797
+01:21:39,520 --> 01:21:41,800
+AUDIENCE: Like RGB channels, so you just
+
+1798
+01:21:41,800 --> 01:21:44,300
+add more RGB [INAUDIBLE] for each frame.
+
+1799
+01:21:44,300 --> 01:21:47,040
+SARA BEERY: Oh, I see.
+
+1800
+01:21:47,040 --> 01:21:48,140
+You could do that.
+
+1801
+01:21:48,140 --> 01:21:51,280
+It would get really expensive.
+
+1802
+01:21:51,280 --> 01:21:54,600
+And I think one of the things that we definitely
+
+1803
+01:21:54,600 --> 01:21:58,180
+see with things like video--
+
+1804
+01:21:58,180 --> 01:22:01,980
+very rarely are those convolutions
+
+1805
+01:22:01,980 --> 01:22:04,287
+in the temporal space worth it computationally.
+
+1806
+01:22:04,287 --> 01:22:06,620
+So if you actually look at a lot of the state of the art
+
+1807
+01:22:06,620 --> 01:22:10,020
+models for video, often, they are downsampling
+
+1808
+01:22:10,020 --> 01:22:13,060
+in the temporal space because you can actually
+
+1809
+01:22:13,060 --> 01:22:16,700
+recognize, like most actions through what
+
+1810
+01:22:16,700 --> 01:22:18,580
+we call maybe a bag of images.
+
+1811
+01:22:18,580 --> 01:22:20,160
+So you don't need every single image.
+
+1812
+01:22:20,160 --> 01:22:22,160
+And the difference between the individual frames
+
+1813
+01:22:22,160 --> 01:22:23,540
+is really small.
+
+1814
+01:22:23,540 --> 01:22:26,900
+And so like Alyosha Efros has a nice paper
+
+1815
+01:22:26,900 --> 01:22:29,780
+where they talk about the complexity of actions
+
+1816
+01:22:29,780 --> 01:22:33,060
+by essentially taking any action recognition
+
+1817
+01:22:33,060 --> 01:22:35,660
+problem with a video clip and then
+
+1818
+01:22:35,660 --> 01:22:37,940
+using the number of frames from that video clip
+
+1819
+01:22:37,940 --> 01:22:39,940
+that you need to be able to accurately recognize
+
+1820
+01:22:39,940 --> 01:22:42,140
+that action as a representation of the complexity
+
+1821
+01:22:42,140 --> 01:22:43,180
+of the problem.
+
+1822
+01:22:43,180 --> 01:22:45,980
+And most actions are it's a single frame.
+
+1823
+01:22:45,980 --> 01:22:47,900
+You can recognize it from a single frame.
+
+1824
+01:22:47,900 --> 01:22:50,580
+So because of the computational complexity and the fact that
+
+1825
+01:22:50,580 --> 01:22:53,150
+often we want these models to maybe run in real time,
+
+1826
+01:22:53,150 --> 01:22:54,900
+a lot of times the state-of-the-art models
+
+1827
+01:22:54,900 --> 01:22:58,780
+for video are doing something that we call fast and slow,
+
+1828
+01:22:58,780 --> 01:23:02,200
+where they will have a really low-dimensional subsampling
+
+1829
+01:23:02,200 --> 01:23:05,600
+spatially and maybe even also temporally that's running more
+
+1830
+01:23:05,600 --> 01:23:10,160
+frequently and then some of secondary channel that's taking
+
+1831
+01:23:10,160 --> 01:23:13,440
+high-resolution inputs, so maybe the full image frame size
+
+1832
+01:23:13,440 --> 01:23:14,980
+or something quite close to it.
+
+1833
+01:23:14,980 --> 01:23:16,898
+But it's only doing that periodically.
+
+1834
+01:23:16,898 --> 01:23:18,440
+And either it's doing it periodically
+
+1835
+01:23:18,440 --> 01:23:21,800
+kind of in some pre-defined way, or it's actually
+
+1836
+01:23:21,800 --> 01:23:25,900
+deciding when to run an image through that high-resolution
+
+1837
+01:23:25,900 --> 01:23:26,760
+channel.
+
+1838
+01:23:26,760 --> 01:23:29,520
+So they'll take this two-pronged approach
+
+1839
+01:23:29,520 --> 01:23:31,540
+where one model is maybe modeling something
+
+1840
+01:23:31,540 --> 01:23:33,040
+like the motion and the other one is
+
+1841
+01:23:33,040 --> 01:23:36,615
+modeling some fine-grained semantic details.
+
+1842
+01:23:36,615 --> 01:23:37,240
+AUDIENCE: Cool.
+
+1843
+01:23:37,240 --> 01:23:37,860
+Thank you.
+
+1844
+01:23:37,860 --> 01:23:40,200
+SARA BEERY: Yeah, video is fascinating and quite
+
+1845
+01:23:40,200 --> 01:23:45,540
+complicated and expensive, expensive to store,
+
+1846
+01:23:45,540 --> 01:23:48,960
+expensive to train models on, expensive to run inference on.
+
+1847
+01:23:48,960 --> 01:23:50,890
+Yeah, it's a mess.

@@ -1,0 +1,6783 @@
+1
+00:00:00,500 --> 00:00:01,976
+[SQUEAKING]
+
+2
+00:00:01,976 --> 00:00:03,944
+[RUSTLING]
+
+3
+00:00:03,944 --> 00:00:06,404
+[CLICKING]
+
+4
+00:00:12,890 --> 00:00:13,640
+PHILLIP ISOLA: OK.
+
+5
+00:00:13,640 --> 00:00:14,660
+Welcome again, everyone.
+
+6
+00:00:14,660 --> 00:00:15,660
+Sorry for the delay.
+
+7
+00:00:15,660 --> 00:00:17,080
+So, yeah, we'll get started.
+
+8
+00:00:17,080 --> 00:00:20,240
+Today is going to be about transformers.
+
+9
+00:00:20,240 --> 00:00:24,760
+So hopefully you're all excited, because this is the architecture
+
+10
+00:00:24,760 --> 00:00:25,940
+that you should use today.
+
+11
+00:00:25,940 --> 00:00:27,310
+Like, this will change.
+
+12
+00:00:27,310 --> 00:00:29,060
+Next year, there'll be a new architecture.
+
+13
+00:00:29,060 --> 00:00:30,440
+Don't worry, things will change.
+
+14
+00:00:30,440 --> 00:00:32,780
+But this is the one that will get you the jobs today.
+
+15
+00:00:32,780 --> 00:00:33,280
+OK.
+
+16
+00:00:33,280 --> 00:00:36,760
+This is going to be a little bit more of a practical lecture.
+
+17
+00:00:36,760 --> 00:00:40,640
+With graph nets, we talked about the general class
+
+18
+00:00:40,640 --> 00:00:44,008
+of all the functions that could represent, and so forth.
+
+19
+00:00:44,008 --> 00:00:45,800
+And there's so many different possible ways
+
+20
+00:00:45,800 --> 00:00:47,825
+of parameterizing graph nets.
+
+21
+00:00:47,825 --> 00:00:49,200
+But with transformers, we're just
+
+22
+00:00:49,200 --> 00:00:52,520
+going to say there's one concrete instantiation that
+
+23
+00:00:52,520 --> 00:00:53,100
+works.
+
+24
+00:00:53,100 --> 00:00:55,780
+And that's what we'll learn about today.
+
+25
+00:00:55,780 --> 00:01:00,490
+So we'll talk about three key ideas behind transformers.
+
+26
+00:01:00,490 --> 00:01:03,850
+One is this idea of operating over tokens.
+
+27
+00:01:03,850 --> 00:01:06,210
+The next, this is going to be the only thing that's
+
+28
+00:01:06,210 --> 00:01:06,893
+actually new.
+
+29
+00:01:06,893 --> 00:01:08,310
+It's going to be called attention.
+
+30
+00:01:08,310 --> 00:01:12,035
+Everything else will actually be just new names for old ideas.
+
+31
+00:01:12,035 --> 00:01:13,410
+And the last one we'll be talking
+
+32
+00:01:13,410 --> 00:01:15,952
+more about, positional encoding, which we've seen a few times
+
+33
+00:01:15,952 --> 00:01:17,770
+now.
+
+34
+00:01:17,770 --> 00:01:19,770
+And then I'll show a few different architectures
+
+35
+00:01:19,770 --> 00:01:22,650
+and some ways of using these things.
+
+36
+00:01:22,650 --> 00:01:25,470
+And so, as I said, there's so many architectures,
+
+37
+00:01:25,470 --> 00:01:28,250
+but right now there's just one to rule them all.
+
+38
+00:01:28,250 --> 00:01:30,450
+This is the one-ring architecture.
+
+39
+00:01:30,450 --> 00:01:30,950
+Don't worry.
+
+40
+00:01:30,950 --> 00:01:31,673
+It will change.
+
+41
+00:01:31,673 --> 00:01:33,590
+This isn't going to be the final architecture,
+
+42
+00:01:33,590 --> 00:01:37,450
+but this is the one right now.
+
+43
+00:01:37,450 --> 00:01:43,730
+So there's this interesting book called Don Quixote,
+
+44
+00:01:43,730 --> 00:01:46,370
+written by Pierre Menard.
+
+45
+00:01:46,370 --> 00:01:49,970
+And you probably are thinking I'm saying something wrong.
+
+46
+00:01:49,970 --> 00:01:52,930
+It's written by Cervantes.
+
+47
+00:01:52,930 --> 00:01:57,370
+But there's a short story that another guy, Borges,
+
+48
+00:01:57,370 --> 00:02:00,770
+wrote about this guy, Pierre Menard, that
+
+49
+00:02:00,770 --> 00:02:04,730
+rewrote the Don Quixote, word for word, exactly
+
+50
+00:02:04,730 --> 00:02:07,610
+the same words, but with entirely new meaning.
+
+51
+00:02:07,610 --> 00:02:10,449
+And in a short story, the meaning
+
+52
+00:02:10,449 --> 00:02:13,110
+is new because the context is different.
+
+53
+00:02:13,110 --> 00:02:17,130
+It's a different historical era, and the life of Pierre
+
+54
+00:02:17,130 --> 00:02:19,690
+is different than the life of Cervantes.
+
+55
+00:02:19,690 --> 00:02:23,413
+And you're going to hear the same exact story.
+
+56
+00:02:23,413 --> 00:02:25,830
+And if you read this, you would read the same exact story,
+
+57
+00:02:25,830 --> 00:02:27,810
+but it'd have entirely new meaning, because the context is
+
+58
+00:02:27,810 --> 00:02:28,570
+different.
+
+59
+00:02:28,570 --> 00:02:30,328
+And I think that's going to be a theme
+
+60
+00:02:30,328 --> 00:02:32,870
+of the lecture today, and also the theme of this whole class.
+
+61
+00:02:32,870 --> 00:02:35,790
+We'll keep on telling you the same things, maybe word for word
+
+62
+00:02:35,790 --> 00:02:36,830
+the same things.
+
+63
+00:02:36,830 --> 00:02:39,090
+But because you have new knowledge and new connections
+
+64
+00:02:39,090 --> 00:02:41,330
+you can make, it'll have new meaning.
+
+65
+00:02:41,330 --> 00:02:45,342
+So this is like a few pages, short story.
+
+66
+00:02:45,342 --> 00:02:47,050
+If you want to read it, it's kind of fun.
+
+67
+00:02:47,050 --> 00:02:51,130
+It's called Pierre Menard, author of The Quixote.
+
+68
+00:02:51,130 --> 00:02:57,580
+So, everything old is new again.
+
+69
+00:02:57,580 --> 00:02:59,760
+We're going to be riffing on the same themes.
+
+70
+00:02:59,760 --> 00:03:02,240
+So let's go back to convolutional architectures.
+
+71
+00:03:02,240 --> 00:03:04,740
+We're going to see a limitation of them.
+
+72
+00:03:04,740 --> 00:03:07,540
+So let's say that I want to ask, how many birds
+
+73
+00:03:07,540 --> 00:03:08,295
+are in this image.
+
+74
+00:03:08,295 --> 00:03:09,920
+We saw that you can do that with a CNN.
+
+75
+00:03:09,920 --> 00:03:12,560
+You chop it up into pieces, you process with filters,
+
+76
+00:03:12,560 --> 00:03:15,820
+you aggregate the results, you count the birds.
+
+77
+00:03:15,820 --> 00:03:17,860
+But what if I want to say, is the top right
+
+78
+00:03:17,860 --> 00:03:21,540
+bird the same species as the bottom left bird?
+
+79
+00:03:21,540 --> 00:03:23,100
+So can a CNN do this?
+
+80
+00:03:23,100 --> 00:03:25,700
+Well, sure, if it's deep enough, if the receptive fields are
+
+81
+00:03:25,700 --> 00:03:26,960
+big enough, it can do it.
+
+82
+00:03:26,960 --> 00:03:29,140
+But it might not be the best way of doing that.
+
+83
+00:03:29,140 --> 00:03:32,860
+Because, remember, the CNN filters are all local.
+
+84
+00:03:32,860 --> 00:03:35,740
+And local filters are not going to be the most effective
+
+85
+00:03:35,740 --> 00:03:38,900
+at making assessments about relationships that are more
+
+86
+00:03:38,900 --> 00:03:41,380
+global in nature or distant.
+
+87
+00:03:41,380 --> 00:03:44,120
+So CNNs, they're built around this idea of locality.
+
+88
+00:03:44,120 --> 00:03:46,460
+They factorize the signal processing problem
+
+89
+00:03:46,460 --> 00:03:51,020
+into little local pieces that get put together, step by step.
+
+90
+00:03:51,020 --> 00:03:53,260
+So they have the strong locality bias.
+
+91
+00:03:53,260 --> 00:03:55,000
+And that can be a good thing.
+
+92
+00:03:55,000 --> 00:03:56,860
+That's good for a lot of problems.
+
+93
+00:03:56,860 --> 00:03:58,460
+If I want to understand something
+
+94
+00:03:58,460 --> 00:04:00,800
+about the population in this room,
+
+95
+00:04:00,800 --> 00:04:03,000
+I don't need to go and look at Mars.
+
+96
+00:04:03,000 --> 00:04:05,340
+I can just locally look at what's going on in this room.
+
+97
+00:04:05,340 --> 00:04:07,900
+Most signals have-- the things that
+
+98
+00:04:07,900 --> 00:04:10,120
+matter to assessing them are all kind of local.
+
+99
+00:04:10,120 --> 00:04:11,920
+There's a smoothness to the world.
+
+100
+00:04:11,920 --> 00:04:13,440
+But that's not always a good idea.
+
+101
+00:04:13,440 --> 00:04:16,060
+And so transformers try to get around that.
+
+102
+00:04:16,060 --> 00:04:19,140
+Here's just a diagram looking at the receptive fields,
+
+103
+00:04:19,140 --> 00:04:21,820
+essentially, of a simple CNN.
+
+104
+00:04:21,820 --> 00:04:24,740
+So this is a two-layer convolutional network.
+
+105
+00:04:24,740 --> 00:04:28,460
+It's convolutional because every output neuron in this layer
+
+106
+00:04:28,460 --> 00:04:32,300
+is going to be taking input from just a local patch
+
+107
+00:04:32,300 --> 00:04:34,460
+of the first layer.
+
+108
+00:04:34,460 --> 00:04:38,600
+So it's like a length 3 filter over the input.
+
+109
+00:04:38,600 --> 00:04:40,940
+And if it's convolutional, the weights
+
+110
+00:04:40,940 --> 00:04:43,500
+would be shared among all these filters.
+
+111
+00:04:43,500 --> 00:04:44,500
+But notice what happens.
+
+112
+00:04:44,500 --> 00:04:46,460
+If I want to make some assessment
+
+113
+00:04:46,460 --> 00:04:49,180
+about the relationship between the first input
+
+114
+00:04:49,180 --> 00:04:54,350
+variable x1 and the seventh dimension of input X7.
+
+115
+00:04:54,350 --> 00:04:57,030
+So on the second layer of the network,
+
+116
+00:04:57,030 --> 00:04:59,530
+let's say this is the input, this is the first hidden layer,
+
+117
+00:04:59,530 --> 00:05:01,030
+and this is the output.
+
+118
+00:05:01,030 --> 00:05:05,650
+On this layer, only these hashed nodes,
+
+119
+00:05:05,650 --> 00:05:11,030
+these hashed neurons have some dependency on x7.
+
+120
+00:05:11,030 --> 00:05:14,110
+And for x1, it's these two over here.
+
+121
+00:05:14,110 --> 00:05:16,790
+And on the next layer, the receptive field
+
+122
+00:05:16,790 --> 00:05:21,050
+expands out by one, because the filter is a length 3 filter.
+
+123
+00:05:21,050 --> 00:05:23,410
+And so you get a receptive field that expands by one.
+
+124
+00:05:23,410 --> 00:05:25,010
+You can just trace the arrows back,
+
+125
+00:05:25,010 --> 00:05:30,990
+see which neurons get some--
+
+126
+00:05:30,990 --> 00:05:33,690
+imagine some dye is dropped onto that neuron,
+
+127
+00:05:33,690 --> 00:05:36,330
+and the dye bleeds out over the edges of this graph.
+
+128
+00:05:36,330 --> 00:05:37,850
+Which ones is it going to hit?
+
+129
+00:05:37,850 --> 00:05:40,150
+Which are in the support of this neuron here?
+
+130
+00:05:40,150 --> 00:05:44,250
+So it's just x1 is in the support of this neuron,
+
+131
+00:05:44,250 --> 00:05:45,610
+this neuron and that neuron.
+
+132
+00:05:45,610 --> 00:05:48,850
+And x7 is the support of the three neurons on the right.
+
+133
+00:05:48,850 --> 00:05:52,550
+But if that's my output layer and I only have this depth 2
+
+134
+00:05:52,550 --> 00:05:55,390
+convolutional network, then no neuron in the output
+
+135
+00:05:55,390 --> 00:05:59,010
+has gotten dye from both x1 and x7.
+
+136
+00:05:59,010 --> 00:06:00,790
+So it's impossible for this architecture
+
+137
+00:06:00,790 --> 00:06:02,710
+to have made a decision that depends
+
+138
+00:06:02,710 --> 00:06:07,950
+on the joint configuration of x1 and x7.
+
+139
+00:06:07,950 --> 00:06:09,490
+So I can always make a deeper CNN,
+
+140
+00:06:09,490 --> 00:06:11,430
+but this dye just bleeds out slowly
+
+141
+00:06:11,430 --> 00:06:12,850
+in convolutional networks.
+
+142
+00:06:15,570 --> 00:06:19,210
+So the idea of attention is to say, well,
+
+143
+00:06:19,210 --> 00:06:24,590
+let's have an operation that allows us to look more globally.
+
+144
+00:06:24,590 --> 00:06:27,043
+But the problem, there's another way of doing this.
+
+145
+00:06:27,043 --> 00:06:28,710
+What is another way that we saw that you
+
+146
+00:06:28,710 --> 00:06:33,412
+can have neural networks that process data globally?
+
+147
+00:06:33,412 --> 00:06:34,870
+What is one of the architectures we
+
+148
+00:06:34,870 --> 00:06:38,690
+saw that doesn't have this locality bias of CNNs?
+
+149
+00:06:38,690 --> 00:06:40,250
+Anyone want to shout out?
+
+150
+00:06:40,250 --> 00:06:41,430
+AUDIENCE: Fully connected.
+
+151
+00:06:41,430 --> 00:06:44,310
+PHILLIP ISOLA: Fully connected network, just a vanilla MLP.
+
+152
+00:06:44,310 --> 00:06:48,160
+And a vanilla MLP with fully connected layers,
+
+153
+00:06:48,160 --> 00:06:51,500
+every single output neuron is connected to every input neuron.
+
+154
+00:06:51,500 --> 00:06:55,180
+So information is aggregated immediately globally.
+
+155
+00:06:55,180 --> 00:06:57,760
+But CNN said no, no, we want to chop it up and factorize
+
+156
+00:06:57,760 --> 00:06:58,600
+the problem.
+
+157
+00:06:58,600 --> 00:07:01,220
+And then attention says, OK, no, we want to look globally,
+
+158
+00:07:01,220 --> 00:07:04,333
+but we don't want to have every neuron connected
+
+159
+00:07:04,333 --> 00:07:06,000
+to every neuron, because that would just
+
+160
+00:07:06,000 --> 00:07:07,260
+be too much processing.
+
+161
+00:07:07,260 --> 00:07:11,300
+That would mean that for a mapping from Rn to Rn,
+
+162
+00:07:11,300 --> 00:07:14,260
+we'd have n squared edges and n squared parameters.
+
+163
+00:07:14,260 --> 00:07:17,400
+And it would just be too compute heavy, too many parameters,
+
+164
+00:07:17,400 --> 00:07:19,520
+too much to learn.
+
+165
+00:07:19,520 --> 00:07:21,840
+Attention says, well, we'll look globally,
+
+166
+00:07:21,840 --> 00:07:23,500
+but we'll look sparsely globally.
+
+167
+00:07:23,500 --> 00:07:25,520
+So when you get a new question, you'll
+
+168
+00:07:25,520 --> 00:07:28,298
+just attend to the parts of the input signal that matter.
+
+169
+00:07:28,298 --> 00:07:29,840
+So if I want to count how many birds,
+
+170
+00:07:29,840 --> 00:07:32,080
+I'll attend to these locations.
+
+171
+00:07:32,080 --> 00:07:34,720
+It's exactly coming from the idea
+
+172
+00:07:34,720 --> 00:07:38,665
+of attention in the human brain or in your own life experience.
+
+173
+00:07:38,665 --> 00:07:40,040
+You can attend to the things that
+
+174
+00:07:40,040 --> 00:07:41,382
+are relevant to your problem.
+
+175
+00:07:41,382 --> 00:07:43,840
+If your problem changes, you'll attend to different things.
+
+176
+00:07:43,840 --> 00:07:46,620
+So you'll attend to these two birds
+
+177
+00:07:46,620 --> 00:07:48,960
+if the question is the top right bird the same
+
+178
+00:07:48,960 --> 00:07:50,300
+as the bottom left bird.
+
+179
+00:07:50,300 --> 00:07:52,508
+And if the question is, what is the color of the sky,
+
+180
+00:07:52,508 --> 00:07:56,280
+you'll just attend to the sky region of the image.
+
+181
+00:07:56,280 --> 00:07:58,260
+So that's the intuitive idea of attention.
+
+182
+00:07:58,260 --> 00:08:00,280
+It's meant to model what humans might
+
+183
+00:08:00,280 --> 00:08:03,240
+be doing when they process images
+
+184
+00:08:03,240 --> 00:08:05,847
+or other types of signals.
+
+185
+00:08:05,847 --> 00:08:07,680
+And we're going to talk about mathematically
+
+186
+00:08:07,680 --> 00:08:09,200
+how that can be done.
+
+187
+00:08:09,200 --> 00:08:13,320
+So I'm going to go through these three architectural pieces
+
+188
+00:08:13,320 --> 00:08:14,645
+of transformers.
+
+189
+00:08:14,645 --> 00:08:16,020
+Attention will be the second one.
+
+190
+00:08:16,020 --> 00:08:17,860
+That's really the new one in transformers.
+
+191
+00:08:17,860 --> 00:08:19,520
+And then tokens and positional encodes
+
+192
+00:08:19,520 --> 00:08:22,280
+will be just the same as you've seen before.
+
+193
+00:08:22,280 --> 00:08:27,040
+So new idea-- not really new, but sort of new idea-- number 1
+
+194
+00:08:27,040 --> 00:08:28,120
+is tokens.
+
+195
+00:08:28,120 --> 00:08:32,400
+So it's a new name for what we actually saw in the GNN lecture.
+
+196
+00:08:32,400 --> 00:08:34,480
+So a token is a vector of neurons.
+
+197
+00:08:34,480 --> 00:08:39,440
+This is how I'll define it for the purpose of our course.
+
+198
+00:08:39,440 --> 00:08:43,520
+So in the GNN lecture, we talked about node attribute vectors
+
+199
+00:08:43,520 --> 00:08:44,970
+or node feature vectors.
+
+200
+00:08:44,970 --> 00:08:47,410
+So every node has a vector associated with it.
+
+201
+00:08:47,410 --> 00:08:49,850
+And we're going to give that just a new name, which
+
+202
+00:08:49,850 --> 00:08:51,050
+is a token.
+
+203
+00:08:51,050 --> 00:08:53,210
+So a token is a vector of neurons.
+
+204
+00:08:53,210 --> 00:08:55,090
+And the way to think of it is that it's
+
+205
+00:08:55,090 --> 00:08:57,730
+like a little encapsulated factor
+
+206
+00:08:57,730 --> 00:08:59,410
+in my computational graph.
+
+207
+00:08:59,410 --> 00:09:02,570
+It's going to be a little packet of information that
+
+208
+00:09:02,570 --> 00:09:08,930
+will be a little bundle of information that will all be
+
+209
+00:09:08,930 --> 00:09:10,850
+processed in a modular fashion.
+
+210
+00:09:10,850 --> 00:09:12,270
+So we'll have a set of tokens.
+
+211
+00:09:12,270 --> 00:09:13,850
+And these are the units that we're
+
+212
+00:09:13,850 --> 00:09:16,130
+operating over in transformers.
+
+213
+00:09:16,130 --> 00:09:18,330
+So in graph nets, the tokens were the nodes
+
+214
+00:09:18,330 --> 00:09:20,970
+of the graph or the feature vectors associated
+
+215
+00:09:20,970 --> 00:09:23,450
+with the nodes.
+
+216
+00:09:23,450 --> 00:09:26,390
+So we can have an array of neurons,
+
+217
+00:09:26,390 --> 00:09:30,330
+and that's what we operate over in MLPs and vanilla
+
+218
+00:09:30,330 --> 00:09:32,090
+neural networks.
+
+219
+00:09:32,090 --> 00:09:33,970
+But in transformers, we should always
+
+220
+00:09:33,970 --> 00:09:38,050
+be thinking about the basic data structure as an array of tokens,
+
+221
+00:09:38,050 --> 00:09:39,730
+as opposed to an array of neurons.
+
+222
+00:09:39,730 --> 00:09:41,290
+So it's an array of vectors or array
+
+223
+00:09:41,290 --> 00:09:43,855
+of little encapsulated bits of information.
+
+224
+00:09:43,855 --> 00:09:45,730
+You could also generalize the notion of token
+
+225
+00:09:45,730 --> 00:09:48,010
+to be not a vector, but it's some array
+
+226
+00:09:48,010 --> 00:09:49,488
+of structured information.
+
+227
+00:09:49,488 --> 00:09:52,030
+In transformers, the structured information is just a vector,
+
+228
+00:09:52,030 --> 00:09:53,780
+but there might be generalizations to this
+
+229
+00:09:53,780 --> 00:09:58,190
+that come about later in 2025 for the next year.
+
+230
+00:09:58,190 --> 00:10:02,130
+So I do want to note that I'm using the word "token"
+
+231
+00:10:02,130 --> 00:10:04,467
+in a way that is not completely standard.
+
+232
+00:10:04,467 --> 00:10:07,050
+I'm using it in a way that shows up in various computer vision
+
+233
+00:10:07,050 --> 00:10:10,650
+literature, but is a little bit less common in natural language
+
+234
+00:10:10,650 --> 00:10:11,270
+processing.
+
+235
+00:10:11,270 --> 00:10:13,170
+So in natural language processing,
+
+236
+00:10:13,170 --> 00:10:15,810
+people mostly talk about tokens as being
+
+237
+00:10:15,810 --> 00:10:18,390
+the discrete units of the vocabulary that we're modeling.
+
+238
+00:10:18,390 --> 00:10:20,850
+So it's like a token is the letter
+
+239
+00:10:20,850 --> 00:10:25,015
+A, B, C. There's 26 tokens for the English alphabet.
+
+240
+00:10:25,015 --> 00:10:27,390
+Or we could tokenize with a different kind of vocabulary.
+
+241
+00:10:27,390 --> 00:10:30,270
+It could be that every English word is a separate token.
+
+242
+00:10:30,270 --> 00:10:33,050
+So there's discrete units of the vocabulary that I'm operating
+
+243
+00:10:33,050 --> 00:10:35,730
+over is what natural language people usually
+
+244
+00:10:35,730 --> 00:10:36,550
+mean by the tokens.
+
+245
+00:10:36,550 --> 00:10:40,220
+But it's a kind of weird definition.
+
+246
+00:10:40,220 --> 00:10:44,380
+I prefer to think of the tokens as the chunks of information
+
+247
+00:10:44,380 --> 00:10:46,550
+that you are factorizing your problem into.
+
+248
+00:10:46,550 --> 00:10:48,300
+It's a more general definition, and that's
+
+249
+00:10:48,300 --> 00:10:50,258
+the one we're going to go with in this lecture.
+
+250
+00:10:50,258 --> 00:10:52,500
+So token is a vector of neurons.
+
+251
+00:10:52,500 --> 00:10:57,140
+And a set of tokens is how I will represent some data.
+
+252
+00:10:57,140 --> 00:11:01,137
+So just like I could have ConvNets
+
+253
+00:11:01,137 --> 00:11:02,720
+that operate over an array of neurons,
+
+254
+00:11:02,720 --> 00:11:05,420
+I could have convolution over tokens that operates
+
+255
+00:11:05,420 --> 00:11:06,780
+over an array of tokens.
+
+256
+00:11:06,780 --> 00:11:09,275
+That would just be like multi-channel convolution.
+
+257
+00:11:09,275 --> 00:11:10,900
+So I can have different data structures
+
+258
+00:11:10,900 --> 00:11:12,567
+built on top of tokens, where now tokens
+
+259
+00:11:12,567 --> 00:11:14,580
+are the new units, the new encapsulated units
+
+260
+00:11:14,580 --> 00:11:17,120
+of atomic information.
+
+261
+00:11:17,120 --> 00:11:20,040
+In a neural net, we have scalar valued neurons.
+
+262
+00:11:20,040 --> 00:11:23,460
+In a token neural net, we have vector valued units.
+
+263
+00:11:26,420 --> 00:11:30,695
+And we could have a set that's unstructured, unordered.
+
+264
+00:11:30,695 --> 00:11:32,320
+And we could also have a set of tokens.
+
+265
+00:11:32,320 --> 00:11:35,500
+And in transformer land, the main thing we operate over
+
+266
+00:11:35,500 --> 00:11:37,400
+is actually sets, as opposed to arrays.
+
+267
+00:11:37,400 --> 00:11:41,840
+But there's always variations on this theme that you can make up.
+
+268
+00:11:41,840 --> 00:11:44,940
+So let's use an image processing example.
+
+269
+00:11:44,940 --> 00:11:48,620
+But I want to just make sure we keep in mind
+
+270
+00:11:48,620 --> 00:11:52,220
+that transformers, maybe why they're so popular
+
+271
+00:11:52,220 --> 00:11:56,460
+is because they're very agnostic to the domain.
+
+272
+00:11:56,460 --> 00:12:00,000
+The recipe is once you turn your data into a set of tokens,
+
+273
+00:12:00,000 --> 00:12:01,407
+then you just use a transformer.
+
+274
+00:12:01,407 --> 00:12:03,740
+And this is one of the reasons they just dominate across
+
+275
+00:12:03,740 --> 00:12:04,840
+so many different domains.
+
+276
+00:12:04,840 --> 00:12:08,177
+And basically, all domains where deep learning is applied
+
+277
+00:12:08,177 --> 00:12:10,260
+that I know of, I think transformers are currently
+
+278
+00:12:10,260 --> 00:12:13,340
+the most popular way of doing it,
+
+279
+00:12:13,340 --> 00:12:16,820
+or at least the most performant way of doing it.
+
+280
+00:12:16,820 --> 00:12:19,580
+So that's one of the powers is they're very
+
+281
+00:12:19,580 --> 00:12:22,140
+agnostic to the input signal.
+
+282
+00:12:22,140 --> 00:12:25,160
+Their previous methods, like CNNs,
+
+283
+00:12:25,160 --> 00:12:27,300
+were much more tied to the locality properties
+
+284
+00:12:27,300 --> 00:12:28,500
+of the signal.
+
+285
+00:12:28,500 --> 00:12:31,542
+So how do you turn your data into tokens?
+
+286
+00:12:31,542 --> 00:12:33,000
+And then we'll just process tokens.
+
+287
+00:12:33,000 --> 00:12:35,160
+That's the general idea of transformers.
+
+288
+00:12:35,160 --> 00:12:37,750
+First, the domain expert turns data into tokens,
+
+289
+00:12:37,750 --> 00:12:42,150
+and then generic transformer processes tokens.
+
+290
+00:12:42,150 --> 00:12:44,428
+So for images, this is the standard way of doing it.
+
+291
+00:12:44,428 --> 00:12:46,970
+But you can imagine a lot of other ways that one could do it.
+
+292
+00:12:46,970 --> 00:12:49,190
+But you just break up the image into patches.
+
+293
+00:12:49,190 --> 00:12:51,470
+Just like a ConvNet, you chop it up into patches,
+
+294
+00:12:51,470 --> 00:12:54,270
+and then you turn each patch into a token
+
+295
+00:12:54,270 --> 00:12:57,310
+by just projecting it into a flat vector.
+
+296
+00:12:57,310 --> 00:12:59,630
+And you could use some matrix that you
+
+297
+00:12:59,630 --> 00:13:03,070
+multiply the pixel values by W tokenize
+
+298
+00:13:03,070 --> 00:13:04,592
+to get a D dimensional vector.
+
+299
+00:13:04,592 --> 00:13:06,050
+And that could be a learned matrix,
+
+300
+00:13:06,050 --> 00:13:08,030
+or it could be somehow hard-coded.
+
+301
+00:13:08,030 --> 00:13:11,750
+So just a linear operation.
+
+302
+00:13:11,750 --> 00:13:14,850
+And I've basically already said this--
+
+303
+00:13:14,850 --> 00:13:16,590
+but when operating over pixels, we're
+
+304
+00:13:16,590 --> 00:13:19,950
+operating over scalar-valued measurements.
+
+305
+00:13:19,950 --> 00:13:21,830
+What's the red color at that pixel?
+
+306
+00:13:21,830 --> 00:13:23,230
+When operating over tokens, we're
+
+307
+00:13:23,230 --> 00:13:26,310
+representing the input as an array
+
+308
+00:13:26,310 --> 00:13:27,770
+of vector-valued measurements.
+
+309
+00:13:27,770 --> 00:13:30,630
+And the vectors are just the projection
+
+310
+00:13:30,630 --> 00:13:33,590
+of a set of RGB measurements in a patch
+
+311
+00:13:33,590 --> 00:13:39,110
+onto a fixed dimensional vector in Rd.
+
+312
+00:13:39,110 --> 00:13:39,730
+Question?
+
+313
+00:13:39,730 --> 00:13:42,310
+AUDIENCE: All the tokens are generally the same size?
+
+314
+00:13:42,310 --> 00:13:43,790
+PHILLIP ISOLA: Yeah, they do.
+
+315
+00:13:43,790 --> 00:13:46,630
+So do all tokens generally have the same size?
+
+316
+00:13:46,630 --> 00:13:47,570
+Yeah, usually they do.
+
+317
+00:13:47,570 --> 00:13:52,630
+They're generically like a set of vectors in Rd.
+
+318
+00:13:52,630 --> 00:13:56,480
+And that is an interesting thing to maybe do
+
+319
+00:13:56,480 --> 00:13:58,230
+for a final project or a research project.
+
+320
+00:13:58,230 --> 00:14:01,350
+I think variable size tokens could be really interesting.
+
+321
+00:14:01,350 --> 00:14:03,910
+It's not a standard way of doing it.
+
+322
+00:14:03,910 --> 00:14:06,550
+Probably there are some challenges with hardware.
+
+323
+00:14:06,550 --> 00:14:09,170
+Another idea of transformers is that they just match really,
+
+324
+00:14:09,170 --> 00:14:13,148
+really well to the GPU hardware and the software that we use.
+
+325
+00:14:13,148 --> 00:14:14,690
+And if you have variable-size tokens,
+
+326
+00:14:14,690 --> 00:14:16,690
+now there's something you have to keep track of.
+
+327
+00:14:16,690 --> 00:14:20,730
+And how do how do you map that onto your hardware?
+
+328
+00:14:20,730 --> 00:14:21,790
+It might be non-trivial.
+
+329
+00:14:21,790 --> 00:14:23,470
+Question in the very back.
+
+330
+00:14:23,470 --> 00:14:26,725
+AUDIENCE: [INAUDIBLE]
+
+331
+00:14:27,960 --> 00:14:29,210
+PHILLIP ISOLA: Yeah, question.
+
+332
+00:14:29,210 --> 00:14:30,650
+If you're tokenizing an image, do you
+
+333
+00:14:30,650 --> 00:14:31,890
+want your patches to overlap?
+
+334
+00:14:31,890 --> 00:14:34,300
+And the answer is in standard architectures,
+
+335
+00:14:34,300 --> 00:14:36,730
+no, you generally don't overlap.
+
+336
+00:14:36,730 --> 00:14:37,980
+But that might be a good idea.
+
+337
+00:14:37,980 --> 00:14:39,300
+Just like in convolutional networks,
+
+338
+00:14:39,300 --> 00:14:40,700
+you can set the stride that's a parameter.
+
+339
+00:14:40,700 --> 00:14:42,500
+And you can have that same parameter here.
+
+340
+00:14:42,500 --> 00:14:44,640
+But the current standard way of doing it
+
+341
+00:14:44,640 --> 00:14:46,740
+is no overlap, as far as I know.
+
+342
+00:14:46,740 --> 00:14:47,708
+That might change.
+
+343
+00:14:47,708 --> 00:14:49,500
+We'll hear one more, and then I'll move on.
+
+344
+00:14:49,500 --> 00:14:51,048
+AUDIENCE: So are the tokens just,
+
+345
+00:14:51,048 --> 00:14:52,840
+like when you take the patches, the patches
+
+346
+00:14:52,840 --> 00:14:53,967
+are also just pixels.
+
+347
+00:14:53,967 --> 00:14:54,800
+PHILLIP ISOLA: Yeah.
+
+348
+00:14:54,800 --> 00:14:56,758
+AUDIENCE: And it would just be the tokens would
+
+349
+00:14:56,758 --> 00:14:59,320
+be the pixels in vector form.
+
+350
+00:14:59,320 --> 00:15:01,640
+PHILLIP ISOLA: Yeah.
+
+351
+00:15:01,640 --> 00:15:03,640
+The question is, are the patches just pixels.
+
+352
+00:15:03,640 --> 00:15:04,400
+Yes.
+
+353
+00:15:04,400 --> 00:15:07,340
+So you flatten the patch into just a list of numbers.
+
+354
+00:15:07,340 --> 00:15:10,160
+It's a long vector that is the length, depending
+
+355
+00:15:10,160 --> 00:15:11,400
+on the size of the patch.
+
+356
+00:15:11,400 --> 00:15:14,080
+And then you project that into a whatever dimensionality
+
+357
+00:15:14,080 --> 00:15:18,120
+you want to process D dimensions.
+
+358
+00:15:18,120 --> 00:15:22,000
+So you can tokenize anything.
+
+359
+00:15:22,000 --> 00:15:24,320
+And again, this is the power.
+
+360
+00:15:24,320 --> 00:15:27,165
+The general strategy is you take your signal, your data you're
+
+361
+00:15:27,165 --> 00:15:29,040
+processing, you chop it up into little chunks
+
+362
+00:15:29,040 --> 00:15:33,582
+where the chunks make sense as the units of your domain.
+
+363
+00:15:33,582 --> 00:15:35,040
+So usually that means local chunks,
+
+364
+00:15:35,040 --> 00:15:38,320
+because locality is a very good inductive bias.
+
+365
+00:15:38,320 --> 00:15:40,520
+So in images, the standard thing is chop up
+
+366
+00:15:40,520 --> 00:15:42,480
+into non-overlapping patches.
+
+367
+00:15:42,480 --> 00:15:44,040
+In language, the standard thing is
+
+368
+00:15:44,040 --> 00:15:46,840
+to chop up into little snippets of words
+
+369
+00:15:46,840 --> 00:15:48,520
+which are called byte pairs.
+
+370
+00:15:48,520 --> 00:15:53,040
+So I won't go into the details, but basically
+
+371
+00:15:53,040 --> 00:15:55,360
+the kind of phonemes or the units of the language
+
+372
+00:15:55,360 --> 00:15:57,680
+that you're operating it over, you
+
+373
+00:15:57,680 --> 00:16:01,920
+could operate over single characters or three characters
+
+374
+00:16:01,920 --> 00:16:04,200
+or entire words, but the one that people like
+
+375
+00:16:04,200 --> 00:16:05,620
+is just called a byte pair.
+
+376
+00:16:05,620 --> 00:16:10,160
+It's like two byte representations of the language.
+
+377
+00:16:10,160 --> 00:16:12,180
+So you can learn this for English.
+
+378
+00:16:12,180 --> 00:16:14,380
+And there might be a byte pair that represents T-H,
+
+379
+00:16:14,380 --> 00:16:18,480
+and there might be a byte pair that represents I-N-G. So
+
+380
+00:16:18,480 --> 00:16:22,340
+that's how you carve up English and other natural language.
+
+381
+00:16:22,340 --> 00:16:24,440
+And how you carve up sounds will often just
+
+382
+00:16:24,440 --> 00:16:26,980
+be chop into chunks like you do for an image.
+
+383
+00:16:30,530 --> 00:16:33,290
+So once you have done that, then everything else
+
+384
+00:16:33,290 --> 00:16:34,430
+is domain agnostic.
+
+385
+00:16:34,430 --> 00:16:36,930
+So this is the only part where you have to actually consider
+
+386
+00:16:36,930 --> 00:16:37,870
+your input domain.
+
+387
+00:16:37,870 --> 00:16:39,822
+I mean, yes, when you think about the loss
+
+388
+00:16:39,822 --> 00:16:41,530
+function and other formulations, yes, you
+
+389
+00:16:41,530 --> 00:16:42,780
+think about your input domain.
+
+390
+00:16:42,780 --> 00:16:45,330
+But this is the main part.
+
+391
+00:16:45,330 --> 00:16:48,670
+So here's a notation that we're going to use.
+
+392
+00:16:48,670 --> 00:16:52,210
+So we're going to think of the tokens as just vectors.
+
+393
+00:16:52,210 --> 00:16:55,290
+And I'm often going to describe an array of tokens
+
+394
+00:16:55,290 --> 00:16:57,667
+or a set of tokens, because it will turn out
+
+395
+00:16:57,667 --> 00:16:59,750
+that actually the ordering is going to not matter.
+
+396
+00:16:59,750 --> 00:17:02,690
+We'll have architectures that are permutation invariant
+
+397
+00:17:02,690 --> 00:17:06,310
+over the ordering of the rows of that matrix as this matrix T.
+
+398
+00:17:06,310 --> 00:17:08,589
+So I'm going to just transpose my token vectors.
+
+399
+00:17:08,589 --> 00:17:10,089
+Now they're going to be row vectors.
+
+400
+00:17:10,089 --> 00:17:11,869
+I'm going to stack them up.
+
+401
+00:17:11,869 --> 00:17:14,890
+And that will be this matrix T that will
+
+402
+00:17:14,890 --> 00:17:16,349
+simplify a lot of the math.
+
+403
+00:17:16,349 --> 00:17:17,849
+So when we're operating over tokens,
+
+404
+00:17:17,849 --> 00:17:19,390
+this is the notation we'll use.
+
+405
+00:17:19,390 --> 00:17:22,401
+We have n tokens in the rows and d channels.
+
+406
+00:17:22,401 --> 00:17:24,609
+So we're going to use the same dimensionality for all
+
+407
+00:17:24,609 --> 00:17:26,490
+tokens to answer that question.
+
+408
+00:17:26,490 --> 00:17:29,167
+And if you've tried to use different dimensionality,
+
+409
+00:17:29,167 --> 00:17:30,750
+the notation will become more complex.
+
+410
+00:17:30,750 --> 00:17:34,870
+And you'd have to do some more bookkeeping.
+
+411
+00:17:34,870 --> 00:17:39,210
+And yeah, it would be harder.
+
+412
+00:17:39,210 --> 00:17:44,170
+So just like with regular old MLPs
+
+413
+00:17:44,170 --> 00:17:47,350
+in networks built out of tokens, we have two basic operations.
+
+414
+00:17:47,350 --> 00:17:49,270
+One is a linear combination operation.
+
+415
+00:17:49,270 --> 00:17:53,270
+And the other is a unit-wise nonlinearity.
+
+416
+00:17:53,270 --> 00:17:55,310
+So what is a linear combination operation?
+
+417
+00:17:55,310 --> 00:17:58,210
+It's just a generalization of the linear combination
+
+418
+00:17:58,210 --> 00:17:59,290
+over neurons.
+
+419
+00:17:59,290 --> 00:18:01,310
+So here's a linear combination over neurons.
+
+420
+00:18:01,310 --> 00:18:02,650
+This is a linear layer.
+
+421
+00:18:02,650 --> 00:18:06,170
+I have x in is a set of scalars-- x1, x2, x3.
+
+422
+00:18:06,170 --> 00:18:09,330
+And x out is just another scalar.
+
+423
+00:18:09,330 --> 00:18:12,770
+And I have a weighted combination, w1 times x1,
+
+424
+00:18:12,770 --> 00:18:13,890
+and so forth.
+
+425
+00:18:13,890 --> 00:18:19,990
+This is the regular old linear layer going from R3 to R1.
+
+426
+00:18:19,990 --> 00:18:22,733
+So what is a linear combination of tokens look like?
+
+427
+00:18:22,733 --> 00:18:24,900
+Oh, and right, we just can write that in matrix form
+
+428
+00:18:24,900 --> 00:18:26,140
+as w times x in.
+
+429
+00:18:26,140 --> 00:18:29,917
+You've done that a lot on the P sets and in other places.
+
+430
+00:18:29,917 --> 00:18:31,500
+A linear combination of tokens is just
+
+431
+00:18:31,500 --> 00:18:34,300
+going to be a weighted combination of vectors.
+
+432
+00:18:34,300 --> 00:18:37,380
+So I'll have vectors with D dimensions.
+
+433
+00:18:37,380 --> 00:18:40,363
+But if I only have three tokens, three such vectors,
+
+434
+00:18:40,363 --> 00:18:41,780
+I'll have three weights that I can
+
+435
+00:18:41,780 --> 00:18:44,380
+learn or decide to set the values of to create
+
+436
+00:18:44,380 --> 00:18:45,860
+a linear combination.
+
+437
+00:18:45,860 --> 00:18:50,977
+So it's going to be a weight times the first vector,
+
+438
+00:18:50,977 --> 00:18:52,560
+plus a weight times the second vector,
+
+439
+00:18:52,560 --> 00:18:55,860
+plus a weight times the third vector.
+
+440
+00:18:55,860 --> 00:19:00,460
+So you can represent that, again, in matrix notation,
+
+441
+00:19:00,460 --> 00:19:07,380
+if we're using our T where T is n rows by d columns, where
+
+442
+00:19:07,380 --> 00:19:09,700
+d is the dimensionality of each token vector.
+
+443
+00:19:09,700 --> 00:19:12,260
+Then w times that matrix T is just
+
+444
+00:19:12,260 --> 00:19:16,160
+like taking a linear combination of the rows.
+
+445
+00:19:16,160 --> 00:19:20,260
+So you can already see here that the token linear combination
+
+446
+00:19:20,260 --> 00:19:23,140
+is less expressive than if I did the same thing
+
+447
+00:19:23,140 --> 00:19:26,060
+over all the individual neurons that make up those tokens.
+
+448
+00:19:26,060 --> 00:19:29,100
+It's like a low rank transformation over the neurons,
+
+449
+00:19:29,100 --> 00:19:31,660
+because I only have three weights that
+
+450
+00:19:31,660 --> 00:19:33,500
+determine that combination, but I actually
+
+451
+00:19:33,500 --> 00:19:36,820
+have 12 neurons that make up all of those tokens.
+
+452
+00:19:36,820 --> 00:19:38,620
+And so you normally would have 12 weights
+
+453
+00:19:38,620 --> 00:19:43,300
+if it were just a linear combination of neurons.
+
+454
+00:19:43,300 --> 00:19:48,000
+So this is a less expressive family of layers.
+
+455
+00:19:48,000 --> 00:19:52,900
+In fact, it's a low rank operation.
+
+456
+00:19:52,900 --> 00:19:56,080
+But we're thinking of the tokens as these bundles,
+
+457
+00:19:56,080 --> 00:19:58,400
+these encapsulated units of operations.
+
+458
+00:19:58,400 --> 00:20:00,860
+We've just now defined how to take linear combinations
+
+459
+00:20:00,860 --> 00:20:04,668
+of those encapsulated units.
+
+460
+00:20:04,668 --> 00:20:06,460
+So the next thing we need is the equivalent
+
+461
+00:20:06,460 --> 00:20:09,100
+of a ReLU, the point-wise nonlinearity.
+
+462
+00:20:09,100 --> 00:20:11,960
+And with tokens, we can have a token-wise nonlinearity.
+
+463
+00:20:11,960 --> 00:20:13,800
+Instead of being a neuron-wise nonlinearity,
+
+464
+00:20:13,800 --> 00:20:15,900
+it will be a nonlinearity that operates
+
+465
+00:20:15,900 --> 00:20:19,220
+on each token independently and identically.
+
+466
+00:20:19,220 --> 00:20:23,510
+So here's my point-wise nonlinearity from MLPs.
+
+467
+00:20:23,510 --> 00:20:26,730
+We have x out is equal to, for each dimension of x in,
+
+468
+00:20:26,730 --> 00:20:28,890
+we just take a ReLU of that dimension.
+
+469
+00:20:31,470 --> 00:20:33,390
+And a token-wise nonlinearity is just
+
+470
+00:20:33,390 --> 00:20:36,350
+going to be, for each token in my array of tokens,
+
+471
+00:20:36,350 --> 00:20:38,750
+I will pass it through a nonlinear function F.
+
+472
+00:20:38,750 --> 00:20:41,110
+And it will be the same nonlinear function applied
+
+473
+00:20:41,110 --> 00:20:44,950
+to every single token.
+
+474
+00:20:44,950 --> 00:20:50,530
+So typically in transformers, F is going to be itself an MLP.
+
+475
+00:20:50,530 --> 00:20:52,450
+So transformers are like a meta architecture.
+
+476
+00:20:52,450 --> 00:20:53,910
+Like, the units of the architecture
+
+477
+00:20:53,910 --> 00:20:57,950
+are other neural networks.
+
+478
+00:20:57,950 --> 00:21:00,750
+And you can also think of this operation as equivalent
+
+479
+00:21:00,750 --> 00:21:03,910
+to a convolutional filter that is run
+
+480
+00:21:03,910 --> 00:21:05,990
+across the sequence of tokens.
+
+481
+00:21:05,990 --> 00:21:09,403
+It's a 1 by 1 convolutional filter.
+
+482
+00:21:09,403 --> 00:21:10,570
+So what does that look like?
+
+483
+00:21:10,570 --> 00:21:11,650
+It looks like this.
+
+484
+00:21:11,650 --> 00:21:13,350
+I have a sequence of tokens.
+
+485
+00:21:13,350 --> 00:21:16,830
+Now think of this as like a spatial sequence
+
+486
+00:21:16,830 --> 00:21:17,810
+or temporal sequence.
+
+487
+00:21:17,810 --> 00:21:19,770
+And the channels are in this token dimension.
+
+488
+00:21:19,770 --> 00:21:23,847
+The vector dimensions of the token.
+
+489
+00:21:23,847 --> 00:21:25,430
+And the convolutional filter will just
+
+490
+00:21:25,430 --> 00:21:27,990
+be something that operates on each token independently
+
+491
+00:21:27,990 --> 00:21:29,010
+and identically.
+
+492
+00:21:29,010 --> 00:21:32,590
+So this is what the token-wise nonlinearity looks like.
+
+493
+00:21:32,590 --> 00:21:34,550
+And you can also now map that in your brain
+
+494
+00:21:34,550 --> 00:21:37,850
+onto a point-wise nonlinearity in an MLP,
+
+495
+00:21:37,850 --> 00:21:40,590
+that would just be like I have vectors of length 1.
+
+496
+00:21:40,590 --> 00:21:43,390
+And my operation them sliding across that sequence
+
+497
+00:21:43,390 --> 00:21:47,730
+is a ReLU or a tanh or sigmoid, some point-wise nonlinearity.
+
+498
+00:21:51,350 --> 00:21:55,030
+So now we've basically built what I'll call token nets.
+
+499
+00:21:55,030 --> 00:21:56,930
+Another name for this would be graph nets.
+
+500
+00:21:56,930 --> 00:22:00,750
+But I'm going to call it token nets for now, which is almost
+
+501
+00:22:00,750 --> 00:22:03,550
+identical looking to a MLP.
+
+502
+00:22:03,550 --> 00:22:06,610
+So MLP is linear combination of scalar-valued neurons,
+
+503
+00:22:06,610 --> 00:22:09,030
+point-wise nonlinearity, and so on.
+
+504
+00:22:09,030 --> 00:22:12,390
+And token net is linear combination of tokens.
+
+505
+00:22:12,390 --> 00:22:15,350
+Take a weighted sum of these three items, followed
+
+506
+00:22:15,350 --> 00:22:18,800
+by token-wise nonlinearity, so each arrow on the second row
+
+507
+00:22:18,800 --> 00:22:22,560
+is itself parameterized by an MLP-- it's
+
+508
+00:22:22,560 --> 00:22:24,100
+a complicated nonlinear function--
+
+509
+00:22:24,100 --> 00:22:26,480
+and then repeat that process.
+
+510
+00:22:26,480 --> 00:22:28,500
+So the motif is the same.
+
+511
+00:22:28,500 --> 00:22:31,080
+It's just over these more complicated units.
+
+512
+00:22:31,080 --> 00:22:33,105
+As opposed to being scalar-valued units, which
+
+513
+00:22:33,105 --> 00:22:34,980
+are called neurons, it's vector-valued units,
+
+514
+00:22:34,980 --> 00:22:38,560
+which I'm calling tokens.
+
+515
+00:22:38,560 --> 00:22:41,840
+So I already mentioned, but this is also
+
+516
+00:22:41,840 --> 00:22:44,520
+equivalent to that unrolled GNN that I talked
+
+517
+00:22:44,520 --> 00:22:46,360
+about a few lectures ago.
+
+518
+00:22:46,360 --> 00:22:51,420
+So an unrolled GNN, we have this aggregate function,
+
+519
+00:22:51,420 --> 00:22:53,940
+which is doing some kind of weighted combination.
+
+520
+00:22:53,940 --> 00:22:55,560
+And then we have a combined function,
+
+521
+00:22:55,560 --> 00:23:00,500
+which now you can understand to be a unit-wise,
+
+522
+00:23:00,500 --> 00:23:02,180
+a node-wise nonlinearity.
+
+523
+00:23:02,180 --> 00:23:03,700
+And then we repeat that process.
+
+524
+00:23:03,700 --> 00:23:06,000
+And GNN is also often have the property that you
+
+525
+00:23:06,000 --> 00:23:08,100
+share weights across depth.
+
+526
+00:23:08,100 --> 00:23:09,760
+You don't have to, but you can.
+
+527
+00:23:09,760 --> 00:23:11,360
+Whereas transformers typically have
+
+528
+00:23:11,360 --> 00:23:13,652
+the property that you don't share weights across depth,
+
+529
+00:23:13,652 --> 00:23:14,320
+but you can.
+
+530
+00:23:14,320 --> 00:23:15,303
+So this is a choice.
+
+531
+00:23:15,303 --> 00:23:16,720
+With the standard transformer, you
+
+532
+00:23:16,720 --> 00:23:19,820
+have separate set of weights here and on the next layer.
+
+533
+00:23:19,820 --> 00:23:21,760
+And I'll tell you how those weights actually
+
+534
+00:23:21,760 --> 00:23:24,940
+get specified in a minute.
+
+535
+00:23:24,940 --> 00:23:27,120
+And just to remind you, here was that picture
+
+536
+00:23:27,120 --> 00:23:28,500
+of the unrolled GNN.
+
+537
+00:23:28,500 --> 00:23:31,080
+So an unrolled GNN, we have our graph.
+
+538
+00:23:31,080 --> 00:23:34,420
+And we take these-- now I'm calling them tokens,
+
+539
+00:23:34,420 --> 00:23:36,680
+they used to be called the node vectors--
+
+540
+00:23:36,680 --> 00:23:37,780
+and we aggregate.
+
+541
+00:23:37,780 --> 00:23:41,040
+But this is going to be in a critical difference.
+
+542
+00:23:41,040 --> 00:23:44,560
+In the GNN, how we aggregate is determined
+
+543
+00:23:44,560 --> 00:23:46,513
+by the graph connectivity.
+
+544
+00:23:46,513 --> 00:23:48,680
+It's the adjacency matrix of the graph that tells us
+
+545
+00:23:48,680 --> 00:23:50,800
+how we do this aggregate, where the arrows are
+
+546
+00:23:50,800 --> 00:23:52,675
+in that linear combination.
+
+547
+00:23:52,675 --> 00:23:55,300
+And additionally in the graph, an aggregate might be nonlinear.
+
+548
+00:23:55,300 --> 00:23:57,300
+It doesn't have to just be a linear combination.
+
+549
+00:24:00,146 --> 00:24:04,640
+And then we also have a particular way of combining that
+
+550
+00:24:04,640 --> 00:24:06,240
+through an update step.
+
+551
+00:24:06,240 --> 00:24:09,360
+But it looks very much like a transformer that I'm showing you
+
+552
+00:24:09,360 --> 00:24:11,720
+now, the token net version of the transformer,
+
+553
+00:24:11,720 --> 00:24:14,750
+except that these arrows are not fully connected.
+
+554
+00:24:14,750 --> 00:24:18,610
+They are determined by the graph structure.
+
+555
+00:24:18,610 --> 00:24:22,610
+So a transformer is going to be like a graph net,
+
+556
+00:24:22,610 --> 00:24:24,410
+but it's a fully connected graph net.
+
+557
+00:24:24,410 --> 00:24:28,530
+So we have all the arrows at every single aggregation layer.
+
+558
+00:24:28,530 --> 00:24:31,010
+And I'll tell you how those arrows' values get determined,
+
+559
+00:24:31,010 --> 00:24:32,670
+which is going to be called attention.
+
+560
+00:24:32,670 --> 00:24:35,730
+But you can think of it as a graph
+
+561
+00:24:35,730 --> 00:24:37,490
+net over a fully connected graph,
+
+562
+00:24:37,490 --> 00:24:39,670
+typically without weight-sharing in depth.
+
+563
+00:24:42,850 --> 00:24:44,610
+Any questions about the relationship
+
+564
+00:24:44,610 --> 00:24:47,250
+between these different neural networks--
+
+565
+00:24:47,250 --> 00:24:53,460
+MLPs, CNNs, graph nets, and now this token net I'm describing?
+
+566
+00:24:53,460 --> 00:24:55,250
+AUDIENCE: Can you talk more about
+
+567
+00:24:55,250 --> 00:24:59,415
+the token-wise nonlinearity and how it's changing?
+
+568
+00:24:59,415 --> 00:25:01,290
+PHILLIP ISOLA: So the token-wise nonlinearity
+
+569
+00:25:01,290 --> 00:25:03,770
+will be typically an MLP, and the parameters
+
+570
+00:25:03,770 --> 00:25:06,310
+will be learned with backpropagation.
+
+571
+00:25:06,310 --> 00:25:10,690
+So the free parameters are learned via optimization.
+
+572
+00:25:10,690 --> 00:25:12,850
+AUDIENCE: And within there in that MLP,
+
+573
+00:25:12,850 --> 00:25:17,910
+there's point-wise nonlinearities in that as well.
+
+574
+00:25:17,910 --> 00:25:18,710
+PHILLIP ISOLA: Yes.
+
+575
+00:25:18,710 --> 00:25:21,530
+So it's like this network of subnetworks.
+
+576
+00:25:21,530 --> 00:25:25,930
+And in the MLP, there are also point-wise nonlinearities.
+
+577
+00:25:25,930 --> 00:25:28,630
+And one more?
+
+578
+00:25:28,630 --> 00:25:30,290
+AUDIENCE: The aggregate functions
+
+579
+00:25:30,290 --> 00:25:35,250
+are then at least the equivalent of the activation functions
+
+580
+00:25:35,250 --> 00:25:36,630
+on the transformers then?
+
+581
+00:25:39,250 --> 00:25:41,490
+PHILLIP ISOLA: The question is, in GNNs
+
+582
+00:25:41,490 --> 00:25:44,130
+the aggregate function is learned-- or it's parameterized,
+
+583
+00:25:44,130 --> 00:25:45,290
+and it can be learned.
+
+584
+00:25:45,290 --> 00:25:48,050
+And in transformers, I didn't tell you
+
+585
+00:25:48,050 --> 00:25:51,528
+how we're going to learn these weights.
+
+586
+00:25:51,528 --> 00:25:53,570
+In transformers, that will be done via this thing
+
+587
+00:25:53,570 --> 00:25:55,650
+called attention, which we'll get to in a minute.
+
+588
+00:25:55,650 --> 00:25:59,830
+And the token-wise nonlinearity in an MLP is not learned.
+
+589
+00:25:59,830 --> 00:26:02,233
+The point-wise nonlinearity is not learned, typically.
+
+590
+00:26:02,233 --> 00:26:04,150
+But in a transformer, it typically is learned.
+
+591
+00:26:04,150 --> 00:26:05,742
+It's a parameterized MLP.
+
+592
+00:26:05,742 --> 00:26:07,950
+And in a graph net, I think it would also be learned.
+
+593
+00:26:07,950 --> 00:26:09,700
+It's this update function, which typically
+
+594
+00:26:09,700 --> 00:26:11,800
+has learnable parameters.
+
+595
+00:26:11,800 --> 00:26:12,300
+OK.
+
+596
+00:26:16,480 --> 00:26:18,720
+And don't worry too much about the semantics here.
+
+597
+00:26:18,720 --> 00:26:20,595
+Like, it doesn't matter if you call something
+
+598
+00:26:20,595 --> 00:26:21,880
+a graph net or a transformer.
+
+599
+00:26:21,880 --> 00:26:23,540
+You should understand the concepts and how there's
+
+600
+00:26:23,540 --> 00:26:24,900
+these particular building blocks that
+
+601
+00:26:24,900 --> 00:26:26,140
+can be combined in different ways
+
+602
+00:26:26,140 --> 00:26:27,200
+to achieve different effects.
+
+603
+00:26:27,200 --> 00:26:28,158
+And there's trade-offs.
+
+604
+00:26:28,158 --> 00:26:30,200
+And if you understand that deeply,
+
+605
+00:26:30,200 --> 00:26:33,780
+then the names are just something
+
+606
+00:26:33,780 --> 00:26:35,580
+that is secondary to that.
+
+607
+00:26:39,460 --> 00:26:42,180
+So that was the first new idea was
+
+608
+00:26:42,180 --> 00:26:44,300
+we're going to operate over tokens, which
+
+609
+00:26:44,300 --> 00:26:46,360
+are vector-valued units, instead of neurons,
+
+610
+00:26:46,360 --> 00:26:48,920
+which are scalar-valued units.
+
+611
+00:26:48,920 --> 00:26:52,580
+The next idea, which is going to actually be technically new,
+
+612
+00:26:52,580 --> 00:26:54,020
+is going to be attention, which is
+
+613
+00:26:54,020 --> 00:26:57,580
+how do we take the linear combination exactly
+
+614
+00:26:57,580 --> 00:26:58,680
+between tokens?
+
+615
+00:27:02,020 --> 00:27:03,880
+Let's say I have a token net.
+
+616
+00:27:03,880 --> 00:27:07,500
+What I could do is I could just learn the weights
+
+617
+00:27:07,500 --> 00:27:08,640
+of the linear combination.
+
+618
+00:27:08,640 --> 00:27:10,390
+Just like in an MLP, I learned the weights
+
+619
+00:27:10,390 --> 00:27:11,860
+of the linear combination.
+
+620
+00:27:11,860 --> 00:27:15,540
+So free parameters I'll draw in blue.
+
+621
+00:27:15,540 --> 00:27:17,520
+And this could just be a weight matrix,
+
+622
+00:27:17,520 --> 00:27:19,380
+which is going to be three numbers, in this case, because I
+
+623
+00:27:19,380 --> 00:27:20,130
+have three tokens.
+
+624
+00:27:20,130 --> 00:27:23,000
+So it would be a three by one weight matrix and one output.
+
+625
+00:27:23,000 --> 00:27:26,380
+Three inputs, one output.
+
+626
+00:27:26,380 --> 00:27:29,650
+And W will be free parameters that are learnable via backprop.
+
+627
+00:27:29,650 --> 00:27:30,400
+That's one option.
+
+628
+00:27:30,400 --> 00:27:31,067
+You can do this.
+
+629
+00:27:31,067 --> 00:27:33,620
+That will work
+
+630
+00:27:33,620 --> 00:27:36,140
+But transformers actually are coupled with this other idea
+
+631
+00:27:36,140 --> 00:27:37,020
+called attention.
+
+632
+00:27:37,020 --> 00:27:40,260
+And in attention, the weights that you
+
+633
+00:27:40,260 --> 00:27:41,840
+use to do this linear combination,
+
+634
+00:27:41,840 --> 00:27:43,000
+now they're not free parameters.
+
+635
+00:27:43,000 --> 00:27:43,980
+So I'm not going to color them in blue.
+
+636
+00:27:43,980 --> 00:27:45,160
+I'm coloring them in red.
+
+637
+00:27:45,160 --> 00:27:46,993
+And if you remember in some of the readings,
+
+638
+00:27:46,993 --> 00:27:49,200
+red was our color for activations.
+
+639
+00:27:49,200 --> 00:27:52,878
+It turns out the weights I used to combine the tokens
+
+640
+00:27:52,878 --> 00:27:54,420
+with the linear combination are going
+
+641
+00:27:54,420 --> 00:27:59,020
+to be coming from activations elsewhere in the network.
+
+642
+00:27:59,020 --> 00:28:03,680
+So A is going to not be free parameters.
+
+643
+00:28:03,680 --> 00:28:05,870
+It's going to be a function of your data
+
+644
+00:28:05,870 --> 00:28:07,210
+that you're processing.
+
+645
+00:28:07,210 --> 00:28:09,210
+So there's a few different ways you can do that.
+
+646
+00:28:09,210 --> 00:28:10,510
+We'll go into the full details.
+
+647
+00:28:10,510 --> 00:28:13,350
+But just think that there's going to be some function F that
+
+648
+00:28:13,350 --> 00:28:16,950
+takes in your input data you're processing and determines
+
+649
+00:28:16,950 --> 00:28:21,210
+this linear combination matrix A.
+
+650
+00:28:21,210 --> 00:28:24,190
+So A is going to be set by some function, which I'll describe,
+
+651
+00:28:24,190 --> 00:28:25,050
+of the data.
+
+652
+00:28:25,050 --> 00:28:26,750
+It's not going to be free parameters.
+
+653
+00:28:26,750 --> 00:28:30,230
+And T out will be just a linear combination of T in,
+
+654
+00:28:30,230 --> 00:28:34,550
+according to A.
+
+655
+00:28:34,550 --> 00:28:40,830
+So let's get some intuition for what this attention matrix might
+
+656
+00:28:40,830 --> 00:28:44,530
+be doing, this attention matrix A. So here's an image.
+
+657
+00:28:44,530 --> 00:28:47,510
+And let's say I want to process the query, how many animals are
+
+658
+00:28:47,510 --> 00:28:48,442
+in this photo?
+
+659
+00:28:48,442 --> 00:28:51,150
+So I told you the intuition is I should look at the three animals
+
+660
+00:28:51,150 --> 00:28:52,630
+and then count them up.
+
+661
+00:28:52,630 --> 00:28:56,110
+And that's exactly what we'll do.
+
+662
+00:28:56,110 --> 00:29:00,188
+So I will attend to-- remember, tokens are representing
+
+663
+00:29:00,188 --> 00:29:02,230
+patches of the image, at least on the first layer
+
+664
+00:29:02,230 --> 00:29:02,930
+of processing.
+
+665
+00:29:02,930 --> 00:29:04,630
+They're representing patches.
+
+666
+00:29:04,630 --> 00:29:06,950
+So what are the patches I will attend to in this image
+
+667
+00:29:06,950 --> 00:29:08,190
+to answer this question?
+
+668
+00:29:08,190 --> 00:29:10,215
+Should be any patch that has an animal.
+
+669
+00:29:10,215 --> 00:29:12,590
+And it's a little hard to see, but there's a giraffe head
+
+670
+00:29:12,590 --> 00:29:14,310
+in this one here.
+
+671
+00:29:14,310 --> 00:29:20,670
+So this is zebra, impala, and two giraffes.
+
+672
+00:29:20,670 --> 00:29:23,950
+Now, every token is a vector of numbers
+
+673
+00:29:23,950 --> 00:29:26,710
+that are descriptive of what is going on.
+
+674
+00:29:26,710 --> 00:29:31,215
+There's some representation of that part of the world.
+
+675
+00:29:31,215 --> 00:29:32,590
+So at the first layer, it'll just
+
+676
+00:29:32,590 --> 00:29:36,150
+be the concatenation or the flattened list of all the RGB
+
+677
+00:29:36,150 --> 00:29:36,650
+values.
+
+678
+00:29:36,650 --> 00:29:38,605
+But later on, it could be more abstract.
+
+679
+00:29:38,605 --> 00:29:40,230
+And here I'm just indicating that there
+
+680
+00:29:40,230 --> 00:29:41,950
+might be one element of the vector which
+
+681
+00:29:41,950 --> 00:29:44,670
+is an indicator function.
+
+682
+00:29:44,670 --> 00:29:48,150
+Does this patch contain an animal or not,
+
+683
+00:29:48,150 --> 00:29:51,150
+or maybe the head of an animal or not?
+
+684
+00:29:51,150 --> 00:29:53,270
+Because each animal has one head.
+
+685
+00:29:53,270 --> 00:29:55,990
+And then what I can do is my attention
+
+686
+00:29:55,990 --> 00:29:59,150
+can be allocating one unit of attention
+
+687
+00:29:59,150 --> 00:30:02,620
+to each of these tokens, and zero units to any other token.
+
+688
+00:30:02,620 --> 00:30:05,520
+And then if I take a linear combination with weights of 1
+
+689
+00:30:05,520 --> 00:30:08,100
+for each of those tokens and 0 for all the other tokens,
+
+690
+00:30:08,100 --> 00:30:09,760
+that will achieve the correct answer
+
+691
+00:30:09,760 --> 00:30:14,000
+of outputting a new token vector whose
+
+692
+00:30:14,000 --> 00:30:17,520
+value is 4 in the dimension that counts animals.
+
+693
+00:30:17,520 --> 00:30:19,680
+So I've just kind of hand constructed here
+
+694
+00:30:19,680 --> 00:30:24,200
+a transformer, one layer transformer,
+
+695
+00:30:24,200 --> 00:30:27,720
+that counts the number of animals in the image
+
+696
+00:30:27,720 --> 00:30:30,240
+by simply attending to animal heads
+
+697
+00:30:30,240 --> 00:30:34,200
+and then taking a sum over all the things I attended
+
+698
+00:30:34,200 --> 00:30:37,180
+to where the attribute vector of each thing I'm attending to.
+
+699
+00:30:37,180 --> 00:30:40,040
+The token vector is just a 1 if there's an animal head, or a 0
+
+700
+00:30:40,040 --> 00:30:41,463
+otherwise.
+
+701
+00:30:41,463 --> 00:30:42,880
+Or in fact, in this case, it could
+
+702
+00:30:42,880 --> 00:30:44,728
+be a 1 no matter what's in the photo,
+
+703
+00:30:44,728 --> 00:30:46,520
+because the attention already only selected
+
+704
+00:30:46,520 --> 00:30:48,222
+to look at the animal heads.
+
+705
+00:30:48,222 --> 00:30:49,180
+Here's another example.
+
+706
+00:30:49,180 --> 00:30:50,500
+What is the color of the impala?
+
+707
+00:30:50,500 --> 00:30:51,833
+So what should I attend to here?
+
+708
+00:30:51,833 --> 00:30:56,420
+I should attend to these tokens, these patches.
+
+709
+00:30:56,420 --> 00:30:58,940
+And now I have another dimension of my token vector
+
+710
+00:30:58,940 --> 00:31:02,120
+which maybe represents the average color within that patch.
+
+711
+00:31:02,120 --> 00:31:05,040
+And if I take the average over those,
+
+712
+00:31:05,040 --> 00:31:07,660
+I take a weighted sum over the things I'm attending to,
+
+713
+00:31:07,660 --> 00:31:10,720
+I will output the average color of the impala.
+
+714
+00:31:10,720 --> 00:31:13,400
+And that will be maybe a good ensembled response
+
+715
+00:31:13,400 --> 00:31:15,420
+about the answer to this question,
+
+716
+00:31:15,420 --> 00:31:16,615
+what color is the impala?
+
+717
+00:31:16,615 --> 00:31:18,240
+So this is just the intuition, but hand
+
+718
+00:31:18,240 --> 00:31:20,800
+constructing how these operations could actually
+
+719
+00:31:20,800 --> 00:31:23,760
+answer queries of interest.
+
+720
+00:31:23,760 --> 00:31:24,400
+Question?
+
+721
+00:31:24,400 --> 00:31:27,720
+AUDIENCE: How do you interpret the [INAUDIBLE] of the T out?
+
+722
+00:31:27,720 --> 00:31:29,592
+Is there a [INAUDIBLE]?
+
+723
+00:31:29,592 --> 00:31:32,800
+PHILLIP ISOLA: T out here is meant to be--
+
+724
+00:31:32,800 --> 00:31:35,780
+oh, yeah, I suppose that maybe I should use a capital letter,
+
+725
+00:31:35,780 --> 00:31:37,107
+but just one token output.
+
+726
+00:31:37,107 --> 00:31:39,440
+It's like I'm just outputting one single token to answer
+
+727
+00:31:39,440 --> 00:31:41,420
+my question in this example.
+
+728
+00:31:43,945 --> 00:31:45,320
+So yeah, the more general form is
+
+729
+00:31:45,320 --> 00:31:46,987
+I'll have an array of tokens represented
+
+730
+00:31:46,987 --> 00:31:48,760
+by the matrix T, where the tokens are
+
+731
+00:31:48,760 --> 00:31:50,760
+in the rows of that array.
+
+732
+00:31:50,760 --> 00:31:53,238
+So here is going to be the mathematical formulation
+
+733
+00:31:53,238 --> 00:31:54,780
+of the most common kind of attention.
+
+734
+00:31:54,780 --> 00:31:57,480
+It's called query-key-value attention.
+
+735
+00:31:57,480 --> 00:32:00,450
+And remember, the transformer is mapping from a set of tokens
+
+736
+00:32:00,450 --> 00:32:02,950
+to a set of tokens, so T in to T out.
+
+737
+00:32:02,950 --> 00:32:05,450
+And this will be one layer of the transformer, one attention
+
+738
+00:32:05,450 --> 00:32:06,870
+layer, so one linear combination.
+
+739
+00:32:06,870 --> 00:32:08,410
+So how is it going to work?
+
+740
+00:32:08,410 --> 00:32:10,710
+So I will have a question.
+
+741
+00:32:10,710 --> 00:32:12,370
+And then I'm going to use the question
+
+742
+00:32:12,370 --> 00:32:14,210
+to determine the attention.
+
+743
+00:32:14,210 --> 00:32:16,930
+So the question, the way I determine the attention
+
+744
+00:32:16,930 --> 00:32:19,570
+is like that function F that produces A.
+
+745
+00:32:19,570 --> 00:32:21,190
+So here's what it looks like.
+
+746
+00:32:21,190 --> 00:32:24,755
+So my input signal is a set of tokens.
+
+747
+00:32:24,755 --> 00:32:26,130
+So it's actually just going to be
+
+748
+00:32:26,130 --> 00:32:27,710
+thought of as an unordered set.
+
+749
+00:32:27,710 --> 00:32:30,770
+Just here's a bunch of different patches in the image.
+
+750
+00:32:30,770 --> 00:32:35,050
+And every token has this vector associated with it.
+
+751
+00:32:35,050 --> 00:32:38,610
+And the question will also be represented
+
+752
+00:32:38,610 --> 00:32:43,250
+as a token, which has a vector associated with it.
+
+753
+00:32:43,250 --> 00:32:45,970
+And I'll have a special operation called query,
+
+754
+00:32:45,970 --> 00:32:51,570
+which will be to emit some vector based
+
+755
+00:32:51,570 --> 00:32:56,710
+on the contents of my question's embedding vector.
+
+756
+00:32:56,710 --> 00:32:59,990
+So the question the question is a token, which is a vector.
+
+757
+00:32:59,990 --> 00:33:03,330
+And then I can transform that to emit some kind of query.
+
+758
+00:33:03,330 --> 00:33:05,210
+So that will just be a linear transformation
+
+759
+00:33:05,210 --> 00:33:07,290
+of that input vector.
+
+760
+00:33:07,290 --> 00:33:10,770
+And each token in my signal that I'm processing
+
+761
+00:33:10,770 --> 00:33:14,970
+will have a function called key, which emits something
+
+762
+00:33:14,970 --> 00:33:17,590
+that the query is meant to try to match against,
+
+763
+00:33:17,590 --> 00:33:22,010
+to see if the query matches the key.
+
+764
+00:33:22,010 --> 00:33:25,490
+So tokens represented by a vector,
+
+765
+00:33:25,490 --> 00:33:27,690
+and they can emit either queries in order
+
+766
+00:33:27,690 --> 00:33:29,530
+to say what should I attend to, or keys
+
+767
+00:33:29,530 --> 00:33:35,930
+to say what is my content that my query should match to.
+
+768
+00:33:35,930 --> 00:33:38,010
+And we will check whether a query matches
+
+769
+00:33:38,010 --> 00:33:42,250
+a key via a dot product between the key vector
+
+770
+00:33:42,250 --> 00:33:44,190
+and the query vector.
+
+771
+00:33:44,190 --> 00:33:47,750
+So this that horizontal line is the key vector.
+
+772
+00:33:47,750 --> 00:33:51,710
+And that vertical yellow line is the query vector.
+
+773
+00:33:51,710 --> 00:33:54,420
+And this is just meant to be the dot product, like the matrix
+
+774
+00:33:54,420 --> 00:34:01,800
+product, of the 1 by D vector times the D by 1 vector.
+
+775
+00:34:01,800 --> 00:34:03,200
+So what will happen here?
+
+776
+00:34:03,200 --> 00:34:07,880
+Well, my query is relevant to animal heads.
+
+777
+00:34:07,880 --> 00:34:09,780
+What is the color of the impala's head?
+
+778
+00:34:09,780 --> 00:34:13,699
+So my key will match that query if I'm
+
+779
+00:34:13,699 --> 00:34:15,199
+looking at an animal head.
+
+780
+00:34:15,199 --> 00:34:17,620
+So the giraffe will be 0.2, but it will match even better
+
+781
+00:34:17,620 --> 00:34:18,860
+if I'm looking at the impala head,
+
+782
+00:34:18,860 --> 00:34:20,400
+because I'm specifying the impala.
+
+783
+00:34:20,400 --> 00:34:23,139
+So that would be, if I train this thing
+
+784
+00:34:23,139 --> 00:34:24,699
+to be a reasonable system, then this
+
+785
+00:34:24,699 --> 00:34:28,187
+would be a reasonable set of queries and keys.
+
+786
+00:34:28,187 --> 00:34:30,020
+And the similarity between the query and key
+
+787
+00:34:30,020 --> 00:34:31,940
+is what I will attend to.
+
+788
+00:34:31,940 --> 00:34:36,699
+So I'll get this kind of score vector s over here on the left.
+
+789
+00:34:36,699 --> 00:34:41,100
+And this will just be the dot product between the question's
+
+790
+00:34:41,100 --> 00:34:44,460
+query vector and each token in the signal and processing's
+
+791
+00:34:44,460 --> 00:34:46,300
+key vector.
+
+792
+00:34:46,300 --> 00:34:50,300
+Then I will also have one more operation
+
+793
+00:34:50,300 --> 00:34:52,780
+called value, which will be another transformation
+
+794
+00:34:52,780 --> 00:34:55,780
+of my token vector, into what I'm
+
+795
+00:34:55,780 --> 00:35:00,040
+going to report to the next layer of my network.
+
+796
+00:35:00,040 --> 00:35:02,580
+This is an analogy from databases
+
+797
+00:35:02,580 --> 00:35:04,840
+where I can ask a question.
+
+798
+00:35:04,840 --> 00:35:07,660
+Each bin in my big database--
+
+799
+00:35:07,660 --> 00:35:09,600
+it can know what it contains.
+
+800
+00:35:09,600 --> 00:35:11,382
+It can say, here's the key, here's
+
+801
+00:35:11,382 --> 00:35:12,840
+the relevant information I contain.
+
+802
+00:35:12,840 --> 00:35:14,680
+And then when the query matches the key,
+
+803
+00:35:14,680 --> 00:35:18,940
+you open that part of the database, that bin in the filing
+
+804
+00:35:18,940 --> 00:35:20,820
+cabinet, and you pull out the values
+
+805
+00:35:20,820 --> 00:35:22,980
+and get some information back.
+
+806
+00:35:22,980 --> 00:35:29,260
+So now the operation will be I take the similarity vector s.
+
+807
+00:35:31,667 --> 00:35:34,000
+That's going to be the weights of my linear combination,
+
+808
+00:35:34,000 --> 00:35:36,780
+but the linear combination will be applied over the value
+
+809
+00:35:36,780 --> 00:35:38,700
+vectors for each token.
+
+810
+00:35:38,700 --> 00:35:42,140
+So T out will be a weighted combination of the value
+
+811
+00:35:42,140 --> 00:35:44,100
+vectors of each token.
+
+812
+00:35:44,100 --> 00:35:49,460
+So those weights alpha, or A1 through An, over here,
+
+813
+00:35:49,460 --> 00:35:52,570
+will be determined by the score.
+
+814
+00:35:52,570 --> 00:35:56,030
+And it'll be determined by the similarity vector
+
+815
+00:35:56,030 --> 00:35:57,910
+by taking a softmax, just normalizing
+
+816
+00:35:57,910 --> 00:36:00,470
+that vector so it sums to 1.
+
+817
+00:36:00,470 --> 00:36:04,510
+So I'm going to then get finally my A's which
+
+818
+00:36:04,510 --> 00:36:08,670
+are the elements of my attention matrix, which tells me
+
+819
+00:36:08,670 --> 00:36:12,742
+how much attention to apply to each of the tokens' values.
+
+820
+00:36:12,742 --> 00:36:14,450
+And then I'll just take the weighted sum,
+
+821
+00:36:14,450 --> 00:36:16,680
+the linear combination.
+
+822
+00:36:16,680 --> 00:36:17,930
+You have a bunch of questions.
+
+823
+00:36:17,930 --> 00:36:19,430
+So let me quickly finish this slide,
+
+824
+00:36:19,430 --> 00:36:21,478
+and then we'll go over it.
+
+825
+00:36:21,478 --> 00:36:22,770
+Like, this is just a mechanism.
+
+826
+00:36:22,770 --> 00:36:24,070
+This is a concrete mechanism that
+
+827
+00:36:24,070 --> 00:36:25,237
+ends up working really well.
+
+828
+00:36:25,237 --> 00:36:27,370
+So it takes a while to get comfortable with it.
+
+829
+00:36:27,370 --> 00:36:30,430
+But I just want to point out that the key query and value
+
+830
+00:36:30,430 --> 00:36:35,830
+vectors are just linear projections of the token vector.
+
+831
+00:36:35,830 --> 00:36:38,133
+So we have one matrix that's learnable,
+
+832
+00:36:38,133 --> 00:36:40,050
+that transforms the token vector into a query;
+
+833
+00:36:40,050 --> 00:36:42,570
+another learnable matrix that transforms it into a key;
+
+834
+00:36:42,570 --> 00:36:45,110
+and another one that transforms it into a value.
+
+835
+00:36:45,110 --> 00:36:47,110
+So these are the learnable parameters.
+
+836
+00:36:47,110 --> 00:36:49,990
+These projections are the learnable parameters
+
+837
+00:36:49,990 --> 00:36:52,653
+of an attention layer.
+
+838
+00:36:52,653 --> 00:36:53,570
+Yeah, a few questions.
+
+839
+00:36:53,570 --> 00:36:54,750
+Let's go here.
+
+840
+00:36:54,750 --> 00:36:57,270
+AUDIENCE: So is the tokenizer the same
+
+841
+00:36:57,270 --> 00:37:01,830
+for-- so is it a multimodal function in that both text
+
+842
+00:37:01,830 --> 00:37:05,030
+and image can be tokenized the same way?
+
+843
+00:37:05,030 --> 00:37:07,630
+PHILLIP ISOLA: Yeah, so can text and images
+
+844
+00:37:07,630 --> 00:37:08,970
+be tokenized the same way?
+
+845
+00:37:08,970 --> 00:37:10,910
+So no, you'd have a tokenizer for text
+
+846
+00:37:10,910 --> 00:37:12,810
+and a tokenizer for images.
+
+847
+00:37:12,810 --> 00:37:14,370
+And this is after you've done that.
+
+848
+00:37:14,370 --> 00:37:15,953
+Now I'm just kind of abstractly saying
+
+849
+00:37:15,953 --> 00:37:18,910
+there is a token that represents that question and a token that
+
+850
+00:37:18,910 --> 00:37:19,970
+represents each patch.
+
+851
+00:37:19,970 --> 00:37:23,070
+And here's how you will use that question
+
+852
+00:37:23,070 --> 00:37:25,390
+to allocate attention to those patches,
+
+853
+00:37:25,390 --> 00:37:28,790
+and then process the image.
+
+854
+00:37:28,790 --> 00:37:29,587
+Question over here?
+
+855
+00:37:29,587 --> 00:37:30,670
+AUDIENCE: I was wondering.
+
+856
+00:37:30,670 --> 00:37:34,290
+So the query image is, for example, taken in the day.
+
+857
+00:37:34,290 --> 00:37:36,630
+But the key images are taken at night.
+
+858
+00:37:36,630 --> 00:37:39,250
+At what point during the layers do we modify that?
+
+859
+00:37:39,250 --> 00:37:41,515
+So we're pairing an image taken in the morning
+
+860
+00:37:41,515 --> 00:37:42,890
+compared to image taken at night.
+
+861
+00:37:42,890 --> 00:37:46,600
+Same object, but how do we change that with respect
+
+862
+00:37:46,600 --> 00:37:48,200
+to the color?
+
+863
+00:37:48,200 --> 00:37:51,180
+PHILLIP ISOLA: So the question is,
+
+864
+00:37:51,180 --> 00:37:53,720
+let's say the queries are coming from an image taken
+
+865
+00:37:53,720 --> 00:37:55,860
+during the day, and we're processing
+
+866
+00:37:55,860 --> 00:37:56,860
+an image taken at night.
+
+867
+00:37:56,860 --> 00:38:00,320
+So the keys are taken from an image taken at night.
+
+868
+00:38:00,320 --> 00:38:01,620
+How do I bridge that gap?
+
+869
+00:38:01,620 --> 00:38:04,740
+So learning will have to solve that for you.
+
+870
+00:38:04,740 --> 00:38:10,800
+So you'll train on being able to query from daytime to ask
+
+871
+00:38:10,800 --> 00:38:12,400
+questions about nighttime.
+
+872
+00:38:12,400 --> 00:38:15,180
+And the parameters will have to adjust in order to be invariant,
+
+873
+00:38:15,180 --> 00:38:17,280
+maybe to the time of day or appropriately answer
+
+874
+00:38:17,280 --> 00:38:18,220
+that question.
+
+875
+00:38:18,220 --> 00:38:20,622
+AUDIENCE: Do we choose the A, the softmax value?
+
+876
+00:38:20,622 --> 00:38:22,080
+PHILLIP ISOLA: So all the learnable
+
+877
+00:38:22,080 --> 00:38:24,235
+parameters of a transformer can contribute to this.
+
+878
+00:38:24,235 --> 00:38:26,360
+In the attention layer, there's only three matrices
+
+879
+00:38:26,360 --> 00:38:28,320
+that are learnable, which are the projection
+
+880
+00:38:28,320 --> 00:38:30,500
+from the token vector to the query vector,
+
+881
+00:38:30,500 --> 00:38:32,500
+the projection from the token vector to the key,
+
+882
+00:38:32,500 --> 00:38:34,080
+and the value.
+
+883
+00:38:34,080 --> 00:38:36,520
+Question in the back?
+
+884
+00:38:36,520 --> 00:38:37,360
+Over here, yeah.
+
+885
+00:38:37,360 --> 00:38:41,800
+AUDIENCE: So for something like a segmentation model
+
+886
+00:38:41,800 --> 00:38:46,340
+where the query basically does not change,
+
+887
+00:38:46,340 --> 00:38:48,425
+what does the query [INAUDIBLE]?
+
+888
+00:38:48,425 --> 00:38:49,300
+PHILLIP ISOLA: Great.
+
+889
+00:38:49,300 --> 00:38:51,323
+So, what if the question doesn't change?
+
+890
+00:38:51,323 --> 00:38:52,740
+I'm just trying to solve one task.
+
+891
+00:38:52,740 --> 00:38:55,160
+I'm going to talk about self-attention next, which
+
+892
+00:38:55,160 --> 00:38:57,800
+will address that setting.
+
+893
+00:38:57,800 --> 00:38:59,640
+Let's do one more over here.
+
+894
+00:38:59,640 --> 00:39:03,120
+AUDIENCE: What's the meaning of the dot
+
+895
+00:39:03,120 --> 00:39:05,920
+product between the key vector and the query vector
+
+896
+00:39:05,920 --> 00:39:07,940
+you have here on the illustration?
+
+897
+00:39:07,940 --> 00:39:09,552
+Do they have any significance?
+
+898
+00:39:09,552 --> 00:39:11,760
+PHILLIP ISOLA: The dot product between the key vector
+
+899
+00:39:11,760 --> 00:39:16,440
+and the query vector is meant to say how relevant
+
+900
+00:39:16,440 --> 00:39:19,480
+is this key to this query.
+
+901
+00:39:19,480 --> 00:39:21,200
+And so dot product is like measuring
+
+902
+00:39:21,200 --> 00:39:24,400
+the similarity between those two vectors in some way.
+
+903
+00:39:24,400 --> 00:39:27,440
+And an appropriate learning system
+
+904
+00:39:27,440 --> 00:39:31,800
+would arrive at projections W, K, V,
+
+905
+00:39:31,800 --> 00:39:39,120
+and Q that make it so that when the text is about an impala's
+
+906
+00:39:39,120 --> 00:39:43,290
+head, then the query vector will have values that
+
+907
+00:39:43,290 --> 00:39:46,250
+are similar to the key vector values
+
+908
+00:39:46,250 --> 00:39:48,063
+for images of impala heads.
+
+909
+00:39:48,063 --> 00:39:48,730
+AUDIENCE: Right.
+
+910
+00:39:48,730 --> 00:39:52,830
+So particularly interesting for the first one is value 1.
+
+911
+00:39:52,830 --> 00:39:54,730
+Does that indicate a perfect match?
+
+912
+00:39:54,730 --> 00:39:57,610
+PHILLIP ISOLA: Oh.
+
+913
+00:39:57,610 --> 00:39:58,870
+That looks like a typo.
+
+914
+00:39:58,870 --> 00:39:59,910
+Sorry.
+
+915
+00:39:59,910 --> 00:40:00,912
+So it's 0.1 up here.
+
+916
+00:40:00,912 --> 00:40:02,870
+And I think I forgot to make it 0.1 down there.
+
+917
+00:40:02,870 --> 00:40:04,170
+So that's just a typo.
+
+918
+00:40:04,170 --> 00:40:05,810
+Yeah, good question.
+
+919
+00:40:05,810 --> 00:40:08,090
+OK, let's do just one more.
+
+920
+00:40:08,090 --> 00:40:11,250
+AUDIENCE: There seem to be a mapping from the question, what
+
+921
+00:40:11,250 --> 00:40:15,990
+color is the impala head, to the query vector.
+
+922
+00:40:15,990 --> 00:40:18,290
+So what do you mean that mapping?
+
+923
+00:40:18,290 --> 00:40:19,570
+How we can [INAUDIBLE]?
+
+924
+00:40:19,570 --> 00:40:21,570
+PHILLIP ISOLA: That mapping, this query function
+
+925
+00:40:21,570 --> 00:40:26,250
+that maps from the question vector,
+
+926
+00:40:26,250 --> 00:40:29,650
+so the token vector that represents the question,
+
+927
+00:40:29,650 --> 00:40:31,930
+is given by this equation up here, which
+
+928
+00:40:31,930 --> 00:40:35,790
+is just a linear projection of the token vector.
+
+929
+00:40:35,790 --> 00:40:38,737
+So it's just a learnable matrix, WQ.
+
+930
+00:40:38,737 --> 00:40:40,070
+But it could be other functions.
+
+931
+00:40:40,070 --> 00:40:41,770
+I'm just telling you that that's the standard one
+
+932
+00:40:41,770 --> 00:40:42,590
+in transformers.
+
+933
+00:40:42,590 --> 00:40:44,310
+But you can always change that.
+
+934
+00:40:44,310 --> 00:40:46,850
+It could be an MLP.
+
+935
+00:40:46,850 --> 00:40:49,198
+So let's move on.
+
+936
+00:40:49,198 --> 00:40:51,490
+Now, I'll also tell you that the problem set coming out
+
+937
+00:40:51,490 --> 00:40:53,170
+next week, you're going to implement
+
+938
+00:40:53,170 --> 00:40:55,690
+a bunch of transformers and all the variations.
+
+939
+00:40:55,690 --> 00:40:56,850
+It'll implement GPT.
+
+940
+00:40:56,850 --> 00:40:59,150
+Like, you'll intimately know how transformers work.
+
+941
+00:40:59,150 --> 00:41:01,770
+It's a little bit more of a practical problem set.
+
+942
+00:41:01,770 --> 00:41:04,370
+But I want to now talk about the next idea, which
+
+943
+00:41:04,370 --> 00:41:06,210
+is self-attention.
+
+944
+00:41:06,210 --> 00:41:09,890
+So self-attention is saying, rather than having my queries
+
+945
+00:41:09,890 --> 00:41:12,670
+come from some external question, like some text,
+
+946
+00:41:12,670 --> 00:41:14,950
+my queries could come from this signal itself.
+
+947
+00:41:14,950 --> 00:41:18,650
+So I could have it that every single token
+
+948
+00:41:18,650 --> 00:41:20,610
+in the set of tokens I'm processing
+
+949
+00:41:20,610 --> 00:41:23,570
+can emit queries to the other tokens.
+
+950
+00:41:23,570 --> 00:41:25,810
+And that's called self-attention.
+
+951
+00:41:25,810 --> 00:41:27,190
+Here's just an intuitive example.
+
+952
+00:41:27,190 --> 00:41:30,290
+If this patch wants to get a better estimate of what
+
+953
+00:41:30,290 --> 00:41:33,730
+it is, maybe it should attend to other things that are similar,
+
+954
+00:41:33,730 --> 00:41:36,870
+and then ensemble or average the results to now say,
+
+955
+00:41:36,870 --> 00:41:41,740
+I'm not sure if I'm an impala or I'm a gazelle or what I am.
+
+956
+00:41:41,740 --> 00:41:45,700
+So I will attend to other things that look like me in the image.
+
+957
+00:41:45,700 --> 00:41:48,852
+And then I will update my own representation
+
+958
+00:41:48,852 --> 00:41:51,060
+by aggregating information from the other things that
+
+959
+00:41:51,060 --> 00:41:51,600
+are similar.
+
+960
+00:41:51,600 --> 00:41:54,820
+That's an intuition for one way that this could
+
+961
+00:41:54,820 --> 00:41:57,380
+solve problems of interest.
+
+962
+00:41:57,380 --> 00:41:59,300
+But in general, it might be learning
+
+963
+00:41:59,300 --> 00:42:01,620
+very complicated ways of processing information
+
+964
+00:42:01,620 --> 00:42:04,300
+in the signal.
+
+965
+00:42:04,300 --> 00:42:09,900
+Let me show you this video of the self-attention applied
+
+966
+00:42:09,900 --> 00:42:14,740
+to patches in these videos when you are looking
+
+967
+00:42:14,740 --> 00:42:19,100
+at the self-attention of a token that corresponds
+
+968
+00:42:19,100 --> 00:42:23,700
+to a place on this horse to every other token in the image.
+
+969
+00:42:23,700 --> 00:42:26,100
+And for the dog, it will be a token on the dog,
+
+970
+00:42:26,100 --> 00:42:28,980
+and how much self-attention it applies
+
+971
+00:42:28,980 --> 00:42:32,460
+to every other token in the image or in the video.
+
+972
+00:42:32,460 --> 00:42:36,980
+So what you'll notice is that the horse token
+
+973
+00:42:36,980 --> 00:42:39,220
+attends to the horse patches.
+
+974
+00:42:39,220 --> 00:42:41,160
+So it's solving the segmentation problem.
+
+975
+00:42:41,160 --> 00:42:42,993
+It's like, if I want to understand something
+
+976
+00:42:42,993 --> 00:42:44,820
+about this part of the image, I should
+
+977
+00:42:44,820 --> 00:42:46,737
+attend to other things that are related to it,
+
+978
+00:42:46,737 --> 00:42:48,960
+and I shouldn't cross object boundaries.
+
+979
+00:42:48,960 --> 00:42:51,120
+This is the natural segmentation of that scene.
+
+980
+00:42:51,120 --> 00:42:52,820
+And that's what the attention function
+
+981
+00:42:52,820 --> 00:42:54,380
+learns for this transformer, which
+
+982
+00:42:54,380 --> 00:42:56,140
+is doing visual recognition.
+
+983
+00:42:56,140 --> 00:42:56,960
+Yeah, question.
+
+984
+00:42:56,960 --> 00:43:00,540
+AUDIENCE: So in the examples that you're showing,
+
+985
+00:43:00,540 --> 00:43:05,780
+it's like the patch is able to intelligently figure out
+
+986
+00:43:05,780 --> 00:43:08,220
+which parts of the image to attend to.
+
+987
+00:43:08,220 --> 00:43:11,640
+But given some arbitrary question or arbitrary task,
+
+988
+00:43:11,640 --> 00:43:15,740
+how does it choose of all the tokens in the image to say,
+
+989
+00:43:15,740 --> 00:43:17,880
+like, these are the ones I care about?
+
+990
+00:43:17,880 --> 00:43:22,340
+PHILLIP ISOLA: So how does the attention mechanism figure out
+
+991
+00:43:22,340 --> 00:43:25,600
+what to actually attend to, what its query vector should be,
+
+992
+00:43:25,600 --> 00:43:28,220
+what its value vector should be?
+
+993
+00:43:28,220 --> 00:43:29,700
+That's just machine learning.
+
+994
+00:43:29,700 --> 00:43:34,420
+That's just backpropagation to minimize your objective is going
+
+995
+00:43:34,420 --> 00:43:37,790
+to find the setting of all the weights, the mechanism that
+
+996
+00:43:37,790 --> 00:43:39,212
+will achieve good behavior.
+
+997
+00:43:39,212 --> 00:43:40,670
+And it turns out the mechanism that
+
+998
+00:43:40,670 --> 00:43:43,310
+achieves good behavior often has an intuitive interpretation
+
+999
+00:43:43,310 --> 00:43:45,612
+like I'm giving you, but it doesn't have to.
+
+1000
+00:43:45,612 --> 00:43:47,070
+To solve recognition, maybe I don't
+
+1001
+00:43:47,070 --> 00:43:49,588
+have to have the patches on the horse
+
+1002
+00:43:49,588 --> 00:43:51,130
+attend to other patches on the horse.
+
+1003
+00:43:51,130 --> 00:43:52,550
+Maybe I could have attended to the background
+
+1004
+00:43:52,550 --> 00:43:54,300
+and done some inference about the context.
+
+1005
+00:43:54,300 --> 00:43:57,590
+If it's on the field, and therefore it might be a horse.
+
+1006
+00:43:57,590 --> 00:43:59,030
+But it turns out that it comes up
+
+1007
+00:43:59,030 --> 00:44:00,572
+with a more intuitive strategy, which
+
+1008
+00:44:00,572 --> 00:44:02,350
+is the horse attends to other horse parts,
+
+1009
+00:44:02,350 --> 00:44:03,910
+and then decides what it is.
+
+1010
+00:44:03,910 --> 00:44:04,950
+Yeah.
+
+1011
+00:44:04,950 --> 00:44:07,270
+AUDIENCE: It's more of a similar question,
+
+1012
+00:44:07,270 --> 00:44:09,650
+but this seems like an observation,
+
+1013
+00:44:09,650 --> 00:44:12,490
+but does it actually always happen?
+
+1014
+00:44:12,490 --> 00:44:15,750
+Or is there a way to interpret or force the model
+
+1015
+00:44:15,750 --> 00:44:17,430
+to train this kind of behavior?
+
+1016
+00:44:17,430 --> 00:44:18,930
+PHILLIP ISOLA: Yeah, great question.
+
+1017
+00:44:18,930 --> 00:44:19,850
+This seems like an observation.
+
+1018
+00:44:19,850 --> 00:44:20,770
+Does it really happen?
+
+1019
+00:44:20,770 --> 00:44:22,790
+Can you enforce this behavior?
+
+1020
+00:44:22,790 --> 00:44:24,445
+This is more empirical science.
+
+1021
+00:44:24,445 --> 00:44:26,070
+This is saying, we have an architecture
+
+1022
+00:44:26,070 --> 00:44:27,890
+and we're investigating what it discovered.
+
+1023
+00:44:27,890 --> 00:44:29,598
+And then I'm trying to provide intuitions
+
+1024
+00:44:29,598 --> 00:44:33,270
+for why it would work that way, why it discovered that solution.
+
+1025
+00:44:33,270 --> 00:44:35,110
+But it's not provable.
+
+1026
+00:44:35,110 --> 00:44:37,790
+It's a property of the data and the statistics
+
+1027
+00:44:37,790 --> 00:44:40,083
+of the world in combination with the optimization
+
+1028
+00:44:40,083 --> 00:44:42,250
+and the transformer architecture that ended up here.
+
+1029
+00:44:42,250 --> 00:44:44,030
+And there's a lot of interesting empirical science
+
+1030
+00:44:44,030 --> 00:44:46,750
+on what do transformers learn, what internal representations do
+
+1031
+00:44:46,750 --> 00:44:49,210
+they have, what are the circuits like.
+
+1032
+00:44:49,210 --> 00:44:51,830
+There's this idea of interpretability research,
+
+1033
+00:44:51,830 --> 00:44:54,285
+trying to understand what these things learn.
+
+1034
+00:44:54,285 --> 00:44:55,910
+But there's another lens, which is just
+
+1035
+00:44:55,910 --> 00:44:58,160
+who cares what they learn-- let's understand ML theory
+
+1036
+00:44:58,160 --> 00:45:00,550
+and how gradient descent on objective functions
+
+1037
+00:45:00,550 --> 00:45:04,170
+with high-capacity networks will converge on good solutions,
+
+1038
+00:45:04,170 --> 00:45:06,190
+but not care about the internal structure.
+
+1039
+00:45:06,190 --> 00:45:08,830
+So you can look at it from either lens.
+
+1040
+00:45:08,830 --> 00:45:10,510
+I think I need to move on, but we'll
+
+1041
+00:45:10,510 --> 00:45:14,270
+come back and have more time for questions soon.
+
+1042
+00:45:14,270 --> 00:45:19,105
+So here is a fully connected layer with learnable parameters
+
+1043
+00:45:19,105 --> 00:45:21,230
+for how to take a weighted combination of the input
+
+1044
+00:45:21,230 --> 00:45:23,910
+token sequence to the output token sequence.
+
+1045
+00:45:23,910 --> 00:45:26,530
+And here is the idea of self-attention,
+
+1046
+00:45:26,530 --> 00:45:29,590
+which is that the weights of that linear combination
+
+1047
+00:45:29,590 --> 00:45:31,840
+are a function of the input sequence.
+
+1048
+00:45:31,840 --> 00:45:37,600
+So the F that's going to determine our queries and keys,
+
+1049
+00:45:37,600 --> 00:45:39,840
+or in particular our queries, is going
+
+1050
+00:45:39,840 --> 00:45:45,600
+to be coming from the input token sequence T in.
+
+1051
+00:45:45,600 --> 00:45:47,680
+So how is it going to come from them?
+
+1052
+00:45:47,680 --> 00:45:52,160
+It's going to be exactly the same type of math
+
+1053
+00:45:52,160 --> 00:45:54,140
+that I showed you a few slides back.
+
+1054
+00:45:54,140 --> 00:45:56,600
+But here's how it looks for self-attention.
+
+1055
+00:45:56,600 --> 00:45:58,300
+So I have my T in.
+
+1056
+00:45:58,300 --> 00:46:00,520
+And every single token in my input sequence
+
+1057
+00:46:00,520 --> 00:46:04,200
+is going to emit a key, a value, and a query vector.
+
+1058
+00:46:04,200 --> 00:46:08,600
+It's going to emit those via WQ, which
+
+1059
+00:46:08,600 --> 00:46:12,240
+is a projection from its token vector into a query vector
+
+1060
+00:46:12,240 --> 00:46:15,240
+WK, which is a projection from its token vectors
+
+1061
+00:46:15,240 --> 00:46:18,120
+to its key vector, and the same for the value vector.
+
+1062
+00:46:18,120 --> 00:46:23,120
+So now I will get a set of queries, a set of keys,
+
+1063
+00:46:23,120 --> 00:46:24,260
+and a set of values.
+
+1064
+00:46:24,260 --> 00:46:28,040
+I can stack them up into the query matrix, which
+
+1065
+00:46:28,040 --> 00:46:29,840
+is for every row in that matrix it will
+
+1066
+00:46:29,840 --> 00:46:32,160
+be the query for one of my input tokens,
+
+1067
+00:46:32,160 --> 00:46:35,200
+for every key matrix and the value matrix.
+
+1068
+00:46:35,200 --> 00:46:41,280
+And this is just saying that I can represent the query matrix
+
+1069
+00:46:41,280 --> 00:46:44,900
+as just the matrix product of-- it's just a matmul,
+
+1070
+00:46:44,900 --> 00:46:49,760
+it's just a matrix multiply of the token matrix
+
+1071
+00:46:49,760 --> 00:46:56,360
+times the learnable projection to queries.
+
+1072
+00:46:56,360 --> 00:47:00,040
+So this is another nice thing about the design of transformers
+
+1073
+00:47:00,040 --> 00:47:03,800
+is everything just becomes these matrix multiplies in a very
+
+1074
+00:47:03,800 --> 00:47:05,380
+simple, notational form.
+
+1075
+00:47:05,380 --> 00:47:07,040
+So this is my queries.
+
+1076
+00:47:07,040 --> 00:47:10,920
+And they're just T in times WQ.
+
+1077
+00:47:10,920 --> 00:47:15,040
+So now I take all of these matrices.
+
+1078
+00:47:15,040 --> 00:47:18,880
+And in order to get the weight in the linear combination
+
+1079
+00:47:18,880 --> 00:47:22,710
+for this unit of T out from this unit of T in-- so remember,
+
+1080
+00:47:22,710 --> 00:47:24,460
+the linear combination is over the values.
+
+1081
+00:47:24,460 --> 00:47:26,220
+The values are in this teal color.
+
+1082
+00:47:26,220 --> 00:47:28,770
+So I'm going to take a linear combination over the values.
+
+1083
+00:47:28,770 --> 00:47:31,465
+And the weight that I'll assign to that linear combination is
+
+1084
+00:47:31,465 --> 00:47:34,090
+going to be the inner product, the dot product, between the key
+
+1085
+00:47:34,090 --> 00:47:38,910
+and the query for this token
+
+1086
+00:47:38,910 --> 00:47:42,770
+So the amount of self-attention that I apply to myself
+
+1087
+00:47:42,770 --> 00:47:44,930
+is going to be given by this gray box, which
+
+1088
+00:47:44,930 --> 00:47:46,850
+is just this dot product.
+
+1089
+00:47:46,850 --> 00:47:49,870
+And if you work out the linear algebra,
+
+1090
+00:47:49,870 --> 00:47:51,690
+you can realize that this will just
+
+1091
+00:47:51,690 --> 00:47:57,570
+be the matrix multiply of the query times the key matrix.
+
+1092
+00:47:57,570 --> 00:47:59,650
+And then that will just be every query vector
+
+1093
+00:47:59,650 --> 00:48:03,870
+gets multiplied by every key vector.
+
+1094
+00:48:03,870 --> 00:48:05,370
+And that results in the value.
+
+1095
+00:48:05,370 --> 00:48:09,810
+And the values will then be stacked up into an n
+
+1096
+00:48:09,810 --> 00:48:10,490
+by n matrix.
+
+1097
+00:48:10,490 --> 00:48:12,990
+I'll have n input tokens to n output tokens.
+
+1098
+00:48:12,990 --> 00:48:15,730
+That's an n by n set of weights that determine
+
+1099
+00:48:15,730 --> 00:48:16,950
+that linear combination.
+
+1100
+00:48:19,650 --> 00:48:23,010
+So mathematically, we can condense all of this
+
+1101
+00:48:23,010 --> 00:48:24,270
+into this simple equation.
+
+1102
+00:48:24,270 --> 00:48:26,410
+This is the famous attention equation,
+
+1103
+00:48:26,410 --> 00:48:30,370
+which is going to be the query matrix times the key matrix
+
+1104
+00:48:30,370 --> 00:48:31,490
+transpose.
+
+1105
+00:48:31,490 --> 00:48:34,250
+So if I transpose, I'm going to be
+
+1106
+00:48:34,250 --> 00:48:36,770
+taking the dot product between all the pairs of queries
+
+1107
+00:48:36,770 --> 00:48:38,170
+and keys.
+
+1108
+00:48:38,170 --> 00:48:42,490
+And then I'll divide by the square root
+
+1109
+00:48:42,490 --> 00:48:48,850
+of the dimensionality of the vectors.
+
+1110
+00:48:48,850 --> 00:48:51,270
+So the keys' queries and values are M dimensional vectors.
+
+1111
+00:48:51,270 --> 00:48:52,110
+They don't have to be the same.
+
+1112
+00:48:52,110 --> 00:48:53,110
+They don't have to be D dimensional.
+
+1113
+00:48:53,110 --> 00:48:54,470
+Remember, the tokens were D dimensional,
+
+1114
+00:48:54,470 --> 00:48:56,262
+but in general the queries' keys and values
+
+1115
+00:48:56,262 --> 00:48:57,890
+could be of some other dimensionality.
+
+1116
+00:48:57,890 --> 00:48:59,770
+I'll divide by that dimensionality.
+
+1117
+00:48:59,770 --> 00:49:03,050
+And then I'll take a softmax to ensure that everything
+
+1118
+00:49:03,050 --> 00:49:04,190
+sums to 1.
+
+1119
+00:49:04,190 --> 00:49:05,810
+So that has some nice normalization
+
+1120
+00:49:05,810 --> 00:49:07,770
+and numerical advantages.
+
+1121
+00:49:07,770 --> 00:49:09,370
+And then finally, the output will just
+
+1122
+00:49:09,370 --> 00:49:17,010
+be the attention matrix times the value matrix of the input
+
+1123
+00:49:17,010 --> 00:49:18,610
+set of tokens.
+
+1124
+00:49:18,610 --> 00:49:22,090
+So it's a lot of little nitty-gritty linear algebra
+
+1125
+00:49:22,090 --> 00:49:23,340
+to work out.
+
+1126
+00:49:23,340 --> 00:49:28,220
+But it comes to a very simple equation in the end.
+
+1127
+00:49:28,220 --> 00:49:29,450
+Yeah.
+
+1128
+00:49:29,450 --> 00:49:32,220
+AUDIENCE: Like, is there a good intuitive reason
+
+1129
+00:49:32,220 --> 00:49:35,980
+for why we bother learning parameters or matrices
+
+1130
+00:49:35,980 --> 00:49:39,660
+for human case separately, rather than learning the values
+
+1131
+00:49:39,660 --> 00:49:41,220
+of the A matrix directly?
+
+1132
+00:49:41,220 --> 00:49:43,220
+At the end of the day, T in is going
+
+1133
+00:49:43,220 --> 00:49:46,340
+to be a matrix multiply, which is
+
+1134
+00:49:46,340 --> 00:49:49,100
+a function of two learned matrices, which
+
+1135
+00:49:49,100 --> 00:49:52,355
+is A. Dot product with another learned matrix, which
+
+1136
+00:49:52,355 --> 00:49:52,980
+is [INAUDIBLE].
+
+1137
+00:49:52,980 --> 00:49:53,855
+PHILLIP ISOLA: Right.
+
+1138
+00:49:53,855 --> 00:49:56,100
+AUDIENCE: So is there something about decomposing A
+
+1139
+00:49:56,100 --> 00:50:02,280
+into the product of Q and K that leads to like--
+
+1140
+00:50:02,280 --> 00:50:04,220
+I'm not asking for a theoretical argument.
+
+1141
+00:50:04,220 --> 00:50:06,840
+PHILLIP ISOLA: Yeah, no, no, it's a good question.
+
+1142
+00:50:06,840 --> 00:50:08,680
+Like, why not learn A directly?
+
+1143
+00:50:11,780 --> 00:50:13,300
+The basic statement is empirically
+
+1144
+00:50:13,300 --> 00:50:14,420
+the transformer recipe--
+
+1145
+00:50:14,420 --> 00:50:17,180
+I'll specify it-- just seems to work the best at so
+
+1146
+00:50:17,180 --> 00:50:19,700
+many different things.
+
+1147
+00:50:19,700 --> 00:50:22,140
+I don't know about direct comparisons between learning
+
+1148
+00:50:22,140 --> 00:50:25,020
+A versus using this outer product
+
+1149
+00:50:25,020 --> 00:50:28,560
+of the queries and the keys that are also learnable projections.
+
+1150
+00:50:28,560 --> 00:50:31,980
+But you can start to count how many learnable parameters there
+
+1151
+00:50:31,980 --> 00:50:33,060
+are and what is.
+
+1152
+00:50:33,060 --> 00:50:36,300
+So at the end of the day, we have some parameterized mapping
+
+1153
+00:50:36,300 --> 00:50:37,320
+from T in to T out.
+
+1154
+00:50:37,320 --> 00:50:40,380
+And you can think, if I learned A directly, I
+
+1155
+00:50:40,380 --> 00:50:43,100
+would have to learn n squared parameters,
+
+1156
+00:50:43,100 --> 00:50:46,220
+where n is the number of tokens in my sequence.
+
+1157
+00:50:46,220 --> 00:50:50,910
+If I learn WQ, WK, and WV, I'm also
+
+1158
+00:50:50,910 --> 00:50:52,660
+learning a lot of parameters, but it's not
+
+1159
+00:50:52,660 --> 00:50:54,035
+dependent on the sequence length.
+
+1160
+00:50:54,035 --> 00:50:55,900
+Now it's dependent on the dimensionality
+
+1161
+00:50:55,900 --> 00:50:57,640
+of my token vectors.
+
+1162
+00:50:57,640 --> 00:50:59,980
+So it's dependent on D, as opposed to n.
+
+1163
+00:50:59,980 --> 00:51:03,260
+Now transformers are typically applied in modern AI
+
+1164
+00:51:03,260 --> 00:51:05,760
+to extremely long sequences of tokens,
+
+1165
+00:51:05,760 --> 00:51:09,780
+maybe like length million sequences of tokens, even.
+
+1166
+00:51:09,780 --> 00:51:13,780
+Like, modern LLMs, you can have paragraphs and paragraphs
+
+1167
+00:51:13,780 --> 00:51:16,060
+and whole books that you're processing.
+
+1168
+00:51:16,060 --> 00:51:18,572
+So n is usually very large, and D is much smaller.
+
+1169
+00:51:18,572 --> 00:51:20,530
+So there's actually fewer learnable parameters.
+
+1170
+00:51:20,530 --> 00:51:23,270
+That's just one perspective.
+
+1171
+00:51:23,270 --> 00:51:24,170
+OK, one more.
+
+1172
+00:51:24,170 --> 00:51:27,310
+AUDIENCE: Yeah, I just wonder if the size
+
+1173
+00:51:27,310 --> 00:51:31,230
+of the I or n or a different tree
+
+1174
+00:51:31,230 --> 00:51:34,550
+or different update for your neural network could be variable
+
+1175
+00:51:34,550 --> 00:51:36,590
+or has to be fixed?
+
+1176
+00:51:36,590 --> 00:51:41,030
+Because I feel like language is so different from images.
+
+1177
+00:51:41,030 --> 00:51:44,870
+And the sequence, the length of your words,
+
+1178
+00:51:44,870 --> 00:51:47,310
+can change different [? things. ?]
+
+1179
+00:51:47,310 --> 00:51:49,662
+PHILLIP ISOLA: Yeah, OK, I'm not sure I've
+
+1180
+00:51:49,662 --> 00:51:51,370
+got the first part of the question quite.
+
+1181
+00:51:51,370 --> 00:51:54,270
+But I think you're asking, shouldn't we
+
+1182
+00:51:54,270 --> 00:51:59,450
+have a different way of processing language and vision?
+
+1183
+00:51:59,450 --> 00:52:01,290
+Can you adapt your architecture to that?
+
+1184
+00:52:01,290 --> 00:52:04,410
+And the answer is, yeah, that is of interest.
+
+1185
+00:52:04,410 --> 00:52:07,550
+But again, the power of the transformer and the transformer
+
+1186
+00:52:07,550 --> 00:52:11,510
+paradigm is only put in domain knowledge
+
+1187
+00:52:11,510 --> 00:52:13,910
+into the first step, plus a few other places,
+
+1188
+00:52:13,910 --> 00:52:15,910
+like in positional encoding, which we'll get to,
+
+1189
+00:52:15,910 --> 00:52:17,310
+you can put in domain knowledge.
+
+1190
+00:52:17,310 --> 00:52:20,110
+And otherwise use a very generic computational framework,
+
+1191
+00:52:20,110 --> 00:52:26,402
+which has the advantage of just if you homogenize, then
+
+1192
+00:52:26,402 --> 00:52:28,110
+you can get advantages of everything runs
+
+1193
+00:52:28,110 --> 00:52:29,610
+on the same commodity hardware.
+
+1194
+00:52:29,610 --> 00:52:31,010
+The code bases are all the same.
+
+1195
+00:52:31,010 --> 00:52:33,905
+The lessons are transferable between different modalities.
+
+1196
+00:52:33,905 --> 00:52:35,530
+So there's a lot of advantages to that.
+
+1197
+00:52:35,530 --> 00:52:39,810
+But specialization to modality is of interest as well.
+
+1198
+00:52:39,810 --> 00:52:41,570
+It's just a trade-off, a back and forth.
+
+1199
+00:52:41,570 --> 00:52:42,945
+How much do you specialize versus
+
+1200
+00:52:42,945 --> 00:52:45,870
+how much do you make homogeneous approaches?
+
+1201
+00:52:45,870 --> 00:52:47,690
+I'm not sure I quite answered the question,
+
+1202
+00:52:47,690 --> 00:52:50,030
+but I think I need to move on to get through everything.
+
+1203
+00:52:50,030 --> 00:52:51,910
+We can talk after.
+
+1204
+00:52:51,910 --> 00:52:56,690
+So as I said, the attention layer is, at the end of the day,
+
+1205
+00:52:56,690 --> 00:52:58,170
+just a linear combination.
+
+1206
+00:52:58,170 --> 00:53:01,270
+So we can now think of a family of different linear combinations
+
+1207
+00:53:01,270 --> 00:53:03,030
+of neurons that we've seen.
+
+1208
+00:53:03,030 --> 00:53:05,970
+So the first one was in the MLP, the fully connected layer,
+
+1209
+00:53:05,970 --> 00:53:08,310
+where every single edge in the mapping
+
+1210
+00:53:08,310 --> 00:53:11,340
+from input vector to output vector is a learnable parameter.
+
+1211
+00:53:11,340 --> 00:53:13,090
+So we have n squared learnable parameters.
+
+1212
+00:53:13,090 --> 00:53:16,140
+If the input is in Rn and the output is in Rn.
+
+1213
+00:53:16,140 --> 00:53:21,040
+And we also have some bias terms that we can add, n bias terms.
+
+1214
+00:53:21,040 --> 00:53:24,410
+In convolution, we have a much lower rank matrix.
+
+1215
+00:53:24,410 --> 00:53:26,160
+But remember, we said that the convolution
+
+1216
+00:53:26,160 --> 00:53:28,680
+can be represented as a matrix.
+
+1217
+00:53:28,680 --> 00:53:31,640
+For a fixed dimensional input, we can represent the convolution
+
+1218
+00:53:31,640 --> 00:53:34,600
+as a fixed dimensional matrix.
+
+1219
+00:53:34,600 --> 00:53:38,120
+But the interesting thing is it has this Toeplitz
+
+1220
+00:53:38,120 --> 00:53:41,020
+structure, where the diagonals all share the same value.
+
+1221
+00:53:41,020 --> 00:53:44,000
+So the colors indicate the unique values in this matrix.
+
+1222
+00:53:44,000 --> 00:53:45,860
+So there's far fewer learnable parameters.
+
+1223
+00:53:45,860 --> 00:53:47,260
+There's only four learnable parameters
+
+1224
+00:53:47,260 --> 00:53:48,920
+if we include the bias, as opposed to n
+
+1225
+00:53:48,920 --> 00:53:51,880
+squared learnable parameters, for this toy problem where
+
+1226
+00:53:51,880 --> 00:53:54,400
+the convolutional kernel size is 3.
+
+1227
+00:53:54,400 --> 00:53:58,600
+So every three neurons in the input
+
+1228
+00:53:58,600 --> 00:54:00,840
+map to one neuron in the output.
+
+1229
+00:54:00,840 --> 00:54:02,680
+And convolution has this nice property
+
+1230
+00:54:02,680 --> 00:54:04,800
+of translation equivariance, conv
+
+1231
+00:54:04,800 --> 00:54:09,760
+of trans x is trans of conv x.
+
+1232
+00:54:09,760 --> 00:54:11,677
+And that comes because of this weight sharing.
+
+1233
+00:54:11,677 --> 00:54:12,468
+You kind of see it.
+
+1234
+00:54:12,468 --> 00:54:13,960
+Like, if I translate the input, I'm
+
+1235
+00:54:13,960 --> 00:54:16,600
+just the same values at a different location
+
+1236
+00:54:16,600 --> 00:54:18,440
+in that matrix.
+
+1237
+00:54:18,440 --> 00:54:21,520
+So what is the transformer attention matrix
+
+1238
+00:54:21,520 --> 00:54:23,920
+look like with this notation?
+
+1239
+00:54:23,920 --> 00:54:25,838
+So what do you think?
+
+1240
+00:54:25,838 --> 00:54:28,380
+This is probably pretty tricky to work out just in your head.
+
+1241
+00:54:28,380 --> 00:54:30,297
+But what do you think it's going to look like?
+
+1242
+00:54:30,297 --> 00:54:32,100
+I'm going to draw it on the next animation.
+
+1243
+00:54:32,100 --> 00:54:33,100
+So anyone want to guess?
+
+1244
+00:54:33,100 --> 00:54:36,440
+Like, what is the transformer's matrix of unique values
+
+1245
+00:54:36,440 --> 00:54:37,840
+going to look like?
+
+1246
+00:54:37,840 --> 00:54:38,900
+OK, yeah, let's go here.
+
+1247
+00:54:38,900 --> 00:54:41,192
+AUDIENCE: So it's not going to necessarily look sparse,
+
+1248
+00:54:41,192 --> 00:54:42,640
+but it should be low rank.
+
+1249
+00:54:42,640 --> 00:54:44,955
+PHILLIP ISOLA: So it will be low rank.
+
+1250
+00:54:44,955 --> 00:54:46,580
+You said it's not going to look sparse.
+
+1251
+00:54:46,580 --> 00:54:48,830
+I think it does look sparse, but we'll see, we'll see.
+
+1252
+00:54:48,830 --> 00:54:50,640
+Yeah, OK, any others?
+
+1253
+00:54:50,640 --> 00:54:54,640
+It's going to be some low-rank sparse matrix.
+
+1254
+00:54:54,640 --> 00:54:56,140
+It's a little hard to work it out.
+
+1255
+00:54:56,140 --> 00:54:59,460
+So I also have to tell you how I'm notating things.
+
+1256
+00:54:59,460 --> 00:55:02,560
+So I mean, it's not like you were wrong.
+
+1257
+00:55:02,560 --> 00:55:04,320
+So I'm going to notate things where
+
+1258
+00:55:04,320 --> 00:55:06,760
+I'm going to take the first three neurons
+
+1259
+00:55:06,760 --> 00:55:08,583
+and call that one token, and the next three
+
+1260
+00:55:08,583 --> 00:55:09,500
+neurons another token.
+
+1261
+00:55:09,500 --> 00:55:12,550
+So I'm factorizing the input signal into these two tokens
+
+1262
+00:55:12,550 --> 00:55:13,050
+now.
+
+1263
+00:55:13,050 --> 00:55:17,050
+And then those two tokens get to attend and interact
+
+1264
+00:55:17,050 --> 00:55:18,610
+with each other.
+
+1265
+00:55:18,610 --> 00:55:22,410
+But that just corresponds to using the same set of weights
+
+1266
+00:55:22,410 --> 00:55:24,630
+for each element of the token vector,
+
+1267
+00:55:24,630 --> 00:55:27,890
+because a linear combination of rows of a matrix
+
+1268
+00:55:27,890 --> 00:55:30,170
+is using the same weights for every element of the row
+
+1269
+00:55:30,170 --> 00:55:31,950
+when I'm taking that combination.
+
+1270
+00:55:31,950 --> 00:55:33,310
+So you can work it out.
+
+1271
+00:55:33,310 --> 00:55:35,685
+Think of it for yourself, but this is what it looks like.
+
+1272
+00:55:35,685 --> 00:55:38,730
+So transformers have these layers or linear layers.
+
+1273
+00:55:38,730 --> 00:55:42,630
+Of course, the weights are coming from queries and values.
+
+1274
+00:55:42,630 --> 00:55:44,338
+So there's another mechanism on the side.
+
+1275
+00:55:44,338 --> 00:55:46,922
+But at the end of the day, it's just like this low-rank sparse
+
+1276
+00:55:46,922 --> 00:55:47,550
+transformation.
+
+1277
+00:55:47,550 --> 00:55:49,810
+It has fewer linear learnable parameters, which
+
+1278
+00:55:49,810 --> 00:55:53,443
+is advantageous in some ways.
+
+1279
+00:55:53,443 --> 00:55:55,110
+And then the other interesting property,
+
+1280
+00:55:55,110 --> 00:55:56,568
+which I'll describe in a minute, is
+
+1281
+00:55:56,568 --> 00:56:00,770
+that transformers are equivariant with permutations
+
+1282
+00:56:00,770 --> 00:56:01,510
+of the input.
+
+1283
+00:56:01,510 --> 00:56:05,450
+But we'll come back to that, just like graph nets.
+
+1284
+00:56:05,450 --> 00:56:06,250
+OK.
+
+1285
+00:56:06,250 --> 00:56:07,310
+So here's the MLP.
+
+1286
+00:56:07,310 --> 00:56:10,850
+Here's the vanilla transformer with self-attention.
+
+1287
+00:56:10,850 --> 00:56:13,730
+And this is roughly the standard architecture
+
+1288
+00:56:13,730 --> 00:56:15,570
+we use in computer vision.
+
+1289
+00:56:15,570 --> 00:56:17,850
+The architecture we use in language processing
+
+1290
+00:56:17,850 --> 00:56:21,210
+has one small difference, which I'll come to in a minute.
+
+1291
+00:56:21,210 --> 00:56:24,650
+A few little details to add on top of this--
+
+1292
+00:56:24,650 --> 00:56:27,850
+I think I won't talk about multi-headed self-attention.
+
+1293
+00:56:27,850 --> 00:56:29,090
+It's in the reading.
+
+1294
+00:56:29,090 --> 00:56:30,110
+There's a section on it.
+
+1295
+00:56:30,110 --> 00:56:33,370
+But the idea is that, rather than just having one attention
+
+1296
+00:56:33,370 --> 00:56:35,910
+layer, I can have k attention layers in parallel,
+
+1297
+00:56:35,910 --> 00:56:37,167
+and then I can aggregate them.
+
+1298
+00:56:37,167 --> 00:56:39,750
+And each attention layer can be attending to different things.
+
+1299
+00:56:39,750 --> 00:56:42,050
+One can learn to attend to shapes
+
+1300
+00:56:42,050 --> 00:56:46,250
+and one can learn to attend to textures, for example.
+
+1301
+00:56:46,250 --> 00:56:50,510
+OK, so here is the complete vision transformer architecture.
+
+1302
+00:56:50,510 --> 00:56:55,510
+This is the standard way of processing spatial signals.
+
+1303
+00:56:55,510 --> 00:56:58,490
+So images in particular, but also audio and other things
+
+1304
+00:56:58,490 --> 00:57:00,810
+can be used with the same architecture.
+
+1305
+00:57:00,810 --> 00:57:03,270
+And there's only a few things that you haven't seen.
+
+1306
+00:57:03,270 --> 00:57:06,490
+So it's going to be a set of tokens,
+
+1307
+00:57:06,490 --> 00:57:08,760
+multi-headed self-attention, which is MSA.
+
+1308
+00:57:08,760 --> 00:57:12,140
+So that's just multiple runs of attention, then combining them
+
+1309
+00:57:12,140 --> 00:57:15,780
+all together, and then point-wise nonlinearity,
+
+1310
+00:57:15,780 --> 00:57:17,380
+which is going to be an MLP.
+
+1311
+00:57:17,380 --> 00:57:19,120
+The blue are the learnable parameters.
+
+1312
+00:57:19,120 --> 00:57:20,560
+Everything else is not learnable.
+
+1313
+00:57:20,560 --> 00:57:23,460
+So the queries and the keys and the values,
+
+1314
+00:57:23,460 --> 00:57:27,125
+which are indicated by this F, well, that's really the queries,
+
+1315
+00:57:27,125 --> 00:57:28,500
+but there's also keys and values.
+
+1316
+00:57:28,500 --> 00:57:29,520
+That's learnable.
+
+1317
+00:57:29,520 --> 00:57:32,320
+And the parameters of the token-wise MLP are learnable.
+
+1318
+00:57:32,320 --> 00:57:33,780
+Everything else is not.
+
+1319
+00:57:33,780 --> 00:57:36,420
+These pluses here are residual connections.
+
+1320
+00:57:36,420 --> 00:57:39,460
+So I think in the CNN lecture, we talked about ResNets.
+
+1321
+00:57:39,460 --> 00:57:43,360
+So we'll just take an identity pass around all this processing.
+
+1322
+00:57:43,360 --> 00:57:45,780
+And that has some advantages.
+
+1323
+00:57:45,780 --> 00:57:47,780
+And then there's one other little layer,
+
+1324
+00:57:47,780 --> 00:57:49,580
+which I'm labeling token norm.
+
+1325
+00:57:49,580 --> 00:57:53,820
+It's often more commonly called in the literature LayerNorm.
+
+1326
+00:57:53,820 --> 00:57:58,380
+There's not really an obvious kind of layer structure here.
+
+1327
+00:57:58,380 --> 00:58:02,220
+Really, this operation is just taking the vector
+
+1328
+00:58:02,220 --> 00:58:06,452
+and normalizing it to have zero mean and unit variance.
+
+1329
+00:58:06,452 --> 00:58:08,160
+So I'm taking the elements of this vector
+
+1330
+00:58:08,160 --> 00:58:09,702
+and I'm just dividing by the variance
+
+1331
+00:58:09,702 --> 00:58:11,700
+and subtracting out the mean.
+
+1332
+00:58:11,700 --> 00:58:16,872
+So that connects a little bit to what Jeremy was talking about
+
+1333
+00:58:16,872 --> 00:58:18,580
+and what you've done on your problem sets
+
+1334
+00:58:18,580 --> 00:58:20,413
+or what you're working on your problem sets,
+
+1335
+00:58:20,413 --> 00:58:24,860
+where it's good to normalize activations and weight
+
+1336
+00:58:24,860 --> 00:58:27,960
+updates in your network for a lot of reasons.
+
+1337
+00:58:27,960 --> 00:58:29,980
+One reason that Jeremy alluded to
+
+1338
+00:58:29,980 --> 00:58:33,140
+is, for stability of optimization
+
+1339
+00:58:33,140 --> 00:58:36,060
+and taking the steepest descent direction,
+
+1340
+00:58:36,060 --> 00:58:37,628
+you need to think about the norms.
+
+1341
+00:58:37,628 --> 00:58:39,420
+And you might want to normalize your weight
+
+1342
+00:58:39,420 --> 00:58:41,120
+updates in a particular norm.
+
+1343
+00:58:41,120 --> 00:58:42,643
+And your problem set goes into that.
+
+1344
+00:58:42,643 --> 00:58:44,560
+Here we're not normalizing the weight updates.
+
+1345
+00:58:44,560 --> 00:58:46,040
+We're normalizing the activations.
+
+1346
+00:58:46,040 --> 00:58:49,300
+But you can understand that normalizing activations will
+
+1347
+00:58:49,300 --> 00:58:52,500
+have a consequence on changing the size of the weight updates.
+
+1348
+00:58:52,500 --> 00:58:56,260
+Because if I backprop through normalizing the activations,
+
+1349
+00:58:56,260 --> 00:58:58,380
+you can see that the weight update
+
+1350
+00:58:58,380 --> 00:59:03,580
+will be a function of the scale of the activations.
+
+1351
+00:59:03,580 --> 00:59:06,490
+So LayerNorm has desirable optimization properties.
+
+1352
+00:59:06,490 --> 00:59:09,430
+Exactly what those are is basically open science.
+
+1353
+00:59:09,430 --> 00:59:12,770
+And it's not quite clear why LayerNorm is right thing to do,
+
+1354
+00:59:12,770 --> 00:59:14,290
+but it's what people do.
+
+1355
+00:59:17,230 --> 00:59:19,450
+So you'll implement transformers on your problem set,
+
+1356
+00:59:19,450 --> 00:59:23,750
+but I want to quickly walk through a kind of pseudocode
+
+1357
+00:59:23,750 --> 00:59:26,270
+of it just to show you how simple these things are.
+
+1358
+00:59:26,270 --> 00:59:27,530
+They're so easy to implement.
+
+1359
+00:59:27,530 --> 00:59:29,830
+That's one of the reasons why people like them.
+
+1360
+00:59:29,830 --> 00:59:34,190
+So here is a transformer in the vision transformer style
+
+1361
+00:59:34,190 --> 00:59:40,590
+that is processing a set of tokens T.
+
+1362
+00:59:40,590 --> 00:59:41,930
+So we first tokenize the input.
+
+1363
+00:59:41,930 --> 00:59:43,597
+That might be domain-specific knowledge,
+
+1364
+00:59:43,597 --> 00:59:46,052
+like break up your image into patches.
+
+1365
+00:59:46,052 --> 00:59:47,510
+And then for each layer, we're just
+
+1366
+00:59:47,510 --> 00:59:50,620
+going to run the same operation.
+
+1367
+00:59:50,620 --> 00:59:52,370
+We might have different weights per layer,
+
+1368
+00:59:52,370 --> 00:59:54,070
+but otherwise the same operation.
+
+1369
+00:59:54,070 --> 01:00:01,750
+We will take the matrix multiply of the LayerNorm of the tokens,
+
+1370
+01:00:01,750 --> 01:00:06,710
+times like this outer product of the key query
+
+1371
+01:00:06,710 --> 01:00:09,390
+and value matrices with the token matrix.
+
+1372
+01:00:09,390 --> 01:00:10,870
+And we're LayerNorming it.
+
+1373
+01:00:10,870 --> 01:00:14,250
+Then we get key query and value matrices.
+
+1374
+01:00:14,250 --> 01:00:19,390
+And then we'll just take the matrix multiply of Q times K
+
+1375
+01:00:19,390 --> 01:00:22,310
+transpose, divided by the dimensionality, which here I'm
+
+1376
+01:00:22,310 --> 01:00:25,950
+noting as D, the dimensionality of the key query and value
+
+1377
+01:00:25,950 --> 01:00:26,830
+vectors.
+
+1378
+01:00:26,830 --> 01:00:29,050
+And then I'll add residual connections,
+
+1379
+01:00:29,050 --> 01:00:30,970
+and take the linear combination, other matmul.
+
+1380
+01:00:30,970 --> 01:00:32,510
+So everything is just matmuls and
+
+1381
+01:00:32,510 --> 01:00:34,090
+a few other simple operators.
+
+1382
+01:00:34,090 --> 01:00:37,190
+And this maps wonderfully onto modern compute
+
+1383
+01:00:37,190 --> 01:00:39,710
+that loves matrix multiplies.
+
+1384
+01:00:39,710 --> 01:00:41,570
+OK, so really simple.
+
+1385
+01:00:41,570 --> 01:00:43,250
+And that should work.
+
+1386
+01:00:45,692 --> 01:00:47,150
+So there's one more new idea I have
+
+1387
+01:00:47,150 --> 01:00:50,400
+to get to before the end of the lecture.
+
+1388
+01:00:50,400 --> 01:00:52,150
+Well, there's a few more things to get to,
+
+1389
+01:00:52,150 --> 01:00:55,090
+but one more big new idea, which is positional encodings.
+
+1390
+01:00:55,090 --> 01:00:56,040
+It's not a new idea.
+
+1391
+01:00:56,040 --> 01:00:58,290
+Again, it's been seen in a lot of older architectures,
+
+1392
+01:00:58,290 --> 01:01:01,000
+but it was one of the key things that
+
+1393
+01:01:01,000 --> 01:01:03,680
+made transformers stand out.
+
+1394
+01:01:03,680 --> 01:01:10,240
+So the first thing to know is that transformers
+
+1395
+01:01:10,240 --> 01:01:16,160
+are permutation equivariant, just like graph nets.
+
+1396
+01:01:16,160 --> 01:01:19,520
+So if I permute the input sequence of tokens,
+
+1397
+01:01:19,520 --> 01:01:21,320
+then you can work out for yourself
+
+1398
+01:01:21,320 --> 01:01:24,040
+that if I permute it, well, it's like taking T2
+
+1399
+01:01:24,040 --> 01:01:26,480
+into the place of T1, then the output
+
+1400
+01:01:26,480 --> 01:01:29,020
+will also change the order.
+
+1401
+01:01:29,020 --> 01:01:33,800
+So the output representation of T2 will now be in this vector,
+
+1402
+01:01:33,800 --> 01:01:35,620
+as opposed to in the second vector.
+
+1403
+01:01:35,620 --> 01:01:38,460
+So permuting the input permutes the output
+
+1404
+01:01:38,460 --> 01:01:41,400
+So transformers are essentially a set-to-set mapping.
+
+1405
+01:01:41,400 --> 01:01:45,340
+An unordered set maps to an unordered set.
+
+1406
+01:01:45,340 --> 01:01:49,140
+The ordering of the tokens doesn't matter.
+
+1407
+01:01:49,140 --> 01:01:52,360
+So you can see this, because point-wise, token-wise
+
+1408
+01:01:52,360 --> 01:01:55,080
+nonlinearity F, it just applies to every token independently
+
+1409
+01:01:55,080 --> 01:01:55,820
+and identically.
+
+1410
+01:01:55,820 --> 01:01:57,440
+So of course, if I change the order of the tokens,
+
+1411
+01:01:57,440 --> 01:01:58,940
+it doesn't change anything.
+
+1412
+01:01:58,940 --> 01:02:00,865
+I'm just treating them all independently.
+
+1413
+01:02:00,865 --> 01:02:02,240
+And you can work out for yourself
+
+1414
+01:02:02,240 --> 01:02:04,920
+that attention is permutation invariant.
+
+1415
+01:02:04,920 --> 01:02:07,340
+Because again, attention is, like, every pair of tokens,
+
+1416
+01:02:07,340 --> 01:02:08,757
+how much they attend to each other
+
+1417
+01:02:08,757 --> 01:02:11,820
+will just be determined based on the values in the token vectors,
+
+1418
+01:02:11,820 --> 01:02:13,720
+not the order.
+
+1419
+01:02:13,720 --> 01:02:16,720
+So because transformers are just point-wise,
+
+1420
+01:02:16,720 --> 01:02:18,540
+token-wise nonlinearity and attention,
+
+1421
+01:02:18,540 --> 01:02:20,640
+the whole thing is permutation equivariant.
+
+1422
+01:02:20,640 --> 01:02:22,640
+So transformer permute the input is
+
+1423
+01:02:22,640 --> 01:02:24,900
+equal to permute the transformer of the input.
+
+1424
+01:02:27,840 --> 01:02:31,960
+So now, positional codes-- well, remember,
+
+1425
+01:02:31,960 --> 01:02:34,320
+if we want convolutional networks to not
+
+1426
+01:02:34,320 --> 01:02:39,480
+be translation equivariant, we tell the filter
+
+1427
+01:02:39,480 --> 01:02:40,780
+where I am in the image.
+
+1428
+01:02:40,780 --> 01:02:42,620
+And then it can make a different decision based on where I am.
+
+1429
+01:02:42,620 --> 01:02:44,420
+It's no longer translation equivariant.
+
+1430
+01:02:44,420 --> 01:02:45,800
+We saw that a few times.
+
+1431
+01:02:45,800 --> 01:02:48,480
+So now you can do exactly the same thing with transformers.
+
+1432
+01:02:48,480 --> 01:02:50,560
+If I don't want it to be permutation equivariant,
+
+1433
+01:02:50,560 --> 01:02:52,060
+which oftentimes you actually don't.
+
+1434
+01:02:52,060 --> 01:02:53,720
+Oftentimes, the order matters.
+
+1435
+01:02:53,720 --> 01:02:56,320
+If I'm processing a sentence, the earlier sentences
+
+1436
+01:02:56,320 --> 01:02:57,355
+have causal impact.
+
+1437
+01:02:57,355 --> 01:02:58,730
+The earlier words in the sentence
+
+1438
+01:02:58,730 --> 01:03:02,270
+are causally determining the next words,
+
+1439
+01:03:02,270 --> 01:03:05,010
+but there's not quite the anti-causal direction.
+
+1440
+01:03:05,010 --> 01:03:06,230
+The statistics are different.
+
+1441
+01:03:06,230 --> 01:03:07,970
+It's not like a reversible sequence
+
+1442
+01:03:07,970 --> 01:03:10,690
+where permutation invariant statistical process.
+
+1443
+01:03:10,690 --> 01:03:13,770
+So anyway, I can concatenate each token
+
+1444
+01:03:13,770 --> 01:03:16,370
+with a value that tells me where it
+
+1445
+01:03:16,370 --> 01:03:18,730
+came from in the input signal.
+
+1446
+01:03:18,730 --> 01:03:21,430
+What position was it in the input sentence?
+
+1447
+01:03:21,430 --> 01:03:24,490
+What location was it in the input image?
+
+1448
+01:03:24,490 --> 01:03:27,750
+And here's how you do that typically.
+
+1449
+01:03:27,750 --> 01:03:30,970
+Not typically-- but this is the vanilla way of doing that.
+
+1450
+01:03:30,970 --> 01:03:33,630
+There's a lot of more advanced ways of doing it.
+
+1451
+01:03:33,630 --> 01:03:36,370
+But if I want to tell this patch here
+
+1452
+01:03:36,370 --> 01:03:39,570
+on the giraffe's head what position it's at,
+
+1453
+01:03:39,570 --> 01:03:43,050
+I could encode the xy location in Cartesian coordinates
+
+1454
+01:03:43,050 --> 01:03:46,170
+of that patch, but I'll typically
+
+1455
+01:03:46,170 --> 01:03:50,530
+represent this on a Fourier basis where I will say,
+
+1456
+01:03:50,530 --> 01:03:55,150
+what is the value of a sine function at that location?
+
+1457
+01:03:55,150 --> 01:03:57,930
+And I'll do that for different sines and cosines,
+
+1458
+01:03:57,930 --> 01:04:01,650
+or in the vertical and the horizontal direction.
+
+1459
+01:04:01,650 --> 01:04:04,790
+And this is just like an encoding of the position,
+
+1460
+01:04:04,790 --> 01:04:08,450
+but in terms of a different basis
+
+1461
+01:04:08,450 --> 01:04:11,490
+as opposed to being just like the Cartesian grid.
+
+1462
+01:04:11,490 --> 01:04:15,650
+So these values tell me where I am in the image.
+
+1463
+01:04:15,650 --> 01:04:18,810
+The book chapter goes into some intuition
+
+1464
+01:04:18,810 --> 01:04:21,330
+about why Fourier positional encoding is
+
+1465
+01:04:21,330 --> 01:04:23,110
+advantageous over other types.
+
+1466
+01:04:23,110 --> 01:04:26,770
+But this is also an open science question.
+
+1467
+01:04:26,770 --> 01:04:27,990
+This one works pretty well.
+
+1468
+01:04:30,730 --> 01:04:34,130
+And for whatever signal you have,
+
+1469
+01:04:34,130 --> 01:04:35,650
+there's a lot of domain expertise
+
+1470
+01:04:35,650 --> 01:04:37,590
+that can come into this part of the problem.
+
+1471
+01:04:37,590 --> 01:04:39,257
+How you define the positional encodings.
+
+1472
+01:04:39,257 --> 01:04:43,410
+Because that's the part where you tell the system what
+
+1473
+01:04:43,410 --> 01:04:46,637
+it means to be local for your domain.
+
+1474
+01:04:46,637 --> 01:04:48,970
+You give it the inductive bias of what locality actually
+
+1475
+01:04:48,970 --> 01:04:49,870
+represents.
+
+1476
+01:04:49,870 --> 01:04:53,122
+So for processing data on a globe,
+
+1477
+01:04:53,122 --> 01:04:54,580
+I can do positional encoding that's
+
+1478
+01:04:54,580 --> 01:04:56,380
+like latitude and longitude, but maybe
+
+1479
+01:04:56,380 --> 01:04:59,760
+on some kind of Fourier basis over spherical harmonics,
+
+1480
+01:04:59,760 --> 01:05:02,820
+over sinusoids on the sphere.
+
+1481
+01:05:02,820 --> 01:05:05,420
+For graphs, one of the typical positional encodings
+
+1482
+01:05:05,420 --> 01:05:10,640
+is onto the eigenbasis of the graph Laplacian.
+
+1483
+01:05:10,640 --> 01:05:13,160
+So we mentioned this a little bit in the GNN lecture.
+
+1484
+01:05:13,160 --> 01:05:15,220
+But basically, I can take a graph
+
+1485
+01:05:15,220 --> 01:05:18,400
+and I can compute something called the graph Laplacian.
+
+1486
+01:05:18,400 --> 01:05:20,580
+And I can look at the eigenvectors
+
+1487
+01:05:20,580 --> 01:05:25,260
+of that, this thing that tells me location in the graph,
+
+1488
+01:05:25,260 --> 01:05:27,220
+canonical location in the graph.
+
+1489
+01:05:27,220 --> 01:05:35,420
+And the coordinates, some of these eigenvectors of this graph
+
+1490
+01:05:35,420 --> 01:05:39,080
+Laplacian are described by these colors on the nodes.
+
+1491
+01:05:39,080 --> 01:05:43,368
+And so the first eigenvector is this one.
+
+1492
+01:05:43,368 --> 01:05:44,160
+It's really smooth.
+
+1493
+01:05:44,160 --> 01:05:46,520
+It's like, where am I globally?
+
+1494
+01:05:46,520 --> 01:05:49,380
+And then other eigenvectors are, like, high frequency, almost
+
+1495
+01:05:49,380 --> 01:05:51,992
+like a Fourier basis.
+
+1496
+01:05:51,992 --> 01:05:53,200
+This is all domain knowledge.
+
+1497
+01:05:53,200 --> 01:05:56,780
+It's not stuff that you need to know intimately, unless you're
+
+1498
+01:05:56,780 --> 01:05:58,392
+working on that domain.
+
+1499
+01:05:58,392 --> 01:06:00,100
+But this is just to say you can introduce
+
+1500
+01:06:00,100 --> 01:06:04,500
+a lot of domain knowledge into positional encodings.
+
+1501
+01:06:04,500 --> 01:06:08,245
+So those are the three pieces for the transformer.
+
+1502
+01:06:08,245 --> 01:06:09,620
+But there's one last thing, which
+
+1503
+01:06:09,620 --> 01:06:13,180
+is a lot of you will have seen large language models
+
+1504
+01:06:13,180 --> 01:06:15,700
+and already heard about transformers
+
+1505
+01:06:15,700 --> 01:06:17,200
+in the context of language modeling.
+
+1506
+01:06:17,200 --> 01:06:19,100
+So I want to tell you how transformers
+
+1507
+01:06:19,100 --> 01:06:21,060
+map onto language models, because there's one
+
+1508
+01:06:21,060 --> 01:06:23,700
+extra piece that is important.
+
+1509
+01:06:23,700 --> 01:06:26,420
+And it's called causal attention.
+
+1510
+01:06:26,420 --> 01:06:29,420
+So first, we're going to come back
+
+1511
+01:06:29,420 --> 01:06:31,660
+to autoregressive models and generative
+
+1512
+01:06:31,660 --> 01:06:34,392
+models of language and other signals a little later.
+
+1513
+01:06:34,392 --> 01:06:36,600
+And one of the kinds will be an autoregressive model.
+
+1514
+01:06:36,600 --> 01:06:38,308
+But I'll tell you briefly what it is now,
+
+1515
+01:06:38,308 --> 01:06:39,558
+because it's extremely simple.
+
+1516
+01:06:39,558 --> 01:06:41,558
+And a lot of you already know this, because it's
+
+1517
+01:06:41,558 --> 01:06:42,360
+all over the media.
+
+1518
+01:06:42,360 --> 01:06:45,620
+This is how ChatGPT works, and so forth.
+
+1519
+01:06:45,620 --> 01:06:48,300
+You take a sequence of words and you simply
+
+1520
+01:06:48,300 --> 01:06:52,690
+try to predict what is the next word in that sequence.
+
+1521
+01:06:52,690 --> 01:06:56,350
+So "once upon a time," and then you do the same thing
+
+1522
+01:06:56,350 --> 01:06:59,830
+autoregressively, which means you just take your prediction
+
+1523
+01:06:59,830 --> 01:07:02,923
+and concatenate it or post-pend the input sequence with
+
+1524
+01:07:02,923 --> 01:07:04,590
+your prediction, and then keep on going.
+
+1525
+01:07:04,590 --> 01:07:08,270
+Now predict the next word and the next word.
+
+1526
+01:07:08,270 --> 01:07:10,590
+And you can train such a model, because you
+
+1527
+01:07:10,590 --> 01:07:12,750
+will train the predictions to match
+
+1528
+01:07:12,750 --> 01:07:16,270
+the data set of actual text that you observe from the training
+
+1529
+01:07:16,270 --> 01:07:18,270
+set.
+
+1530
+01:07:18,270 --> 01:07:20,070
+So we'll say, "once upon a time,"
+
+1531
+01:07:20,070 --> 01:07:23,135
+and you can watch Claude or Llama,
+
+1532
+01:07:23,135 --> 01:07:25,510
+or whatever your favorite LLM, you can watch it write out
+
+1533
+01:07:25,510 --> 01:07:26,010
+things.
+
+1534
+01:07:26,010 --> 01:07:28,510
+It's doing exactly this.
+
+1535
+01:07:28,510 --> 01:07:31,430
+We'll talk more about those later.
+
+1536
+01:07:31,430 --> 01:07:34,030
+And you don't have to do autoregression
+
+1537
+01:07:34,030 --> 01:07:37,090
+in time's arrow order.
+
+1538
+01:07:37,090 --> 01:07:38,910
+You can do it in any order you want.
+
+1539
+01:07:38,910 --> 01:07:40,190
+But that's just a detail.
+
+1540
+01:07:40,190 --> 01:07:42,690
+So as I said, you have a training set,
+
+1541
+01:07:42,690 --> 01:07:45,930
+which is sequences and completions to the sequence.
+
+1542
+01:07:45,930 --> 01:07:49,110
+This is just text online for language models.
+
+1543
+01:07:49,110 --> 01:07:51,790
+And you are then going to use supervised
+
+1544
+01:07:51,790 --> 01:07:54,950
+learning to try to classify what is
+
+1545
+01:07:54,950 --> 01:07:57,710
+the next word in a vocabulary of possible words.
+
+1546
+01:07:57,710 --> 01:08:00,430
+And then at test time when you're going to sample new
+
+1547
+01:08:00,430 --> 01:08:03,570
+sentences, you'll just say, "colorless green ideas sleep,"
+
+1548
+01:08:03,570 --> 01:08:05,647
+it will predict, based on my training data,
+
+1549
+01:08:05,647 --> 01:08:06,730
+what might have come next.
+
+1550
+01:08:06,730 --> 01:08:10,470
+And maybe "furiously" came next.
+
+1551
+01:08:10,470 --> 01:08:13,170
+It's a quote from Noem Chomsky.
+
+1552
+01:08:17,350 --> 01:08:18,649
+So that's how GPT works.
+
+1553
+01:08:18,649 --> 01:08:21,630
+GPT is Generative Pre-trained Transformer.
+
+1554
+01:08:21,630 --> 01:08:24,990
+So it's a transformer.
+
+1555
+01:08:24,990 --> 01:08:27,630
+And it's an autoregressive transformer.
+
+1556
+01:08:27,630 --> 01:08:30,470
+So here's my normal transformer that I'm drawing,
+
+1557
+01:08:30,470 --> 01:08:31,649
+where it's self-attention.
+
+1558
+01:08:31,649 --> 01:08:35,229
+So the input sequence of tokens that represent the words,
+
+1559
+01:08:35,229 --> 01:08:37,390
+or maybe subparts of the words, get
+
+1560
+01:08:37,390 --> 01:08:39,590
+to choose which of them to attend to,
+
+1561
+01:08:39,590 --> 01:08:41,970
+update their representations, finally
+
+1562
+01:08:41,970 --> 01:08:44,630
+at the very end come up with a prediction for the next item
+
+1563
+01:08:44,630 --> 01:08:46,240
+in the sequence.
+
+1564
+01:08:46,240 --> 01:08:49,040
+And every time I run this, I will
+
+1565
+01:08:49,040 --> 01:08:51,500
+get a prediction of the next item in the sequence,
+
+1566
+01:08:51,500 --> 01:08:56,760
+and I'll shift the input over by one and repeat the process.
+
+1567
+01:08:56,760 --> 01:09:03,760
+So there's a little issue here, which is that if I want to train
+
+1568
+01:09:03,760 --> 01:09:07,120
+such a system, I want it to be the case that my prediction
+
+1569
+01:09:07,120 --> 01:09:10,000
+for the word "furiously" only depends on the previous items
+
+1570
+01:09:10,000 --> 01:09:11,160
+in the sequence.
+
+1571
+01:09:11,160 --> 01:09:13,279
+Now with this architecture I'm showing here,
+
+1572
+01:09:13,279 --> 01:09:14,979
+the input has the word "furiously."
+
+1573
+01:09:14,979 --> 01:09:17,399
+And it could just learn an identity connection to say, oh,
+
+1574
+01:09:17,399 --> 01:09:18,580
+I'm predicting "furiously."
+
+1575
+01:09:18,580 --> 01:09:20,830
+And then my input already told me what the answer was.
+
+1576
+01:09:20,830 --> 01:09:21,600
+That'd be wrong.
+
+1577
+01:09:21,600 --> 01:09:23,380
+If I'm predicting the word "ideas,"
+
+1578
+01:09:23,380 --> 01:09:25,553
+I need to only be able to look at the previous items
+
+1579
+01:09:25,553 --> 01:09:26,220
+in the sequence.
+
+1580
+01:09:26,220 --> 01:09:27,595
+I can't look into the future if I
+
+1581
+01:09:27,595 --> 01:09:31,080
+want to be able to write a sentence in time's order.
+
+1582
+01:09:31,080 --> 01:09:35,840
+So what we do is we do what's called masking, causal masking
+
+1583
+01:09:35,840 --> 01:09:37,560
+of our attention matrix.
+
+1584
+01:09:37,560 --> 01:09:43,640
+And that just means that every output token can only
+
+1585
+01:09:43,640 --> 01:09:45,979
+attend to earlier tokens in the sequence.
+
+1586
+01:09:45,979 --> 01:09:47,340
+So the order does matter.
+
+1587
+01:09:47,340 --> 01:09:49,300
+This is no longer permutation equivariant.
+
+1588
+01:09:49,300 --> 01:09:51,040
+Now the order actually is mattering
+
+1589
+01:09:51,040 --> 01:09:53,240
+via the masking operation.
+
+1590
+01:09:53,240 --> 01:09:57,848
+And so now the attention matrix looks like a masked matrix.
+
+1591
+01:09:57,848 --> 01:10:00,140
+And that just means some of the arrows are not allowed.
+
+1592
+01:10:00,140 --> 01:10:01,800
+They're just set to zero.
+
+1593
+01:10:01,800 --> 01:10:06,200
+So the arrows at the top here exactly match the masking
+
+1594
+01:10:06,200 --> 01:10:07,220
+at the bottom here.
+
+1595
+01:10:07,220 --> 01:10:09,240
+And I only allowed to learn, or I'm only
+
+1596
+01:10:09,240 --> 01:10:11,085
+allowed to use these values.
+
+1597
+01:10:11,085 --> 01:10:12,960
+Meaning, I'm only allowed to attend to things
+
+1598
+01:10:12,960 --> 01:10:14,497
+previous in the sequence.
+
+1599
+01:10:14,497 --> 01:10:16,080
+And this allows me to make predictions
+
+1600
+01:10:16,080 --> 01:10:18,038
+that are causal that only depend on information
+
+1601
+01:10:18,038 --> 01:10:19,220
+previous in the sequence.
+
+1602
+01:10:22,080 --> 01:10:25,520
+So this is what a multi-layer transformer
+
+1603
+01:10:25,520 --> 01:10:28,120
+looks like with causal masking.
+
+1604
+01:10:28,120 --> 01:10:31,992
+On the first layer, I am trying to predict the fourth item
+
+1605
+01:10:31,992 --> 01:10:33,700
+in the sequence given the previous three.
+
+1606
+01:10:33,700 --> 01:10:38,670
+So I will not observe the fourth item, because otherwise I
+
+1607
+01:10:38,670 --> 01:10:39,420
+would be cheating.
+
+1608
+01:10:39,420 --> 01:10:40,800
+And it would be too easy.
+
+1609
+01:10:40,800 --> 01:10:42,650
+But then after the first layer, then I
+
+1610
+01:10:42,650 --> 01:10:45,270
+can just use a mask that looks like this.
+
+1611
+01:10:45,270 --> 01:10:48,708
+Every token attends to itself and all the previous tokens.
+
+1612
+01:10:48,708 --> 01:10:51,250
+And this will achieve that the receptive field of this output
+
+1613
+01:10:51,250 --> 01:10:52,970
+token that will predict the next word
+
+1614
+01:10:52,970 --> 01:10:54,535
+can only see every previous word.
+
+1615
+01:10:54,535 --> 01:10:56,410
+And the receptive field for this output token
+
+1616
+01:10:56,410 --> 01:10:58,570
+that I could use to predict the second-to-last word
+
+1617
+01:10:58,570 --> 01:11:01,015
+will only see everything previous to itself.
+
+1618
+01:11:01,015 --> 01:11:02,890
+And therefore I can just supervise this thing
+
+1619
+01:11:02,890 --> 01:11:06,290
+to output a sequence of words.
+
+1620
+01:11:06,290 --> 01:11:08,050
+And every word in that output sequence
+
+1621
+01:11:08,050 --> 01:11:09,830
+will only depend on the previous words.
+
+1622
+01:11:09,830 --> 01:11:14,310
+And this is an efficient way of training such a system.
+
+1623
+01:11:14,310 --> 01:11:16,550
+I'm going a little quickly for the sake of time,
+
+1624
+01:11:16,550 --> 01:11:19,170
+but there's more details on this in the book chapter.
+
+1625
+01:11:19,170 --> 01:11:21,170
+This lecture follows the chapter almost exactly,
+
+1626
+01:11:21,170 --> 01:11:24,990
+because finally I had all the material ready for this year.
+
+1627
+01:11:27,795 --> 01:11:30,170
+I'm sorry to say, this is just probably the worst diagram
+
+1628
+01:11:30,170 --> 01:11:32,690
+in all of science, but it's also the best paper
+
+1629
+01:11:32,690 --> 01:11:33,550
+in all of science.
+
+1630
+01:11:33,550 --> 01:11:35,670
+So it's like they balance each other out.
+
+1631
+01:11:35,670 --> 01:11:38,090
+"Attention Is All You Need," it's a super important paper,
+
+1632
+01:11:38,090 --> 01:11:41,250
+because it's the one that defined the transformer
+
+1633
+01:11:41,250 --> 01:11:42,190
+architecture.
+
+1634
+01:11:42,190 --> 01:11:45,850
+Again, it's not new ideas-- it's just a particular recipe that
+
+1635
+01:11:45,850 --> 01:11:49,730
+is novel in its details, but works incredibly well,
+
+1636
+01:11:49,730 --> 01:11:52,162
+and a few new ideas here and there.
+
+1637
+01:11:52,162 --> 01:11:53,870
+And so this paper, just super important--
+
+1638
+01:11:53,870 --> 01:11:54,790
+"Attention Is All You Need."
+
+1639
+01:11:54,790 --> 01:11:56,330
+And a lot of you will come across
+
+1640
+01:11:56,330 --> 01:11:57,710
+or will have seen this diagram.
+
+1641
+01:11:57,710 --> 01:12:01,970
+This is their diagram for what a transformer is.
+
+1642
+01:12:01,970 --> 01:12:03,030
+Super confusing to me.
+
+1643
+01:12:03,030 --> 01:12:05,990
+I don't know why they call this like a feedforward layer.
+
+1644
+01:12:05,990 --> 01:12:06,950
+But what is it?
+
+1645
+01:12:06,950 --> 01:12:09,890
+So this is the token-wise nonlinearity.
+
+1646
+01:12:09,890 --> 01:12:11,670
+That box in blue they call feedforward.
+
+1647
+01:12:11,670 --> 01:12:15,890
+So it's like just applying independently and identically
+
+1648
+01:12:15,890 --> 01:12:19,130
+an MLP to every single token vector.
+
+1649
+01:12:19,130 --> 01:12:20,310
+What is this thing here?
+
+1650
+01:12:20,310 --> 01:12:22,350
+This is that autoregressive part that I was describing.
+
+1651
+01:12:22,350 --> 01:12:24,110
+So that has nothing to do with really transformers.
+
+1652
+01:12:24,110 --> 01:12:26,050
+That's more about autoregressive modeling.
+
+1653
+01:12:26,050 --> 01:12:29,790
+So they factor those two ideas separately,
+
+1654
+01:12:29,790 --> 01:12:31,770
+but they put them together in the first paper.
+
+1655
+01:12:31,770 --> 01:12:37,860
+So that's just saying, shifted right.
+
+1656
+01:12:37,860 --> 01:12:40,380
+Shifted right is this thing where I just
+
+1657
+01:12:40,380 --> 01:12:42,960
+shifted the input sequence to the left, I guess,
+
+1658
+01:12:42,960 --> 01:12:44,300
+in my diagram.
+
+1659
+01:12:44,300 --> 01:12:47,220
+And positional encoding, that's meant
+
+1660
+01:12:47,220 --> 01:12:49,900
+to be like a sinusoid positional encoding.
+
+1661
+01:12:49,900 --> 01:12:52,080
+Then all of these things, add and norm,
+
+1662
+01:12:52,080 --> 01:12:53,680
+that's just the residual connection.
+
+1663
+01:12:53,680 --> 01:12:58,420
+So just think of it like this and I think it will be simpler.
+
+1664
+01:12:58,420 --> 01:13:02,680
+And I definitely prefer this diagram instead.
+
+1665
+01:13:02,680 --> 01:13:05,380
+But for language, I would just shift the input to the left
+
+1666
+01:13:05,380 --> 01:13:08,300
+and do causal attention.
+
+1667
+01:13:08,300 --> 01:13:11,380
+Last slide is going to be just showing now how
+
+1668
+01:13:11,380 --> 01:13:14,020
+I can put together some language modeling and image modeling
+
+1669
+01:13:14,020 --> 01:13:16,440
+to do more complicated things.
+
+1670
+01:13:16,440 --> 01:13:18,820
+So here is a case where I will take
+
+1671
+01:13:18,820 --> 01:13:20,900
+my input, which is an image.
+
+1672
+01:13:20,900 --> 01:13:23,540
+I'll tokenize it by mapping each of these patches
+
+1673
+01:13:23,540 --> 01:13:25,600
+into token vectors.
+
+1674
+01:13:25,600 --> 01:13:28,200
+I'll do self-attention and some computer vision stuff here,
+
+1675
+01:13:28,200 --> 01:13:31,035
+but it's all generic processing of tokens now.
+
+1676
+01:13:31,035 --> 01:13:33,160
+And then I'll do this thing called cross-attention.
+
+1677
+01:13:33,160 --> 01:13:36,920
+So now I'm going to try to be describing this image in text.
+
+1678
+01:13:36,920 --> 01:13:39,160
+The task is to take an image and turn it into text.
+
+1679
+01:13:39,160 --> 01:13:40,820
+Write a caption for the image.
+
+1680
+01:13:40,820 --> 01:13:43,740
+So I'll take this as input.
+
+1681
+01:13:43,740 --> 01:13:45,860
+And then I will autoregressively start
+
+1682
+01:13:45,860 --> 01:13:49,260
+writing a sentence where every next step in my prediction
+
+1683
+01:13:49,260 --> 01:13:52,140
+problem will be capable of attending
+
+1684
+01:13:52,140 --> 01:13:54,460
+to the previous words in my sentence,
+
+1685
+01:13:54,460 --> 01:13:58,260
+and additionally all of the representations of the image
+
+1686
+01:13:58,260 --> 01:13:59,118
+tokens.
+
+1687
+01:13:59,118 --> 01:14:00,660
+And cross-attention is just referring
+
+1688
+01:14:00,660 --> 01:14:06,060
+to when you are having these tokens attend
+
+1689
+01:14:06,060 --> 01:14:08,275
+to these tokens, which are not themselves.
+
+1690
+01:14:08,275 --> 01:14:09,900
+They're like a different set of tokens.
+
+1691
+01:14:09,900 --> 01:14:11,540
+So you can have all different types
+
+1692
+01:14:11,540 --> 01:14:13,780
+of attention-masking strategies.
+
+1693
+01:14:13,780 --> 01:14:17,580
+And this one is popular for image-to-text captioning.
+
+1694
+01:14:17,580 --> 01:14:22,060
+We'll come back to generative models and autoregressive models
+
+1695
+01:14:22,060 --> 01:14:23,420
+a little bit later.
+
+1696
+01:14:23,420 --> 01:14:25,890
+And I'll end there for today.

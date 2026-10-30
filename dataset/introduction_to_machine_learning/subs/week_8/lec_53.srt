@@ -1,0 +1,1051 @@
+1
+00:00:11,030 --> 00:00:21,710
+So we will move on to another topic which is essentially ensemble methods so what do
+
+2
+00:00:21,710 --> 00:00:28,250
+people do in ensemble methods is that instead of using a single classifier or regressor you tend
+
+3
+00:00:28,250 --> 00:00:43,280
+to use a set of them right in order to make the same prediction typically these end up
+
+4
+00:00:43,280 --> 00:00:48,710
+improving some performance or the other of the of the classifier right statistically speaking
+
+5
+00:00:48,710 --> 00:00:56,870
+more often than not they end up in reducing the variance of your classifier right but that also
+
+6
+00:00:56,870 --> 00:01:01,130
+ends up giving you better empirical performance at the end of the day right.
+
+7
+00:01:01,130 --> 00:01:07,880
+So we are going to talk about several approaches for an ensemble methods I will start off with the
+
+8
+00:01:07,880 --> 00:01:21,260
+one that is familiar too familiar to all of us called bagging right so, so what is
+
+9
+00:01:21,260 --> 00:01:52,820
+bagging why did I say similar at all of us so bagging stands for bootstrap aggregation okay
+
+10
+00:01:52,820 --> 00:01:59,930
+do not ask me how they dread bagging out of boots bootstrap aggregation right but the idea is very
+
+11
+00:01:59,930 --> 00:02:04,880
+simple all of you know what bootstrap sampling right select mean about bootstrap sampling.
+
+12
+00:02:04,880 --> 00:02:10,610
+So what I am essentially going to do is I am going to create you give me one training set of
+
+13
+00:02:10,610 --> 00:02:21,740
+size n I am going to create multiple training sets of size n by sampling by replacement and
+
+14
+00:02:21,740 --> 00:02:30,350
+then I am going to train a classifier on each of those sets I am going to train a
+
+15
+00:02:30,350 --> 00:02:38,270
+classifier on each of those sets and how will I combine the outputs of the classifier sorry
+
+16
+00:02:40,000 --> 00:02:52,300
+I can do a majority vote or average what sorry cannot end up blowing majority vote right.
+
+17
+00:02:52,300 --> 00:02:57,880
+So average what average if you can if your classifier is going to produce probabilities
+
+18
+00:02:57,880 --> 00:03:03,580
+for the class labels right I could do some kind of a weighted average of the probabilities the
+
+19
+00:03:03,580 --> 00:03:09,460
+classifier is just going to give me one or zero right I end up essentially doing majority vote
+
+20
+00:03:09,460 --> 00:03:15,130
+okay does it make sense so the idea is very simple backing idea is very simple I am going
+
+21
+00:03:15,130 --> 00:03:28,090
+to produce lot of classifiers right so I am going to call them fi right so it could
+
+22
+00:03:28,090 --> 00:03:43,420
+it could be it could be regression as well. So it does not have to be classification right the
+
+23
+00:03:43,420 --> 00:03:50,980
+situation I just take an average of the outputs of all the classify so each fi is trained on one bag
+
+24
+00:03:50,980 --> 00:03:59,290
+which I have produced from the from the original sample like this is another back derivation from
+
+25
+00:03:59,290 --> 00:04:03,820
+the word left bagging it so it is bootstrap aggregation but then each of those bootstrap
+
+26
+00:04:03,820 --> 00:04:15,220
+sample you produce is sometimes called a bag right so if I produce B bags then I eventually average
+
+27
+00:04:15,220 --> 00:04:19,930
+by I mean be to get me the prediction. And if I am doing it for classification
+
+28
+00:04:19,930 --> 00:04:27,700
+I can produce majority vote on average the probabilities okay the few things to note so
+
+29
+00:04:37,770 --> 00:04:48,630
+backing reduces variance right so in, in effect it ends up giving you better classifiers normally
+
+30
+00:04:48,630 --> 00:04:56,790
+then what you would get by training on a single sample of the data right or producing a single
+
+31
+00:04:56,790 --> 00:05:05,100
+classifier it is particularly useful when you are dealing with unstable classifiers
+
+32
+00:05:05,100 --> 00:05:11,820
+right it can take an unstable classifier and produce something that is more stable right
+
+33
+00:05:11,820 --> 00:05:17,790
+that is just a fallout of reducing variance right it can take an unstable classifier.
+
+34
+00:05:17,790 --> 00:05:21,630
+And produce something more stable so one thing that you have to be careful about when you are
+
+35
+00:05:21,630 --> 00:05:34,590
+bagging is that if you bag bad classifiers the performance can become arbitrarily worse something
+
+36
+00:05:34,590 --> 00:05:45,240
+that has a classification accuracy less than .5 less than or equal to 0.5 two classes sorry each
+
+37
+00:05:45,240 --> 00:05:49,920
+when you change the data on which you train the classifier right you are going to end up
+
+38
+00:05:49,920 --> 00:06:01,300
+with a different classifier in sets of data yes you could as well if you want to but it
+
+39
+00:06:01,300 --> 00:06:07,260
+is a good point if you initialize two different variables different values for the parameters.
+
+40
+00:06:07,260 --> 00:06:16,140
+You introduce an additional source of variance there but the you could you could there is nothing
+
+41
+00:06:16,140 --> 00:06:20,130
+stopping you from doing that just that you have to be careful about how we do the analysis if
+
+42
+00:06:20,130 --> 00:06:24,120
+at all you are doing a variance analysis now do be careful about how we do the variance analysis
+
+43
+00:06:24,120 --> 00:06:32,790
+right yeah so by that he brings have a good point so in some of the ensemble methods that we talked
+
+44
+00:06:32,790 --> 00:06:39,570
+about right the ensemble is will typically be of the same kind of classifier okay.
+
+45
+00:06:39,570 --> 00:06:43,890
+The only way we are distinguishing one classifier from the other is by training it on a different
+
+46
+00:06:43,890 --> 00:06:51,210
+data right except for one approach which I will tell you later where typically if we use end up
+
+47
+00:06:51,210 --> 00:06:55,680
+using different kinds of classifiers okay so data would be the same but the classifiers would be
+
+48
+00:06:55,680 --> 00:07:09,780
+different but this is one of our aggression but anyway soon I am not using different
+
+49
+00:07:09,780 --> 00:07:12,960
+variables it is like suppose he is using a neural network right so you need to have an
+
+50
+00:07:12,960 --> 00:07:17,520
+initial starting point for the weights right. So if I use a different random starting point what
+
+51
+00:07:17,520 --> 00:07:21,810
+so that was this question should I use the same random starting point or should he is a different
+
+52
+00:07:21,810 --> 00:07:27,600
+starting point right and even then going back to your question right so you think about it this
+
+53
+00:07:27,600 --> 00:07:46,340
+way right so right we are talking about f (x) instead of that think of it as right so this hi
+
+54
+00:07:46,340 --> 00:07:52,010
+will give me whatever features I want from x even if I want to run each classifier on a different
+
+55
+00:07:52,010 --> 00:07:56,630
+subset of the features it will just be that that will get enrolled up into the classifier.
+
+56
+00:07:56,630 --> 00:08:02,210
+I can still do the averaging if I want right that is not an issue but that is not the question
+
+57
+00:08:02,210 --> 00:08:21,260
+us asking anything else on this okay so if you throw a bad classified into the mix right your
+
+58
+00:08:21,260 --> 00:08:25,820
+performance can become arbitrarily bad so that is something that you have to guard against okay
+
+59
+00:08:25,820 --> 00:08:31,340
+so bagging is a very, very intuitive very simple thing and a couple of more practical things about
+
+60
+00:08:31,340 --> 00:08:38,960
+bagging is that it is you know what they call embarrassingly parallel you know you can run how
+
+61
+00:08:38,960 --> 00:08:44,840
+many other instances of training on bagging you want at some of the other ensemble methods.
+
+62
+00:08:44,840 --> 00:08:50,480
+We talked about are going to be inherently serial in nature right so allowed to run one
+
+63
+00:08:50,480 --> 00:08:56,480
+after the other right suppose you are looking to run this on many large data sets right so doing
+
+64
+00:08:56,480 --> 00:09:03,290
+bagging is kind of easier because you can run it because one, one bag like or classify trained on
+
+65
+00:09:03,290 --> 00:09:08,360
+one bag does not depend on a classified trained on the other bag in any way right so they can be
+
+66
+00:09:08,360 --> 00:09:34,950
+trained independently and trained in parallel. So that is the first thing okay next thing you
+
+67
+00:09:34,950 --> 00:09:41,040
+talk about something called committee machines okay this is nothing big okay all it says is it
+
+68
+00:09:41,040 --> 00:09:42,136
+read a lot of different classifiers let us say we have some glass or something no and all with all
+
+69
+00:09:42,136 --> 00:09:42,235
+the individual classifiers performed well on test eight or do they just have to learn the training
+
+70
+00:09:42,235 --> 00:10:06,840
+do they have to generalize well or so each classifier you typically train it using whatever
+
+71
+00:10:06,840 --> 00:10:12,120
+is your normal training procedure right. So if normally you would expect it to generalize
+
+72
+00:10:12,120 --> 00:10:16,530
+well on the test data right so you would want to produce classifiers that generalize well on
+
+73
+00:10:16,530 --> 00:10:24,900
+the test data right but that is a call to be made I mean if you do not want to
+
+74
+00:10:24,900 --> 00:10:29,940
+test each in every classify sometimes people just tested the what they call the bag the
+
+75
+00:10:29,940 --> 00:10:35,370
+classifier right the combined prediction alone is something that they test they just train each
+
+76
+00:10:35,370 --> 00:10:40,530
+classifier on the data that is given right. And then they test the combined classifier
+
+77
+00:10:40,530 --> 00:10:47,640
+there are multiple reasons for wanting to do that so one is that typically the classifiers that you
+
+78
+00:10:47,640 --> 00:10:54,330
+use in bagging or not very powerful classifier right so the chances of the mover fitting or
+
+79
+00:10:54,330 --> 00:11:00,990
+low so you do not really try to do a validation on the test set to make sure that it is not over
+
+80
+00:11:00,990 --> 00:11:05,160
+fit and things like it because the classifier itself is not very powerful classifier and then
+
+81
+00:11:05,160 --> 00:11:10,710
+you just go ahead and test it on the tested on combined classifier on the data right.
+
+82
+00:11:10,710 --> 00:11:13,620
+So why would want to test the combined classifier on the data you will want to know whether you
+
+83
+00:11:13,620 --> 00:11:20,190
+should produce more bags and think like that right so the nice thing about the bagging is
+
+84
+00:11:20,190 --> 00:11:25,350
+that because you are using at any point of time you are only using a weak classifier to
+
+85
+00:11:25,350 --> 00:11:32,340
+fit the data right and not if we classified but not necessarily a you know very strong
+
+86
+00:11:32,340 --> 00:11:38,490
+classifier to fit the data the chances of you over fitting is very small even if you increase
+
+87
+00:11:38,490 --> 00:11:43,320
+the number of classifiers in, in the bag even if increased number of bags and I can do this
+
+88
+00:11:43,320 --> 00:11:49,530
+for 10,000 samples 10,000 such bags right. And I still want to overfill the danger of
+
+89
+00:11:49,530 --> 00:11:56,220
+over fitting is no more than training it once right so that is a nice thing about
+
+90
+00:11:56,220 --> 00:12:00,630
+bagging I can keep making the classifier I can reduce the variance in my estimate more
+
+91
+00:12:00,630 --> 00:12:06,990
+and more but I am not getting into any danger of over fitting right so that is a nice thing
+
+92
+00:12:06,990 --> 00:12:23,280
+so the other thing is committing machines did have to really think about anything you do not
+
+93
+00:12:23,280 --> 00:12:28,230
+even have to think about how oh my god how do I paralyzed this thing that is this typically.
+
+94
+00:12:28,230 --> 00:12:32,490
+I mean it is a term that people use in architecture and they are trying to think
+
+95
+00:12:32,490 --> 00:12:36,270
+of parallel computing so things like though this is embarrassingly parallel so I can do
+
+96
+00:12:36,270 --> 00:12:41,310
+dude that whatever levels of parallelism I want and things like that maybe I am misusing the
+
+97
+00:12:41,310 --> 00:12:46,560
+term but, but yeah but it is really easy to paralyze right you can just want it on
+
+98
+00:12:46,560 --> 00:12:53,280
+different sample separately yeah so what is embarrassing about it I mean why do you even
+
+99
+00:12:53,280 --> 00:12:58,230
+have this whole parallel computing field to study something that can be parallelized.
+
+100
+00:12:58,230 --> 00:13:05,910
+So easily so I am really embarrassed to be working in parallel computing and just making it up okay,
+
+101
+00:13:05,910 --> 00:13:10,710
+okay committing machines can I want the committee which this any other questions
+
+102
+00:13:10,710 --> 00:13:17,250
+okay so computing machines is very simple idea so I am going to train I have given a data set
+
+103
+00:13:17,250 --> 00:13:21,510
+and I am going to train a lot of different classifiers on, on the given data right and
+
+104
+00:13:21,510 --> 00:13:32,550
+then I am going to combine their outputs right based on some kind of weighting mechanism okay
+
+105
+00:13:32,550 --> 00:13:42,360
+so what could be the weighting mechanism. I will try the neural network whatever it I
+
+106
+00:13:42,360 --> 00:13:47,280
+trained many, many different classifiers right and then I have this set of classifies that
+
+107
+00:13:47,280 --> 00:13:52,650
+have already been trained right and I have to combine their output how do I go about doing
+
+108
+00:13:52,650 --> 00:13:57,930
+this in there are many ways in which you can combine their output right so I am just taking
+
+109
+00:13:57,930 --> 00:14:04,080
+this classification from the textbook elements of statistical learning and not that I completely
+
+110
+00:14:04,080 --> 00:14:08,550
+agree with it so in committee machine. Suppose I have M classifiers the weight is
+
+111
+00:14:08,550 --> 00:14:19,020
+assigned to each classifier is 1 by M, 1 by M so I treated classifies as being equal right
+
+112
+00:14:19,020 --> 00:14:24,270
+so that is called a committee machine and I have many different classifiers as the outputs of all
+
+113
+00:14:24,270 --> 00:14:29,400
+the classifiers I am going to give each one of them an equal weightage or equal vote right so
+
+114
+00:14:29,400 --> 00:14:43,530
+I call that a committee right then we go on to something more for interesting called stacking
+
+115
+00:14:43,530 --> 00:14:52,860
+no badge me says the same classifier same algorithm but trained on different samples
+
+116
+00:14:52,860 --> 00:14:57,360
+of the data right in committee machine. It is the same data but trained on different
+
+117
+00:14:57,360 --> 00:15:01,080
+algorithms right so I have a three and I could have never let works I could have anything right
+
+118
+00:15:01,080 --> 00:15:05,550
+or it could be says it could be neural networks with different number of neurons I mean I am not
+
+119
+00:15:05,550 --> 00:15:11,850
+saying that it has to be a completely different algorithm it is the different classifier it could
+
+120
+00:15:11,850 --> 00:15:20,250
+for different settings of the parameters and so on so forth right and so starting
+
+121
+00:15:22,780 --> 00:15:26,350
+the stacking is like committing machine so I have many, many different classifiers
+
+122
+00:15:26,350 --> 00:15:33,850
+right but what I am going to do is instead of arbitrarily assigning a weight to each of the
+
+123
+00:15:33,850 --> 00:15:46,540
+classifier what will I do what can I do. I could do that but with stacking what do I
+
+124
+00:15:46,540 --> 00:15:58,960
+do I learn the weights right so that is a natural thing to try and do right so I have the prediction
+
+125
+00:15:58,960 --> 00:16:07,480
+that is made by each of the classifiers right I go ahead and I learn the weights so another way
+
+126
+00:16:07,480 --> 00:16:15,460
+of thinking about stacking is the following so I use each of these classifiers okay to generate a
+
+127
+00:16:15,460 --> 00:16:22,930
+feature for me so this way it is called stacking so I have a set of classifiers right they all
+
+128
+00:16:22,930 --> 00:16:28,210
+output some it could be a probability vector or it could be just a class label or whatever at
+
+129
+00:16:28,210 --> 00:16:33,610
+the classifier one comes and tells me okay. I think this data point is class 1plus if I to
+
+130
+00:16:33,610 --> 00:16:38,380
+comes and tell me I think this data point is class to the classified three comes in tell me I think
+
+131
+00:16:38,380 --> 00:16:44,470
+the data point is class 1 and now what will happen is i will my input to when next machine learning
+
+132
+00:16:44,470 --> 00:16:51,670
+stage will be class 1 class to class one right and now again it is a machine learning algorithm
+
+133
+00:16:51,670 --> 00:16:55,570
+now I can run whatever machine learning thing I want it could be linear regression because
+
+134
+00:16:55,570 --> 00:16:59,200
+I am interested in finding weights right so doing some kind of regression seems to make
+
+135
+00:16:59,200 --> 00:17:03,130
+sense right but then you know problems with regression classification all of you know.
+
+136
+00:17:03,130 --> 00:17:06,400
+That so you might want to use it for classification or you might want to use
+
+137
+00:17:06,400 --> 00:17:09,490
+some other method for classic you might want to use logistic regression for classification
+
+138
+00:17:09,490 --> 00:17:15,280
+whatever it is right but then the inputs to this stage or they are these outputs of the
+
+139
+00:17:15,280 --> 00:17:22,090
+first stage of classifiers and they try target is the same target as the first stage the same
+
+140
+00:17:22,090 --> 00:17:28,360
+class level right so one way of thinking about it is like stacking these classifiers
+
+141
+00:17:28,360 --> 00:17:34,690
+one upon the other so I first have some set of classifiers they produce features for me right
+
+142
+00:17:34,690 --> 00:17:39,670
+the features are essentially what the class what they think are the class labels right.
+
+143
+00:17:39,670 --> 00:17:46,420
+And then I learnt to combine the features I learn a predictor based on these sets of
+
+144
+00:17:46,420 --> 00:17:58,280
+features so that is another way of thinking about it makes sense then make sense okay
+
+145
+00:18:02,280 --> 00:18:10,170
+right let us take a classifier FM either I there are some people are actually saying
+
+146
+00:18:10,170 --> 00:18:13,650
+they did make sense I am trying to make it easy more explicit let us take a classifier
+
+147
+00:18:13,650 --> 00:18:22,050
+some fi right so it basically it operates on at X1 to XP right I just going to give
+
+148
+00:18:22,050 --> 00:18:28,950
+me something right it is going to give me real number or, or some, some class label okay.
+
+149
+00:18:28,950 --> 00:18:33,300
+So that is basically the, the function you see there does classification or regression
+
+150
+00:18:33,300 --> 00:18:40,908
+or whatever r so now what I am saying is I am going to Train another H right that
+
+151
+00:18:40,908 --> 00:19:01,570
+is going to take as input right it is going to take this f1 to FM as input so FI is the
+
+152
+00:19:01,570 --> 00:19:08,650
+first level classifier I have m of them right and then h is going to take h(x) is going to
+
+153
+00:19:08,650 --> 00:19:14,560
+take f1(x) …. fM (x) as input and it will produce whatever is the thing I am looking
+
+154
+00:19:14,560 --> 00:19:19,840
+for real number or write so if you go and look at the structure of h right.
+
+155
+00:19:19,840 --> 00:19:27,460
+To make it explicit let us say I want head h to be a linear function right so that will essentially
+
+156
+00:19:27,460 --> 00:19:46,210
+mean that H will look something like right it just going to look something like this so this
+
+157
+00:19:46,210 --> 00:19:51,460
+is essentially saying that okay I am taking the outputs of all this classifies I am combining them
+
+158
+00:19:51,460 --> 00:20:00,790
+in some kind of a weighted fashion the same way I tried any of their face yeah the same
+
+159
+00:20:00,790 --> 00:20:05,260
+training data yeah the same training data that we had gives for fi’s in use the same training
+
+160
+00:20:05,260 --> 00:20:18,040
+data for h may be, may be not depends on the kind of classifier that you are using right.
+
+161
+00:20:18,040 --> 00:20:24,130
+I mean H is a completely different training algorithm right oh I can see your confusion
+
+162
+00:20:24,130 --> 00:20:39,640
+okay so my initial training data is going to look like this I do not know okay initiate training
+
+163
+00:20:39,640 --> 00:20:45,040
+data is going to look like this, this is my X and that is my +1 so corresponding to this that
+
+164
+00:20:45,040 --> 00:21:04,810
+will be a training data for H which will be f1 of this guy so now I have only two elements here but
+
+165
+00:21:04,810 --> 00:21:11,290
+there is f1 of this and this is f2 of this and the same plus one comes in here right so I can
+
+166
+00:21:11,290 --> 00:21:18,310
+I can do this so the dimensions do not have to be the same wait so this is stacking.
+
+167
+00:21:18,310 --> 00:21:23,410
+So stacking is very powerful method and in fact you can do all kinds of weird things
+
+168
+00:21:23,410 --> 00:21:28,720
+with stacking in fact this these weights that I am learning right I can make them functions
+
+169
+00:21:28,720 --> 00:21:48,410
+of X as well what does it mean what does it mean if my weights are functions of X type
+
+170
+00:21:48,410 --> 00:21:53,660
+depending on where in the input space the data is coming from when I might want to trust one,
+
+171
+00:21:53,660 --> 00:21:59,900
+one output more than the other way suppose it should say the top left quadrant of my input
+
+172
+00:21:59,900 --> 00:22:05,360
+space then I trust f1 and f2 maybe a little bit but then if it is in the top right quadrant.
+
+173
+00:22:05,360 --> 00:22:10,130
+Then I trust both f2 more than f3 less or something like that I can actually do that
+
+174
+00:22:10,130 --> 00:22:14,360
+also so with stacking this function can be arbitrarily complex that is why I did not
+
+175
+00:22:14,360 --> 00:22:18,620
+want to write the linear thing first because it will bias you into thinking about simple linear
+
+176
+00:22:18,620 --> 00:22:28,520
+weighted functions but this H can be arbitrarily complex so if you think about it in fact we are
+
+177
+00:22:28,520 --> 00:22:39,560
+doing something like this in the in neural networks right so the first layer it gives
+
+178
+00:22:39,560 --> 00:22:45,260
+you features are complex feature some, some, some hyper plane is being learnt in the first layer
+
+179
+00:22:45,260 --> 00:22:49,520
+itself and it produces a complex feature and the second layer takes all these complex features.
+
+180
+00:22:49,520 --> 00:22:56,090
+I have produced and it learns to produce a final output right the only difference is the first
+
+181
+00:22:56,090 --> 00:23:02,630
+layer is not trained in this way right the first layer is not trained directly using the training
+
+182
+00:23:02,630 --> 00:23:07,190
+data it is trained using the back propagation error or whatever is the training algorithm you
+
+183
+00:23:07,190 --> 00:23:11,330
+use it is not directly trained using this data so that is the difference right but we already
+
+184
+00:23:11,330 --> 00:23:16,340
+looked at things like this right these are all some kind of general additive models they are
+
+185
+00:23:16,340 --> 00:23:27,470
+called additive models fine so any questions on this can we take less pay directly as it
+
+186
+00:23:31,510 --> 00:23:37,000
+affects so or are you meaning that training like this just simplifies
+
+187
+00:23:37,000 --> 00:23:41,740
+you are the way you are doing it basically all, all your Plus page can be linear.
+
+188
+00:23:41,740 --> 00:23:47,290
+But a combination but any combination of linear classifiers you will be able to explain much more
+
+189
+00:23:47,290 --> 00:23:54,040
+complex cream using stacking the basic idea is, is that when my classifieds need not necessarily
+
+190
+00:23:54,040 --> 00:23:59,650
+be linear classifiers see the thing is so any of the classification algorithm that we are
+
+191
+00:23:59,650 --> 00:24:04,270
+looking at right comes with two own biases in terms of what are the class of functions it can
+
+192
+00:24:04,270 --> 00:24:10,510
+fit and so on so forth right and it could very well be that across the entire input space the
+
+193
+00:24:10,510 --> 00:24:14,920
+function is so complex the final function. I want to learn it is so complex that no
+
+194
+00:24:14,920 --> 00:24:19,690
+individual classifier can actually fit it or if I try to fit it with a single classifier and it end
+
+195
+00:24:19,690 --> 00:24:24,670
+up with something that has too many parameters so when you do this kind of this layer wise training
+
+196
+00:24:24,670 --> 00:24:31,000
+so the I can get by with whatever I know a simple classifiers in the first stage first stage right
+
+197
+00:24:31,000 --> 00:24:35,335
+I could use decision trees it need not necessarily be linear so addition trees are simple enough I do
+
+198
+00:24:35,335 --> 00:24:39,970
+not have to grow it all the way out that I can stop at some point I can use decision trees.
+
+199
+00:24:39,970 --> 00:24:45,310
+I can use neural networks whatever I want as my choice right and then later on try and combine
+
+200
+00:24:45,310 --> 00:24:58,580
+the outputs you could you could given how much success people have had a deep learning I would
+
+201
+00:24:58,580 --> 00:25:03,620
+suspect that if you if you work on this carefully yes you could have multiple levels of stacking
+
+202
+00:25:03,620 --> 00:25:07,040
+people do that I mean it is not that it is not that the reason it is called stacking is because
+
+203
+00:25:07,040 --> 00:25:12,350
+people actually did multiple levels so it could do multiple levels of this but then the question
+
+204
+00:25:12,350 --> 00:25:18,740
+comes how do you group these things and so on so forth right do I do I run it on every give
+
+205
+00:25:18,740 --> 00:25:22,490
+all my first level classifies as input. To all my second level classifiers or should
+
+206
+00:25:22,490 --> 00:25:27,380
+I group them somehow to a form a hierarchy so those kinds of issues will arise as long as you
+
+207
+00:25:27,380 --> 00:25:32,360
+can address them sensibly then you can go ahead and do multi-level stacking is one thing which
+
+208
+00:25:32,360 --> 00:25:40,310
+I wanted to mention sometimes when people want to run you know competitions and so on so forth they
+
+209
+00:25:40,310 --> 00:25:46,100
+do something very clever they do not expose the actual data to the competitors they give you the
+
+210
+00:25:46,100 --> 00:25:52,970
+outputs of the first level classifiers okay. And then the actual class level they do not tell
+
+211
+00:25:52,970 --> 00:25:56,720
+you what the features were that they measured they give you the outputs of the first level
+
+212
+00:25:56,720 --> 00:26:00,380
+classifiers and then they give you the class labels and then now all you need to do is train
+
+213
+00:26:00,380 --> 00:26:04,340
+your second level classifier take the first level classifies output as inputs and train
+
+214
+00:26:04,340 --> 00:26:08,300
+the second level affair and see what we can do with it in fact it ran for a couple of ways.
+
+215
+00:26:08,300 --> 00:26:11,390
+I do not know I am not sure they are still running there is an ensemble learning competition which
+
+216
+00:26:11,390 --> 00:26:20,090
+essentially does then this also allows you to have some amount of data privacy rights I do not have
+
+217
+00:26:20,090 --> 00:26:25,490
+to release X but I am releasing some amount of simple functions computed on X okay and then you
+
+218
+00:26:25,490 --> 00:26:30,260
+build whatever classifier you wanton so it is hard for me to reverse engineer because I do not tell
+
+219
+00:26:30,260 --> 00:26:35,420
+you what F is even a very tell you the output of F I do not tell you what F is I do not tell you what
+
+220
+00:26:35,420 --> 00:26:40,190
+X is so it is very hard for you to recover. Because you cannot essentially compute F inverse
+
+221
+00:26:40,190 --> 00:26:46,100
+right so, so that is another nice thing that you can so the reason that there are so many
+
+222
+00:26:46,100 --> 00:26:49,820
+approaches for doing this is because there is no one clear winner under all circumstances
+
+223
+00:26:49,820 --> 00:26:57,650
+way so yeah so it depends so in fact like I said so stacking is something that you
+
+224
+00:26:57,650 --> 00:27:02,300
+can use under a variety of circumstances you can even use it under cases where you cannot
+
+225
+00:27:02,300 --> 00:27:12,600
+do bagging how so I mean I can use stacking when I do not want to have you want to give
+
+226
+00:27:12,600 --> 00:27:17,400
+you access to data right so that is one case in other cases the data set is small enough.
+
+227
+00:27:17,400 --> 00:27:24,660
+That bagging does not make much of a sense on that right so it is not really truly representative of
+
+228
+00:27:24,660 --> 00:27:28,110
+the underlying sample and I am not really sure we want to do that in which case I can
+
+229
+00:27:28,110 --> 00:27:38,460
+use the different biases given by my multiple classifiers as my that is my variation right to
+
+230
+00:27:38,460 --> 00:27:42,540
+my ensemble so there are different ways in which you can do this next thing when I want to talk
+
+231
+00:27:42,540 --> 00:27:52,890
+about which is more interesting thing yeah why yours and I run like I train them on a single
+
+232
+00:27:52,890 --> 00:28:00,120
+data set and then I get the percentage of points misclassified and then I normalize them through
+
+233
+00:28:00,120 --> 00:28:08,970
+all the classifiers like say 3% 5%. I normalize them to come for each of the
+
+234
+00:28:08,970 --> 00:28:21,300
+classifier you know what is a percentage of data points I got wrong okay learning this when beta’s
+
+235
+00:28:21,300 --> 00:28:26,250
+are not a function of X oh that is one way of finding the beta here nothing wrong with it
+
+236
+00:28:26,250 --> 00:28:43,880
+like when betas are not the function of X so how else would be you distribute the beta’s that is
+
+237
+00:28:43,880 --> 00:28:47,510
+one way of estimating beta I mean what you mean missing how else would you read this remove it
+
+238
+00:28:47,510 --> 00:28:51,800
+I can think of many ways of doing that right take the classifier that has a smallest error and give
+
+239
+00:28:51,800 --> 00:28:58,820
+beta1 to that and make everything else. But why would I even want to give weights
+
+240
+00:28:58,820 --> 00:29:06,950
+to classify switch which give me higher error than the lowest error okay give me an answer
+
+241
+00:29:06,950 --> 00:29:16,790
+why the possibility of them you having a better chance no it could be making errors in different
+
+242
+00:29:16,790 --> 00:29:21,470
+things so I might have a one percent error another guy might have a 3% error but he might actually be
+
+243
+00:29:21,470 --> 00:29:26,270
+capturing that 1% correctly the one that I make the error on he met the other classifier might
+
+244
+00:29:26,270 --> 00:29:30,020
+get it correctly so I do not want to completely neglect other classifies also so that is the
+
+245
+00:29:30,020 --> 00:29:34,550
+reason why you have to go about trying to be more clever about the weight assignments.
+
+246
+00:29:34,550 --> 00:29:42,170
+I can do this proportional to the errors in fact there is another, another more Bayesian approach
+
+247
+00:29:42,170 --> 00:29:48,530
+for doing this I can look at the likelihood of the classifier given the data and I can assign
+
+248
+00:29:48,530 --> 00:29:53,180
+the weights proportional to the likelihood the higher the likelihood the higher the weight and
+
+249
+00:29:53,180 --> 00:29:57,770
+I can do some kind of normalization on that so that my beta sum to 1 and I could do that as
+
+250
+00:29:57,770 --> 00:30:01,370
+well instead of just looking at the error the error would be a frequentist way of looking
+
+251
+00:30:01,370 --> 00:30:03,980
+at it a Bayesian way of looking at it. We look at the likelihood of the data and
+
+252
+00:30:03,980 --> 00:30:08,090
+do this there are many ways in which you can derive the data and so stacking this takes
+
+253
+00:30:08,090 --> 00:30:12,170
+it to the extreme say okay fine I am not going to worry about a specific algorithm I mean I am just
+
+254
+00:30:12,170 --> 00:30:17,990
+going to let it learn from the data directly someone right so yeah there are pros and cons
+
+255
+00:30:17,990 --> 00:30:24,590
+and whole bunch of things so yeah empirically if you want to validate it finally do cross faction
+
+256
+00:30:24,590 --> 00:30:29,870
+and then test against all of these ways of generating the joint classifier right.
+
+257
+00:30:29,870 --> 00:30:34,460
+But then analytically also you can try to analyze some of the variance of the combined
+
+258
+00:30:34,460 --> 00:30:41,750
+classifier and you will end up hitting the wall at some point that says that it depends
+
+259
+00:30:41,750 --> 00:30:47,720
+on the characteristics of the variance of the data so that is basically what that I mean we
+
+260
+00:30:47,720 --> 00:30:51,740
+are entering territory where you can come up with whole bunch of things like ensemble methods like
+
+261
+00:30:51,740 --> 00:30:55,400
+a thousand papers or their research papers out there which I proposed lots and lots of
+
+262
+00:30:55,400 --> 00:31:02,552
+variations right so think of something and before you try to publish it do a literature survey you
+
+263
+00:31:02,552 --> 00:31:09,260
+will probably find it there ok so that is, that is, that is how crowded the space is.

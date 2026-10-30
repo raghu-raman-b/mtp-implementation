@@ -1,0 +1,2271 @@
+1
+00:00:00,500 --> 00:00:01,979
+[SQUEAKING]
+
+2
+00:00:01,979 --> 00:00:03,951
+[RUSTLING]
+
+3
+00:00:03,951 --> 00:00:07,402
+[CLICKING]
+
+4
+00:00:13,140 --> 00:00:15,080
+JAMISON MEINDL: So I guess we can get started.
+
+5
+00:00:15,080 --> 00:00:17,497
+We're going to be going over some of the basics of PyTorch
+
+6
+00:00:17,497 --> 00:00:20,800
+today, and you guys are going to be using PyTorch many times
+
+7
+00:00:20,800 --> 00:00:22,240
+with all of your psets.
+
+8
+00:00:22,240 --> 00:00:24,760
+And I think if you keep doing deep learning in the future,
+
+9
+00:00:24,760 --> 00:00:26,240
+everyone's using PyTorch.
+
+10
+00:00:26,240 --> 00:00:28,560
+And so lots of projects, research projects
+
+11
+00:00:28,560 --> 00:00:32,920
+and real industry projects, are actually using PyTorch.
+
+12
+00:00:32,920 --> 00:00:36,360
+So there's a few things to know about PyTorch.
+
+13
+00:00:36,360 --> 00:00:41,340
+And a few of the more important things are that PyTorch is fast.
+
+14
+00:00:41,340 --> 00:00:43,520
+So we're able to run PyTorch on GPU.
+
+15
+00:00:43,520 --> 00:00:46,640
+And this allows us to actually complete powerful deep learning
+
+16
+00:00:46,640 --> 00:00:50,800
+models by actually running these things within a reasonable time
+
+17
+00:00:50,800 --> 00:00:51,640
+frame.
+
+18
+00:00:51,640 --> 00:00:53,960
+So GPUs really speed up the ability
+
+19
+00:00:53,960 --> 00:00:56,400
+to perform operations that we use
+
+20
+00:00:56,400 --> 00:00:58,560
+within these machine learning models,
+
+21
+00:00:58,560 --> 00:01:00,432
+and PyTorch supports that ability.
+
+22
+00:01:00,432 --> 00:01:02,140
+So you may have used something like NumPy
+
+23
+00:01:02,140 --> 00:01:08,260
+before, where PyTorch and NumPy have similar data operations,
+
+24
+00:01:08,260 --> 00:01:11,780
+but we're able to use GPU and speed up within PyTorch.
+
+25
+00:01:11,780 --> 00:01:14,820
+The other thing about PyTorch is it supports autograd.
+
+26
+00:01:14,820 --> 00:01:18,820
+So we talked about gradients a little bit in lecture today.
+
+27
+00:01:18,820 --> 00:01:20,660
+But autograd is basically the idea
+
+28
+00:01:20,660 --> 00:01:23,460
+that we can compute the gradients automatically
+
+29
+00:01:23,460 --> 00:01:26,260
+as we iterate through our models.
+
+30
+00:01:26,260 --> 00:01:28,380
+And so PyTorch makes this very easy for us.
+
+31
+00:01:28,380 --> 00:01:30,540
+It makes it very intuitive and simple
+
+32
+00:01:30,540 --> 00:01:32,580
+for us to actually train and update
+
+33
+00:01:32,580 --> 00:01:35,580
+the weights of our models.
+
+34
+00:01:35,580 --> 00:01:38,140
+So that's a few reasons of why we use PyTorch.
+
+35
+00:01:38,140 --> 00:01:41,420
+It's a great library, and I think you guys will hopefully
+
+36
+00:01:41,420 --> 00:01:43,140
+enjoy it.
+
+37
+00:01:43,140 --> 00:01:45,980
+So today, just a quick overview of what we're going to do,
+
+38
+00:01:45,980 --> 00:01:49,500
+I'm going to go over some of intro stuff of just how we use
+
+39
+00:01:49,500 --> 00:01:52,340
+PyTorch tensors and some of the simple operations
+
+40
+00:01:52,340 --> 00:01:53,542
+on these tensors.
+
+41
+00:01:53,542 --> 00:01:55,500
+And then we're going to go through a little bit
+
+42
+00:01:55,500 --> 00:01:57,500
+about autograd, and then a little bit
+
+43
+00:01:57,500 --> 00:02:00,380
+about how we can train a model.
+
+44
+00:02:00,380 --> 00:02:03,400
+You'll go into a lot more depth on some of the psets,
+
+45
+00:02:03,400 --> 00:02:06,040
+but overall, this should give you a good start
+
+46
+00:02:06,040 --> 00:02:09,188
+to be able to understand how it actually works behind the scenes
+
+47
+00:02:09,188 --> 00:02:11,480
+and how you're going to actually be able to use it well
+
+48
+00:02:11,480 --> 00:02:13,440
+on your psets.
+
+49
+00:02:13,440 --> 00:02:16,660
+So just to start off, just how many people have used PyTorch?
+
+50
+00:02:16,660 --> 00:02:20,560
+Maybe you could raise your hand if you've used PyTorch.
+
+51
+00:02:20,560 --> 00:02:25,120
+OK, so we definitely have a lot of newbies to PyTorch, I guess.
+
+52
+00:02:25,120 --> 00:02:26,340
+And that's totally fine.
+
+53
+00:02:26,340 --> 00:02:28,173
+I think you guys will all be able to pick it
+
+54
+00:02:28,173 --> 00:02:33,320
+up and be able to be totally fine throughout the course.
+
+55
+00:02:33,320 --> 00:02:35,080
+So yeah, let's get started.
+
+56
+00:02:35,080 --> 00:02:37,220
+If you guys want to pull up this notebook, you can.
+
+57
+00:02:37,220 --> 00:02:39,000
+It's on the Piazza.
+
+58
+00:02:39,000 --> 00:02:40,060
+I posted it.
+
+59
+00:02:40,060 --> 00:02:43,360
+It's probably one of the latest posts.
+
+60
+00:02:43,360 --> 00:02:45,920
+And yeah, we'll get started.
+
+61
+00:02:45,920 --> 00:02:49,280
+So the first thing we have to do is we have to do a few imports.
+
+62
+00:02:49,280 --> 00:02:53,912
+PyTorch can be imported by importing torch here.
+
+63
+00:02:53,912 --> 00:02:56,120
+And then we'll import a few other things as well just
+
+64
+00:02:56,120 --> 00:03:01,360
+to help with this visualizing and creating tensors.
+
+65
+00:03:04,660 --> 00:03:07,850
+So the first topic we're going to go over is PyTorch tensors.
+
+66
+00:03:07,850 --> 00:03:10,100
+And PyTorch tensors is basically where we can actually
+
+67
+00:03:10,100 --> 00:03:12,300
+store data within PyTorch.
+
+68
+00:03:12,300 --> 00:03:14,260
+So if you ever had some input data
+
+69
+00:03:14,260 --> 00:03:17,220
+that you wanted to put into a machine learning model,
+
+70
+00:03:17,220 --> 00:03:19,400
+or if you wanted to compare some outputs,
+
+71
+00:03:19,400 --> 00:03:22,600
+these outputs are going to be represented as PyTorch tensors.
+
+72
+00:03:22,600 --> 00:03:24,100
+And so the first thing we'll go over
+
+73
+00:03:24,100 --> 00:03:26,933
+is how we can actually initialize a tensor.
+
+74
+00:03:26,933 --> 00:03:29,600
+So the first way we can do this here is just directly from data.
+
+75
+00:03:29,600 --> 00:03:31,200
+You're probably not going to actually do this too often.
+
+76
+00:03:31,200 --> 00:03:33,940
+But it's good to know all the different ways that you can do.
+
+77
+00:03:33,940 --> 00:03:37,020
+So if we just have a Python list here
+
+78
+00:03:37,020 --> 00:03:39,500
+where we have the inputs 1, 2, 3, and 4,
+
+79
+00:03:39,500 --> 00:03:42,620
+we can create a tensor directly from that data.
+
+80
+00:03:42,620 --> 00:03:46,620
+So if we run that cell, we see that we create a tensor object
+
+81
+00:03:46,620 --> 00:03:50,780
+here, which is the same structure as that nested list
+
+82
+00:03:50,780 --> 00:03:51,840
+that we saw before.
+
+83
+00:03:54,780 --> 00:03:56,540
+The next way we can do this is we
+
+84
+00:03:56,540 --> 00:04:00,880
+can also transform and create tensors from a NumPy array.
+
+85
+00:04:00,880 --> 00:04:03,280
+So do we have a question back there?
+
+86
+00:04:03,280 --> 00:04:04,323
+AUDIENCE: [INAUDIBLE]
+
+87
+00:04:04,323 --> 00:04:05,740
+JAMISON MEINDL: Oh, you can't see?
+
+88
+00:04:09,120 --> 00:04:12,400
+Is that a little better?
+
+89
+00:04:12,400 --> 00:04:15,040
+One more?
+
+90
+00:04:15,040 --> 00:04:17,399
+Good?
+
+91
+00:04:17,399 --> 00:04:20,160
+All right, so yeah, we can create tensors
+
+92
+00:04:20,160 --> 00:04:22,000
+from NumPy arrays.
+
+93
+00:04:22,000 --> 00:04:24,240
+NumPy arrays are obviously another common way
+
+94
+00:04:24,240 --> 00:04:26,240
+we can store data in Python.
+
+95
+00:04:26,240 --> 00:04:28,240
+And tensors and NumPy arrays store
+
+96
+00:04:28,240 --> 00:04:30,240
+a lot of the same structure.
+
+97
+00:04:30,240 --> 00:04:32,280
+So we can copy directly from NumPy arrays.
+
+98
+00:04:32,280 --> 00:04:35,040
+And it actually can use the same memory
+
+99
+00:04:35,040 --> 00:04:38,160
+in the system for both the tensor and NumPy array.
+
+100
+00:04:38,160 --> 00:04:41,440
+So if we do the same thing here, we're copying the same data.
+
+101
+00:04:41,440 --> 00:04:46,580
+And we can create a tensor with this torch.from_numpy function.
+
+102
+00:04:49,560 --> 00:04:51,400
+The next way we can create tensors
+
+103
+00:04:51,400 --> 00:04:54,960
+is if we wanted to create a tensor with a specific shape
+
+104
+00:04:54,960 --> 00:04:56,960
+and specific values within it, we
+
+105
+00:04:56,960 --> 00:04:59,880
+might want to create a tensor of all ones or a tensor
+
+106
+00:04:59,880 --> 00:05:05,110
+with random numbers to initialize some of model.
+
+107
+00:05:05,110 --> 00:05:07,690
+And what we can do here is just use this ones_like
+
+108
+00:05:07,690 --> 00:05:10,550
+if we wanted to make a tensor of the same shape
+
+109
+00:05:10,550 --> 00:05:12,142
+as another object.
+
+110
+00:05:12,142 --> 00:05:13,350
+But there's also operations--
+
+111
+00:05:13,350 --> 00:05:15,270
+I think I have that-- that's next, where
+
+112
+00:05:15,270 --> 00:05:17,270
+you can input a specific shape.
+
+113
+00:05:17,270 --> 00:05:22,070
+And then rand_like will give you a random number between 0 and 1
+
+114
+00:05:22,070 --> 00:05:23,090
+in each element.
+
+115
+00:05:27,310 --> 00:05:30,770
+Moving on, yeah, we can create tensors of specific shapes.
+
+116
+00:05:30,770 --> 00:05:34,150
+Here, I'm using rand, ones, zeros, and you can also--
+
+117
+00:05:34,150 --> 00:05:36,910
+there's more that you can find in the documentation
+
+118
+00:05:36,910 --> 00:05:39,710
+of different types of initializations of each element
+
+119
+00:05:39,710 --> 00:05:41,310
+that you can do.
+
+120
+00:05:41,310 --> 00:05:44,153
+So yeah, we can also define tensors with a specific shape.
+
+121
+00:05:44,153 --> 00:05:46,070
+So if you didn't already have a tensor defined
+
+122
+00:05:46,070 --> 00:05:47,730
+that you were interested in the shape,
+
+123
+00:05:47,730 --> 00:05:52,390
+you could, say, create a tensor of size 2 by 3.
+
+124
+00:05:52,390 --> 00:05:54,390
+And we can do that in a few different ways here.
+
+125
+00:05:54,390 --> 00:05:55,370
+We can do random.
+
+126
+00:05:55,370 --> 00:05:57,150
+We can do ones, zeros.
+
+127
+00:05:57,150 --> 00:05:58,790
+There's a few other options.
+
+128
+00:05:58,790 --> 00:06:01,450
+There's a few attributes of a tensor that are good to know.
+
+129
+00:06:01,450 --> 00:06:04,250
+So the first one that we've seen already is the shape.
+
+130
+00:06:04,250 --> 00:06:07,010
+So if we make a random tensor of size 3 by 4,
+
+131
+00:06:07,010 --> 00:06:10,530
+we can get the shape by doing .shape.
+
+132
+00:06:10,530 --> 00:06:12,430
+The next thing to know is the data type.
+
+133
+00:06:12,430 --> 00:06:15,850
+So most of the tensors you're probably going to be using
+
+134
+00:06:15,850 --> 00:06:18,770
+and that we use as inputs to machine learning models
+
+135
+00:06:18,770 --> 00:06:20,190
+are going to be float32.
+
+136
+00:06:20,190 --> 00:06:23,970
+So that's a 32-bit float.
+
+137
+00:06:23,970 --> 00:06:28,330
+But you might see integers as well in some situations.
+
+138
+00:06:28,330 --> 00:06:32,490
+But the float 32 is generally used because it's the fastest.
+
+139
+00:06:32,490 --> 00:06:37,050
+And GPU hardware is optimized to use that.
+
+140
+00:06:37,050 --> 00:06:39,370
+The last thing you see here is the device.
+
+141
+00:06:39,370 --> 00:06:43,970
+We get the device the tensor is stored on by doing .device.
+
+142
+00:06:43,970 --> 00:06:47,370
+And this is important if you're using both CPU and GPU.
+
+143
+00:06:47,370 --> 00:06:49,250
+So we can only do operations between tensors
+
+144
+00:06:49,250 --> 00:06:50,545
+that are on the same device.
+
+145
+00:06:50,545 --> 00:06:53,170
+So if you have one tensor that's on a CPU and one tensor that's
+
+146
+00:06:53,170 --> 00:06:54,610
+on a GPU, you won't be able to do
+
+147
+00:06:54,610 --> 00:06:56,110
+any operations between the two.
+
+148
+00:06:56,110 --> 00:06:58,210
+You'd have to move one to the other device
+
+149
+00:06:58,210 --> 00:07:00,870
+before you can actually do any operations between them.
+
+150
+00:07:00,870 --> 00:07:04,550
+And so you will probably be frequently
+
+151
+00:07:04,550 --> 00:07:07,370
+be finding out which device your tensors are on and then moving
+
+152
+00:07:07,370 --> 00:07:08,870
+them to the device you actually want
+
+153
+00:07:08,870 --> 00:07:10,550
+them to be on if you wanted to do
+
+154
+00:07:10,550 --> 00:07:12,170
+some operation between the two.
+
+155
+00:07:15,643 --> 00:07:17,310
+The next thing we're going to talk about
+
+156
+00:07:17,310 --> 00:07:18,990
+is just some of the basic operations
+
+157
+00:07:18,990 --> 00:07:21,150
+that we can perform on tensors.
+
+158
+00:07:21,150 --> 00:07:24,110
+So we can do things like, to modify a tensor
+
+159
+00:07:24,110 --> 00:07:28,590
+or create a new tensor based on the tensor input,
+
+160
+00:07:28,590 --> 00:07:32,310
+and these are pretty simple operations that include things
+
+161
+00:07:32,310 --> 00:07:34,910
+like adding tensors together or multiplying them
+
+162
+00:07:34,910 --> 00:07:38,470
+that we can do to get different data that we want.
+
+163
+00:07:38,470 --> 00:07:41,550
+So if we look at an example, the first thing we'll do
+
+164
+00:07:41,550 --> 00:07:44,950
+is let's just create some of input tensor.
+
+165
+00:07:44,950 --> 00:07:47,350
+And this notation here is basically
+
+166
+00:07:47,350 --> 00:07:51,230
+going to create a tensor of 101 equally-spaced numbers
+
+167
+00:07:51,230 --> 00:07:52,925
+from 0 to 5.
+
+168
+00:07:52,925 --> 00:07:54,550
+And so that might be something if we're
+
+169
+00:07:54,550 --> 00:07:59,150
+interested in seeing the effect along a specific range
+
+170
+00:07:59,150 --> 00:08:02,090
+in this case 0 to 5.
+
+171
+00:08:02,090 --> 00:08:04,070
+And if we wanted to see that worked,
+
+172
+00:08:04,070 --> 00:08:05,930
+we can print the first five things
+
+173
+00:08:05,930 --> 00:08:08,330
+in x by just indexing in the same way
+
+174
+00:08:08,330 --> 00:08:14,450
+we would in NumPy or other Python environments.
+
+175
+00:08:14,450 --> 00:08:18,370
+So we can also get the last ones by doing negative 5
+
+176
+00:08:18,370 --> 00:08:24,050
+to the end, which you may have seen in other Python libraries.
+
+177
+00:08:24,050 --> 00:08:27,730
+So let's try and perform some operations on this tensor.
+
+178
+00:08:27,730 --> 00:08:31,490
+So if we wanted to, say, graph a sine wave or cosine,
+
+179
+00:08:31,490 --> 00:08:34,289
+we could do x.sin.
+
+180
+00:08:34,289 --> 00:08:38,770
+And that will perform sine on each input in the tensor.
+
+181
+00:08:38,770 --> 00:08:40,809
+We can also do something more complex
+
+182
+00:08:40,809 --> 00:08:45,730
+like doing x to the power of x cosine to create
+
+183
+00:08:45,730 --> 00:08:49,530
+a more interesting output.
+
+184
+00:08:49,530 --> 00:08:50,810
+We can also subtract tensors.
+
+185
+00:08:50,810 --> 00:08:53,010
+So we can subtract those two outputs
+
+186
+00:08:53,010 --> 00:08:56,510
+or just find the specific value within that tensor.
+
+187
+00:08:56,510 --> 00:08:58,010
+So if we wanted to find the min, you
+
+188
+00:08:58,010 --> 00:09:00,450
+could also find max, mean, standard deviation,
+
+189
+00:09:00,450 --> 00:09:01,830
+stuff like that.
+
+190
+00:09:01,830 --> 00:09:06,350
+If you wanted to find some characteristic about a tensor,
+
+191
+00:09:06,350 --> 00:09:08,370
+we can also use tensors with matplotlib.
+
+192
+00:09:08,370 --> 00:09:11,870
+So maybe some of you have used matplotlib in other cases.
+
+193
+00:09:11,870 --> 00:09:14,910
+And we can directly input these tensors
+
+194
+00:09:14,910 --> 00:09:17,630
+and create plots with matplotlib.
+
+195
+00:09:17,630 --> 00:09:20,190
+So we see here that some of our transformations
+
+196
+00:09:20,190 --> 00:09:23,470
+of x from 0 to 5, and we can see how
+
+197
+00:09:23,470 --> 00:09:27,345
+those different transformations occurred.
+
+198
+00:09:27,345 --> 00:09:29,470
+So there's a lot of different operations we can do.
+
+199
+00:09:29,470 --> 00:09:31,830
+I'm obviously not going to be able to go through all
+
+200
+00:09:31,830 --> 00:09:33,670
+the different operations, but just
+
+201
+00:09:33,670 --> 00:09:37,030
+know that you can apply some of these vector operations
+
+202
+00:09:37,030 --> 00:09:42,110
+to tensors, and you'll just get a tensor as the output.
+
+203
+00:09:42,110 --> 00:09:44,590
+Another thing that might be important
+
+204
+00:09:44,590 --> 00:09:46,370
+is you can clamp tensors.
+
+205
+00:09:46,370 --> 00:09:50,230
+So if you, say, were worried about your outputs going too far
+
+206
+00:09:50,230 --> 00:09:54,350
+in some direction, you can use .clamp and then some specific
+
+207
+00:09:54,350 --> 00:09:57,870
+range to actually get a specifically clamped output.
+
+208
+00:09:57,870 --> 00:10:01,850
+So we can see this plot here of that kind of transformation.
+
+209
+00:10:01,850 --> 00:10:04,410
+And so yeah, there's lots of different transformations
+
+210
+00:10:04,410 --> 00:10:05,110
+that we can do.
+
+211
+00:10:05,110 --> 00:10:07,235
+I'm not going to be able to go through all of them,
+
+212
+00:10:07,235 --> 00:10:11,050
+but just know that if you want to do some of operation
+
+213
+00:10:11,050 --> 00:10:14,250
+or transformation on a tensor, there's probably some ability
+
+214
+00:10:14,250 --> 00:10:14,750
+to do it.
+
+215
+00:10:14,750 --> 00:10:16,833
+And you'll just have to look up the documentation.
+
+216
+00:10:20,330 --> 00:10:23,530
+Moving on, we're going to start talking about how we can deal
+
+217
+00:10:23,530 --> 00:10:25,410
+with multidimensional data.
+
+218
+00:10:25,410 --> 00:10:29,450
+So we're going to be dealing with, frequently,
+
+219
+00:10:29,450 --> 00:10:31,610
+some sort of data input that's in a batch.
+
+220
+00:10:31,610 --> 00:10:34,010
+And I think we talked about batches in lectures today.
+
+221
+00:10:34,010 --> 00:10:37,810
+But basically, we create a batch of some of inputs.
+
+222
+00:10:37,810 --> 00:10:40,530
+And generally, what we do to represent
+
+223
+00:10:40,530 --> 00:10:43,610
+that is we include the batch as the first dimension.
+
+224
+00:10:43,610 --> 00:10:46,670
+And then this example is for an image.
+
+225
+00:10:46,670 --> 00:10:50,410
+So you might do the channel of R, G, and B
+
+226
+00:10:50,410 --> 00:10:54,190
+as the second dimension, and then the rest of your data,
+
+227
+00:10:54,190 --> 00:10:54,733
+and so on.
+
+228
+00:10:54,733 --> 00:10:56,650
+But in general I think the most important part
+
+229
+00:10:56,650 --> 00:11:03,110
+there is that the batch index is generally the first dimension.
+
+230
+00:11:03,110 --> 00:11:06,750
+Moving on, we can look at some of these tensors of higher
+
+231
+00:11:06,750 --> 00:11:10,150
+dimensions and see how we can play with their shapes
+
+232
+00:11:10,150 --> 00:11:13,470
+and see how this affects things.
+
+233
+00:11:13,470 --> 00:11:15,310
+So if we create a random tensor, we're
+
+234
+00:11:15,310 --> 00:11:18,970
+going to do this shape representing two images here.
+
+235
+00:11:18,970 --> 00:11:24,230
+So we have two RGB images that are 5 by 4.
+
+236
+00:11:24,230 --> 00:11:27,370
+And we can create this random--
+
+237
+00:11:27,370 --> 00:11:28,930
+we'll just say random numbers.
+
+238
+00:11:28,930 --> 00:11:31,590
+They're obviously not following RGB format,
+
+239
+00:11:31,590 --> 00:11:34,060
+but that's OK for this example.
+
+240
+00:11:34,060 --> 00:11:35,810
+One thing we can do is permute dimensions.
+
+241
+00:11:35,810 --> 00:11:38,910
+So if we were interested in swapping the dimensions x and y
+
+242
+00:11:38,910 --> 00:11:42,243
+within our image, we can use this permute command.
+
+243
+00:11:42,243 --> 00:11:43,910
+And so what you do is you basically just
+
+244
+00:11:43,910 --> 00:11:46,530
+order the dimensions how you want them to be ordered.
+
+245
+00:11:46,530 --> 00:11:48,790
+So if you wanted to keep the batch size the same,
+
+246
+00:11:48,790 --> 00:11:51,790
+and then the RGB dimension the same,
+
+247
+00:11:51,790 --> 00:11:55,790
+we'd say 0 and 1 because those are indexed.
+
+248
+00:11:55,790 --> 00:11:59,350
+And then if we wanted to swap, say, the x and y,
+
+249
+00:11:59,350 --> 00:12:02,650
+we'd just swap the dimensions that they were originally
+
+250
+00:12:02,650 --> 00:12:06,850
+in our permute statement.
+
+251
+00:12:06,850 --> 00:12:12,560
+So if we run that, we see that we originally had a size of 2,
+
+252
+00:12:12,560 --> 00:12:16,570
+3, 4, 5, but in this case, we've swapped the 4 and the 5 with
+
+253
+00:12:16,570 --> 00:12:20,370
+our .permute command.
+
+254
+00:12:20,370 --> 00:12:23,170
+Another thing you might frequently do is reshaping.
+
+255
+00:12:23,170 --> 00:12:25,170
+And so there's a few different ways to do this.
+
+256
+00:12:25,170 --> 00:12:27,210
+The first is with .view.
+
+257
+00:12:27,210 --> 00:12:30,190
+And this is generally the more efficient way.
+
+258
+00:12:30,190 --> 00:12:32,810
+But there's also .reshape, and it has pretty much the same
+
+259
+00:12:32,810 --> 00:12:34,570
+functionality.
+
+260
+00:12:34,570 --> 00:12:38,690
+And basically, what we can do is we can input specific shapes
+
+261
+00:12:38,690 --> 00:12:39,350
+that we want.
+
+262
+00:12:39,350 --> 00:12:42,090
+So in this case, we're just keeping the batch size.
+
+263
+00:12:42,090 --> 00:12:43,753
+And then the negative basically just
+
+264
+00:12:43,753 --> 00:12:46,170
+means that we're going to have all of the rest of the data
+
+265
+00:12:46,170 --> 00:12:49,430
+that we had included in one dimension.
+
+266
+00:12:49,430 --> 00:12:52,770
+So we end up with a shape of just 2 and 60,
+
+267
+00:12:52,770 --> 00:12:57,090
+because this negative 1 was just the rest of the data in each--
+
+268
+00:12:57,090 --> 00:12:59,630
+the rest of those dimensions.
+
+269
+00:12:59,630 --> 00:13:01,830
+Next thing to know is indexing.
+
+270
+00:13:01,830 --> 00:13:06,430
+So PyTorch does indexing pretty much the same way as NumPy does.
+
+271
+00:13:06,430 --> 00:13:09,230
+So if we wanted to, say, get something like the first row,
+
+272
+00:13:09,230 --> 00:13:11,610
+we can just input a specific number.
+
+273
+00:13:11,610 --> 00:13:13,150
+So that would be 0.
+
+274
+00:13:13,150 --> 00:13:15,970
+And if we wanted to get the first column,
+
+275
+00:13:15,970 --> 00:13:18,110
+we can use this colon to represent
+
+276
+00:13:18,110 --> 00:13:21,910
+all of the rows and then the 0 to represent the first column.
+
+277
+00:13:21,910 --> 00:13:24,710
+And so that's the second dimension.
+
+278
+00:13:24,710 --> 00:13:26,790
+And then if we want to get the last thing,
+
+279
+00:13:26,790 --> 00:13:32,270
+similar to other Python methods, you can just use negative 1.
+
+280
+00:13:32,270 --> 00:13:35,610
+We can also use this slicing to assign values.
+
+281
+00:13:35,610 --> 00:13:39,710
+So if we did wanted to assign the first column or, I guess,
+
+282
+00:13:39,710 --> 00:13:42,390
+this second column to 0, we could
+
+283
+00:13:42,390 --> 00:13:44,110
+do this using this assignment.
+
+284
+00:13:44,110 --> 00:13:47,210
+The next thing we might want to do is join tensors together.
+
+285
+00:13:47,210 --> 00:13:52,550
+So we might want to combine different maybe batches or just
+
+286
+00:13:52,550 --> 00:13:55,790
+specific elements to create a larger tensor.
+
+287
+00:13:55,790 --> 00:13:57,870
+And so we'll go through two different ways here.
+
+288
+00:13:57,870 --> 00:14:00,290
+The first is just concatenating.
+
+289
+00:14:00,290 --> 00:14:02,610
+So we use this torch.cat operator.
+
+290
+00:14:02,610 --> 00:14:08,170
+Then we input our tensors in a list here.
+
+291
+00:14:08,170 --> 00:14:11,712
+We also define a dimension that we want to concatenate along.
+
+292
+00:14:11,712 --> 00:14:13,170
+And basically, what this will do is
+
+293
+00:14:13,170 --> 00:14:16,930
+it will just add all of these input tensors
+
+294
+00:14:16,930 --> 00:14:18,950
+together along that specific dimension.
+
+295
+00:14:18,950 --> 00:14:22,450
+So we see here we have this tensor that's a 4 by 4.
+
+296
+00:14:22,450 --> 00:14:25,330
+And if we concatenate the three tensors together
+
+297
+00:14:25,330 --> 00:14:28,030
+along the first dimension dim equals 1.
+
+298
+00:14:28,030 --> 00:14:30,010
+We're going to end up with a 4 by 12.
+
+299
+00:14:30,010 --> 00:14:33,890
+And you can see how this works out with our second column
+
+300
+00:14:33,890 --> 00:14:37,490
+and our tensor, all 0's.
+
+301
+00:14:37,490 --> 00:14:39,730
+The next thing you can do is torch.stack.
+
+302
+00:14:39,730 --> 00:14:41,810
+And instead of concatenating along one dimension,
+
+303
+00:14:41,810 --> 00:14:44,170
+you're going to actually create a new dimension.
+
+304
+00:14:44,170 --> 00:14:48,010
+So say if you had a few different inputs
+
+305
+00:14:48,010 --> 00:14:49,850
+and you wanted to create a batch,
+
+306
+00:14:49,850 --> 00:14:53,530
+you might do a stack along dimension equals 0,
+
+307
+00:14:53,530 --> 00:14:56,690
+and you'll end up with an additional dimension
+
+308
+00:14:56,690 --> 00:14:58,290
+at the start here.
+
+309
+00:14:58,290 --> 00:15:00,440
+The next thing we can do is things
+
+310
+00:15:00,440 --> 00:15:02,462
+like matrix multiplication.
+
+311
+00:15:02,462 --> 00:15:04,420
+So there's a few different ways we can do this.
+
+312
+00:15:04,420 --> 00:15:08,240
+All of these operations here do the same thing.
+
+313
+00:15:08,240 --> 00:15:11,100
+I think using the at symbol is probably the easiest way,
+
+314
+00:15:11,100 --> 00:15:13,360
+but you can pick whatever you would like.
+
+315
+00:15:13,360 --> 00:15:15,400
+And this just performs matrix multiplication,
+
+316
+00:15:15,400 --> 00:15:17,280
+as you would expect.
+
+317
+00:15:17,280 --> 00:15:22,000
+And so, in this case, we made this tensor,
+
+318
+00:15:22,000 --> 00:15:26,720
+and we'll just apply matrix multiplication to it.
+
+319
+00:15:26,720 --> 00:15:29,720
+We can also compute element-wise products.
+
+320
+00:15:29,720 --> 00:15:32,440
+So that will just be the multiplication symbol
+
+321
+00:15:32,440 --> 00:15:34,920
+or this tensor.mul.
+
+322
+00:15:34,920 --> 00:15:37,260
+And so that will do just an element-wise product.
+
+323
+00:15:37,260 --> 00:15:41,720
+So if we had this tensor of 1, 2, 3, 4,
+
+324
+00:15:41,720 --> 00:15:46,060
+we'll just end up with the squares element-wise product.
+
+325
+00:15:49,160 --> 00:15:53,480
+Next thing to know is we can use some aggregators to find
+
+326
+00:15:53,480 --> 00:15:57,780
+some different statistics or values within our tensors.
+
+327
+00:15:57,780 --> 00:16:03,700
+So we can do things like sum, mean, max, min, stuff like that,
+
+328
+00:16:03,700 --> 00:16:06,700
+and get the value along a specific dimension
+
+329
+00:16:06,700 --> 00:16:08,460
+or along the whole tensor.
+
+330
+00:16:08,460 --> 00:16:13,875
+So that concludes the overall tensor part of this.
+
+331
+00:16:13,875 --> 00:16:16,000
+Definitely going a little slower than I was hoping,
+
+332
+00:16:16,000 --> 00:16:20,820
+but we'll try and get through as much as we can.
+
+333
+00:16:20,820 --> 00:16:24,323
+So the next thing to talk about is the autograd of PyTorch.
+
+334
+00:16:24,323 --> 00:16:26,740
+And autograd is one of the most important parts of PyTorch
+
+335
+00:16:26,740 --> 00:16:29,740
+because it allows us to actually compute gradients and update
+
+336
+00:16:29,740 --> 00:16:32,820
+our models so that they can actually learn and produce
+
+337
+00:16:32,820 --> 00:16:34,660
+reasonable outputs.
+
+338
+00:16:34,660 --> 00:16:37,300
+And so we can first use autograd to just calculate
+
+339
+00:16:37,300 --> 00:16:39,380
+a simple gradient of a vector.
+
+340
+00:16:39,380 --> 00:16:42,100
+So I think we saw a similar example here before,
+
+341
+00:16:42,100 --> 00:16:46,340
+where we made this x, which is the values between 0 and 5.
+
+342
+00:16:46,340 --> 00:16:48,600
+And then we applied an operator on this.
+
+343
+00:16:48,600 --> 00:16:52,500
+So we're squaring it, and then taking the cosine here.
+
+344
+00:16:52,500 --> 00:16:56,140
+And we can find the derivative of this
+
+345
+00:16:56,140 --> 00:16:58,860
+by using the autograd features of PyTorch.
+
+346
+00:16:58,860 --> 00:17:02,260
+And so if we want to take a derivative,
+
+347
+00:17:02,260 --> 00:17:05,700
+we actually need to have a scalar as an output.
+
+348
+00:17:05,700 --> 00:17:07,480
+So we take the sum here, and then we
+
+349
+00:17:07,480 --> 00:17:12,359
+can use this torch.autograd of that output with respect
+
+350
+00:17:12,359 --> 00:17:18,520
+to x to get our actual derivative here, dy by dx.
+
+351
+00:17:18,520 --> 00:17:23,800
+And so this is the backend, how you could specifically
+
+352
+00:17:23,800 --> 00:17:27,520
+calculate one specific gradient or one derivative here.
+
+353
+00:17:27,520 --> 00:17:29,800
+But when we're actually doing a model,
+
+354
+00:17:29,800 --> 00:17:33,320
+PyTorch takes care of exactly which derivatives we need.
+
+355
+00:17:33,320 --> 00:17:36,080
+And we don't have to do these really specific calculations
+
+356
+00:17:36,080 --> 00:17:39,613
+of which differential we actually want.
+
+357
+00:17:39,613 --> 00:17:41,280
+But we can see in this plot here that we
+
+358
+00:17:41,280 --> 00:17:47,040
+have our x squared cosine, where we end up with a shorter period
+
+359
+00:17:47,040 --> 00:17:48,840
+as we go to the right.
+
+360
+00:17:48,840 --> 00:17:51,680
+And then we can see our gradient here,
+
+361
+00:17:51,680 --> 00:17:57,360
+where it's the correct gradient of that value.
+
+362
+00:17:57,360 --> 00:18:00,040
+We can do this with another function here.
+
+363
+00:18:00,040 --> 00:18:03,600
+So if you have a polynomial and we want to compute the gradient,
+
+364
+00:18:03,600 --> 00:18:07,620
+we can do this in the same way as we previously did.
+
+365
+00:18:07,620 --> 00:18:10,720
+And we can run this, and we can see the result is the same.
+
+366
+00:18:10,720 --> 00:18:13,620
+We end up with our plot, and we have our gradient
+
+367
+00:18:13,620 --> 00:18:17,180
+of our plot as well.
+
+368
+00:18:17,180 --> 00:18:19,860
+So these are this really specific way
+
+369
+00:18:19,860 --> 00:18:22,620
+we can calculate this exact gradient.
+
+370
+00:18:22,620 --> 00:18:25,620
+But PyTorch allows us to actually calculate
+
+371
+00:18:25,620 --> 00:18:27,703
+all the gradients all together.
+
+372
+00:18:27,703 --> 00:18:29,620
+And so we don't need to specifically calculate
+
+373
+00:18:29,620 --> 00:18:30,700
+one gradient.
+
+374
+00:18:30,700 --> 00:18:33,460
+Instead, we can just do a specific command,
+
+375
+00:18:33,460 --> 00:18:35,883
+and we will get all the gradients that we want.
+
+376
+00:18:35,883 --> 00:18:37,300
+And so that's what you'll actually
+
+377
+00:18:37,300 --> 00:18:39,560
+be doing if you're running a PyTorch model.
+
+378
+00:18:39,560 --> 00:18:42,700
+You won't need to calculate and store each different part
+
+379
+00:18:42,700 --> 00:18:45,020
+individually.
+
+380
+00:18:45,020 --> 00:18:47,820
+And so if we look at this, we have the same example as we had
+
+381
+00:18:47,820 --> 00:18:52,720
+before, but instead of doing our autograd and using the brackets,
+
+382
+00:18:52,720 --> 00:18:55,340
+as we saw before, we can just use this .backward,
+
+383
+00:18:55,340 --> 00:19:01,440
+and that will store the gradient of each part within the tensor.
+
+384
+00:19:01,440 --> 00:19:04,360
+And so if we just get the use .grad,
+
+385
+00:19:04,360 --> 00:19:07,680
+we can actually get the specific gradient using the .backward
+
+386
+00:19:07,680 --> 00:19:08,880
+command.
+
+387
+00:19:08,880 --> 00:19:12,240
+So you'll never do the autograd.grad
+
+388
+00:19:12,240 --> 00:19:13,440
+that we had up here.
+
+389
+00:19:13,440 --> 00:19:15,680
+You'll always use the .backward to just calculate all
+
+390
+00:19:15,680 --> 00:19:17,680
+the gradients that you need.
+
+391
+00:19:17,680 --> 00:19:19,645
+So yeah, as I was mentioning, if you
+
+392
+00:19:19,645 --> 00:19:21,020
+aren't going to use the gradient,
+
+393
+00:19:21,020 --> 00:19:22,540
+you shouldn't calculate it.
+
+394
+00:19:22,540 --> 00:19:23,717
+And we can use--
+
+395
+00:19:23,717 --> 00:19:25,300
+I don't know if I have it listed here,
+
+396
+00:19:25,300 --> 00:19:31,160
+but you would say torch.no_grad, and that would allow you to not
+
+397
+00:19:31,160 --> 00:19:35,760
+use the gradient and speed up your computation.
+
+398
+00:19:35,760 --> 00:19:39,880
+Oh yeah, here we go with torch.no_grad that would be what
+
+399
+00:19:39,880 --> 00:19:40,660
+we would use.
+
+400
+00:19:43,640 --> 00:19:46,040
+Next thing we're going to talk about is optimizers.
+
+401
+00:19:46,040 --> 00:19:48,807
+So we figured out how we can calculate a gradient.
+
+402
+00:19:48,807 --> 00:19:50,640
+But the next thing we need to do is actually
+
+403
+00:19:50,640 --> 00:19:55,280
+use that gradient to optimize some function, some loss
+
+404
+00:19:55,280 --> 00:19:56,820
+function, something like that.
+
+405
+00:19:56,820 --> 00:20:00,580
+So this naive gradient descent-- obviously,
+
+406
+00:20:00,580 --> 00:20:02,660
+it works for this scenario, but in a lot of cases
+
+407
+00:20:02,660 --> 00:20:06,820
+we want to be more adaptive and speed up our training.
+
+408
+00:20:06,820 --> 00:20:11,060
+So I think we saw stochastic gradient descent in lecture.
+
+409
+00:20:11,060 --> 00:20:12,600
+But this is another method.
+
+410
+00:20:12,600 --> 00:20:14,700
+We import this optimizer.
+
+411
+00:20:14,700 --> 00:20:16,780
+And if we do optimizer.step it takes
+
+412
+00:20:16,780 --> 00:20:18,600
+care of the gradient update.
+
+413
+00:20:18,600 --> 00:20:21,940
+So it will use the gradient, and it will update
+
+414
+00:20:21,940 --> 00:20:23,160
+the weights of our model.
+
+415
+00:20:25,780 --> 00:20:31,107
+So if we run this, we see, again, our model minimizes.
+
+416
+00:20:31,107 --> 00:20:32,940
+Maybe it got to the minimum a little faster,
+
+417
+00:20:32,940 --> 00:20:35,460
+and then it's jumping around a little bit.
+
+418
+00:20:35,460 --> 00:20:37,920
+This is just some little toy examples,
+
+419
+00:20:37,920 --> 00:20:42,220
+so we're not too concerned exactly about what's happening.
+
+420
+00:20:42,220 --> 00:20:45,140
+The last optimizer here we're going to look at is Adam.
+
+421
+00:20:45,140 --> 00:20:47,200
+So Adam is a pretty common optimizer.
+
+422
+00:20:47,200 --> 00:20:50,580
+And it adaptively does a lot of the steps.
+
+423
+00:20:50,580 --> 00:20:53,460
+And it generally is the most efficient.
+
+424
+00:20:53,460 --> 00:20:55,740
+So a lot of people use that in real scenarios
+
+425
+00:20:55,740 --> 00:20:57,660
+as opposed to just naive gradient descent
+
+426
+00:20:57,660 --> 00:21:01,200
+or stochastic gradient descent.
+
+427
+00:21:01,200 --> 00:21:02,560
+So we can run this one.
+
+428
+00:21:02,560 --> 00:21:07,360
+It's the same structure as the SGD.
+
+429
+00:21:07,360 --> 00:21:10,000
+But we see in this example, it's not quite doing
+
+430
+00:21:10,000 --> 00:21:13,260
+as well as some of the simpler ways, but in general,
+
+431
+00:21:13,260 --> 00:21:16,760
+this is a pretty good method of optimizing.
+
+432
+00:21:16,760 --> 00:21:19,480
+I think we can try and get through a quick bit
+
+433
+00:21:19,480 --> 00:21:21,800
+of neural networks and how we can use
+
+434
+00:21:21,800 --> 00:21:25,080
+PyTorch for neural networks.
+
+435
+00:21:25,080 --> 00:21:28,080
+So obviously, that's a big part of deep learning
+
+436
+00:21:28,080 --> 00:21:29,840
+is neural networks.
+
+437
+00:21:29,840 --> 00:21:32,200
+And so there's a lot of modules within PyTorch
+
+438
+00:21:32,200 --> 00:21:34,360
+that we can use to create networks
+
+439
+00:21:34,360 --> 00:21:39,520
+from just really simple MLPs to more complex models.
+
+440
+00:21:39,520 --> 00:21:43,600
+So the first building block that we see here is the linear layer.
+
+441
+00:21:43,600 --> 00:21:45,240
+And so this is basically just going
+
+442
+00:21:45,240 --> 00:21:47,840
+to do a transformation from one dimension
+
+443
+00:21:47,840 --> 00:21:53,640
+to another dimension with a linear transformation.
+
+444
+00:21:53,640 --> 00:21:56,560
+So we can generate that, and we can
+
+445
+00:21:56,560 --> 00:21:58,020
+set the number of input features,
+
+446
+00:21:58,020 --> 00:22:04,140
+the number of output features, along with a bias term as well.
+
+447
+00:22:04,140 --> 00:22:06,180
+And so we could just run an input
+
+448
+00:22:06,180 --> 00:22:08,700
+through our linear network.
+
+449
+00:22:08,700 --> 00:22:12,500
+We put an input of size 3 and get an output of size 2.
+
+450
+00:22:12,500 --> 00:22:14,640
+So yeah, then we can pass an input to that,
+
+451
+00:22:14,640 --> 00:22:17,340
+and we see we had an input of 3.
+
+452
+00:22:17,340 --> 00:22:21,780
+And then we end up with an output of size 2.
+
+453
+00:22:21,780 --> 00:22:23,080
+We can also use a batch.
+
+454
+00:22:23,080 --> 00:22:27,420
+So we have four inputs of size 3 here.
+
+455
+00:22:27,420 --> 00:22:30,640
+And natively, it will just work to support that,
+
+456
+00:22:30,640 --> 00:22:32,680
+and we get four outputs of size 2.
+
+457
+00:22:35,387 --> 00:22:37,220
+If we can take a look at some of the weights
+
+458
+00:22:37,220 --> 00:22:41,860
+and bias of this linear layer, we can just
+
+459
+00:22:41,860 --> 00:22:43,317
+get the actual numbers.
+
+460
+00:22:43,317 --> 00:22:44,900
+And so these are the numbers that it's
+
+461
+00:22:44,900 --> 00:22:48,300
+going to multiply the inputs by to actually get an output.
+
+462
+00:22:48,300 --> 00:22:50,800
+And the bias terms are added to the outputs.
+
+463
+00:22:53,620 --> 00:22:56,740
+And you'll note the requires_grad=True on this
+
+464
+00:22:56,740 --> 00:23:00,480
+tensor here, which shows that it's calculating the gradient
+
+465
+00:23:00,480 --> 00:23:01,340
+as you go along.
+
+466
+00:23:05,040 --> 00:23:10,280
+We can set specific things like the bias to 0 if we wanted to.
+
+467
+00:23:10,280 --> 00:23:13,960
+And then we can see that our outputs will not
+
+468
+00:23:13,960 --> 00:23:16,460
+add that bias term at the end.
+
+469
+00:23:19,760 --> 00:23:22,920
+We can look at some of the parameters.
+
+470
+00:23:22,920 --> 00:23:25,760
+Just if we do this net.name_parameters,
+
+471
+00:23:25,760 --> 00:23:29,400
+and that will get the exact values within those weights
+
+472
+00:23:29,400 --> 00:23:31,200
+as well.
+
+473
+00:23:31,200 --> 00:23:34,060
+And we can see that we set it to 0, and the bias term is now 0.
+
+474
+00:23:40,080 --> 00:23:42,260
+We can look at a few different features,
+
+475
+00:23:42,260 --> 00:23:45,920
+the shapes of our weights.
+
+476
+00:23:45,920 --> 00:23:49,460
+We can load them.
+
+477
+00:23:49,460 --> 00:23:51,880
+So yeah, we saved the weights, and then we
+
+478
+00:23:51,880 --> 00:23:54,617
+can load the weights here.
+
+479
+00:23:54,617 --> 00:23:57,200
+Sorry, I'm trying to go-- let's see if we can get to something
+
+480
+00:23:57,200 --> 00:24:00,340
+a little more interesting.
+
+481
+00:24:00,340 --> 00:24:02,180
+Maybe if we wanted to calculate a loss, so
+
+482
+00:24:02,180 --> 00:24:05,900
+if we're trying to optimize this linear layer,
+
+483
+00:24:05,900 --> 00:24:08,140
+and let's say we wanted to just--
+
+484
+00:24:08,140 --> 00:24:11,100
+kind of a dumb example, but if we wanted to just always output
+
+485
+00:24:11,100 --> 00:24:14,820
+1 comma 1, we could try and train our linear layer
+
+486
+00:24:14,820 --> 00:24:17,180
+to always output 1 comma 1.
+
+487
+00:24:17,180 --> 00:24:20,900
+So if we see here, first, we get an output.
+
+488
+00:24:20,900 --> 00:24:22,660
+And it will calculate this loss, where
+
+489
+00:24:22,660 --> 00:24:27,620
+we're doing squared loss here.
+
+490
+00:24:27,620 --> 00:24:29,380
+And we could use the loss.backward
+
+491
+00:24:29,380 --> 00:24:30,900
+to get the gradients.
+
+492
+00:24:30,900 --> 00:24:32,540
+And then we could use those gradients
+
+493
+00:24:32,540 --> 00:24:35,680
+to update our linear layer.
+
+494
+00:24:39,620 --> 00:24:42,980
+So here, if we wanted to actually train this model
+
+495
+00:24:42,980 --> 00:24:46,340
+to learn to always output 1 comma 1,
+
+496
+00:24:46,340 --> 00:24:47,600
+we could do an update loop.
+
+497
+00:24:47,600 --> 00:24:52,020
+So here we're just looping doing a batch input
+
+498
+00:24:52,020 --> 00:24:54,540
+and then calculating the loss.
+
+499
+00:24:54,540 --> 00:24:57,460
+We're getting the gradients here with loss.backward.
+
+500
+00:24:57,460 --> 00:24:59,250
+And then we're just using gradient descent
+
+501
+00:24:59,250 --> 00:25:01,450
+to update our parameters.
+
+502
+00:25:01,450 --> 00:25:05,450
+And we can see if we run this, we
+
+503
+00:25:05,450 --> 00:25:07,550
+should get a graph of what our loss is.
+
+504
+00:25:07,550 --> 00:25:09,390
+So we end up with the following weights.
+
+505
+00:25:09,390 --> 00:25:12,450
+You can see the weights within the linear layer just went to 0,
+
+506
+00:25:12,450 --> 00:25:14,490
+and our bias went to 1.
+
+507
+00:25:14,490 --> 00:25:18,810
+And so our loss went to near 0 because we've learned
+
+508
+00:25:18,810 --> 00:25:21,850
+to always output 1 comma 1.
+
+509
+00:25:21,850 --> 00:25:25,290
+I'll try and work through maybe one more part here,
+
+510
+00:25:25,290 --> 00:25:27,550
+but feel free to go if you need to go.
+
+511
+00:25:30,250 --> 00:25:32,010
+So the last thing I want to talk about
+
+512
+00:25:32,010 --> 00:25:34,450
+is that we can create a more complex network using
+
+513
+00:25:34,450 --> 00:25:36,250
+this sequential command.
+
+514
+00:25:36,250 --> 00:25:39,170
+This will combine different layers together.
+
+515
+00:25:39,170 --> 00:25:42,730
+So here, we see a combination of linear and ReLU layers.
+
+516
+00:25:42,730 --> 00:25:46,348
+So ReLU is the activation that we've seen in lecture.
+
+517
+00:25:46,348 --> 00:25:47,890
+And then we can combine this together
+
+518
+00:25:47,890 --> 00:25:50,610
+with this sequential framework.
+
+519
+00:25:50,610 --> 00:25:53,010
+And so this actually creates a little bit
+
+520
+00:25:53,010 --> 00:25:55,290
+of a more interesting network that we
+
+521
+00:25:55,290 --> 00:25:56,910
+can use to create outputs.
+
+522
+00:26:03,180 --> 00:26:04,930
+So we can see the different parts of this.
+
+523
+00:26:04,930 --> 00:26:07,950
+We have sequential parts, we have linear parts, ReLU.
+
+524
+00:26:07,950 --> 00:26:11,010
+And then, continuously, we're creating a network--
+
+525
+00:26:11,010 --> 00:26:14,610
+I think this one is 3 layers in size.
+
+526
+00:26:17,270 --> 00:26:21,652
+So we can use this to train a more interesting model.
+
+527
+00:26:21,652 --> 00:26:23,110
+So here, what we're trying to do is
+
+528
+00:26:23,110 --> 00:26:25,110
+we're trying to train a model that
+
+529
+00:26:25,110 --> 00:26:29,750
+takes an input in the space--
+
+530
+00:26:29,750 --> 00:26:32,630
+a 2D input in the space negative 2 to 2.
+
+531
+00:26:32,630 --> 00:26:36,310
+And it's going to try and output--
+
+532
+00:26:36,310 --> 00:26:38,950
+try and classify points as either above a sine wave
+
+533
+00:26:38,950 --> 00:26:41,830
+or below a sine wave.
+
+534
+00:26:41,830 --> 00:26:46,690
+And so what we do is we want to use the Adam optimizer.
+
+535
+00:26:46,690 --> 00:26:49,430
+Here, we have a classify target, which
+
+536
+00:26:49,430 --> 00:26:54,110
+is going to say is our input either above or below the sine
+
+537
+00:26:54,110 --> 00:26:54,870
+wave.
+
+538
+00:26:54,870 --> 00:26:58,650
+And that's going to give us our loss when
+
+539
+00:26:58,650 --> 00:27:02,090
+we use this crossentropy because we can actually generate
+
+540
+00:27:02,090 --> 00:27:05,530
+what the actual target is.
+
+541
+00:27:05,530 --> 00:27:08,010
+So what we do in this loop is we're iterating.
+
+542
+00:27:08,010 --> 00:27:12,770
+We're generating a batch of random inputs.
+
+543
+00:27:12,770 --> 00:27:15,810
+We're classifying those random inputs as
+
+544
+00:27:15,810 --> 00:27:18,090
+either above the sine wave or below the sine wave.
+
+545
+00:27:18,090 --> 00:27:19,465
+And then we're calculating a loss
+
+546
+00:27:19,465 --> 00:27:22,930
+using crossentropy, which is a loss typically used
+
+547
+00:27:22,930 --> 00:27:25,090
+for classification model.
+
+548
+00:27:25,090 --> 00:27:28,570
+And basically, it's going to give a higher value
+
+549
+00:27:28,570 --> 00:27:31,010
+if your classification result is worse
+
+550
+00:27:31,010 --> 00:27:34,730
+and a lower value if it's better.
+
+551
+00:27:34,730 --> 00:27:36,652
+And then we continue with this iteration.
+
+552
+00:27:36,652 --> 00:27:38,610
+We're doing loss.backward to get our gradients,
+
+553
+00:27:38,610 --> 00:27:41,530
+and we're doing an optimizer step.
+
+554
+00:27:41,530 --> 00:27:43,450
+And then the last bit here is just
+
+555
+00:27:43,450 --> 00:27:47,410
+giving us some information about our accuracy.
+
+556
+00:27:47,410 --> 00:27:49,610
+And so if we run this--
+
+557
+00:27:49,610 --> 00:27:50,950
+oh, I didn't create the--
+
+558
+00:27:59,790 --> 00:28:08,310
+sorry, must have not ran another cell above.
+
+559
+00:28:08,310 --> 00:28:11,950
+Must have not ran a few cells above.
+
+560
+00:28:11,950 --> 00:28:17,397
+But basically, if we want to run this,
+
+561
+00:28:17,397 --> 00:28:19,230
+we're going to be able to train a model that
+
+562
+00:28:19,230 --> 00:28:22,390
+is able to classify these points as either above the sine wave
+
+563
+00:28:22,390 --> 00:28:24,430
+or below the sine wave.
+
+564
+00:28:24,430 --> 00:28:30,910
+Let me see if I can find where that's not loaded.
+
+565
+00:28:30,910 --> 00:28:34,270
+Not sure where that is.
+
+566
+00:28:34,270 --> 00:28:38,810
+But yeah, I think--
+
+567
+00:28:41,413 --> 00:28:42,330
+it's a little strange.
+
+568
+00:28:53,790 --> 00:28:57,140
+I think, yeah, we'll just leave that there.

@@ -1,0 +1,411 @@
+1
+00:00:11,030 --> 00:00:24,830
+Right so people might have come across HMMs in other contexts right and you might be
+
+2
+00:00:24,830 --> 00:00:29,540
+wondering what does he mean by saying it is a graphical model but it is a graphical model
+
+3
+00:00:29,540 --> 00:00:36,110
+right so here I will stick with a concrete example, I am going to have a sequence.
+
+4
+00:00:36,110 --> 00:00:43,790
+Right, so I am going to have a sequence of random variables right I am going to assume
+
+5
+00:00:43,790 --> 00:00:48,860
+that it is Markov in the traditional sense, so what would that mean.
+
+6
+00:00:55,200 --> 00:01:02,220
+Okay so it is left to right okay so that is the earliest point in time okay so there is no time
+
+7
+00:01:02,220 --> 00:01:06,510
+it is a sequence right this is the first element in the sequence okay the second element in the
+
+8
+00:01:06,510 --> 00:01:10,800
+sequence the third element in the sequence and because it is Markov so this is this will be
+
+9
+00:01:10,800 --> 00:01:15,510
+dependent only on the previous one right this will be dependent only on the previous one so knowing
+
+10
+00:01:15,510 --> 00:01:20,400
+this value makes this independent of anything that came before right, so this is essentially
+
+11
+00:01:20,400 --> 00:01:28,410
+the graphical model version of Markov right just have a chain directed graph so it is this is
+
+12
+00:01:28,410 --> 00:01:35,640
+sometimes called a left-to-right model. So this is this is the Markov part
+
+13
+00:01:35,640 --> 00:01:49,270
+right I am also going to assume that. I have a set of observations that I make.
+
+14
+00:01:49,270 --> 00:01:55,180
+Right, this could be like the pixels we are talking about right so I am having
+
+15
+00:01:55,180 --> 00:02:01,210
+labels for the images right labels for each pixel on the actual pixel value right.
+
+16
+00:02:01,210 --> 00:02:06,670
+So likewise in the hidden Markov model so I will have random variables which could be
+
+17
+00:02:06,670 --> 00:02:14,140
+labels right so these are labels. Right and these are the entities that
+
+18
+00:02:14,140 --> 00:02:19,690
+are being labeled. So give an example of
+
+19
+00:02:19,690 --> 00:02:26,380
+such a situation they would find. Media is little tricky because you also
+
+20
+00:02:26,380 --> 00:02:30,640
+have the spatial dimension to it right so text is why I asked how many of you are
+
+21
+00:02:30,640 --> 00:02:36,010
+in NLP other day. So text right so I might want to do say part-of-speech tagging.
+
+22
+00:02:36,010 --> 00:02:40,660
+And I want to take each word again I want to assign a part of speech to the world right
+
+23
+00:02:40,660 --> 00:02:45,700
+all I want to assign each word I want to take each word and I want to say that whether the
+
+24
+00:02:45,700 --> 00:02:51,460
+word is part of a phrase or not part of a phrase right for example I would need to figure out the
+
+25
+00:02:51,460 --> 00:02:57,010
+United States of America is actually a single thing and all the United States of America is
+
+26
+00:02:57,010 --> 00:03:02,450
+a single phrase right so sometimes I want to capture things like that from the text right.
+
+27
+00:03:02,450 --> 00:03:06,520
+Is that so is that some way of doing this automatically right so people have actually come
+
+28
+00:03:06,520 --> 00:03:13,690
+up with ways of doing there are many things there are tasks in the NLP called chunking so people
+
+29
+00:03:13,690 --> 00:03:20,410
+have come across chunking, no, okay. So chunking essentially says that I am going to take a piece
+
+30
+00:03:20,410 --> 00:03:26,170
+of text right and break it up into some meaningful chunks it could be noun phrases verb phrases
+
+31
+00:03:26,170 --> 00:03:32,860
+whatever right, so but some chunks right so that is called chunking right and there is another
+
+32
+00:03:32,860 --> 00:03:37,660
+task called shallow parsing right so shallow parsing essentially breaks it up into phrases
+
+33
+00:03:37,660 --> 00:03:43,180
+right but does not look at the structure of the phrases I just want to give the phrasal structure
+
+34
+00:03:43,180 --> 00:03:49,270
+of the sentence so there are many tasks which people do this right so people use hidden Markov
+
+35
+00:03:49,270 --> 00:03:55,420
+models a lot in text right and the other place where people use hidden Markov models a lot is in
+
+36
+00:03:55,420 --> 00:04:04,470
+speech right. Because speech is inherently a. Like a forward process right so the speech is
+
+37
+00:04:04,470 --> 00:04:07,890
+inherently a forward process so people use that a lot in speech and of course you can use it in
+
+38
+00:04:07,890 --> 00:04:15,390
+videos except that you are individual random variable will now become something that covers
+
+39
+00:04:15,390 --> 00:04:20,670
+the entire spatial dimensions this becomes a little more complex hidden Markov model right.
+
+40
+00:04:20,670 --> 00:04:25,050
+So great so I am going to call these after that as X s.
+
+41
+00:04:25,050 --> 00:04:36,960
+Well these are words right. This could be words and these
+
+42
+00:04:36,960 --> 00:04:41,010
+could be whatever label you want to send to them you can say that okay so is it part of
+
+43
+00:04:41,010 --> 00:04:44,670
+a chunk or not part of the chunk what is it this is part of a name of not part of a name
+
+44
+00:04:44,670 --> 00:04:51,180
+so I could do all kinds of labels. That is the assumption we are making
+
+45
+00:04:51,180 --> 00:04:56,670
+to make the model easy. Okay, so yeah we can relax this
+
+46
+00:04:56,670 --> 00:05:01,020
+assumption there are models that the more complex model that do this specifically the
+
+47
+00:05:01,020 --> 00:05:05,100
+conditional random field that I mentioned when I was talking about Markov random process. It
+
+48
+00:05:05,100 --> 00:05:12,180
+relaxes the assumption of this dependence. Right so this Markov assumption is still there
+
+49
+00:05:12,180 --> 00:05:17,370
+right but this dependence is relaxed so that is typically what you are looking for I can look at
+
+50
+00:05:17,370 --> 00:05:21,930
+any word in the sentence and then I can label the seventh word so that is that assumption is
+
+51
+00:05:21,930 --> 00:05:27,300
+this is like right now I have to look at only the seventh word and the sixth label
+
+52
+00:05:27,300 --> 00:05:33,330
+I cannot look at the sixth word I had to look at the sixth label and the seventh word right
+
+53
+00:05:33,330 --> 00:05:38,100
+and that is all the information I have. So one thing to note here is a hidden Markov
+
+54
+00:05:38,100 --> 00:05:43,680
+model essentially says that your Xi give rise to the Yi right does not go the other way.
+
+55
+00:05:43,680 --> 00:05:48,180
+In fact this gives this gives also gives ways to other problems later on.
+
+56
+00:05:48,180 --> 00:05:55,410
+So the X s are essentially you have labels so you do not know the labels you don't
+
+57
+00:05:55,410 --> 00:06:00,540
+see the labels but whatever you do not see right that part of it is Markov okay.
+
+58
+00:06:00,540 --> 00:06:06,600
+And whatever you see is or the labels okay and they are just given influence only by
+
+59
+00:06:06,600 --> 00:06:10,440
+the I am sorry. Whatever you see are the words then they are influenced only by the
+
+60
+00:06:10,440 --> 00:06:15,300
+labels that is the assumption you are making so very strong independence assumptions right but
+
+61
+00:06:15,300 --> 00:06:21,180
+it turns out that it works like Naive Bayes works right so this also works in many situations right
+
+62
+00:06:21,180 --> 00:06:25,140
+but then of course it also does not work in a lot of situations so people have come up with other
+
+63
+00:06:25,140 --> 00:06:32,880
+models I just wanted to introduce you to HMMs. I do not get to see X1, X2, X3 and I only get
+
+64
+00:06:32,880 --> 00:06:36,330
+to see Y1, Y2, Y3 and X1, X2, X3 I will have to guess.
+
+65
+00:06:38,400 --> 00:06:41,340
+I mean you can also think of this as a hidden Markov Random field if you want
+
+66
+00:06:41,340 --> 00:06:45,570
+but they do not use the terminology but hidden Markov models is something that is used quite
+
+67
+00:06:45,570 --> 00:06:52,680
+often and there are inference techniques which people have specially honed for HMMs right but
+
+68
+00:06:52,680 --> 00:06:59,172
+it turns out that the same things work on many of the graphical models that you will see you
+
+69
+00:06:59,172 --> 00:07:03,570
+will see in practice right, so they have all kinds of things they have an algorithm called
+
+70
+00:07:03,570 --> 00:07:06,750
+the Viterbi algorithm which essentially tells you what is the probability of.
+
+71
+00:07:06,750 --> 00:07:14,550
+The labels given the text, no it does not give you the probability of the labels
+
+72
+00:07:14,550 --> 00:07:20,940
+given the text it gives you the. MAP estimate and it gives you the most
+
+73
+00:07:20,940 --> 00:07:29,370
+probable label sequence given the text. But then I can use it on any kind of this
+
+74
+00:07:29,370 --> 00:07:35,250
+kind of an inference process right, so I can use a Viterbi algorithm for any kind of a MAP
+
+75
+00:07:35,250 --> 00:07:40,110
+inference process is instead of looking at the probability distribution over X and if I want
+
+76
+00:07:40,110 --> 00:07:44,130
+to answer the query which is the most probable configuration over X this is the MAP estimated
+
+77
+00:07:44,130 --> 00:07:48,690
+we looked at that right maximum likelihood MAP and then the full Bayesian inference which case
+
+78
+00:07:48,690 --> 00:07:53,100
+me the full distribution right so far we have been talking about knowing the full distribution but
+
+79
+00:07:53,100 --> 00:07:57,720
+you also want to do the MAP query right. So that is essentially what Viterbi will give you right
+
+80
+00:07:57,720 --> 00:07:59,550
+so we are talking about estimating a potential between Xi and Yi right so we are talking about
+
+81
+00:07:59,550 --> 00:08:12,090
+estimating a potential between Xi and Yi so the question is the question is Psi (Xi, Yi)
+
+82
+00:08:12,090 --> 00:08:20,910
+independent of i with regardless of where in the pixel the label occurs right sorry we're in the
+
+83
+00:08:20,910 --> 00:08:26,380
+picture the label occurs right is the relationship between the pixel the label the same right.
+
+84
+00:08:26,380 --> 00:08:32,560
+When I say that the Psi is independent of I that is what it means right that need not
+
+85
+00:08:32,560 --> 00:08:36,490
+be the case right suppose on the edge if a particular pixel value occurs it might
+
+86
+00:08:36,490 --> 00:08:41,020
+have a higher probability of being a background right I mean it is very edge, you typically not
+
+87
+00:08:41,020 --> 00:08:46,210
+going to frame a picture so that the foreground goes to the very edge rate but then that might
+
+88
+00:08:46,210 --> 00:08:53,050
+happen but the problem is suppose I have a 256 x 256 image then I have to learn a classifier
+
+89
+00:08:53,050 --> 00:09:00,700
+for every one of those positions or to learn a classifier that gives me the probability of Xi
+
+90
+00:09:00,700 --> 00:09:07,950
+given Yi for every one of those positions. And that is a very large problem right it
+
+91
+00:09:07,950 --> 00:09:13,210
+is a very hard problem so what we typically assume that Psi is a independent of Psi (Xi,
+
+92
+00:09:13,210 --> 00:09:19,240
+Yi) is independent of i so I am going to estimate the same model across the entire image right so of
+
+93
+00:09:19,240 --> 00:09:23,290
+course you can try to be more clever I mean if you know some things about the about the about
+
+94
+00:09:23,290 --> 00:09:26,530
+the task we can be trying to be more clever and say that okay I am going to break it up
+
+95
+00:09:26,530 --> 00:09:31,900
+into four classes of Psi okay for Xi and Yi. I will break it into four classes I will use
+
+96
+00:09:31,900 --> 00:09:35,800
+one class here one class here rather than the bulk of the image and so on so forth you can
+
+97
+00:09:35,800 --> 00:09:40,270
+do things like that but yeah but typically without any prior knowledge you just assume
+
+98
+00:09:40,270 --> 00:09:46,540
+that it is the same all along alright. This has to be different right and if that
+
+99
+00:09:46,540 --> 00:09:50,710
+s also the same all through then you are basically we can use one pixel and predict
+
+100
+00:09:50,710 --> 00:10:05,210
+the whole image the label for the whole image Yeah, do we end up doing that you could do that
+
+101
+00:10:05,210 --> 00:10:12,980
+also yeah Psi (Xi) Psi (Xi +1) right whatever that could also be taken as being independent of i.
+
+102
+00:10:12,980 --> 00:10:24,770
+You lose more modeling freedom that way but you could do it that way as well yeah depends on
+
+103
+00:10:24,770 --> 00:10:27,500
+depends on how much effort you want to spend in doing the building the model yeah.

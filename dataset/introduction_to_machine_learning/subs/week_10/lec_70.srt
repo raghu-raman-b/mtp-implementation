@@ -1,0 +1,583 @@
+1
+00:00:00,000 --> 00:00:35,420
+Can you see two clusters on the these points?
+
+2
+00:00:35,420 --> 00:00:44,240
+kind of? sort of? what are the two classes as a
+
+3
+00:00:44,240 --> 00:00:47,930
+row of pluses there in the row of pluses at the bottom so there are two clusters here right.
+
+4
+00:00:47,930 --> 00:00:53,810
+So I will not touch these data points right I just do the following,
+
+5
+00:00:53,810 --> 00:01:06,350
+now do you see two clusters side by side so what essentially defines clusters is not the
+
+6
+00:01:06,350 --> 00:01:11,120
+distance between the data points that is more like the density of the data points right.
+
+7
+00:01:11,120 --> 00:01:17,180
+Naturally when we think of clusters it is really thinks that where data points are really dense is
+
+8
+00:01:17,180 --> 00:01:24,440
+one cluster and then we tend to draw the boundary between clusters where the density is lower right
+
+9
+00:01:24,440 --> 00:01:27,680
+so I did not change the data points in the initial set of data points you are very happy to say that
+
+10
+00:01:27,680 --> 00:01:34,280
+okay the cluster or the top and at the bottom right so what cost you to change your clustering
+
+11
+00:01:34,280 --> 00:01:39,590
+when added the additional data points. The density went up right the density went up
+
+12
+00:01:39,590 --> 00:01:44,150
+in a different way therefore you said oh okay the least dense point is no longer between the
+
+13
+00:01:44,150 --> 00:01:50,540
+two but vertically right no longer horizontal but vertical was the low density points right.
+
+14
+00:01:50,540 --> 00:01:55,760
+if you run k-means you might get anything I do not know and depending
+
+15
+00:01:55,760 --> 00:02:01,070
+on where you start off with right. so the question is so if you have your
+
+16
+00:02:01,070 --> 00:02:05,240
+intuitive notion of clustering is to do with density so why do not you try to come up with
+
+17
+00:02:05,240 --> 00:02:15,290
+a clustering algorithm that captures this notion of density right and trying to come
+
+18
+00:02:15,290 --> 00:02:17,510
+up with a clustering algorithm that captures this notion of density.
+
+19
+00:02:17,510 --> 00:02:31,070
+So there is a very popular clustering algorithm called DB scan,
+
+20
+00:02:31,070 --> 00:02:41,060
+it’s very popular algorithm called DB scan that does density based clustering okay so
+
+21
+00:02:41,060 --> 00:02:46,520
+Dbscan actually has a lot of terminology that they define right once all the terminology is
+
+22
+00:02:46,520 --> 00:02:51,980
+defined then the clustering algorithm itself becomes nearly trivial okay.
+
+23
+00:02:51,980 --> 00:02:57,560
+but the terminology takes a while to get through so the basic idea is very simple right
+
+24
+00:02:58,220 --> 00:03:31,710
+suppose I have a suppose I have data points like this right.
+
+25
+00:03:37,320 --> 00:03:44,700
+You see two clusters here clearly two clusters right incredibly hard to get k-means return these
+
+26
+00:03:44,700 --> 00:03:49,170
+two classes and if you run k-means what will happen is you will end up with the centroid
+
+27
+00:03:49,170 --> 00:03:54,840
+somewhere here right another centroid somewhere here right and it will say these data points are
+
+28
+00:03:54,840 --> 00:04:01,140
+one cluster and these data points another cluster is the biggest drawback with k-means right.
+
+29
+00:04:01,140 --> 00:04:07,230
+so what DB scan say is that two points belong to the same cluster okay.
+
+30
+00:04:07,230 --> 00:04:15,900
+If I can get from one point to another right by moving only through only through dense regions
+
+31
+00:04:17,730 --> 00:04:24,660
+only through points that are close by right two points belong to the same cluster right suppose
+
+32
+00:04:24,660 --> 00:04:34,980
+I take let us take let us say I take this point let me take this point right in fact they look
+
+33
+00:04:34,980 --> 00:04:40,680
+pretty far away and if you look at the direct distance between them they are pretty far away
+
+34
+00:04:40,680 --> 00:04:48,420
+infact the points of other cluster which are closer to this than this point right but when
+
+35
+00:04:48,420 --> 00:04:52,500
+you look at it you think that they this thing is one cluster this thing is another cluster.
+
+36
+00:04:52,500 --> 00:05:05,950
+So what is the intuition here is that can keep hopping at no point do I take a very big hop
+
+37
+00:05:05,950 --> 00:05:15,460
+right I can keep hopping to things that are nearby and I can go from here to here right, so if you
+
+38
+00:05:15,460 --> 00:05:24,130
+take these two points the blue and the brown one right so if I take these two points the no
+
+39
+00:05:24,130 --> 00:05:30,610
+way I can hop from here to here right because there is a this nice gap here right there is
+
+40
+00:05:30,610 --> 00:05:36,970
+no way I can get from here to here only by going through dense regions right is that clear.
+
+41
+00:05:36,970 --> 00:05:42,070
+So that is the intuition that we are trying to capture here so what is it that we should define
+
+42
+00:05:42,070 --> 00:05:50,980
+now first what I mean by a dense region right so that is essentially what we have to define
+
+43
+00:05:50,980 --> 00:05:58,360
+so we will start off by defining something called there are two parameters that DB scan uses one is
+
+44
+00:05:58,360 --> 00:06:10,570
+called min points other one is epsilon there are two parameters so min points essentially gives
+
+45
+00:06:10,570 --> 00:06:16,510
+you some kind of a threshold on how many points would you consider as being dense right.
+
+46
+00:06:16,510 --> 00:06:25,360
+And epsilon gives you the area over which you will perform the count is a min point says okay
+
+47
+00:06:25,360 --> 00:06:31,570
+if you have five points okay then you are in a dense neighborhood but where do I count these
+
+48
+00:06:31,570 --> 00:06:36,880
+five points okay in a radius of ε epsilon epsilon around me you count the five points okay count in
+
+49
+00:06:36,880 --> 00:06:42,820
+the area epsilon around me if you find five points then you are in a dense region and if
+
+50
+00:06:42,820 --> 00:06:46,960
+you make the ε epsilon very large then it might encompass my entire input space then everybody
+
+51
+00:06:46,960 --> 00:06:51,190
+will be dense so it does not make sense. The epsilon has to be small likewise if I make
+
+52
+00:06:51,190 --> 00:06:57,310
+my min points 1 point 1 not 2 points that means everything will look dense unless make me epsilon
+
+53
+00:06:57,310 --> 00:07:01,540
+very small so these are actually complimentary things I can control my min points and I can
+
+54
+00:07:01,540 --> 00:07:07,960
+make them in points very small right and then make the density high right or I can make my
+
+55
+00:07:07,960 --> 00:07:12,100
+min points large with the larger epsilon and that it then also I can make me density high
+
+56
+00:07:12,820 --> 00:07:17,710
+the effects that you will see are different for both right so I let you think about it.
+
+57
+00:07:17,710 --> 00:07:23,530
+Which one I mean what is the effect of increasing min points versus decreasing
+
+58
+00:07:23,530 --> 00:07:31,420
+epsilon okay so essentially what I am saying is okay take a data point right take a radius
+
+59
+00:07:31,420 --> 00:07:39,220
+epsilon around it okay that that is that is a circle so take a radius epsilon around it and
+
+60
+00:07:39,220 --> 00:07:56,350
+count the number of points okay if this count is greater than min points okay then you call this a
+
+61
+00:07:56,350 --> 00:08:08,920
+core point take a data point take a ready ball of radius epsilon around the data point right.
+
+62
+00:08:08,920 --> 00:08:15,430
+Count the number of points right if the number of points is greater than or equal to min points
+
+63
+00:08:15,430 --> 00:08:22,330
+right number of points is greater than or equal to min points in that ball of epsilon then you
+
+64
+00:08:22,330 --> 00:08:28,936
+call this a core point right a core point is a point that lies in a high density region that
+
+65
+00:08:28,936 --> 00:08:50,460
+is the definition we have right. So we say a point is you see that
+
+66
+00:08:50,460 --> 00:08:58,710
+the point is density reachable okay. A point is density reachable if there is a core
+
+67
+00:08:58,710 --> 00:09:16,380
+point from which you can reach this point it went by traversing only through core points so this
+
+68
+00:09:16,380 --> 00:09:21,540
+might not be a core point because is it the border rate I draw in the radius around it I get only
+
+69
+00:09:21,540 --> 00:09:29,340
+one point here okay so this might not be a core point right but then if I start here let us say
+
+70
+00:09:29,340 --> 00:09:34,740
+let us say this is a core point for sure a lot of points in the anything from here i can basically
+
+71
+00:09:34,740 --> 00:09:43,500
+move two points within epsilon of itself. Which are internal core points right so I can move
+
+72
+00:09:43,500 --> 00:09:54,600
+to you can move to core points right and finally reach this that no point I should be making a
+
+73
+00:09:54,600 --> 00:09:58,410
+jump greater than epsilon right because it is starting a core point I will have enough points
+
+74
+00:09:58,410 --> 00:10:04,230
+in the neighborhood that I can actually jump to something within epsilon right so I make steps of
+
+75
+00:10:04,230 --> 00:10:13,200
+size epsilon and I actually go through core points every time then we call them density reachable say
+
+76
+00:10:13,200 --> 00:10:19,260
+point I is density reachable if there exists a core point from which I can reach here.
+
+77
+00:10:19,260 --> 00:10:26,160
+By jumping only from a core point to core point until the last step obviously every core point
+
+78
+00:10:26,160 --> 00:10:32,010
+is density reachable because it Is reachable from itself right every core point is density
+
+79
+00:10:32,010 --> 00:10:37,920
+reachable and then there will be these border points right which are density reachable from
+
+80
+00:10:37,920 --> 00:10:42,690
+core points there might be other points which are not density reachable from core points
+
+81
+00:10:42,690 --> 00:10:51,990
+which are essentially outliers okay right. So these are the definitions we have so this is
+
+82
+00:10:51,990 --> 00:10:59,160
+the first right these are the two quantities we need this is these are not definitions
+
+83
+00:10:59,160 --> 00:11:04,680
+this is the first definition what is a core point second definition third definition is
+
+84
+00:11:12,790 --> 00:11:20,380
+density connected case I will say two points I and J are density connected if
+
+85
+00:11:20,380 --> 00:11:25,600
+there exists a core point k from which both of them or density reachable.
+
+86
+00:11:25,600 --> 00:11:35,860
+That makes sense right so what is density reachable. I start from a core point and
+
+87
+00:11:35,860 --> 00:11:42,100
+only move to core points right until I make the last hop to this case so no point I will
+
+88
+00:11:42,100 --> 00:11:46,390
+be making a move greater than ε epsilon. And all the points I visit in the on the way
+
+89
+00:11:46,390 --> 00:11:53,530
+will be core points ok that is density reachable density connected is if I and
+
+90
+00:11:53,530 --> 00:11:59,440
+J that exist one core point from which both I and J are density reachable then
+
+91
+00:11:59,440 --> 00:12:10,270
+the I and J are density connected okay here is the next thing. So I and J are in the same
+
+92
+00:12:10,270 --> 00:12:20,380
+cluster if and only if they are density connected. this is the definition of a cluster two points I
+
+93
+00:12:20,380 --> 00:12:28,450
+and J belong to the same cluster if and only if they are density connected make sense?
+
+94
+00:12:28,450 --> 00:12:36,730
+Sorry! how do I implement ? this so I start off with YS any point right I pick up a random point
+
+95
+00:12:36,730 --> 00:12:44,020
+right I figure out whether t is a core point or not right then okay it was a core point great
+
+96
+00:12:44,020 --> 00:12:47,470
+so I will keep that as my starting point for the cluster how do I determines the core point
+
+97
+00:12:47,470 --> 00:12:51,550
+I pick up a point look in the neighborhood figure out if there are epsilon if there are
+
+98
+00:12:51,550 --> 00:12:55,540
+min points within a neighborhood of Epsilon if that is the case then I will keep it right.
+
+99
+00:12:55,540 --> 00:13:03,430
+Then what I do is I look at all the neighbors of that point and look at all the neighbors of
+
+100
+00:13:03,430 --> 00:13:08,110
+the point and each point in turn I will check whether it is a core point or not
+
+101
+00:13:12,720 --> 00:13:18,000
+right, so each point in turn I will check if it is a core point or not so any additional points
+
+102
+00:13:18,000 --> 00:13:24,690
+I encounter when I do this check I throw it into my Queue so I will keep going right if
+
+103
+00:13:24,690 --> 00:13:30,990
+I reach a point which is not a core point okay so I will not insert the neighbors of that new
+
+104
+00:13:30,990 --> 00:13:34,950
+neighbors of that point I will just stop there if we reach a point is not a core point I will
+
+105
+00:13:34,950 --> 00:13:39,180
+just leave that exploration go back to my Queue to see if anything else is still there.
+
+106
+00:13:39,180 --> 00:13:45,840
+So I keep doing this until my Queue becomes empty so all the points I have examined from the time
+
+107
+00:13:45,840 --> 00:13:56,760
+I started till my Queue became empty go into a single cluster sorry like it that first search
+
+108
+00:13:57,530 --> 00:14:00,720
+moves like a depth first search you do that all these data points go to a single cluster
+
+109
+00:14:00,720 --> 00:14:05,130
+now what I do I go and start at a random point which has not been assigned a cluster so far
+
+110
+00:14:05,130 --> 00:14:10,620
+and then do it if first search again till I find the whole clusters I do this and I am done.
+
+111
+00:14:10,620 --> 00:14:16,800
+So the nice thing about this is I am really doing only one scan through the data right so every data
+
+112
+00:14:16,800 --> 00:14:23,080
+point I will actually look at it once right I will examine the neighborhood right and then I
+
+113
+00:14:23,080 --> 00:14:27,300
+will go on but then the number of computation I will do will be still significant so DBscan is
+
+114
+00:14:27,300 --> 00:14:32,040
+a slow algorithm even though I examine each data point only ones but the amount of computation I
+
+115
+00:14:32,040 --> 00:14:36,660
+do an examiner data point is significant. Because I am looking at the radius epsilon and
+
+116
+00:14:36,660 --> 00:14:40,320
+then we have to find all the neighbors within the radius so unless I have a very efficient
+
+117
+00:14:40,320 --> 00:14:44,820
+data structure that will return to me the nearest neighbors very quickly right so this can take a
+
+118
+00:14:44,820 --> 00:14:48,870
+significant amount of time in running so there are some efficient implementations of DB Scan
+
+119
+00:14:48,870 --> 00:14:53,790
+out there it is really cool in that it gives you all kinds of arbitrary clusters right.
+
+120
+00:14:53,790 --> 00:14:57,930
+And so these kinds of things today whatever I drew that that you would not be able to recover
+
+121
+00:14:57,930 --> 00:15:05,100
+using k-means or even hierarchical clustering depending on the kind of cluster measures that
+
+122
+00:15:05,100 --> 00:15:09,210
+you choose right cure might be able to give you or might not be able to give you this kind
+
+123
+00:15:09,210 --> 00:15:15,330
+of clusters depends on again how your sampling that you do and what you start off with and so
+
+124
+00:15:15,330 --> 00:15:20,070
+on so far so whole bunch of imponderables. But again the same thing with DB scan depending
+
+125
+00:15:20,070 --> 00:15:24,120
+on which is of min points in epsilon right you might get very weird results,
+
+126
+00:15:24,120 --> 00:15:35,400
+right yeah so if you look at the data mining text book by Han and camber right Michelin
+
+127
+00:15:35,400 --> 00:15:42,000
+Cameron book right so they have actually horrendous examples of DB scan in fact I think
+
+128
+00:15:42,000 --> 00:15:47,010
+they did a significant optimization to find out which are the worst parameters possible form in
+
+129
+00:15:47,010 --> 00:15:51,540
+points in epsilon and they give you results. Because they wanted to write a paper that said hey
+
+130
+00:15:51,540 --> 00:15:57,240
+we have an algorithm that does better than DB scan so they said oh DB scan can perform really badly
+
+131
+00:15:57,240 --> 00:16:06,210
+if you give it bad parameters so let us give it back parameters and then we will beat it right.
+
+132
+00:16:06,210 --> 00:16:11,460
+So I on this well this is assuming that they were actually being more fair than that but the way the
+
+133
+00:16:11,460 --> 00:16:15,060
+way the way look at the results it looks like that I mean DBscan looks really horrendous and
+
+134
+00:16:15,060 --> 00:16:29,010
+they are a method which is called chameleon. It is an acronym yeah so I think C stands for
+
+135
+00:16:29,010 --> 00:16:37,860
+clustering I am not sure good I sure about that either so yeah so yeah it is a nick name DB scan
+
+136
+00:16:37,860 --> 00:16:44,040
+right I just start off with some arbitrary point and then I look at look at the exam examine the
+
+137
+00:16:44,040 --> 00:16:51,300
+clusters and soon so forth, so what happens if I happen to start off at a boundary point instead
+
+138
+00:16:51,300 --> 00:16:58,740
+of a core point I will examine it I will say okay it is not a code point I will throw it away right
+
+139
+00:16:58,740 --> 00:17:03,630
+so it will never get assigned to any cluster. So it will kind of be all by itself as an outlier
+
+140
+00:17:03,630 --> 00:17:08,580
+even though it should belong to a particular cluster that is one thing the second thing is
+
+141
+00:17:08,580 --> 00:17:13,590
+suppose I want to vary ε epsilon and I want to run the clustering again I basically have to do it all
+
+142
+00:17:13,590 --> 00:17:20,130
+over from the beginning right so what optics does this gives you a clever way of ordering
+
+143
+00:17:20,130 --> 00:17:27,600
+your data points such that right for different values of epsilon you can recover the clusters
+
+144
+00:17:27,600 --> 00:17:33,600
+very quickly for the same value of min points min points is fixed but epsilon changes right.
+
+145
+00:17:33,600 --> 00:17:39,060
+So it gives you a way of ordering your scan through the data such that for different values
+
+146
+00:17:39,060 --> 00:17:46,080
+of epsilon I can recover the clusters very quickly and is a really cool idea right.

@@ -1,0 +1,675 @@
+1
+00:00:00,000 --> 00:00:18,950
+Suppose I have some data which is not linearly
+
+2
+00:00:18,950 --> 00:00:23,120
+separable right, so that is the problem that we are with perceptions right so what happens if the
+
+3
+00:00:23,120 --> 00:00:28,880
+data is not linearly separable perceptrons do not converge, so can we tweak our objective function
+
+4
+00:00:28,880 --> 00:00:38,390
+that we have here to make sure that we can handle non linearly separable data is that right we are
+
+5
+00:00:38,390 --> 00:00:51,650
+saying it is okay to say non linearly separable data was my question yeah linearly inseparable
+
+6
+00:00:51,650 --> 00:00:56,570
+data right, so you have to be careful where you put the not the negation there right.
+
+7
+00:00:56,570 --> 00:00:59,840
+So what we do in this case yeah somebody had been a suggestion
+
+8
+00:01:05,790 --> 00:01:13,530
+yeah so how will you do this right so there are many ways there are many choices you can
+
+9
+00:01:13,530 --> 00:01:18,030
+make right let me not play around with it are many choices you could make but there is one
+
+10
+00:01:18,030 --> 00:01:23,850
+particular choice which is seems to yield a very nice optimization formulation okay
+
+11
+00:01:23,850 --> 00:01:32,430
+so what is a choice I am going to say that I would really like to maximize the margin right
+
+12
+00:01:32,430 --> 00:01:37,830
+and I would like to get as many data points correct as possible right.
+
+13
+00:01:37,830 --> 00:01:45,840
+So if you think about it so there are a couple of things so this is the margin that I want right,
+
+14
+00:01:45,840 --> 00:01:53,610
+so what are the problems here well these data points are within the margin right,
+
+15
+00:01:53,610 --> 00:01:57,900
+so I have some data points that are within the margin so I would like to minimize such cases
+
+16
+00:01:57,900 --> 00:02:06,660
+there are some data points that are within the margin and erroneous right I would like
+
+17
+00:02:06,660 --> 00:02:12,750
+to minimize such cases as well right if you think of what if I had tried to get this correct right
+
+18
+00:02:12,750 --> 00:02:19,110
+there is a gap here and there seems to be a gap here between the points if I try to get
+
+19
+00:02:19,110 --> 00:02:24,360
+this correct and move my classification surface below then the margin would have been reduced even
+
+20
+00:02:24,360 --> 00:02:32,070
+further right so it is okay to get this wrong but then what about this case is it within the
+
+21
+00:02:32,070 --> 00:02:43,080
+margin or outside the person and within. Right so the margin for that class is defined
+
+22
+00:02:43,080 --> 00:02:51,990
+on the other side right so the margin for that class is this side so anything to this
+
+23
+00:02:51,990 --> 00:03:03,780
+side and x is within the margin does it make sense right this will be yi times this right,
+
+24
+00:03:03,780 --> 00:03:10,290
+so this will actually be negative so it is within the margin if we want things to be greater than
+
+25
+00:03:10,290 --> 00:03:15,930
+one yi times f(x) we want it to be greater than one right ≥ 1 this is going to be negative.
+
+26
+00:03:15,930 --> 00:03:23,400
+So obviously this is within the margin right makes sense right so essentially what I want
+
+27
+00:03:23,400 --> 00:03:48,600
+to do is minimize these distances so you can see the distance that I marked here so these
+
+28
+00:03:48,600 --> 00:03:56,100
+distances I would like to minimize that makes sense right so this is a certain
+
+29
+00:03:56,100 --> 00:04:00,780
+small distance inside the margin right this is a large distance inside the margin is a very large
+
+30
+00:04:00,780 --> 00:04:06,510
+distance inside the margin likewise so I can mark each one of these and I want to minimize these,
+
+31
+00:04:06,510 --> 00:04:25,290
+so let us denote them says 1 to 5 and I want to minimize those right essentially.
+
+32
+00:04:25,290 --> 00:04:31,530
+So if I minimize the sum of these deviations I make along with my original along with my
+
+33
+00:04:31,530 --> 00:04:45,390
+original objective function right I can handle why do not they minimize the minimum here again that
+
+34
+00:04:45,390 --> 00:04:54,600
+could minimize the maximum would essentially mean that I will try to get as many things character
+
+35
+00:04:54,600 --> 00:05:00,300
+as possible so in this case I do not mind getting something wrong as long as the overall deviation
+
+36
+00:05:00,300 --> 00:05:08,610
+is not does not exceed a certain limit see that the difference between minimizing the maximum
+
+37
+00:05:08,610 --> 00:05:16,410
+and minimizing a sum is that I might as well give up all of the sum to a single data point it might
+
+38
+00:05:16,410 --> 00:05:21,240
+be something that is very hard to classify. And I might have one single outlier somewhere here
+
+39
+00:05:21,240 --> 00:05:30,480
+right let us let us let us draw so this data might be perfectly separable and I might have an outlier
+
+40
+00:05:30,480 --> 00:05:38,220
+then okay so now if I say okay minimize the sum of the things it is fine right but if I say minimize
+
+41
+00:05:38,220 --> 00:05:51,870
+the max okay then it is going to actually give me a hyper plane somewhere there but like I said
+
+42
+00:05:51,870 --> 00:05:57,840
+many different formulations are possible this one actually yields a very nice computation that is
+
+43
+00:05:57,840 --> 00:06:21,660
+one of the reasons people use this. So what I am going to do is write it here, so I am
+
+44
+00:06:21,660 --> 00:06:36,570
+going to say that this has to be that we had already right I am going to introduce a slack
+
+45
+00:06:36,570 --> 00:06:46,110
+variable so it does not have to be greater than M it can be some fraction lesser also
+
+46
+00:06:46,680 --> 00:06:52,530
+M is what I would really like but I allow it to have a slack right ideally I would want
+
+47
+00:06:52,530 --> 00:07:01,050
+most of these ξ is to ξ be as to be 0 right I want ideally I would like most of ξ this is to
+
+48
+00:07:01,050 --> 00:07:08,040
+be 0 if I force ξ as to be zero I am back here right but I really like some lee way right.
+
+49
+00:07:08,040 --> 00:07:14,070
+So I am allowing myself that leeway by introducing ξi here this is a very standard technique for
+
+50
+00:07:14,070 --> 00:07:20,100
+relaxing constraints in optimization right that is one of the reasons people adopt this
+
+51
+00:07:20,100 --> 00:07:28,380
+is a standard constraint so another wee thing which I could have chosen is that right in fact
+
+52
+00:07:28,380 --> 00:07:34,710
+this is a little bit more common constraint but it turns out that in this particular case
+
+53
+00:07:34,710 --> 00:07:43,110
+if I choose M - ξi instead of M(1- ξi) I end up getting a non convex optimization problem.
+
+54
+00:07:43,110 --> 00:07:53,460
+So we do not want that right so it is to end up doing this so I drew this figure
+
+55
+00:07:53,460 --> 00:07:59,250
+first because I wanted to get an idea of what these slack variables actually mean right,
+
+56
+00:07:59,250 --> 00:08:04,860
+so the slack variables essentially tell you by what fraction right you are violating the
+
+57
+00:08:04,860 --> 00:08:13,860
+margin right, so is ξ1 is essentially what fraction of distance you are coming in here
+
+58
+00:08:13,860 --> 00:08:18,060
+from the margin ξ2 is what fraction of the distance you are coming in from the margin.
+
+59
+00:08:18,060 --> 00:08:24,810
+So the margin is M so I have moved some fraction of the distance inside right, so they essentially
+
+60
+00:08:24,810 --> 00:09:07,380
+that is what the ξ tells me right so what are the constraints we have so the first constraint
+
+61
+00:09:07,380 --> 00:09:14,760
+I have is okay all ξi have to be ≥ 0 right I do not care about points going to that side of the
+
+62
+00:09:14,760 --> 00:09:20,790
+margin right so all ξi ≥ 0 and the second thing is whatever we have been talking about right I do not
+
+63
+00:09:20,790 --> 00:09:26,850
+want the ξi is to be very large taken in total so I want to upper bound them by a constant.
+
+64
+00:09:26,850 --> 00:09:41,400
+So because I am talking about going that side of the margin right if ξi are negative so essentially
+
+65
+00:09:41,400 --> 00:09:46,440
+I will be imposing a tighter constraint than what I was looking for so this will be like it
+
+66
+00:09:46,440 --> 00:09:51,360
+will larger than M right this is well I will be having a thing that is larger than M on
+
+67
+00:09:51,360 --> 00:10:01,440
+the returns I am sorry it is a relative distance, so it is why it is a relative distance right so
+
+68
+00:10:01,440 --> 00:10:10,920
+essentially this becomes on M- Mξi right so if I original should be M, so it is now M ξi a away
+
+69
+00:10:10,920 --> 00:10:17,580
+from their okay so ξi is essentially a relative distance right and if I make ξi is negative so
+
+70
+00:10:17,580 --> 00:10:22,680
+this will become plus so that will essentially mean that not only do I want the data points
+
+71
+00:10:22,680 --> 00:10:27,660
+to be away than M actually asking it to be further away than so it just imposes a tighter constraint,
+
+72
+00:10:27,660 --> 00:10:40,810
+so I do not want that to happen so and here we are essentially giving it a budget that we do not want
+
+73
+00:10:40,810 --> 00:10:49,210
+it to be greater than the budget right fine. So we saw such an constraint earlier where it we
+
+74
+00:10:49,210 --> 00:10:56,770
+see such a constraint earlier we had a budget we did not want it to be greater than a budget.
+
+75
+00:10:58,000 --> 00:11:03,640
+So yeah ridge regression and LASSO and other things we had this thing right,
+
+76
+00:11:03,640 --> 00:11:08,020
+so wherever we are looking at this regularized regression, so we had this greater than it or
+
+77
+00:11:08,020 --> 00:11:13,780
+lesser than a constant and what did we do in those cases we push it into the objective function right
+
+78
+00:11:13,780 --> 00:11:20,890
+and then added a multiplier there and then we said okay it has to be right, so then there
+
+79
+00:11:20,890 --> 00:11:25,000
+is a relationship between this constant on the multiplier that we put in the objective function
+
+80
+00:11:25,000 --> 00:11:35,800
+right so likewise will do the same thing here I will do all the other transformations that we need
+
+81
+00:11:35,800 --> 00:11:40,060
+to do right to normalize β and things like this. So essentially I will end up with the same
+
+82
+00:11:40,060 --> 00:12:24,840
+objective function I had there right you what ≥ to
+
+83
+00:12:36,040 --> 00:12:44,500
+because they have gotten rid of the M right why how do we get rid of them M is
+
+84
+00:12:44,500 --> 00:12:51,490
+1 / β right so 1 by ||β|| so we got rid of that just anything else we need here
+
+85
+00:13:01,490 --> 00:13:09,910
+right, so now that we have this objective function what should be the value of C if
+
+86
+00:13:09,910 --> 00:13:20,170
+I want a linearly separable case we want to solve the linearly separable problem right or
+
+87
+00:13:20,170 --> 00:13:30,340
+I want to ensure that all ξi are 0 what should the value of C be this is the simple question
+
+88
+00:13:30,340 --> 00:13:38,680
+infinity right C should be infinity. So the larger the value of C the more you are
+
+89
+00:13:38,680 --> 00:13:46,690
+penalizing the violations right, so the smaller the ξi should be right so the larger the value
+
+90
+00:13:46,690 --> 00:13:51,490
+of C the smaller the ξi should be right so this is a trade-off so the larger you make
+
+91
+00:13:51,490 --> 00:13:59,680
+C the smaller will the margin be but work will be getting more of the training data correct right so
+
+92
+00:13:59,680 --> 00:14:08,950
+for large values of C you are allowing a little bit more leeway in does it make sense so C is
+
+93
+00:14:08,950 --> 00:14:14,830
+very large C small then you are allowing lot more errors to happen if C is very large then you are
+
+94
+00:14:14,830 --> 00:14:22,000
+forcing the classifier to classify as much of the training data is correct as possible okay.
+
+95
+00:14:22,000 --> 00:14:30,700
+The data is truly linearly separable and you make C very large what will happen you
+
+96
+00:14:30,700 --> 00:14:36,640
+will find the correct linear separator right but if the data is truly linearly separable
+
+97
+00:14:36,640 --> 00:14:42,850
+but you keep C small what might happen you might trade off errors in the training data
+
+98
+00:14:42,850 --> 00:15:00,340
+for a larger margin even if the data is linearly separable Is that a desirable thing when exactly,
+
+99
+00:15:00,340 --> 00:15:05,080
+so if the data is noisy such that there are some data points that are closer to
+
+100
+00:15:05,080 --> 00:15:09,190
+the margin it may be one or two data points that are closer to the margin. So if you are
+
+101
+00:15:09,190 --> 00:15:13,360
+trying to find the perfect linear separation you will pay attention to them as well right
+
+102
+00:15:13,360 --> 00:15:19,660
+and therefore you will end up having a low margin right but then if you are willing to
+
+103
+00:15:19,660 --> 00:15:25,930
+ignore a few noisy data points right even if the training data looks perfectly separable right
+
+104
+00:15:25,930 --> 00:15:32,740
+you might end up making a few errors on it but you will get a more robust classifier right so
+
+105
+00:15:32,740 --> 00:15:37,330
+can people visualize a situation I am going to try and do something here let us see that works
+
+106
+00:15:37,330 --> 00:15:51,460
+it has looks perfectly separable right. That is noise is it still separable yes hey
+
+107
+00:15:54,530 --> 00:16:01,130
+let us more or less linear see the data points are point okay there you go there it is still
+
+108
+00:16:01,130 --> 00:16:06,530
+separable right if you try to solve it as a perfectly separable problem that is the separator
+
+109
+00:16:06,530 --> 00:16:14,210
+that you are going to get but if you allow errors right so that will probably be the separating
+
+110
+00:16:14,210 --> 00:16:17,690
+hyper plane you get and that is probably a more appropriate hyper plane right.
+
+111
+00:16:17,690 --> 00:16:27,860
+Apart from being robust it is it is also correct in an expected sense so far no questions now we
+
+112
+00:16:27,860 --> 00:16:35,240
+will move on to the whole the primal do so I just wanted to leave this on board till I wrote this
+
+113
+00:16:35,240 --> 00:17:36,330
+note so that you can compare it right so it is all good okay this fine.
+
+114
+00:17:50,110 --> 00:18:49,530
+So that is the primal value also having have α right ξ α μ has to be ≥ 0.
+
+115
+00:18:57,080 --> 00:19:07,820
+Yeah I do not have to I do not have to do this what is that why is it
+
+116
+00:19:12,430 --> 00:19:34,720
+what is the single condition not a single condition is there for each i. Do we need
+
+117
+00:19:34,720 --> 00:19:44,530
+the . No right, so that is why we consider constructed put that into the optimization
+
+118
+00:19:44,530 --> 00:19:53,950
+objective function itself right, so by minimizing this right we are ensuring
+
+119
+00:19:53,950 --> 00:20:03,280
+that will be less than some limit right and like I was mentioning in the ridge regression discussion,
+
+120
+00:20:03,280 --> 00:20:08,950
+so you can find a relationship between this constant and this C right.
+
+121
+00:20:08,950 --> 00:20:13,840
+It is also a function of the range of the objective function but you can always find so
+
+122
+00:20:13,840 --> 00:20:19,570
+basically they are equivalent ways of writing the optimization problem except that you have
+
+123
+00:20:19,570 --> 00:20:26,350
+to this constant and the C will not be the same there will be different values so this constraint
+
+124
+00:20:26,350 --> 00:20:33,250
+is gone this is no longer present here that went into the objective function okay.
+
+125
+00:20:35,310 --> 00:20:47,910
+So putting all of this back in and doing some algebra can be surprised at the algebra
+
+126
+00:20:47,910 --> 00:20:53,670
+outcome of this anyone has already solved it know what it is look familiar right it is
+
+127
+00:21:42,410 --> 00:21:50,690
+essentially the same dual you will get but your constraints are different this is already there,
+
+128
+00:21:50,690 --> 00:21:57,710
+so it is just added for completeness sake but what is important here is earlier while I had
+
+129
+00:21:57,710 --> 00:22:05,210
+only a non negativity constraint on α now I have a upper bound on the value of α. So why is that
+
+130
+00:22:05,210 --> 00:22:28,030
+because α is only C- μ right since α is only C - μ so there has to be a upper bound on α okay good so
+
+131
+00:22:28,030 --> 00:23:29,220
+what about the other KKT conditions. So 1 to 7 or the KKT conditions
+
+132
+00:23:46,800 --> 00:23:57,930
+okay. So what do you notice here again well you notice again that your β is determined by your
+
+133
+00:23:58,830 --> 00:24:08,610
+αiyixi just like you hand earlier right it β is given by those xi for which α will be nonzero
+
+134
+00:24:08,610 --> 00:24:17,940
+right so like we had earlier those xi’s for which α is non zero or called support points okay our
+
+135
+00:24:17,940 --> 00:24:22,680
+support vectors depending on how we want to look at it okay now let us go look at when it will be
+
+136
+00:24:22,680 --> 00:24:40,530
+nonzero right so when will α be 0 whole thing is nonzero when will this whole thing be nonzero well
+
+137
+00:24:40,530 --> 00:24:50,100
+it lies at a large enough distance on the right side of the margin right what about ξi is a will
+
+138
+00:24:50,100 --> 00:25:02,970
+be 0. Then ready somewhere here the ξi will be 0 right, so in the ξi 0 so it will be left with this
+
+139
+00:25:02,970 --> 00:25:09,750
+term alone right -1 that just takes exactly the same condition that we had earlier right, so if
+
+140
+00:25:09,750 --> 00:25:17,310
+this is far enough away from the margin then this will be nonzero so α is have to be 0 so we know
+
+141
+00:25:17,310 --> 00:25:22,350
+for sure okay the same thing right things that are on the right side of the margin right means
+
+142
+00:25:22,350 --> 00:25:29,257
+correct side okay things that are on the correct side of the margin then α will be 0 so they would
+
+143
+00:25:29,258 --> 00:25:33,750
+not contribute anything right. So now what about things that are on the margin
+
+144
+00:26:11,170 --> 00:26:57,960
+right is that a third case we have to consider third case now right we have to consider the
+
+145
+00:26:57,960 --> 00:27:11,070
+third case in which case what happened as ξi will start increasing right ξi’s will become non zero,
+
+146
+00:27:11,070 --> 00:27:49,440
+okay if ξi is nonzero what does it imply okay because my α is C – μi I right so if ξi is nonzero
+
+147
+00:27:49,440 --> 00:27:59,970
+then μi will become 0 that for my α is will become C right so now how will this term go to 0 by
+
+148
+00:27:59,970 --> 00:28:09,210
+suitably makings ξi a large enough right. So I will make ξi a large enough, so that this
+
+149
+00:28:09,210 --> 00:28:14,640
+term will go to 0 right because this is this will be negative will be less than 1 all right
+
+150
+00:28:14,640 --> 00:28:19,560
+so I will make this I will just ξi so that this term in the square bracket goes to 0 because my
+
+151
+00:28:19,560 --> 00:28:35,340
+αi will be C what is that in case this is because I do not really do not want to penalize this case
+
+152
+00:28:35,340 --> 00:28:49,350
+right this case also ξi will be 0 right, so this case ξi is 0 this case also ξi will be 0 because
+
+153
+00:28:49,350 --> 00:28:56,550
+what I really need is that is my condition ≥ 1- ξi so if is equal to 1 so I can set ξi to 0
+
+154
+00:29:04,200 --> 00:29:21,780
+correct in both these cases ξi 0. So what are all the support vectors
+
+155
+00:29:21,780 --> 00:29:29,310
+everything on the margin everything on the wrong side of the margin as well right everything for
+
+156
+00:29:29,310 --> 00:29:33,210
+which alpha is nonzero now becomes support vectors so at the end of the day I am going to say that
+
+157
+00:29:33,210 --> 00:29:39,270
+you are just going to use a package to solve all of these things right but it is like saying yeah
+
+158
+00:29:39,270 --> 00:29:45,300
+anyway you are going to use Microsoft Windows or I mean Mac OS X or something why do you learn
+
+159
+00:29:45,300 --> 00:29:52,920
+operating system right. So you need to know what the internals are it is not the fact that you just
+
+160
+00:29:52,920 --> 00:29:58,080
+use the tools that matters it when you can just use the tools well yeah we can do a tool course
+
+161
+00:29:58,080 --> 00:30:05,700
+right how to use the tools right how will you start up limb svm it is not trivial right, so
+
+162
+00:30:05,700 --> 00:30:11,370
+many people I know actually run experiments with SVM's by just using the default parameter settings
+
+163
+00:30:11,370 --> 00:30:20,490
+that the package will give right. I do not laugh I mean there might be some of you in that but
+
+164
+00:30:20,490 --> 00:30:25,950
+then it Is you need to understand what is it that you are tuning right, so now I told you about the
+
+165
+00:30:25,950 --> 00:30:30,540
+C parameter right, so you understand have some idea of what a large C means versus what a small
+
+166
+00:30:30,540 --> 00:30:37,230
+C means hey instead of blindly saying that okay I am going to queue and C from some number to some
+
+167
+00:30:37,230 --> 00:30:41,370
+other number right, so to have an appreciation of what these things are doing actually helps
+
+168
+00:30:41,370 --> 00:30:45,690
+you even use the tools better right so that is the whole idea behind doing all of this is not that I
+
+169
+00:30:45,690 --> 00:30:50,820
+am going to expect you to come and derive a large margin classifier tomorrow when ideally.

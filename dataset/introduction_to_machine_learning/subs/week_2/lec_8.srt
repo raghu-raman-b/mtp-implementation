@@ -1,0 +1,587 @@
+1
+00:00:00,000 --> 00:00:44,990
+So there is a basic assumption
+
+2
+00:00:44,990 --> 00:00:56,630
+that we had earlier. So we are going to assume that the expected
+
+3
+00:00:56,630 --> 00:01:04,910
+value of y given x is linear right. So that is essentially what, this is telling us right. So
+
+4
+00:01:04,910 --> 00:01:12,170
+f(x) is so here is the expected value of y. there is some kind of a noise corrupted the training
+
+5
+00:01:12,170 --> 00:01:23,390
+data that is given to you; the expected value of y given x is linear right. And so we had this
+
+6
+00:01:23,390 --> 00:01:29,570
+discussion earlier, so the nice thing is linear regression is not as weak as you think right.
+
+7
+00:01:29,570 --> 00:01:38,960
+So x can be a variety of different things right, x need not just be real valued inputs. They are
+
+8
+00:01:38,960 --> 00:01:44,570
+assume to be drawn from Rp right x are assumed to be drawn from some p dimensional real valued
+
+9
+00:01:44,570 --> 00:01:50,780
+space. But they did not just be real valid inputs they could be any kind of encoding
+
+10
+00:01:50,780 --> 00:02:06,070
+right. We talked about basis expansions like we talked about basis expansion, which essentially
+
+11
+00:02:06,070 --> 00:02:14,410
+is blowing up your input space by some kind of transformation of the input variables right.
+
+12
+00:02:14,410 --> 00:02:28,210
+So if my original data is x1 to xp. I can think of right that this as my input so that is basically
+
+13
+00:02:28,210 --> 00:02:36,400
+basis expansion right I could also think of interaction terms right.
+
+14
+00:02:36,400 --> 00:03:06,950
+I have to think of more complex transformation, x could be qualitative inputs as well. What I mean
+
+15
+00:03:06,950 --> 00:03:22,310
+by that hot cold right, tall short medium height how I would handle that. Weights has levels in
+
+16
+00:03:22,310 --> 00:03:27,590
+the input right or it could be just red blue green mean it does not really correspond to
+
+17
+00:03:27,590 --> 00:03:33,590
+any level. I mean young and old we can think of saying okay. Young is 1 and old is 2 and middle
+
+18
+00:03:33,590 --> 00:03:38,000
+age is 1.5 or whatever right but what about red blue and green things like that.
+
+19
+00:03:38,000 --> 00:03:47,630
+Encode each color right, encoding how do you do the encoding. Yeah! you are right
+
+20
+00:03:47,630 --> 00:03:53,840
+you have to do some kind of encoding how do you do the encoding. As soon as I said
+
+21
+00:03:53,840 --> 00:04:00,080
+identify yourself and talk nobody talks. I could do some kind of binary encoding right,
+
+22
+00:04:00,080 --> 00:04:05,990
+so I can think of saying that okay I have four colors right. So I will have two bits
+
+23
+00:04:05,990 --> 00:04:11,450
+to encode the four colors right two bit 4 gets translated into two bits.
+
+24
+00:04:11,450 --> 00:04:18,380
+It turns out that that is usually too much of a compression in the encoding right and
+
+25
+00:04:18,380 --> 00:04:25,910
+if you have four possible values this thing can take it is better to sometimes use four
+
+26
+00:04:25,910 --> 00:04:36,500
+bits right. So it is sometimes called one of n encoding right so only one of those four bits
+
+27
+00:04:36,500 --> 00:04:42,140
+will be one for any input right. So red means the first bit will be one blue means the second
+
+28
+00:04:42,140 --> 00:04:46,100
+bit will be one and so on and so for right or sometimes it is called one hot encoding.
+
+29
+00:04:46,100 --> 00:04:50,570
+So this one of the inputs will be hot the others will all be cold right. So sometimes
+
+30
+00:04:50,570 --> 00:04:57,020
+called one of n or one hot encoding, so you could take care of qualitative inputs like
+
+31
+00:04:57,020 --> 00:05:01,760
+that categorical inputs also you could do that. And whatever you do right mean however you are
+
+32
+00:05:01,760 --> 00:05:06,800
+expanded your basis or however you are encoded the thing. Finally the model you fit will be linear,
+
+33
+00:05:06,800 --> 00:05:13,670
+it except that if your original dimension was 1 in this case right I had a one color input.
+
+34
+00:05:13,670 --> 00:05:21,860
+It could take four values now my input dimensions become 4. Similarly I had P input earlier now
+
+35
+00:05:21,860 --> 00:05:33,920
+input dimensions has become this case depends. Depends on whether I am feeding in x1 to xp also
+
+36
+00:05:33,920 --> 00:05:41,090
+right, if I only feed in the second order terms it is still P but the the class of functions I
+
+37
+00:05:41,090 --> 00:05:49,100
+can model is restricted. And if I feed in x1 to xp as well as the squares then it is 2p and the class
+
+38
+00:05:49,100 --> 00:05:55,160
+of functions I can model is become larger. So that is basically the underlying set up right
+
+39
+00:05:55,160 --> 00:06:06,110
+the model is still linear. why is it two-bit including each to the degree 4 bit inputting
+
+40
+00:06:06,110 --> 00:06:13,370
+is better than 2-bit encodings it okay. The point is so when I have two bits encoding so there will
+
+41
+00:06:13,370 --> 00:06:20,840
+be the same input variable that gets activated for two different colors right suppose I am using
+
+42
+00:06:20,840 --> 00:06:28,430
+red this 01 okay and blue is 11 okay. so that 11 will get activated for both red then blue.
+
+43
+00:06:28,430 --> 00:06:34,730
+And likewise when there is 10 and 11 right. So so the same bit gets activated for multiple
+
+44
+00:06:34,730 --> 00:06:41,150
+inputs okay. And that gives you some amount of interference in the training right. We can
+
+45
+00:06:41,150 --> 00:06:48,110
+still train it with two bits you probably need a lot more training data to take care of the
+
+46
+00:06:48,110 --> 00:06:52,820
+interference from one to the other right. When you have these kinds of 4 bits essentially you
+
+47
+00:06:52,820 --> 00:06:57,950
+have independent weights modeling the influence of each of the levels.
+
+48
+00:06:57,950 --> 00:07:04,340
+So red that is one weight by weight I mean one β here okay for red there will be one β
+
+49
+00:07:04,340 --> 00:07:08,240
+that will be modeling the effect of red. For blue there will be another beta modeling the
+
+50
+00:07:08,240 --> 00:07:12,830
+effect of blue right. That way there will not be much interference between the variables right.
+
+51
+00:07:12,830 --> 00:07:17,780
+So technically you can model it with two bits and get away with it is that you will probably
+
+52
+00:07:17,780 --> 00:07:20,990
+need more data for the estimation. That is why I say in practice four bits is better.
+
+53
+00:07:25,030 --> 00:07:40,450
+Let us go and continue looking at this, so I am my training data so fonts are fine so the
+
+54
+00:07:40,450 --> 00:08:03,250
+training data is I am going to assume this of the form and that each xi. I am going to I am going to
+
+55
+00:08:03,250 --> 00:08:09,130
+assume that I have n data points each of the form (x1,y1) to (xn, yn) right.
+
+56
+00:08:09,130 --> 00:09:01,430
+And the way we are going to fix this is using least squares. So we are going to translate
+
+57
+00:09:01,430 --> 00:09:08,120
+this into matrix notation to show you some things right and in matrix notation when I
+
+58
+00:09:08,120 --> 00:09:19,130
+write x at least for today it is N x (P +1) matrix, where the first column is all ones.
+
+59
+00:09:19,130 --> 00:09:51,030
+So we have seen this already so it is N x P matrix where the first column is all ones okay.
+
+60
+00:10:03,550 --> 00:10:11,080
+So I can write it like this in matrix form. Let me think about it that square thingy there
+
+61
+00:10:11,080 --> 00:10:34,040
+becomes this. Because f (x) now becomes just xβ. What would that be? Since you all have done the
+
+62
+00:10:34,040 --> 00:10:36,290
+linear algebra tutorial you should be able to tell me what there is,
+
+63
+00:10:52,810 --> 00:10:58,150
+so I am going to let you if you cannot see that immediately. I am going to let you work
+
+64
+00:10:58,150 --> 00:11:01,570
+it out yourself okay and yourself okay. We should get really familiar with doing this
+
+65
+00:11:01,570 --> 00:11:07,630
+kind of derivatives of matrices. Because we will be using this quite often whenever
+
+66
+00:11:07,630 --> 00:11:11,440
+we write this kinds of error functions in terms of matrices be ready to use this.
+
+67
+00:11:13,030 --> 00:11:15,760
+Intuitively see it is right but you just need to work out the math here. And
+
+68
+00:11:26,110 --> 00:11:34,480
+at least this seems easy enough I am taking a derivative of this with respect to β and the only
+
+69
+00:11:34,480 --> 00:11:51,040
+term where β appears is XT X okay right. So if X has full column rank okay XT X will be positive
+
+70
+00:11:51,040 --> 00:11:58,630
+definite. So it will certainly be invertible okay. So it will be and no it is not just invertible
+
+71
+00:11:58,630 --> 00:12:09,190
+it will be positive definite and therefore we can assume that it is here maxima or minima.
+
+72
+00:12:09,190 --> 00:12:19,270
+Now anyways so if I equate this to 0, I will get an extremism point right I will get either
+
+73
+00:12:19,270 --> 00:12:26,230
+a maximum or a minimum okay. So what would it be anyway think about it I am going to anyway
+
+74
+00:12:26,230 --> 00:12:49,570
+minimize the error that that should give you a clue right okay. So I am essentially I have to
+
+75
+00:12:49,570 --> 00:12:56,110
+set this to 0 if I want to find the minima of the error and this is going to give me
+
+76
+00:13:36,330 --> 00:13:36,930
+right.
+
+77
+00:14:07,200 --> 00:14:10,830
+This is all standard if you already know what the solution of linear regression is
+
+78
+00:14:10,830 --> 00:14:15,540
+we saw that in the the last class and you should have revised things by now.
+
+79
+00:14:15,540 --> 00:14:20,520
+They tell you that if you read in the previous whatever we have covered till the previous class
+
+80
+00:14:20,520 --> 00:14:26,400
+and come the next class will be easier right. So we already seen the solution right and so
+
+81
+00:14:26,400 --> 00:14:37,920
+if I put this together I basically get Y^= X times XT X inverse XT Y. So this expression is
+
+82
+00:14:37,920 --> 00:14:51,810
+sometimes called the Hat matrix you know why it takes Y and puts a hat on it right. So it
+
+83
+00:14:51,810 --> 00:14:58,230
+is called the Hat matrix so hat essentially means what this is short hand for estimates okay.
+
+84
+00:14:59,190 --> 00:15:04,290
+Hats are short hands for estimates denotes that it is not the true quantity so y is the the true
+
+85
+00:15:04,290 --> 00:15:09,990
+random variable and y hat is an estimate of the value of y okay. So this is essentially
+
+86
+00:15:09,990 --> 00:15:16,320
+the estimator matrix right. So in that sense you can think of it as a hat matrix, so another way
+
+87
+00:15:16,320 --> 00:15:28,590
+of thinking about it is the following. So what do we what can we say about Y right the vector
+
+88
+00:15:28,590 --> 00:15:33,270
+Y not the output random variable Y. I am talking about the vector Y right,
+
+89
+00:15:33,270 --> 00:15:46,260
+I should say that. So X is n x p +1what about Y N x 1 right. So Y is actually a point in
+
+90
+00:15:50,780 --> 00:16:09,650
+right it is N x 1, so you can take the P + 1 columns of X right so X is going to have P + 1
+
+91
+00:16:09,650 --> 00:16:19,310
+columns right. You can take the P +1 columns of X as set of basis vectors right. So what
+
+92
+00:16:19,310 --> 00:16:28,070
+is the dimensionality of each column n okay. So each column is a RN is a vector in RN right
+
+93
+00:16:28,070 --> 00:16:35,630
+and I have P + 1 such vector in RN okay. Now I can think of these vectors as a set of
+
+94
+00:16:35,630 --> 00:16:42,800
+basis function basis vectors right. So it ideally I would like them to span a P +1 dimensional
+
+95
+00:16:42,800 --> 00:16:55,400
+subspace of RN. It is where all the linear algebra tutorial supposed to help. So so you have a P + 1
+
+96
+00:16:55,400 --> 00:17:12,670
+subspace of RN, your X beta is what we will be a point in that P + 1 subspace, dimensional subspace
+
+97
+00:17:12,670 --> 00:17:23,110
+right. Because X or my basis vectors right and I am combining the basis vectors by some set of
+
+98
+00:17:23,110 --> 00:17:31,780
+scalars β right β1 β2 like β1 β2 right. That al those scalars just am getting just
+
+99
+00:17:31,780 --> 00:17:35,320
+getting a linear combination of my basis vector so it is going to give me some point
+
+100
+00:17:35,320 --> 00:17:42,580
+in the p + 1 dimensional space right. In fact if I am doing linear regression all I can do
+
+101
+00:17:42,580 --> 00:17:47,560
+is express a point in that P +1 dimensional space. If I take the columns of my X matrix
+
+102
+00:17:47,560 --> 00:17:55,690
+any output that I can learn will be a point in that p +1 dimensional space. Makes sense right
+
+103
+00:17:55,690 --> 00:18:00,760
+so what is the best possible point in that p +1 dimensional space that I can predict.
+
+104
+00:18:08,090 --> 00:18:21,770
+So let us say I have two vectors x1 and x2 these are not the data points okay. These
+
+105
+00:18:21,770 --> 00:18:29,360
+are the the column vectors okay so since there are two dimension 2 vectors here so
+
+106
+00:18:29,360 --> 00:18:39,710
+X1 and X2 right. And this is the space and let us supposes I have a vector Y which is in the
+
+107
+00:18:39,710 --> 00:18:46,910
+N dimensional space okay. I have a vector Y in the n-dimensional space what is the
+
+108
+00:18:46,910 --> 00:18:52,940
+best prediction I can make. So Y is in R3 I mean if you mean if you can buy
+
+109
+00:18:52,940 --> 00:19:02,660
+into my drawing skills okay so X1 and X2 span that two dimensional subspace of R3 right. And Y is a
+
+110
+00:19:02,660 --> 00:19:10,640
+point in R3 right so that is what Y is what is the best prediction that I can make that fits into the
+
+111
+00:19:10,640 --> 00:19:20,780
+X1 X2 space. The projection of Y right that is what I had should be and will I be able to make
+
+112
+00:19:20,780 --> 00:19:26,240
+that prediction. am I making the prediction? yes, because if you look at the error.
+
+113
+00:19:26,240 --> 00:19:33,680
+So Y minus y hat is essentially orthogonal to the space spanned by X so that is what
+
+114
+00:19:33,680 --> 00:19:41,000
+our minimization condition is telling us right, XT Y minus X β is 0 right. So essentially it is
+
+115
+00:19:41,000 --> 00:19:47,780
+telling I said okay ,this vector this is y minus y hat this vector is orthogonal to the plane spanned
+
+116
+00:19:47,780 --> 00:19:53,090
+by X that is essentially what the minimizing condition is telling is okay. So this is the
+
+117
+00:19:53,090 --> 00:19:59,900
+best possible estimate that you can make for why given that you are restricted to the plane
+
+118
+00:19:59,900 --> 00:20:08,390
+spanned by the columns of X okay. That make sense so this is a geometric
+
+119
+00:20:08,390 --> 00:20:16,550
+interpretation of what linear regression is doing. It is also lets us think about some other things
+
+120
+00:20:16,550 --> 00:20:25,880
+right so what happens if X is not full rank that would mean that some of the columns are dependent
+
+121
+00:20:25,880 --> 00:20:30,080
+on each other right or linearly dependent on each other. That essentially means that it is
+
+122
+00:20:30,080 --> 00:20:36,620
+not really spanning a P +1 dimensional space its spanning a smaller subspace right.
+
+123
+00:20:36,620 --> 00:20:40,460
+It is planning a smaller dimensional subspace therefore your approximation is going to be
+
+124
+00:20:40,460 --> 00:20:50,510
+worse. That is one part of it, then anything else the formula would not be valid. So we
+
+125
+00:20:50,510 --> 00:20:56,540
+have to think of different ways of doing it right, so that is the next thing but still
+
+126
+00:20:56,540 --> 00:21:05,360
+regardless of that the best fit that you can get will still be the projection of your Y onto the
+
+127
+00:21:05,360 --> 00:21:12,290
+space spanned by the Xs. You have to have to come up with different ways finding it.
+
+128
+00:21:12,290 --> 00:21:17,030
+But it will still be the projection right, so that is the thing. So one of the easiest ways of
+
+129
+00:21:17,030 --> 00:21:32,320
+doing it is what? Now we know exactly now we know that, it is just in the space that is spanned by
+
+130
+00:21:32,320 --> 00:21:36,220
+these vectors that is important right and we are supposed to find the projection onto the space.
+
+131
+00:21:36,220 --> 00:21:40,180
+And if there are redundant vectors that will not help us define the space. We can throw them out
+
+132
+00:21:40,180 --> 00:21:45,970
+but even though I have all this P+1 dimension right whatever is redundant that is not helping
+
+133
+00:21:45,970 --> 00:21:51,160
+me define the subspace I can throw them out. So there are some very simple checks that you
+
+134
+00:21:51,160 --> 00:21:55,420
+can do right in fact if you use some standard tools like R and you are trying to do linear
+
+135
+00:21:55,420 --> 00:22:00,940
+regression unless you explicitly tell it not to it will automatically do the check for you it
+
+136
+00:22:00,940 --> 00:22:05,920
+will automatically do the check and throw out the independent columns it will pick some subset of
+
+137
+00:22:05,920 --> 00:22:14,440
+independent bases and then use that to figure out what the projection should be okay.
+
+138
+00:22:14,440 --> 00:22:34,150
+Great so what about the case with the number of dimensions is much larger than the number of
+
+139
+00:22:34,150 --> 00:22:46,180
+data points? Do you think that will happen yes, no possible how many of you here work with images or
+
+140
+00:22:46,180 --> 00:22:53,440
+have done any work with image data. So more often than not that is the case right so because image
+
+141
+00:22:53,440 --> 00:22:59,230
+data is very high dimensional right and unless you are able to generate huge volumes of such data and
+
+142
+00:22:59,230 --> 00:23:05,530
+more often than not P will be greater than n. So you have to think of some kind of regularizing
+
+143
+00:23:05,530 --> 00:23:11,860
+the fit so that you get actually a valid answer right. If P is larger essentially what it means
+
+144
+00:23:11,860 --> 00:23:18,340
+that you have a much larger space and Y actually exists in a smaller space than what is given to
+
+145
+00:23:18,340 --> 00:23:24,100
+you. So so we have to figure out a way of regularizing the problems so that adding
+
+146
+00:23:24,100 --> 00:23:28,480
+additional constraints on what kind of projections you are looking for because otherwise it does not
+
+147
+00:23:28,480 --> 00:23:35,050
+make sense to talk about the projection of Y on this P plus 1 dimensional space okay.

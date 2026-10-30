@@ -1,0 +1,795 @@
+1
+00:00:16,480 --> 00:00:20,960
+Hello and welcome to this tutorial on Weka. Weka is an open source and
+
+2
+00:00:20,960 --> 00:00:24,960
+freely available software package containing a collection of machine learning algorithms.
+
+3
+00:00:26,160 --> 00:00:31,600
+The algorithms present in Weka are all coded in java and they can be used by calling them from
+
+4
+00:00:31,600 --> 00:00:36,400
+your own java code. However, the algorithm also provides a graphical user interface
+
+5
+00:00:37,200 --> 00:00:43,920
+from which the algorithms can directly be applied to data sets. For the programming assignments in
+
+6
+00:00:43,920 --> 00:00:49,200
+the introduction to machine learning course, we will mostly be using Weka in its GUI form.
+
+7
+00:00:50,480 --> 00:00:54,480
+This will allow us to spend more time on understanding how the algorithms which we
+
+8
+00:00:54,480 --> 00:00:58,480
+come across in the lectures actually work and how to use them in analyzing data.
+
+9
+00:00:59,680 --> 00:01:04,080
+You can download different versions of Weka for different operating systems from the website of
+
+10
+00:01:04,080 --> 00:01:11,440
+the University of Waikato. This tutorial is mainly aimed at people who have never used Weka before
+
+11
+00:01:11,440 --> 00:01:16,560
+we will look at some of the basic features and options provided by the software and also do
+
+12
+00:01:16,560 --> 00:01:21,600
+some linear regression experiments to help you in solving the questions in the third assignment.
+
+13
+00:01:23,840 --> 00:01:28,880
+Before we start with Weka let us create a synthetic data set on which we can then
+
+14
+00:01:28,880 --> 00:01:34,400
+apply linear regression. Since this is just for illustration purposes, we will create a
+
+15
+00:01:35,040 --> 00:01:40,720
+simple one dimensional data set. We will create this dataset using a few lines of Python code.
+
+16
+00:01:46,720 --> 00:01:53,840
+So here we have imported the numpy package.
+
+17
+00:02:05,200 --> 00:02:11,760
+The statement creates the input data which ranges from -25 to 100 and consists of 100
+
+18
+00:02:11,760 --> 00:02:21,840
+data points. Now we will get the output data which will have a linear relation with the input.
+
+19
+00:02:24,880 --> 00:02:26,800
+Since we are creating a data set here,
+
+20
+00:02:27,920 --> 00:02:33,760
+we know how the input and the output are related. However if this data was given to us,
+
+21
+00:02:34,320 --> 00:02:42,480
+then our objective would be to try to run this relation that is the parameters β0 = 12 and β1=3.
+
+22
+00:02:43,600 --> 00:02:50,480
+As we will see when this input that is xy pair is provided to the linear regression algorithm. It
+
+23
+00:02:50,480 --> 00:02:55,040
+will be able to learn a perfect model; this is because there is no noise in our data.
+
+24
+00:02:55,680 --> 00:03:03,840
+So to make things a bit more challenging we will add some noise to the output.
+
+25
+00:03:20,960 --> 00:03:26,080
+The variable z is essentially the noise character output where we have used Gaussian noise with
+
+26
+00:03:26,080 --> 00:03:45,840
+parameters 0 and 3. We will now save this data and apply linear regression on it using Weka.
+
+27
+00:04:03,200 --> 00:04:06,000
+We have saved our data in a text file.
+
+28
+00:04:06,000 --> 00:04:13,680
+So let us have a look now Weka uses a specific format for its input it this format is known
+
+29
+00:04:13,680 --> 00:04:19,840
+as a ARFF and we have to add a few bits of information to what is essentially a CSV file
+
+30
+00:04:20,400 --> 00:04:27,840
+to make it suitable for use Weka. We essentially have to provide three pieces of information
+
+31
+00:04:36,800 --> 00:04:42,800
+this first one just gives a name to the data. Eventually specifying what relation this data is
+
+32
+00:04:43,440 --> 00:04:47,760
+showing, so since we have cooked up this data we are just given it the name synthetic.
+
+33
+00:04:49,040 --> 00:04:55,840
+Next we provide the attribute information.
+
+34
+00:05:08,320 --> 00:05:14,800
+We have used x, y and z as the names of the three columns and specified the data type as numeric.
+
+35
+00:05:15,520 --> 00:05:20,720
+There are other data types which will be seen a little later such as nominal and string data type.
+
+36
+00:05:22,000 --> 00:05:30,080
+The final piece that has to be provided is the data which we have already listed @data specify
+
+37
+00:05:30,080 --> 00:05:39,800
+the start of the data. Now we should save this in the ARFF format that is with the extension .arff.
+
+38
+00:05:44,000 --> 00:05:47,520
+Hopefully this gives you an idea of how to represent data
+
+39
+00:05:47,520 --> 00:05:50,480
+in the ARFF format suitable for use with Weka.
+
+40
+00:05:51,360 --> 00:05:57,920
+Just to recap you have to provide the relation and attribute information and the data is listed
+
+41
+00:05:57,920 --> 00:06:05,840
+row wise that is each row specifies one data point with the values being separated by commas.
+
+42
+00:06:09,280 --> 00:06:14,400
+We will now open this data in Weka and apply linear regression on it.
+
+43
+00:06:17,200 --> 00:06:23,360
+So this is the opening screen for the Weka application. We will be using explorer.
+
+44
+00:06:25,920 --> 00:06:30,080
+So this the start screen for the explorer application. As you can notice most of the
+
+45
+00:06:30,080 --> 00:06:35,520
+options are grayed out this is because we do not have any data selected yet. So let us do that
+
+46
+00:06:38,320 --> 00:06:41,840
+this is the synthetic data that we had just created, so let us open that.
+
+47
+00:06:44,720 --> 00:06:48,880
+Right a lot of things to notice here. First of all at the top
+
+48
+00:06:48,880 --> 00:06:56,800
+we have these tabs which allow us to specify different actions. So the first tab is preprocess
+
+49
+00:06:58,080 --> 00:07:03,120
+where we can do different preprocessing activities such as normalizing the data,
+
+50
+00:07:03,920 --> 00:07:08,480
+filling in missing values, in case the input as missing values and so on.
+
+51
+00:07:09,600 --> 00:07:12,960
+Under the classify tab are listed all the supervised learning algorithms,
+
+52
+00:07:13,760 --> 00:07:17,680
+that is both classification and regression algorithms which will be looking at soon.
+
+53
+00:07:18,880 --> 00:07:23,760
+Clustering algorithm was listed on the cluster tab. Association rule mining algorithms under the
+
+54
+00:07:23,760 --> 00:07:32,240
+associate tab in. Under the select attributes tab we can perform attribute selection activities such
+
+55
+00:07:32,240 --> 00:07:39,280
+as is subset selection PCA and soon and finally visualize allows us to visualize the data.
+
+56
+00:07:39,280 --> 00:07:40,240
+Let us have a look at that
+
+57
+00:07:42,160 --> 00:07:46,080
+here we have the scatter plots between each pair of attributes in the data;
+
+58
+00:07:47,120 --> 00:07:53,440
+this allows us to visualize the distribution of the data. For example, if we look at the
+
+59
+00:07:53,440 --> 00:08:00,640
+scatter plot between y and x, we can observe the perfect linear relation between the two variables.
+
+60
+00:08:00,640 --> 00:08:06,640
+Since that is how we created the data, however if we look at the scatter plot between z and x.
+
+61
+00:08:07,840 --> 00:08:11,840
+We can see the effect of adding noise to the output.
+
+62
+00:08:15,360 --> 00:08:20,240
+Getting back to the preprocess tab here, we have the relation information,
+
+63
+00:08:20,240 --> 00:08:26,240
+the name of the relation is synthetic and there are 100 instances and three attributes.
+
+64
+00:08:26,240 --> 00:08:31,680
+The attribute window gives the list out the attributes. We have three attributes x, y and z,
+
+65
+00:08:33,200 --> 00:08:36,800
+on the right-hand side for the selected attribute, we can use some information.
+
+66
+00:08:37,600 --> 00:08:45,200
+So right now the attribute x is selected, so it has 0% missing data there are 100 distinct
+
+67
+00:08:45,200 --> 00:08:50,000
+values with each value being unique. Some basic statistics which has mean
+
+68
+00:08:50,000 --> 00:08:54,400
+maximum mean and standard deviation and at the bottom we have a histogram.
+
+69
+00:08:56,720 --> 00:09:03,440
+Now let us go ahead and apply linear regression on the data. For our first attempt we will use
+
+70
+00:09:03,440 --> 00:09:07,840
+the first two columns that is x and y and remove the noise character output set.
+
+71
+00:09:12,400 --> 00:09:14,640
+So first we come to the classify tab.
+
+72
+00:09:16,400 --> 00:09:23,360
+Here we have to choose the algorithm, so which we will choose functions and linear regression.
+
+73
+00:09:24,000 --> 00:09:29,440
+Note that there is a simple linear regression function which is actually suitable for this
+
+74
+00:09:29,440 --> 00:09:36,000
+specific task because we have only one dimensional input but when the dimensionality of the input
+
+75
+00:09:36,000 --> 00:09:41,200
+is more, we need the linear regression function. So let us just use this function
+
+76
+00:09:44,720 --> 00:09:48,160
+these are the default parameters, for the linear regression function.
+
+77
+00:09:48,800 --> 00:09:55,200
+We can change them by clicking here; the first parameter is the attribute selection method that
+
+78
+00:09:55,200 --> 00:10:00,480
+is the method used to eliminate attributes which not contribute to the learning of the model.
+
+79
+00:10:01,440 --> 00:10:07,920
+Since we would like to handle this ourselves, we will select no attribute selection we will not
+
+80
+00:10:07,920 --> 00:10:14,240
+be using the debug mode the third attribute the third parameter is eliminate collinear attributes
+
+81
+00:10:14,240 --> 00:10:21,280
+which essentially allows Weka to identify and remove attributes which have a high correlation.
+
+82
+00:10:22,720 --> 00:10:28,960
+We will set this too false for now. The final parameter is the value of
+
+83
+00:10:28,960 --> 00:10:33,600
+the regularization parameter. Note that we are using Ridge regularization here.
+
+84
+00:10:33,600 --> 00:10:38,000
+So initially we will take this to zero, that is we will not be using any regularization.
+
+85
+00:10:42,400 --> 00:10:45,840
+Having set the parameters of the linear regression algorithm,
+
+86
+00:10:46,560 --> 00:10:54,480
+we now look at the different evaluation options. The first option is to use the training data
+
+87
+00:10:54,480 --> 00:11:00,720
+that is we use the training data to build a model and then use the same data to evaluate the model.
+
+88
+00:11:02,960 --> 00:11:08,960
+In case we have a separate data set for testing that is a portion of the data
+
+89
+00:11:09,520 --> 00:11:13,840
+which has not been used in training the model. We can supply that here.
+
+90
+00:11:15,760 --> 00:11:23,600
+More common you will be using cross-validation. In cross-validation, we will iteratively partition
+
+91
+00:11:23,600 --> 00:11:31,120
+the training data into testing and training slits. In each iteration we will train on the
+
+92
+00:11:31,120 --> 00:11:37,840
+training split and evaluate on the testing split. The partition will be done in such a
+
+93
+00:11:37,840 --> 00:11:43,120
+way that each data point will appear in the train and the testing split at least once.
+
+94
+00:11:44,000 --> 00:11:48,320
+The purpose of doing this is to get a robust estimation of the performance of the model.
+
+95
+00:11:50,240 --> 00:11:53,520
+We will be discussing the concept of cross-validation in more detail
+
+96
+00:11:53,520 --> 00:12:01,520
+in upcoming lectures. For now we can go ahead and use this evaluation method. Note that
+
+97
+00:12:02,480 --> 00:12:08,720
+the number of folds simply indicates the number of your iterations and the sizes of each set.
+
+98
+00:12:09,760 --> 00:12:15,920
+We have ten folds which mean we will partition, the data and build models ten times
+
+99
+00:12:15,920 --> 00:12:20,320
+with each partition being a 90:10 split between training and testing.
+
+100
+00:12:22,160 --> 00:12:30,400
+Only the percentage slit option allows us to split the training data and keep a portion for testing.
+
+101
+00:12:33,360 --> 00:12:41,280
+Next this drop-down box allows us to select the output attribute. That is the attribute
+
+102
+00:12:41,280 --> 00:12:47,120
+which we are trying to predict. With all settings in place we can execute.
+
+103
+00:12:51,360 --> 00:12:56,400
+The main window displays the results of the execution of the algorithm. Going through
+
+104
+00:12:56,400 --> 00:13:03,360
+the output, we see the linear regression function used with the following parameters.
+
+105
+00:13:05,040 --> 00:13:15,520
+The relation synthetic on which the filter applied is removing of the column 3. There
+
+106
+00:13:15,520 --> 00:13:22,400
+are 100 instances two attributes namely x and y we use 10-fold cross-validation for evaluation
+
+107
+00:13:23,200 --> 00:13:30,800
+and this is the linear regression model that we obtained. Note that we are able to recover
+
+108
+00:13:30,800 --> 00:13:34,320
+the exact parameters values used in constructing the data.
+
+109
+00:13:36,320 --> 00:13:43,600
+The correlation coefficient is 1. The correlation coefficient specifies the correlation between the
+
+110
+00:13:44,320 --> 00:13:50,240
+predicted output and the actual output. Here it is perfectly correlated and each error term is 0.
+
+111
+00:13:52,000 --> 00:13:59,440
+Now for more meaningful evaluation we will use the noise corrupted output. So we can recover
+
+112
+00:13:59,440 --> 00:14:08,240
+the column which we deleted by selecting the undo button and now we will remove the y column. Going
+
+113
+00:14:08,240 --> 00:14:16,640
+back to classify we will have all the parameters will leave it same and just execute the algorithm.
+
+114
+00:14:18,640 --> 00:14:24,400
+Note that Weka uses the z attribute for prediction. In general, Weka will use the last
+
+115
+00:14:24,400 --> 00:14:30,800
+attribute listed for prediction or classification. Here we observe the effect of noise in the
+
+116
+00:14:30,800 --> 00:14:37,600
+output variable. The parameters estimated parameters differ from the actual parameters,
+
+117
+00:14:38,160 --> 00:14:43,840
+due to the noise. We also observe that the noise the error is no longer zero.
+
+118
+00:14:45,680 --> 00:14:52,240
+Hopefully you will now be a little comfortable with the Weka interface and the steps involved
+
+119
+00:14:52,240 --> 00:14:58,080
+in performing linear regression on the data set. Up to now we have worked with a very
+
+120
+00:14:58,080 --> 00:15:03,360
+simple synthetic data, so next we will apply regression on the more realistic data set.
+
+121
+00:15:07,360 --> 00:15:11,840
+The UCI machine learning repository is home to a number of real-world datasets.
+
+122
+00:15:12,880 --> 00:15:16,960
+Here you can see the different data sets characterized by the primary tasks they
+
+123
+00:15:16,960 --> 00:15:24,640
+support the type of data they contain the area from which the data has been generated and so on.
+
+124
+00:15:25,680 --> 00:15:28,720
+We will use the abalone data set for our next experiment.
+
+125
+00:15:36,000 --> 00:15:42,640
+Here you can see the basic information about the data set such as the associated tasks, the number
+
+126
+00:15:42,640 --> 00:15:48,560
+of instances, the number of attributes whether the dataset contains any missing values and so on.
+
+127
+00:15:50,960 --> 00:15:56,560
+The data description page contains more detailed information.
+
+128
+00:15:57,520 --> 00:16:01,520
+Most importantly lists out the attributes and their data types.
+
+129
+00:16:02,240 --> 00:16:07,840
+This information will be needed for creating the ARFF input format.
+
+130
+00:16:09,360 --> 00:16:15,920
+This is the raw data and here we have added the information necessary for the ARFF representation.
+
+131
+00:16:17,280 --> 00:16:20,480
+Note, that this data set contains categorical attributes.
+
+132
+00:16:21,360 --> 00:16:26,720
+For such attributes we specify their data type by listing all the possible values they can take.
+
+133
+00:16:27,600 --> 00:16:33,280
+In this case the first attribute can take one of three possible values (M,F or I).
+
+134
+00:16:35,120 --> 00:16:41,120
+Note also that the last attribute is of integer type ranging from 1 to 29. Here
+
+135
+00:16:41,120 --> 00:16:46,160
+we have specified it as a numeric attribute but in case, we wanted to consider this as the
+
+136
+00:16:46,160 --> 00:16:51,520
+class level for a classification task we would have specified it as a categorical attribute.
+
+137
+00:16:53,920 --> 00:17:03,840
+Let us get back to Weka and apply linear regression on this data set.
+
+138
+00:17:04,880 --> 00:17:11,280
+Here we see the nine attributes along with the associated information on the right. The
+
+139
+00:17:11,280 --> 00:17:19,040
+first thing to do is to handle the categorical attribute. Recall from the lectures we learned
+
+140
+00:17:19,040 --> 00:17:25,680
+about one hot encoding this can be done in the preprocess tab using an appropriate filter. First
+
+141
+00:17:25,680 --> 00:17:31,280
+of all we select the attribute then choose the appropriate filter. This filter comes
+
+142
+00:17:31,280 --> 00:17:38,480
+under the unsupervised attribute folder and it is the nominal to binary filter.
+
+143
+00:17:40,160 --> 00:17:46,960
+On applying this filter we observe that from one attribute we have now created three attributes.
+
+144
+00:17:49,200 --> 00:17:54,960
+One corresponding to each of the possible values that the original attribute would have taken.
+
+145
+00:17:55,760 --> 00:18:02,720
+Also from the histograms, we can see that each of the attribute is now 0 or 1 or that is binary
+
+146
+00:18:03,760 --> 00:18:13,840
+variable, we can now apply linear regression on this data set.
+
+147
+00:18:16,000 --> 00:18:19,200
+We will start by using the same parameter values as used previously.
+
+148
+00:18:27,440 --> 00:18:32,320
+We will stick with cross validation for evaluation and try and predict the Rings attribute.
+
+149
+00:18:35,440 --> 00:18:41,040
+Here we observe the results. These are the estimated β parameters and below we
+
+150
+00:18:41,040 --> 00:18:47,680
+see the error measures. The question here is can, we improve this result.
+
+151
+00:18:48,800 --> 00:18:54,400
+One idea is to apply regularization, however before applying regularization,
+
+152
+00:18:55,040 --> 00:19:00,480
+we should normalize the data since ridge regression is not invariant to scale.
+
+153
+00:19:01,840 --> 00:19:09,840
+This can be done in the preprocess tab by selecting the normalization filter.
+
+154
+00:19:21,040 --> 00:19:29,760
+Note that except for the nominal attributes and the output attribute
+
+155
+00:19:32,880 --> 00:19:37,840
+each of the other attributes has been normalized to a range within 0 & 1.
+
+156
+00:19:39,760 --> 00:19:41,360
+Now we can try ridge regression.
+
+157
+00:19:45,440 --> 00:19:51,840
+Let us start with a value of 0.5.
+
+158
+00:19:56,800 --> 00:20:02,000
+However to compare this result we should apply linear regression on the normalized
+
+159
+00:20:02,000 --> 00:20:06,240
+data. So we will run linear regression again with ridge parameter set to zero.
+
+160
+00:20:10,560 --> 00:20:12,640
+Here we have the result of running
+
+161
+00:20:13,600 --> 00:20:19,840
+linear regression with regularization parameter set to zero on the normalized data.
+
+162
+00:20:22,160 --> 00:20:26,880
+Looking at the β parameters as well as the error values we notice some slight changes.
+
+163
+00:20:29,360 --> 00:20:36,800
+Especially if we look at the β parameters for some of the attributes we see that in the result for
+
+164
+00:20:38,320 --> 00:20:41,120
+rigid regression the parameter values have shrunk
+
+165
+00:20:42,800 --> 00:20:50,800
+this is understandable, since in ridge regression we are adding a penalty term ways to are on the
+
+166
+00:20:50,800 --> 00:21:01,840
+magnitude of the parameters. We can also observe a slight change in the erro terms.
+
+167
+00:21:03,360 --> 00:21:06,880
+By trying out different values of the regularization parameter, we can
+
+168
+00:21:06,880 --> 00:21:12,480
+attempt to improve on the performance. However trying out parameters manually is not feasible
+
+169
+00:21:13,280 --> 00:21:29,840
+for this. We will use a meta learning algorithm called CV parameter selection.
+
+170
+00:21:32,240 --> 00:21:37,520
+Essentially CV parameter selection will take as input a learning algorithm, a parameter of
+
+171
+00:21:37,520 --> 00:21:44,800
+that algorithm and a range of values to try out for that parameter. Let us specify this,
+
+172
+00:21:45,920 --> 00:21:49,600
+so first we select the algorithm which is linear regression.
+
+173
+00:21:55,520 --> 00:22:05,120
+We set its parameters. Notice that the regularization parameter is specified with the
+
+174
+00:22:05,120 --> 00:22:12,960
+letter R. So this will allow us to specify the regularization parameter along with the range.
+
+175
+00:22:12,960 --> 00:22:28,400
+So let us say we want to vary the regulation parameter between 0 and let us say 5 in 50 steps.
+
+176
+00:22:37,120 --> 00:22:42,800
+We stick with the same cross-validation evaluation and execute.
+
+177
+00:22:49,440 --> 00:22:54,720
+The result of the execution of the meta learning algorithm shows the optimal
+
+178
+00:22:54,720 --> 00:23:02,080
+value of the regularization parameter as follows subject to the range constraints provided by us.
+
+179
+00:23:04,000 --> 00:23:07,840
+The β parameters and the corresponding error measures are shown here.
+
+180
+00:23:09,200 --> 00:23:13,520
+Comparing this result with the results of the previous two executions,
+
+181
+00:23:15,920 --> 00:23:21,840
+where the regularization parameter was set to 0 and 0.5,
+
+182
+00:23:24,400 --> 00:23:27,280
+we see that there are small changes but not nothing drastic.
+
+183
+00:23:29,360 --> 00:23:33,920
+This seems to suggest that regulation does not seem to have much effect
+
+184
+00:23:33,920 --> 00:23:38,320
+on this model or perhaps that we have not found the right range of parameters.
+
+185
+00:23:40,640 --> 00:23:50,240
+In case of the latter we can run the meta learning algorithm again and specify a larger range.
+
+186
+00:23:50,240 --> 00:23:54,560
+One very useful technique when searching for the optimal parameters
+
+187
+00:23:54,560 --> 00:24:01,280
+for any learning algorithm is to start with a large range and the large step size. This
+
+188
+00:24:01,280 --> 00:24:08,080
+initial step performs a coarse-grained search over the range of parameter values.
+
+189
+00:24:09,120 --> 00:24:14,000
+Next we perform a fine-grained search in the vicinity of the value which gave the
+
+190
+00:24:14,000 --> 00:24:20,480
+best results in the previous step. That is we restrict the range but decrease the step size.
+
+191
+00:24:22,160 --> 00:24:26,880
+We can leave it to you to apply these two-stage parameters search on this data set
+
+192
+00:24:29,840 --> 00:24:36,880
+this concludes the tutorial on Weka. We hope that people encountering Weka for the first time will
+
+193
+00:24:36,880 --> 00:24:43,200
+feel a really comfortable with the basic features of the software. In this tutorial we covered most
+
+194
+00:24:43,200 --> 00:24:47,200
+of the concepts which will be required for the first set of programming assignment questions.
+
+195
+00:24:48,800 --> 00:24:55,440
+In future assignments we will simply mention the algorithms that need to be used and expect you
+
+196
+00:24:55,440 --> 00:25:00,880
+to apply them on the datasets supplied using Welka. We also encourage you to explore the
+
+197
+00:25:01,520 --> 00:25:07,200
+algorithms provided in the package as and when we cover them and related one in class.
+
+198
+00:25:08,480 --> 00:25:12,240
+For this the UCI machine learning repository is a very good source for
+
+199
+00:25:12,240 --> 00:25:20,640
+data sets that can be used for all kinds of learning experiments.

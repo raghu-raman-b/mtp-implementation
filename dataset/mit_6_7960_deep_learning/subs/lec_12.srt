@@ -1,0 +1,6339 @@
+1
+00:00:00,500 --> 00:00:02,500
+[SQUEAKING]
+
+2
+00:00:02,500 --> 00:00:04,500
+[RUSTLING]
+
+3
+00:00:04,500 --> 00:00:06,500
+[CLICKING]
+
+4
+00:00:13,000 --> 00:00:16,160
+SARA BEERY: I hope everyone is having a good fall.
+
+5
+00:00:16,160 --> 00:00:18,980
+I don't know if any of all of you noticed,
+
+6
+00:00:18,980 --> 00:00:22,580
+but it started to be really cold today for the first time.
+
+7
+00:00:22,580 --> 00:00:27,880
+And I went outside, and I was like, it begins.
+
+8
+00:00:27,880 --> 00:00:32,680
+So today, we're going to be continuing our series digging
+
+9
+00:00:32,680 --> 00:00:34,600
+into representation learning.
+
+10
+00:00:34,600 --> 00:00:36,360
+And specifically, I'm going to be
+
+11
+00:00:36,360 --> 00:00:40,320
+introducing the concept of similarity-based representation
+
+12
+00:00:40,320 --> 00:00:41,360
+learning.
+
+13
+00:00:41,360 --> 00:00:46,160
+So to start with a high-level roadmap,
+
+14
+00:00:46,160 --> 00:00:48,720
+today, we're going to be talking about why
+
+15
+00:00:48,720 --> 00:00:51,520
+we want to think about learning representations, why learning
+
+16
+00:00:51,520 --> 00:00:56,960
+representations is a good thing, try to get a sense of what makes
+
+17
+00:00:56,960 --> 00:01:00,030
+a good representation both qualitatively
+
+18
+00:01:00,030 --> 00:01:02,930
+but also exploring some dimensions of quantitatively
+
+19
+00:01:02,930 --> 00:01:05,050
+what might make a good representation.
+
+20
+00:01:05,050 --> 00:01:08,330
+We'll introduce the concept of metric learning.
+
+21
+00:01:08,330 --> 00:01:11,250
+And then we'll dig into contrastive representation
+
+22
+00:01:11,250 --> 00:01:14,490
+learning, which is essentially different creative ways
+
+23
+00:01:14,490 --> 00:01:18,130
+to self-supervise the idea of building a metric space
+
+24
+00:01:18,130 --> 00:01:20,150
+or using metric learning.
+
+25
+00:01:20,150 --> 00:01:22,470
+And we'll talk about what contrastive learning does,
+
+26
+00:01:22,470 --> 00:01:24,090
+and then some of the different potential models
+
+27
+00:01:24,090 --> 00:01:25,710
+that are using contrastive learning.
+
+28
+00:01:25,710 --> 00:01:30,290
+This is a pretty important point throughout this entire course
+
+29
+00:01:30,290 --> 00:01:33,170
+because it turns out that many of our modern architectures
+
+30
+00:01:33,170 --> 00:01:36,370
+are built on top of some form, or some component
+
+31
+00:01:36,370 --> 00:01:41,810
+of contrastive learning and contrastive representations.
+
+32
+00:01:41,810 --> 00:01:46,610
+So why learn representations?
+
+33
+00:01:46,610 --> 00:01:48,850
+What are some reasons why we might
+
+34
+00:01:48,850 --> 00:01:51,190
+want to learn a representation of data?
+
+35
+00:01:56,490 --> 00:01:57,320
+Yeah, over there.
+
+36
+00:01:57,320 --> 00:01:58,820
+AUDIENCE: Use it for any many tasks.
+
+37
+00:01:58,820 --> 00:02:01,340
+SARA BEERY: We can use it for many tasks, the idea
+
+38
+00:02:01,340 --> 00:02:05,460
+that maybe some representation of data is broadly useful.
+
+39
+00:02:05,460 --> 00:02:06,640
+Anything else?
+
+40
+00:02:09,940 --> 00:02:10,580
+Yeah?
+
+41
+00:02:10,580 --> 00:02:11,927
+AUDIENCE: Maybe more compact.
+
+42
+00:02:11,927 --> 00:02:13,760
+SARA BEERY: It might be more compact, right.
+
+43
+00:02:13,760 --> 00:02:15,340
+It might be more efficient to work
+
+44
+00:02:15,340 --> 00:02:17,300
+with some representation of data rather
+
+45
+00:02:17,300 --> 00:02:20,055
+than the original data itself, though,
+
+46
+00:02:20,055 --> 00:02:21,180
+of course, that's a choice.
+
+47
+00:02:21,180 --> 00:02:23,097
+You can actually build a representation that's
+
+48
+00:02:23,097 --> 00:02:25,300
+larger than your data input.
+
+49
+00:02:25,300 --> 00:02:25,960
+Anyone else?
+
+50
+00:02:25,960 --> 00:02:28,260
+What else makes it-- yeah, in the back?
+
+51
+00:02:28,260 --> 00:02:29,565
+AUDIENCE: Generalization.
+
+52
+00:02:29,565 --> 00:02:31,440
+SARA BEERY: To improve generalization, right.
+
+53
+00:02:31,440 --> 00:02:35,660
+We might want representations that actually are capturing
+
+54
+00:02:35,660 --> 00:02:38,020
+some semantic meaning or some important components
+
+55
+00:02:38,020 --> 00:02:40,220
+of the things we're trying to identify
+
+56
+00:02:40,220 --> 00:02:42,740
+that will generalize well.
+
+57
+00:02:42,740 --> 00:02:45,733
+So I mean, yes, to improve generalization--
+
+58
+00:02:45,733 --> 00:02:48,400
+I'm going to trust you that you weren't just reading the slides,
+
+59
+00:02:48,400 --> 00:02:51,700
+but power to you if you were--
+
+60
+00:02:51,700 --> 00:02:54,400
+to do more learning things, like transfer learning.
+
+61
+00:02:54,400 --> 00:02:57,990
+So often, we talk about this is that first point about working
+
+62
+00:02:57,990 --> 00:02:59,310
+for many different tasks.
+
+63
+00:02:59,310 --> 00:03:02,710
+We build some representation that then is more easily
+
+64
+00:03:02,710 --> 00:03:05,910
+finetuned in a way that actually gives us something that's
+
+65
+00:03:05,910 --> 00:03:09,550
+useful, maybe requiring less training data in that finetuning
+
+66
+00:03:09,550 --> 00:03:11,310
+step.
+
+67
+00:03:11,310 --> 00:03:13,750
+And then another version is actually maybe
+
+68
+00:03:13,750 --> 00:03:16,830
+to exploit something like geometric similarity
+
+69
+00:03:16,830 --> 00:03:18,470
+for new data or queries.
+
+70
+00:03:18,470 --> 00:03:20,530
+So what does geometric similarity mean?
+
+71
+00:03:20,530 --> 00:03:24,190
+Well, one thing might have we seen the face of this person
+
+72
+00:03:24,190 --> 00:03:26,050
+before, or is it new?
+
+73
+00:03:26,050 --> 00:03:29,110
+There's actually something physical and structural
+
+74
+00:03:29,110 --> 00:03:33,590
+about our face that should be similar, regardless of maybe
+
+75
+00:03:33,590 --> 00:03:37,150
+the lighting, the pose, the orientation.
+
+76
+00:03:37,150 --> 00:03:40,070
+Or another version of something like geometric similarity
+
+77
+00:03:40,070 --> 00:03:42,270
+might be in retrieval.
+
+78
+00:03:42,270 --> 00:03:43,750
+Can you build representations that
+
+79
+00:03:43,750 --> 00:03:48,290
+let you find items similar to a given query?
+
+80
+00:03:48,290 --> 00:03:51,410
+So if I say, hey, here's something I just found,
+
+81
+00:03:51,410 --> 00:03:54,050
+have we ever seen something similar to this before?
+
+82
+00:03:56,680 --> 00:04:00,600
+Another example might be trying to do something improve
+
+83
+00:04:00,600 --> 00:04:04,280
+clustering with side information, something
+
+84
+00:04:04,280 --> 00:04:08,920
+about what makes pairs similar or dissimilar.
+
+85
+00:04:08,920 --> 00:04:11,980
+And then, possibly, we want to do dimensionality reduction--
+
+86
+00:04:11,980 --> 00:04:12,480
+exactly.
+
+87
+00:04:12,480 --> 00:04:14,800
+Can we actually make our--
+
+88
+00:04:14,800 --> 00:04:18,079
+can we store this information in a much more compact way?
+
+89
+00:04:18,079 --> 00:04:20,360
+And we can often do dimensionality reduction
+
+90
+00:04:20,360 --> 00:04:24,000
+in ways that are fundamentally unsupervised.
+
+91
+00:04:24,000 --> 00:04:26,800
+So what are some of the things we might expect
+
+92
+00:04:26,800 --> 00:04:28,180
+from such representations?
+
+93
+00:04:28,180 --> 00:04:30,180
+What makes a representation good?
+
+94
+00:04:35,320 --> 00:04:36,080
+Yeah?
+
+95
+00:04:36,080 --> 00:04:40,240
+AUDIENCE: It should map objects in your higher dimensional space
+
+96
+00:04:40,240 --> 00:04:43,280
+that are similar in semantic representation
+
+97
+00:04:43,280 --> 00:04:47,480
+to the very close point in your embedding space.
+
+98
+00:04:47,480 --> 00:04:50,200
+SARA BEERY: Yeah, so the idea that objects
+
+99
+00:04:50,200 --> 00:04:51,760
+that are semantically similar, we
+
+100
+00:04:51,760 --> 00:04:54,860
+actually want them to be really close together
+
+101
+00:04:54,860 --> 00:04:56,660
+in that representation space.
+
+102
+00:04:56,660 --> 00:04:58,647
+We want them to be close together.
+
+103
+00:04:58,647 --> 00:05:00,480
+Why would we want them to be close together?
+
+104
+00:05:00,480 --> 00:05:02,140
+What does that do?
+
+105
+00:05:02,140 --> 00:05:03,580
+Yeah?
+
+106
+00:05:03,580 --> 00:05:05,920
+AUDIENCE: Helps us reject disturbances and noise,
+
+107
+00:05:05,920 --> 00:05:06,803
+potentially.
+
+108
+00:05:06,803 --> 00:05:08,220
+SARA BEERY: Yeah, it might help us
+
+109
+00:05:08,220 --> 00:05:10,980
+be robust to things like disturbances and noise
+
+110
+00:05:10,980 --> 00:05:12,900
+if you move a little bit in any direction,
+
+111
+00:05:12,900 --> 00:05:15,940
+if you're not moving of far away from things
+
+112
+00:05:15,940 --> 00:05:18,380
+that same semantic category.
+
+113
+00:05:18,380 --> 00:05:20,100
+Why else might we want things that are
+
+114
+00:05:20,100 --> 00:05:22,340
+similar to be close together?
+
+115
+00:05:22,340 --> 00:05:23,660
+Yeah, sure?
+
+116
+00:05:23,660 --> 00:05:25,360
+AUDIENCE: [INAUDIBLE] the answer,
+
+117
+00:05:25,360 --> 00:05:27,020
+but one reason might be that if you
+
+118
+00:05:27,020 --> 00:05:30,620
+think of a downstream function which takes the embeddings,
+
+119
+00:05:30,620 --> 00:05:33,500
+but then logically, if I'm trying
+
+120
+00:05:33,500 --> 00:05:37,040
+to compute some feature of two inputs which are very similar,
+
+121
+00:05:37,040 --> 00:05:40,300
+there's a good chance that I want f of x and f
+
+122
+00:05:40,300 --> 00:05:44,500
+of x plus epsilon to have very similar y values.
+
+123
+00:05:44,500 --> 00:05:47,500
+SARA BEERY: Yeah, so what you said was basically
+
+124
+00:05:47,500 --> 00:05:50,620
+we might want the downstream mapping of this embedding
+
+125
+00:05:50,620 --> 00:05:53,670
+space to some maybe categorization
+
+126
+00:05:53,670 --> 00:05:56,190
+to be kind of robust, to change, and to map things
+
+127
+00:05:56,190 --> 00:05:58,495
+easily from one space to another.
+
+128
+00:05:58,495 --> 00:05:59,870
+Actually, there's a different way
+
+129
+00:05:59,870 --> 00:06:03,750
+to say that, which is basically it's useful if the space is
+
+130
+00:06:03,750 --> 00:06:05,070
+linearly separable.
+
+131
+00:06:05,070 --> 00:06:07,190
+It's a very easy function, if you
+
+132
+00:06:07,190 --> 00:06:10,085
+want to learn categorization, if different objects that
+
+133
+00:06:10,085 --> 00:06:12,710
+are the same are close together, and objects that are different
+
+134
+00:06:12,710 --> 00:06:14,670
+are not close together because then you
+
+135
+00:06:14,670 --> 00:06:16,050
+just draw lines between things.
+
+136
+00:06:16,050 --> 00:06:18,310
+It's a very easy categorization problem.
+
+137
+00:06:18,310 --> 00:06:24,790
+So a well-separated space is also potentially quite useful.
+
+138
+00:06:24,790 --> 00:06:29,550
+So Goodfellow, back in 2016, said that, "generally speaking,
+
+139
+00:06:29,550 --> 00:06:33,150
+a good representation is one that makes a subsequent learning
+
+140
+00:06:33,150 --> 00:06:34,410
+task easier."
+
+141
+00:06:34,410 --> 00:06:36,590
+That's exactly what you were trying to get at.
+
+142
+00:06:36,590 --> 00:06:38,150
+And so what could that mean?
+
+143
+00:06:38,150 --> 00:06:40,030
+What is a good representation?
+
+144
+00:06:40,030 --> 00:06:43,750
+So one framing of this is explicitly
+
+145
+00:06:43,750 --> 00:06:45,750
+what we were just trying to capture.
+
+146
+00:06:45,750 --> 00:06:48,710
+A good representation is both compact,
+
+147
+00:06:48,710 --> 00:06:53,460
+which means it's not too big.
+
+148
+00:06:53,460 --> 00:06:57,400
+We don't want to have more capacity than we actually need.
+
+149
+00:06:57,400 --> 00:06:59,620
+This is getting at that efficiency angle.
+
+150
+00:06:59,620 --> 00:07:02,640
+You can take in information theoretic perspective
+
+151
+00:07:02,640 --> 00:07:04,920
+here and think about we want to keep
+
+152
+00:07:04,920 --> 00:07:07,960
+the minimal amount of information,
+
+153
+00:07:07,960 --> 00:07:11,600
+but we also need it to be what we call explanatory.
+
+154
+00:07:11,600 --> 00:07:14,880
+So that means that it's somehow sufficient to capture
+
+155
+00:07:14,880 --> 00:07:18,320
+the dimensions that matter in our original data.
+
+156
+00:07:18,320 --> 00:07:20,640
+And the really interesting part here
+
+157
+00:07:20,640 --> 00:07:24,040
+is that of course this is going to be contextually related
+
+158
+00:07:24,040 --> 00:07:26,000
+to the set of downstream tasks we might
+
+159
+00:07:26,000 --> 00:07:28,240
+be interested in because something that
+
+160
+00:07:28,240 --> 00:07:31,400
+is sufficient to be explanatory for one possible thing
+
+161
+00:07:31,400 --> 00:07:34,320
+might be insufficient for another.
+
+162
+00:07:34,320 --> 00:07:37,280
+And so a good representation, ideally,
+
+163
+00:07:37,280 --> 00:07:41,120
+would be something that is kind of compact and explanatory
+
+164
+00:07:41,120 --> 00:07:42,720
+in a way that makes it generalize
+
+165
+00:07:42,720 --> 00:07:45,640
+to many possible downstream tasks.
+
+166
+00:07:45,640 --> 00:07:50,730
+So back in 2020, there was this work
+
+167
+00:07:50,730 --> 00:07:54,010
+that tried to pose specifically the question of not
+
+168
+00:07:54,010 --> 00:07:56,590
+what makes a good categorizer, but actually,
+
+169
+00:07:56,590 --> 00:08:01,970
+can we build complexity measures that accurately predict
+
+170
+00:08:01,970 --> 00:08:03,433
+the generalization of models?
+
+171
+00:08:03,433 --> 00:08:04,850
+Can you build a complexity measure
+
+172
+00:08:04,850 --> 00:08:07,290
+over a representation that will predict
+
+173
+00:08:07,290 --> 00:08:11,610
+how well that representation will generalize?
+
+174
+00:08:11,610 --> 00:08:15,010
+And it turned out that a couple of winning strategies for this
+
+175
+00:08:15,010 --> 00:08:19,670
+specifically looked at both the geometry of the representation,
+
+176
+00:08:19,670 --> 00:08:23,390
+so that consistency and separation, how tight together,
+
+177
+00:08:23,390 --> 00:08:25,850
+how close together were things that were the same, how
+
+178
+00:08:25,850 --> 00:08:28,130
+far apart were things that were different,
+
+179
+00:08:28,130 --> 00:08:30,830
+but also robustness to perturbations.
+
+180
+00:08:30,830 --> 00:08:34,370
+So if you move a little bit in any dimension or any direction,
+
+181
+00:08:34,370 --> 00:08:37,049
+do you actually change something fundamental
+
+182
+00:08:37,049 --> 00:08:39,409
+about the representation?
+
+183
+00:08:39,409 --> 00:08:43,450
+And this really maps quite well, I
+
+184
+00:08:43,450 --> 00:08:45,850
+think, to some of our own intuition
+
+185
+00:08:45,850 --> 00:08:48,530
+about what might make something easy to learn.
+
+186
+00:08:48,530 --> 00:08:51,060
+And if you look at this specifically on something
+
+187
+00:08:51,060 --> 00:08:56,460
+like CIFAR, CIFAR-10, which is a very low dimensional image
+
+188
+00:08:56,460 --> 00:09:00,340
+categorization problem where all of the images are very, very low
+
+189
+00:09:00,340 --> 00:09:05,020
+resolution and small, and the categories are simple.
+
+190
+00:09:05,020 --> 00:09:09,220
+If you train a classifier on CIFAR-10 with the correct
+
+191
+00:09:09,220 --> 00:09:14,540
+labels, and then you look at a t-SNE visualization
+
+192
+00:09:14,540 --> 00:09:16,608
+of the representations on the training data--
+
+193
+00:09:16,608 --> 00:09:18,900
+so this is the data that we've actually already trained
+
+194
+00:09:18,900 --> 00:09:20,100
+the models on--
+
+195
+00:09:20,100 --> 00:09:22,100
+what you see is it learns to build
+
+196
+00:09:22,100 --> 00:09:28,320
+a very consistent and separable training space.
+
+197
+00:09:28,320 --> 00:09:30,723
+The categories here are the same color.
+
+198
+00:09:30,723 --> 00:09:32,140
+And so you can see the things that
+
+199
+00:09:32,140 --> 00:09:34,040
+are the same color are very close together
+
+200
+00:09:34,040 --> 00:09:36,300
+and they're very well-separated from everything else.
+
+201
+00:09:36,300 --> 00:09:38,540
+And, interestingly, they're somewhat uniformly
+
+202
+00:09:38,540 --> 00:09:39,627
+distributed in this space.
+
+203
+00:09:39,627 --> 00:09:41,460
+And we'll actually talk later in the lecture
+
+204
+00:09:41,460 --> 00:09:44,740
+about this other dimension of distribution
+
+205
+00:09:44,740 --> 00:09:46,860
+throughout the space.
+
+206
+00:09:46,860 --> 00:09:52,590
+Now, if you take the same model and you randomly
+
+207
+00:09:52,590 --> 00:09:54,750
+generate the labels on that training data,
+
+208
+00:09:54,750 --> 00:09:57,990
+and then you train a model to recognize what are now
+
+209
+00:09:57,990 --> 00:10:00,230
+basically random noise, you still
+
+210
+00:10:00,230 --> 00:10:03,970
+will get clusters because the model can learn to memorize.
+
+211
+00:10:03,970 --> 00:10:07,850
+But what you see is that those clusters are much less concise.
+
+212
+00:10:07,850 --> 00:10:10,510
+They're much less compact.
+
+213
+00:10:10,510 --> 00:10:13,550
+The colors that are the same color
+
+214
+00:10:13,550 --> 00:10:15,910
+are more spread out in the space.
+
+215
+00:10:15,910 --> 00:10:18,432
+And they are much less separable.
+
+216
+00:10:18,432 --> 00:10:20,390
+So you can imagine that this would be much less
+
+217
+00:10:20,390 --> 00:10:23,770
+robust to perturbation because if you change in some direction,
+
+218
+00:10:23,770 --> 00:10:28,510
+you're pretty quickly moving into another color, let's say.
+
+219
+00:10:28,510 --> 00:10:32,470
+So this is really capturing that something
+
+220
+00:10:32,470 --> 00:10:35,430
+that generalizes versus something that can't generalize
+
+221
+00:10:35,430 --> 00:10:37,890
+will have this concentration or this consistency.
+
+222
+00:10:37,890 --> 00:10:39,990
+Data from the same classes close together
+
+223
+00:10:39,990 --> 00:10:43,490
+and separation classes are well-separated and robustness.
+
+224
+00:10:43,490 --> 00:10:45,570
+If you move a little bit in any direction,
+
+225
+00:10:45,570 --> 00:10:47,280
+you're not crossing what we might
+
+226
+00:10:47,280 --> 00:10:50,760
+call a class boundary if you train a downstream classifier
+
+227
+00:10:50,760 --> 00:10:53,680
+on this.
+
+228
+00:10:53,680 --> 00:10:57,360
+So what makes a good representation?
+
+229
+00:10:57,360 --> 00:10:59,160
+You want it to be compact.
+
+230
+00:10:59,160 --> 00:11:01,440
+We want it to be explanatory.
+
+231
+00:11:01,440 --> 00:11:04,600
+We want to have concentration, data from the same classes
+
+232
+00:11:04,600 --> 00:11:05,500
+close together.
+
+233
+00:11:05,500 --> 00:11:06,760
+We want to have separation.
+
+234
+00:11:06,760 --> 00:11:08,400
+Classes are well separated.
+
+235
+00:11:08,400 --> 00:11:12,500
+And we want to have robustness to irrelevant perturbations,
+
+236
+00:11:12,500 --> 00:11:15,700
+perturbations that we would not want to cross a class boundary.
+
+237
+00:11:15,700 --> 00:11:18,880
+So a nice example of this-- and we'll get into this later--
+
+238
+00:11:18,880 --> 00:11:22,160
+but if you saw me from this angle,
+
+239
+00:11:22,160 --> 00:11:25,860
+you'd want to be robust to me looking the other direction.
+
+240
+00:11:25,860 --> 00:11:26,960
+It's still Sarah.
+
+241
+00:11:26,960 --> 00:11:29,340
+It's not, somehow, a completely different class.
+
+242
+00:11:29,340 --> 00:11:32,560
+So you might want to be robust to a perturbation that's
+
+243
+00:11:32,560 --> 00:11:34,760
+something like pose.
+
+244
+00:11:34,760 --> 00:11:37,240
+So how could we encourage a model
+
+245
+00:11:37,240 --> 00:11:39,520
+during training to actually achieve
+
+246
+00:11:39,520 --> 00:11:43,360
+this type of representation?
+
+247
+00:11:43,360 --> 00:11:49,810
+So one of the kind of high-level ideas
+
+248
+00:11:49,810 --> 00:11:53,190
+that really has had a lot of traction
+
+249
+00:11:53,190 --> 00:11:55,490
+here is the idea of explicitly encouraging
+
+250
+00:11:55,490 --> 00:11:58,610
+good representations via feedback in terms
+
+251
+00:11:58,610 --> 00:12:01,610
+of the similarity of data.
+
+252
+00:12:01,610 --> 00:12:04,670
+So you have pairs of either similar or dissimilar inputs.
+
+253
+00:12:04,670 --> 00:12:07,130
+You're not just looking at one example at a time.
+
+254
+00:12:07,130 --> 00:12:10,010
+You're actually looking at two or maybe three examples
+
+255
+00:12:10,010 --> 00:12:11,810
+and giving information to the model
+
+256
+00:12:11,810 --> 00:12:15,130
+about what should be similar and what should be dissimilar.
+
+257
+00:12:15,130 --> 00:12:17,090
+So why might this be different than just
+
+258
+00:12:17,090 --> 00:12:18,470
+looking at one image at a time?
+
+259
+00:12:18,470 --> 00:12:20,470
+So there's actually a really nice example,
+
+260
+00:12:20,470 --> 00:12:23,250
+I think, from psychology about the value
+
+261
+00:12:23,250 --> 00:12:26,370
+of this contextualization or this comparison.
+
+262
+00:12:26,370 --> 00:12:30,050
+So tell me what an elephant looks like.
+
+263
+00:12:30,050 --> 00:12:32,010
+Describe an elephant to me.
+
+264
+00:12:32,010 --> 00:12:37,807
+AUDIENCE: Very big, very bulky, and huge-sized.
+
+265
+00:12:37,807 --> 00:12:39,890
+SARA BEERY: OK, very big and bulky and huge-sized.
+
+266
+00:12:39,890 --> 00:12:40,930
+AUDIENCE: Large ears.
+
+267
+00:12:40,930 --> 00:12:43,330
+SARA BEERY: Large ears, OK.
+
+268
+00:12:43,330 --> 00:12:45,860
+Anything else?
+
+269
+00:12:45,860 --> 00:12:47,680
+AUDIENCE: I think it has also--
+
+270
+00:12:50,420 --> 00:12:53,120
+yeah, I think I'd also like something in the front of it.
+
+271
+00:12:53,120 --> 00:12:57,640
+SARA BEERY: Like some big nose, trunk.
+
+272
+00:12:57,640 --> 00:13:01,820
+So now if you knew nothing about elephants,
+
+273
+00:13:01,820 --> 00:13:04,740
+you could draw almost an infinite set
+
+274
+00:13:04,740 --> 00:13:08,300
+of things that might have those characteristics.
+
+275
+00:13:08,300 --> 00:13:12,400
+And probably none of them would look very close to an elephant.
+
+276
+00:13:12,400 --> 00:13:17,580
+So now you, in the front row, or in the second row,
+
+277
+00:13:17,580 --> 00:13:22,660
+you, pretend I already know what a rhinoceros looks like.
+
+278
+00:13:22,660 --> 00:13:25,720
+Now try to describe what an elephant looks like to me.
+
+279
+00:13:30,420 --> 00:13:32,348
+AUDIENCE: Instead of a trunk, it has a horn.
+
+280
+00:13:32,348 --> 00:13:34,640
+SARA BEERY: OK, so I know what a rhinoceros looks like.
+
+281
+00:13:34,640 --> 00:13:36,540
+So now you're saying, OK, instead
+
+282
+00:13:36,540 --> 00:13:38,840
+of having a horn in the front, take a rhinoceros,
+
+283
+00:13:38,840 --> 00:13:44,230
+but add a long trunk, and then maybe add some big ears.
+
+284
+00:13:44,230 --> 00:13:47,190
+I'm actually probably much more likely to have an understanding
+
+285
+00:13:47,190 --> 00:13:50,750
+of what that thing is because I understand similarity and then
+
+286
+00:13:50,750 --> 00:13:52,870
+these small contrastive differences.
+
+287
+00:13:52,870 --> 00:13:55,790
+And I actually think this is a really nice, intuitive example
+
+288
+00:13:55,790 --> 00:13:58,710
+of how we think about contrastive learning
+
+289
+00:13:58,710 --> 00:14:01,270
+and why this type of contrastive signal is so valuable.
+
+290
+00:14:01,270 --> 00:14:03,510
+And I actually think, interestingly enough, I
+
+291
+00:14:03,510 --> 00:14:05,030
+work a lot with species.
+
+292
+00:14:05,030 --> 00:14:07,990
+One of the ways that we train people in identifying species
+
+293
+00:14:07,990 --> 00:14:10,190
+is almost always contrastively.
+
+294
+00:14:10,190 --> 00:14:12,710
+If I'm teaching you how to identify two different types
+
+295
+00:14:12,710 --> 00:14:15,490
+of birds, I'm not going to say, oh,
+
+296
+00:14:15,490 --> 00:14:17,510
+I'm going to describe this one from scratch
+
+297
+00:14:17,510 --> 00:14:20,570
+with this massive, exhaustive list of independent attributes.
+
+298
+00:14:20,570 --> 00:14:23,290
+I'll say it looks a lot like this other bird,
+
+299
+00:14:23,290 --> 00:14:26,070
+but the important differences are the spot near the eye
+
+300
+00:14:26,070 --> 00:14:27,490
+and the color of the legs.
+
+301
+00:14:27,490 --> 00:14:32,110
+It's this comparative difference.
+
+302
+00:14:32,110 --> 00:14:36,830
+So the way that we actually try to train things
+
+303
+00:14:36,830 --> 00:14:39,950
+based on similarity and dissimilarity,
+
+304
+00:14:39,950 --> 00:14:43,050
+the original proposed approach was this thing
+
+305
+00:14:43,050 --> 00:14:45,050
+called metric learning.
+
+306
+00:14:45,050 --> 00:14:47,450
+And essentially, this was based on the idea
+
+307
+00:14:47,450 --> 00:14:50,090
+that measuring Euclidean distance in your input data
+
+308
+00:14:50,090 --> 00:14:50,590
+space.
+
+309
+00:14:50,590 --> 00:14:52,570
+So for example, looking at Euclidean distance
+
+310
+00:14:52,570 --> 00:14:55,050
+between all the pixels in one image and another
+
+311
+00:14:55,050 --> 00:14:57,130
+might not be ideal.
+
+312
+00:14:57,130 --> 00:15:00,970
+Instead, we might want to learn some metric, some representation
+
+313
+00:15:00,970 --> 00:15:03,810
+that respects some desired properties.
+
+314
+00:15:03,810 --> 00:15:06,450
+And so our goal is to learn a metric where data points that
+
+315
+00:15:06,450 --> 00:15:08,713
+belong together are similar, close together,
+
+316
+00:15:08,713 --> 00:15:10,130
+and data points that are different
+
+317
+00:15:10,130 --> 00:15:12,050
+are dissimilar far apart.
+
+318
+00:15:12,050 --> 00:15:15,290
+And then the supervision becomes similarity information.
+
+319
+00:15:15,290 --> 00:15:19,970
+So for example, maybe you'd have three images
+
+320
+00:15:19,970 --> 00:15:23,850
+of your instructors, and you would want to explicitly say
+
+321
+00:15:23,850 --> 00:15:26,210
+that the two images of Phil should
+
+322
+00:15:26,210 --> 00:15:28,490
+be closer together because they're both Phil,
+
+323
+00:15:28,490 --> 00:15:33,650
+and the image of me would be far apart because I'm not Phil.
+
+324
+00:15:33,650 --> 00:15:36,370
+And so, actually, how do we do this?
+
+325
+00:15:36,370 --> 00:15:38,810
+So the very, very simple version,
+
+326
+00:15:38,810 --> 00:15:42,740
+which is just in one-dimensional space, let's assume.
+
+327
+00:15:42,740 --> 00:15:46,060
+Say you have some data points x1 through xn,
+
+328
+00:15:46,060 --> 00:15:49,340
+and you have some form of supervision.
+
+329
+00:15:49,340 --> 00:15:51,220
+And this supervision is not exactly
+
+330
+00:15:51,220 --> 00:15:54,060
+the distances between things or how similar or dissimilar
+
+331
+00:15:54,060 --> 00:15:54,860
+there are.
+
+332
+00:15:54,860 --> 00:15:56,660
+We just have supervision in terms
+
+333
+00:15:56,660 --> 00:15:59,300
+of which pairs are in the same category
+
+334
+00:15:59,300 --> 00:16:01,900
+and which pairs are in different categories.
+
+335
+00:16:01,900 --> 00:16:03,900
+So we have some set of similar pairs
+
+336
+00:16:03,900 --> 00:16:05,980
+and some set of dissimilar pairs.
+
+337
+00:16:05,980 --> 00:16:08,580
+And our goal is to learn a linear transformation,
+
+338
+00:16:08,580 --> 00:16:10,740
+z equals Wx.
+
+339
+00:16:10,740 --> 00:16:14,300
+So essentially, we're trying to learn this matrix W that
+
+340
+00:16:14,300 --> 00:16:17,500
+will respect this similarity.
+
+341
+00:16:17,500 --> 00:16:20,340
+And so the idea here is that we can use Euclidean distance
+
+342
+00:16:20,340 --> 00:16:22,620
+in representation space.
+
+343
+00:16:22,620 --> 00:16:25,780
+And so now if we map out, OK, we want
+
+344
+00:16:25,780 --> 00:16:30,340
+the distance between zi and xj to be equal to,
+
+345
+00:16:30,340 --> 00:16:34,820
+factored out, the difference in terms of xi and xj
+
+346
+00:16:34,820 --> 00:16:38,600
+transpose W transpose W the difference between xi and xj.
+
+347
+00:16:38,600 --> 00:16:41,390
+We're were just taking that norm and factoring it out.
+
+348
+00:16:41,390 --> 00:16:46,990
+Then you can define, basically, this A norm on xi and xj
+
+349
+00:16:46,990 --> 00:16:51,590
+that will be W transpose W, which is a positive semidefinite
+
+350
+00:16:51,590 --> 00:16:52,790
+matrix.
+
+351
+00:16:52,790 --> 00:16:54,830
+We like positive semidefinite matrices
+
+352
+00:16:54,830 --> 00:16:57,630
+because they're easy to work with mathematically.
+
+353
+00:16:57,630 --> 00:17:00,790
+And so this distance here actually
+
+354
+00:17:00,790 --> 00:17:04,710
+is explicitly defined as the Mahalanobis distance.
+
+355
+00:17:04,710 --> 00:17:08,390
+And so the Mahalanobis distance between two points
+
+356
+00:17:08,390 --> 00:17:12,170
+is going to be defined by positive semidefinite matrix A.
+
+357
+00:17:12,170 --> 00:17:15,369
+And it's defined explicitly as that.
+
+358
+00:17:15,369 --> 00:17:18,990
+And so what you can show is that this,
+
+359
+00:17:18,990 --> 00:17:22,790
+if we can learn some of optimal A, which essentially would
+
+360
+00:17:22,790 --> 00:17:26,470
+be an optimal W for this z equals Wx,
+
+361
+00:17:26,470 --> 00:17:29,910
+then that will actually be this transformation that
+
+362
+00:17:29,910 --> 00:17:33,110
+preserves similarity and difference maximally.
+
+363
+00:17:33,110 --> 00:17:36,670
+So how could we actually phrase that as an optimization problem?
+
+364
+00:17:36,670 --> 00:17:40,060
+How do we learn the right W here?
+
+365
+00:17:43,120 --> 00:17:44,140
+Any ideas?
+
+366
+00:17:51,560 --> 00:17:56,520
+So essentially, the first proposed approach,
+
+367
+00:17:56,520 --> 00:17:59,880
+and one that was really introduced in the paper that
+
+368
+00:17:59,880 --> 00:18:02,320
+defined the term metric learning, and they call
+
+369
+00:18:02,320 --> 00:18:06,800
+it distance metric learning, was to specifically set this up
+
+370
+00:18:06,800 --> 00:18:10,200
+as an optimization problem with a constraint.
+
+371
+00:18:10,200 --> 00:18:13,360
+So here, what we can do is we can
+
+372
+00:18:13,360 --> 00:18:17,420
+say we want to find A. We want to find positive semidefinite
+
+373
+00:18:17,420 --> 00:18:21,702
+A such that the minimum distance of similar--
+
+374
+00:18:21,702 --> 00:18:24,160
+we want to minimize the distance between similar points, so
+
+375
+00:18:24,160 --> 00:18:26,760
+between those pairs that are known to be similar,
+
+376
+00:18:26,760 --> 00:18:32,000
+while making sure that there is at least a distance of 1
+
+377
+00:18:32,000 --> 00:18:36,988
+or some epsilon between dissimilar points.
+
+378
+00:18:36,988 --> 00:18:38,530
+So you're essentially setting this up
+
+379
+00:18:38,530 --> 00:18:39,770
+as an optimization problem, where
+
+380
+00:18:39,770 --> 00:18:41,853
+you're trying to bring the things that are similar
+
+381
+00:18:41,853 --> 00:18:44,730
+as close together as possible, while enforcing that there is
+
+382
+00:18:44,730 --> 00:18:49,450
+at least some margin around any point and any other point
+
+383
+00:18:49,450 --> 00:18:51,005
+that is dissimilar to it.
+
+384
+00:18:51,005 --> 00:18:52,630
+And you can actually flip this as well.
+
+385
+00:18:52,630 --> 00:18:55,370
+You can also think of it as keeping
+
+386
+00:18:55,370 --> 00:18:58,690
+the distance between similar points within some constraint,
+
+387
+00:18:58,690 --> 00:19:03,250
+and maximizing the difference between dissimilar points.
+
+388
+00:19:03,250 --> 00:19:06,690
+And there's now a lot of different variations
+
+389
+00:19:06,690 --> 00:19:10,130
+of this that have been proposed since 2003,
+
+390
+00:19:10,130 --> 00:19:13,650
+which is now over 20 years ago.
+
+391
+00:19:13,650 --> 00:19:17,690
+And it really is something that can be explicitly solvable.
+
+392
+00:19:17,690 --> 00:19:21,585
+And you can, again, swap the objective and constraint.
+
+393
+00:19:21,585 --> 00:19:24,210
+And there's actually been a lot of related ideas and follow-ups
+
+394
+00:19:24,210 --> 00:19:26,710
+to this, things like, for example,
+
+395
+00:19:26,710 --> 00:19:28,810
+information theoretic metric learning,
+
+396
+00:19:28,810 --> 00:19:31,970
+which explicitly proposed preserving distribution
+
+397
+00:19:31,970 --> 00:19:33,210
+information.
+
+398
+00:19:33,210 --> 00:19:36,380
+So for example, relative entropy between Gaussians,
+
+399
+00:19:36,380 --> 00:19:38,620
+while trying to observe both upper and lower
+
+400
+00:19:38,620 --> 00:19:40,580
+bounds as constraints.
+
+401
+00:19:40,580 --> 00:19:43,220
+But a really simple example of what
+
+402
+00:19:43,220 --> 00:19:45,180
+this is, like why you might want to learn
+
+403
+00:19:45,180 --> 00:19:49,300
+some projection, some linear projection that
+
+404
+00:19:49,300 --> 00:19:52,120
+preserves these similarities and dissimilarities, is this one.
+
+405
+00:19:52,120 --> 00:19:53,860
+I think this is incredibly intuitive.
+
+406
+00:19:53,860 --> 00:19:58,720
+So say your original data was bimodal in some way.
+
+407
+00:19:58,720 --> 00:20:03,713
+There's clearly red and blue categories.
+
+408
+00:20:03,713 --> 00:20:05,380
+And then there's one mode, where there's
+
+409
+00:20:05,380 --> 00:20:06,797
+red and blue categories over here,
+
+410
+00:20:06,797 --> 00:20:08,460
+and one where they're over here.
+
+411
+00:20:08,460 --> 00:20:11,500
+The very, very simple optimal projection
+
+412
+00:20:11,500 --> 00:20:14,380
+here would be just removing the dimension.
+
+413
+00:20:14,380 --> 00:20:17,960
+Here, it would be like along the y-axis.
+
+414
+00:20:17,960 --> 00:20:21,000
+So now you're just projecting everything into the same plane.
+
+415
+00:20:21,000 --> 00:20:26,480
+And now they're very easily separable from that perspective.
+
+416
+00:20:29,718 --> 00:20:32,260
+There's a lot of improvements and developments on top of this
+
+417
+00:20:32,260 --> 00:20:33,790
+that you can do.
+
+418
+00:20:33,790 --> 00:20:39,790
+So one thing is you can think about looking
+
+419
+00:20:39,790 --> 00:20:41,910
+at nonlinear transformations.
+
+420
+00:20:41,910 --> 00:20:45,990
+So instead of only learning a linear projection W,
+
+421
+00:20:45,990 --> 00:20:49,710
+you can think about doing things like deep metric learning, where
+
+422
+00:20:49,710 --> 00:20:53,350
+you're actually explicitly learning some of neural network
+
+423
+00:20:53,350 --> 00:20:57,070
+that would map into a space that keeps things similar that we
+
+424
+00:20:57,070 --> 00:20:59,867
+want similar and dissimilar that we want dissimilar.
+
+425
+00:20:59,867 --> 00:21:01,950
+We've introduced these concepts of different types
+
+426
+00:21:01,950 --> 00:21:03,250
+of contrastive losses.
+
+427
+00:21:03,250 --> 00:21:05,110
+We'll get into those a little bit more.
+
+428
+00:21:05,110 --> 00:21:07,470
+And then another improvement and something
+
+429
+00:21:07,470 --> 00:21:10,510
+that actually is just tracked to be quite helpful
+
+430
+00:21:10,510 --> 00:21:13,090
+is the idea of normalizing your representations.
+
+431
+00:21:13,090 --> 00:21:15,530
+So instead of then taking Euclidean distance,
+
+432
+00:21:15,530 --> 00:21:17,630
+if you normalize representations to enforce
+
+433
+00:21:17,630 --> 00:21:21,910
+that all of the distances have to live on the hypersphere,
+
+434
+00:21:21,910 --> 00:21:24,590
+then distance would be essentially just
+
+435
+00:21:24,590 --> 00:21:25,965
+equivalent to angle.
+
+436
+00:21:25,965 --> 00:21:27,590
+And then you can look at inner products
+
+437
+00:21:27,590 --> 00:21:29,310
+to measure similarity instead of needing
+
+438
+00:21:29,310 --> 00:21:30,930
+to look at Euclidean distance.
+
+439
+00:21:30,930 --> 00:21:32,640
+And this is nice because you don't end up
+
+440
+00:21:32,640 --> 00:21:35,460
+having things that get really blown up by scale.
+
+441
+00:21:35,460 --> 00:21:38,060
+You're removing the scale complexity.
+
+442
+00:21:41,320 --> 00:21:45,655
+So this deep metric learning idea is quite simple.
+
+443
+00:21:45,655 --> 00:21:47,280
+Linear metric learning is you're trying
+
+444
+00:21:47,280 --> 00:21:50,458
+to learn some linear transformation z equals Wx.
+
+445
+00:21:50,458 --> 00:21:52,000
+Deep metric learning is you're trying
+
+446
+00:21:52,000 --> 00:21:54,720
+to learn a nonlinear transformation z
+
+447
+00:21:54,720 --> 00:21:58,080
+equals f of x, where now f of x is a neural network.
+
+448
+00:21:58,080 --> 00:22:00,320
+And now you're not optimizing over the set
+
+449
+00:22:00,320 --> 00:22:02,088
+of positive semidefinite matrices.
+
+450
+00:22:02,088 --> 00:22:04,380
+You're optimizing over the weights of a neural network.
+
+451
+00:22:04,380 --> 00:22:07,040
+And there, we can use things like stochastic gradient descent
+
+452
+00:22:07,040 --> 00:22:09,280
+to do so.
+
+453
+00:22:09,280 --> 00:22:11,400
+So the intuition behind this introduction
+
+454
+00:22:11,400 --> 00:22:16,120
+of contrastive losses is the following.
+
+455
+00:22:16,120 --> 00:22:19,000
+So say I show you this moth.
+
+456
+00:22:19,000 --> 00:22:22,000
+What kind of moth is that?
+
+457
+00:22:22,000 --> 00:22:24,840
+Anybody really into moths in this room?
+
+458
+00:22:24,840 --> 00:22:27,240
+I'm guessing no.
+
+459
+00:22:27,240 --> 00:22:30,500
+Lepidoptera is the scientific term for the genus.
+
+460
+00:22:30,500 --> 00:22:33,450
+Anyway, so that's a moth.
+
+461
+00:22:33,450 --> 00:22:36,795
+I actually also don't know what kind of moth that is.
+
+462
+00:22:36,795 --> 00:22:37,670
+There's another moth.
+
+463
+00:22:37,670 --> 00:22:38,810
+Are these the same moth?
+
+464
+00:22:38,810 --> 00:22:41,668
+Are they the same kind of moth?
+
+465
+00:22:41,668 --> 00:22:42,210
+AUDIENCE: No.
+
+466
+00:22:45,210 --> 00:22:47,730
+SARA BEERY: It's kind of hard to say, right?
+
+467
+00:22:47,730 --> 00:22:50,110
+Well, OK, what if I showed you another moth?
+
+468
+00:22:50,110 --> 00:22:53,850
+What if I showed you this moth?
+
+469
+00:22:53,850 --> 00:22:56,170
+If you had to guess, and you had to say two of these
+
+470
+00:22:56,170 --> 00:22:59,530
+were the same kind of moth, which two would you guess?
+
+471
+00:22:59,530 --> 00:23:00,950
+Yeah, right.
+
+472
+00:23:00,950 --> 00:23:04,090
+So it might be really hard to explicitly say whether something
+
+473
+00:23:04,090 --> 00:23:06,050
+is the same or different, especially
+
+474
+00:23:06,050 --> 00:23:09,370
+because when you get into things like this, actually,
+
+475
+00:23:09,370 --> 00:23:13,650
+there's this dimension of what is a category that
+
+476
+00:23:13,650 --> 00:23:14,790
+gets complicated.
+
+477
+00:23:14,790 --> 00:23:16,762
+Is the category all moths?
+
+478
+00:23:16,762 --> 00:23:17,970
+Well, then, they're the same.
+
+479
+00:23:17,970 --> 00:23:19,272
+Is the category white moths?
+
+480
+00:23:19,272 --> 00:23:20,230
+They're still the same.
+
+481
+00:23:20,230 --> 00:23:22,505
+Is it the category white moths on green leaves?
+
+482
+00:23:22,505 --> 00:23:23,130
+Still the same.
+
+483
+00:23:23,130 --> 00:23:25,850
+Is the category species of moth?
+
+484
+00:23:25,850 --> 00:23:30,020
+Then maybe we don't know anymore.
+
+485
+00:23:30,020 --> 00:23:32,980
+But it's actually very easy, regardless of what
+
+486
+00:23:32,980 --> 00:23:37,300
+you want your downstream task and the dimension of granularity
+
+487
+00:23:37,300 --> 00:23:40,820
+to be to say those two are definitely
+
+488
+00:23:40,820 --> 00:23:43,660
+more similar than that one.
+
+489
+00:23:43,660 --> 00:23:46,220
+So the way we translate this into machine learning
+
+490
+00:23:46,220 --> 00:23:48,580
+is we try to build a loss that explicitly
+
+491
+00:23:48,580 --> 00:23:51,140
+says that the distance between dissimilar pairs
+
+492
+00:23:51,140 --> 00:23:56,060
+must be much larger than the distance between similar pairs.
+
+493
+00:23:56,060 --> 00:23:58,540
+And the very initial version that was introduced here
+
+494
+00:23:58,540 --> 00:24:01,580
+is this idea of what's called triplet loss, which essentially
+
+495
+00:24:01,580 --> 00:24:04,200
+demands that the distance between an anchor.
+
+496
+00:24:04,200 --> 00:24:06,820
+So you have one point that you say is your anchor point,
+
+497
+00:24:06,820 --> 00:24:10,020
+and then you have two other data points that are sent in too.
+
+498
+00:24:10,020 --> 00:24:12,620
+And one of them is a positive example
+
+499
+00:24:12,620 --> 00:24:14,195
+of the same as that anchor point.
+
+500
+00:24:14,195 --> 00:24:15,820
+And the other one is a negative example
+
+501
+00:24:15,820 --> 00:24:17,680
+that's different from that anchor point.
+
+502
+00:24:17,680 --> 00:24:20,780
+Now you enforce that the distance between the anchor
+
+503
+00:24:20,780 --> 00:24:23,740
+and the negative example has to be bigger
+
+504
+00:24:23,740 --> 00:24:26,400
+than the distance between the anchor and the positive example,
+
+505
+00:24:26,400 --> 00:24:30,280
+plus some margin-- again, this kind of enforced margin.
+
+506
+00:24:30,280 --> 00:24:33,200
+And so what this actually looks like in practice
+
+507
+00:24:33,200 --> 00:24:36,200
+is you're just explicitly enforcing
+
+508
+00:24:36,200 --> 00:24:39,000
+that you want to have some loss that penalizes
+
+509
+00:24:39,000 --> 00:24:42,560
+if that condition is not met.
+
+510
+00:24:42,560 --> 00:24:45,700
+And so then, when you actually look at data examples here,
+
+511
+00:24:45,700 --> 00:24:51,120
+so maybe you take in your initial data, and in that space,
+
+512
+00:24:51,120 --> 00:24:54,160
+it turns out that, incorrectly, your model
+
+513
+00:24:54,160 --> 00:24:58,600
+had put this first horse, the anchor horse x, and this monkey
+
+514
+00:24:58,600 --> 00:25:02,640
+closer together than the anchor horse and this other horse.
+
+515
+00:25:02,640 --> 00:25:05,220
+And now, after actually updating your model,
+
+516
+00:25:05,220 --> 00:25:07,760
+taking a gradient descent step, the loss and that gradient
+
+517
+00:25:07,760 --> 00:25:10,440
+would tell you that you needed to push, in that representation
+
+518
+00:25:10,440 --> 00:25:13,080
+space, the horse and the monkey further
+
+519
+00:25:13,080 --> 00:25:17,600
+apart and the horse and the other horse closer together.
+
+520
+00:25:17,600 --> 00:25:21,480
+And the way this actually is done is in a triplet network.
+
+521
+00:25:21,480 --> 00:25:23,720
+You would have these shared weights.
+
+522
+00:25:23,720 --> 00:25:25,700
+So you have three images that go in.
+
+523
+00:25:25,700 --> 00:25:28,250
+You run all three of them through the same convolutional
+
+524
+00:25:28,250 --> 00:25:29,410
+neural network.
+
+525
+00:25:29,410 --> 00:25:31,970
+You calculate embeddings for all three.
+
+526
+00:25:31,970 --> 00:25:35,170
+You take a triplet loss over those three different embeddings
+
+527
+00:25:35,170 --> 00:25:36,810
+based on the anchor, the positive,
+
+528
+00:25:36,810 --> 00:25:38,490
+and the negative example, and then
+
+529
+00:25:38,490 --> 00:25:44,210
+you back propagate through that branch in the graph.
+
+530
+00:25:44,210 --> 00:25:47,610
+And so there are actually quite a few different improvements
+
+531
+00:25:47,610 --> 00:25:48,930
+of this.
+
+532
+00:25:48,930 --> 00:25:51,090
+One is actually pretty explicitly related
+
+533
+00:25:51,090 --> 00:25:53,010
+to training efficiency.
+
+534
+00:25:53,010 --> 00:25:55,690
+And that's just that you can now,
+
+535
+00:25:55,690 --> 00:25:59,730
+instead of sending in all of these independent triplets,
+
+536
+00:25:59,730 --> 00:26:01,610
+you can load an entire batch.
+
+537
+00:26:01,610 --> 00:26:03,410
+And now you'll have some positive examples
+
+538
+00:26:03,410 --> 00:26:05,490
+and some negative examples in that batch.
+
+539
+00:26:05,490 --> 00:26:08,330
+And then you can construct every possible triplet
+
+540
+00:26:08,330 --> 00:26:13,082
+of positive and negative and calculate the loss over those.
+
+541
+00:26:13,082 --> 00:26:15,290
+And so that way you're actually getting more training
+
+542
+00:26:15,290 --> 00:26:15,830
+efficiency.
+
+543
+00:26:15,830 --> 00:26:17,530
+You're making the best use of the batch you've already
+
+544
+00:26:17,530 --> 00:26:18,510
+loaded in.
+
+545
+00:26:18,510 --> 00:26:21,390
+And also, in this way, you're more likely to sample,
+
+546
+00:26:21,390 --> 00:26:24,730
+for example, these hard negatives that give you a signal
+
+547
+00:26:24,730 --> 00:26:27,060
+because, for example, if you send
+
+548
+00:26:27,060 --> 00:26:30,140
+in an image or a set of three images
+
+549
+00:26:30,140 --> 00:26:33,580
+and your representation already captures well
+
+550
+00:26:33,580 --> 00:26:35,940
+that these two are--
+
+551
+00:26:35,940 --> 00:26:37,620
+the positive example is closer than
+
+552
+00:26:37,620 --> 00:26:40,020
+the negative example with a margin,
+
+553
+00:26:40,020 --> 00:26:41,880
+then you don't get any signal.
+
+554
+00:26:41,880 --> 00:26:43,380
+So the easy stuff doesn't actually
+
+555
+00:26:43,380 --> 00:26:47,040
+help you train because you don't have any signal saying,
+
+556
+00:26:47,040 --> 00:26:48,280
+ah, no, you got that wrong.
+
+557
+00:26:48,280 --> 00:26:49,600
+You need to move them apart.
+
+558
+00:26:49,600 --> 00:26:51,980
+So you really need to see these hard examples, where
+
+559
+00:26:51,980 --> 00:26:54,600
+your model is getting it wrong, to be able to get signal
+
+560
+00:26:54,600 --> 00:26:57,267
+and to be able to actually get a gradient that trains your model
+
+561
+00:26:57,267 --> 00:26:59,660
+to improve your representation.
+
+562
+00:26:59,660 --> 00:27:03,900
+So if you use this type of embedding, what you can see
+
+563
+00:27:03,900 --> 00:27:06,460
+is get clusters.
+
+564
+00:27:06,460 --> 00:27:08,420
+You have done this in a way where
+
+565
+00:27:08,420 --> 00:27:11,780
+now things that are similar tend to be clustered close together.
+
+566
+00:27:11,780 --> 00:27:14,660
+In this case, this is a triplet loss network
+
+567
+00:27:14,660 --> 00:27:18,660
+that was trained over the Caltech UCSD Birds data set.
+
+568
+00:27:18,660 --> 00:27:21,380
+And you can see that, in this embedding space,
+
+569
+00:27:21,380 --> 00:27:24,550
+things that are close together are actually quite similar.
+
+570
+00:27:24,550 --> 00:27:27,230
+Are there some other things that this thing has learned
+
+571
+00:27:27,230 --> 00:27:29,130
+beyond maybe similar species?
+
+572
+00:27:32,750 --> 00:27:33,330
+Yeah?
+
+573
+00:27:33,330 --> 00:27:34,247
+AUDIENCE: Environment.
+
+574
+00:27:34,247 --> 00:27:35,557
+SARA BEERY: Environment, yeah.
+
+575
+00:27:35,557 --> 00:27:37,890
+So if you look at, for example, that cluster over there,
+
+576
+00:27:37,890 --> 00:27:40,710
+it's a cluster where, yes, all of the examples of those birds
+
+577
+00:27:40,710 --> 00:27:43,558
+are terns, the ones that are flying against a blue sky.
+
+578
+00:27:43,558 --> 00:27:44,850
+I could tell you they're terns.
+
+579
+00:27:44,850 --> 00:27:47,030
+Maybe some of you guys know they're terns.
+
+580
+00:27:47,030 --> 00:27:50,550
+But they're also all pretty much birds that are flying
+
+581
+00:27:50,550 --> 00:27:53,390
+and mostly birds that are flying against a blue sky.
+
+582
+00:27:53,390 --> 00:27:55,630
+So you can imagine that similarity here
+
+583
+00:27:55,630 --> 00:27:58,590
+has may be picked up on some more stuff than just maybe what
+
+584
+00:27:58,590 --> 00:28:02,310
+we might be interested in terms of similarity.
+
+585
+00:28:02,310 --> 00:28:05,250
+And if you query using this, you say,
+
+586
+00:28:05,250 --> 00:28:09,390
+OK, find me nearest neighbors in this embedding space,
+
+587
+00:28:09,390 --> 00:28:14,470
+you also do start to learn similarity semantically.
+
+588
+00:28:14,470 --> 00:28:19,150
+You start to learn that things that look similar are similar
+
+589
+00:28:19,150 --> 00:28:22,350
+and things that look different are far apart.
+
+590
+00:28:22,350 --> 00:28:24,280
+And this gets at this interesting question
+
+591
+00:28:24,280 --> 00:28:27,820
+of what makes an image similar.
+
+592
+00:28:27,820 --> 00:28:31,280
+So here, these are embedding spaces
+
+593
+00:28:31,280 --> 00:28:34,760
+that are trained on much larger data sets.
+
+594
+00:28:34,760 --> 00:28:36,740
+And we have some reference image.
+
+595
+00:28:36,740 --> 00:28:40,040
+And then we have different things
+
+596
+00:28:40,040 --> 00:28:44,120
+that are kind of coming in that are potentially
+
+597
+00:28:44,120 --> 00:28:45,580
+similar or dissimilar.
+
+598
+00:28:45,580 --> 00:28:48,880
+And this was a paper, actually, of Phil's, where they explicitly
+
+599
+00:28:48,880 --> 00:28:53,560
+asked humans what they thought was the most similar, trying
+
+600
+00:28:53,560 --> 00:28:56,240
+to get this sense of how does a human brain think
+
+601
+00:28:56,240 --> 00:28:57,198
+about similarity.
+
+602
+00:28:57,198 --> 00:28:59,240
+And it turns out, there's a lot of different ways
+
+603
+00:28:59,240 --> 00:29:00,540
+that we think about similarity.
+
+604
+00:29:00,540 --> 00:29:04,520
+We might think about similarity in pose, perspective, foreground
+
+605
+00:29:04,520 --> 00:29:07,800
+color, foreground-background orientation, the number
+
+606
+00:29:07,800 --> 00:29:09,720
+of items, object shape.
+
+607
+00:29:09,720 --> 00:29:12,320
+There's a lot of different ways that things can be similar.
+
+608
+00:29:12,320 --> 00:29:16,160
+And what's the most useful way to have things
+
+609
+00:29:16,160 --> 00:29:18,960
+be similar or different based on a representation space
+
+610
+00:29:18,960 --> 00:29:20,600
+is probably going to be contextualized
+
+611
+00:29:20,600 --> 00:29:25,450
+by some downstream task that we're interested in.
+
+612
+00:29:25,450 --> 00:29:28,410
+So how do we actually try to make sure
+
+613
+00:29:28,410 --> 00:29:33,450
+that we're showing these images that are hard to the models
+
+614
+00:29:33,450 --> 00:29:35,610
+that we get training signal?
+
+615
+00:29:35,610 --> 00:29:40,290
+So we need to find basically hard negatives.
+
+616
+00:29:40,290 --> 00:29:42,250
+And this type of hard negative mining
+
+617
+00:29:42,250 --> 00:29:46,030
+will often look for a misplaced negative.
+
+618
+00:29:46,030 --> 00:29:48,090
+So we need to try to find things that
+
+619
+00:29:48,090 --> 00:29:51,850
+have been put closer to the anchor than a positive example.
+
+620
+00:29:51,850 --> 00:29:54,050
+And being able to do this hard negative mining
+
+621
+00:29:54,050 --> 00:29:56,370
+helps us accelerate our learning.
+
+622
+00:29:56,370 --> 00:29:58,430
+The more we can find the hard things,
+
+623
+00:29:58,430 --> 00:30:00,850
+the more we train quickly.
+
+624
+00:30:00,850 --> 00:30:02,710
+And one nice example of that is this.
+
+625
+00:30:02,710 --> 00:30:04,390
+So here's our moths again.
+
+626
+00:30:04,390 --> 00:30:07,890
+You can imagine that if you saw those first two images based
+
+627
+00:30:07,890 --> 00:30:10,290
+on a lot of dimensions of similarity,
+
+628
+00:30:10,290 --> 00:30:15,170
+like the pose, the background color, the orientation,
+
+629
+00:30:15,170 --> 00:30:18,130
+these are actually more similar than this one on the bottom,
+
+630
+00:30:18,130 --> 00:30:20,680
+but in some of semantic categorization space,
+
+631
+00:30:20,680 --> 00:30:22,548
+we want to know the type of moth.
+
+632
+00:30:22,548 --> 00:30:24,340
+These ones should actually be more similar,
+
+633
+00:30:24,340 --> 00:30:25,940
+and that one should be further away.
+
+634
+00:30:25,940 --> 00:30:28,460
+And those things like pose and background color
+
+635
+00:30:28,460 --> 00:30:31,380
+are actually confounding dimensions right there.
+
+636
+00:30:31,380 --> 00:30:34,380
+There are ways that we want our model to be invariant.
+
+637
+00:30:34,380 --> 00:30:36,220
+And so finding examples like this
+
+638
+00:30:36,220 --> 00:30:38,700
+would be explicitly ways to train your model faster
+
+639
+00:30:38,700 --> 00:30:43,580
+to recognize what you want to be similar.
+
+640
+00:30:43,580 --> 00:30:49,420
+So this assumes, though, that we already know the right answer.
+
+641
+00:30:49,420 --> 00:30:52,420
+It assumes that we know that these two moths at the bottom
+
+642
+00:30:52,420 --> 00:30:55,740
+are the same and then that one at the top is different.
+
+643
+00:30:55,740 --> 00:30:59,820
+But actually, the idea of contrastive representation
+
+644
+00:30:59,820 --> 00:31:02,380
+learning and specifically self-supervised contrastive
+
+645
+00:31:02,380 --> 00:31:04,900
+representation learning thinks about how
+
+646
+00:31:04,900 --> 00:31:07,460
+we might take these ideas from metric learning
+
+647
+00:31:07,460 --> 00:31:11,620
+and also self-supervision to build representation spaces that
+
+648
+00:31:11,620 --> 00:31:13,840
+are not explicitly supervised.
+
+649
+00:31:13,840 --> 00:31:17,220
+How do we get a good starting point or good representation
+
+650
+00:31:17,220 --> 00:31:20,870
+if we don't necessarily have labels?
+
+651
+00:31:20,870 --> 00:31:22,950
+And why might that, in some ways,
+
+652
+00:31:22,950 --> 00:31:27,390
+be better than actually training something with explicit labels?
+
+653
+00:31:27,390 --> 00:31:30,990
+So a common setup for this type of
+
+654
+00:31:30,990 --> 00:31:33,175
+self-supervised representation learning
+
+655
+00:31:33,175 --> 00:31:34,550
+would be that we're going to have
+
+656
+00:31:34,550 --> 00:31:38,390
+some encoder, some function that will map
+
+657
+00:31:38,390 --> 00:31:39,810
+our data onto a hypersphere.
+
+658
+00:31:39,810 --> 00:31:41,852
+So again, we're normalizing to enforce everything
+
+659
+00:31:41,852 --> 00:31:43,270
+to be on the hypersphere.
+
+660
+00:31:43,270 --> 00:31:46,870
+And we'll define some crossentropy for a softmax
+
+661
+00:31:46,870 --> 00:31:49,510
+classifier that will discriminate classes
+
+662
+00:31:49,510 --> 00:31:52,230
+based on similarity.
+
+663
+00:31:52,230 --> 00:31:54,950
+So if we know that these two images at the bottom
+
+664
+00:31:54,950 --> 00:31:57,430
+are the same class, and this one is different,
+
+665
+00:31:57,430 --> 00:32:00,590
+then we're going to try to explicitly pull
+
+666
+00:32:00,590 --> 00:32:04,310
+positive pairs together and push negative pairs apart.
+
+667
+00:32:04,310 --> 00:32:08,350
+So essentially, this is something
+
+668
+00:32:08,350 --> 00:32:11,210
+like a crossentropy loss.
+
+669
+00:32:11,210 --> 00:32:16,250
+We have an activation of a logarithm of something.
+
+670
+00:32:16,250 --> 00:32:20,640
+And this kind of looks to us maybe
+
+671
+00:32:20,640 --> 00:32:25,440
+close to a softmax, something close to a softmax.
+
+672
+00:32:25,440 --> 00:32:29,600
+So we can use inner products to actually do
+
+673
+00:32:29,600 --> 00:32:31,468
+this comparison because we've constrained it
+
+674
+00:32:31,468 --> 00:32:32,260
+to the hypersphere.
+
+675
+00:32:32,260 --> 00:32:35,800
+So we can look at the angle instead of the distance.
+
+676
+00:32:35,800 --> 00:32:40,100
+So now we're maximizing the inner product,
+
+677
+00:32:40,100 --> 00:32:43,560
+which is explicitly trying--
+
+678
+00:32:43,560 --> 00:32:45,540
+sorry, what am I saying?
+
+679
+00:32:45,540 --> 00:32:49,240
+No, no, no, so we want we want to make sure
+
+680
+00:32:49,240 --> 00:32:52,660
+that the inner product is as close as possible to 1
+
+681
+00:32:52,660 --> 00:32:55,240
+because that would mean that they were as close as
+
+682
+00:32:55,240 --> 00:32:57,060
+possible on this sphere.
+
+683
+00:33:00,440 --> 00:33:02,340
+And now instead of minimizing distance,
+
+684
+00:33:02,340 --> 00:33:04,520
+we can maximize that inner product
+
+685
+00:33:04,520 --> 00:33:07,640
+that minimizes the angle between the two of them.
+
+686
+00:33:07,640 --> 00:33:10,480
+And then, essentially, what we want to do
+
+687
+00:33:10,480 --> 00:33:13,300
+is we want to make this green part as big as possible.
+
+688
+00:33:13,300 --> 00:33:16,068
+So that's maximizing the inner product
+
+689
+00:33:16,068 --> 00:33:17,110
+between those two things.
+
+690
+00:33:17,110 --> 00:33:21,050
+And we want to make the red part as small as possible, which
+
+691
+00:33:21,050 --> 00:33:23,430
+is going to give us the largest possible overall thing.
+
+692
+00:33:26,090 --> 00:33:31,810
+Now we assume, for example, that we have a couple
+
+693
+00:33:31,810 --> 00:33:36,010
+dimensions of symmetry, right.
+
+694
+00:33:36,010 --> 00:33:41,930
+You can say that we want to have symmetry where we would have
+
+695
+00:33:41,930 --> 00:33:46,370
+essentially if the first one is your anchor
+
+696
+00:33:46,370 --> 00:33:48,350
+and the positive example is the second one,
+
+697
+00:33:48,350 --> 00:33:50,450
+we want the distance between those two be the same
+
+698
+00:33:50,450 --> 00:33:52,070
+as if you flipped the two.
+
+699
+00:33:52,070 --> 00:33:54,182
+So it's enforcing some symmetry between them.
+
+700
+00:33:54,182 --> 00:33:55,890
+The distance should basically be the same
+
+701
+00:33:55,890 --> 00:33:58,557
+no matter whether your first one is the anchor or the second one
+
+702
+00:33:58,557 --> 00:33:59,410
+is the anchor.
+
+703
+00:33:59,410 --> 00:34:01,310
+And we also want to match the marginal.
+
+704
+00:34:01,310 --> 00:34:04,170
+And kind of what we mean here is for the distribution
+
+705
+00:34:04,170 --> 00:34:06,170
+over all those positive pairs, we
+
+706
+00:34:06,170 --> 00:34:09,449
+assume if we marginalize over one of those partners,
+
+707
+00:34:09,449 --> 00:34:11,469
+we would end up with the data distribution.
+
+708
+00:34:11,469 --> 00:34:15,190
+So it's starting point distribution over the data.
+
+709
+00:34:15,190 --> 00:34:22,230
+And so now a really common-- so yeah, this noise contrastive
+
+710
+00:34:22,230 --> 00:34:24,670
+estimation InfoNCE loss, there's a lot
+
+711
+00:34:24,670 --> 00:34:26,870
+of similar losses in metric learning
+
+712
+00:34:26,870 --> 00:34:30,150
+that introduce these types of ideas.
+
+713
+00:34:30,150 --> 00:34:34,750
+And essentially, if we want to try
+
+714
+00:34:34,750 --> 00:34:37,690
+to do this specifically self-supervised,
+
+715
+00:34:37,690 --> 00:34:40,830
+so we don't necessarily know already
+
+716
+00:34:40,830 --> 00:34:42,810
+that these two things are the same category.
+
+717
+00:34:42,810 --> 00:34:45,070
+And instead, we're going to do some fancy stuff
+
+718
+00:34:45,070 --> 00:34:49,350
+to try to force our model to learn that an input data
+
+719
+00:34:49,350 --> 00:34:51,938
+point is the same as itself after running it
+
+720
+00:34:51,938 --> 00:34:53,730
+through a bunch of different augmentations,
+
+721
+00:34:53,730 --> 00:34:57,150
+so perturbing it in a bunch of different ways.
+
+722
+00:34:57,150 --> 00:35:02,050
+This actually can outperform some supervised pretraining,
+
+723
+00:35:02,050 --> 00:35:03,070
+which is interesting.
+
+724
+00:35:03,070 --> 00:35:07,670
+So intuitively, for me, it's like,
+
+725
+00:35:07,670 --> 00:35:12,950
+why would we want to not have supervision?
+
+726
+00:35:12,950 --> 00:35:16,440
+Well, one thing is if our supervision is not
+
+727
+00:35:16,440 --> 00:35:18,320
+well-aligned with the actual task
+
+728
+00:35:18,320 --> 00:35:20,860
+that we want to use the representation for,
+
+729
+00:35:20,860 --> 00:35:23,160
+we might learn dimensions of invariance or dimensions
+
+730
+00:35:23,160 --> 00:35:25,960
+of variance that are explicitly unhelpful.
+
+731
+00:35:25,960 --> 00:35:28,320
+But if we just do self-supervision,
+
+732
+00:35:28,320 --> 00:35:30,320
+so we're just trying to learn something
+
+733
+00:35:30,320 --> 00:35:33,840
+without any explicit definition of what
+
+734
+00:35:33,840 --> 00:35:36,440
+is similar or dissimilar based on category,
+
+735
+00:35:36,440 --> 00:35:39,880
+that might actually be better for a bunch
+
+736
+00:35:39,880 --> 00:35:42,080
+of different possible downstream tasks,
+
+737
+00:35:42,080 --> 00:35:44,160
+but not necessarily better for everything.
+
+738
+00:35:44,160 --> 00:35:46,560
+It's a little bit nuanced.
+
+739
+00:35:46,560 --> 00:35:48,840
+And again, just talking about why we might
+
+740
+00:35:48,840 --> 00:35:50,960
+map to a hypersphere--
+
+741
+00:35:50,960 --> 00:35:54,360
+so here, one thing is more stable during training.
+
+742
+00:35:54,360 --> 00:35:57,997
+Why do we not want to have scale be a dimension of variance?
+
+743
+00:35:57,997 --> 00:35:59,580
+It's kind of like logistic regression.
+
+744
+00:35:59,580 --> 00:36:01,280
+It helps you regularize.
+
+745
+00:36:01,280 --> 00:36:04,920
+And also we get this really nice behavior.
+
+746
+00:36:04,920 --> 00:36:08,710
+So if you enforce that everything is on a hypersphere.
+
+747
+00:36:08,710 --> 00:36:10,960
+And you enforce that similar things are close together
+
+748
+00:36:10,960 --> 00:36:13,293
+on a hypersphere and different things are very far apart
+
+749
+00:36:13,293 --> 00:36:14,530
+on a hypersphere.
+
+750
+00:36:14,530 --> 00:36:18,810
+Then you can always build a linear classifier, just a slice
+
+751
+00:36:18,810 --> 00:36:21,170
+through that hypersphere, that will actually
+
+752
+00:36:21,170 --> 00:36:23,690
+be linearly separable.
+
+753
+00:36:23,690 --> 00:36:25,798
+So there's this nice kind of thing where,
+
+754
+00:36:25,798 --> 00:36:27,590
+no matter what, we can always enforce that.
+
+755
+00:36:27,590 --> 00:36:29,090
+We build a linear classifier on top
+
+756
+00:36:29,090 --> 00:36:31,938
+of that hypersphere representation.
+
+757
+00:36:31,938 --> 00:36:33,730
+How do we actually make it self-supervised?
+
+758
+00:36:33,730 --> 00:36:37,650
+How do you get this signal if you don't actually
+
+759
+00:36:37,650 --> 00:36:40,970
+have labels about what's similar and different?
+
+760
+00:36:40,970 --> 00:36:45,770
+So basically, what people do is they
+
+761
+00:36:45,770 --> 00:36:48,610
+take all the random stuff, randomly uniform drawn
+
+762
+00:36:48,610 --> 00:36:51,850
+from the data as negative examples.
+
+763
+00:36:51,850 --> 00:36:55,210
+And as positive examples, you take your image,
+
+764
+00:36:55,210 --> 00:36:58,770
+and you do a bunch of weird stuff to it.
+
+765
+00:36:58,770 --> 00:37:01,110
+So here, we have this original image of a dog,
+
+766
+00:37:01,110 --> 00:37:06,070
+and we can do crop and resize, crop, resize, and flip.
+
+767
+00:37:06,070 --> 00:37:07,610
+You can distort the color.
+
+768
+00:37:07,610 --> 00:37:09,950
+You can drop or jitter the color.
+
+769
+00:37:09,950 --> 00:37:10,870
+You can rotate it.
+
+770
+00:37:10,870 --> 00:37:12,800
+You can cut chunks out of it.
+
+771
+00:37:12,800 --> 00:37:14,080
+You can add Gaussian noise.
+
+772
+00:37:14,080 --> 00:37:15,317
+You can add Gaussian blur.
+
+773
+00:37:15,317 --> 00:37:16,900
+You can do things like Sobel filtering
+
+774
+00:37:16,900 --> 00:37:21,900
+and get you this rough edge kind of representation.
+
+775
+00:37:21,900 --> 00:37:24,240
+And so then something like SimCLR,
+
+776
+00:37:24,240 --> 00:37:26,860
+which is one of the original methods that explicitly tried
+
+777
+00:37:26,860 --> 00:37:29,620
+to teach this type of self-supervised contrastive
+
+778
+00:37:29,620 --> 00:37:31,220
+learning--
+
+779
+00:37:31,220 --> 00:37:33,300
+here, for every data point in the batch,
+
+780
+00:37:33,300 --> 00:37:35,740
+you would generate two different random augmentations
+
+781
+00:37:35,740 --> 00:37:36,640
+of that data point.
+
+782
+00:37:36,640 --> 00:37:39,162
+And those two random augmentations are the positives.
+
+783
+00:37:39,162 --> 00:37:40,620
+And essentially, the intuition here
+
+784
+00:37:40,620 --> 00:37:44,220
+is you want the exact same thing under some reasonable
+
+785
+00:37:44,220 --> 00:37:46,900
+perturbations to be mapped very close together,
+
+786
+00:37:46,900 --> 00:37:53,140
+and then some random set of all of the other things in the batch
+
+787
+00:37:53,140 --> 00:37:56,500
+are used as negatives for that pair.
+
+788
+00:37:56,500 --> 00:37:59,860
+So can anyone think of any limitations of this?
+
+789
+00:37:59,860 --> 00:38:00,618
+Yeah?
+
+790
+00:38:00,618 --> 00:38:02,660
+AUDIENCE: If you happen to have multiple pictures
+
+791
+00:38:02,660 --> 00:38:04,598
+of the same thing in the data set.
+
+792
+00:38:04,598 --> 00:38:06,140
+SARA BEERY: Yeah, so what if you have
+
+793
+00:38:06,140 --> 00:38:09,460
+multiple pictures of the same thing in the data set?
+
+794
+00:38:09,460 --> 00:38:12,710
+So it turns out, and we'll get into this, that that actually
+
+795
+00:38:12,710 --> 00:38:13,770
+is a challenge.
+
+796
+00:38:13,770 --> 00:38:16,470
+And the assumption is that, well, maybe there's
+
+797
+00:38:16,470 --> 00:38:19,150
+something in terms of similarity that we would still
+
+798
+00:38:19,150 --> 00:38:21,550
+possibly want to capture if you have two dogs that
+
+799
+00:38:21,550 --> 00:38:23,670
+are exactly the same under perturbation
+
+800
+00:38:23,670 --> 00:38:27,710
+versus another dog, for example, or another lab or even
+
+801
+00:38:27,710 --> 00:38:29,910
+another picture of that exact same dog.
+
+802
+00:38:29,910 --> 00:38:36,490
+But definitely these types of positive negatives,
+
+803
+00:38:36,490 --> 00:38:39,818
+almost in a way, are confusing when you're actually
+
+804
+00:38:39,818 --> 00:38:41,110
+learning these representations.
+
+805
+00:38:41,110 --> 00:38:42,830
+And there's explicitly work that shows
+
+806
+00:38:42,830 --> 00:38:46,670
+that if you can remove those, even by using something
+
+807
+00:38:46,670 --> 00:38:49,070
+like explicit supervision, it can actually really improve
+
+808
+00:38:49,070 --> 00:38:50,590
+a representation.
+
+809
+00:38:50,590 --> 00:38:51,270
+Yeah?
+
+810
+00:38:51,270 --> 00:38:53,630
+AUDIENCE: Is there an analogy to the perturbations
+
+811
+00:38:53,630 --> 00:39:00,910
+for nonimage data types, for example, that are commonly used?
+
+812
+00:39:00,910 --> 00:39:02,815
+SARA BEERY: Yeah, so for example here,
+
+813
+00:39:02,815 --> 00:39:04,190
+we're talking about SimCLR, which
+
+814
+00:39:04,190 --> 00:39:08,440
+is explicitly an image-focused contrastive thing.
+
+815
+00:39:08,440 --> 00:39:14,260
+So those perturbations are going to be data-specific.
+
+816
+00:39:14,260 --> 00:39:19,240
+So for example, reasonable perturbations on images
+
+817
+00:39:19,240 --> 00:39:22,360
+are things that we actually have some intuition that we
+
+818
+00:39:22,360 --> 00:39:23,700
+want to be invariant to.
+
+819
+00:39:23,700 --> 00:39:26,160
+We want to recognize the object is the same
+
+820
+00:39:26,160 --> 00:39:28,160
+and is invariant under flips, for example.
+
+821
+00:39:28,160 --> 00:39:31,040
+This is a strong assumption that we're building in.
+
+822
+00:39:31,040 --> 00:39:32,478
+And there are actually some cases
+
+823
+00:39:32,478 --> 00:39:35,020
+where we explicitly don't want to build in those assumptions.
+
+824
+00:39:35,020 --> 00:39:36,560
+If your downstream representation
+
+825
+00:39:36,560 --> 00:39:38,268
+needs to be able to detect the difference
+
+826
+00:39:38,268 --> 00:39:40,280
+between right and left shoes, if you
+
+827
+00:39:40,280 --> 00:39:43,100
+use random flipping as an augmentation,
+
+828
+00:39:43,100 --> 00:39:45,698
+it makes that almost impossible because if you
+
+829
+00:39:45,698 --> 00:39:47,740
+say this is a right shoe and this is a right shoe
+
+830
+00:39:47,740 --> 00:39:49,740
+and this is a left shoe and this is a left shoe,
+
+831
+00:39:49,740 --> 00:39:52,000
+your model is incredibly confused.
+
+832
+00:39:52,000 --> 00:39:56,040
+So the same would be possible for any other type of data.
+
+833
+00:39:56,040 --> 00:40:02,000
+Say you had, for example, data of specific molecules.
+
+834
+00:40:02,000 --> 00:40:04,760
+You then would have to inject some domain knowledge in terms
+
+835
+00:40:04,760 --> 00:40:08,370
+of what types of augmentations of those molecules
+
+836
+00:40:08,370 --> 00:40:10,810
+are reasonable, where we would kind of want to maintain
+
+837
+00:40:10,810 --> 00:40:12,690
+similarity, and what types of augmentations
+
+838
+00:40:12,690 --> 00:40:15,370
+are actually potentially unreasonable.
+
+839
+00:40:15,370 --> 00:40:16,730
+Same for text.
+
+840
+00:40:16,730 --> 00:40:18,370
+Same for video.
+
+841
+00:40:18,370 --> 00:40:20,050
+So the choice of augmentations actually
+
+842
+00:40:20,050 --> 00:40:22,653
+does become quite important.
+
+843
+00:40:22,653 --> 00:40:24,570
+You can think of a lot of different variations
+
+844
+00:40:24,570 --> 00:40:26,970
+of this type of contrastive learning
+
+845
+00:40:26,970 --> 00:40:29,530
+that use self-supervision-- yeah?
+
+846
+00:40:29,530 --> 00:40:32,350
+AUDIENCE: On the previous slide, I just have a question.
+
+847
+00:40:32,350 --> 00:40:35,190
+Why doesn't the model just learn something really stupid,
+
+848
+00:40:35,190 --> 00:40:37,910
+like what about this setup?
+
+849
+00:40:37,910 --> 00:40:39,630
+Is it going to guarantee, for instance,
+
+850
+00:40:39,630 --> 00:40:42,250
+that two golden retrievers are going
+
+851
+00:40:42,250 --> 00:40:45,410
+to-- say you get a different image of a golden retriever,
+
+852
+00:40:45,410 --> 00:40:47,530
+and you make two augmentations of it,
+
+853
+00:40:47,530 --> 00:40:51,210
+and then you pick a negative sample that's now a horse.
+
+854
+00:40:51,210 --> 00:40:53,070
+There's nothing about this, I think,
+
+855
+00:40:53,070 --> 00:40:55,237
+that says that those two golden retrievers are going
+
+856
+00:40:55,237 --> 00:40:57,250
+to end up close to this picture golden retriever
+
+857
+00:40:57,250 --> 00:40:58,910
+in your representation space.
+
+858
+00:41:01,930 --> 00:41:03,910
+SARA BEERY: Right, so if you augment this one,
+
+859
+00:41:03,910 --> 00:41:06,680
+you augment that one, that one, and you force it close together,
+
+860
+00:41:06,680 --> 00:41:10,035
+there's nothing from this particular training step that
+
+861
+00:41:10,035 --> 00:41:11,660
+would say that either of them should be
+
+862
+00:41:11,660 --> 00:41:13,940
+closer to the original image.
+
+863
+00:41:13,940 --> 00:41:16,820
+But now you're going to sample these over and over
+
+864
+00:41:16,820 --> 00:41:19,060
+during training in many different combinations
+
+865
+00:41:19,060 --> 00:41:21,420
+and with many different randomizations.
+
+866
+00:41:21,420 --> 00:41:24,500
+And so the assumption is, essentially,
+
+867
+00:41:24,500 --> 00:41:27,100
+though there might be some things in there that
+
+868
+00:41:27,100 --> 00:41:30,340
+are more or less confusing, that generally, over time,
+
+869
+00:41:30,340 --> 00:41:33,540
+you're going to learn that golden retriever-like things
+
+870
+00:41:33,540 --> 00:41:35,240
+should all be somewhat close together
+
+871
+00:41:35,240 --> 00:41:36,740
+because, more often than not, you're
+
+872
+00:41:36,740 --> 00:41:39,340
+going to get two augmentations of a golden retriever
+
+873
+00:41:39,340 --> 00:41:41,020
+and a boat, not two augmentations
+
+874
+00:41:41,020 --> 00:41:44,340
+of a golden retriever and another golden retriever.
+
+875
+00:41:44,340 --> 00:41:45,980
+Does that make sense?
+
+876
+00:41:45,980 --> 00:41:51,180
+So I think it comes out in the noise kind of over time
+
+877
+00:41:51,180 --> 00:41:54,460
+and, over many, many different types of categories,
+
+878
+00:41:54,460 --> 00:41:57,340
+does equalize or get to something
+
+879
+00:41:57,340 --> 00:42:00,740
+that has learned the signal you want it to learn.
+
+880
+00:42:00,740 --> 00:42:02,660
+So there are a lot of different clever ways
+
+881
+00:42:02,660 --> 00:42:06,630
+to think about how to get that similarity signal that
+
+882
+00:42:06,630 --> 00:42:11,070
+isn't necessarily just massively augmenting.
+
+883
+00:42:11,070 --> 00:42:12,790
+So one example is if you actually
+
+884
+00:42:12,790 --> 00:42:17,830
+have data of something like a scene
+
+885
+00:42:17,830 --> 00:42:21,030
+and the depth image for that scene,
+
+886
+00:42:21,030 --> 00:42:24,830
+then you can, for example, try to learn representations
+
+887
+00:42:24,830 --> 00:42:29,170
+that put things close together if it's actually--
+
+888
+00:42:29,170 --> 00:42:32,790
+the image of the scene closely matches the depth of the scene.
+
+889
+00:42:32,790 --> 00:42:35,910
+So you can learn representations that
+
+890
+00:42:35,910 --> 00:42:38,110
+capture something about scene structure
+
+891
+00:42:38,110 --> 00:42:43,190
+by explicitly leveraging RGB-D during training.
+
+892
+00:42:43,190 --> 00:42:46,470
+Or you could think about representation learning
+
+893
+00:42:46,470 --> 00:42:49,670
+over video, where you take frames randomly sampled
+
+894
+00:42:49,670 --> 00:42:52,470
+from the same video as positives and a frame
+
+895
+00:42:52,470 --> 00:42:53,883
+from another video as negatives.
+
+896
+00:42:53,883 --> 00:42:55,550
+Now, your model needs to learn something
+
+897
+00:42:55,550 --> 00:42:59,430
+about possibly potential similarity over time.
+
+898
+00:42:59,430 --> 00:43:03,610
+And there's lots of different works that do of thing.
+
+899
+00:43:03,610 --> 00:43:08,890
+You can think about using vision language as views
+
+900
+00:43:08,890 --> 00:43:10,450
+in some way of the same scene.
+
+901
+00:43:10,450 --> 00:43:13,545
+You have the text description of an image and the image itself.
+
+902
+00:43:13,545 --> 00:43:15,170
+You try to push those together, and you
+
+903
+00:43:15,170 --> 00:43:17,570
+try to push them far away from an image that doesn't
+
+904
+00:43:17,570 --> 00:43:19,113
+match that text description.
+
+905
+00:43:19,113 --> 00:43:20,530
+So there's a lot of ways of trying
+
+906
+00:43:20,530 --> 00:43:23,430
+to think about how you can get this self-supervised signal.
+
+907
+00:43:23,430 --> 00:43:25,490
+And a lot of modern work actually
+
+908
+00:43:25,490 --> 00:43:27,970
+really is just people coming up with creative ways
+
+909
+00:43:27,970 --> 00:43:30,870
+to supervise models without requiring labels
+
+910
+00:43:30,870 --> 00:43:32,330
+because labels are--
+
+911
+00:43:32,330 --> 00:43:36,490
+handcrafted, human-generated labels are very expensive.
+
+912
+00:43:36,490 --> 00:43:43,210
+So essentially, what is this method doing?
+
+913
+00:43:43,210 --> 00:43:47,770
+There's kind of two ingredients here to making this work.
+
+914
+00:43:47,770 --> 00:43:51,250
+One is the contrastive loss, so which specific form
+
+915
+00:43:51,250 --> 00:43:53,530
+of contrastive loss you use.
+
+916
+00:43:53,530 --> 00:43:55,570
+And the other one is the data.
+
+917
+00:43:55,570 --> 00:43:58,390
+And by the data, I don't just mean the underlying data set.
+
+918
+00:43:58,390 --> 00:44:00,410
+I also mean specifically which types
+
+919
+00:44:00,410 --> 00:44:02,140
+of positive and negative pairs we
+
+920
+00:44:02,140 --> 00:44:04,820
+surface to the model over time.
+
+921
+00:44:04,820 --> 00:44:07,620
+So if we dig into the contrastive loss,
+
+922
+00:44:07,620 --> 00:44:10,380
+and we think of this, again, as something like a cross entropy
+
+923
+00:44:10,380 --> 00:44:14,940
+loss that tries to distinguish between data points,
+
+924
+00:44:14,940 --> 00:44:17,620
+another way that you can motivate this loss
+
+925
+00:44:17,620 --> 00:44:20,180
+mathematically is you can try to frame it
+
+926
+00:44:20,180 --> 00:44:23,940
+as maximizing the mutual information
+
+927
+00:44:23,940 --> 00:44:28,620
+between positive examples in the pairs.
+
+928
+00:44:28,620 --> 00:44:32,060
+And so essentially, if you think of it that way,
+
+929
+00:44:32,060 --> 00:44:35,980
+you're really just trying to maximize a lower
+
+930
+00:44:35,980 --> 00:44:40,980
+bound on mutual information between views of the same thing.
+
+931
+00:44:40,980 --> 00:44:44,980
+And there's been some interesting work, specifically
+
+932
+00:44:44,980 --> 00:44:50,300
+this work that showed that, actually, if, instead of using
+
+933
+00:44:50,300 --> 00:44:55,180
+the standard contrastive losses, you just explicitly maximize
+
+934
+00:44:55,180 --> 00:44:58,060
+mutual information alone, it actually worsened
+
+935
+00:44:58,060 --> 00:45:00,060
+downstream performance.
+
+936
+00:45:00,060 --> 00:45:02,710
+And looser bounds with simpler critics
+
+937
+00:45:02,710 --> 00:45:04,090
+led to better representation.
+
+938
+00:45:04,090 --> 00:45:06,350
+So essentially, the contrastive loss
+
+939
+00:45:06,350 --> 00:45:07,770
+has to be doing something else.
+
+940
+00:45:07,770 --> 00:45:10,910
+It's not just maximizing the mutual information
+
+941
+00:45:10,910 --> 00:45:13,150
+between things that are similar.
+
+942
+00:45:13,150 --> 00:45:15,110
+So what else is it doing?
+
+943
+00:45:15,110 --> 00:45:17,350
+So we'd said that we had a couple of properties
+
+944
+00:45:17,350 --> 00:45:20,010
+that we liked that made representations good.
+
+945
+00:45:20,010 --> 00:45:22,650
+We had concentration alignment.
+
+946
+00:45:22,650 --> 00:45:24,790
+So data from the same class is close.
+
+947
+00:45:24,790 --> 00:45:27,390
+We had separation, which means data from different classes
+
+948
+00:45:27,390 --> 00:45:28,510
+are far apart.
+
+949
+00:45:28,510 --> 00:45:30,390
+We don't lose information.
+
+950
+00:45:30,390 --> 00:45:33,050
+And then we had robustness to irrelevant perturbations.
+
+951
+00:45:33,050 --> 00:45:35,430
+We don't want to change something in some way
+
+952
+00:45:35,430 --> 00:45:39,070
+that we think is irrelevant and have it change or move really
+
+953
+00:45:39,070 --> 00:45:40,330
+far in our space.
+
+954
+00:45:43,030 --> 00:45:48,623
+So you can see how, explicitly, the alignment is really
+
+955
+00:45:48,623 --> 00:45:50,290
+built into that loss from the beginning.
+
+956
+00:45:50,290 --> 00:45:52,920
+We're saying we want to pull similar samples together.
+
+957
+00:45:52,920 --> 00:45:54,170
+So that's enforcing alignment.
+
+958
+00:45:54,170 --> 00:45:56,910
+Similar samples should have similar features.
+
+959
+00:45:56,910 --> 00:46:03,920
+And then you can talk about this uniformity, which is essentially
+
+960
+00:46:03,920 --> 00:46:06,007
+saying we want to push to similar samples apart,
+
+961
+00:46:06,007 --> 00:46:07,840
+and we're pushing all the dissimilar samples
+
+962
+00:46:07,840 --> 00:46:08,860
+apart kind of equally.
+
+963
+00:46:08,860 --> 00:46:10,360
+You can imagine that the optimal way
+
+964
+00:46:10,360 --> 00:46:14,880
+to do that would be to cover the entire hypersphere because if we
+
+965
+00:46:14,880 --> 00:46:16,460
+don't use part of the hypersphere,
+
+966
+00:46:16,460 --> 00:46:17,960
+then there's actually a way we could
+
+967
+00:46:17,960 --> 00:46:22,040
+have pushed even further apart things that are different.
+
+968
+00:46:22,040 --> 00:46:25,280
+So here, this actually pushes apart all of the classes.
+
+969
+00:46:25,280 --> 00:46:25,900
+We're here.
+
+970
+00:46:25,900 --> 00:46:28,600
+Every class is, again, one point because we've
+
+971
+00:46:28,600 --> 00:46:31,160
+said that the only information we have
+
+972
+00:46:31,160 --> 00:46:35,000
+is that this image is the same as itself under perturbations.
+
+973
+00:46:35,000 --> 00:46:38,000
+So we're really pushing apart all the data points
+
+974
+00:46:38,000 --> 00:46:40,000
+on that hypersphere, which is kind
+
+975
+00:46:40,000 --> 00:46:42,880
+of pushing for that uniformity in our feature space.
+
+976
+00:46:42,880 --> 00:46:48,000
+And that could be as seen as a way to enforce separation.
+
+977
+00:46:48,000 --> 00:46:51,960
+So you can actually see this, which is really interesting.
+
+978
+00:46:51,960 --> 00:46:57,480
+So if you take CIFAR-10 and you build these encoders that
+
+979
+00:46:57,480 --> 00:47:00,210
+encode them into the S1 feature space
+
+980
+00:47:00,210 --> 00:47:03,190
+with the hypersphere on one dimension or two dimensions,
+
+981
+00:47:03,190 --> 00:47:05,890
+it's just a circle, and you visualize feature distributions
+
+982
+00:47:05,890 --> 00:47:08,170
+on the validation set, you can see
+
+983
+00:47:08,170 --> 00:47:10,550
+that if you use unsupervised contrastive learning,
+
+984
+00:47:10,550 --> 00:47:13,050
+you get this distribution that is
+
+985
+00:47:13,050 --> 00:47:16,770
+properly uniform around that circle and that embedding space.
+
+986
+00:47:16,770 --> 00:47:19,930
+Whereas if you actually use supervised predictive learning,
+
+987
+00:47:19,930 --> 00:47:23,210
+you get a feature distribution that's not uniform.
+
+988
+00:47:23,210 --> 00:47:25,430
+And if you just randomly initialize the network,
+
+989
+00:47:25,430 --> 00:47:27,290
+it's far from uniform.
+
+990
+00:47:27,290 --> 00:47:30,590
+We really don't get anything close to this uniformity.
+
+991
+00:47:30,590 --> 00:47:32,950
+So you can see that almost it's actually happening.
+
+992
+00:47:32,950 --> 00:47:34,090
+Something in the way that we're doing
+
+993
+00:47:34,090 --> 00:47:35,715
+these unsupervised contrastive learning
+
+994
+00:47:35,715 --> 00:47:38,930
+is really pushing and enforcing uniformity
+
+995
+00:47:38,930 --> 00:47:41,330
+across the data points.
+
+996
+00:47:41,330 --> 00:47:43,530
+So how can we quantify this?
+
+997
+00:47:43,530 --> 00:47:45,770
+So the idea is that you might want to explicitly
+
+998
+00:47:45,770 --> 00:47:49,690
+be able to study alignment and uniformity, so things being
+
+999
+00:47:49,690 --> 00:47:53,390
+close together and things being spread apart, using metrics.
+
+1000
+00:47:53,390 --> 00:47:57,900
+We want, actually, a way to quantify how aligned
+
+1001
+00:47:57,900 --> 00:48:00,900
+or how uniform a representation is.
+
+1002
+00:48:00,900 --> 00:48:04,540
+So for uniform, for alignment, we just
+
+1003
+00:48:04,540 --> 00:48:07,740
+do something like looking at the expectation
+
+1004
+00:48:07,740 --> 00:48:12,860
+over the distance between features for positive pairs.
+
+1005
+00:48:12,860 --> 00:48:13,960
+This is pretty intuitive.
+
+1006
+00:48:13,960 --> 00:48:17,300
+So you're just saying my alignment metric
+
+1007
+00:48:17,300 --> 00:48:20,540
+is how far apart do I think any two positive examples are
+
+1008
+00:48:20,540 --> 00:48:23,260
+going to be in expectation.
+
+1009
+00:48:23,260 --> 00:48:25,540
+And then, for uniformity, instead
+
+1010
+00:48:25,540 --> 00:48:27,780
+of trying to explicitly say the expected
+
+1011
+00:48:27,780 --> 00:48:30,820
+difference between negative pairs,
+
+1012
+00:48:30,820 --> 00:48:33,820
+you can do a transformation of this using the Gaussian
+
+1013
+00:48:33,820 --> 00:48:35,060
+potential.
+
+1014
+00:48:35,060 --> 00:48:38,980
+And then you can look at using the logarithm of the expected
+
+1015
+00:48:38,980 --> 00:48:41,860
+pairwise Gaussian potential, which
+
+1016
+00:48:41,860 --> 00:48:45,380
+is essentially e to the minus squared distance.
+
+1017
+00:48:45,380 --> 00:48:50,500
+And this puts more focus on the smallest distances.
+
+1018
+00:48:50,500 --> 00:48:53,020
+And this objective of goal has a lot
+
+1019
+00:48:53,020 --> 00:48:54,400
+of connections throughout math.
+
+1020
+00:48:54,400 --> 00:48:56,150
+And it turns out the solution that
+
+1021
+00:48:56,150 --> 00:49:00,750
+optimizes this is the one that maximally spreads out
+
+1022
+00:49:00,750 --> 00:49:02,233
+the points on the hypersphere.
+
+1023
+00:49:02,233 --> 00:49:04,150
+So the uniform distribution on the hypersphere
+
+1024
+00:49:04,150 --> 00:49:07,430
+is explicitly the solution to this.
+
+1025
+00:49:07,430 --> 00:49:11,750
+And so now the uniform distribution on the hypersphere
+
+1026
+00:49:11,750 --> 00:49:14,150
+becomes the unique measure that minimizes
+
+1027
+00:49:14,150 --> 00:49:18,790
+expected pairwise potential between negative pairs.
+
+1028
+00:49:18,790 --> 00:49:21,930
+So now if we want to dig into our explicit contrastive loss,
+
+1029
+00:49:21,930 --> 00:49:24,410
+one way to do that is we take asymptotics.
+
+1030
+00:49:24,410 --> 00:49:30,450
+We assume, OK, what happens as you take things to infinity?
+
+1031
+00:49:30,450 --> 00:49:32,750
+That's a good way to understand behavior generally
+
+1032
+00:49:32,750 --> 00:49:36,990
+when you're looking at mathematical properties.
+
+1033
+00:49:36,990 --> 00:49:41,230
+So here, without getting too formal,
+
+1034
+00:49:41,230 --> 00:49:43,750
+we want to make connections between alignment and uniformity
+
+1035
+00:49:43,750 --> 00:49:45,950
+and our contrastive loss.
+
+1036
+00:49:45,950 --> 00:49:48,310
+So since our definitions are expectations,
+
+1037
+00:49:48,310 --> 00:49:50,630
+we'll look at the asymptotic behavior,
+
+1038
+00:49:50,630 --> 00:49:54,800
+specifically taking the limit as the number of negative samples
+
+1039
+00:49:54,800 --> 00:49:55,960
+goes to infinity.
+
+1040
+00:49:55,960 --> 00:50:01,360
+So say we have infinite negative examples for any given positive.
+
+1041
+00:50:01,360 --> 00:50:03,240
+Then you can reformulate this to getting
+
+1042
+00:50:03,240 --> 00:50:05,840
+basically the combination two different terms that
+
+1043
+00:50:05,840 --> 00:50:07,480
+are expectations.
+
+1044
+00:50:07,480 --> 00:50:10,760
+And we're putting them here in green and in red
+
+1045
+00:50:10,760 --> 00:50:14,760
+because, basically, the first component of this
+
+1046
+00:50:14,760 --> 00:50:18,880
+gets minimized if every single point of the same category
+
+1047
+00:50:18,880 --> 00:50:21,120
+has the exact same embedding.
+
+1048
+00:50:21,120 --> 00:50:25,840
+So essentially, if the distance between positive pairs is just 0
+
+1049
+00:50:25,840 --> 00:50:28,280
+and the second term gets minimized,
+
+1050
+00:50:28,280 --> 00:50:30,973
+if those collapsed points are-- all the points
+
+1051
+00:50:30,973 --> 00:50:32,640
+are spread out as far as possible, which
+
+1052
+00:50:32,640 --> 00:50:35,280
+is that uniform distribution.
+
+1053
+00:50:35,280 --> 00:50:38,760
+So the first term gets minimized if and only
+
+1054
+00:50:38,760 --> 00:50:41,120
+if f is perfectly aligned.
+
+1055
+00:50:41,120 --> 00:50:44,760
+All the things that are same are exactly the same embedding.
+
+1056
+00:50:44,760 --> 00:50:49,060
+And then the second one is minimized
+
+1057
+00:50:49,060 --> 00:50:51,400
+if we get perfect uniformity, which is explicitly
+
+1058
+00:50:51,400 --> 00:50:52,820
+the uniform feature distribution,
+
+1059
+00:50:52,820 --> 00:50:55,610
+pushing everything as far apart as possible.
+
+1060
+00:50:55,610 --> 00:50:59,130
+And now these are actually measurable quantities.
+
+1061
+00:50:59,130 --> 00:51:03,570
+So now you can actually look at representation quality
+
+1062
+00:51:03,570 --> 00:51:07,330
+as defined by alignment versus uniformity
+
+1063
+00:51:07,330 --> 00:51:12,770
+and look at how accurate, for example,
+
+1064
+00:51:12,770 --> 00:51:15,568
+prediction is on a validation set.
+
+1065
+00:51:15,568 --> 00:51:18,110
+And what you can see is you take a bunch of different models,
+
+1066
+00:51:18,110 --> 00:51:19,568
+so every single one of these points
+
+1067
+00:51:19,568 --> 00:51:21,865
+would be a different representation space
+
+1068
+00:51:21,865 --> 00:51:23,490
+or different thing that's been learned,
+
+1069
+00:51:23,490 --> 00:51:26,210
+and you can plot them in terms of their alignment
+
+1070
+00:51:26,210 --> 00:51:29,410
+versus their uniformity as measured by these quantities.
+
+1071
+00:51:29,410 --> 00:51:32,450
+And you can show that the things that have the highest validation
+
+1072
+00:51:32,450 --> 00:51:36,490
+accuracy are the best possible minimizers of both alignment
+
+1073
+00:51:36,490 --> 00:51:37,770
+and uniformity.
+
+1074
+00:51:37,770 --> 00:51:40,770
+So this kind of red that goes into blue that goes back
+
+1075
+00:51:40,770 --> 00:51:44,770
+into red explicitly tells us in some nice, measurable way
+
+1076
+00:51:44,770 --> 00:51:46,370
+that alignment and uniformity are
+
+1077
+00:51:46,370 --> 00:51:49,450
+in fact good qualities for a representation space,
+
+1078
+00:51:49,450 --> 00:51:53,620
+and they map towards good accuracy on downstream tasks.
+
+1079
+00:51:53,620 --> 00:51:56,980
+And you can show this over several different data sets,
+
+1080
+00:51:56,980 --> 00:52:00,820
+though you will see that simpler data sets show this better
+
+1081
+00:52:00,820 --> 00:52:04,340
+than more complicated ones.
+
+1082
+00:52:04,340 --> 00:52:07,080
+So what's the contrastive loss doing?
+
+1083
+00:52:07,080 --> 00:52:09,460
+So the loss function itself, we've just shown,
+
+1084
+00:52:09,460 --> 00:52:14,060
+explicitly encourages alignment and uniformity or concentration
+
+1085
+00:52:14,060 --> 00:52:15,620
+and separation.
+
+1086
+00:52:15,620 --> 00:52:18,760
+So then what is the selection of positive and negative pairs
+
+1087
+00:52:18,760 --> 00:52:20,700
+encouraging?
+
+1088
+00:52:20,700 --> 00:52:23,500
+We talked about how we generate those positive and negative
+
+1089
+00:52:23,500 --> 00:52:26,580
+pairs is through maybe all these different augmentations.
+
+1090
+00:52:26,580 --> 00:52:32,420
+So what are we teaching a model via our choice of pairs?
+
+1091
+00:52:32,420 --> 00:52:35,220
+So augmentations of the same data point should be close.
+
+1092
+00:52:37,820 --> 00:52:41,500
+And then we want a learned representation
+
+1093
+00:52:41,500 --> 00:52:43,380
+that's invariant to perturbations
+
+1094
+00:52:43,380 --> 00:52:45,000
+induced by data augmentations.
+
+1095
+00:52:45,000 --> 00:52:47,180
+So we're trying to learn invariance
+
+1096
+00:52:47,180 --> 00:52:50,440
+to the set of augmentations we explicitly put in.
+
+1097
+00:52:50,440 --> 00:52:54,320
+And it turns out that finding the right invariances
+
+1098
+00:52:54,320 --> 00:52:55,880
+can be really hard.
+
+1099
+00:52:55,880 --> 00:52:57,520
+We talked about the molecule thing.
+
+1100
+00:52:57,520 --> 00:53:01,440
+We talked about in the right and left shoe thing.
+
+1101
+00:53:01,440 --> 00:53:06,400
+And so there might actually be some explicit invariances
+
+1102
+00:53:06,400 --> 00:53:08,440
+like, for example, the ones we talked
+
+1103
+00:53:08,440 --> 00:53:10,467
+about in the geometric deep learning lecture
+
+1104
+00:53:10,467 --> 00:53:12,300
+that you could actually explicitly hardcode.
+
+1105
+00:53:12,300 --> 00:53:14,465
+If you want to be symmetrically invariant,
+
+1106
+00:53:14,465 --> 00:53:15,840
+you could build symmetry directly
+
+1107
+00:53:15,840 --> 00:53:18,850
+into your representation.
+
+1108
+00:53:18,850 --> 00:53:20,600
+And maybe there are some cases where you'd
+
+1109
+00:53:20,600 --> 00:53:23,320
+want to use one or the other.
+
+1110
+00:53:23,320 --> 00:53:26,622
+And it turns out that there are a lot of types of invariances
+
+1111
+00:53:26,622 --> 00:53:28,080
+that we might want to have that can
+
+1112
+00:53:28,080 --> 00:53:30,320
+be really difficult to define mathematically.
+
+1113
+00:53:30,320 --> 00:53:33,400
+And so this kind of experimental or maybe slightly more
+
+1114
+00:53:33,400 --> 00:53:35,860
+brute force approach of just explicitly saying, hey,
+
+1115
+00:53:35,860 --> 00:53:39,720
+if I do this to this thing, I want it to be the same,
+
+1116
+00:53:39,720 --> 00:53:42,160
+you can build those invariances in without actually
+
+1117
+00:53:42,160 --> 00:53:45,040
+being able to mathematically define explicitly
+
+1118
+00:53:45,040 --> 00:53:47,060
+what it means to be, for example,
+
+1119
+00:53:47,060 --> 00:53:50,650
+invariant to pose within a scene or distance
+
+1120
+00:53:50,650 --> 00:53:53,250
+in these complex geometric spaces,
+
+1121
+00:53:53,250 --> 00:53:56,810
+particularly for nonrigid objects.
+
+1122
+00:53:56,810 --> 00:53:59,370
+So what we're saying here is essentially
+
+1123
+00:53:59,370 --> 00:54:02,050
+that the data is explicitly the dimension that
+
+1124
+00:54:02,050 --> 00:54:05,490
+encourages the robustness, that third category that we really
+
+1125
+00:54:05,490 --> 00:54:07,610
+wanted in our representation.
+
+1126
+00:54:07,610 --> 00:54:12,690
+That robustness to perturbations is coming just from our data.
+
+1127
+00:54:12,690 --> 00:54:16,090
+So this means that to make all of this work,
+
+1128
+00:54:16,090 --> 00:54:19,930
+you specifically want to have this set of things that
+
+1129
+00:54:19,930 --> 00:54:25,050
+help us get those losses to converge and encourage
+
+1130
+00:54:25,050 --> 00:54:27,410
+the right types of robustness.
+
+1131
+00:54:27,410 --> 00:54:32,490
+And it turns out, for example, that these four things,
+
+1132
+00:54:32,490 --> 00:54:36,210
+really heavy data augmentation, like not just simple stuff,
+
+1133
+00:54:36,210 --> 00:54:40,010
+doing really, really weird things to your inputs within
+
+1134
+00:54:40,010 --> 00:54:42,750
+reason, having these projection heads--
+
+1135
+00:54:42,750 --> 00:54:44,930
+we'll talk about this in a second--
+
+1136
+00:54:44,930 --> 00:54:50,380
+having very large batch sizes, and selecting the correct data
+
+1137
+00:54:50,380 --> 00:54:52,158
+pairs and hard negative examples,
+
+1138
+00:54:52,158 --> 00:54:53,700
+these are really the ingredients that
+
+1139
+00:54:53,700 --> 00:54:55,740
+make this self-supervised contrastive learning
+
+1140
+00:54:55,740 --> 00:54:58,180
+work much better.
+
+1141
+00:54:58,180 --> 00:55:01,100
+And you can actually see this in the literature.
+
+1142
+00:55:01,100 --> 00:55:05,580
+So here, they're explicitly ablating in the SimCLR paper
+
+1143
+00:55:05,580 --> 00:55:08,020
+how these different transformations
+
+1144
+00:55:08,020 --> 00:55:09,620
+affect the performance.
+
+1145
+00:55:09,620 --> 00:55:11,580
+And it turns out that the performance
+
+1146
+00:55:11,580 --> 00:55:14,060
+of your downstream classifier, if you
+
+1147
+00:55:14,060 --> 00:55:16,580
+do self-supervised representation learning
+
+1148
+00:55:16,580 --> 00:55:21,160
+using only crops, for example, is significantly lower,
+
+1149
+00:55:21,160 --> 00:55:24,740
+like 15% almost lower, than if you
+
+1150
+00:55:24,740 --> 00:55:29,060
+use all of the entire set of augmentations shown here
+
+1151
+00:55:29,060 --> 00:55:30,620
+on the left.
+
+1152
+00:55:30,620 --> 00:55:32,660
+So the data augmentation definitely
+
+1153
+00:55:32,660 --> 00:55:35,580
+plays a huge role here.
+
+1154
+00:55:35,580 --> 00:55:37,940
+Another thing that actually plays a huge role
+
+1155
+00:55:37,940 --> 00:55:40,540
+is this idea of a projection head.
+
+1156
+00:55:40,540 --> 00:55:44,140
+So here, what people found experimentally
+
+1157
+00:55:44,140 --> 00:55:48,510
+is that if, instead of applying your contrastive loss directly
+
+1158
+00:55:48,510 --> 00:55:52,010
+to the feature representation you're trying to learn,
+
+1159
+00:55:52,010 --> 00:55:55,950
+you enable some learned projection g that's
+
+1160
+00:55:55,950 --> 00:55:59,230
+quite simple from h, which is the representation space you're
+
+1161
+00:55:59,230 --> 00:56:03,470
+planning to use, and some z where you're actually
+
+1162
+00:56:03,470 --> 00:56:07,330
+going to maximize the agreement between similar pairs,
+
+1163
+00:56:07,330 --> 00:56:09,430
+you're actually applying that contrastive loss,
+
+1164
+00:56:09,430 --> 00:56:15,448
+that this ends up also really helping performance downstream.
+
+1165
+00:56:15,448 --> 00:56:16,990
+And g will be something quite simple,
+
+1166
+00:56:16,990 --> 00:56:20,710
+a linear projection or a very small multilayer perceptron.
+
+1167
+00:56:20,710 --> 00:56:22,990
+And then so you don't actually use z,
+
+1168
+00:56:22,990 --> 00:56:24,670
+which is like this projected space where
+
+1169
+00:56:24,670 --> 00:56:27,330
+you're calculating your loss as your representation.
+
+1170
+00:56:27,330 --> 00:56:29,550
+Instead, you use h.
+
+1171
+00:56:29,550 --> 00:56:32,137
+And this projection had improved performance.
+
+1172
+00:56:32,137 --> 00:56:34,470
+And I think one of the ways that people have intuitively
+
+1173
+00:56:34,470 --> 00:56:40,190
+tried to explain it is that instead of--
+
+1174
+00:56:40,190 --> 00:56:43,870
+it lets the model learn a representation that keeps
+
+1175
+00:56:43,870 --> 00:56:46,080
+a little bit more variance.
+
+1176
+00:56:46,080 --> 00:56:48,400
+So for example, if you're trying to explicitly enforce
+
+1177
+00:56:48,400 --> 00:56:50,640
+this contrastive loss, you're really
+
+1178
+00:56:50,640 --> 00:56:56,080
+trying to push things completely together that are augmentations
+
+1179
+00:56:56,080 --> 00:56:57,480
+of the same object.
+
+1180
+00:56:57,480 --> 00:57:00,040
+But actually, maintaining some dimensions
+
+1181
+00:57:00,040 --> 00:57:03,320
+of variance to some of those differences, it seems,
+
+1182
+00:57:03,320 --> 00:57:05,680
+may be a helpful thing.
+
+1183
+00:57:05,680 --> 00:57:08,180
+This isn't something that's been super formalized,
+
+1184
+00:57:08,180 --> 00:57:09,880
+but it's some high-level intuition
+
+1185
+00:57:09,880 --> 00:57:13,200
+for why we might want to use this representation as opposed
+
+1186
+00:57:13,200 --> 00:57:15,680
+to the thing we're actually calculating loss over.
+
+1187
+00:57:15,680 --> 00:57:20,160
+And actually, I see some synonyms to this in transformers
+
+1188
+00:57:20,160 --> 00:57:22,820
+because when you think about a transformer,
+
+1189
+00:57:22,820 --> 00:57:27,240
+there's one set of projections where you're calculating
+
+1190
+00:57:27,240 --> 00:57:29,443
+similarity between things.
+
+1191
+00:57:29,443 --> 00:57:31,360
+And then there's this other set of projections
+
+1192
+00:57:31,360 --> 00:57:33,840
+that you use to actually pass information.
+
+1193
+00:57:33,840 --> 00:57:36,880
+And so it kind of, again, seems to suggest
+
+1194
+00:57:36,880 --> 00:57:39,935
+that it might be valuable to have differences
+
+1195
+00:57:39,935 --> 00:57:41,560
+between the representations we actually
+
+1196
+00:57:41,560 --> 00:57:44,130
+use to keep information and the representations
+
+1197
+00:57:44,130 --> 00:57:48,290
+we use to calculate similarity or difference.
+
+1198
+00:57:48,290 --> 00:57:51,530
+So if you actually look at this, you
+
+1199
+00:57:51,530 --> 00:57:56,690
+can see you have these gains between no projection
+
+1200
+00:57:56,690 --> 00:58:01,690
+at all versus different dimensionalities
+
+1201
+00:58:01,690 --> 00:58:05,850
+of those projections and linear versus nonlinear projections.
+
+1202
+00:58:05,850 --> 00:58:10,290
+And again, h maybe gets to keep some invariance
+
+1203
+00:58:10,290 --> 00:58:13,690
+to dimensions of augmentation.
+
+1204
+00:58:13,690 --> 00:58:16,570
+Batch size has also been shown to be really important.
+
+1205
+00:58:16,570 --> 00:58:20,710
+So SimCLR uses all the points in a batch as negative examples.
+
+1206
+00:58:20,710 --> 00:58:24,010
+And it turns out that the number of negative examples you have
+
+1207
+00:58:24,010 --> 00:58:27,690
+at every given point really significantly improves
+
+1208
+00:58:27,690 --> 00:58:30,130
+performance, particularly when you have--
+
+1209
+00:58:30,130 --> 00:58:32,050
+early on in training, you can see
+
+1210
+00:58:32,050 --> 00:58:35,810
+that the difference is close to 10% between having
+
+1211
+00:58:35,810 --> 00:58:41,050
+a batch size of 256 versus a batch size of 8192.
+
+1212
+00:58:41,050 --> 00:58:44,440
+This is another reason why all of us are building GPUs-- well,
+
+1213
+00:58:44,440 --> 00:58:46,180
+I say all of us--
+
+1214
+00:58:46,180 --> 00:58:48,540
+NVIDIA is building GPUs that have
+
+1215
+00:58:48,540 --> 00:58:50,100
+bigger and bigger and bigger memory
+
+1216
+00:58:50,100 --> 00:58:52,980
+because we need to be able to capture batch sizes that
+
+1217
+00:58:52,980 --> 00:58:56,700
+are really big to be able to maximize performance.
+
+1218
+00:58:56,700 --> 00:58:58,780
+And it turns out this is very expensive.
+
+1219
+00:58:58,780 --> 00:59:01,260
+Needing to have huge batch sizes is
+
+1220
+00:59:01,260 --> 00:59:04,260
+costly from a computational perspective.
+
+1221
+00:59:04,260 --> 00:59:07,040
+And there's a lot of efforts to try to make that more efficient.
+
+1222
+00:59:07,040 --> 00:59:09,600
+So Moco, for example, you can go read.
+
+1223
+00:59:09,600 --> 00:59:11,620
+It was an improvement upon SimCLR
+
+1224
+00:59:11,620 --> 00:59:15,220
+that explicitly tried to make that the batch size dimension
+
+1225
+00:59:15,220 --> 00:59:18,140
+a little bit more efficient.
+
+1226
+00:59:18,140 --> 00:59:21,340
+And then, finally, we talked about the selection
+
+1227
+00:59:21,340 --> 00:59:23,540
+of negative examples, how it's really important
+
+1228
+00:59:23,540 --> 00:59:29,080
+to try to make sure that negative pairs are informative.
+
+1229
+00:59:29,080 --> 00:59:30,800
+We want to find the hard cases.
+
+1230
+00:59:30,800 --> 00:59:33,900
+We're actually getting signal from our loss.
+
+1231
+00:59:33,900 --> 00:59:38,660
+And it turns out that if you actually have labels--
+
+1232
+00:59:38,660 --> 00:59:42,550
+and so here, labels would be maybe categories
+
+1233
+00:59:42,550 --> 00:59:44,710
+from your set of classes that you're
+
+1234
+00:59:44,710 --> 00:59:46,910
+interested in using your downstream representation
+
+1235
+00:59:46,910 --> 00:59:48,030
+to categorize--
+
+1236
+00:59:48,030 --> 00:59:48,530
+that.
+
+1237
+00:59:48,530 --> 00:59:51,590
+If you can explicitly remove those, quote unquote,
+
+1238
+00:59:51,590 --> 00:59:54,910
+"false negative" samples, which is basically like you have
+
+1239
+00:59:54,910 --> 00:59:58,190
+golden retrievers, and you want to not tell your model that
+
+1240
+00:59:58,190 --> 01:00:01,910
+another golden retriever should be really far apart.
+
+1241
+01:00:01,910 --> 01:00:04,575
+And particularly, we want that far apart with a margin.
+
+1242
+01:00:04,575 --> 01:00:05,950
+So it's not just saying it should
+
+1243
+01:00:05,950 --> 01:00:06,770
+be a little farther apart.
+
+1244
+01:00:06,770 --> 01:00:09,230
+It's really trying to push it outside of a margin far away
+
+1245
+01:00:09,230 --> 01:00:11,647
+from these points, which is something we don't necessarily
+
+1246
+01:00:11,647 --> 01:00:12,270
+want.
+
+1247
+01:00:12,270 --> 01:00:17,150
+If you remove all of those and you use only the true negatives,
+
+1248
+01:00:17,150 --> 01:00:20,790
+you actually end up getting much higher top one accuracy
+
+1249
+01:00:20,790 --> 01:00:22,190
+downstream.
+
+1250
+01:00:22,190 --> 01:00:24,230
+But again, this assumes that you have access
+
+1251
+01:00:24,230 --> 01:00:27,850
+to labeled data for all of your data points
+
+1252
+01:00:27,850 --> 01:00:29,310
+and that the labeled data probably
+
+1253
+01:00:29,310 --> 01:00:31,227
+needs to align with the downstream task you're
+
+1254
+01:00:31,227 --> 01:00:32,830
+interested in.
+
+1255
+01:00:32,830 --> 01:00:34,310
+And so then there's a lot of people
+
+1256
+01:00:34,310 --> 01:00:37,090
+who've looked at how we can leverage some supervision,
+
+1257
+01:00:37,090 --> 01:00:40,440
+maybe not requiring all the points to be labeled, but maybe
+
+1258
+01:00:40,440 --> 01:00:42,600
+if you have labels for some of them,
+
+1259
+01:00:42,600 --> 01:00:45,080
+how we can look at supervised or even semi-supervised
+
+1260
+01:00:45,080 --> 01:00:47,200
+contrastive learning.
+
+1261
+01:00:47,200 --> 01:00:51,600
+And so here, the idea is that having the contrastive learning
+
+1262
+01:00:51,600 --> 01:00:53,400
+signal, that triplet loss signal,
+
+1263
+01:00:53,400 --> 01:00:57,040
+you get some more geometric and robust feedback than if you just
+
+1264
+01:00:57,040 --> 01:00:59,600
+do crossentropy loss.
+
+1265
+01:00:59,600 --> 01:01:02,380
+So then if you have images from the same class,
+
+1266
+01:01:02,380 --> 01:01:04,600
+you can use those as positive pairs.
+
+1267
+01:01:04,600 --> 01:01:10,540
+Or if you don't actually have labels for everything
+
+1268
+01:01:10,540 --> 01:01:12,400
+but you do have labels for some things,
+
+1269
+01:01:12,400 --> 01:01:15,120
+you can use those positive examples as anchors
+
+1270
+01:01:15,120 --> 01:01:20,140
+and then enforce dimensions across,
+
+1271
+01:01:20,140 --> 01:01:22,720
+like whether you do or don't have supervisory signal that
+
+1272
+01:01:22,720 --> 01:01:25,160
+tries to get a little bit more structure
+
+1273
+01:01:25,160 --> 01:01:27,680
+and handle negatives and positives reasonably.
+
+1274
+01:01:27,680 --> 01:01:31,240
+And there's a lot of work along these lines.
+
+1275
+01:01:31,240 --> 01:01:32,160
+Cool.
+
+1276
+01:01:32,160 --> 01:01:36,960
+So representation learning using similarity
+
+1277
+01:01:36,960 --> 01:01:39,490
+seems to be really powerful.
+
+1278
+01:01:39,490 --> 01:01:41,490
+So just to finish up the class, I
+
+1279
+01:01:41,490 --> 01:01:46,990
+want to do a bit of a case study with one particular data set.
+
+1280
+01:01:46,990 --> 01:01:49,770
+This is the iNaturalist 2021 data set.
+
+1281
+01:01:49,770 --> 01:01:54,210
+It has images of species, so 10,000 different species
+
+1282
+01:01:54,210 --> 01:01:57,210
+of plants, animals, and wildlife, insects.
+
+1283
+01:01:57,210 --> 01:01:59,230
+About 2.7 million training images--
+
+1284
+01:01:59,230 --> 01:02:03,490
+so it's not on the order of billions, but it's pretty big--
+
+1285
+01:02:03,490 --> 01:02:08,370
+about 50,000 validation images, and 500,000 test images.
+
+1286
+01:02:08,370 --> 01:02:12,410
+And the interesting thing about this data set
+
+1287
+01:02:12,410 --> 01:02:15,470
+is it has pretty explicit structure.
+
+1288
+01:02:15,470 --> 01:02:17,730
+It's species, so you can look at the taxonomic tree
+
+1289
+01:02:17,730 --> 01:02:19,530
+over the set of categories.
+
+1290
+01:02:19,530 --> 01:02:23,050
+And here, if you start at the middle,
+
+1291
+01:02:23,050 --> 01:02:27,050
+this is high-order branching in terms of taxonomic tree.
+
+1292
+01:02:27,050 --> 01:02:28,730
+So it's very coarse grained.
+
+1293
+01:02:28,730 --> 01:02:32,450
+This would be something like the difference between Animalia
+
+1294
+01:02:32,450 --> 01:02:33,310
+and Plantae.
+
+1295
+01:02:33,310 --> 01:02:34,728
+These are animals versus plants.
+
+1296
+01:02:34,728 --> 01:02:36,770
+They're very, very different, and this difference
+
+1297
+01:02:36,770 --> 01:02:39,470
+is very coarse-grained.
+
+1298
+01:02:39,470 --> 01:02:41,870
+And then as, you move closer to the edge,
+
+1299
+01:02:41,870 --> 01:02:44,950
+you would get things that are increasingly more and more
+
+1300
+01:02:44,950 --> 01:02:45,650
+similar.
+
+1301
+01:02:45,650 --> 01:02:48,510
+So different species within the same genera
+
+1302
+01:02:48,510 --> 01:02:50,537
+are going to probably be quite visually similar,
+
+1303
+01:02:50,537 --> 01:02:52,870
+though, of course, there are some exceptions from things
+
+1304
+01:02:52,870 --> 01:02:54,870
+like mimicry.
+
+1305
+01:02:54,870 --> 01:02:57,390
+So at the very fine edge, that's where
+
+1306
+01:02:57,390 --> 01:03:00,110
+you get things like the two moths I keep showing.
+
+1307
+01:03:00,110 --> 01:03:03,190
+These are different species, but from the same genus.
+
+1308
+01:03:03,190 --> 01:03:06,810
+And so you can of unroll this level of granularity
+
+1309
+01:03:06,810 --> 01:03:10,190
+that's-- we've got this proxy for the level of visual
+
+1310
+01:03:10,190 --> 01:03:13,350
+granularity in the classes coming from the taxonomic tree.
+
+1311
+01:03:13,350 --> 01:03:15,550
+So you can roll this out on a graph
+
+1312
+01:03:15,550 --> 01:03:17,850
+and say, OK, kingdom is very coarse-grained.
+
+1313
+01:03:17,850 --> 01:03:20,310
+Going down to species is very finegrained.
+
+1314
+01:03:20,310 --> 01:03:23,910
+So one of the things that's quite interesting is if we look
+
+1315
+01:03:23,910 --> 01:03:27,850
+at a supervised model versus SimCLR or MoCo,
+
+1316
+01:03:27,850 --> 01:03:32,150
+these two different approaches for self-supervised contrastive
+
+1317
+01:03:32,150 --> 01:03:35,350
+learning, and we look at accuracy now using a linear
+
+1318
+01:03:35,350 --> 01:03:37,120
+probe--
+
+1319
+01:03:37,120 --> 01:03:39,520
+so that means basically taking a representation space
+
+1320
+01:03:39,520 --> 01:03:42,200
+and then just learning a linear projection that's going
+
+1321
+01:03:42,200 --> 01:03:44,202
+to actually be our categorizer.
+
+1322
+01:03:44,202 --> 01:03:46,160
+And we'll actually learn that linear projection
+
+1323
+01:03:46,160 --> 01:03:47,520
+with supervision.
+
+1324
+01:03:47,520 --> 01:03:50,120
+Then we can look at the accuracy across
+
+1325
+01:03:50,120 --> 01:03:52,120
+these different granularities.
+
+1326
+01:03:52,120 --> 01:03:53,760
+And so this black line up top, that's
+
+1327
+01:03:53,760 --> 01:03:55,140
+supervised training from scratch.
+
+1328
+01:03:55,140 --> 01:03:57,015
+We're not starting with ImageNet or anything.
+
+1329
+01:03:57,015 --> 01:03:59,680
+It's just all of this is only trained on this data.
+
+1330
+01:03:59,680 --> 01:04:01,858
+And then, at the bottom, we see what
+
+1331
+01:04:01,858 --> 01:04:03,400
+we get from self-supervised learning,
+
+1332
+01:04:03,400 --> 01:04:05,980
+again with that linear probe on the entire data set,
+
+1333
+01:04:05,980 --> 01:04:09,640
+so on the whole training data set with the linear probe.
+
+1334
+01:04:09,640 --> 01:04:13,360
+And what we do is we train both the supervised
+
+1335
+01:04:13,360 --> 01:04:15,880
+and the self-supervised, then the linear probe
+
+1336
+01:04:15,880 --> 01:04:19,240
+for the self-supervised representation on the finest
+
+1337
+01:04:19,240 --> 01:04:21,007
+level, so on the species level.
+
+1338
+01:04:21,007 --> 01:04:22,840
+And then instead of explicitly training them
+
+1339
+01:04:22,840 --> 01:04:25,580
+for these higher-order levels, we just roll them up.
+
+1340
+01:04:25,580 --> 01:04:28,480
+So you would say, OK, we're going to predict at the species
+
+1341
+01:04:28,480 --> 01:04:29,060
+level.
+
+1342
+01:04:29,060 --> 01:04:31,560
+Now you just aggregate all of your category predictions
+
+1343
+01:04:31,560 --> 01:04:35,130
+up a level based on that graph, on that taxonomic tree.
+
+1344
+01:04:35,130 --> 01:04:37,610
+You use that as your prediction for the next level,
+
+1345
+01:04:37,610 --> 01:04:39,490
+and et cetera.
+
+1346
+01:04:39,490 --> 01:04:41,508
+So we're basically training on the finest level,
+
+1347
+01:04:41,508 --> 01:04:43,050
+but then we're evaluating our ability
+
+1348
+01:04:43,050 --> 01:04:46,410
+to categorize a coarser and coarser levels.
+
+1349
+01:04:46,410 --> 01:04:49,630
+And it turns out that if you look at this type of data set,
+
+1350
+01:04:49,630 --> 01:04:52,790
+you can really see that, at this finegrained levels,
+
+1351
+01:04:52,790 --> 01:04:55,130
+there's really not a small difference.
+
+1352
+01:04:55,130 --> 01:05:00,570
+There's about a 30% gap between a supervised and self-supervised
+
+1353
+01:05:00,570 --> 01:05:02,050
+training on iNaturalist.
+
+1354
+01:05:02,050 --> 01:05:05,140
+And if you do the same experiment on ImageNet,
+
+1355
+01:05:05,140 --> 01:05:06,390
+the gap is much, much smaller.
+
+1356
+01:05:06,390 --> 01:05:08,650
+It's more like 7%.
+
+1357
+01:05:08,650 --> 01:05:11,810
+And so one reason for that is this--
+
+1358
+01:05:11,810 --> 01:05:14,030
+ImageNet is a very coarse grained data set.
+
+1359
+01:05:14,030 --> 01:05:16,490
+The categories are not very similar to each other.
+
+1360
+01:05:16,490 --> 01:05:20,190
+And you see the same performance or the same trend here.
+
+1361
+01:05:20,190 --> 01:05:21,930
+The gap is very small when you look
+
+1362
+01:05:21,930 --> 01:05:25,010
+at these very coarse groupings-- class, phylum, or kingdom.
+
+1363
+01:05:25,010 --> 01:05:27,890
+But then the gap actually grows as the evaluation
+
+1364
+01:05:27,890 --> 01:05:29,730
+is made more fine grained.
+
+1365
+01:05:29,730 --> 01:05:33,495
+And so this interestingly captures
+
+1366
+01:05:33,495 --> 01:05:35,620
+some of those dimensions that we were talking about
+
+1367
+01:05:35,620 --> 01:05:38,500
+in terms of the ways that we have chosen our data
+
+1368
+01:05:38,500 --> 01:05:41,620
+augmentations, the pairs that we give the model
+
+1369
+01:05:41,620 --> 01:05:44,860
+or don't give the model, and the effect that might have.
+
+1370
+01:05:44,860 --> 01:05:48,140
+So first, if we look at this and we actually
+
+1371
+01:05:48,140 --> 01:05:50,820
+try to probe these representations that are learned
+
+1372
+01:05:50,820 --> 01:05:54,220
+using this kind of query approach or this retrieval
+
+1373
+01:05:54,220 --> 01:05:56,860
+approach, and we say, OK, we're going to start with this image.
+
+1374
+01:05:56,860 --> 01:05:59,500
+Now if we take our supervised model
+
+1375
+01:05:59,500 --> 01:06:03,980
+and we find the nearest neighbors in the entire data
+
+1376
+01:06:03,980 --> 01:06:08,900
+set, it turns out this is a hard problem.
+
+1377
+01:06:08,900 --> 01:06:11,060
+And so there are a few examples outlined
+
+1378
+01:06:11,060 --> 01:06:14,420
+in blue, where we do actually get nearest neighbors that
+
+1379
+01:06:14,420 --> 01:06:16,660
+are the same species.
+
+1380
+01:06:16,660 --> 01:06:19,740
+But then we also get a lot of nearest neighbors
+
+1381
+01:06:19,740 --> 01:06:21,300
+that are different species.
+
+1382
+01:06:21,300 --> 01:06:25,420
+So even with supervision, this problem can be quite difficult.
+
+1383
+01:06:25,420 --> 01:06:28,375
+And it turns out that as you aggregate up the category set,
+
+1384
+01:06:28,375 --> 01:06:30,000
+no, these are not all the same species,
+
+1385
+01:06:30,000 --> 01:06:34,070
+but they are in the same of genus or family.
+
+1386
+01:06:34,070 --> 01:06:39,670
+But now, if you take the same sort of SimCLR representation
+
+1387
+01:06:39,670 --> 01:06:42,510
+and you do the same thing, you use the same image,
+
+1388
+01:06:42,510 --> 01:06:45,630
+and you query into the representation space,
+
+1389
+01:06:45,630 --> 01:06:50,350
+you can see that none of them are the same species.
+
+1390
+01:06:50,350 --> 01:06:52,270
+What has the model learned?
+
+1391
+01:06:52,270 --> 01:06:53,518
+Yeah?
+
+1392
+01:06:53,518 --> 01:06:54,810
+AUDIENCE: Oh, I had a question.
+
+1393
+01:06:54,810 --> 01:06:56,430
+SARA BEERY: Yeah.
+
+1394
+01:06:56,430 --> 01:06:58,730
+AUDIENCE: It relates to a couple slides back.
+
+1395
+01:06:58,730 --> 01:07:03,190
+You had the accuracy of the supervised
+
+1396
+01:07:03,190 --> 01:07:05,452
+and the contrastive learning.
+
+1397
+01:07:05,452 --> 01:07:06,910
+So earlier in the lecture, you were
+
+1398
+01:07:06,910 --> 01:07:10,270
+saying that the representation space that contrastive learning
+
+1399
+01:07:10,270 --> 01:07:11,833
+learns is uniform.
+
+1400
+01:07:11,833 --> 01:07:13,250
+In some sense, that's really good.
+
+1401
+01:07:13,250 --> 01:07:16,670
+Whereas the supervised version won't necessarily
+
+1402
+01:07:16,670 --> 01:07:19,310
+learn a uniform embedding space.
+
+1403
+01:07:19,310 --> 01:07:22,970
+But you're showing that supervised is doing much better,
+
+1404
+01:07:22,970 --> 01:07:26,430
+so maybe it's not that important to have a uniform embedding
+
+1405
+01:07:26,430 --> 01:07:26,930
+space.
+
+1406
+01:07:26,930 --> 01:07:30,670
+I'm trying to reconcile those two points.
+
+1407
+01:07:30,670 --> 01:07:34,800
+SARA BEERY: Yeah, and actually, I think this will actually help.
+
+1408
+01:07:34,800 --> 01:07:39,740
+So it depends a little bit on the signal.
+
+1409
+01:07:39,740 --> 01:07:45,640
+So basically, yeah, it's usually good to have this separability.
+
+1410
+01:07:45,640 --> 01:07:49,140
+But for contrastive learning to work well,
+
+1411
+01:07:49,140 --> 01:07:53,000
+you need to have a good similarity measure
+
+1412
+01:07:53,000 --> 01:07:55,440
+for your problem of interest.
+
+1413
+01:07:55,440 --> 01:07:57,680
+And so here, what I'm trying to show,
+
+1414
+01:07:57,680 --> 01:08:02,160
+actually, is that what we've learned is we've taken an image
+
+1415
+01:08:02,160 --> 01:08:03,820
+and we've augmented it in some way,
+
+1416
+01:08:03,820 --> 01:08:06,200
+and then we force those things to be close together.
+
+1417
+01:08:06,200 --> 01:08:10,320
+And it looks like that the types of augmentations we're doing is
+
+1418
+01:08:10,320 --> 01:08:14,260
+giving us more information about contextual similarity--
+
+1419
+01:08:14,260 --> 01:08:17,560
+so, in this case, birds being held in human hands--
+
+1420
+01:08:17,560 --> 01:08:21,220
+than it is giving us information about species similarity,
+
+1421
+01:08:21,220 --> 01:08:23,920
+which is what we're hoping this model will be good at
+
+1422
+01:08:23,920 --> 01:08:26,200
+and what we're evaluating it on.
+
+1423
+01:08:26,200 --> 01:08:30,609
+So if you don't have a similarity measure,
+
+1424
+01:08:30,609 --> 01:08:33,450
+where you're choosing those positive pairs
+
+1425
+01:08:33,450 --> 01:08:35,590
+and saying these are similar and this is different
+
+1426
+01:08:35,590 --> 01:08:37,930
+that's well aligned with your downstream goal, which
+
+1427
+01:08:37,930 --> 01:08:40,649
+in this case is identifying species, then
+
+1428
+01:08:40,649 --> 01:08:43,990
+these contrastive objectives, they're giving you uniformity,
+
+1429
+01:08:43,990 --> 01:08:46,890
+but they're maybe not giving you the uniformity that you want,
+
+1430
+01:08:46,890 --> 01:08:51,290
+or they're not giving you the similarity that you want.
+
+1431
+01:08:51,290 --> 01:08:52,529
+Does that make sense?
+
+1432
+01:08:52,529 --> 01:08:56,290
+AUDIENCE: So, in this case, if you were able to, say, control
+
+1433
+01:08:56,290 --> 01:08:59,970
+for birds versus birds in hands, like maybe segment
+
+1434
+01:08:59,970 --> 01:09:02,210
+out the birds, then do you expect
+
+1435
+01:09:02,210 --> 01:09:04,689
+that accuracy to be pushed down closer
+
+1436
+01:09:04,689 --> 01:09:06,450
+to the supervised accuracy?
+
+1437
+01:09:06,450 --> 01:09:09,890
+SARA BEERY: Yeah, so I think the point here
+
+1438
+01:09:09,890 --> 01:09:12,569
+that I'm trying to make is that if you
+
+1439
+01:09:12,569 --> 01:09:15,609
+don't have a self-supervised signal that
+
+1440
+01:09:15,609 --> 01:09:20,210
+is capturing the task that you actually have in mind,
+
+1441
+01:09:20,210 --> 01:09:24,450
+then it's possible that the contrastive objective really
+
+1442
+01:09:24,450 --> 01:09:26,290
+will not build a representation that
+
+1443
+01:09:26,290 --> 01:09:30,220
+is good in the context of your downstream task.
+
+1444
+01:09:30,220 --> 01:09:34,120
+Yeah, so if you did, if we had-- for example,
+
+1445
+01:09:34,120 --> 01:09:36,380
+if we had a supervised objective here,
+
+1446
+01:09:36,380 --> 01:09:37,979
+then you would expect it to be much
+
+1447
+01:09:37,979 --> 01:09:40,660
+closer to a supervised learning objective.
+
+1448
+01:09:40,660 --> 01:09:43,939
+And I actually think one of the things that I didn't do or--
+
+1449
+01:09:43,939 --> 01:09:47,420
+this is some work that was led by Elijah Cole.
+
+1450
+01:09:47,420 --> 01:09:49,260
+It would be interesting to look at taking
+
+1451
+01:09:49,260 --> 01:09:51,580
+a contrastive objective, where now we're
+
+1452
+01:09:51,580 --> 01:09:53,163
+using supervised contrastive learning
+
+1453
+01:09:53,163 --> 01:09:55,080
+and see how that actually affects performance,
+
+1454
+01:09:55,080 --> 01:09:56,622
+though I actually wouldn't anticipate
+
+1455
+01:09:56,622 --> 01:10:01,020
+it would be so different from crossentropy loss in this case.
+
+1456
+01:10:01,020 --> 01:10:04,100
+So I think this is interesting because it kind of points out
+
+1457
+01:10:04,100 --> 01:10:07,300
+how the benchmarks that we use really
+
+1458
+01:10:07,300 --> 01:10:10,980
+influence our idea of what's good enough because it turns out
+
+1459
+01:10:10,980 --> 01:10:13,500
+that, with ImageNet, we're saying, wow,
+
+1460
+01:10:13,500 --> 01:10:16,660
+without any labels at all, we're still building representations
+
+1461
+01:10:16,660 --> 01:10:18,940
+that are very, very close to as good as supervised
+
+1462
+01:10:18,940 --> 01:10:20,160
+representations.
+
+1463
+01:10:20,160 --> 01:10:21,900
+But it turns out that that's, again,
+
+1464
+01:10:21,900 --> 01:10:23,540
+contextualized on the task of interest.
+
+1465
+01:10:23,540 --> 01:10:25,820
+With ImageNet, our task is coarse-grained.
+
+1466
+01:10:25,820 --> 01:10:28,950
+And it turns out, the augmentations were building in,
+
+1467
+01:10:28,950 --> 01:10:30,950
+they're capturing things that make
+
+1468
+01:10:30,950 --> 01:10:33,735
+it easy to separate coarse grained visual characteristics.
+
+1469
+01:10:33,735 --> 01:10:35,110
+Maybe they're relying on the fact
+
+1470
+01:10:35,110 --> 01:10:37,950
+that, at a coarse-grained level, all those birds on hands
+
+1471
+01:10:37,950 --> 01:10:38,897
+would be put together.
+
+1472
+01:10:38,897 --> 01:10:40,730
+That's fine because we just care about bird.
+
+1473
+01:10:40,730 --> 01:10:42,470
+We don't care about bird categories.
+
+1474
+01:10:42,470 --> 01:10:45,430
+But as soon as you have some of these categorizations that
+
+1475
+01:10:45,430 --> 01:10:49,470
+need to be much more subtle, then the augmentations
+
+1476
+01:10:49,470 --> 01:10:53,950
+would somehow need to capture that well.
+
+1477
+01:10:53,950 --> 01:10:55,730
+Yeah, any other questions about this?
+
+1478
+01:10:59,230 --> 01:11:00,230
+Yeah?
+
+1479
+01:11:00,230 --> 01:11:02,430
+AUDIENCE: [INAUDIBLE]
+
+1480
+01:11:07,910 --> 01:11:10,750
+SARA BEERY: So the question was, does SimCLR or does--
+
+1481
+01:11:10,750 --> 01:11:12,790
+I mean, I think SimCLR is just one
+
+1482
+01:11:12,790 --> 01:11:16,390
+example of a self-supervised contrastive objective.
+
+1483
+01:11:16,390 --> 01:11:20,190
+Does that usually do bad on unseen data?
+
+1484
+01:11:20,190 --> 01:11:25,700
+AUDIENCE: [INAUDIBLE] so you don't know what it is?
+
+1485
+01:11:28,600 --> 01:11:31,360
+SARA BEERY: Sorry, can you try to repeat that one more time.
+
+1486
+01:11:31,360 --> 01:11:34,460
+AUDIENCE: So in the negative samples,
+
+1487
+01:11:34,460 --> 01:11:36,060
+we are not doing any augmentations.
+
+1488
+01:11:36,060 --> 01:11:37,560
+We are not doing anything.
+
+1489
+01:11:37,560 --> 01:11:39,360
+So I'm just trying to understand how
+
+1490
+01:11:39,360 --> 01:11:42,200
+the model sees the negative samples [INAUDIBLE]
+
+1491
+01:11:42,200 --> 01:11:43,820
+not doing anything on it.
+
+1492
+01:11:43,820 --> 01:11:50,760
+So when it sees something which is not seen, how does it act?
+
+1493
+01:11:50,760 --> 01:11:54,980
+SARA BEERY: So, I mean, in a lot of these cases,
+
+1494
+01:11:54,980 --> 01:11:56,600
+what we're actually showing results
+
+1495
+01:11:56,600 --> 01:12:00,000
+on is test data, which is unseen during training.
+
+1496
+01:12:00,000 --> 01:12:02,965
+So what we are actually showing that these things do
+
+1497
+01:12:02,965 --> 01:12:04,840
+for some things, like ImageNet in particular,
+
+1498
+01:12:04,840 --> 01:12:07,560
+do generalize well to unseen data.
+
+1499
+01:12:07,560 --> 01:12:10,125
+But the point you brought up about augmentations
+
+1500
+01:12:10,125 --> 01:12:12,500
+on the negative examples-- and it is an interesting one--
+
+1501
+01:12:12,500 --> 01:12:16,320
+and I think, actually, one of the things that is kind of funny
+
+1502
+01:12:16,320 --> 01:12:19,498
+is if you only did augmentations on the positive samples,
+
+1503
+01:12:19,498 --> 01:12:22,040
+you never do any augmentations on the negative samples, which
+
+1504
+01:12:22,040 --> 01:12:24,613
+in practice is not necessarily what people are doing,
+
+1505
+01:12:24,613 --> 01:12:26,780
+you can imagine that the model might learn something
+
+1506
+01:12:26,780 --> 01:12:30,540
+about statistic weirdness in terms of the input space
+
+1507
+01:12:30,540 --> 01:12:34,140
+versus not, like more natural statistics, and start picking up
+
+1508
+01:12:34,140 --> 01:12:35,300
+on that signal.
+
+1509
+01:12:35,300 --> 01:12:38,100
+So that is an interesting bit of intuition you brought up.
+
+1510
+01:12:38,100 --> 01:12:41,740
+But no, generally, I think, actually,
+
+1511
+01:12:41,740 --> 01:12:43,960
+because we're showing this on unseen test data,
+
+1512
+01:12:43,960 --> 01:12:46,120
+I think there is something reasonable about that.
+
+1513
+01:12:46,120 --> 01:12:52,620
+And we've actually found that these types
+
+1514
+01:12:52,620 --> 01:12:55,500
+of contrastive objectives, or the triplet loss objectives,
+
+1515
+01:12:55,500 --> 01:12:58,220
+often will generalize better.
+
+1516
+01:12:58,220 --> 01:13:00,380
+So the example, I'm specifically going to bring up
+
+1517
+01:13:00,380 --> 01:13:04,140
+is this idea of individual re-identification.
+
+1518
+01:13:04,140 --> 01:13:09,200
+In almost all, for example, like Celeb A,
+
+1519
+01:13:09,200 --> 01:13:11,700
+this recognizing celebrities again,
+
+1520
+01:13:11,700 --> 01:13:14,220
+almost all the best methods on this type
+
+1521
+01:13:14,220 --> 01:13:16,660
+of individual identification, where you explicitly
+
+1522
+01:13:16,660 --> 01:13:18,500
+want to be able to say, even if it's not
+
+1523
+01:13:18,500 --> 01:13:21,420
+a category you've seen before-- so, for example, a human that
+
+1524
+01:13:21,420 --> 01:13:23,470
+hasn't been seen by the model-- you
+
+1525
+01:13:23,470 --> 01:13:25,950
+want a picture of that human and another picture
+
+1526
+01:13:25,950 --> 01:13:28,210
+of that new human to be close together.
+
+1527
+01:13:28,210 --> 01:13:30,673
+And it turns out that these metric spaces, particularly
+
+1528
+01:13:30,673 --> 01:13:32,590
+learned through contrastive objectives, things
+
+1529
+01:13:32,590 --> 01:13:34,190
+like triplet loss and then building up
+
+1530
+01:13:34,190 --> 01:13:37,170
+to more and more complex contrastive objectives,
+
+1531
+01:13:37,170 --> 01:13:39,470
+those explicitly are better at that open set
+
+1532
+01:13:39,470 --> 01:13:46,350
+clustering problem in a way that actually a standard crossentropy
+
+1533
+01:13:46,350 --> 01:13:48,750
+loss based on a fixed number of categories,
+
+1534
+01:13:48,750 --> 01:13:50,630
+there's almost nothing you can reasonably
+
+1535
+01:13:50,630 --> 01:13:54,410
+say about what will happen when you look at new categories.
+
+1536
+01:13:54,410 --> 01:13:58,510
+And in practice, actually, similarly to this, what we find
+
+1537
+01:13:58,510 --> 01:14:01,990
+is that if you use classification losses
+
+1538
+01:14:01,990 --> 01:14:05,390
+versus contrastive losses, the contrastive losses significantly
+
+1539
+01:14:05,390 --> 01:14:09,110
+benefit for that open set in terms of making
+
+1540
+01:14:09,110 --> 01:14:11,430
+things similar close together.
+
+1541
+01:14:11,430 --> 01:14:13,830
+AUDIENCE: I guess the reason I got confused initially
+
+1542
+01:14:13,830 --> 01:14:15,750
+[INAUDIBLE] discussed in the lecture
+
+1543
+01:14:15,750 --> 01:14:18,836
+that for positive samples [INAUDIBLE],
+
+1544
+01:14:18,836 --> 01:14:23,040
+but for the negative samples, we just randomly pick any images.
+
+1545
+01:14:23,040 --> 01:14:25,100
+So I thought we were not doing augmentations,
+
+1546
+01:14:25,100 --> 01:14:26,880
+and it looks like we are.
+
+1547
+01:14:26,880 --> 01:14:29,580
+SARA BEERY: I mean, not everything does.
+
+1548
+01:14:29,580 --> 01:14:32,120
+But yes, there are cases where people do augmentations
+
+1549
+01:14:32,120 --> 01:14:33,140
+on negative examples.
+
+1550
+01:14:33,140 --> 01:14:35,920
+Yeah, but I think that is interesting.
+
+1551
+01:14:35,920 --> 01:14:37,020
+Any other questions?
+
+1552
+01:14:40,600 --> 01:14:41,840
+Cool.
+
+1553
+01:14:41,840 --> 01:14:44,800
+So yeah, to summarize again, we tried
+
+1554
+01:14:44,800 --> 01:14:46,520
+to capture some dimensions of what
+
+1555
+01:14:46,520 --> 01:14:50,400
+makes a representation good, and specifically
+
+1556
+01:14:50,400 --> 01:14:52,480
+that good representations might actually
+
+1557
+01:14:52,480 --> 01:14:56,280
+be really based on similarity and dissimilarity.
+
+1558
+01:14:56,280 --> 01:14:57,680
+We said that we want to make sure
+
+1559
+01:14:57,680 --> 01:15:01,240
+that representations are well clustered, that they're compact,
+
+1560
+01:15:01,240 --> 01:15:04,600
+and that they're separated, so the classes are spread out.
+
+1561
+01:15:04,600 --> 01:15:06,820
+We want to preserve relevant information,
+
+1562
+01:15:06,820 --> 01:15:09,620
+and we want to teach relevant invariances.
+
+1563
+01:15:09,620 --> 01:15:11,400
+We want the model to almost forget
+
+1564
+01:15:11,400 --> 01:15:13,220
+the irrelevant information.
+
+1565
+01:15:13,220 --> 01:15:15,880
+Where here, we're explicitly defining what's irrelevant
+
+1566
+01:15:15,880 --> 01:15:19,200
+based on, for example, in those self-supervised objectives,
+
+1567
+01:15:19,200 --> 01:15:22,210
+showing different augmentations that we want the model to be
+
+1568
+01:15:22,210 --> 01:15:24,870
+invariant to, and in the supervised case,
+
+1569
+01:15:24,870 --> 01:15:26,730
+what we're saying is, OK, we want the model
+
+1570
+01:15:26,730 --> 01:15:28,610
+to be invariant to the things that
+
+1571
+01:15:28,610 --> 01:15:31,430
+are different about these two images of the same category.
+
+1572
+01:15:31,430 --> 01:15:34,350
+So that might, for example, be the context,
+
+1573
+01:15:34,350 --> 01:15:37,770
+the fact that the bird is being held in a hand.
+
+1574
+01:15:37,770 --> 01:15:39,890
+And then we can do this in a supervised
+
+1575
+01:15:39,890 --> 01:15:42,490
+or a self-supervised way.
+
+1576
+01:15:42,490 --> 01:15:44,290
+And it all comes down to the difference
+
+1577
+01:15:44,290 --> 01:15:46,290
+between supervised and self-supervised,
+
+1578
+01:15:46,290 --> 01:15:49,530
+the way that we decide what's a similar pair.
+
+1579
+01:15:49,530 --> 01:15:51,650
+And so we can actually build a lot of knowledge
+
+1580
+01:15:51,650 --> 01:15:54,030
+into the systems around what should be similar
+
+1581
+01:15:54,030 --> 01:15:56,970
+and what should be different based on our downstream goals.
+
+1582
+01:15:56,970 --> 01:15:57,530
+Cool.
+
+1583
+01:15:57,530 --> 01:15:59,330
+All right, any other questions?
+
+1584
+01:15:59,330 --> 01:16:00,370
+If so, you can come up.
+
+1585
+01:16:00,370 --> 01:16:03,920
+And otherwise, we'll see you guys next on Thursday.

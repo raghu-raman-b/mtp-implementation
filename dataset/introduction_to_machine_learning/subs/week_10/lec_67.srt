@@ -1,0 +1,907 @@
+1
+00:00:00,000 --> 00:00:25,890
+When you looked at
+
+2
+00:00:25,890 --> 00:00:33,720
+many such things so, so I am going to look at a specific setting now which essentially
+
+3
+00:00:33,720 --> 00:00:46,170
+looks at how do you do clustering? Right when I do not really give you the data points
+
+4
+00:00:46,170 --> 00:00:55,800
+right but I give you a similarity matrix between them right. So I do not give you the data points
+
+5
+00:00:55,800 --> 00:01:14,820
+right but I tell you that okay, here are the similarity like similarity matrix between the
+
+6
+00:01:14,820 --> 00:01:29,560
+data points, so this is like say 0.8 similar is what are the things I can fill in now,
+
+7
+00:01:47,290 --> 00:01:50,890
+I am trying to give you something consistent, when this cooking this numbers up on the fly.
+
+8
+00:02:24,030 --> 00:02:53,490
+I cannot cook everything up on the fly can I? something like these rates.
+
+9
+00:02:53,490 --> 00:03:03,060
+I will give you a matrix like this okay can you do clustering? sorry similarity is the inverse of
+
+10
+00:03:03,060 --> 00:03:08,940
+distance right or I can of course take the inverse of this and give you the distance between the
+
+11
+00:03:08,940 --> 00:03:14,460
+points as well right, so I give you a similarity matrix right. So the reason I am stating this is
+
+12
+00:03:14,460 --> 00:03:20,700
+sometimes it makes it really convenient to reduce the data that is given to you and even if i give
+
+13
+00:03:20,700 --> 00:03:25,350
+you let us say i give you a huge collection of documents right, so instead of computing
+
+14
+00:03:25,350 --> 00:03:29,310
+the distance between every document again and again when you are doing clustering right.
+
+15
+00:03:29,310 --> 00:03:35,730
+I can just basically do a n x n I can construct the n cross n matrix like this right. In fact I
+
+16
+00:03:35,730 --> 00:03:41,220
+am assuming this distance is symmetric right I am assuming the distance is symmetric so it is
+
+17
+00:03:41,220 --> 00:03:49,050
+not really n cross n is only half of that right and so you can construct this matrix
+
+18
+00:03:49,050 --> 00:03:54,270
+you can keep this with you and then you can do clustering based on this right. Suppose I want
+
+19
+00:03:54,270 --> 00:04:04,590
+to do something like k-means’s and how will it work in this case? Little tricky right I want
+
+20
+00:04:04,590 --> 00:04:14,880
+to k-means is a little tricky sorry yeah but then the first you have to find embedding right.
+
+21
+00:04:14,880 --> 00:04:18,960
+So it is not so that is a is called an embedding into a space right, first you
+
+22
+00:04:18,960 --> 00:04:23,820
+have to find them adding (A) be the embedding, (B) might not be sufficient right may not be
+
+23
+00:04:23,820 --> 00:04:27,270
+sufficiently accurate you have to, first figure out what dimensional space you are going to do
+
+24
+00:04:27,270 --> 00:04:32,760
+this embedding in, this is 2d 3d, 4d and finding the embedding itself is a hard problem right and
+
+25
+00:04:32,760 --> 00:04:37,110
+then you want to do clustering on top of that. It is you are going to actually solve a harder
+
+26
+00:04:37,110 --> 00:04:40,775
+problem before you are going to solve clustering. So you do not want to do the embedding right this
+
+27
+00:04:40,775 --> 00:04:47,370
+has some other mechanism which you can do this right. So one way to think about given data like
+
+28
+00:04:47,370 --> 00:04:53,790
+that is to think of it as a graph right, think of it as a graph and think of it as this some
+
+29
+00:04:53,790 --> 00:05:03,960
+kind of weights between the nodes right. So I have how many nodes I have five nodes right
+
+30
+00:05:03,960 --> 00:05:13,950
+so I have five notes right, so I will give them numbers right, so 1 to 2 okay the weight is 0.8
+
+31
+00:05:13,950 --> 00:05:20,910
+that is a complete graph by the way. This beginning then 1 to 3 right, the weight is
+
+32
+00:05:34,900 --> 00:05:56,800
+and then also 2 to 3 and becomes more and more at this 0.5 belong to. Now I am confused 4
+
+33
+00:06:12,930 --> 00:06:36,200
+to 5 is. ok really I mean you can make out the weights know right. So that is a graph
+
+34
+00:06:36,200 --> 00:06:41,090
+right and I want to look at a partitional clustering on this graph right. So what I
+
+35
+00:06:41,090 --> 00:06:49,220
+can do is I can solve what is known as a min cut problem on the graph right.
+
+36
+00:06:49,220 --> 00:06:55,940
+So what is the min cut? a cut on a graph is a set of you can do to two things, you can either cut on
+
+37
+00:06:55,940 --> 00:07:00,200
+the edges, and you can cut on the vertices? We will worry about cutting on the edges that cut
+
+38
+00:07:00,200 --> 00:07:06,950
+set of edges on a graph is a set of edges such that if I remove the edges in the cut-set the
+
+39
+00:07:06,950 --> 00:07:12,590
+graph gets split into two components right. So I take a connected graph I remove a set
+
+40
+00:07:12,590 --> 00:07:18,230
+of edges from the graph ok and the graph becomes two separate components ok, so that is called the
+
+41
+00:07:18,230 --> 00:07:26,870
+cut-set right and the min cut is a set that has the least weight right. In an unweighted graph it
+
+42
+00:07:26,870 --> 00:07:32,660
+is a set that has the fewer stages right. In the weighted graph it is a set that has the
+
+43
+00:07:32,660 --> 00:07:37,970
+least weight it could have more edges but of all the weight edges could have less weight then that
+
+44
+00:07:37,970 --> 00:07:48,470
+becomes a min cut okay. So you could try and do a min cut on this graph right, so that is one way
+
+45
+00:07:48,470 --> 00:07:56,510
+of solving it and so in the next clustering class that we will have which will be like not next week
+
+46
+00:07:56,510 --> 00:08:00,890
+the week after right the next clustering class will have I will talk about spectral approaches
+
+47
+00:08:00,890 --> 00:08:06,050
+to clustering right. Which essentially talks about different ways of solving this min cut problem,
+
+48
+00:08:06,050 --> 00:08:10,220
+talks about a completely different way of solving the min cut problem, so we look at spectral
+
+49
+00:08:10,220 --> 00:08:14,150
+clustering later right, there are a couple of other things that you can do right.
+
+50
+00:08:14,150 --> 00:08:21,770
+So especially all of you have done graph theory some point you must have done graph theory all
+
+51
+00:08:21,770 --> 00:08:30,080
+of you have done some graph theory, basic graph theory data structures in okay. People understand
+
+52
+00:08:30,080 --> 00:08:35,000
+what is the meaning by minimum spanning tree very one understands what a minimum spanning tree? Is
+
+53
+00:08:35,000 --> 00:08:49,010
+so what is a minimum spanning tree, a tree okay, b it spans all the vertices it connects all the
+
+54
+00:08:49,010 --> 00:08:53,990
+vertices and three it has the least weight among all those trees that connects all the vertices
+
+55
+00:08:53,990 --> 00:08:59,300
+right. These are the three things I so minimum spanning tree you can just basically take each
+
+56
+00:08:59,300 --> 00:09:04,940
+term and define it and we get the think. So in this case if you can think of a minimum
+
+57
+00:09:04,940 --> 00:09:12,080
+spanning tree, what would it be I am making people run the extra or something now come on
+
+58
+00:09:12,080 --> 00:09:18,650
+Kruskal prim what do you want to run kruskal okay give me a minimum spanning tree now
+
+59
+00:09:54,750 --> 00:10:00,990
+right. So that is a minimum spanning tree so I started off by inserting the edges with 0.2
+
+60
+00:10:00,990 --> 00:10:06,060
+write and then I looked at things that are outside and figured out which is the least
+
+61
+00:10:06,060 --> 00:10:18,330
+cost eight so both of these had the same cost I so now I have a minimum spanning tree. Now I
+
+62
+00:10:18,330 --> 00:10:27,180
+can once I have the minimum spanning tree I can use this to produce clusters. I can start off by
+
+63
+00:10:27,180 --> 00:10:31,020
+saying in this case it is pretty trivial. I can start off by saying remove the highest
+
+64
+00:10:31,020 --> 00:10:36,900
+weighted edge in the spanning tree, remove the highest weighted edge in the spanning tree
+
+65
+00:10:36,900 --> 00:10:42,120
+right or should it be the lowest fit we are doing similarities right by doing something okay remove
+
+66
+00:10:42,120 --> 00:10:45,600
+the lowest weighted edge in the spanning tree now I could do this either way right if I had
+
+67
+00:10:45,600 --> 00:10:53,820
+add distances instead of similarities also I could do this right, remove the lowest weighted edge. No
+
+68
+00:10:53,820 --> 00:10:58,230
+wait now I think have to the other way around I am doing similarities right. So I should do a
+
+69
+00:10:58,230 --> 00:11:06,660
+Max spanning tree may not have min spanning tree. This is it easy to do a Max spanning tree is the
+
+70
+00:11:06,660 --> 00:11:20,430
+same complexity as a min spanning tree okay. So you not tell me what is a Max spanning tree
+
+71
+00:11:20,430 --> 00:11:59,196
+here 5 and 6 is 0.2, 5 and 4 right not is that yeah okay if you want to do it that way sure 5 to
+
+72
+00:11:59,196 --> 00:11:59,880
+3 is a 0.4, 5 to 3 is 0.2, so 5 to 4 is a 0.3, 2 to 4 the 0.5, yeah that could work yeah so that is
+
+73
+00:11:59,880 --> 00:12:37,560
+a point okay right. So now what I do is I remove a an edge that is got the least weight right,
+
+74
+00:12:37,560 --> 00:12:45,900
+so I will remove this guy, so I am a left with two clusters it is a if i remove an edge from
+
+75
+00:12:45,900 --> 00:12:51,120
+a tree it becomes disconnected right. So get the Max spanning tree in this case I remove the
+
+76
+00:12:51,120 --> 00:12:57,720
+edge with the least cost right. So I can think of doing clustering by doing it this way right.
+
+77
+00:12:57,720 --> 00:13:04,560
+In stuff if I had been given distances instead of similarity i’ve done the minimum spanning tree
+
+78
+00:13:04,560 --> 00:13:13,200
+right removed the edge with the max cost right. Now I did the Max spanning tree and remove the
+
+79
+00:13:13,200 --> 00:13:19,890
+edge with a min cost to give me two clusters, if i wanted to do work with distances instead
+
+80
+00:13:19,890 --> 00:13:24,180
+of similarity I will do the minimum spanning tree and remove the edge with the max cost
+
+81
+00:13:24,180 --> 00:13:30,720
+right okay this gives me 2 class suppose I want 3 clusters what do I do? Remove another edge, so now
+
+82
+00:13:30,720 --> 00:13:35,220
+that two three classes will be 125 will be one cluster and three will be one cluster by itself
+
+83
+00:13:35,220 --> 00:13:40,800
+or will be another cluster by itself right. So I do not really need to do the embedding right
+
+84
+00:13:40,800 --> 00:13:47,130
+I can treat it as a graph right and I can still do useful clustering with this. So one thing is
+
+85
+00:13:47,130 --> 00:13:52,740
+do the min cut which we will come back to later other one is to just first do the minimum or
+
+86
+00:13:52,740 --> 00:14:02,670
+maximum spanning tree right depending on what data are given and then do this ok cool. I am going to
+
+87
+00:14:02,670 --> 00:14:19,440
+look at something else I will erase that okay, so that is a good question. So take it pick you know
+
+88
+00:14:19,440 --> 00:14:24,570
+so you have to use some other heuristic even here also there was two possible choices for my first
+
+89
+00:14:24,570 --> 00:14:29,010
+stage itself right I could have when I wanted to cut a 0.5 that I could either cut the one
+
+90
+00:14:29,010 --> 00:14:33,420
+between 3 & 4 are the one between 2 and 4. That I chose to cut the one between two and
+
+91
+00:14:33,420 --> 00:14:39,270
+four because it gave me more or less equal sized clusters that could be here to strictly use right.
+
+92
+00:14:39,270 --> 00:14:44,040
+So you can just say that ok if I cut this 0.5 I get an isolated node and all the other nodes are
+
+93
+00:14:44,040 --> 00:14:49,230
+in one cluster, look at the other 0.5 I get two nodes 2 and 3 so maybe that is a better division,
+
+94
+00:14:49,230 --> 00:14:52,650
+so you can use additional heuristics like this there are multiple things that are possible.
+
+95
+00:14:52,650 --> 00:14:56,610
+In fact it is even more complex than that there could be minimal many minimum spanning
+
+96
+00:14:56,610 --> 00:15:01,440
+tree is possible. I just showed you one tree it luckily it turns out that this particular graph
+
+97
+00:15:01,440 --> 00:15:05,940
+there is only one minimum maximum spanning tree that could be minimum many maximum spanning tree
+
+98
+00:15:05,940 --> 00:15:14,910
+is possible. What do you do in that case? You could only just pick one that is it just pick
+
+99
+00:15:14,910 --> 00:15:22,430
+one and then go ahead and do the clustering it is like yeah there is no single answer
+
+100
+00:15:22,430 --> 00:15:29,720
+for this remember me telling you clustering is a ill-defined problem yeah, so there is
+
+101
+00:15:29,720 --> 00:15:34,010
+no single answer for this right there could be multiple different answers. So let us look more
+
+102
+00:15:34,010 --> 00:15:39,980
+interesting okay, so I am going to introduce you to this concept called threshold graphs right.
+
+103
+00:15:39,980 --> 00:15:47,180
+So I have graphs like this what is the maximum similarity I can have one right I will start
+
+104
+00:15:47,180 --> 00:15:54,200
+off by saying I will connect all the nodes in the graph okay, says that the similarity is 1 or > 1
+
+105
+00:15:54,200 --> 00:15:55,790
+okay.
+
+106
+00:15:55,790 --> 00:16:08,750
+So I will basically end up with that is my graph right so it is essentially the empty
+
+107
+00:16:08,750 --> 00:16:15,710
+set right now I will say that ok great I have this graph and I am going to treat all the connected
+
+108
+00:16:15,710 --> 00:16:22,790
+components in this graph as a cluster. All the connected components in this graph I will treat
+
+109
+00:16:22,790 --> 00:16:30,080
+as a cluster, so what do I get five clusters, so remains you of something hierarchical clustering
+
+110
+00:16:30,080 --> 00:16:33,320
+this how we start off in the hierarchical clustering rates I will say that I will start off
+
+111
+00:16:33,320 --> 00:16:39,620
+with each data point of being a cluster of its own right. Now what I do ok I will start decreasing my
+
+112
+00:16:39,620 --> 00:16:45,440
+threshold right so what is the first step that I can do? I will make my threshold 0.8.
+
+113
+00:16:45,440 --> 00:16:58,280
+Now I will do all my connected components right I will take them as clusters, so how many clusters I
+
+114
+00:16:58,280 --> 00:17:24,680
+have 4 clusters 1 and 2 right. Next what is the best of sorry point it next I say oh 0.7 right
+
+115
+00:17:30,750 --> 00:17:54,360
+that is my graph 0.7 that is my graph so what does it do, so I change the labels here if people are
+
+116
+00:17:54,360 --> 00:18:04,470
+wondering what happen? So and then what is the next level I can do 0.6 is it and what is 0.6
+
+117
+00:18:04,470 --> 00:18:24,795
+is 2&5 is 0.6 okay sorry does not matter this is still connected right nothing changes I do not hit
+
+118
+00:18:24,795 --> 00:18:29,910
+use any new or connect components it is same set okay. No new clusters have been found right then
+
+119
+00:18:29,910 --> 00:18:37,500
+I will go to 0.5 so what happens to the 0.5 I get that anything else is little tricky.
+
+120
+00:18:37,500 --> 00:18:48,720
+So two and four as well right so what happens now essentially everything is a cluster right, so
+
+121
+00:19:02,260 --> 00:19:15,700
+everything has been I just stopped here, so this is my dendogram correct. So now i have
+
+122
+00:19:15,700 --> 00:19:19,750
+done hierarchical clustering by using just simple graph theoretic concepts,
+
+123
+00:19:19,750 --> 00:19:24,790
+what did I do? I just kept taking threshold graphs and I look at connected components in that graph
+
+124
+00:19:24,790 --> 00:19:30,970
+and I got a hierarchical clusters right. So what is it equal to any one of those things
+
+125
+00:19:30,970 --> 00:19:40,390
+I written down there is it equivalent any one of those distance measures, I wrote down there.
+
+126
+00:19:48,870 --> 00:19:59,730
+Single link, how many of you think it is single link? One how many of you think five thank you
+
+127
+00:19:59,730 --> 00:20:11,460
+how many of you think it is complete link okay, one how many of you think is Average link? One
+
+128
+00:20:11,460 --> 00:20:20,010
+and a half so I am taking the average and somebody put their hand up like this somebody who did this
+
+129
+00:20:20,010 --> 00:20:32,280
+so anyway. Single link right so the majority hope it was for single link 5 vs 1vs 1/2 right
+
+130
+00:20:32,280 --> 00:20:38,460
+so single-link clustering right, so if we think about it I so what is the distance between the
+
+131
+00:20:38,460 --> 00:20:46,170
+cluster 1 to 5and the cluster 3 4things, that are closest right the pair of points
+
+132
+00:20:46,170 --> 00:20:49,380
+that are closer so between four and two. So that is essentially in the distance I am
+
+133
+00:20:49,380 --> 00:20:56,010
+using right when I have the distances for and to this edge appears in right and then it becomes
+
+134
+00:20:56,010 --> 00:21:01,680
+connected right, that means that the closest points right these are the most similar so similar
+
+135
+00:21:01,680 --> 00:21:06,720
+most similarly means closest distance is smallest right. So they appear in and therefore this is a
+
+136
+00:21:06,720 --> 00:21:13,380
+single link clustering is equal not exactly equal into single-link clustering okay is it fine so
+
+137
+00:21:13,380 --> 00:21:25,440
+can I erase that and I want to do this again. Except that I change the definition of cluster
+
+138
+00:21:33,690 --> 00:21:44,280
+okay. Threshold graph will start off with this right and I will take all the cliques
+
+139
+00:21:44,280 --> 00:21:53,820
+in this graph as a cluster right, so what are the maximal cliques in this graph all
+
+140
+00:21:53,820 --> 00:21:57,120
+of them right each one of them, so that is it that does not change so the same
+
+141
+00:21:57,120 --> 00:22:06,240
+thing. So I start off with sort of with five
+
+142
+00:22:06,240 --> 00:22:13,500
+clusters right then I do the threshold right, so the first page that appears will be this guy right
+
+143
+00:22:13,500 --> 00:22:20,760
+now what are the maximal cliques in this graph one to write everything else is all by themselves,
+
+144
+00:22:20,760 --> 00:22:31,680
+so again I get that I emerge this and the level is 0.8. Now I do the 0.7 level what do I get I
+
+145
+00:22:31,680 --> 00:22:41,790
+get that okay so what are the maximal cliques in this graph is 12 and 15 but we are already
+
+146
+00:22:41,790 --> 00:22:46,440
+inserted 12 as a cluster, so since we have not allowing overlapping clusters or anything here
+
+147
+00:22:46,440 --> 00:22:52,380
+we are thinking of partitions here right. So 5 will still be left alone right, so I have
+
+148
+00:22:52,380 --> 00:23:02,100
+two possible cluster cliques here 12 or 15 right but since I do not consider overlapping clusters
+
+149
+00:23:02,100 --> 00:23:06,840
+I cannot assign one to two clusters so I just leave it like that so at the 0.7 level I do not do
+
+150
+00:23:06,840 --> 00:23:14,040
+anything, so point name we do not know anything, also I do not do anything. Next what do i do I go
+
+151
+00:23:14,040 --> 00:23:32,830
+to 0.6 which is what 25 a okay, now what are we have a maximal cliques here 125 right. So earlier
+
+152
+00:23:32,830 --> 00:23:38,260
+at the 0.6 level nothing happened this cluster got formed at the 0.7 level itself here you have to go
+
+153
+00:23:38,260 --> 00:23:49,660
+down 2.6 before the cluster gets formed okay. Next what we do raise it 2.5 I do not need to put
+
+154
+00:23:49,660 --> 00:24:03,370
+the right 0.5 this is what I get, so there is a new cliques that is formed like 34 right, this is
+
+155
+00:24:03,370 --> 00:24:20,780
+what this is 0.5 right then you cliques that gets formed a 2.5 then what I do 0.4 that is a point
+
+156
+00:24:20,780 --> 00:24:31,100
+for which is what one and 4 okay let us say change any rate no right I do not want to disturb any of
+
+157
+00:24:31,100 --> 00:24:34,730
+the cliques that has already been formed unless a new clique is forming I do not want to break
+
+158
+00:24:34,730 --> 00:24:40,550
+this and put it there or anything right so i will leave it like that. Then i go to a 0.3 what is the
+
+159
+00:24:40,550 --> 00:25:02,420
+0.3, 1 and 3 is it 1 & 34 & 5 what about three and five know what about two and three no right, so at
+
+160
+00:25:02,420 --> 00:25:11,540
+0.3 nothing happens but then I go to 0.2. Now I finally have everything down right then
+
+161
+00:25:11,540 --> 00:25:29,480
+basically 0.3,0.4 nothing happens at 0.2 I get the final merging okay it is fine,
+
+162
+00:25:29,480 --> 00:25:32,210
+so there are two ways in which I can do is I can just think of connected components
+
+163
+00:25:32,210 --> 00:25:39,200
+or I can so also think of cliques right and so what is the difference here if I choose to cut,
+
+164
+00:25:40,070 --> 00:25:44,810
+remember I was telling you can cut that tree at some point and retrieve your clusters right. So
+
+165
+00:25:44,810 --> 00:25:51,560
+now I can set myself a threshold okay I want to cut the tree auxh that the similarity between
+
+166
+00:25:51,560 --> 00:25:58,550
+the data points in a cluster is at least 0.5 right, so then what do I do so I cut the tree
+
+167
+00:25:58,550 --> 00:26:14,560
+just below that right like that and here I will cut it just here right oh well in this case
+
+168
+00:26:14,560 --> 00:26:23,890
+it turns out to be the same sorry yeah. So I said at least 0.5 right so 0.5 is a bad
+
+169
+00:26:23,890 --> 00:26:33,340
+idea let us let us take let us take 0.6 right I want at least 0.6, so what happens is right
+
+170
+00:26:33,340 --> 00:26:42,490
+so I will cut it off here just below 0.6 I want at least 0.6 means I want it to be at least 0-600001
+
+171
+00:26:43,660 --> 00:26:49,000
+which I do not want it to be exactly points it going to be slightly more than 0.6 I can't it
+
+172
+00:26:49,000 --> 00:26:54,340
+just below 0.6 level here, so what do I get I get 12 as a cluster five as a cluster four as
+
+173
+00:26:54,340 --> 00:27:00,430
+a cluster 3 as a cluster but if you do the same thing here just below 0.6 right I get 125 as a
+
+174
+00:27:00,430 --> 00:27:04,720
+cluster four and three as a cluster. So depending on how I did the clustering
+
+175
+00:27:04,720 --> 00:27:09,760
+and how I built the dendogram given the same tolerance level my teal different clusters for
+
+176
+00:27:09,760 --> 00:27:21,850
+me right so is this Plus this tie up with any of the clustering technique that we already saw its
+
+177
+00:27:21,850 --> 00:27:30,700
+complete link like why is it complete link? So I consider two clusters as having merged only
+
+178
+00:27:30,700 --> 00:27:37,750
+if all points are connected that means, even the specifically the farthest most points also should
+
+179
+00:27:37,750 --> 00:27:43,180
+get connected right. So the level at which I will merge the cluster now this will be the
+
+180
+00:27:43,180 --> 00:27:49,660
+level at which the to the farthest point lie right so this is essentially this is complete link.
+
+181
+00:27:49,660 --> 00:28:36,460
+So this is single link okay makes sense so you can always think of your data points lying on a
+
+182
+00:28:36,460 --> 00:28:44,470
+graph and we can do all of these things but a nice thing about data points lying on a graph it can
+
+183
+00:28:44,470 --> 00:28:55,840
+visualize them harm it is 2d that is interesting are all graphs visualize able in 2d, so they were
+
+184
+00:28:55,840 --> 00:29:00,340
+named for it they call planar graph I mean you can still utilize other kinds of graphsis just
+
+185
+00:29:00,340 --> 00:29:05,260
+that they will have all kinds of course crossing lines right, so and so it becomes a little harder
+
+186
+00:29:05,260 --> 00:29:18,340
+to visualize right but yeah huh this is planar complete not claim I don't think dendogram can
+
+187
+00:29:18,340 --> 00:29:21,130
+visualize anyway come on doesn't have to be a graph right.
+
+188
+00:29:21,130 --> 00:29:25,840
+You can visualize the dendogram given any points it seems something even more important and when
+
+189
+00:29:25,840 --> 00:29:31,240
+I start embedding them in some space and start giving you a distance measure it basically has
+
+190
+00:29:31,240 --> 00:29:36,340
+to follow certain properties of that space right typically you end up wanting their distances to
+
+191
+00:29:36,340 --> 00:29:44,260
+follow some kind of a metric right. When I start putting them in a graph right there basically
+
+192
+00:29:44,260 --> 00:29:50,920
+arbitrary numbers I can fill in there right so I do not I can have some similarity measure which
+
+193
+00:29:50,920 --> 00:29:56,470
+is not even a metric right, I do not have to worry about whether it makes sense whether
+
+194
+00:29:56,470 --> 00:29:59,890
+triangle in equality is followed or anything again just take our can assign arbitrary.
+
+195
+00:29:59,890 --> 00:30:04,840
+Similarities to get a points okay and then I can say do clustering there might be applications
+
+196
+00:30:04,840 --> 00:30:11,470
+where you need this kind of a power, so that is the nice advantage of thinking about this as
+
+197
+00:30:11,470 --> 00:30:17,500
+graphs right. So once you have these as graphs then you can go ahead and do all kinds of your
+
+198
+00:30:17,500 --> 00:30:21,310
+single link complete length clustering or do minimum spanning tree do minutes whatever it
+
+199
+00:30:21,310 --> 00:30:27,100
+is and you can do your clustering. So that is the power of the graph modeling in fact so much
+
+200
+00:30:27,100 --> 00:30:33,250
+so that when nowadays when I think of clustering applications I almost always think of okay what
+
+201
+00:30:33,250 --> 00:30:38,380
+is the graph right that I can construct out of the data and once I construct the graph and then feed
+
+202
+00:30:38,380 --> 00:30:43,240
+it into my clustering algorithm right. So that is that is typically how many people
+
+203
+00:30:43,240 --> 00:30:46,900
+operate right because there are so many powerful clustering algorithm there are based on graphs
+
+204
+00:30:46,900 --> 00:30:49,962
+okay good any questions on this is not possible to reduce. So the complicity of the intelligence
+
+205
+00:30:49,962 --> 00:31:07,390
+is it possible to reduce it most clustering algorithms are way more than order N2 in their
+
+206
+00:31:07,390 --> 00:31:12,850
+operations because if you think about it right so if you use something like k-means and what is the
+
+207
+00:31:12,850 --> 00:31:18,730
+problem with k-means? Every time the centroids change and I have to redo the computation to the
+
+208
+00:31:18,730 --> 00:31:25,000
+centroids. Suppose I have n data points okay. So every time the things change I have to do a for
+
+209
+00:31:25,000 --> 00:31:29,800
+every iteration allowed to NK computation okay and the number of iterations can be fab pretty
+
+210
+00:31:29,800 --> 00:31:41,560
+large. so yes that is the problem right but then k means in if you have effect a fairly
+
+211
+00:31:41,560 --> 00:31:46,450
+large data set a small number of cluster centroids k-means is actually not a bad thing for example
+
+212
+00:31:46,450 --> 00:31:53,740
+k medoids right think about the complexity of no it is humongous or Pam right, so when you
+
+213
+00:31:53,740 --> 00:32:00,580
+do Pam basically you take each yeah exactly, so many clustering algorithm very expensive. So N2
+
+214
+00:32:00,580 --> 00:32:07,120
+is not too bad right but of course if you have a cheaper way of if you have a way of getting
+
+215
+00:32:07,120 --> 00:32:15,010
+around computing the N 2 distances great. If you have better way of computer computing
+
+216
+00:32:15,010 --> 00:32:27,640
+that is great. So what typically yeah I mean there are ways of doing that okay but it involves using
+
+217
+00:32:27,640 --> 00:32:36,130
+very clever data structures and trying to reduce the amount of computation that you do right, by
+
+218
+00:32:36,130 --> 00:32:40,600
+doing some cheap computations and then trying to do more expensive computations and so on so forth.
+
+219
+00:32:40,600 --> 00:32:45,100
+We are depending on the size of the depending on the volume of data that you are handling right and
+
+220
+00:32:45,850 --> 00:32:50,590
+a amount of resources that is available to you and so on so forth you might want to choose
+
+221
+00:32:50,590 --> 00:32:55,750
+something over them it turns out that. The overhead in doing this N2 computation is
+
+222
+00:32:55,750 --> 00:33:01,690
+lot lesser then in some of those techniques is try to avoid the N2 computation right so
+
+223
+00:33:01,690 --> 00:33:05,140
+one of the things which way should realize this big O notation is very deceptive right.
+
+224
+00:33:05,140 --> 00:33:15,370
+Suppose you have ten elements in an array what is the best way to sort it likewise that might
+
+225
+00:33:15,370 --> 00:33:20,320
+be instances where even though it looks N2 it might be cheaper to do that rather than
+
+226
+00:33:20,320 --> 00:33:27,190
+try to set up something that is more clever okay, so that that is the thing you will not
+
+227
+00:33:27,190 --> 00:33:31,840
+to think about but clustering is inherently an expensive operation there is no way around.

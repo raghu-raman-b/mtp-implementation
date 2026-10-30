@@ -1,0 +1,563 @@
+1
+00:00:11,030 --> 00:00:20,960
+So there is one thing that we are doing here see if you remember what was our two stated
+
+2
+00:00:20,960 --> 00:00:28,370
+goals which I have erased of the board, what are the two stated goals that we had? One was
+
+3
+00:00:28,370 --> 00:00:37,850
+to find some parameters that best explain the data, what is the second goal? Exactly right
+
+4
+00:00:38,360 --> 00:00:43,100
+I am doing the best I am actually finding the best parameter like one single setting
+
+5
+00:00:43,100 --> 00:00:47,480
+for the parameter that best explains the data that was given to me that is what we have been
+
+6
+00:00:47,480 --> 00:00:53,900
+doing so far. But in terms of finding the best prediction for a new data point am I doing the
+
+7
+00:00:53,900 --> 00:01:24,870
+right thing so far? is it the right way to do it right, so if you think about it right.
+
+8
+00:01:24,870 --> 00:01:34,500
+So probability of (~X / X), it is a probability of ~X given θ times the probability of θ given X
+
+9
+00:01:34,500 --> 00:01:39,720
+summed over all θ if θ was a I mean first a discrete probability distribution but since
+
+10
+00:01:39,720 --> 00:01:46,320
+we have been considering Bernoulli and other things it is going to be a integral over all θ
+
+11
+00:01:46,320 --> 00:01:51,000
+righ.t I am not talking about the outcome I am talking about the parameterization
+
+12
+00:01:51,000 --> 00:01:55,560
+so the parameterization is a continuous parameter right, θ is a continuous parameter.
+
+13
+00:01:55,560 --> 00:01:58,890
+So I cannot sum over θ it is not like I am only considering θ1 θ2
+
+14
+00:01:58,890 --> 00:02:11,250
+θ3 I am considering θ in the interval 0 to 1, right? So is integral over θ, right. So
+
+15
+00:02:11,250 --> 00:02:20,310
+this is this is the actual outcome right but think about what happens in the case
+
+16
+00:02:20,310 --> 00:02:28,710
+of the prior or any one of this case right I am only picking one θ it could very well
+
+17
+00:02:28,710 --> 00:02:34,620
+be that there is another θ which also has a high probability of being correct.
+
+18
+00:02:34,620 --> 00:02:40,680
+But since I am picking only one θ I am sticking with that, there could be two
+
+19
+00:02:40,680 --> 00:02:45,600
+different θ which I could have used them right in fact I should ideally be using all the θ
+
+20
+00:02:45,600 --> 00:02:54,930
+because for a certain parameter setting some X ~ might have a high value right,
+
+21
+00:02:56,890 --> 00:03:02,650
+so even if that probability of that happening is very small and I should still be accounting
+
+22
+00:03:02,650 --> 00:03:11,320
+for that in my prediction, that makes sense why this is a much better predictor than
+
+23
+00:03:11,320 --> 00:03:20,680
+using ML or MAP. But why do not people use this then computationally hard, why?
+
+24
+00:03:20,680 --> 00:03:28,690
+So far I was actually trying to avoid computing probability of θ given X right
+
+25
+00:03:28,690 --> 00:03:33,400
+here I did that by assuming everything else was constant right and I just had
+
+26
+00:03:33,400 --> 00:03:39,340
+to do the likelihood right here I said okay I am just doing a point estimate so I can
+
+27
+00:03:39,340 --> 00:03:44,050
+ignore the denominator I can only do the numerator right but when I go here boom,
+
+28
+00:03:44,050 --> 00:03:49,660
+I have to do the full computation right this essentially means I need to know p(x) right.
+
+29
+00:03:49,660 --> 00:04:04,030
+And that becomes hard but computing that is actually harder to actually multiplied over
+
+30
+00:04:04,030 --> 00:04:11,200
+all the data points that you have right so it becomes a little tricky right and what
+
+31
+00:04:11,200 --> 00:04:18,880
+is P(X) by the way, no yeah but what is P(X), p(x) is a probability of seeing the data right
+
+32
+00:04:18,880 --> 00:04:24,670
+what does the probability of seeing that I do not know that I have only given you the data
+
+33
+00:04:24,670 --> 00:04:29,020
+right I do not I do not know the distribution from which the data was drawn that is exactly
+
+34
+00:04:29,020 --> 00:04:33,580
+what you are trying to do so the θ gives you the distribution over which the data was drawn right,
+
+35
+00:04:33,580 --> 00:04:59,090
+so what would be P(X) right so that is P(X), how do you compute that?
+
+36
+00:05:11,680 --> 00:05:20,140
+Good point, so whenever we talk about parameter estimation right so you need
+
+37
+00:05:20,140 --> 00:05:24,400
+to have some parameterize form of a function for you to do the estimation of the parameters right.
+
+38
+00:05:24,400 --> 00:05:30,910
+So if you remember in the logistic regression it was not Bernoulli it was the logic function
+
+39
+00:05:30,910 --> 00:05:34,270
+that we were trying to estimate the parameters for and I also told you
+
+40
+00:05:34,270 --> 00:05:39,460
+in when we looked at LDA I told you we could make a lot of different assumptions about the
+
+41
+00:05:39,460 --> 00:05:44,110
+parameters in the LDA we made an assumption what did we assume it was a Gaussian right,
+
+42
+00:05:44,110 --> 00:05:49,510
+anything else? Covariance was the same right this is for LDA right.
+
+43
+00:05:49,510 --> 00:05:54,130
+And I at that point I told you could use mixture distributions as well and you could
+
+44
+00:05:54,130 --> 00:06:00,010
+use whole bunch of other things I also said you could use nonparametric techniques right but I
+
+45
+00:06:00,010 --> 00:06:04,240
+told you it is a misnomer it is a misleading name because nonparametric really means that
+
+46
+00:06:04,240 --> 00:06:08,710
+you just keep adding parameters and things like this so there is a very flexible very powerful
+
+47
+00:06:08,710 --> 00:06:14,410
+modeling paradigm so you could do parameter estimation for nonparametric methods also right.
+
+48
+00:06:14,410 --> 00:06:17,410
+Where you have to actually figure out how many parameters you need as well so then
+
+49
+00:06:17,410 --> 00:06:21,400
+the distributions you consider become more and more complex now we are looking at very
+
+50
+00:06:21,400 --> 00:06:26,230
+simple forms right but the distributions become more complex and it is the parameter
+
+51
+00:06:26,230 --> 00:06:32,890
+estimation consequently becomes harder right, so infact most of machine learning research
+
+52
+00:06:32,890 --> 00:06:36,910
+nowadays is essentially on parameter estimation for all kinds of different
+
+53
+00:06:37,720 --> 00:06:40,810
+things like non parametric models how do you do the parameter estimation things like that
+
+54
+00:06:40,810 --> 00:06:44,860
+lot of research is going into that. And a lot of powerful models have come out.
+
+55
+00:07:06,690 --> 00:07:15,390
+Let us go back to our Bernoulli case for a minute right I have Bernoulli and my prior
+
+56
+00:07:15,390 --> 00:07:23,070
+is a ß distribution right now I can try to do this so this is this will be what,
+
+57
+00:07:50,760 --> 00:08:47,200
+this P(x) given θ right that is P(θ),p(x) given θ is p(θ) divided by; make that makes sense
+
+58
+00:08:47,200 --> 00:08:57,730
+right this just the is p(x) right this is P(ρ/X) right so X is your C, C is the set of experiments
+
+59
+00:08:57,730 --> 00:09:12,850
+that we were talking about that right so P(ρ) given X is equal to P(x) given ρ x p(ρ) / p(x).
+
+60
+00:09:12,850 --> 00:09:17,770
+Next p(x) is given by integral over the entire row space which is 0 to
+
+61
+00:09:17,770 --> 00:09:36,780
+1 okay p(x) given ρ x p(ρ) d ρ and it is just the base rule I have it now,
+
+62
+00:09:36,780 --> 00:09:41,780
+right. one thing you notice here what is gone here or nice convenient logarithms are gone
+
+63
+00:09:41,780 --> 00:09:59,810
+right but it does not matter too much why? We are not doing any maximization here we are not have
+
+64
+00:09:59,810 --> 00:10:03,650
+to take the derivative or anything now right and this actually interested in computing this whole
+
+65
+00:10:03,650 --> 00:10:07,370
+functional form again and I am not interested in taking derivatives and trying to maximize.
+
+66
+00:10:07,370 --> 00:10:11,180
+So it is okay if we look like if I do not have logarithms but it just makes the whole thing
+
+67
+00:10:11,180 --> 00:11:42,970
+more of a nasty right, when it turns out this is pretty easy to compute well so I skipped a
+
+68
+00:11:42,970 --> 00:11:52,960
+few steps in between but you can figure that out so I wrote out probability of ρ given α ß which
+
+69
+00:11:52,960 --> 00:11:59,950
+is essentially this right and this product I can write like this as we did earlier that
+
+70
+00:11:59,950 --> 00:12:03,880
+we have done both of this before so what I have left out here is a normalizing function.
+
+71
+00:12:03,880 --> 00:12:11,560
+There should be a 1/ß, ß function of α ß right and then I have this integral also and it turns
+
+72
+00:12:11,560 --> 00:12:17,860
+out that this whole thing including that normalizing factor is actually equivalent
+
+73
+00:12:17,860 --> 00:12:35,620
+to the ß function of n0 + α I mean n1 + α and N0 + ß okay. These are P’s these are ρ’ s yeah
+
+74
+00:13:01,000 --> 00:13:12,520
+if you remember the ß function right it is ρ power α – 1, (1- ρ)ß-1 and the normalizing
+
+75
+00:13:12,520 --> 00:13:24,940
+factor is a ß function of α ß right, so it is ρn1 +( α -1) , (1 – ρ)n0 + ß – 1 and then
+
+76
+00:13:24,940 --> 00:13:31,840
+there is the ß function of n1 + α, n0 + α this actually itself a ß distribution right.
+
+77
+00:13:31,840 --> 00:13:42,580
+So it is exactly the same ß distribution so we started off with the ß distribution as
+
+78
+00:13:42,580 --> 00:13:48,910
+the prior over the ρ right and then we did this computation and the posterior turned
+
+79
+00:13:48,910 --> 00:14:00,280
+out to be a ß distribution as well is very convenient right? Such distribution which
+
+80
+00:14:00,280 --> 00:14:10,270
+allowed us to do this are known as conjugate pairs that are conjugate distributions so
+
+81
+00:14:10,270 --> 00:14:20,050
+what are the two distributors are talking about here ß and ß and Bernoulli right.
+
+82
+00:14:20,050 --> 00:14:27,130
+So the data distribution was Bernoulli prior distribution was ß right if that is the case then
+
+83
+00:14:27,130 --> 00:14:38,140
+the posterior will also be ß right people know the difference between Bernoulli and binomial,
+
+84
+00:14:38,140 --> 00:14:46,560
+what is the difference between Bernoulli and binomial? Single trial is Bernoulli repeated
+
+85
+00:14:46,560 --> 00:14:53,610
+trials is binomial right it turns out that ß is also conjugate prior for binomial, right.
+
+86
+00:15:36,110 --> 00:16:03,060
+Any the famous conjugate pairs that you guys know? So both the data and the prior
+
+87
+00:16:03,060 --> 00:16:08,490
+can because it so remember what we mean by the prior distribution right so the prior
+
+88
+00:16:08,490 --> 00:16:13,440
+distribution is the distribution over the parameters of the data distribution when I
+
+89
+00:16:13,440 --> 00:16:17,130
+say Gaussian-Gaussian that means that okay I am assuming my data is coming from a Gaussian
+
+90
+00:16:17,130 --> 00:16:25,140
+and I am going to assume that the mean of the Gaussian is coming from another Gaussian right.
+
+91
+00:16:25,140 --> 00:16:29,880
+The probability of the mean is going to be given by another Gaussian so that is what I mean by
+
+92
+00:16:29,880 --> 00:16:35,310
+a Gaussian-Gaussian prime like the like in the ß Bernoulli prior I am assuming that the probability
+
+93
+00:16:35,310 --> 00:16:42,120
+of heads is ρ and the prior distribution ρ is a ß distribution, so when I say Gaussian-Gaussian I am
+
+94
+00:16:42,120 --> 00:16:46,920
+assuming that the data is coming from a Gaussian distribution and the mean of the Gaussian is
+
+95
+00:16:46,920 --> 00:16:50,360
+coming from another Gaussian distribution that is what Gaussian – Gaussian. There
+
+96
+00:16:50,360 --> 00:17:08,340
+is also another very famous and so Derichlet so people about multinomial is what is multinomial?
+
+97
+00:17:16,900 --> 00:17:21,100
+It is a distribution that will describe multiple roles of a dye for example,
+
+98
+00:17:21,100 --> 00:17:28,570
+binomial is when you have two outcomes multinomial is when you have multiple outcomes right,
+
+99
+00:17:28,570 --> 00:17:37,660
+so the single experiment single trial version of multinomial is called not too many people
+
+100
+00:17:37,660 --> 00:17:42,850
+know it and multinomial, binomial is called Bernoulli the single trial of a multinomial
+
+101
+00:17:42,850 --> 00:17:50,650
+is called know the unimaginative name is called the discrete distribution okay.
+
+102
+00:17:50,650 --> 00:17:58,090
+So but so multiple trials is called the multinomial distribution and the prior
+
+103
+00:17:58,090 --> 00:18:01,660
+the conjugate prior for it is an original a distribution which is nothing but the
+
+104
+00:18:01,660 --> 00:18:11,260
+multi-level extension of the ß distribution so it is like the ß distribution when it is
+
+105
+00:18:11,260 --> 00:18:18,340
+a multi-dimensional extension of ß distribution okay and there are a bunch of others okay so but
+
+106
+00:18:18,340 --> 00:18:26,680
+there are several that are known and so typically what you do is you look at your data right look
+
+107
+00:18:26,680 --> 00:18:32,620
+at the data and figure out what distribution is a good distribution for the data right.
+
+108
+00:18:32,620 --> 00:18:38,170
+So for example coin tossing experiments we figured out that Bernoulli is good right,
+
+109
+00:18:38,170 --> 00:18:44,260
+so die rolls right we will figure out that multinomial is a good distribution what about
+
+110
+00:18:44,260 --> 00:18:53,610
+text, people typically use multinomial distribution so you can think of having
+
+111
+00:18:53,610 --> 00:18:59,820
+a very large dimensional die on one word written on each side of it right so what
+
+112
+00:18:59,820 --> 00:19:04,770
+is the next word you use roll the die that will tell you or the next word to use right
+
+113
+00:19:04,770 --> 00:19:08,790
+so that is that is do not laugh I mean that is the seriously the model that people use
+
+114
+00:19:08,790 --> 00:19:13,800
+for modeling text you know they use multinomial distribution so they assume that each word is a
+
+115
+00:19:13,800 --> 00:19:20,820
+generated independent of the previous word sometimes when okay fine let another yeah.
+
+116
+00:19:20,820 --> 00:19:26,310
+So that each word is generated independent of the previous word and so you can model that as
+
+117
+00:19:26,310 --> 00:19:30,330
+a multinomial distribution right, so they have actually have different names for it,
+
+118
+00:19:30,330 --> 00:19:35,970
+it is sometimes called the Unigram model right also it is called the roughly a bag
+
+119
+00:19:35,970 --> 00:19:40,500
+of words model right where the sequence do not matter and each word is generated in
+
+120
+00:19:40,500 --> 00:19:44,970
+differently so many ways of describing the same idea right but at the end of
+
+121
+00:19:44,970 --> 00:19:50,580
+it is nothing but using a multinomial as comical as it sounded that is what it means.
+
+122
+00:19:50,580 --> 00:19:55,770
+Having this huge die and rolling it every time I want to add a word to the document
+
+123
+00:19:55,770 --> 00:20:00,960
+okay so that is multinomial right so once you have decided what is the distribution
+
+124
+00:20:00,960 --> 00:20:09,180
+that you think is appropriate for modeling the data then you go and decide on what your prior
+
+125
+00:20:09,180 --> 00:20:15,300
+should be right so sometimes the choice of the distribution for modeling the data is
+
+126
+00:20:15,300 --> 00:20:24,570
+driven by not whether there is a conjugate prior is available for the distribution
+
+127
+00:20:24,570 --> 00:20:32,160
+or not right so maybe there is a different distribution that is perfect for modeling data.
+
+128
+00:20:32,160 --> 00:20:36,150
+But because there is a very convenient conjugate prior for multinomial right
+
+129
+00:20:36,150 --> 00:20:41,550
+people want to use multi no means so like that there are other instances where even
+
+130
+00:20:41,550 --> 00:20:45,390
+though Gaussian is inappropriate for example people want to model discrete
+
+131
+00:20:45,390 --> 00:20:51,360
+value data right the Gaussian cannot do discrete values right but then coming
+
+132
+00:20:51,360 --> 00:20:56,370
+up with the distributions which have allowed discrete values and have nice conjugate priors
+
+133
+00:20:56,370 --> 00:21:04,900
+is hard right so people just go with Gaussian sometimes you end up operate they use Gaussian.
+
+134
+00:21:04,900 --> 00:21:08,650
+Because it has a nice conjugate price so y and y are conjugate priors important,
+
+135
+00:21:12,110 --> 00:21:18,400
+because an easy to do things in iterative fashion because once I run some data through
+
+136
+00:21:18,400 --> 00:21:24,130
+the ß Bernoulli pair, okay I am going to end up with a ß distribution over the parameters
+
+137
+00:21:24,130 --> 00:21:30,040
+again so if I get more data and I can just happily just go ahead and do it and if I
+
+138
+00:21:30,040 --> 00:21:33,910
+every time I run through it I keep getting a different probability distribution there is no
+
+139
+00:21:33,910 --> 00:21:38,350
+functional form for me to stick these things into and then it becomes very hard for me to
+
+140
+00:21:38,350 --> 00:21:44,500
+do this in any tractable fashion then I cannot come up with some parameter update equations or
+
+141
+00:21:44,500 --> 00:21:48,790
+anything like that so it becomes very hard so, so the conjugacy is very important.

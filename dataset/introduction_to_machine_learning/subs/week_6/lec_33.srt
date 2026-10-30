@@ -1,0 +1,595 @@
+1
+00:00:10,980 --> 00:00:22,800
+So we are going to shift gears and we are going to look at a very, very popular supervised learning
+
+2
+00:00:22,800 --> 00:00:26,940
+algorithm and also provide learning model I should say because there are many different
+
+3
+00:00:26,940 --> 00:00:32,940
+algorithms for estimating this model or based on decision trees right , okay people at the
+
+4
+00:00:32,940 --> 00:00:42,990
+back hear me fine okay. So decision trees have a very I mean very special place in all this
+
+5
+00:00:42,990 --> 00:00:49,410
+machine learning stuff in that they are very widely used right and very poorly understood
+
+6
+00:00:49,410 --> 00:00:56,220
+know in terms of I mean we talked about all this bias-variance tradeoff classification area we can
+
+7
+00:00:56,220 --> 00:01:00,360
+show convergence we can show approximations and whole bunch of other things for all the
+
+8
+00:01:00,360 --> 00:01:05,490
+linear classifiers linear regresses let me know lot about all the linear stuff right.
+
+9
+00:01:05,490 --> 00:01:10,890
+And some of the non linear stuff like SVM's and so on so forth again we have very strong theory
+
+10
+00:01:10,890 --> 00:01:15,990
+we know about convergence and things like that right with decision trees I can tell you what
+
+11
+00:01:15,990 --> 00:01:20,280
+the problem is and I can tell you what is the best known heuristic for solving the
+
+12
+00:01:20,280 --> 00:01:26,460
+problem but I cannot even tell you how good the heuristic is right because there are isolated
+
+13
+00:01:26,460 --> 00:01:32,550
+results under very special conditions people have some results on how good the heuristic
+
+14
+00:01:32,550 --> 00:01:38,370
+is you know that is this best possible tree that you can learn right and how close will
+
+15
+00:01:38,370 --> 00:01:42,120
+it get you to the best possible tree right. So there are some very isolated results right
+
+16
+00:01:42,120 --> 00:01:48,870
+but there is nothing that really something out there that we understand well right and it is
+
+17
+00:01:48,870 --> 00:01:54,890
+incredible because it is such a simple idea it is a very simple classifier right. So it
+
+18
+00:01:54,890 --> 00:02:00,840
+is more or less along the lines of how humans do their decision-making right, so when you are
+
+19
+00:02:00,840 --> 00:02:08,130
+trying to decide whether something belongs to some category X or some category Y right how do
+
+20
+00:02:08,130 --> 00:02:15,390
+you think you go about doing it right you do not do not create a hyper plane in your head right.
+
+21
+00:02:15,390 --> 00:02:20,010
+So typically what you end up doing is okay this is red? okay it is not red okay Is it round? oh
+
+22
+00:02:20,010 --> 00:02:26,550
+yeah it looks round and round and okay it is blue maybe it is that right essentially what
+
+23
+00:02:26,550 --> 00:02:32,430
+you are doing is querying some properties of the object right or some properties of the entity at
+
+24
+00:02:32,430 --> 00:02:40,170
+hand right do I want the when do I think he is a studious boy or not right then I can ask all
+
+25
+00:02:40,170 --> 00:02:46,770
+kinds of queries okay let us see show up for all the classes as you sit in the first row
+
+26
+00:02:46,770 --> 00:02:58,500
+all the time is he smiling after quiz one. So I can ask him in again build this thing so
+
+27
+00:02:58,500 --> 00:03:03,540
+I can ask the series of queries right and then I can essentially am building some kind of a
+
+28
+00:03:03,540 --> 00:03:10,200
+characterization of the object and then I say okay, so this is this person is class one okay
+
+29
+00:03:10,200 --> 00:03:15,240
+this person is class 2 right. So on so forth that is the whole idea behind decision trees
+
+30
+00:03:15,240 --> 00:03:20,100
+right you are essentially trying to if you think about what you are doing.
+
+31
+00:03:20,100 --> 00:03:33,030
+You are trying to partition the input space into certain regions okay right the feature one has
+
+32
+00:03:33,030 --> 00:03:39,570
+value X feature two has value Y feature three has value Z and that gives me some region in
+
+33
+00:03:39,570 --> 00:03:52,350
+stage space so what do I mean by that let us take a right. So the first question is a two
+
+34
+00:03:52,350 --> 00:04:03,060
+dimensional data set now let us forget about all the all the relevance to real they real-life and
+
+35
+00:04:03,060 --> 00:04:07,020
+things like this I have two variables X1 and X 2 now I am going to ask the question first
+
+36
+00:04:07,020 --> 00:04:12,630
+question there is a new data point is the x1 of this data point greater than 0.6 or lesser
+
+37
+00:04:12,630 --> 00:04:22,110
+than 0.6 okay the first question I asked. So what am I doing in some sense I am right so
+
+38
+00:04:22,110 --> 00:04:26,820
+I am splitting this into two parts its greater than 0.6 it will be here which is lesser than
+
+39
+00:04:26,820 --> 00:04:35,490
+0.6 it will be here right next question I can ask is okay suppose X1 is greater than 0.6
+
+40
+00:04:36,740 --> 00:04:52,640
+okay then is x2 greater than 0.2 or not right then what do I do right, so this region is now
+
+41
+00:04:52,640 --> 00:05:01,040
+x1 lesser than 0.6 X2 greater than point I mean x1 greater than 0.6 X2 less the greater
+
+42
+00:05:01,040 --> 00:05:10,430
+than 0.2 likewise this is x2lesser than 0.2 and likewise here I can ask the question is what kind
+
+43
+00:05:10,430 --> 00:05:16,520
+of question can I ask you come on let us just say something random and do not think too much
+
+44
+00:05:16,520 --> 00:05:24,230
+about it you can make any conditions on X 1 and then you did with X you can do anything right.
+
+45
+00:05:24,230 --> 00:05:29,570
+So typically they alternate but you can also ask a question of case X1 given that X1 is less than
+
+46
+00:05:29,570 --> 00:05:37,520
+0.6 is it less than 0.3 or not or you could ask is X2 greater than not give me some root 2 or
+
+47
+00:05:37,520 --> 00:05:49,220
+something but 0.5 okay good right. So as soon as I write that thing that it becomes 0.5 so
+
+48
+00:05:49,220 --> 00:05:59,910
+the regions that we can act arise each do class are in the rectangular but have some but lately
+
+49
+00:05:59,910 --> 00:06:08,580
+on something i Function and lately a slant of the saying I can I come to that little later right.
+
+50
+00:06:08,580 --> 00:06:14,040
+So I am just trying to mimic the way we try to think of things right so normally what this is
+
+51
+00:06:14,040 --> 00:06:17,580
+all of you are agreeing with me when I said okay I w ill think about attributes one at a
+
+52
+00:06:17,580 --> 00:06:21,990
+time right so is the price okay is the TV screen of this as the right size then I am going to buy
+
+53
+00:06:21,990 --> 00:06:27,120
+or not right so this is like that so I am just mimicking that process here okay then we will
+
+54
+00:06:27,120 --> 00:06:34,680
+come to other things a little later right. So I mean it will be really truly amazing if
+
+55
+00:06:34,680 --> 00:06:40,200
+you are true class labels are going to lie like this right what is the problem what do you think
+
+56
+00:06:40,200 --> 00:06:43,830
+is a likelihood that the class labels will actually be this kind of rectangular regions
+
+57
+00:06:43,830 --> 00:06:53,580
+it could be high I mean depends on what process was used to generate the class label since the
+
+58
+00:06:53,580 --> 00:06:57,660
+problem labels are generated by doing this kind of region splitting obviously they will
+
+59
+00:06:57,660 --> 00:07:02,760
+you have to find the right regions but we are making some kind of an assumption right
+
+60
+00:07:02,760 --> 00:07:06,960
+earlier when we made assumptions about linear right we are making some kind of an assumption
+
+61
+00:07:06,960 --> 00:07:15,300
+about what the boundaries would be right. Likewise we are making assumptions here that there
+
+62
+00:07:15,300 --> 00:07:19,650
+will be rectangles right so if you do not want to make the assumption that there will be rectangles
+
+63
+00:07:19,650 --> 00:07:28,350
+then it is not going to be little harder, so not only are these rectangles right there is something
+
+64
+00:07:28,350 --> 00:07:38,450
+more special about these rectangles I mean they are all recursively generated right it is not
+
+65
+00:07:38,450 --> 00:07:43,160
+like I can I cannot just take some arbitrary set of rectangles and tile the space right they are
+
+66
+00:07:43,160 --> 00:07:47,300
+recursively generated by first splitting it into two and then splitting each section into two and
+
+67
+00:07:47,300 --> 00:08:00,740
+so on and so forth it turns out right. So this kind of recursive splitting is what
+
+68
+00:08:00,740 --> 00:08:07,850
+is most tractable to handle right and for most of our decision tree discussion we will stick
+
+69
+00:08:07,850 --> 00:08:12,890
+with this right I will come back and address that issue little later right about having more
+
+70
+00:08:12,890 --> 00:08:18,650
+complex boundaries but almost all decision tree algorithms try all the approximations that we do
+
+71
+00:08:18,650 --> 00:08:28,160
+for decision trees use this kind of recursive splitting of regions right like one inside the
+
+72
+00:08:28,160 --> 00:08:41,940
+other like that how will you describe this region it becomes harder right, see now each of these
+
+73
+00:08:41,940 --> 00:08:48,900
+regions I can describe very easily right. But if I start doing nested rectangles right
+
+74
+00:08:48,900 --> 00:08:56,370
+it becomes a little tricky to describe the outer region but I can do something like this provided
+
+75
+00:08:56,370 --> 00:09:03,480
+I am willing to accept that right now it is no longer a nested really no longer nested
+
+76
+00:09:03,480 --> 00:09:10,740
+rectangle because I had to actually fragment the outer region that will give you the inner
+
+77
+00:09:10,740 --> 00:09:15,390
+rectangle but the outer rectangle you have to actually exclude it right I have to I
+
+78
+00:09:15,390 --> 00:09:18,150
+have to specify the outer rectangle and then say okay to remove the inner rectangle.
+
+79
+00:09:18,150 --> 00:09:29,730
+So it becomes a little harder to specific okay, yeah it becomes harder right I wanted to be easy
+
+80
+00:09:29,730 --> 00:09:35,640
+I wanted to if I want to represent this as a tree but then the way you are going it make it
+
+81
+00:09:35,640 --> 00:09:40,350
+harder and harder so the biggest advantage of decision trees is the interpretability,
+
+82
+00:09:40,350 --> 00:09:45,450
+so for example this tree that I have this region segmentation that I have drawn I can represent
+
+83
+00:09:45,450 --> 00:09:49,770
+it as I mean talking to you about trees right where it said tree right the segmentation I
+
+84
+00:09:49,770 --> 00:09:54,060
+have made I can represent it as a tree. So what I will do is I will first ask the
+
+85
+00:09:54,060 --> 00:10:11,190
+question is x1 less than 0.6 rights then if we say yes I will go left then last equation is
+
+86
+00:10:59,560 --> 00:11:07,870
+right. So I can very compactly represent this rectangle segmentation as a tree right you can see
+
+87
+00:11:07,870 --> 00:11:13,810
+what is here I am asking the question is x1 less than 0.6if it is true I go to the right and then
+
+88
+00:11:13,810 --> 00:11:19,300
+again I ask the question is x2 less than 0.5 it is true I go to the right and I say that this r1.
+
+89
+00:11:19,300 --> 00:11:27,670
+Right so I am essentially here right otherwise I am here then go into the other branch which
+
+90
+00:11:27,670 --> 00:11:33,520
+is x1 is greater than or equal to 0.6 on this side and if it is less than 0.2 mean r3. r is
+
+91
+00:11:33,520 --> 00:11:41,470
+greater than 0.2 I mean r4right so I can very compactly describe this segmentation as a tree
+
+92
+00:11:41,470 --> 00:11:47,800
+right so what is nice about the streets is easily understandable that you show somebody okay so you
+
+93
+00:11:47,800 --> 00:11:53,560
+are building your this you go out to become a data scientist or a data analyst or whatever okay.
+
+94
+00:11:53,560 --> 00:11:59,110
+Some manager who makes like 10 times what you do but who has ever heard of a hyper plane in
+
+95
+00:11:59,110 --> 00:12:05,440
+his life right comes and asksyou for a to build a classifier here is the data build
+
+96
+00:12:05,440 --> 00:12:09,790
+a classifier and then you tell him okay, I built this classifier and this new customer
+
+97
+00:12:09,790 --> 00:12:17,320
+you should label him as a buyer then he will ask you why right so at that point you just
+
+98
+00:12:17,320 --> 00:12:23,800
+talk to him about optimal separating hyper planes and show him something okay well then
+
+99
+00:12:23,800 --> 00:12:29,290
+the next day probably the manager is going to be running infinitely more than you right.
+
+100
+00:12:29,290 --> 00:12:41,260
+So what you should okay so what you should be doing is showing him a decision tree right because
+
+101
+00:12:41,260 --> 00:12:48,538
+that people can understand right people even with an MBA can understand right so you can see what
+
+102
+00:12:48,538 --> 00:12:55,540
+is my recommendation to you guys have to finish your B Tech or anything, do not do it MBA anyway
+
+103
+00:12:55,540 --> 00:13:01,420
+so that is easily interpretable right you say oh that is oh yeah you should you should classify him
+
+104
+00:13:01,420 --> 00:13:07,210
+as a buyer because well this is on this parameter he is so much on that parameter is less blah, blah
+
+105
+00:13:07,210 --> 00:13:13,750
+and then there you go right the biggest advantage of decision trees is the interpretability always
+
+106
+00:13:13,750 --> 00:13:19,960
+easy to explain the decision tree to people. In fact so much so that at one point when neural
+
+107
+00:13:19,960 --> 00:13:22,870
+networks were at their peak you know you know what is the biggest problem with
+
+108
+00:13:22,870 --> 00:13:30,130
+neural networks the opposite of decision trees incomprehensibility right this is interpretable
+
+109
+00:13:30,130 --> 00:13:34,150
+and neural networks are incomprehensible essentially you say okay it is a black box I
+
+110
+00:13:34,150 --> 00:13:38,650
+do not even know what hyper plane it is learning right if I get if you think optimal separating
+
+111
+00:13:38,650 --> 00:13:43,090
+hyper planes are hard I cannot even visualize what the neural network is learning right.
+
+112
+00:13:43,090 --> 00:13:47,770
+So you see here is a black box you throw in all your data at one end something will come out at
+
+113
+00:13:47,770 --> 00:13:56,890
+the other end you just take it on faith right I so welcome to the Church of neural networks right,
+
+114
+00:13:56,890 --> 00:14:02,050
+so that is essentially how neural networks are working so when the neural networks are at their
+
+115
+00:14:02,050 --> 00:14:08,110
+peak there was this whole line of research where people took a neural network like that was trained
+
+116
+00:14:08,110 --> 00:14:13,150
+on your training data etcetera, etcetera. And then try to construct a decision tree that
+
+117
+00:14:13,150 --> 00:14:17,530
+will give the same decisions as the neural network will give the same class labels as
+
+118
+00:14:17,530 --> 00:14:22,780
+in your network so that you can actually understand what has what is happening it
+
+119
+00:14:23,470 --> 00:14:29,530
+sounds weird right but remember that now I am no longer using whatever other heuristic I had
+
+120
+00:14:29,530 --> 00:14:34,180
+for constructing the decision tree I amusing a decision tree which makes the neural network so if
+
+121
+00:14:34,180 --> 00:14:39,040
+the neural network learned some complex function of the data right I am trying to build a decision
+
+122
+00:14:39,040 --> 00:14:44,650
+tree that mimics the complex function right. So it is a different decision tree that I would
+
+123
+00:14:44,650 --> 00:14:48,970
+come up with than the one I would have constructed if I had used any of my decision tree learning
+
+124
+00:14:48,970 --> 00:14:54,250
+heuristics on the data from the beginning okay so that is value to doing this right,
+
+125
+00:14:56,950 --> 00:15:02,920
+so people do see that right that is value doing this a because your networks do something I cannot
+
+126
+00:15:02,920 --> 00:15:08,170
+understand right but they seem to work now they give me a wonderful answer and I do not know what
+
+127
+00:15:08,170 --> 00:15:12,850
+the answer means so can I use something for which I know what the meaning is and try to
+
+128
+00:15:12,850 --> 00:15:16,510
+understand it in terms of that right. So that is how useful decision trees
+
+129
+00:15:16,510 --> 00:15:20,590
+are right even if you have a more complex learning mechanism at hand okay sometimes
+
+130
+00:15:20,590 --> 00:15:26,890
+for interpretability sake so you can use decision trees right.
+
+131
+00:15:50,330 --> 00:16:04,250
+How expressive are decision trees. If you remember we have the discussion about neural
+
+132
+00:16:04,250 --> 00:16:10,460
+networks I said if you have two layers of weights there is three layers of neurons and you can
+
+133
+00:16:10,460 --> 00:16:16,700
+basically represent any Boolean function right as the branching factor might be very high but
+
+134
+00:16:16,700 --> 00:16:21,140
+then you can represent any Boolean function so neural networks are universal approximators as
+
+135
+00:16:21,140 --> 00:16:31,640
+in that sense is what about decision trees? So you can it can be an Universal approximated
+
+136
+00:16:31,640 --> 00:16:38,990
+as well right I can just keep dividing and subdividing this space okay just that my tree
+
+137
+00:16:38,990 --> 00:16:48,050
+might become very, very large right as long as there is some kind of guarantee on the function
+
+138
+00:16:48,050 --> 00:16:55,130
+yeah. Now I can define some variables here it is fine yeah in the eye I could do that I mean in
+
+139
+00:16:55,130 --> 00:17:07,580
+fact he was pointing out in the beginning I could have as well draw another line here yeah okay.
+
+140
+00:17:07,580 --> 00:17:11,510
+Everywhere that the discussion was when we were discussing about this line versus that
+
+141
+00:17:11,510 --> 00:17:17,990
+line yeah sure I can keep doing this if that is your question right now this becomes a much
+
+142
+00:17:17,990 --> 00:17:23,450
+more complex tree right, so now I have splitting here once more right I will have another branch
+
+143
+00:17:23,450 --> 00:17:29,240
+here will have another branch here and another branch somewhere there right so keeps becoming
+
+144
+00:17:29,240 --> 00:17:36,890
+more and more complex I can but the point is conceptually you can represent anything right.
+
+145
+00:17:36,890 --> 00:17:44,030
+So it is powerful in the sense that it is a universal approximator right and it is just
+
+146
+00:17:44,030 --> 00:17:48,320
+that the number of parameters can grow unbounded okay and that is another thing
+
+147
+00:17:48,320 --> 00:17:56,780
+nice thing about it is nonparametric ever we talked about what nonparametric means right,
+
+148
+00:17:56,780 --> 00:17:59,720
+so decision trees are actually nonparametric it can just keep
+
+149
+00:17:59,720 --> 00:18:03,260
+growing right we can keep adding parameters as you go along.

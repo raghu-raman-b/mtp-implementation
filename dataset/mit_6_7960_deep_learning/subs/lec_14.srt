@@ -1,0 +1,7975 @@
+1
+00:00:00,000 --> 00:00:02,925
+[SQUEAKING]
+
+2
+00:00:02,925 --> 00:00:04,380
+[RUSTLING]
+
+3
+00:00:04,380 --> 00:00:05,835
+[CLICKING]
+
+4
+00:00:12,450 --> 00:00:13,200
+PHILLIP ISOLA: OK.
+
+5
+00:00:13,200 --> 00:00:13,460
+Yeah.
+
+6
+00:00:13,460 --> 00:00:14,220
+Welcome, everyone.
+
+7
+00:00:14,220 --> 00:00:17,360
+So now we're coming to another section of the course, which
+
+8
+00:00:17,360 --> 00:00:18,340
+is generative models.
+
+9
+00:00:18,340 --> 00:00:21,000
+We'll have three lectures on generative models.
+
+10
+00:00:21,000 --> 00:00:23,080
+And generative models are--
+
+11
+00:00:23,080 --> 00:00:24,740
+the new name for them is generative AI.
+
+12
+00:00:24,740 --> 00:00:27,900
+So this is the big thing of 2023,
+
+13
+00:00:27,900 --> 00:00:32,119
+and continuing on to this year, 2024.
+
+14
+00:00:32,119 --> 00:00:32,619
+OK.
+
+15
+00:00:32,619 --> 00:00:34,202
+So we're going to learn all about what
+
+16
+00:00:34,202 --> 00:00:35,720
+generative models are.
+
+17
+00:00:35,720 --> 00:00:37,200
+Again, this is one of those topics
+
+18
+00:00:37,200 --> 00:00:39,660
+which you could teach without mentioning deep learning at all.
+
+19
+00:00:39,660 --> 00:00:41,785
+Of course, we'll talk about deep generative models.
+
+20
+00:00:41,785 --> 00:00:45,760
+But the place where generative models are having innovation
+
+21
+00:00:45,760 --> 00:00:48,000
+is mostly in deep learning.
+
+22
+00:00:48,000 --> 00:00:50,280
+They kind of go hand in hand.
+
+23
+00:00:50,280 --> 00:00:52,280
+OK.
+
+24
+00:00:52,280 --> 00:00:54,200
+So I want to come back to this picture
+
+25
+00:00:54,200 --> 00:00:57,680
+because we've had three lectures now on representation, learning,
+
+26
+00:00:57,680 --> 00:01:00,370
+and the way I like to think about generative modeling
+
+27
+00:01:00,370 --> 00:01:02,630
+is it's just the inverse of representation learning.
+
+28
+00:01:02,630 --> 00:01:04,463
+So these two things, representation learning
+
+29
+00:01:04,463 --> 00:01:07,570
+and generative modeling, are very tightly coupled.
+
+30
+00:01:07,570 --> 00:01:10,930
+And we'll see, actually, in the next lecture, models
+
+31
+00:01:10,930 --> 00:01:13,530
+that do both representation learning and generative
+
+32
+00:01:13,530 --> 00:01:15,558
+modeling at the same time.
+
+33
+00:01:15,558 --> 00:01:17,350
+But we're talking about this direction now.
+
+34
+00:01:17,350 --> 00:01:19,130
+So we've so far, in the last few weeks,
+
+35
+00:01:19,130 --> 00:01:21,170
+talked a lot about going from data to some kind
+
+36
+00:01:21,170 --> 00:01:23,410
+of low-dimensional embedding.
+
+37
+00:01:23,410 --> 00:01:26,290
+And now we'll be going from simple low-dimensional
+
+38
+00:01:26,290 --> 00:01:28,510
+embeddings to data.
+
+39
+00:01:28,510 --> 00:01:29,010
+OK.
+
+40
+00:01:29,010 --> 00:01:31,930
+So today will be just a tour of a bunch
+
+41
+00:01:31,930 --> 00:01:34,090
+of the fundamentals of generative modeling
+
+42
+00:01:34,090 --> 00:01:38,010
+and some of the popular models like diffusion models and GANs.
+
+43
+00:01:38,010 --> 00:01:40,210
+And then, next week, we'll be looking
+
+44
+00:01:40,210 --> 00:01:42,890
+at variational autoencoders, which are a model that
+
+45
+00:01:42,890 --> 00:01:46,050
+does both directions jointly.
+
+46
+00:01:46,050 --> 00:01:49,850
+And then we'll talk about conditional models, which
+
+47
+00:01:49,850 --> 00:01:52,850
+is, How can I condition a generative model on some data
+
+48
+00:01:52,850 --> 00:01:54,110
+to predict some other data?
+
+49
+00:01:54,110 --> 00:01:57,110
+And in lecture 16, we'll really get out,
+
+50
+00:01:57,110 --> 00:01:58,870
+What are these things useful for?
+
+51
+00:01:58,870 --> 00:02:00,370
+So it might be a little confusing when you first
+
+52
+00:02:00,370 --> 00:02:01,620
+come across generative models.
+
+53
+00:02:01,620 --> 00:02:04,050
+You know, like, why do we care about these things?
+
+54
+00:02:04,050 --> 00:02:06,630
+There are things that make random images, random stories.
+
+55
+00:02:06,630 --> 00:02:07,770
+Why would you care?
+
+56
+00:02:07,770 --> 00:02:09,850
+Well, we care because-- you know,
+
+57
+00:02:09,850 --> 00:02:11,490
+ChatGPT is a generative model, and we
+
+58
+00:02:11,490 --> 00:02:13,530
+know that that's something that's popular.
+
+59
+00:02:13,530 --> 00:02:15,290
+But we'll talk more about the applications
+
+60
+00:02:15,290 --> 00:02:18,210
+of generative models in lecture 16.
+
+61
+00:02:18,210 --> 00:02:21,410
+And yeah, I love generative models.
+
+62
+00:02:21,410 --> 00:02:23,750
+I just think that--
+
+63
+00:02:23,750 --> 00:02:25,950
+my favorite topic is representation learning,
+
+64
+00:02:25,950 --> 00:02:27,910
+but my even more favorite topic is generative modeling.
+
+65
+00:02:27,910 --> 00:02:29,660
+And I think they're really the same topic.
+
+66
+00:02:29,660 --> 00:02:31,830
+And this is just, like, the coolest thing in AI.
+
+67
+00:02:31,830 --> 00:02:35,850
+So to me, generative models are kind
+
+68
+00:02:35,850 --> 00:02:37,590
+of the core of intelligence.
+
+69
+00:02:37,590 --> 00:02:39,770
+And that's kind of played out in the last few years
+
+70
+00:02:39,770 --> 00:02:42,170
+with this generative AI revolution.
+
+71
+00:02:42,170 --> 00:02:44,850
+But it's just super cool stuff.
+
+72
+00:02:44,850 --> 00:02:46,170
+OK.
+
+73
+00:02:46,170 --> 00:02:48,330
+So I'm going to start by giving a little math
+
+74
+00:02:48,330 --> 00:02:50,890
+background because we're going to be using
+
+75
+00:02:50,890 --> 00:02:53,130
+a different type of math than we've used previously
+
+76
+00:02:53,130 --> 00:02:55,310
+in this class, which will be probability.
+
+77
+00:02:55,310 --> 00:02:57,560
+This will be things that you should have already seen.
+
+78
+00:02:57,560 --> 00:02:59,900
+If you haven't, you should touch up on this.
+
+79
+00:02:59,900 --> 00:03:00,400
+OK.
+
+80
+00:03:00,400 --> 00:03:03,620
+Then we'll talk about, What's a generative model?
+
+81
+00:03:03,620 --> 00:03:06,420
+We'll talk about density functions, energy functions,
+
+82
+00:03:06,420 --> 00:03:08,340
+and samplers.
+
+83
+00:03:08,340 --> 00:03:12,020
+And then we'll get into a survey of a few of the currently
+
+84
+00:03:12,020 --> 00:03:13,360
+popular generative models.
+
+85
+00:03:13,360 --> 00:03:15,838
+So one will be the autoregressive model.
+
+86
+00:03:15,838 --> 00:03:17,380
+The next will be the diffusion model.
+
+87
+00:03:17,380 --> 00:03:19,820
+And the next will be the GAN, the Generative Adversarial
+
+88
+00:03:19,820 --> 00:03:20,700
+Network.
+
+89
+00:03:20,700 --> 00:03:22,373
+So there's a lot.
+
+90
+00:03:22,373 --> 00:03:25,040
+You can have a whole lecture, a whole class on diffusion models.
+
+91
+00:03:25,040 --> 00:03:27,207
+But we're just going to go through the basics of it.
+
+92
+00:03:27,207 --> 00:03:29,340
+And hopefully, you'll have this toolkit
+
+93
+00:03:29,340 --> 00:03:32,640
+that you can read up on in your own work.
+
+94
+00:03:32,640 --> 00:03:33,140
+OK.
+
+95
+00:03:33,140 --> 00:03:36,740
+And the good news is all generative models
+
+96
+00:03:36,740 --> 00:03:37,880
+use the same principles.
+
+97
+00:03:37,880 --> 00:03:41,480
+So it's not-- there's very tight connections between all of them.
+
+98
+00:03:41,480 --> 00:03:43,500
+You can often cast one model as another model
+
+99
+00:03:43,500 --> 00:03:46,100
+with some exchange of variables.
+
+100
+00:03:46,100 --> 00:03:48,640
+A diffusion model is a type of variational autoencoder,
+
+101
+00:03:48,640 --> 00:03:51,420
+and an autoregressive model is a small variation
+
+102
+00:03:51,420 --> 00:03:52,360
+on a diffusion model.
+
+103
+00:03:52,360 --> 00:03:53,770
+They're all connected.
+
+104
+00:03:53,770 --> 00:03:54,270
+OK.
+
+105
+00:03:54,270 --> 00:03:57,145
+But you don't know what those terms mean, presumably, yet.
+
+106
+00:03:57,145 --> 00:03:57,770
+So don't worry.
+
+107
+00:03:57,770 --> 00:04:01,390
+We're going to see some connections.
+
+108
+00:04:01,390 --> 00:04:03,590
+So what I want to start with is, yeah,
+
+109
+00:04:03,590 --> 00:04:05,605
+What is the definition of a generative model?
+
+110
+00:04:05,605 --> 00:04:07,730
+And there's basically two definitions in the field.
+
+111
+00:04:07,730 --> 00:04:10,250
+There's the definition that I will focus on,
+
+112
+00:04:10,250 --> 00:04:13,110
+which is an algorithm that generates data.
+
+113
+00:04:13,110 --> 00:04:15,430
+And there's a definition that you may have come across
+
+114
+00:04:15,430 --> 00:04:17,453
+in a statistics class or a probability class,
+
+115
+00:04:17,453 --> 00:04:18,870
+a slightly older definition, which
+
+116
+00:04:18,870 --> 00:04:22,970
+is the joint distribution of some data,
+
+117
+00:04:22,970 --> 00:04:26,750
+so probability of a joint configuration of x's, y's,
+
+118
+00:04:26,750 --> 00:04:29,590
+and other variables
+
+119
+00:04:29,590 --> 00:04:30,090
+OK.
+
+120
+00:04:30,090 --> 00:04:33,670
+So these are actually highly related concepts.
+
+121
+00:04:33,670 --> 00:04:34,790
+But I think it's--
+
+122
+00:04:34,790 --> 00:04:37,130
+our real goal in generative modeling,
+
+123
+00:04:37,130 --> 00:04:39,510
+especially in this area that we would call generative AI,
+
+124
+00:04:39,510 --> 00:04:42,010
+is we want algorithms that make things that look like data.
+
+125
+00:04:42,010 --> 00:04:42,690
+So what's data?
+
+126
+00:04:42,690 --> 00:04:43,482
+It could be images.
+
+127
+00:04:43,482 --> 00:04:45,230
+We want algorithms that make images.
+
+128
+00:04:45,230 --> 00:04:46,170
+What's data?
+
+129
+00:04:46,170 --> 00:04:47,010
+Proteins are data.
+
+130
+00:04:47,010 --> 00:04:49,070
+We want algorithms that make proteins,
+
+131
+00:04:49,070 --> 00:04:51,740
+design proteins, design drugs.
+
+132
+00:04:51,740 --> 00:04:54,060
+We want algorithms that write stories and chat with us.
+
+133
+00:04:54,060 --> 00:04:55,260
+This is generating text.
+
+134
+00:04:55,260 --> 00:04:56,320
+That's data.
+
+135
+00:04:56,320 --> 00:05:00,060
+So this is in contrast to other forms of AI,
+
+136
+00:05:00,060 --> 00:05:05,360
+which are more about analyzing or classifying or deciding--
+
+137
+00:05:05,360 --> 00:05:07,720
+making decisions, taking data and saying,
+
+138
+00:05:07,720 --> 00:05:10,320
+this data is of type x, or this data
+
+139
+00:05:10,320 --> 00:05:13,080
+means I should turn left with my car.
+
+140
+00:05:13,080 --> 00:05:16,773
+So going from data to decisions or abstract representations
+
+141
+00:05:16,773 --> 00:05:18,440
+is what we've seen before, but now we're
+
+142
+00:05:18,440 --> 00:05:21,260
+going from something to data.
+
+143
+00:05:21,260 --> 00:05:21,760
+OK.
+
+144
+00:05:21,760 --> 00:05:25,160
+But most of the time, we'll be generating data
+
+145
+00:05:25,160 --> 00:05:26,960
+by either explicitly or implicitly
+
+146
+00:05:26,960 --> 00:05:28,380
+modeling a distribution.
+
+147
+00:05:30,920 --> 00:05:35,120
+And I think that this is all probably
+
+148
+00:05:35,120 --> 00:05:38,840
+well known to you at this point in history,
+
+149
+00:05:38,840 --> 00:05:42,280
+but these things are all over the world now.
+
+150
+00:05:42,280 --> 00:05:43,823
+Generative models are what make it
+
+151
+00:05:43,823 --> 00:05:45,240
+so that you can type in a sentence
+
+152
+00:05:45,240 --> 00:05:49,360
+on your favorite text-to-image model and say,
+
+153
+00:05:49,360 --> 00:05:52,120
+a photo of a group of robots building this data center,
+
+154
+00:05:52,120 --> 00:05:54,660
+and you get almost photorealistic pictures.
+
+155
+00:05:54,660 --> 00:05:56,800
+Or you can make videos of this now.
+
+156
+00:05:56,800 --> 00:06:00,640
+This stuff is advancing so quickly.
+
+157
+00:06:00,640 --> 00:06:02,280
+But what you might not know as much,
+
+158
+00:06:02,280 --> 00:06:04,360
+or not see yet in the media as much,
+
+159
+00:06:04,360 --> 00:06:06,360
+is that generative models also can
+
+160
+00:06:06,360 --> 00:06:11,480
+be used to generate scientific data, data that is not just
+
+161
+00:06:11,480 --> 00:06:14,440
+for entertainment but might be for some kind of engineering
+
+162
+00:06:14,440 --> 00:06:16,980
+application or logistics data of some form.
+
+163
+00:06:16,980 --> 00:06:20,140
+Or in this case, this is a diffusion model,
+
+164
+00:06:20,140 --> 00:06:21,560
+a type of generative model, which
+
+165
+00:06:21,560 --> 00:06:26,720
+is generating some structures that describe
+
+166
+00:06:26,720 --> 00:06:29,880
+the geometry of a protein.
+
+167
+00:06:29,880 --> 00:06:32,520
+So we have this input, which is, like, I
+
+168
+00:06:32,520 --> 00:06:35,320
+want you to make me the--
+
+169
+00:06:35,320 --> 00:06:38,900
+I want you to tell me what the binding sites are on a protein,
+
+170
+00:06:38,900 --> 00:06:42,320
+and I'll use the diffusion model for that process.
+
+171
+00:06:42,320 --> 00:06:43,380
+Here's another example.
+
+172
+00:06:43,380 --> 00:06:45,460
+Here's an image-to-image model.
+
+173
+00:06:45,460 --> 00:06:47,990
+So it's generating-- the output of this model is an image.
+
+174
+00:06:47,990 --> 00:06:50,450
+But the output is a CT scan image,
+
+175
+00:06:50,450 --> 00:06:53,430
+and this is conditioned on an input which is an MRI image.
+
+176
+00:06:53,430 --> 00:06:54,990
+So it's taking it and it's saying,
+
+177
+00:06:54,990 --> 00:06:56,570
+What would it look like if the doctor
+
+178
+00:06:56,570 --> 00:06:58,130
+hadn't scanned with an MRI machine
+
+179
+00:06:58,130 --> 00:07:00,530
+but had scanned with a CT machine?
+
+180
+00:07:00,530 --> 00:07:03,170
+So we'll talk about that setting as well.
+
+181
+00:07:03,170 --> 00:07:05,930
+OK, so generative models are not just for entertainment,
+
+182
+00:07:05,930 --> 00:07:09,250
+but where they became popular was, yeah, writing funny stories
+
+183
+00:07:09,250 --> 00:07:12,530
+and having chatbots and making funny images.
+
+184
+00:07:12,530 --> 00:07:14,570
+OK.
+
+185
+00:07:14,570 --> 00:07:17,530
+So let's go over a little bit of math background
+
+186
+00:07:17,530 --> 00:07:18,857
+to get us all on the same page.
+
+187
+00:07:18,857 --> 00:07:21,190
+And this is material that if you haven't seen it before,
+
+188
+00:07:21,190 --> 00:07:21,870
+you should review.
+
+189
+00:07:21,870 --> 00:07:23,870
+But you should've taken some kind of probability
+
+190
+00:07:23,870 --> 00:07:25,250
+or statistics class.
+
+191
+00:07:25,250 --> 00:07:28,210
+So we are going to be assuming that.
+
+192
+00:07:28,210 --> 00:07:28,902
+OK.
+
+193
+00:07:28,902 --> 00:07:30,610
+But we're going to be changing the way we
+
+194
+00:07:30,610 --> 00:07:32,130
+think about neural nets.
+
+195
+00:07:32,130 --> 00:07:35,050
+So, so far, we've mostly thought of neural nets
+
+196
+00:07:35,050 --> 00:07:39,610
+as functions that map from some input data to some output data.
+
+197
+00:07:39,610 --> 00:07:41,610
+And in fact, we've thought of them
+
+198
+00:07:41,610 --> 00:07:43,970
+as the classical definition of a function, which
+
+199
+00:07:43,970 --> 00:07:46,420
+is, for each unique element of the--
+
+200
+00:07:46,420 --> 00:07:48,380
+for each element of the input space,
+
+201
+00:07:48,380 --> 00:07:50,360
+there is a unique element of the output space.
+
+202
+00:07:50,360 --> 00:07:55,240
+So it's a many-to-one mapping, or maybe a one-to-one mapping.
+
+203
+00:07:55,240 --> 00:07:57,780
+But it's not a one-to-many mapping.
+
+204
+00:07:57,780 --> 00:08:00,562
+So for every element of the input, there's only one output.
+
+205
+00:08:00,562 --> 00:08:03,020
+And that's not going to be sufficient for generative models
+
+206
+00:08:03,020 --> 00:08:05,460
+because we want to make we want to make
+
+207
+00:08:05,460 --> 00:08:07,180
+a whole distribution of things.
+
+208
+00:08:07,180 --> 00:08:10,660
+And so we're going to change our perspective a little bit.
+
+209
+00:08:10,660 --> 00:08:13,420
+Let me just give an example of the function perspective
+
+210
+00:08:13,420 --> 00:08:14,940
+on neural nets.
+
+211
+00:08:14,940 --> 00:08:18,900
+For an image classifier, the input might be a tensor,
+
+212
+00:08:18,900 --> 00:08:22,783
+an "N by M by C" number of color channels, a dimensional tensor.
+
+213
+00:08:22,783 --> 00:08:24,200
+We're going to learn a function f.
+
+214
+00:08:24,200 --> 00:08:26,420
+It will be a neural network.
+
+215
+00:08:26,420 --> 00:08:28,600
+Our goal is to output a class prediction.
+
+216
+00:08:28,600 --> 00:08:30,780
+So it will be an integer from 1 to d, where
+
+217
+00:08:30,780 --> 00:08:33,260
+d is the number of classes
+
+218
+00:08:33,260 --> 00:08:34,620
+OK.
+
+219
+00:08:34,620 --> 00:08:37,220
+So instead, we're going to now think of neural nets
+
+220
+00:08:37,220 --> 00:08:39,100
+as-- or the models that we'll consider
+
+221
+00:08:39,100 --> 00:08:42,260
+are going to be mappings from some input space X,
+
+222
+00:08:42,260 --> 00:08:46,980
+not to a object Y, but to a distribution over objects Y.
+
+223
+00:08:46,980 --> 00:08:49,820
+So we call that, with this fancy script, P,
+
+224
+00:08:49,820 --> 00:08:54,420
+the space of probability distributions over the space Y.
+
+225
+00:08:54,420 --> 00:08:56,960
+And that might seem a little bit weird,
+
+226
+00:08:56,960 --> 00:08:59,420
+but it's like going from data to a distribution
+
+227
+00:08:59,420 --> 00:09:01,900
+over possibilities, not just one answer.
+
+228
+00:09:01,900 --> 00:09:03,583
+And we've seen that, in fact, already.
+
+229
+00:09:03,583 --> 00:09:05,500
+In fact, almost all the things that we've seen
+
+230
+00:09:05,500 --> 00:09:07,125
+or you'll encounter in machine learning
+
+231
+00:09:07,125 --> 00:09:08,980
+can be recast from this perspective.
+
+232
+00:09:08,980 --> 00:09:11,800
+So one example is classification.
+
+233
+00:09:11,800 --> 00:09:14,160
+We actually model it as softmax regression.
+
+234
+00:09:14,160 --> 00:09:17,920
+This is a standard thing we've been doing in machine learning.
+
+235
+00:09:17,920 --> 00:09:21,380
+We learn a function from, in this case, let's say, images,
+
+236
+00:09:21,380 --> 00:09:24,380
+to a distribution over the probability
+
+237
+00:09:24,380 --> 00:09:27,620
+that the image contains each of the d classes.
+
+238
+00:09:27,620 --> 00:09:30,420
+So this little triangle is meant to indicate the simplex, which
+
+239
+00:09:30,420 --> 00:09:34,900
+is the space of all categorical distributions over d categories.
+
+240
+00:09:34,900 --> 00:09:39,040
+And for d categories, it's the d-minus-1 simplex.
+
+241
+00:09:39,040 --> 00:09:42,570
+So if I have a binary classifier, 0 or 1,
+
+242
+00:09:42,570 --> 00:09:45,893
+then my distribution will be, How much probability
+
+243
+00:09:45,893 --> 00:09:47,810
+do I place on class 1 and how much probability
+
+244
+00:09:47,810 --> 00:09:52,470
+do I place on class 2? f that will be a line.
+
+245
+00:09:52,470 --> 00:09:54,030
+OK.
+
+246
+00:09:54,030 --> 00:09:59,090
+So this is the way we'll think of what we're actually modeling.
+
+247
+00:09:59,090 --> 00:10:02,070
+We're modeling the probability of some output conditioned
+
+248
+00:10:02,070 --> 00:10:04,670
+on the input, which is thought of as a random variable,
+
+249
+00:10:04,670 --> 00:10:07,895
+takes on some value x.
+
+250
+00:10:07,895 --> 00:10:09,270
+And again, this is something that
+
+251
+00:10:09,270 --> 00:10:11,950
+does characterize the classifiers we've
+
+252
+00:10:11,950 --> 00:10:13,510
+seen in the past.
+
+253
+00:10:13,510 --> 00:10:17,630
+If we have a vanilla regression, where we're doing regression
+
+254
+00:10:17,630 --> 00:10:20,790
+with respect to a Euclidean like squared error loss,
+
+255
+00:10:20,790 --> 00:10:23,950
+then you can recast that as outputting a Gaussian
+
+256
+00:10:23,950 --> 00:10:25,730
+distribution over the possibilities,
+
+257
+00:10:25,730 --> 00:10:29,030
+and the mean is what you're regressing.
+
+258
+00:10:29,030 --> 00:10:30,530
+OK.
+
+259
+00:10:30,530 --> 00:10:33,510
+So the main perspective here is that the outputs of neural nets
+
+260
+00:10:33,510 --> 00:10:35,550
+are, either implicitly or explicitly,
+
+261
+00:10:35,550 --> 00:10:37,770
+going to be distributions of possibilities,
+
+262
+00:10:37,770 --> 00:10:39,820
+as opposed to just one, like, point prediction.
+
+263
+00:10:42,680 --> 00:10:44,500
+So this was in that hacker's guide lecture.
+
+264
+00:10:44,500 --> 00:10:50,500
+I talked about this idea that in a lot of deep learning,
+
+265
+00:10:50,500 --> 00:10:54,360
+we're going to be predicting something from something.
+
+266
+00:10:54,360 --> 00:10:55,800
+And this little trick, this hack,
+
+267
+00:10:55,800 --> 00:10:57,207
+is that you make the thing you're
+
+268
+00:10:57,207 --> 00:10:59,040
+conditioning on-- so you're going to predict
+
+269
+00:10:59,040 --> 00:11:00,660
+the class of an image.
+
+270
+00:11:00,660 --> 00:11:03,960
+But better than that would be to take your whole experience
+
+271
+00:11:03,960 --> 00:11:06,880
+of the photographer's life before they took that photo.
+
+272
+00:11:06,880 --> 00:11:10,080
+If you condition on more information, like a video,
+
+273
+00:11:10,080 --> 00:11:12,560
+then you get less uncertainty over the output.
+
+274
+00:11:12,560 --> 00:11:14,320
+And the neural nets we had looked
+
+275
+00:11:14,320 --> 00:11:17,060
+at before were making these point predictions, just saying,
+
+276
+00:11:17,060 --> 00:11:18,602
+for this input, I'm going to predict,
+
+277
+00:11:18,602 --> 00:11:21,320
+What is the possible label Y, or what is the possible outcome Y?
+
+278
+00:11:21,320 --> 00:11:24,025
+But in reality, there's some set of possibilities.
+
+279
+00:11:24,025 --> 00:11:25,900
+It's not always that there's only one answer.
+
+280
+00:11:25,900 --> 00:11:28,000
+There could be-- this image could
+
+281
+00:11:28,000 --> 00:11:30,000
+be a cat with probability of 50% and a dog
+
+282
+00:11:30,000 --> 00:11:31,375
+with another probability.
+
+283
+00:11:31,375 --> 00:11:33,500
+And it becomes a complicated distribution to model.
+
+284
+00:11:33,500 --> 00:11:36,280
+And I said, just put more information into X
+
+285
+00:11:36,280 --> 00:11:37,868
+to reduce that uncertainty.
+
+286
+00:11:37,868 --> 00:11:39,410
+But now I'm going to tell you, if you
+
+287
+00:11:39,410 --> 00:11:42,205
+don't have that luxury, if you can't put more data into X,
+
+288
+00:11:42,205 --> 00:11:42,830
+what do you do?
+
+289
+00:11:42,830 --> 00:11:45,550
+How do you model a complicated output distribution
+
+290
+00:11:45,550 --> 00:11:47,690
+that's not just a point?
+
+291
+00:11:47,690 --> 00:11:50,250
+OK.
+
+292
+00:11:50,250 --> 00:11:50,750
+OK.
+
+293
+00:11:50,750 --> 00:11:53,630
+So that's what generative modeling tries to deal with.
+
+294
+00:11:53,630 --> 00:11:56,170
+So a little bit more notation--
+
+295
+00:11:56,170 --> 00:11:57,950
+so we'll talk about random variables.
+
+296
+00:11:57,950 --> 00:12:00,150
+They'll be characterized by a distribution.
+
+297
+00:12:00,150 --> 00:12:07,670
+So a random variable is a set of possible atoms,
+
+298
+00:12:07,670 --> 00:12:10,970
+and there's a distribution over what
+
+299
+00:12:10,970 --> 00:12:13,070
+values that random variable will take on.
+
+300
+00:12:13,070 --> 00:12:16,030
+And that distribution is either discrete or continuous.
+
+301
+00:12:16,030 --> 00:12:18,790
+If it's discrete, we call it a probability mass function.
+
+302
+00:12:18,790 --> 00:12:21,490
+And if it's continuous, we will call it a probability density
+
+303
+00:12:21,490 --> 00:12:24,210
+function.
+
+304
+00:12:24,210 --> 00:12:26,850
+And a realization of that random variable
+
+305
+00:12:26,850 --> 00:12:29,770
+will be indicated with a lowercase variable name.
+
+306
+00:12:29,770 --> 00:12:32,130
+So a sample from the distribution
+
+307
+00:12:32,130 --> 00:12:34,890
+of possible settings of that random variable
+
+308
+00:12:34,890 --> 00:12:36,330
+will be a realization x.
+
+309
+00:12:36,330 --> 00:12:39,330
+And we'll call that the probability of x.
+
+310
+00:12:39,330 --> 00:12:41,790
+And you can think of that as a mass, in the discrete case,
+
+311
+00:12:41,790 --> 00:12:45,550
+or a probability density of x, in the continuous case.
+
+312
+00:12:45,550 --> 00:12:46,050
+OK.
+
+313
+00:12:46,050 --> 00:12:49,525
+So uppercase letters, in this course, are random variables.
+
+314
+00:12:49,525 --> 00:12:51,150
+They're characterized by distributions.
+
+315
+00:12:51,150 --> 00:12:52,950
+Lowercase letters are realizations.
+
+316
+00:12:52,950 --> 00:12:55,930
+They're characterized by scalars, just the probability
+
+317
+00:12:55,930 --> 00:12:59,270
+of that realization.
+
+318
+00:12:59,270 --> 00:12:59,770
+OK.
+
+319
+00:12:59,770 --> 00:13:03,570
+So just, formally, a probability mass function
+
+320
+00:13:03,570 --> 00:13:06,330
+is a mapping from data to scalars.
+
+321
+00:13:06,330 --> 00:13:08,990
+And the scalars are between 0 and 1.
+
+322
+00:13:08,990 --> 00:13:12,210
+So the probability can be 0 up to a hundred percent, up to 1.
+
+323
+00:13:12,210 --> 00:13:15,650
+And the sum of all the probabilities
+
+324
+00:13:15,650 --> 00:13:17,910
+over all possibilities sums to 1.
+
+325
+00:13:17,910 --> 00:13:20,050
+That's just the definition of probability.
+
+326
+00:13:20,050 --> 00:13:22,175
+So if you ever have a vector that sums to 1-- like,
+
+327
+00:13:22,175 --> 00:13:24,170
+let's say you do L1 normalization
+
+328
+00:13:24,170 --> 00:13:27,410
+of a vector of activations in a neural network, and all of the--
+
+329
+00:13:27,410 --> 00:13:31,290
+and also, you have a sigmoid, so that the numbers are
+
+330
+00:13:31,290 --> 00:13:33,170
+all between 0 and 1-- well, that vector, you
+
+331
+00:13:33,170 --> 00:13:35,360
+can call that a probability mass function.
+
+332
+00:13:35,360 --> 00:13:39,857
+That's just mathematically what a probability mass function is.
+
+333
+00:13:39,857 --> 00:13:41,440
+Probability density is the same thing,
+
+334
+00:13:41,440 --> 00:13:44,700
+except it's over a continuous space and it integrates to 1.
+
+335
+00:13:44,700 --> 00:13:48,600
+And the densities don't have to be-- they can go to infinity.
+
+336
+00:13:48,600 --> 00:13:51,460
+So it's just that the densities are nonnegative.
+
+337
+00:13:51,460 --> 00:13:52,540
+OK.
+
+338
+00:13:52,540 --> 00:13:54,780
+So again, this should be stuff from probability,
+
+339
+00:13:54,780 --> 00:13:55,653
+intro probability.
+
+340
+00:13:55,653 --> 00:13:57,820
+But it's a little bit of a different way of thinking
+
+341
+00:13:57,820 --> 00:13:59,860
+about things, and it's the fundamental language
+
+342
+00:13:59,860 --> 00:14:02,300
+of generative modeling.
+
+343
+00:14:02,300 --> 00:14:04,160
+So you should refresh yourself on that.
+
+344
+00:14:04,160 --> 00:14:06,820
+And the notation that is linked in the schedule for the very
+
+345
+00:14:06,820 --> 00:14:09,960
+first class, and that you should be using on your problem sets
+
+346
+00:14:09,960 --> 00:14:11,860
+and we're using throughout the class,
+
+347
+00:14:11,860 --> 00:14:13,140
+has a section on probability.
+
+348
+00:14:13,140 --> 00:14:14,820
+And we have some shorthands.
+
+349
+00:14:14,820 --> 00:14:18,020
+So one shorthand that might confuse you a little
+
+350
+00:14:18,020 --> 00:14:21,840
+is, if I write p of capital letter X,
+
+351
+00:14:21,840 --> 00:14:24,760
+I mean a distribution of this random variable.
+
+352
+00:14:24,760 --> 00:14:27,140
+And if I write p of lowercase letter x,
+
+353
+00:14:27,140 --> 00:14:30,300
+I mean the scalar probability of random variable X
+
+354
+00:14:30,300 --> 00:14:31,790
+taking on value x.
+
+355
+00:14:31,790 --> 00:14:37,070
+So this is shorthand for the distribution over X,
+
+356
+00:14:37,070 --> 00:14:40,270
+and this is shorthand for the distribution--
+
+357
+00:14:40,270 --> 00:14:43,510
+sorry, the scalar probability of the realization random variable
+
+358
+00:14:43,510 --> 00:14:45,830
+X takes on the value little x.
+
+359
+00:14:45,830 --> 00:14:49,730
+So this is on this slide as well, from the notation doc.
+
+360
+00:14:53,110 --> 00:14:53,610
+OK.
+
+361
+00:14:53,610 --> 00:14:54,110
+Cool.
+
+362
+00:14:54,110 --> 00:14:58,150
+Any questions about the math background before we
+
+363
+00:14:58,150 --> 00:15:02,590
+now get into generative models?
+
+364
+00:15:02,590 --> 00:15:04,150
+Yeah?
+
+365
+00:15:04,150 --> 00:15:07,750
+AUDIENCE: When you say continuous probability function,
+
+366
+00:15:07,750 --> 00:15:10,430
+how can you define the density of X?
+
+367
+00:15:10,430 --> 00:15:13,910
+I mean, my understanding is that it's always zero.
+
+368
+00:15:13,910 --> 00:15:15,270
+PHILLIP ISOLA: Yeah.
+
+369
+00:15:15,270 --> 00:15:15,930
+Great question.
+
+370
+00:15:15,930 --> 00:15:19,160
+So the question is, For probability density functions,
+
+371
+00:15:19,160 --> 00:15:20,410
+how do you define probability?
+
+372
+00:15:20,410 --> 00:15:23,550
+The probability of an infinitesimal thing
+
+373
+00:15:23,550 --> 00:15:24,530
+shouldn't go to 0.
+
+374
+00:15:24,530 --> 00:15:27,990
+So the definition is you always only define
+
+375
+00:15:27,990 --> 00:15:29,590
+the probability of a variable taking
+
+376
+00:15:29,590 --> 00:15:32,390
+on some value over an interval, so the probability
+
+377
+00:15:32,390 --> 00:15:36,133
+of x being between 0 and 0.1.
+
+378
+00:15:36,133 --> 00:15:38,050
+So it's all defined with respect to integrals.
+
+379
+00:15:38,050 --> 00:15:40,047
+But usually, we don't worry about that.
+
+380
+00:15:40,047 --> 00:15:41,630
+This is, like, when you start thinking
+
+381
+00:15:41,630 --> 00:15:44,005
+about measure theory and the proper way to define things.
+
+382
+00:15:44,005 --> 00:15:45,713
+But just think of it like the probability
+
+383
+00:15:45,713 --> 00:15:46,890
+that X takes on that value.
+
+384
+00:15:46,890 --> 00:15:48,830
+It's really defined as some integral.
+
+385
+00:15:48,830 --> 00:15:49,510
+Yeah?
+
+386
+00:15:49,510 --> 00:15:50,910
+AUDIENCE: Could you explain one more time
+
+387
+00:15:50,910 --> 00:15:52,510
+how we can think of a neural network
+
+388
+00:15:52,510 --> 00:15:54,237
+as an implicit distribution?
+
+389
+00:15:54,237 --> 00:15:55,070
+PHILLIP ISOLA: Yeah.
+
+390
+00:15:55,070 --> 00:15:56,570
+How can we think of a neural network
+
+391
+00:15:56,570 --> 00:15:58,250
+as implying a probability distribution?
+
+392
+00:15:58,250 --> 00:16:01,270
+Well, I'll show a bunch of examples of this.
+
+393
+00:16:01,270 --> 00:16:03,910
+But basically, let's say that I'm doing regression
+
+394
+00:16:03,910 --> 00:16:05,250
+with an L2 loss.
+
+395
+00:16:05,250 --> 00:16:07,190
+I'm going to predict some number.
+
+396
+00:16:07,190 --> 00:16:10,270
+I will interpret that as, I am predicting
+
+397
+00:16:10,270 --> 00:16:13,710
+a distribution over outcomes, parameterized by the mean
+
+398
+00:16:13,710 --> 00:16:16,630
+equals my output of my neural network.
+
+399
+00:16:16,630 --> 00:16:21,910
+So that's like-- and that interpretation is valid
+
+400
+00:16:21,910 --> 00:16:26,430
+because the probability of the data under that Gaussian model
+
+401
+00:16:26,430 --> 00:16:29,520
+is equal to the squared error loss function.
+
+402
+00:16:29,520 --> 00:16:32,320
+So this is something-- you can look
+
+403
+00:16:32,320 --> 00:16:35,640
+into the connection between Gaussian max likelihood modeling
+
+404
+00:16:35,640 --> 00:16:38,580
+and least squares regression.
+
+405
+00:16:38,580 --> 00:16:39,360
+AUDIENCE: OK.
+
+406
+00:16:39,360 --> 00:16:44,340
+So it's not that the network is sampling of a distribution,
+
+407
+00:16:44,340 --> 00:16:46,340
+it's that the output is a distribution itself?
+
+408
+00:16:46,340 --> 00:16:47,220
+PHILLIP ISOLA: We'll see both.
+
+409
+00:16:47,220 --> 00:16:48,700
+So there's two possibilities.
+
+410
+00:16:48,700 --> 00:16:53,080
+One, the network is outputting samples from a distribution,
+
+411
+00:16:53,080 --> 00:16:55,040
+and the other is the network is outputting
+
+412
+00:16:55,040 --> 00:16:56,300
+parameters of a distribution.
+
+413
+00:16:56,300 --> 00:16:59,190
+So I'm going to talk about both.
+
+414
+00:16:59,190 --> 00:16:59,940
+OK.
+
+415
+00:16:59,940 --> 00:17:02,600
+So let's build up some intuition.
+
+416
+00:17:02,600 --> 00:17:04,060
+So that was math background.
+
+417
+00:17:04,060 --> 00:17:05,477
+We're going to get some intuition,
+
+418
+00:17:05,477 --> 00:17:07,920
+and then we're going to get back to the math.
+
+419
+00:17:07,920 --> 00:17:10,839
+So I like to start with generative models
+
+420
+00:17:10,839 --> 00:17:13,560
+from this perspective, that we already
+
+421
+00:17:13,560 --> 00:17:15,040
+know about things like classifiers
+
+422
+00:17:15,040 --> 00:17:16,677
+take data and output a label.
+
+423
+00:17:16,677 --> 00:17:18,760
+And so again, I like thinking of generative models
+
+424
+00:17:18,760 --> 00:17:21,440
+as the inverse of that, the opposite direction.
+
+425
+00:17:21,440 --> 00:17:24,319
+Take a label or some abstract description, like,
+
+426
+00:17:24,319 --> 00:17:26,530
+I want you to make me a bird, and output the thing
+
+427
+00:17:26,530 --> 00:17:28,410
+that we would normally call data.
+
+428
+00:17:28,410 --> 00:17:30,570
+There's no definition to label versus data.
+
+429
+00:17:30,570 --> 00:17:33,150
+But you kind of have an intuition about what that means.
+
+430
+00:17:33,150 --> 00:17:35,130
+So, yeah, precisely, mathematically, there's
+
+431
+00:17:35,130 --> 00:17:36,790
+really no distinction here.
+
+432
+00:17:36,790 --> 00:17:40,770
+But generative models are when the outputs are something
+
+433
+00:17:40,770 --> 00:17:42,970
+you would think of as data.
+
+434
+00:17:42,970 --> 00:17:44,946
+OK.
+
+435
+00:17:44,946 --> 00:17:48,490
+So what is the problem?
+
+436
+00:17:48,490 --> 00:17:50,650
+The problem is that in this direction,
+
+437
+00:17:50,650 --> 00:17:53,650
+there's many possible outputs that match the input.
+
+438
+00:17:53,650 --> 00:17:57,010
+So in this direction, there's only one possible label
+
+439
+00:17:57,010 --> 00:17:59,170
+that is the correct label for this bird.
+
+440
+00:17:59,170 --> 00:18:02,530
+But in this direction, that robin
+
+441
+00:18:02,530 --> 00:18:04,430
+is just one possibility out of many.
+
+442
+00:18:04,430 --> 00:18:07,610
+So there's the distribution over correct answers.
+
+443
+00:18:07,610 --> 00:18:10,210
+So how do we model the distribution?
+
+444
+00:18:10,210 --> 00:18:12,150
+So we're going to see a few different ways.
+
+445
+00:18:12,150 --> 00:18:15,290
+But here's one of the ways.
+
+446
+00:18:15,290 --> 00:18:18,990
+We take a function generator, called a generator.
+
+447
+00:18:18,990 --> 00:18:20,490
+That's a neural net.
+
+448
+00:18:20,490 --> 00:18:23,010
+It's a deterministic function, but we condition it
+
+449
+00:18:23,010 --> 00:18:25,020
+on some random variable.
+
+450
+00:18:25,020 --> 00:18:28,820
+So we make multiple outputs by taking the function
+
+451
+00:18:28,820 --> 00:18:31,553
+and conditioning it on some random variable.
+
+452
+00:18:31,553 --> 00:18:32,720
+And that will be these dice.
+
+453
+00:18:32,720 --> 00:18:33,760
+So we roll the dice.
+
+454
+00:18:33,760 --> 00:18:35,010
+We input that into our system.
+
+455
+00:18:35,010 --> 00:18:35,940
+We get one outcome.
+
+456
+00:18:35,940 --> 00:18:36,648
+We roll the dice.
+
+457
+00:18:36,648 --> 00:18:38,232
+That's a different setting of numbers,
+
+458
+00:18:38,232 --> 00:18:39,700
+and that gives us another outcome.
+
+459
+00:18:39,700 --> 00:18:43,060
+And this is the way that you can turn a normal neural network
+
+460
+00:18:43,060 --> 00:18:46,460
+into something that can sample from a distribution,
+
+461
+00:18:46,460 --> 00:18:50,340
+by conditioning it on random variables.
+
+462
+00:18:50,340 --> 00:18:53,140
+OK.
+
+463
+00:18:53,140 --> 00:18:55,860
+So sometimes, people will call these random variables--
+
+464
+00:18:55,860 --> 00:18:57,620
+these dice, in this diagram--
+
+465
+00:18:57,620 --> 00:18:59,340
+as noise.
+
+466
+00:18:59,340 --> 00:19:02,120
+I think that's a confusing term.
+
+467
+00:19:02,120 --> 00:19:04,970
+They're noise in the sense that they are random variables,
+
+468
+00:19:04,970 --> 00:19:06,660
+so they're randomized.
+
+469
+00:19:06,660 --> 00:19:09,140
+But they're not noise in the sense that they're meaningless
+
+470
+00:19:09,140 --> 00:19:11,380
+or something that you want to get rid of or ignore.
+
+471
+00:19:11,380 --> 00:19:14,780
+These dice rolls, you should instead think of them
+
+472
+00:19:14,780 --> 00:19:19,140
+as specifying everything about the data that's not specified
+
+473
+00:19:19,140 --> 00:19:20,280
+by your input command.
+
+474
+00:19:20,280 --> 00:19:21,870
+So if I say, I want to make a bird,
+
+475
+00:19:21,870 --> 00:19:23,620
+well, everything else that's not specified
+
+476
+00:19:23,620 --> 00:19:26,328
+by that-- like what color is the bird, what species is the bird--
+
+477
+00:19:26,328 --> 00:19:29,140
+has to be specified, made deterministic by,
+
+478
+00:19:29,140 --> 00:19:31,220
+determined by these random variables.
+
+479
+00:19:31,220 --> 00:19:34,920
+So they're specifying, What's the color of the bird?
+
+480
+00:19:34,920 --> 00:19:37,392
+If I roll that, I'll change the color of the bird.
+
+481
+00:19:37,392 --> 00:19:38,600
+What's the angle of the bird?
+
+482
+00:19:38,600 --> 00:19:40,787
+If I roll that, I'll change the angle of the bird.
+
+483
+00:19:40,787 --> 00:19:42,120
+And what's the size of the bird?
+
+484
+00:19:42,120 --> 00:19:43,720
+OK.
+
+485
+00:19:43,720 --> 00:19:47,020
+So that's kind of how a generative model will
+
+486
+00:19:47,020 --> 00:19:50,720
+output randomized possible birds for the input command,
+
+487
+00:19:50,720 --> 00:19:53,140
+make me a photo of a bird.
+
+488
+00:19:53,140 --> 00:19:54,540
+OK.
+
+489
+00:19:54,540 --> 00:19:58,057
+So rather than thinking of them as dice rolls, another way,
+
+490
+00:19:58,057 --> 00:20:00,140
+you could think of them as these sort of control--
+
+491
+00:20:00,140 --> 00:20:03,620
+the underlying control variables that control the output
+
+492
+00:20:03,620 --> 00:20:05,940
+that you're going to get.
+
+493
+00:20:05,940 --> 00:20:08,060
+And I could spin this knob randomly,
+
+494
+00:20:08,060 --> 00:20:10,100
+and then it's like noise, a random variable,
+
+495
+00:20:10,100 --> 00:20:11,480
+that gives me a random bird.
+
+496
+00:20:11,480 --> 00:20:14,700
+But I could also set that knob, that dice-- now
+
+497
+00:20:14,700 --> 00:20:17,460
+I'm going to think of it as a knob-- to a value of the bird
+
+498
+00:20:17,460 --> 00:20:18,380
+I want.
+
+499
+00:20:18,380 --> 00:20:22,098
+And this is something that we'll see in a lot of the applications
+
+500
+00:20:22,098 --> 00:20:24,390
+of generative models, gearing the models by controlling
+
+501
+00:20:24,390 --> 00:20:26,990
+the latent variables that are input into the models.
+
+502
+00:20:26,990 --> 00:20:28,270
+OK.
+
+503
+00:20:28,270 --> 00:20:28,810
+OK.
+
+504
+00:20:28,810 --> 00:20:31,393
+So this is all kind of to build up this intuition about what's
+
+505
+00:20:31,393 --> 00:20:33,230
+going on.
+
+506
+00:20:33,230 --> 00:20:36,270
+Now let's-- I want to have you make a generative model really
+
+507
+00:20:36,270 --> 00:20:36,770
+quickly.
+
+508
+00:20:36,770 --> 00:20:40,790
+So one of the places where generative modeling got
+
+509
+00:20:40,790 --> 00:20:43,070
+started is statistics, but another place where it got
+
+510
+00:20:43,070 --> 00:20:45,297
+started is computer graphics, actually.
+
+511
+00:20:45,297 --> 00:20:47,630
+So in computer graphics, the name for a generative model
+
+512
+00:20:47,630 --> 00:20:51,390
+is-- the classical name is procedural graphics.
+
+513
+00:20:51,390 --> 00:20:54,910
+It's a way of making random content for your video game
+
+514
+00:20:54,910 --> 00:20:55,730
+or movie.
+
+515
+00:20:55,730 --> 00:20:58,530
+I want to draw a random map for my video game,
+
+516
+00:20:58,530 --> 00:21:01,770
+so I will write down a procedure that creates a random map.
+
+517
+00:21:01,770 --> 00:21:02,950
+That's a generative model.
+
+518
+00:21:02,950 --> 00:21:05,710
+So let's make a generative model like that.
+
+519
+00:21:05,710 --> 00:21:08,810
+So we're going to take in a random variable.
+
+520
+00:21:08,810 --> 00:21:11,870
+It will be a coin flip, so a Bernoulli random variable.
+
+521
+00:21:11,870 --> 00:21:15,530
+And we're going to try to make a generative model of rivers.
+
+522
+00:21:15,530 --> 00:21:17,670
+So here's how it's going to be.
+
+523
+00:21:17,670 --> 00:21:20,480
+Does anyone have a coin?
+
+524
+00:21:20,480 --> 00:21:22,880
+Somebody has a coin?
+
+525
+00:21:22,880 --> 00:21:25,677
+An object you can flip.
+
+526
+00:21:25,677 --> 00:21:27,260
+Google can do it for you, if you want.
+
+527
+00:21:27,260 --> 00:21:30,080
+You can search "coin flip."
+
+528
+00:21:30,080 --> 00:21:31,080
+AUDIENCE: I have a coin.
+
+529
+00:21:31,080 --> 00:21:31,620
+PHILLIP ISOLA: OK, good.
+
+530
+00:21:31,620 --> 00:21:32,662
+So why don't you do this?
+
+531
+00:21:32,662 --> 00:21:35,505
+So here's the start of the river.
+
+532
+00:21:35,505 --> 00:21:37,880
+So flip the coin, and it will determine if the river goes
+
+533
+00:21:37,880 --> 00:21:39,200
+left or right.
+
+534
+00:21:39,200 --> 00:21:40,200
+AUDIENCE: Heads is left?
+
+535
+00:21:40,200 --> 00:21:40,760
+PHILLIP ISOLA: OK.
+
+536
+00:21:40,760 --> 00:21:41,260
+Yeah.
+
+537
+00:21:41,260 --> 00:21:42,173
+Heads is left.
+
+538
+00:21:42,173 --> 00:21:42,840
+AUDIENCE: Heads.
+
+539
+00:21:42,840 --> 00:21:43,200
+PHILLIP ISOLA: OK.
+
+540
+00:21:43,200 --> 00:21:43,700
+Left.
+
+541
+00:21:43,700 --> 00:21:45,968
+Again.
+
+542
+00:21:45,968 --> 00:21:46,800
+AUDIENCE: Heads.
+
+543
+00:21:46,800 --> 00:21:47,080
+PHILLIP ISOLA: OK.
+
+544
+00:21:47,080 --> 00:21:47,600
+Left.
+
+545
+00:21:47,600 --> 00:21:50,025
+Again.
+
+546
+00:21:50,025 --> 00:21:50,692
+AUDIENCE: Heads.
+
+547
+00:21:50,692 --> 00:21:51,680
+[LAUGHTER]
+
+548
+00:21:51,680 --> 00:21:52,980
+PHILLIP ISOLA: So I don't know if you can still see it,
+
+549
+00:21:52,980 --> 00:21:54,147
+but anyways, going that way.
+
+550
+00:21:54,147 --> 00:21:54,893
+One more time?
+
+551
+00:21:54,893 --> 00:21:55,560
+AUDIENCE: Tails.
+
+552
+00:21:55,560 --> 00:21:56,440
+PHILLIP ISOLA: OK, cool.
+
+553
+00:21:56,440 --> 00:21:58,023
+So I think that's a pretty cool river.
+
+554
+00:21:58,023 --> 00:21:59,840
+And then my computer rendering engine
+
+555
+00:21:59,840 --> 00:22:03,720
+would probably make it a little thicker, smooth out the borders,
+
+556
+00:22:03,720 --> 00:22:04,720
+paint it blue.
+
+557
+00:22:04,720 --> 00:22:06,060
+And then there I go.
+
+558
+00:22:06,060 --> 00:22:09,600
+I have randomly generated a river from a distribution.
+
+559
+00:22:09,600 --> 00:22:11,380
+You could do the same trick with trees.
+
+560
+00:22:11,380 --> 00:22:12,860
+You could flip two coins.
+
+561
+00:22:12,860 --> 00:22:15,062
+One coin is, like, how many branches-- maybe
+
+562
+00:22:15,062 --> 00:22:17,520
+roll a dice, how many branches, and then the other coin is,
+
+563
+00:22:17,520 --> 00:22:19,120
+like, What's the angle of the branch?
+
+564
+00:22:19,120 --> 00:22:20,870
+So you can write little scripts like this.
+
+565
+00:22:20,870 --> 00:22:24,840
+You probably have done it in some of your coding experience.
+
+566
+00:22:24,840 --> 00:22:25,600
+OK.
+
+567
+00:22:25,600 --> 00:22:28,400
+So I wrote a little program that does that.
+
+568
+00:22:28,400 --> 00:22:30,452
+It's just exactly what we did.
+
+569
+00:22:30,452 --> 00:22:31,660
+So what is the program doing?
+
+570
+00:22:31,660 --> 00:22:37,640
+It's flipping a coin N times and drawing the river by just
+
+571
+00:22:37,640 --> 00:22:41,100
+changing the heading of the river by some 10-degree angle.
+
+572
+00:22:41,100 --> 00:22:43,540
+Depending on if I flip heads or tails,
+
+573
+00:22:43,540 --> 00:22:45,680
+it will choose left or right.
+
+574
+00:22:45,680 --> 00:22:46,400
+OK.
+
+575
+00:22:46,400 --> 00:22:47,460
+So what is that?
+
+576
+00:22:47,460 --> 00:22:51,620
+That's a mapping from random variables to generated imagery.
+
+577
+00:22:51,620 --> 00:22:55,720
+And that's how generative models tend to work.
+
+578
+00:22:55,720 --> 00:22:59,520
+So here's a more complicated mapping.
+
+579
+00:22:59,520 --> 00:23:03,480
+But again, you can specify so many details of the world
+
+580
+00:23:03,480 --> 00:23:07,488
+just via choosing a random variable that determines each
+
+581
+00:23:07,488 --> 00:23:08,780
+of the attributes of the image.
+
+582
+00:23:08,780 --> 00:23:11,660
+So in this case, I have a Bernoulli variable, N of them,
+
+583
+00:23:11,660 --> 00:23:12,880
+for the river turns.
+
+584
+00:23:12,880 --> 00:23:15,830
+I have a Gaussian variable for the color of the grass.
+
+585
+00:23:15,830 --> 00:23:17,427
+It's brighter or darker.
+
+586
+00:23:17,427 --> 00:23:19,510
+I have a uniform variable for the number of trees.
+
+587
+00:23:19,510 --> 00:23:22,850
+This is a top-down look at some river.
+
+588
+00:23:22,850 --> 00:23:25,830
+And you could say those random variables are noise.
+
+589
+00:23:25,830 --> 00:23:29,210
+But what we'll think of them as is
+
+590
+00:23:29,210 --> 00:23:32,730
+as control knobs that specify all the attributes of the data.
+
+591
+00:23:32,730 --> 00:23:35,550
+And a formal name for that is latent variables.
+
+592
+00:23:35,550 --> 00:23:38,930
+So a latent variable is any variable
+
+593
+00:23:38,930 --> 00:23:41,570
+that determines how the data looks
+
+594
+00:23:41,570 --> 00:23:44,210
+that is not directly observed.
+
+595
+00:23:44,210 --> 00:23:45,430
+OK.
+
+596
+00:23:45,430 --> 00:23:47,930
+So these latent variables are the thing
+
+597
+00:23:47,930 --> 00:23:50,710
+that underlie the causal process of generating the data.
+
+598
+00:23:53,730 --> 00:23:55,230
+OK.
+
+599
+00:23:55,230 --> 00:23:57,530
+So yeah, that's one concept to start with,
+
+600
+00:23:57,530 --> 00:24:00,770
+is that generative models that we'll see
+
+601
+00:24:00,770 --> 00:24:04,240
+are going to be taking noise as input and turning it into data.
+
+602
+00:24:04,240 --> 00:24:06,490
+And you should really think of the noise as the latent
+
+603
+00:24:06,490 --> 00:24:07,230
+variables.
+
+604
+00:24:10,210 --> 00:24:14,880
+OK So now let's talk about how to learn such models.
+
+605
+00:24:14,880 --> 00:24:17,980
+So you could handcraft this, write down a Python script
+
+606
+00:24:17,980 --> 00:24:19,580
+or play a game in a class.
+
+607
+00:24:19,580 --> 00:24:22,420
+But how do you actually learn that program
+
+608
+00:24:22,420 --> 00:24:25,632
+and represent it as a neural net?
+
+609
+00:24:25,632 --> 00:24:27,840
+And this gets to the question that was asked earlier.
+
+610
+00:24:27,840 --> 00:24:30,300
+There's going to be two different approaches.
+
+611
+00:24:30,300 --> 00:24:32,540
+One, I'll call the direct approach.
+
+612
+00:24:32,540 --> 00:24:34,300
+The direct approach is I'm going to learn
+
+613
+00:24:34,300 --> 00:24:40,760
+a function that directly samples random generated data points.
+
+614
+00:24:40,760 --> 00:24:41,260
+OK.
+
+615
+00:24:41,260 --> 00:24:43,540
+It'll start from z, which is going
+
+616
+00:24:43,540 --> 00:24:46,720
+to be our name for the noise, or the latent variables,
+
+617
+00:24:46,720 --> 00:24:48,660
+so the dice rolls or the coin flips.
+
+618
+00:24:48,660 --> 00:24:50,980
+And it will output data.
+
+619
+00:24:50,980 --> 00:24:53,460
+And the other approach will be, we'll call,
+
+620
+00:24:53,460 --> 00:24:55,940
+the indirect approach, which is, rather than learning
+
+621
+00:24:55,940 --> 00:24:59,900
+a function that goes from random variables to data,
+
+622
+00:24:59,900 --> 00:25:03,740
+I'll learn a function that scores the probability of a data
+
+623
+00:25:03,740 --> 00:25:04,900
+point.
+
+624
+00:25:04,900 --> 00:25:06,980
+So this is a function that should assign
+
+625
+00:25:06,980 --> 00:25:11,950
+a high score, a high scalar, to data that I like
+
+626
+00:25:11,950 --> 00:25:14,470
+and a low number to data that I don't like.
+
+627
+00:25:14,470 --> 00:25:17,110
+And there's a lot of different varieties of what that scoring
+
+628
+00:25:17,110 --> 00:25:18,668
+function could be.
+
+629
+00:25:18,668 --> 00:25:21,210
+The most basic one would be, it's the likelihood of the data,
+
+630
+00:25:21,210 --> 00:25:23,510
+the probability of the data, is a mapping
+
+631
+00:25:23,510 --> 00:25:25,710
+from the data to a scalar.
+
+632
+00:25:25,710 --> 00:25:29,990
+If it's a density, it's a nonnegative scalar.
+
+633
+00:25:29,990 --> 00:25:30,910
+OK.
+
+634
+00:25:30,910 --> 00:25:32,850
+Then, if I have such a scoring function,
+
+635
+00:25:32,850 --> 00:25:36,190
+I can generate data by searching for data points that
+
+636
+00:25:36,190 --> 00:25:40,110
+score highly, or by sampling from the distribution
+
+637
+00:25:40,110 --> 00:25:43,030
+given by that score.
+
+638
+00:25:43,030 --> 00:25:47,693
+So it's like the direct approach directly give me data points.
+
+639
+00:25:47,693 --> 00:25:49,110
+Indirect approach gives me a score
+
+640
+00:25:49,110 --> 00:25:51,590
+that I can optimize to find good data points,
+
+641
+00:25:51,590 --> 00:25:55,710
+or data points that are high probability.
+
+642
+00:25:55,710 --> 00:25:58,657
+Notation wise, there is kind of a historical name
+
+643
+00:25:58,657 --> 00:26:00,990
+for this top one, which is called an implicit generative
+
+644
+00:26:00,990 --> 00:26:01,290
+model.
+
+645
+00:26:01,290 --> 00:26:03,690
+I'm not sure that that name is still around or sticking around,
+
+646
+00:26:03,690 --> 00:26:04,898
+but you might come across it.
+
+647
+00:26:04,898 --> 00:26:06,670
+And if you do, don't worry.
+
+648
+00:26:06,670 --> 00:26:09,090
+Implicit sounds like it's kind of indirect,
+
+649
+00:26:09,090 --> 00:26:10,670
+but this is the direct approach.
+
+650
+00:26:10,670 --> 00:26:13,110
+So what it means is that the sampling procedure
+
+651
+00:26:13,110 --> 00:26:14,950
+implies a probability distribution
+
+652
+00:26:14,950 --> 00:26:16,390
+you're sampling from.
+
+653
+00:26:16,390 --> 00:26:18,430
+That's why it's called implicit.
+
+654
+00:26:18,430 --> 00:26:20,945
+So this direct sampler implies a distribution
+
+655
+00:26:20,945 --> 00:26:22,570
+that you could have drawn samples from.
+
+656
+00:26:22,570 --> 00:26:25,510
+And this distribution, this scoring function,
+
+657
+00:26:25,510 --> 00:26:30,190
+implies a sampler that can generate data directly.
+
+658
+00:26:30,190 --> 00:26:34,610
+So we'll see both of these types of models in more detail.
+
+659
+00:26:34,610 --> 00:26:35,110
+OK.
+
+660
+00:26:35,110 --> 00:26:36,972
+So let's start with the direct approach.
+
+661
+00:26:36,972 --> 00:26:38,430
+The direct approach is the one that
+
+662
+00:26:38,430 --> 00:26:42,350
+is kind of the more popular characterization right
+
+663
+00:26:42,350 --> 00:26:43,990
+now, whereas the indirect approach is
+
+664
+00:26:43,990 --> 00:26:45,470
+the more classical characterization
+
+665
+00:26:45,470 --> 00:26:47,630
+of generative models.
+
+666
+00:26:47,630 --> 00:26:49,648
+So the direct approach is, I start with--
+
+667
+00:26:49,648 --> 00:26:51,690
+I train the model by giving it a lot of examples.
+
+668
+00:26:51,690 --> 00:26:52,850
+It's just regular machine learning.
+
+669
+00:26:52,850 --> 00:26:54,310
+Right, I give you examples, and I
+
+670
+00:26:54,310 --> 00:26:57,070
+try to make more stuff like the examples.
+
+671
+00:26:57,070 --> 00:26:58,890
+And I'll take the data.
+
+672
+00:26:58,890 --> 00:27:01,670
+I'll output parameters of a parameterized function that
+
+673
+00:27:01,670 --> 00:27:04,750
+can map from random noise or from latent variables that
+
+674
+00:27:04,750 --> 00:27:06,440
+are randomized to--
+
+675
+00:27:06,440 --> 00:27:09,280
+that have simple distributions, to data samples that
+
+676
+00:27:09,280 --> 00:27:11,040
+look like the training data.
+
+677
+00:27:11,040 --> 00:27:14,040
+So the objective is to make more data that
+
+678
+00:27:14,040 --> 00:27:16,240
+looks like the training data.
+
+679
+00:27:16,240 --> 00:27:16,740
+OK.
+
+680
+00:27:16,740 --> 00:27:19,548
+So this, in our class, will be a neural network.
+
+681
+00:27:19,548 --> 00:27:21,340
+But it doesn't have to be a neural network.
+
+682
+00:27:21,340 --> 00:27:23,880
+But that's the thing that tends to work the best.
+
+683
+00:27:23,880 --> 00:27:26,780
+And we call these two phases training.
+
+684
+00:27:26,780 --> 00:27:28,200
+And now we use a different term.
+
+685
+00:27:28,200 --> 00:27:29,900
+Rather than testing, we might call it sampling.
+
+686
+00:27:29,900 --> 00:27:31,483
+But it's the same as the testing phase
+
+687
+00:27:31,483 --> 00:27:33,493
+for any neural net that's fit to data.
+
+688
+00:27:33,493 --> 00:27:35,160
+It's just, when I run it, you might call
+
+689
+00:27:35,160 --> 00:27:37,117
+it inference or deployment.
+
+690
+00:27:37,117 --> 00:27:39,200
+But from a generative model, we can also just call
+
+691
+00:27:39,200 --> 00:27:41,480
+it sampling from the model.
+
+692
+00:27:41,480 --> 00:27:44,285
+OK.
+
+693
+00:27:44,285 --> 00:27:48,140
+So the indirect approach is--
+
+694
+00:27:48,140 --> 00:27:50,640
+I already described it, but let's look at it in a little bit
+
+695
+00:27:50,640 --> 00:27:51,880
+more detail here.
+
+696
+00:27:51,880 --> 00:27:54,680
+So it is, take some data-- and this
+
+697
+00:27:54,680 --> 00:27:57,240
+is what you would've seen in your statistics
+
+698
+00:27:57,240 --> 00:27:59,120
+classes or probability classes.
+
+699
+00:27:59,120 --> 00:28:03,440
+You take some data and you learn a scoring function
+
+700
+00:28:03,440 --> 00:28:06,890
+that places a high score where the data lives.
+
+701
+00:28:06,890 --> 00:28:07,490
+OK.
+
+702
+00:28:07,490 --> 00:28:11,290
+So the most standard one would be a probability distribution
+
+703
+00:28:11,290 --> 00:28:14,050
+that has high probability where the data lives,
+
+704
+00:28:14,050 --> 00:28:16,210
+so that the samples that you observe
+
+705
+00:28:16,210 --> 00:28:21,050
+are samples from the distribution that you learn.
+
+706
+00:28:21,050 --> 00:28:23,650
+But it could also be what we'll call an energy function, which
+
+707
+00:28:23,650 --> 00:28:25,317
+I'll show you, or something more exotic,
+
+708
+00:28:25,317 --> 00:28:27,650
+some other type of score function.
+
+709
+00:28:27,650 --> 00:28:29,550
+And then, sampling is no longer direct.
+
+710
+00:28:29,550 --> 00:28:32,130
+Now, sampling is, I have my function that
+
+711
+00:28:32,130 --> 00:28:36,030
+scores the probability of every possible value of x.
+
+712
+00:28:36,030 --> 00:28:38,550
+So this is a one-dimensional distribution, the x-axis.
+
+713
+00:28:38,550 --> 00:28:41,170
+What's the probability of coming up with this value of x?
+
+714
+00:28:41,170 --> 00:28:42,690
+It's high probability.
+
+715
+00:28:42,690 --> 00:28:45,370
+And I can sample from that distribution using
+
+716
+00:28:45,370 --> 00:28:48,770
+another algorithm, which will be called a sampling algorithm.
+
+717
+00:28:48,770 --> 00:28:53,230
+And we won't go into too much detail about these.
+
+718
+00:28:53,230 --> 00:28:57,890
+But you probably-- you may have seen these before as--
+
+719
+00:28:57,890 --> 00:29:00,600
+Markov chain Monte Carlo is one type of sampling algorithm.
+
+720
+00:29:00,600 --> 00:29:02,350
+Another type is called rejection sampling.
+
+721
+00:29:02,350 --> 00:29:05,450
+You just take a random sample and reject it in proportion
+
+722
+00:29:05,450 --> 00:29:07,745
+to its probability under that scoring function.
+
+723
+00:29:07,745 --> 00:29:09,370
+So there's a lot of sampling algorithms
+
+724
+00:29:09,370 --> 00:29:11,010
+for how to go from this distribution
+
+725
+00:29:11,010 --> 00:29:14,190
+to samples from that distribution.
+
+726
+00:29:14,190 --> 00:29:14,690
+OK.
+
+727
+00:29:14,690 --> 00:29:16,550
+So this is the indirect approach.
+
+728
+00:29:20,980 --> 00:29:24,610
+So what's the goal of generative modeling?
+
+729
+00:29:24,610 --> 00:29:29,105
+The goal is to make synthetic data that looks like real data,
+
+730
+00:29:29,105 --> 00:29:31,230
+make more stuff that looks like your training data.
+
+731
+00:29:34,830 --> 00:29:36,788
+So the modeling questions to answer are,
+
+732
+00:29:36,788 --> 00:29:38,830
+What does it mean to look like the training data?
+
+733
+00:29:38,830 --> 00:29:40,810
+What does it mean for it to be making more stuff that's
+
+734
+00:29:40,810 --> 00:29:41,710
+like the training data?
+
+735
+00:29:41,710 --> 00:29:43,002
+It doesn't have to be an image.
+
+736
+00:29:43,002 --> 00:29:46,637
+It could be "looks like" in an abstract sense.
+
+737
+00:29:46,637 --> 00:29:48,970
+And there's a lot of answers to this question, that lead
+
+738
+00:29:48,970 --> 00:29:50,970
+to different types of model.
+
+739
+00:29:50,970 --> 00:29:53,050
+But we've kind of converged on one main one
+
+740
+00:29:53,050 --> 00:29:56,610
+in machine learning, which is that you should make
+
+741
+00:29:56,610 --> 00:30:00,860
+more data that has high probability under a density
+
+742
+00:30:00,860 --> 00:30:04,060
+model fit to your training data.
+
+743
+00:30:04,060 --> 00:30:06,460
+So this is called the max likelihood objective.
+
+744
+00:30:06,460 --> 00:30:09,085
+We're going to go through that in a little bit more detail now.
+
+745
+00:30:11,140 --> 00:30:13,160
+So here's, again, the density model.
+
+746
+00:30:13,160 --> 00:30:16,340
+It's a mapping from data to positive numbers--
+
+747
+00:30:16,340 --> 00:30:18,500
+or nonnegative numbers, in fact.
+
+748
+00:30:18,500 --> 00:30:20,390
+And it's going to be parameterized
+
+749
+00:30:20,390 --> 00:30:22,140
+by parameters theta, which are the weights
+
+750
+00:30:22,140 --> 00:30:24,140
+and biases in a neural network.
+
+751
+00:30:24,140 --> 00:30:30,100
+And think of that as assigning a likelihood, a probability,
+
+752
+00:30:30,100 --> 00:30:33,500
+to every point along some data space X. So here,
+
+753
+00:30:33,500 --> 00:30:36,260
+data is just a one-dimensional space.
+
+754
+00:30:36,260 --> 00:30:37,640
+And here's my training data.
+
+755
+00:30:37,640 --> 00:30:40,640
+My training data is examples of what the data looks like,
+
+756
+00:30:40,640 --> 00:30:42,540
+and I want to make more like it.
+
+757
+00:30:42,540 --> 00:30:44,740
+So in order to maximize the probability
+
+758
+00:30:44,740 --> 00:30:48,140
+that my model P theta places on the training data,
+
+759
+00:30:48,140 --> 00:30:49,420
+I will start with some model.
+
+760
+00:30:49,420 --> 00:30:54,580
+Maybe I have-- my neural network is going to output
+
+761
+00:30:54,580 --> 00:30:57,140
+this shape, so it's going to output a structured object
+
+762
+00:30:57,140 --> 00:30:58,110
+of this shape.
+
+763
+00:30:58,110 --> 00:30:59,730
+Now, how does it actually do that?
+
+764
+00:30:59,730 --> 00:31:01,470
+It's going to output the parameters
+
+765
+00:31:01,470 --> 00:31:03,510
+of a parameterized function--
+
+766
+00:31:03,510 --> 00:31:06,110
+like, a Gaussian is a parameterized function specified
+
+767
+00:31:06,110 --> 00:31:07,318
+by the mean and the variance.
+
+768
+00:31:07,318 --> 00:31:09,152
+So I could output the mean and the variance,
+
+769
+00:31:09,152 --> 00:31:11,950
+and my neural net is telling me that that's the distribution it
+
+770
+00:31:11,950 --> 00:31:14,225
+thinks explains the data.
+
+771
+00:31:14,225 --> 00:31:15,850
+But it could be a mixture of Gaussians,
+
+772
+00:31:15,850 --> 00:31:17,430
+or it could be any-- yeah, it could output, like,
+
+773
+00:31:17,430 --> 00:31:18,610
+the shape of some spline.
+
+774
+00:31:18,610 --> 00:31:20,710
+So the network can output a set of numbers that
+
+775
+00:31:20,710 --> 00:31:22,770
+parameterizes the distribution.
+
+776
+00:31:22,770 --> 00:31:23,270
+OK.
+
+777
+00:31:23,270 --> 00:31:25,650
+So here's what I'll do with max likelihood modeling.
+
+778
+00:31:25,650 --> 00:31:30,190
+I'll simply-- so the definition of a probability distribution
+
+779
+00:31:30,190 --> 00:31:32,910
+is constant mass, right, so this area under the curve
+
+780
+00:31:32,910 --> 00:31:35,790
+has to be constant, 1.
+
+781
+00:31:35,790 --> 00:31:36,370
+OK.
+
+782
+00:31:36,370 --> 00:31:38,310
+So I will push up the probability
+
+783
+00:31:38,310 --> 00:31:40,230
+I place where the data lives.
+
+784
+00:31:40,230 --> 00:31:43,950
+I'll increase the probability my model places on the data.
+
+785
+00:31:43,950 --> 00:31:46,350
+And because it's constant mass, I'll
+
+786
+00:31:46,350 --> 00:31:48,870
+have to take away mass from somewhere else, where
+
+787
+00:31:48,870 --> 00:31:51,270
+the data does not live.
+
+788
+00:31:51,270 --> 00:31:54,870
+OK, so I'm outputting a set of parameters
+
+789
+00:31:54,870 --> 00:31:57,680
+that characterize a parametric family of distributions
+
+790
+00:31:57,680 --> 00:31:58,780
+that integrate to 1.
+
+791
+00:31:58,780 --> 00:32:01,200
+So every possible set of the parameters
+
+792
+00:32:01,200 --> 00:32:05,920
+specifies a curve, where the area under the curve is 1.
+
+793
+00:32:05,920 --> 00:32:08,740
+And if I increase the curve where the data lives,
+
+794
+00:32:08,740 --> 00:32:12,720
+I necessarily decrease the curve where the data does not live.
+
+795
+00:32:12,720 --> 00:32:16,940
+And that's the idea of a density model.
+
+796
+00:32:16,940 --> 00:32:19,440
+So a gradient update to my density model
+
+797
+00:32:19,440 --> 00:32:22,320
+will increase the probability I place on the data
+
+798
+00:32:22,320 --> 00:32:26,000
+and, therefore, decrease the probability a place elsewhere.
+
+799
+00:32:26,000 --> 00:32:27,840
+So the output of my neural network
+
+800
+00:32:27,840 --> 00:32:31,740
+is a set of parameters that characterize this curve.
+
+801
+00:32:31,740 --> 00:32:32,240
+Yeah?
+
+802
+00:32:32,240 --> 00:32:33,027
+Question.
+
+803
+00:32:33,027 --> 00:32:34,860
+AUDIENCE: Can you go back one slide, please?
+
+804
+00:32:34,860 --> 00:32:35,760
+PHILLIP ISOLA: Yeah.
+
+805
+00:32:35,760 --> 00:32:37,927
+AUDIENCE: One thing I'm just a little confused about
+
+806
+00:32:37,927 --> 00:32:40,720
+is you have p sub theta mapping each data
+
+807
+00:32:40,720 --> 00:32:44,660
+point to some probability between 0 and infinity,
+
+808
+00:32:44,660 --> 00:32:47,400
+but normally, I think of probability distributions
+
+809
+00:32:47,400 --> 00:32:48,140
+as summing to 1.
+
+810
+00:32:48,140 --> 00:32:49,640
+So it's hard to reconcile, like, how
+
+811
+00:32:49,640 --> 00:32:53,600
+you can have points with very large probability, potentially.
+
+812
+00:32:53,600 --> 00:32:54,680
+PHILLIP ISOLA: Yeah.
+
+813
+00:32:54,680 --> 00:32:59,960
+So I think the question is, if the probability density can
+
+814
+00:32:59,960 --> 00:33:02,600
+go to infinity, how can I-- like, how does that
+
+815
+00:33:02,600 --> 00:33:04,200
+make sense numerically?
+
+816
+00:33:04,200 --> 00:33:06,120
+How can that still integrate to 1?
+
+817
+00:33:06,120 --> 00:33:09,100
+This is that kind of subtlety of continuous probabilities.
+
+818
+00:33:09,100 --> 00:33:13,000
+We characterize the distribution with probability density
+
+819
+00:33:13,000 --> 00:33:15,340
+function, which is not actually a probability.
+
+820
+00:33:15,340 --> 00:33:18,510
+The probability is an integral of the probability density
+
+821
+00:33:18,510 --> 00:33:20,760
+over some interval, and that specifies the probability
+
+822
+00:33:20,760 --> 00:33:21,843
+of being in that interval.
+
+823
+00:33:21,843 --> 00:33:23,520
+And if the interval is infinitesimal,
+
+824
+00:33:23,520 --> 00:33:26,537
+then the density can go to infinity over
+
+825
+00:33:26,537 --> 00:33:27,620
+an infinitesimal interval.
+
+826
+00:33:27,620 --> 00:33:29,745
+So it's like infinity divided by infinity, roughly.
+
+827
+00:33:29,745 --> 00:33:32,680
+You get into the subtleties of continuous math.
+
+828
+00:33:32,680 --> 00:33:33,840
+Yeah.
+
+829
+00:33:33,840 --> 00:33:36,280
+OK.
+
+830
+00:33:36,280 --> 00:33:37,200
+Cool.
+
+831
+00:33:37,200 --> 00:33:45,040
+So what is our objective going to be to fit my density to data?
+
+832
+00:33:45,040 --> 00:33:46,220
+I gave you the intuition.
+
+833
+00:33:46,220 --> 00:33:49,760
+But formally, we like to minimize the difference
+
+834
+00:33:49,760 --> 00:33:54,653
+between the world's true data generating distribution--
+
+835
+00:33:54,653 --> 00:33:56,570
+so these data points, these black data points,
+
+836
+00:33:56,570 --> 00:33:58,310
+came from some unknown process.
+
+837
+00:33:58,310 --> 00:34:00,492
+We're going to call that unknown process pdata.
+
+838
+00:34:00,492 --> 00:34:02,950
+We'll use that all over the place in the next few lectures.
+
+839
+00:34:02,950 --> 00:34:05,613
+pdata is just the probability from which--
+
+840
+00:34:05,613 --> 00:34:08,030
+the distribution from which the training data was sampled.
+
+841
+00:34:08,030 --> 00:34:08,988
+But we don't know that.
+
+842
+00:34:08,988 --> 00:34:10,196
+We don't have access to that.
+
+843
+00:34:10,196 --> 00:34:11,738
+And then we're going to fit our model
+
+844
+00:34:11,738 --> 00:34:13,469
+to be close to that distribution,
+
+845
+00:34:13,469 --> 00:34:15,270
+according to the KL divergence.
+
+846
+00:34:15,270 --> 00:34:17,409
+It's just a measure of the difference
+
+847
+00:34:17,409 --> 00:34:19,770
+between two distributions.
+
+848
+00:34:19,770 --> 00:34:21,784
+And we want our model distribution
+
+849
+00:34:21,784 --> 00:34:23,409
+to be the same as nature's distribution
+
+850
+00:34:23,409 --> 00:34:25,730
+that generated the training data.
+
+851
+00:34:25,730 --> 00:34:28,290
+So we're going to see that it will come out
+
+852
+00:34:28,290 --> 00:34:31,949
+to just pushing up probability where the data points live.
+
+853
+00:34:31,949 --> 00:34:33,870
+But mathematically, here's what it looks like.
+
+854
+00:34:33,870 --> 00:34:36,969
+So this is the definition of KL divergence.
+
+855
+00:34:36,969 --> 00:34:39,889
+It'll be negative log of how much probability
+
+856
+00:34:39,889 --> 00:34:42,330
+the model places on a data point, divided
+
+857
+00:34:42,330 --> 00:34:47,130
+by how much probability nature placed on the data point.
+
+858
+00:34:47,130 --> 00:34:50,010
+OK, so we want these to be the same.
+
+859
+00:34:50,010 --> 00:34:57,600
+So we want these to go to 1, so that log of 1 will be 0.
+
+860
+00:34:57,600 --> 00:34:59,360
+And then I will be minimizing this,
+
+861
+00:34:59,360 --> 00:35:02,980
+and I'll eventually get these to be equal.
+
+862
+00:35:02,980 --> 00:35:04,980
+OK.
+
+863
+00:35:04,980 --> 00:35:07,860
+So we can separate out the log of the ratio
+
+864
+00:35:07,860 --> 00:35:11,820
+into how much log probability I place on the data--
+
+865
+00:35:11,820 --> 00:35:13,900
+sorry, how much log probability the model places
+
+866
+00:35:13,900 --> 00:35:16,540
+on the data, minus how much log probability nature placed
+
+867
+00:35:16,540 --> 00:35:17,480
+on the data.
+
+868
+00:35:17,480 --> 00:35:19,780
+I want that difference to be 0.
+
+869
+00:35:19,780 --> 00:35:22,780
+We can't actually measure how much probability nature placed
+
+870
+00:35:22,780 --> 00:35:23,280
+on the data.
+
+871
+00:35:23,280 --> 00:35:24,488
+We don't have access to that.
+
+872
+00:35:24,488 --> 00:35:26,568
+We only have access to samples from pdata.
+
+873
+00:35:26,568 --> 00:35:28,360
+We don't have access to the function pdata.
+
+874
+00:35:28,360 --> 00:35:30,500
+That's just the universe.
+
+875
+00:35:30,500 --> 00:35:31,620
+OK.
+
+876
+00:35:31,620 --> 00:35:33,940
+So the nice trick is that in order
+
+877
+00:35:33,940 --> 00:35:37,173
+to maximize-- so, OK, we're minimizing the difference.
+
+878
+00:35:37,173 --> 00:35:38,840
+But now we got rid of the negative sign,
+
+879
+00:35:38,840 --> 00:35:44,100
+so going to maximize this term, this equation.
+
+880
+00:35:44,100 --> 00:35:46,300
+Well, in order to maximize this with respect
+
+881
+00:35:46,300 --> 00:35:48,700
+to the parameters theta, the parameters theta
+
+882
+00:35:48,700 --> 00:35:51,320
+don't appear in the second term, so that's just a constant.
+
+883
+00:35:51,320 --> 00:35:53,020
+So we don't actually have to consider
+
+884
+00:35:53,020 --> 00:35:54,560
+that in the maximization.
+
+885
+00:35:54,560 --> 00:35:56,075
+So we drop that second term.
+
+886
+00:35:56,075 --> 00:35:57,700
+And that's great because we didn't even
+
+887
+00:35:57,700 --> 00:35:59,450
+have a way of evaluating that second term,
+
+888
+00:35:59,450 --> 00:36:01,820
+since we don't have access to pdata directly.
+
+889
+00:36:01,820 --> 00:36:04,060
+And instead, we are going to maximize
+
+890
+00:36:04,060 --> 00:36:07,260
+the probability the model places on samples
+
+891
+00:36:07,260 --> 00:36:08,860
+from the distribution.
+
+892
+00:36:08,860 --> 00:36:12,460
+And whenever we try to maximize an expectation, in machine
+
+893
+00:36:12,460 --> 00:36:15,540
+learning, we're going to tend to always approximate that
+
+894
+00:36:15,540 --> 00:36:18,540
+with a finite set of samples.
+
+895
+00:36:18,540 --> 00:36:22,430
+So this is the probability the model places on the population.
+
+896
+00:36:22,430 --> 00:36:24,180
+And this is the probability that the model
+
+897
+00:36:24,180 --> 00:36:26,580
+places on the set of samples from the population, which
+
+898
+00:36:26,580 --> 00:36:28,060
+are our training data.
+
+899
+00:36:28,060 --> 00:36:31,800
+And this is called max likelihood learning--
+
+900
+00:36:31,800 --> 00:36:34,057
+maximize the likelihood, the probability,
+
+901
+00:36:34,057 --> 00:36:36,140
+that the model places on your training data, which
+
+902
+00:36:36,140 --> 00:36:41,460
+are samples from some unknown data generating process, pdata.
+
+903
+00:36:41,460 --> 00:36:41,960
+OK.
+
+904
+00:36:41,960 --> 00:36:44,220
+So you should recognize this as being the same form
+
+905
+00:36:44,220 --> 00:36:50,172
+as we saw with softmax regression, or it's kind of--
+
+906
+00:36:50,172 --> 00:36:51,630
+max likelihood is usually the thing
+
+907
+00:36:51,630 --> 00:36:53,130
+that we're doing in data modeling.
+
+908
+00:36:53,130 --> 00:36:55,270
+It's often the thing we're doing.
+
+909
+00:36:55,270 --> 00:36:56,470
+OK.
+
+910
+00:36:56,470 --> 00:36:56,970
+Yeah?
+
+911
+00:36:56,970 --> 00:36:57,527
+Question.
+
+912
+00:36:57,527 --> 00:36:59,610
+AUDIENCE: If you don't have a regularization term,
+
+913
+00:36:59,610 --> 00:37:01,110
+is this just going to lead to, like,
+
+914
+00:37:01,110 --> 00:37:03,478
+Dirac delta spikes on your data points?
+
+915
+00:37:03,478 --> 00:37:04,270
+PHILLIP ISOLA: Yes.
+
+916
+00:37:04,270 --> 00:37:04,570
+OK.
+
+917
+00:37:04,570 --> 00:37:06,528
+If you don't have a regularizer, will this just
+
+918
+00:37:06,528 --> 00:37:09,390
+lead to Dirac delta function on your data points?
+
+919
+00:37:09,390 --> 00:37:11,070
+That's going to be the next slide.
+
+920
+00:37:11,070 --> 00:37:11,610
+Wonderful.
+
+921
+00:37:11,610 --> 00:37:14,212
+So this is the question that comes up all the time
+
+922
+00:37:14,212 --> 00:37:15,170
+in generative modeling.
+
+923
+00:37:15,170 --> 00:37:16,670
+It's kind of confusing.
+
+924
+00:37:16,670 --> 00:37:18,030
+So here's a question for you.
+
+925
+00:37:18,030 --> 00:37:20,550
+Is the filing cabinet-- remember the filing cabinet
+
+926
+00:37:20,550 --> 00:37:22,230
+from the lecture on generalization?
+
+927
+00:37:22,230 --> 00:37:25,190
+Is the filing cabinet a good generative model?
+
+928
+00:37:25,190 --> 00:37:27,270
+OK, so what is the filing cabinet?
+
+929
+00:37:27,270 --> 00:37:29,570
+I'm going to define it as follows.
+
+930
+00:37:29,570 --> 00:37:33,170
+I will train the generative model by taking my data set X,
+
+931
+00:37:33,170 --> 00:37:37,750
+and I'll just put every data point into a file.
+
+932
+00:37:37,750 --> 00:37:39,490
+So I'll just add to the cabinet.
+
+933
+00:37:39,490 --> 00:37:41,710
+And then to sample from my learned generative model,
+
+934
+00:37:41,710 --> 00:37:45,680
+this cabinet, I will simply take a random drawer, or random file,
+
+935
+00:37:45,680 --> 00:37:47,360
+and pull it out.
+
+936
+00:37:47,360 --> 00:37:50,180
+So is this a good generative model.
+
+937
+00:37:50,180 --> 00:37:52,830
+What do you think?
+
+938
+00:37:52,830 --> 00:37:54,330
+AUDIENCE: It doesn't make new stuff.
+
+939
+00:37:54,330 --> 00:37:56,038
+PHILLIP ISOLA: It doesn't make new stuff.
+
+940
+00:37:56,038 --> 00:37:57,832
+OK.
+
+941
+00:37:57,832 --> 00:38:02,085
+But it does make data which is identical to the training data.
+
+942
+00:38:02,085 --> 00:38:04,460
+So that's like-- that kind of seemed like what we wanted.
+
+943
+00:38:04,460 --> 00:38:07,110
+We wanted to make data that's identical to the training data,
+
+944
+00:38:07,110 --> 00:38:08,120
+right?
+
+945
+00:38:08,120 --> 00:38:10,000
+This does maximize the likelihood.
+
+946
+00:38:10,000 --> 00:38:11,972
+This is the max likelihood solution,
+
+947
+00:38:11,972 --> 00:38:13,680
+or this is getting the highest likelihood
+
+948
+00:38:13,680 --> 00:38:15,200
+you could possibly get.
+
+949
+00:38:15,200 --> 00:38:19,200
+Just memorize the data and output the same data.
+
+950
+00:38:19,200 --> 00:38:21,520
+You're right, but any other answers?
+
+951
+00:38:21,520 --> 00:38:24,200
+Want to elaborate on this?
+
+952
+00:38:24,200 --> 00:38:25,940
+How could we avoid this solution?
+
+953
+00:38:25,940 --> 00:38:28,060
+This is intuitively a bad solution.
+
+954
+00:38:28,060 --> 00:38:31,000
+I didn't do anything.
+
+955
+00:38:31,000 --> 00:38:31,820
+Any thoughts?
+
+956
+00:38:34,440 --> 00:38:35,160
+OK.
+
+957
+00:38:35,160 --> 00:38:37,560
+So here's how I like to think about it.
+
+958
+00:38:37,560 --> 00:38:40,200
+It's exactly the same as overfitting in classical machine
+
+959
+00:38:40,200 --> 00:38:40,700
+learning.
+
+960
+00:38:40,700 --> 00:38:42,120
+So if you understand overfitting,
+
+961
+00:38:42,120 --> 00:38:44,490
+then you can understand why the filing cabinet
+
+962
+00:38:44,490 --> 00:38:46,250
+is a bad generative model.
+
+963
+00:38:46,250 --> 00:38:48,290
+So here's my training data.
+
+964
+00:38:48,290 --> 00:38:53,290
+And exactly as you said, the optimal generative model--
+
+965
+00:38:53,290 --> 00:38:55,150
+and the max likelihood generative model,
+
+966
+00:38:55,150 --> 00:38:57,462
+if I have infinite capacity, I can
+
+967
+00:38:57,462 --> 00:39:00,170
+fit any wiggly curve-- is to put a delta function on all the data
+
+968
+00:39:00,170 --> 00:39:02,690
+points, on all the training points.
+
+969
+00:39:02,690 --> 00:39:05,090
+But the true data generating process
+
+970
+00:39:05,090 --> 00:39:07,570
+is something unknown, which here, as a cartoon,
+
+971
+00:39:07,570 --> 00:39:08,850
+it could look like that.
+
+972
+00:39:08,850 --> 00:39:11,890
+So these blue dots are just samples, my training data
+
+973
+00:39:11,890 --> 00:39:14,250
+samples, from some underlying process.
+
+974
+00:39:14,250 --> 00:39:16,030
+So what went wrong here?
+
+975
+00:39:16,030 --> 00:39:19,270
+If I take new samples from that same process,
+
+976
+00:39:19,270 --> 00:39:20,510
+they'll land somewhere else.
+
+977
+00:39:20,510 --> 00:39:22,890
+And I'll have placed zero probability, under this model,
+
+978
+00:39:22,890 --> 00:39:24,410
+on those samples.
+
+979
+00:39:24,410 --> 00:39:27,730
+So what matters in generative modeling is the probability
+
+980
+00:39:27,730 --> 00:39:31,130
+you place on the test data, on new samples from the data
+
+981
+00:39:31,130 --> 00:39:33,010
+generating process.
+
+982
+00:39:33,010 --> 00:39:35,535
+We optimize the probability you place on the training data,
+
+983
+00:39:35,535 --> 00:39:37,410
+but what matters is the probability you place
+
+984
+00:39:37,410 --> 00:39:39,130
+on the test data-- exactly the same
+
+985
+00:39:39,130 --> 00:39:42,100
+as overfitting in machine learning, where you actually
+
+986
+00:39:42,100 --> 00:39:44,350
+care about test performance, not training performance.
+
+987
+00:39:44,350 --> 00:39:46,010
+But here, test performance is going
+
+988
+00:39:46,010 --> 00:39:49,210
+to be the density you have placed on new samples
+
+989
+00:39:49,210 --> 00:39:51,370
+from the true generating process.
+
+990
+00:39:51,370 --> 00:39:54,610
+And you have to control capacity or regularize in order
+
+991
+00:39:54,610 --> 00:39:58,690
+to avoid the memorization solution.
+
+992
+00:39:58,690 --> 00:40:00,908
+OK.
+
+993
+00:40:00,908 --> 00:40:03,450
+So that's what overfitting looks like for a generative model.
+
+994
+00:40:03,450 --> 00:40:04,825
+So the goal of a generative model
+
+995
+00:40:04,825 --> 00:40:07,210
+is not to make exactly the training data
+
+996
+00:40:07,210 --> 00:40:10,210
+or, actually, maximize likelihood on the training data.
+
+997
+00:40:10,210 --> 00:40:12,850
+It's to make things that are new but capture
+
+998
+00:40:12,850 --> 00:40:15,170
+the important statistics and realistic properties
+
+999
+00:40:15,170 --> 00:40:18,250
+of the data, but are infinitely new.
+
+1000
+00:40:18,250 --> 00:40:20,490
+We can quantify that as likelihood of the test data
+
+1001
+00:40:20,490 --> 00:40:21,930
+under a model.
+
+1002
+00:40:21,930 --> 00:40:25,350
+Now, if I don't have an explicit representation of the density,
+
+1003
+00:40:25,350 --> 00:40:27,230
+then it's not easy to quantify this.
+
+1004
+00:40:27,230 --> 00:40:29,950
+And that's why these methods, the direct methods,
+
+1005
+00:40:29,950 --> 00:40:31,850
+that just produce samples but not densities,
+
+1006
+00:40:31,850 --> 00:40:33,568
+are a little bit hard to calibrate.
+
+1007
+00:40:33,568 --> 00:40:35,610
+It's a little bit hard to know what the test data
+
+1008
+00:40:35,610 --> 00:40:37,010
+likelihood is.
+
+1009
+00:40:37,010 --> 00:40:38,540
+But with density models, I can just
+
+1010
+00:40:38,540 --> 00:40:40,020
+cross-validate by having a test set
+
+1011
+00:40:40,020 --> 00:40:43,300
+and measuring the likelihood I place on the test set.
+
+1012
+00:40:43,300 --> 00:40:45,340
+OK.
+
+1013
+00:40:45,340 --> 00:40:49,278
+So here's the way that you can measure the quality
+
+1014
+00:40:49,278 --> 00:40:50,320
+of your generative model.
+
+1015
+00:40:50,320 --> 00:40:51,000
+You can evaluate it.
+
+1016
+00:40:51,000 --> 00:40:51,917
+You can't fit on this.
+
+1017
+00:40:51,917 --> 00:40:54,460
+This is like the test score, the validation score.
+
+1018
+00:40:54,460 --> 00:40:57,040
+You sample new samples from the world.
+
+1019
+00:40:57,040 --> 00:40:59,680
+You make a split, your test split or your validation split.
+
+1020
+00:40:59,680 --> 00:41:01,260
+And you measure generalization error
+
+1021
+00:41:01,260 --> 00:41:05,080
+as the likelihood your model places on the test data.
+
+1022
+00:41:05,080 --> 00:41:05,580
+OK.
+
+1023
+00:41:08,940 --> 00:41:09,440
+OK.
+
+1024
+00:41:09,440 --> 00:41:11,780
+Any questions about density models?
+
+1025
+00:41:11,780 --> 00:41:15,860
+And then we're going to do energy models.
+
+1026
+00:41:15,860 --> 00:41:17,060
+Yeah?
+
+1027
+00:41:17,060 --> 00:41:19,800
+AUDIENCE: How exactly is p sub theta parameterized?
+
+1028
+00:41:19,800 --> 00:41:22,700
+Like what is it actually doing?
+
+1029
+00:41:22,700 --> 00:41:25,795
+PHILLIP ISOLA: So theta, how is it parameterized?
+
+1030
+00:41:25,795 --> 00:41:27,920
+You can parameterize it in a lot of different ways.
+
+1031
+00:41:27,920 --> 00:41:30,020
+So one example would be the network
+
+1032
+00:41:30,020 --> 00:41:32,420
+outputs two numbers, two scalars, so it's
+
+1033
+00:41:32,420 --> 00:41:33,820
+a two-dimensional vector.
+
+1034
+00:41:33,820 --> 00:41:35,820
+That would be sufficient to parameterize
+
+1035
+00:41:35,820 --> 00:41:37,522
+a one-dimensional Gaussian.
+
+1036
+00:41:37,522 --> 00:41:38,730
+The first number is the mean.
+
+1037
+00:41:38,730 --> 00:41:40,590
+The second number is the variance.
+
+1038
+00:41:40,590 --> 00:41:43,930
+Another option is the network could output a thousand numbers,
+
+1039
+00:41:43,930 --> 00:41:46,710
+and that would be sufficient to characterize--
+
+1040
+00:41:46,710 --> 00:41:48,150
+or, let's say, a hundred numbers,
+
+1041
+00:41:48,150 --> 00:41:50,070
+or a hundred plus 10 numbers, that would be sufficient
+
+1042
+00:41:50,070 --> 00:41:52,510
+to characterize a 10-dimensional Gaussian where I have
+
+1043
+00:41:52,510 --> 00:41:55,970
+a covariance matrix which is 10 by 10, so a hundred numbers,
+
+1044
+00:41:55,970 --> 00:41:57,870
+and a mean which is 10 dimensions.
+
+1045
+00:41:57,870 --> 00:42:01,070
+So I have to output the number of--
+
+1046
+00:42:01,070 --> 00:42:02,790
+the vector output by my network has
+
+1047
+00:42:02,790 --> 00:42:05,710
+to be all the parameters of the family of distributions
+
+1048
+00:42:05,710 --> 00:42:07,790
+that I am considering.
+
+1049
+00:42:07,790 --> 00:42:09,770
+And if I want to do a mixture of Gaussians,
+
+1050
+00:42:09,770 --> 00:42:12,170
+then I have to-- if I want to output two Gaussians,
+
+1051
+00:42:12,170 --> 00:42:15,930
+I can do that with 2 times 100 plus 10 numbers.
+
+1052
+00:42:15,930 --> 00:42:18,850
+And if I wanted to output other, funny-shaped curves,
+
+1053
+00:42:18,850 --> 00:42:21,195
+I can do that with other parametric families.
+
+1054
+00:42:21,195 --> 00:42:22,570
+It doesn't have to be a Gaussian.
+
+1055
+00:42:22,570 --> 00:42:25,950
+But that's the general idea.
+
+1056
+00:42:25,950 --> 00:42:30,270
+AUDIENCE: So assuming that you have a finite set of validation
+
+1057
+00:42:30,270 --> 00:42:30,873
+data--
+
+1058
+00:42:30,873 --> 00:42:32,790
+I assume your procedure would be to train this
+
+1059
+00:42:32,790 --> 00:42:36,030
+until your validation loss starts to increase,
+
+1060
+00:42:36,030 --> 00:42:38,310
+and then you do early stopping to try and find
+
+1061
+00:42:38,310 --> 00:42:41,822
+a good point at which you've got a good generative model.
+
+1062
+00:42:41,822 --> 00:42:44,030
+Is there an analogy similar to what we learned before
+
+1063
+00:42:44,030 --> 00:42:46,870
+about inductive bias in these models?
+
+1064
+00:42:46,870 --> 00:42:49,870
+Presumably, if you're trying to generate images,
+
+1065
+00:42:49,870 --> 00:42:51,630
+you should somehow be able to add
+
+1066
+00:42:51,630 --> 00:42:53,750
+a form of bias or regularization that says,
+
+1067
+00:42:53,750 --> 00:42:56,910
+like, images should not look like static.
+
+1068
+00:42:56,910 --> 00:43:00,550
+You should not be able to have just a zero-value pixel
+
+1069
+00:43:00,550 --> 00:43:02,790
+next to something that's a max-value pixel,
+
+1070
+00:43:02,790 --> 00:43:04,950
+so images have this sort of smooth quality.
+
+1071
+00:43:04,950 --> 00:43:08,370
+So does that show up in how you regularize in the loss?
+
+1072
+00:43:08,370 --> 00:43:10,110
+Or is that a [AUDIO OUT]?
+
+1073
+00:43:10,110 --> 00:43:11,110
+PHILLIP ISOLA: Yeah.
+
+1074
+00:43:11,110 --> 00:43:12,210
+So yeah, great question.
+
+1075
+00:43:12,210 --> 00:43:16,190
+So can we add inductive biases to generative models
+
+1076
+00:43:16,190 --> 00:43:18,218
+to prevent them from finding bad solutions
+
+1077
+00:43:18,218 --> 00:43:20,510
+and kind of encourage them to find a good solution that
+
+1078
+00:43:20,510 --> 00:43:22,630
+actually generalizes to the test data?
+
+1079
+00:43:22,630 --> 00:43:25,590
+And all the tricks that we have from other deep learning
+
+1080
+00:43:25,590 --> 00:43:26,610
+can apply here.
+
+1081
+00:43:26,610 --> 00:43:29,190
+So you can use an architecture which
+
+1082
+00:43:29,190 --> 00:43:31,910
+has some kind of spatial smoothness.
+
+1083
+00:43:31,910 --> 00:43:35,800
+So a convolutional architecture has baked-in spatial locality.
+
+1084
+00:43:35,800 --> 00:43:37,680
+You can use positional codes in transformers
+
+1085
+00:43:37,680 --> 00:43:39,480
+that have baked-in kind of inductive bias
+
+1086
+00:43:39,480 --> 00:43:41,080
+towards spatial locality.
+
+1087
+00:43:41,080 --> 00:43:44,040
+You can use regularizers that-- you can
+
+1088
+00:43:44,040 --> 00:43:45,280
+do all the tricks, basically.
+
+1089
+00:43:45,280 --> 00:43:48,320
+There's a lot to say, but you can do everything.
+
+1090
+00:43:48,320 --> 00:43:49,600
+Yeah.
+
+1091
+00:43:49,600 --> 00:43:50,440
+OK.
+
+1092
+00:43:50,440 --> 00:43:53,227
+Question in the back, and then I'll move on.
+
+1093
+00:43:53,227 --> 00:43:55,562
+AUDIENCE: Is there a connection between max likelihood
+
+1094
+00:43:55,562 --> 00:43:58,287
+estimation and empirical risk minimization?
+
+1095
+00:43:58,287 --> 00:43:59,120
+PHILLIP ISOLA: Yeah.
+
+1096
+00:43:59,120 --> 00:44:01,412
+Is there a connection between max likelihood estimation
+
+1097
+00:44:01,412 --> 00:44:02,920
+and empirical risk minimization?
+
+1098
+00:44:02,920 --> 00:44:04,860
+Generally, yes.
+
+1099
+00:44:04,860 --> 00:44:09,168
+I guess I would say empirical max likelihood,
+
+1100
+00:44:09,168 --> 00:44:10,960
+which is the maximized likelihood you place
+
+1101
+00:44:10,960 --> 00:44:12,920
+on the data-- that's what empirical means,
+
+1102
+00:44:12,920 --> 00:44:16,240
+is on the training data--
+
+1103
+00:44:16,240 --> 00:44:18,960
+that is a form of empirical risk minimization for the risk
+
+1104
+00:44:18,960 --> 00:44:20,860
+function which is the likelihood of the data.
+
+1105
+00:44:20,860 --> 00:44:22,360
+But you could have more general risk
+
+1106
+00:44:22,360 --> 00:44:25,840
+functions that might not have interpretations as likelihood.
+
+1107
+00:44:25,840 --> 00:44:26,400
+Yeah.
+
+1108
+00:44:26,400 --> 00:44:30,620
+But typically, the ones we use, like squared error or L1 error,
+
+1109
+00:44:30,620 --> 00:44:32,850
+these all have interpretations as some type
+
+1110
+00:44:32,850 --> 00:44:37,090
+of likelihood function.
+
+1111
+00:44:37,090 --> 00:44:39,710
+So let's talk about energy-based models.
+
+1112
+00:44:39,710 --> 00:44:41,770
+So energy-based models are--
+
+1113
+00:44:41,770 --> 00:44:43,810
+I said that the indirect approach-- this
+
+1114
+00:44:43,810 --> 00:44:45,630
+is another possible indirect approach.
+
+1115
+00:44:45,630 --> 00:44:49,110
+The indirect approach is you try to score your data
+
+1116
+00:44:49,110 --> 00:44:51,870
+and then sample from or optimize the score,
+
+1117
+00:44:51,870 --> 00:44:56,638
+find data points that have high score.
+
+1118
+00:44:56,638 --> 00:44:58,930
+Energy-based models say, Well, what if the score is not
+
+1119
+00:44:58,930 --> 00:45:02,650
+a probability, but it's just an unnormalized probability?
+
+1120
+00:45:02,650 --> 00:45:05,930
+So remember that the definition of a probability density
+
+1121
+00:45:05,930 --> 00:45:08,010
+is it integrates to 1.
+
+1122
+00:45:08,010 --> 00:45:11,810
+An energy function is just a probability
+
+1123
+00:45:11,810 --> 00:45:13,270
+that is unnormalized.
+
+1124
+00:45:13,270 --> 00:45:18,690
+So for any probability, I can represent-- or, yeah,
+
+1125
+00:45:18,690 --> 00:45:21,943
+for a broad family of functions, I can represent them like this.
+
+1126
+00:45:21,943 --> 00:45:24,110
+This is sometimes called the Boltzmann distribution.
+
+1127
+00:45:24,110 --> 00:45:26,850
+So it's an exponential of the negative energy
+
+1128
+00:45:26,850 --> 00:45:29,700
+divided by a normalization.
+
+1129
+00:45:29,700 --> 00:45:34,180
+And any energy function, any function E,
+
+1130
+00:45:34,180 --> 00:45:37,140
+that is not necessarily normalized,
+
+1131
+00:45:37,140 --> 00:45:40,753
+will, through this map, imply a probability function
+
+1132
+00:45:40,753 --> 00:45:43,420
+p that is normalized, because I just divide by the normalization
+
+1133
+00:45:43,420 --> 00:45:44,980
+constant.
+
+1134
+00:45:44,980 --> 00:45:48,540
+So whatever E is, if I divide by Z, which is this integral,
+
+1135
+00:45:48,540 --> 00:45:50,960
+p will be normalized.
+
+1136
+00:45:50,960 --> 00:45:51,460
+Yeah?
+
+1137
+00:45:51,460 --> 00:45:53,117
+AUDIENCE: What is an energy function?
+
+1138
+00:45:53,117 --> 00:45:54,700
+PHILLIP ISOLA: Energy function is just
+
+1139
+00:45:54,700 --> 00:45:58,020
+a map from data to a scalar, between negative infinity
+
+1140
+00:45:58,020 --> 00:45:58,960
+and infinity.
+
+1141
+00:45:58,960 --> 00:46:01,095
+AUDIENCE: So kind of like a loss, in a sense?
+
+1142
+00:46:01,095 --> 00:46:03,220
+PHILLIP ISOLA: Just like the score-- so think of it
+
+1143
+00:46:03,220 --> 00:46:04,838
+as an unnormalized probability.
+
+1144
+00:46:04,838 --> 00:46:05,380
+AUDIENCE: OK.
+
+1145
+00:46:05,380 --> 00:46:05,700
+PHILLIP ISOLA: Yeah.
+
+1146
+00:46:05,700 --> 00:46:07,140
+Unnormalized probability.
+
+1147
+00:46:07,140 --> 00:46:07,727
+Yeah.
+
+1148
+00:46:07,727 --> 00:46:10,060
+AUDIENCE: Kind of like the thing that goes into softmax?
+
+1149
+00:46:10,060 --> 00:46:10,852
+PHILLIP ISOLA: Yes.
+
+1150
+00:46:10,852 --> 00:46:12,980
+So the logits in a softmax classifier
+
+1151
+00:46:12,980 --> 00:46:15,980
+can be considered the energy.
+
+1152
+00:46:15,980 --> 00:46:17,900
+And then, softmax is just, you divide
+
+1153
+00:46:17,900 --> 00:46:19,858
+by the normalization-- you exponentiate and you
+
+1154
+00:46:19,858 --> 00:46:21,580
+divide by the normalization.
+
+1155
+00:46:21,580 --> 00:46:23,620
+OK.
+
+1156
+00:46:23,620 --> 00:46:24,120
+OK.
+
+1157
+00:46:24,120 --> 00:46:26,620
+So why are energies good?
+
+1158
+00:46:26,620 --> 00:46:28,460
+Because they're often sufficient.
+
+1159
+00:46:28,460 --> 00:46:31,320
+So, OK, so first of all, why are probabilities bad?
+
+1160
+00:46:31,320 --> 00:46:33,840
+Because probabilities need to be normalized.
+
+1161
+00:46:33,840 --> 00:46:35,820
+So my family of functions I search over
+
+1162
+00:46:35,820 --> 00:46:37,660
+is just normalized functions.
+
+1163
+00:46:37,660 --> 00:46:40,220
+And if I search over arbitrary curves-- like,
+
+1164
+00:46:40,220 --> 00:46:42,660
+let's say the neural network doesn't parameterize
+
+1165
+00:46:42,660 --> 00:46:45,020
+a Gaussian, which is normalized, but it just
+
+1166
+00:46:45,020 --> 00:46:49,245
+outputs some polynomial curve.
+
+1167
+00:46:49,245 --> 00:46:51,620
+Or maybe it just outputs a set of numbers that are, like,
+
+1168
+00:46:51,620 --> 00:46:52,920
+the control points on a spline.
+
+1169
+00:46:52,920 --> 00:46:54,860
+Whatever.
+
+1170
+00:46:54,860 --> 00:46:58,580
+Or maybe it just outputs, like, a number per data point.
+
+1171
+00:46:58,580 --> 00:47:00,413
+So I could have a network that takes in data
+
+1172
+00:47:00,413 --> 00:47:02,538
+and just outputs a number between negative infinity
+
+1173
+00:47:02,538 --> 00:47:03,140
+and infinity.
+
+1174
+00:47:03,140 --> 00:47:04,528
+Well, how would I normalize that?
+
+1175
+00:47:04,528 --> 00:47:06,820
+I'd have to do this integral over all possible settings
+
+1176
+00:47:06,820 --> 00:47:07,320
+of the data.
+
+1177
+00:47:07,320 --> 00:47:08,278
+And that's intractable.
+
+1178
+00:47:08,278 --> 00:47:09,460
+I don't want to do that.
+
+1179
+00:47:09,460 --> 00:47:12,220
+So that's why probability densities are bad,
+
+1180
+00:47:12,220 --> 00:47:15,200
+because I have to consider families that are normalized,
+
+1181
+00:47:15,200 --> 00:47:17,500
+and that's very restrictive.
+
+1182
+00:47:17,500 --> 00:47:20,380
+But energies are sufficient because energies,
+
+1183
+00:47:20,380 --> 00:47:24,000
+energy ratios are equal to probability ratios OK.
+
+1184
+00:47:24,000 --> 00:47:26,270
+So the probability that I place on-- let's say
+
+1185
+00:47:26,270 --> 00:47:27,877
+I want to say, Which is more likely,
+
+1186
+00:47:27,877 --> 00:47:29,710
+that it's going to snow tomorrow or there'll
+
+1187
+00:47:29,710 --> 00:47:30,990
+be a hurricane tomorrow?
+
+1188
+00:47:30,990 --> 00:47:32,830
+So that's some probability ratio.
+
+1189
+00:47:32,830 --> 00:47:34,470
+And maybe that's the type of thing
+
+1190
+00:47:34,470 --> 00:47:38,732
+I need to decide for how to prepare for some disaster.
+
+1191
+00:47:38,732 --> 00:47:40,690
+Oftentimes, relative judgments are what matter.
+
+1192
+00:47:40,690 --> 00:47:42,815
+And so relative judgments, the relative probability
+
+1193
+00:47:42,815 --> 00:47:46,390
+of x1 divided by x2, is equal to-- here's
+
+1194
+00:47:46,390 --> 00:47:50,030
+the definition of my energy function.
+
+1195
+00:47:50,030 --> 00:47:53,070
+And notice that the normalization functions
+
+1196
+00:47:53,070 --> 00:47:54,430
+cancel out.
+
+1197
+00:47:54,430 --> 00:48:00,030
+So that means that exponential energies provide the same ratio
+
+1198
+00:48:00,030 --> 00:48:02,390
+as probabilities.
+
+1199
+00:48:02,390 --> 00:48:06,710
+And I can evaluate whether a hurricane
+
+1200
+00:48:06,710 --> 00:48:08,730
+is less likely or more likely than snow
+
+1201
+00:48:08,730 --> 00:48:10,230
+by just looking at the energy ratio,
+
+1202
+00:48:10,230 --> 00:48:12,750
+as opposed to the probability ratio, which is intractable
+
+1203
+00:48:12,750 --> 00:48:16,010
+unless I know the normalization.
+
+1204
+00:48:16,010 --> 00:48:16,510
+Yeah?
+
+1205
+00:48:16,510 --> 00:48:18,110
+AUDIENCE: So it's the energy ratio?
+
+1206
+00:48:18,110 --> 00:48:19,510
+PHILLIP ISOLA: Yeah.
+
+1207
+00:48:19,510 --> 00:48:22,130
+AUDIENCE: So I guess energy ration includes exponentiation.
+
+1208
+00:48:22,130 --> 00:48:22,963
+PHILLIP ISOLA: Yeah.
+
+1209
+00:48:22,963 --> 00:48:25,333
+AUDIENCE: So it's quantum difference, or?
+
+1210
+00:48:25,333 --> 00:48:27,000
+PHILLIP ISOLA: Yeah, you could do like--
+
+1211
+00:48:27,000 --> 00:48:28,200
+so the question is like--
+
+1212
+00:48:28,200 --> 00:48:29,540
+I said energy ratio.
+
+1213
+00:48:29,540 --> 00:48:32,185
+I meant exponential. e to the negative energy divided
+
+1214
+00:48:32,185 --> 00:48:33,560
+by e to the negative other energy
+
+1215
+00:48:33,560 --> 00:48:34,980
+is equal to the probability ratio.
+
+1216
+00:48:34,980 --> 00:48:36,760
+If you took a log of that, you could see,
+
+1217
+00:48:36,760 --> 00:48:38,080
+it'll have another form.
+
+1218
+00:48:38,080 --> 00:48:39,520
+It'll be some difference.
+
+1219
+00:48:39,520 --> 00:48:41,440
+OK.
+
+1220
+00:48:41,440 --> 00:48:44,480
+So this is-- relative probabilities are often all
+
+1221
+00:48:44,480 --> 00:48:45,840
+you need for decisionmaking.
+
+1222
+00:48:45,840 --> 00:48:49,900
+In particular, they're also all you need for a lot of samplers.
+
+1223
+00:48:49,900 --> 00:48:53,260
+So Markov chain Monte Carlo only requires relative probabilities,
+
+1224
+00:48:53,260 --> 00:48:56,260
+so you don't need to have a normalized density or output.
+
+1225
+00:48:56,260 --> 00:48:59,960
+You can just output arbitrary unnormalized numbers and still
+
+1226
+00:48:59,960 --> 00:49:02,360
+sample from that, the implied distribution.
+
+1227
+00:49:02,360 --> 00:49:02,860
+OK.
+
+1228
+00:49:02,860 --> 00:49:05,960
+So energy functions are often all you need.
+
+1229
+00:49:05,960 --> 00:49:06,800
+Yeah?
+
+1230
+00:49:06,800 --> 00:49:08,592
+AUDIENCE: Can you explain the negative sign
+
+1231
+00:49:08,592 --> 00:49:09,680
+in front of the energy?
+
+1232
+00:49:09,680 --> 00:49:11,160
+PHILLIP ISOLA: Yeah, so that's just a definition.
+
+1233
+00:49:11,160 --> 00:49:12,780
+You could have-- you don't need that.
+
+1234
+00:49:12,780 --> 00:49:15,320
+It's just the definition.
+
+1235
+00:49:15,320 --> 00:49:19,280
+Because E is just a function that outputs negative infinity
+
+1236
+00:49:19,280 --> 00:49:23,040
+to infinity, so the definition is energies
+
+1237
+00:49:23,040 --> 00:49:25,020
+are related to negative probabilities.
+
+1238
+00:49:25,020 --> 00:49:27,060
+So low energy means high probability.
+
+1239
+00:49:27,060 --> 00:49:30,680
+It's just a definition.
+
+1240
+00:49:30,680 --> 00:49:32,510
+OK.
+
+1241
+00:49:32,510 --> 00:49:34,620
+So why would you actually want a probability?
+
+1242
+00:49:34,620 --> 00:49:36,580
+Why wouldn't you always work with energies?
+
+1243
+00:49:36,580 --> 00:49:39,720
+Anyone have some thoughts on that?
+
+1244
+00:49:39,720 --> 00:49:42,700
+Why would I ever care about using normalized probabilities,
+
+1245
+00:49:42,700 --> 00:49:46,460
+if what I'm saying is true?
+
+1246
+00:49:50,760 --> 00:49:51,940
+Yeah, any thoughts on that?
+
+1247
+00:49:51,940 --> 00:49:52,440
+Yeah?
+
+1248
+00:49:52,440 --> 00:49:54,815
+AUDIENCE: How would you scale them to different concepts,
+
+1249
+00:49:54,815 --> 00:49:55,440
+perhaps?
+
+1250
+00:49:55,440 --> 00:49:56,760
+PHILLIP ISOLA: How would you scale them?
+
+1251
+00:49:56,760 --> 00:49:57,940
+AUDIENCE: To different concepts.
+
+1252
+00:49:57,940 --> 00:49:59,020
+PHILLIP ISOLA: To different concepts.
+
+1253
+00:49:59,020 --> 00:49:59,617
+Yeah.
+
+1254
+00:49:59,617 --> 00:50:01,700
+So how would you scale them to different concepts?
+
+1255
+00:50:01,700 --> 00:50:04,600
+I think that's getting at what I think I agree with,
+
+1256
+00:50:04,600 --> 00:50:07,600
+that probabilities put everything
+
+1257
+00:50:07,600 --> 00:50:11,562
+on the same kind of unit, on the same playing field.
+
+1258
+00:50:11,562 --> 00:50:14,020
+Like, you're kind of scaling things to have the same units.
+
+1259
+00:50:14,020 --> 00:50:17,200
+So 90% probability could be--
+
+1260
+00:50:17,200 --> 00:50:19,710
+in one domain, it's 90% probability in another domain,
+
+1261
+00:50:19,710 --> 00:50:22,370
+but the energies could be arbitrarily scaled
+
+1262
+00:50:22,370 --> 00:50:24,170
+or arbitrarily offset.
+
+1263
+00:50:24,170 --> 00:50:26,530
+So I think probabilities are often
+
+1264
+00:50:26,530 --> 00:50:28,330
+more interpretable and more exchangeable
+
+1265
+00:50:28,330 --> 00:50:29,673
+between different problems.
+
+1266
+00:50:29,673 --> 00:50:31,090
+If you go to the hospital and they
+
+1267
+00:50:31,090 --> 00:50:33,320
+tell you your energy of having cancer is 10 million,
+
+1268
+00:50:33,320 --> 00:50:35,070
+what are you going to do with that, right?
+
+1269
+00:50:35,070 --> 00:50:37,930
+But if they say your likelihood is 0.1%,
+
+1270
+00:50:37,930 --> 00:50:40,170
+you're going to be like, OK, that's fine.
+
+1271
+00:50:40,170 --> 00:50:42,040
+OK.
+
+1272
+00:50:42,040 --> 00:50:44,150
+So human interpretability is the most obvious,
+
+1273
+00:50:44,150 --> 00:50:47,330
+but I think there's other reasons beyond that, too.
+
+1274
+00:50:47,330 --> 00:50:49,310
+So how do you optimize an energy-based model?
+
+1275
+00:50:49,310 --> 00:50:51,490
+How do you fit an energy-based model to data?
+
+1276
+00:50:51,490 --> 00:50:52,987
+So here's how you do it.
+
+1277
+00:50:52,987 --> 00:50:54,570
+So we do the same thing we did before.
+
+1278
+00:50:54,570 --> 00:50:58,570
+We find our data and we decrease the energy where the data lives.
+
+1279
+00:50:58,570 --> 00:51:01,530
+Remember, decrease energy means increase probability,
+
+1280
+00:51:01,530 --> 00:51:04,490
+because energy is related to probability by negative.
+
+1281
+00:51:04,490 --> 00:51:08,410
+e to the negative energy is probability.
+
+1282
+00:51:08,410 --> 00:51:09,290
+OK.
+
+1283
+00:51:09,290 --> 00:51:12,030
+So what's wrong with this?
+
+1284
+00:51:12,030 --> 00:51:15,650
+We're going to decrease our energy where the data lives.
+
+1285
+00:51:15,650 --> 00:51:18,460
+What's wrong with this?
+
+1286
+00:51:18,460 --> 00:51:20,020
+What's wrong with this?
+
+1287
+00:51:20,020 --> 00:51:21,305
+AUDIENCE: It's not constant.
+
+1288
+00:51:21,305 --> 00:51:22,180
+PHILLIP ISOLA: Sorry.
+
+1289
+00:51:22,180 --> 00:51:22,680
+Yes.
+
+1290
+00:51:22,680 --> 00:51:23,980
+Not constant mass.
+
+1291
+00:51:23,980 --> 00:51:25,940
+What's wrong with this is I could just
+
+1292
+00:51:25,940 --> 00:51:28,960
+decrease my energy to be negative infinity everywhere.
+
+1293
+00:51:28,960 --> 00:51:31,440
+If my only goal is decrease energy where the data lives,
+
+1294
+00:51:31,440 --> 00:51:34,140
+I can just say, well, I'll also decrease energy everywhere else.
+
+1295
+00:51:34,140 --> 00:51:36,480
+I'm not forcing it to be normalized.
+
+1296
+00:51:36,480 --> 00:51:39,460
+So there's no necessity to increase energy
+
+1297
+00:51:39,460 --> 00:51:41,220
+where the data does not live.
+
+1298
+00:51:41,220 --> 00:51:45,060
+So the simple solution is I will add a term to increase energy
+
+1299
+00:51:45,060 --> 00:51:47,900
+where the data doesn't live.
+
+1300
+00:51:47,900 --> 00:51:52,580
+So the way you do this is you decrease energy
+
+1301
+00:51:52,580 --> 00:51:56,220
+where the data lives and you increase energy where
+
+1302
+00:51:56,220 --> 00:51:57,960
+the model places high energy.
+
+1303
+00:51:57,960 --> 00:51:59,640
+You actually sample from the model.
+
+1304
+00:51:59,640 --> 00:52:02,560
+So I said you can sample from an energy--
+
+1305
+00:52:02,560 --> 00:52:04,060
+you can sample from the distribution
+
+1306
+00:52:04,060 --> 00:52:06,300
+implied by an energy without having the normalization
+
+1307
+00:52:06,300 --> 00:52:06,920
+constant.
+
+1308
+00:52:06,920 --> 00:52:10,900
+That's what things like Markov chain Monte Carlo do.
+
+1309
+00:52:10,900 --> 00:52:13,400
+So I can sample from my energy function,
+
+1310
+00:52:13,400 --> 00:52:16,050
+but I can't evaluate the probability.
+
+1311
+00:52:16,050 --> 00:52:18,033
+But I can take these points, and I'm
+
+1312
+00:52:18,033 --> 00:52:19,950
+sampling where there's low energy because that
+
+1313
+00:52:19,950 --> 00:52:21,110
+means high probability.
+
+1314
+00:52:21,110 --> 00:52:23,150
+I'm going to increase energy there,
+
+1315
+00:52:23,150 --> 00:52:25,430
+and I'll get this solution.
+
+1316
+00:52:25,430 --> 00:52:27,990
+If I repeat this process, I decrease energy
+
+1317
+00:52:27,990 --> 00:52:30,670
+where the data lives and I increase energy
+
+1318
+00:52:30,670 --> 00:52:32,390
+where my current energy function implies
+
+1319
+00:52:32,390 --> 00:52:35,110
+high probability via sampling.
+
+1320
+00:52:35,110 --> 00:52:36,490
+I go like that.
+
+1321
+00:52:36,490 --> 00:52:37,730
+And eventually, I get this.
+
+1322
+00:52:37,730 --> 00:52:40,490
+And here, I decrease energy where the data lives,
+
+1323
+00:52:40,490 --> 00:52:42,390
+and I increase energy where the model
+
+1324
+00:52:42,390 --> 00:52:44,870
+has placed high probability.
+
+1325
+00:52:44,870 --> 00:52:46,050
+And they cancel out.
+
+1326
+00:52:46,050 --> 00:52:49,330
+So eventually, I get a delta function on the data points.
+
+1327
+00:52:49,330 --> 00:52:52,400
+And that convergence of this algorithm, the positive term,
+
+1328
+00:52:52,400 --> 00:52:54,650
+which is decrease in energy, equals the negative term,
+
+1329
+00:52:54,650 --> 00:52:57,390
+which is increasing energy, because the model places energy
+
+1330
+00:52:57,390 --> 00:52:58,730
+exactly where the data lives.
+
+1331
+00:52:58,730 --> 00:52:59,230
+OK.
+
+1332
+00:52:59,230 --> 00:53:01,750
+So that should, therefore, kind convince you graphically
+
+1333
+00:53:01,750 --> 00:53:05,170
+that this thing will converge to a solution that fits the data.
+
+1334
+00:53:05,170 --> 00:53:07,670
+It will overfit in the same way that other generative models
+
+1335
+00:53:07,670 --> 00:53:08,830
+overfit.
+
+1336
+00:53:08,830 --> 00:53:11,830
+But we'll just do early stopping or regularization
+
+1337
+00:53:11,830 --> 00:53:13,370
+of various forms.
+
+1338
+00:53:13,370 --> 00:53:13,870
+OK.
+
+1339
+00:53:13,870 --> 00:53:17,750
+So at convergence, the green arrows and the red arrows
+
+1340
+00:53:17,750 --> 00:53:18,950
+cancel out.
+
+1341
+00:53:18,950 --> 00:53:21,610
+I get zero delta between them, and the thing stops.
+
+1342
+00:53:21,610 --> 00:53:23,170
+So let's look at that mathematically.
+
+1343
+00:53:23,170 --> 00:53:25,210
+This algorithm is called contrastive divergence.
+
+1344
+00:53:25,210 --> 00:53:27,117
+And variations on this come up a lot.
+
+1345
+00:53:27,117 --> 00:53:28,950
+It's even connected to contrastive learning,
+
+1346
+00:53:28,950 --> 00:53:32,150
+but a little bit indirectly.
+
+1347
+00:53:32,150 --> 00:53:33,830
+It's another contrast, the contrast
+
+1348
+00:53:33,830 --> 00:53:36,710
+between where the data lives and where the model has
+
+1349
+00:53:36,710 --> 00:53:37,730
+placed high probability.
+
+1350
+00:53:37,730 --> 00:53:40,710
+You want that to cancel out so that the model places
+
+1351
+00:53:40,710 --> 00:53:43,990
+high probability exactly where the data lives.
+
+1352
+00:53:43,990 --> 00:53:48,373
+So mathematically, here's how you derive that.
+
+1353
+00:53:48,373 --> 00:53:49,790
+This is the kind of thing that you
+
+1354
+00:53:49,790 --> 00:53:52,910
+might want to work through yourself after the lecture.
+
+1355
+00:53:52,910 --> 00:53:55,110
+But I'll go through the steps for you here.
+
+1356
+00:53:55,110 --> 00:53:57,870
+So we're going to do max likelihood learning
+
+1357
+00:53:57,870 --> 00:53:59,630
+with energy-based models.
+
+1358
+00:53:59,630 --> 00:54:04,050
+So max likelihood learning is, I want to update the parameters,
+
+1359
+00:54:04,050 --> 00:54:06,030
+find the gradient of the parameters that
+
+1360
+00:54:06,030 --> 00:54:09,990
+will increase the probability I place on the data.
+
+1361
+00:54:09,990 --> 00:54:13,220
+And I'm writing it in terms of the expectation over samples,
+
+1362
+00:54:13,220 --> 00:54:17,480
+but you would really do this on an empirical training set.
+
+1363
+00:54:17,480 --> 00:54:18,160
+OK.
+
+1364
+00:54:18,160 --> 00:54:21,560
+So I can rewrite my probability distribution
+
+1365
+00:54:21,560 --> 00:54:24,920
+as an energy function divided by a normalization.
+
+1366
+00:54:24,920 --> 00:54:25,720
+OK.
+
+1367
+00:54:25,720 --> 00:54:28,900
+And now I'm parameterizing the energy function.
+
+1368
+00:54:28,900 --> 00:54:32,343
+So the neural net E is just a mapping from data to a number.
+
+1369
+00:54:32,343 --> 00:54:33,760
+And I'm going to parameterize that
+
+1370
+00:54:33,760 --> 00:54:37,520
+by theta, which are the weights and biases
+
+1371
+00:54:37,520 --> 00:54:38,240
+OK.
+
+1372
+00:54:38,240 --> 00:54:41,380
+Now I'm going to take the log and split it into two terms.
+
+1373
+00:54:41,380 --> 00:54:47,160
+It'll place high energy where the data lives, and then
+
+1374
+00:54:47,160 --> 00:54:52,040
+have this extra term related to the normalization integral Z.
+
+1375
+00:54:52,040 --> 00:54:52,640
+OK.
+
+1376
+00:54:52,640 --> 00:54:54,190
+So that's called the positive term.
+
+1377
+00:54:54,190 --> 00:54:55,300
+That's those green arrows.
+
+1378
+00:54:55,300 --> 00:54:56,120
+And this is the negative term.
+
+1379
+00:54:56,120 --> 00:54:57,340
+That was the red arrows.
+
+1380
+00:54:57,340 --> 00:54:58,820
+So this one's easy, right?
+
+1381
+00:54:58,820 --> 00:55:03,460
+This one is just, I have my samples from the data,
+
+1382
+00:55:03,460 --> 00:55:05,480
+and I just do backprop to increase
+
+1383
+00:55:05,480 --> 00:55:07,168
+the energy I place on those samples--
+
+1384
+00:55:07,168 --> 00:55:08,460
+or, sorry, decrease the energy.
+
+1385
+00:55:08,460 --> 00:55:12,370
+Remember, negative energy means high probability.
+
+1386
+00:55:12,370 --> 00:55:14,190
+But how do you measure the normalization?
+
+1387
+00:55:14,190 --> 00:55:18,850
+How do you measure the gradient of this normalization function?
+
+1388
+00:55:18,850 --> 00:55:20,890
+So here's the full derivation, which
+
+1389
+00:55:20,890 --> 00:55:23,310
+you might want to kind of walk through after the lecture.
+
+1390
+00:55:23,310 --> 00:55:24,730
+But here's what it is.
+
+1391
+00:55:24,730 --> 00:55:28,690
+It turns out that this thing has a very simple form.
+
+1392
+00:55:28,690 --> 00:55:34,670
+So the gradient of this normalization function,
+
+1393
+00:55:34,670 --> 00:55:36,690
+sometimes called the partition function,
+
+1394
+00:55:36,690 --> 00:55:40,930
+is-- so grad of log of f of x is equal to 1
+
+1395
+00:55:40,930 --> 00:55:44,210
+over f at x grad of f of x.
+
+1396
+00:55:44,210 --> 00:55:45,630
+That's an identity from calculus.
+
+1397
+00:55:45,630 --> 00:55:47,610
+It's a good thing to remember.
+
+1398
+00:55:47,610 --> 00:55:51,650
+So this is equal to 1 over Z grad of Z.
+
+1399
+00:55:51,650 --> 00:55:54,650
+Now I can write the definition of Z. The definition of Z
+
+1400
+00:55:54,650 --> 00:55:57,610
+is the integral over x of--
+
+1401
+00:55:57,610 --> 00:55:59,345
+this is like we're doing the softmax.
+
+1402
+00:55:59,345 --> 00:56:00,470
+This is exactly what we do.
+
+1403
+00:56:00,470 --> 00:56:02,450
+This is just the more general setting.
+
+1404
+00:56:02,450 --> 00:56:06,190
+This is the normalizing constant,
+
+1405
+00:56:06,190 --> 00:56:09,810
+so the integral over how much energy I place on all the data.
+
+1406
+00:56:09,810 --> 00:56:10,490
+OK.
+
+1407
+00:56:10,490 --> 00:56:10,990
+Oops.
+
+1408
+00:56:10,990 --> 00:56:12,130
+Sorry.
+
+1409
+00:56:12,130 --> 00:56:18,990
+So then, the next line is going to be chain rule.
+
+1410
+00:56:18,990 --> 00:56:20,850
+So this is just the gradient of e
+
+1411
+00:56:20,850 --> 00:56:24,490
+to the negative function of x, is-- here,
+
+1412
+00:56:24,490 --> 00:56:26,635
+gradient of e to the x is e to the x times
+
+1413
+00:56:26,635 --> 00:56:28,510
+the gradient of whatever was in the exponent.
+
+1414
+00:56:28,510 --> 00:56:30,450
+That's just the chain rule.
+
+1415
+00:56:30,450 --> 00:56:34,970
+And then this line here is just rearrangement of terms.
+
+1416
+00:56:34,970 --> 00:56:37,970
+I'm taking this ratio, dividing by Z,
+
+1417
+00:56:37,970 --> 00:56:39,430
+pulling it into the integral.
+
+1418
+00:56:39,430 --> 00:56:42,210
+So now I get this term, which simplifies to p again.
+
+1419
+00:56:42,210 --> 00:56:43,710
+So it's just rearrangement of terms.
+
+1420
+00:56:43,710 --> 00:56:45,752
+That's the definition of p is equal to this term.
+
+1421
+00:56:45,752 --> 00:56:46,510
+I found it again.
+
+1422
+00:56:46,510 --> 00:56:50,090
+But now I have an integral of p of this thing.
+
+1423
+00:56:50,090 --> 00:56:52,450
+And this is-- the whole point is to rearrange
+
+1424
+00:56:52,450 --> 00:56:55,150
+the terms until I get something that looks an expectation.
+
+1425
+00:56:55,150 --> 00:56:56,110
+That's an expectation.
+
+1426
+00:56:56,110 --> 00:56:59,390
+An expectation is integral of p of x f of x.
+
+1427
+00:56:59,390 --> 00:57:03,550
+That's expectation of f of x under the distribution p of x.
+
+1428
+00:57:03,550 --> 00:57:05,210
+OK, so I got an expectation.
+
+1429
+00:57:05,210 --> 00:57:07,740
+So this is all equal to expectation of samples
+
+1430
+00:57:07,740 --> 00:57:11,740
+from the model of the gradient of the energy.
+
+1431
+00:57:11,740 --> 00:57:13,767
+So what does that-- why did I do that?
+
+1432
+00:57:13,767 --> 00:57:16,100
+Because if I get things into the form of an expectation,
+
+1433
+00:57:16,100 --> 00:57:18,960
+I know how to approximate expectations on finite data.
+
+1434
+00:57:18,960 --> 00:57:20,500
+I don't have to compute an integral
+
+1435
+00:57:20,500 --> 00:57:22,920
+over some analytical infinite set.
+
+1436
+00:57:22,920 --> 00:57:24,620
+I approximate expectation with samples,
+
+1437
+00:57:24,620 --> 00:57:26,040
+and we know how to do that.
+
+1438
+00:57:26,040 --> 00:57:30,660
+That's just sample from p, evaluate this, and backprop.
+
+1439
+00:57:30,660 --> 00:57:31,160
+OK.
+
+1440
+00:57:31,160 --> 00:57:32,700
+So here we go.
+
+1441
+00:57:32,700 --> 00:57:35,220
+We converted this funny-looking term into now
+
+1442
+00:57:35,220 --> 00:57:36,980
+just another expectation.
+
+1443
+00:57:36,980 --> 00:57:40,200
+Both of these expectations can be approximated with samples.
+
+1444
+00:57:40,200 --> 00:57:42,580
+This is samples from my training set.
+
+1445
+00:57:42,580 --> 00:57:45,540
+And this is samples from my model.
+
+1446
+00:57:45,540 --> 00:57:47,780
+And that's the gradient that will maximize
+
+1447
+00:57:47,780 --> 00:57:50,660
+the likelihood of the density implied
+
+1448
+00:57:50,660 --> 00:57:55,260
+by the energy for an energy-based model.
+
+1449
+00:57:55,260 --> 00:57:59,100
+It's called contrastive divergence.
+
+1450
+00:57:59,100 --> 00:58:01,960
+Any questions?
+
+1451
+00:58:01,960 --> 00:58:02,460
+Yeah?
+
+1452
+00:58:02,460 --> 00:58:03,950
+AUDIENCE: Just one question on the derivation.
+
+1453
+00:58:03,950 --> 00:58:05,410
+You pulled out, like, a minus sign,
+
+1454
+00:58:05,410 --> 00:58:07,290
+but it wasn't-- if I understand correctly,
+
+1455
+00:58:07,290 --> 00:58:08,332
+it was not a subtraction.
+
+1456
+00:58:08,332 --> 00:58:09,450
+It was times negative 1.
+
+1457
+00:58:09,450 --> 00:58:11,450
+PHILLIP ISOLA: That-- I think-- oh, yeah, sorry.
+
+1458
+00:58:11,450 --> 00:58:13,602
+That's a little-- this is a times negative 1.
+
+1459
+00:58:13,602 --> 00:58:14,810
+Yeah, that's not subtraction.
+
+1460
+00:58:14,810 --> 00:58:17,630
+That's probably confusing, yeah.
+
+1461
+00:58:17,630 --> 00:58:18,710
+OK.
+
+1462
+00:58:18,710 --> 00:58:19,670
+OK.
+
+1463
+00:58:19,670 --> 00:58:20,610
+So that's the math.
+
+1464
+00:58:20,610 --> 00:58:24,090
+But you can also just kind of keep in mind the intuition.
+
+1465
+00:58:24,090 --> 00:58:26,290
+Push down energy where the data lives.
+
+1466
+00:58:26,290 --> 00:58:28,350
+Push up energy where the model currently
+
+1467
+00:58:28,350 --> 00:58:31,428
+places high probability.
+
+1468
+00:58:31,428 --> 00:58:33,970
+Eventually, those cancel out, and the model has fit the data.
+
+1469
+00:58:36,750 --> 00:58:37,250
+OK.
+
+1470
+00:58:37,250 --> 00:58:40,210
+So we've seen a few different families of generative models
+
+1471
+00:58:40,210 --> 00:58:40,710
+now.
+
+1472
+00:58:40,710 --> 00:58:43,150
+We've seen that generative modeling takes data,
+
+1473
+00:58:43,150 --> 00:58:45,270
+and you can learn a density function that assigns
+
+1474
+00:58:45,270 --> 00:58:46,650
+a normalized score to the data.
+
+1475
+00:58:46,650 --> 00:58:48,310
+You can define an energy function
+
+1476
+00:58:48,310 --> 00:58:53,710
+that gives you a unnormalized score to the data.
+
+1477
+00:58:53,710 --> 00:58:58,430
+And you can also directly sample by learning
+
+1478
+00:58:58,430 --> 00:59:02,920
+a mapping from random noise or latent variables to data.
+
+1479
+00:59:02,920 --> 00:59:05,840
+So you can represent the data generating
+
+1480
+00:59:05,840 --> 00:59:07,760
+process in any of these ways, either directly
+
+1481
+00:59:07,760 --> 00:59:12,480
+generate data from initial random variable or sample
+
+1482
+00:59:12,480 --> 00:59:15,680
+from a density or energy fit to the data.
+
+1483
+00:59:15,680 --> 00:59:17,320
+And each of these things, then, will
+
+1484
+00:59:17,320 --> 00:59:19,600
+have a family of generative models
+
+1485
+00:59:19,600 --> 00:59:21,982
+and deep generative models that have one of these forms.
+
+1486
+00:59:21,982 --> 00:59:23,440
+And a lot of deep generative models
+
+1487
+00:59:23,440 --> 00:59:28,300
+have multiple of these forms simultaneously.
+
+1488
+00:59:28,300 --> 00:59:32,400
+So, finally, we're going to get to the popular, named,
+
+1489
+00:59:32,400 --> 00:59:33,460
+deep generative models.
+
+1490
+00:59:33,460 --> 00:59:35,280
+All of that was really just background
+
+1491
+00:59:35,280 --> 00:59:38,760
+on generative modeling and probability theory.
+
+1492
+00:59:38,760 --> 00:59:40,220
+So let's start.
+
+1493
+00:59:40,220 --> 00:59:41,720
+We're going to talk about three now.
+
+1494
+00:59:41,720 --> 00:59:43,440
+We're going to talk about autoregressive models, which
+
+1495
+00:59:43,440 --> 00:59:44,628
+we've actually seen before.
+
+1496
+00:59:44,628 --> 00:59:46,420
+We're going to talk about diffusion models.
+
+1497
+00:59:46,420 --> 00:59:48,545
+And we're going to talk about GANs.
+
+1498
+00:59:48,545 --> 00:59:49,920
+And then tomorrow-- not tomorrow,
+
+1499
+00:59:49,920 --> 00:59:54,300
+but next week, we'll talk about VAEs, variational autoencoders.
+
+1500
+00:59:54,300 --> 00:59:57,200
+So autoregressive models are kind of the simplest one
+
+1501
+00:59:57,200 --> 00:59:58,960
+to understand, so we'll start there.
+
+1502
+00:59:58,960 --> 01:00:02,880
+So autoregressive models are these next word predictors,
+
+1503
+01:00:02,880 --> 01:00:04,780
+or next data point predictors.
+
+1504
+01:00:04,780 --> 01:00:08,140
+So I do "once upon" and I try to predict what's the next word.
+
+1505
+01:00:08,140 --> 01:00:09,700
+"A."
+
+1506
+01:00:09,700 --> 01:00:11,068
+And then I repeat the process.
+
+1507
+01:00:11,068 --> 01:00:12,360
+So we've seen this a few times.
+
+1508
+01:00:12,360 --> 01:00:14,320
+"Time."
+
+1509
+01:00:14,320 --> 01:00:16,020
+So how is this a generative model?
+
+1510
+01:00:16,020 --> 01:00:19,600
+What probability distribution is it sampling from?
+
+1511
+01:00:19,600 --> 01:00:22,180
+And I don't have to go in temporal order.
+
+1512
+01:00:22,180 --> 01:00:24,880
+That's just a particular choice.
+
+1513
+01:00:24,880 --> 01:00:26,238
+So, recap.
+
+1514
+01:00:26,238 --> 01:00:27,780
+I think I've shown this slide before.
+
+1515
+01:00:27,780 --> 01:00:29,320
+We trained an autoregressive model
+
+1516
+01:00:29,320 --> 01:00:31,180
+with standard supervised learning.
+
+1517
+01:00:31,180 --> 01:00:32,940
+We have a data set of sentences.
+
+1518
+01:00:32,940 --> 01:00:37,920
+We just chop the sentence into the prefix and the final word,
+
+1519
+01:00:37,920 --> 01:00:41,240
+or the next word at some point in the sentence.
+
+1520
+01:00:41,240 --> 01:00:42,860
+That's a supervised learning problem.
+
+1521
+01:00:42,860 --> 01:00:45,100
+I can just try to treat it as classification.
+
+1522
+01:00:45,100 --> 01:00:46,760
+Predict the next word
+
+1523
+01:00:46,760 --> 01:00:47,260
+OK.
+
+1524
+01:00:47,260 --> 01:00:48,593
+So that's my learning algorithm.
+
+1525
+01:00:48,593 --> 01:00:51,320
+And my sampling algorithm-- now I'm going to call it sampling--
+
+1526
+01:00:51,320 --> 01:00:52,960
+is I run--
+
+1527
+01:00:52,960 --> 01:00:55,640
+I predict the next word, but I'm not
+
+1528
+01:00:55,640 --> 01:00:58,870
+going to necessarily just predict one word.
+
+1529
+01:00:58,870 --> 01:01:00,510
+I'll predict a distribution over words.
+
+1530
+01:01:00,510 --> 01:01:03,003
+So it's like, if each word is treated as a class,
+
+1531
+01:01:03,003 --> 01:01:04,670
+I can output a categorical distribution.
+
+1532
+01:01:04,670 --> 01:01:07,770
+I can do softmax regression and sample from that distribution.
+
+1533
+01:01:10,476 --> 01:01:11,170
+OK.
+
+1534
+01:01:11,170 --> 01:01:14,230
+So why is this a valid probability model?
+
+1535
+01:01:14,230 --> 01:01:17,090
+Why does this actually do max likelihood density
+
+1536
+01:01:17,090 --> 01:01:19,410
+modeling of a distribution?
+
+1537
+01:01:19,410 --> 01:01:22,170
+The reason is because of this equation, which is, I think,
+
+1538
+01:01:22,170 --> 01:01:24,230
+sometimes called the chain rule of probability.
+
+1539
+01:01:24,230 --> 01:01:30,350
+But it says that the probability a set of words-- or a vector X,
+
+1540
+01:01:30,350 --> 01:01:33,810
+so a set of data points X--
+
+1541
+01:01:33,810 --> 01:01:37,750
+is equal to the probability of x2 given x1.
+
+1542
+01:01:37,750 --> 01:01:40,290
+So x1 through xn are the elements of my vector
+
+1543
+01:01:40,290 --> 01:01:44,010
+X. So I just do probability of x1 times probability of x2 times
+
+1544
+01:01:44,010 --> 01:01:44,670
+x1.
+
+1545
+01:01:44,670 --> 01:01:47,770
+So that becomes probability of x1 and x2.
+
+1546
+01:01:47,770 --> 01:01:50,130
+And then I multiply that by probability of x3, given x1
+
+1547
+01:01:50,130 --> 01:01:50,810
+and x2.
+
+1548
+01:01:50,810 --> 01:01:51,310
+OK.
+
+1549
+01:01:51,310 --> 01:01:55,330
+So this is an identity, an identity from probability.
+
+1550
+01:01:55,330 --> 01:01:56,140
+OK.
+
+1551
+01:01:56,140 --> 01:01:58,820
+So I can just write that in the shorthand form
+
+1552
+01:01:58,820 --> 01:02:01,818
+as this is product over all the conditionals of the next token
+
+1553
+01:02:01,818 --> 01:02:03,860
+given the previous tokens, or the next word given
+
+1554
+01:02:03,860 --> 01:02:05,693
+the previous word, the next data point given
+
+1555
+01:02:05,693 --> 01:02:07,650
+previous data points.
+
+1556
+01:02:07,650 --> 01:02:09,900
+OK, so here's what that looks like for the probability
+
+1557
+01:02:09,900 --> 01:02:12,140
+of "once upon a time" is equal to the probability of "once"
+
+1558
+01:02:12,140 --> 01:02:13,973
+times the probability of "upon" given "once"
+
+1559
+01:02:13,973 --> 01:02:15,340
+times the probability of--
+
+1560
+01:02:15,340 --> 01:02:15,960
+right.
+
+1561
+01:02:15,960 --> 01:02:16,580
+OK.
+
+1562
+01:02:16,580 --> 01:02:19,820
+So it's the product of all those conditional probabilities.
+
+1563
+01:02:19,820 --> 01:02:22,340
+And autoregressive modeling is simply
+
+1564
+01:02:22,340 --> 01:02:25,700
+modeling all of those conditional probabilities
+
+1565
+01:02:25,700 --> 01:02:29,160
+in a sequence and trying to maximize the likelihood.
+
+1566
+01:02:29,160 --> 01:02:31,660
+So how do I model probability of "time" given "once upon a"?
+
+1567
+01:02:31,660 --> 01:02:34,880
+I just do next word classifier.
+
+1568
+01:02:34,880 --> 01:02:37,100
+So I just output a categorical distribution
+
+1569
+01:02:37,100 --> 01:02:39,077
+over my vocabulary size.
+
+1570
+01:02:39,077 --> 01:02:40,660
+The number of categories is the number
+
+1571
+01:02:40,660 --> 01:02:42,320
+of words I could possibly predict.
+
+1572
+01:02:42,320 --> 01:02:44,860
+So "once upon a," I output a probability mass function,
+
+1573
+01:02:44,860 --> 01:02:48,233
+a categorical distribution, over all the possible next words.
+
+1574
+01:02:48,233 --> 01:02:49,900
+There's a few other ways you could do it
+
+1575
+01:02:49,900 --> 01:02:51,400
+in natural language processing.
+
+1576
+01:02:51,400 --> 01:02:54,660
+But this is kind of the basic idea.
+
+1577
+01:02:54,660 --> 01:02:56,140
+OK.
+
+1578
+01:02:56,140 --> 01:02:57,520
+What about in image processing?
+
+1579
+01:02:57,520 --> 01:02:59,437
+Here's how you would do it in image processing
+
+1580
+01:02:59,437 --> 01:03:00,860
+for an autoregressive model.
+
+1581
+01:03:00,860 --> 01:03:03,580
+I am going to start drawing this bird,
+
+1582
+01:03:03,580 --> 01:03:05,820
+and at any point in my drawing, I'm
+
+1583
+01:03:05,820 --> 01:03:08,260
+going to predict the color of the next pixel given
+
+1584
+01:03:08,260 --> 01:03:10,300
+all the previous pixels.
+
+1585
+01:03:10,300 --> 01:03:10,800
+OK.
+
+1586
+01:03:10,800 --> 01:03:14,495
+So I can quantize my pixels--
+
+1587
+01:03:14,495 --> 01:03:17,120
+just like I showed in one of the colorization examples earlier,
+
+1588
+01:03:17,120 --> 01:03:19,260
+I can quantize my pixels into classes--
+
+1589
+01:03:19,260 --> 01:03:21,460
+red, green, blue, and so forth-- and output
+
+1590
+01:03:21,460 --> 01:03:23,480
+a categorical distribution over the classes.
+
+1591
+01:03:23,480 --> 01:03:26,020
+That's just softmax regression, that we've seen before.
+
+1592
+01:03:26,020 --> 01:03:27,420
+And then I sample from it by just
+
+1593
+01:03:27,420 --> 01:03:29,160
+sampling from a categorical distribution.
+
+1594
+01:03:29,160 --> 01:03:30,422
+So if I have--
+
+1595
+01:03:30,422 --> 01:03:32,880
+it's easy to sample from a categorical distribution, right?
+
+1596
+01:03:32,880 --> 01:03:36,060
+I can just take the unit interval 0 to 1,
+
+1597
+01:03:36,060 --> 01:03:38,960
+I can take a uniform sample from 0 to 1,
+
+1598
+01:03:38,960 --> 01:03:41,860
+and I can walk through my probability vector
+
+1599
+01:03:41,860 --> 01:03:44,940
+until I get to--
+
+1600
+01:03:44,940 --> 01:03:48,820
+until I get to the segment that has been sampled from.
+
+1601
+01:03:48,820 --> 01:03:52,070
+So we can easily sample from a categorical distribution.
+
+1602
+01:03:52,070 --> 01:03:54,290
+And then we just repeat the process.
+
+1603
+01:03:54,290 --> 01:03:56,970
+So I go from nothing to next pixel, next pixel, next pixel.
+
+1604
+01:03:56,970 --> 01:04:02,110
+It's the same as predicting the next word in a sentence.
+
+1605
+01:04:02,110 --> 01:04:04,040
+OK.
+
+1606
+01:04:04,040 --> 01:04:05,790
+And this is just, again--
+
+1607
+01:04:05,790 --> 01:04:07,710
+I think one of the early slides in this course
+
+1608
+01:04:07,710 --> 01:04:10,810
+was classifying images into categories,
+
+1609
+01:04:10,810 --> 01:04:13,170
+and here, I'm classifying next pixel into categories.
+
+1610
+01:04:13,170 --> 01:04:18,190
+And my loss function is the likelihood that my model--
+
+1611
+01:04:18,190 --> 01:04:20,810
+my model, which is not really specified here,
+
+1612
+01:04:20,810 --> 01:04:24,588
+but anyway-- f theta places on the ground-truth class.
+
+1613
+01:04:24,588 --> 01:04:26,630
+This is the amount of probability my model places
+
+1614
+01:04:26,630 --> 01:04:28,610
+on the ground-truth class.
+
+1615
+01:04:28,610 --> 01:04:33,550
+I want to maximize that, max likelihood modeling.
+
+1616
+01:04:33,550 --> 01:04:34,270
+OK.
+
+1617
+01:04:34,270 --> 01:04:37,750
+So yeah, just spelling it out for a different data type.
+
+1618
+01:04:37,750 --> 01:04:39,790
+So now my supervised data I learned from
+
+1619
+01:04:39,790 --> 01:04:43,710
+is examples of patches of pixels and the next pixel
+
+1620
+01:04:43,710 --> 01:04:45,030
+in the sequence.
+
+1621
+01:04:45,030 --> 01:04:47,450
+I do supervised softmax regression,
+
+1622
+01:04:47,450 --> 01:04:49,830
+and I can predict the next pixel in the sequence given
+
+1623
+01:04:49,830 --> 01:04:51,800
+the previous pixels, and I can actually
+
+1624
+01:04:51,800 --> 01:04:55,260
+sample to create a randomized variety of birds in this way.
+
+1625
+01:04:58,220 --> 01:04:58,720
+Yeah?
+
+1626
+01:04:58,720 --> 01:04:59,960
+Question.
+
+1627
+01:04:59,960 --> 01:05:01,800
+AUDIENCE: So would you characterize
+
+1628
+01:05:01,800 --> 01:05:03,680
+this as a density model?
+
+1629
+01:05:03,680 --> 01:05:06,200
+Can you draw that correspondence lower?
+
+1630
+01:05:06,200 --> 01:05:08,617
+PHILLIP ISOLA: Yeah, so what would I characterize this as?
+
+1631
+01:05:08,617 --> 01:05:11,980
+A density model, sampler, energy model?
+
+1632
+01:05:11,980 --> 01:05:13,360
+What do you all think?
+
+1633
+01:05:13,360 --> 01:05:14,500
+Who thinks density model?
+
+1634
+01:05:14,500 --> 01:05:15,620
+Raise your hand.
+
+1635
+01:05:15,620 --> 01:05:16,120
+OK.
+
+1636
+01:05:16,120 --> 01:05:18,040
+Who thinks energy model?
+
+1637
+01:05:18,040 --> 01:05:23,840
+Who thinks sampler or the direct approach?
+
+1638
+01:05:23,840 --> 01:05:27,000
+So I think density model was the highest vote.
+
+1639
+01:05:27,000 --> 01:05:29,340
+I think that these things are a little fuzzy.
+
+1640
+01:05:29,340 --> 01:05:32,060
+You can actually-- I'm not sure there's a correct answer here.
+
+1641
+01:05:32,060 --> 01:05:34,760
+But I would characterize it as a density model
+
+1642
+01:05:34,760 --> 01:05:39,520
+because we're outputting the density over the next pixel
+
+1643
+01:05:39,520 --> 01:05:41,120
+given the previous pixels.
+
+1644
+01:05:41,120 --> 01:05:42,720
+And we're actually going to do that
+
+1645
+01:05:42,720 --> 01:05:44,880
+for every pixel in a sequence or every word
+
+1646
+01:05:44,880 --> 01:05:47,600
+in a sequence to get a probability that's explicitly
+
+1647
+01:05:47,600 --> 01:05:48,260
+represented.
+
+1648
+01:05:48,260 --> 01:05:50,290
+So this is actually-- you can multiply
+
+1649
+01:05:50,290 --> 01:05:52,745
+all of those probabilities together,
+
+1650
+01:05:52,745 --> 01:05:54,870
+and you'll get the probability of the entire image.
+
+1651
+01:05:54,870 --> 01:05:56,970
+So the product of all the conditional probabilities
+
+1652
+01:05:56,970 --> 01:05:58,595
+is the probability of the entire image.
+
+1653
+01:05:58,595 --> 01:06:01,050
+That's a density that integrates to 1.
+
+1654
+01:06:01,050 --> 01:06:03,690
+So I would call it a density model.
+
+1655
+01:06:03,690 --> 01:06:07,062
+OK.
+
+1656
+01:06:07,062 --> 01:06:09,970
+And people do this in a lot of sequential data modeling
+
+1657
+01:06:09,970 --> 01:06:10,550
+problems.
+
+1658
+01:06:10,550 --> 01:06:13,387
+Time series modeling is often autoregressive.
+
+1659
+01:06:13,387 --> 01:06:14,970
+So here's another example, where we're
+
+1660
+01:06:14,970 --> 01:06:18,910
+going to predict the next sound wave in a sound.
+
+1661
+01:06:18,910 --> 01:06:22,330
+So this is, like, for music modeling or audio modeling.
+
+1662
+01:06:22,330 --> 01:06:24,450
+I simply predict the next--
+
+1663
+01:06:27,970 --> 01:06:29,470
+I have some representation of sound,
+
+1664
+01:06:29,470 --> 01:06:32,930
+and I predict what the sound will be on the next time step.
+
+1665
+01:06:32,930 --> 01:06:35,530
+So it looks exactly like language modeling.
+
+1666
+01:06:35,530 --> 01:06:39,530
+This is just autoregressive modeling on another domain.
+
+1667
+01:06:39,530 --> 01:06:41,570
+OK.
+
+1668
+01:06:41,570 --> 01:06:42,450
+Right.
+
+1669
+01:06:42,450 --> 01:06:47,050
+So maybe it was a little-- let me-- sorry.
+
+1670
+01:06:47,050 --> 01:06:50,170
+Let me just go up here.
+
+1671
+01:06:50,170 --> 01:06:56,330
+So just to clarify, I'm trying to maximize the likelihood
+
+1672
+01:06:56,330 --> 01:06:57,855
+I place on my training data.
+
+1673
+01:06:57,855 --> 01:06:59,730
+So the likelihood I place on my training data
+
+1674
+01:06:59,730 --> 01:07:01,147
+is the product over the likelihood
+
+1675
+01:07:01,147 --> 01:07:06,930
+I place on each next observation in this sequence.
+
+1676
+01:07:06,930 --> 01:07:09,810
+And if I'm using log probabilities,
+
+1677
+01:07:09,810 --> 01:07:12,770
+it becomes the sum over the log probabilities.
+
+1678
+01:07:12,770 --> 01:07:16,490
+So the likelihood that the autoregressive model
+
+1679
+01:07:16,490 --> 01:07:21,810
+places on a training example is the sum of the log probabilities
+
+1680
+01:07:21,810 --> 01:07:24,570
+it places on every next pixel in the sequence.
+
+1681
+01:07:24,570 --> 01:07:27,690
+And I just sum all those up and backprop.
+
+1682
+01:07:27,690 --> 01:07:29,450
+And that's how you do optimization.
+
+1683
+01:07:29,450 --> 01:07:34,850
+So that's kind of what this picture is showing,
+
+1684
+01:07:34,850 --> 01:07:36,242
+is I will just make a prediction,
+
+1685
+01:07:36,242 --> 01:07:37,950
+then I'll compare it to the ground truth,
+
+1686
+01:07:37,950 --> 01:07:41,210
+measure the probability under my categorical distribution.
+
+1687
+01:07:41,210 --> 01:07:43,355
+Then I have output of that ground-truth point,
+
+1688
+01:07:43,355 --> 01:07:44,980
+and I'll sum up all those probabilities
+
+1689
+01:07:44,980 --> 01:07:46,360
+and backprop through this graph.
+
+1690
+01:07:46,360 --> 01:07:48,152
+So that's how you actually train the thing.
+
+1691
+01:07:50,580 --> 01:07:53,260
+OK.
+
+1692
+01:07:53,260 --> 01:07:53,760
+OK.
+
+1693
+01:07:53,760 --> 01:07:56,200
+So same as what we saw in other sequence modeling
+
+1694
+01:07:56,200 --> 01:07:57,560
+in previous lectures, like RNNs.
+
+1695
+01:07:57,560 --> 01:07:59,243
+We talked about, you output predictions,
+
+1696
+01:07:59,243 --> 01:08:00,160
+you measure the error.
+
+1697
+01:08:00,160 --> 01:08:03,820
+But now I'm just giving it this probabilistic language.
+
+1698
+01:08:03,820 --> 01:08:06,740
+So next model that we're going to talk about
+
+1699
+01:08:06,740 --> 01:08:09,580
+is diffusion model.
+
+1700
+01:08:09,580 --> 01:08:13,628
+So diffusion models are really clever because they
+
+1701
+01:08:13,628 --> 01:08:14,920
+make the following observation.
+
+1702
+01:08:14,920 --> 01:08:18,260
+They say that-- you know, it's pretty hard to--
+
+1703
+01:08:18,260 --> 01:08:21,240
+these are one of these more direct generative models.
+
+1704
+01:08:21,240 --> 01:08:25,220
+So they're directly mapping from a random dice roll to a sample,
+
+1705
+01:08:25,220 --> 01:08:30,380
+as opposed to going through a density or an energy function.
+
+1706
+01:08:30,380 --> 01:08:33,580
+So diffusion models make the very clever observation
+
+1707
+01:08:33,580 --> 01:08:38,300
+that it's very hard to convert noise, random variables,
+
+1708
+01:08:38,300 --> 01:08:42,020
+into data, structured objects, but it's really easy
+
+1709
+01:08:42,020 --> 01:08:44,250
+to convert structured objects into noise,
+
+1710
+01:08:44,250 --> 01:08:47,069
+into random variables with simple distributions.
+
+1711
+01:08:47,069 --> 01:08:50,550
+So just imagine that these birds are like balloon animals filled
+
+1712
+01:08:50,550 --> 01:08:54,330
+with some kind of colored gas, and then you pop the balloon.
+
+1713
+01:08:54,330 --> 01:08:55,050
+What happens?
+
+1714
+01:08:55,050 --> 01:08:57,399
+All the particles spread out randomly,
+
+1715
+01:08:57,399 --> 01:08:59,149
+and eventually, they become just uniformly
+
+1716
+01:08:59,149 --> 01:09:01,470
+distributed in a space.
+
+1717
+01:09:01,470 --> 01:09:03,569
+Physically, that's called a diffusion process.
+
+1718
+01:09:03,569 --> 01:09:05,830
+And diffusion models are exactly the same thing,
+
+1719
+01:09:05,830 --> 01:09:09,210
+except you're diffusing in some high-dimensional data space.
+
+1720
+01:09:09,210 --> 01:09:12,350
+Whatever your data is, it might be a tensor,
+
+1721
+01:09:12,350 --> 01:09:15,310
+and you're diffusing by just randomly perturbing it
+
+1722
+01:09:15,310 --> 01:09:19,270
+until it becomes uniform, or it has a simple distribution,
+
+1723
+01:09:19,270 --> 01:09:20,990
+typically Gaussian.
+
+1724
+01:09:20,990 --> 01:09:23,529
+So converting images to noise is really easy.
+
+1725
+01:09:23,529 --> 01:09:24,870
+Here's how it looks like.
+
+1726
+01:09:24,870 --> 01:09:29,010
+I just take an image and I let the pixels diffuse outward.
+
+1727
+01:09:29,010 --> 01:09:32,158
+So I simply take every pixel and I add a little bit of noise.
+
+1728
+01:09:32,158 --> 01:09:34,450
+And I add a little more noise, add a little more noise.
+
+1729
+01:09:34,450 --> 01:09:35,867
+Eventually, I get to a state which
+
+1730
+01:09:35,867 --> 01:09:38,689
+is, like, fully entropic, a very simple distribution.
+
+1731
+01:09:38,689 --> 01:09:39,732
+Maybe it's uniform.
+
+1732
+01:09:39,732 --> 01:09:41,149
+In the models that we'll see, it's
+
+1733
+01:09:41,149 --> 01:09:42,399
+actually going to be Gaussian.
+
+1734
+01:09:42,399 --> 01:09:44,850
+If I just add a sequence of Gaussian random perturbations,
+
+1735
+01:09:44,850 --> 01:09:50,870
+I end up with a unit Gaussian at the very end of that sequence.
+
+1736
+01:09:50,870 --> 01:09:54,470
+So diffusion models convert data to noise
+
+1737
+01:09:54,470 --> 01:09:57,470
+and then just learn to reverse the process.
+
+1738
+01:09:57,470 --> 01:09:59,030
+So easy, right?
+
+1739
+01:09:59,030 --> 01:10:00,510
+So it's extremely hard to know how
+
+1740
+01:10:00,510 --> 01:10:02,650
+to do that mapping from noise to data,
+
+1741
+01:10:02,650 --> 01:10:06,590
+but I supervise it by telling it the exact path to take.
+
+1742
+01:10:06,590 --> 01:10:08,190
+So every little step of denoising,
+
+1743
+01:10:08,190 --> 01:10:11,582
+of going from noise to a little less noise, is a very simple--
+
+1744
+01:10:11,582 --> 01:10:13,290
+just remove a little bit of noise, right?
+
+1745
+01:10:13,290 --> 01:10:14,530
+It's a very easy thing to model.
+
+1746
+01:10:14,530 --> 01:10:16,197
+I can model it with supervised learning.
+
+1747
+01:10:16,197 --> 01:10:19,790
+So I simply-- I've created a lot of noisy sequences
+
+1748
+01:10:19,790 --> 01:10:22,590
+like this on my training data.
+
+1749
+01:10:22,590 --> 01:10:25,230
+I turn them all around, and I then chop it up.
+
+1750
+01:10:25,230 --> 01:10:28,330
+And for every noisy to less noisy pair,
+
+1751
+01:10:28,330 --> 01:10:31,850
+that's like an xy target, a noisy to a less noisy.
+
+1752
+01:10:31,850 --> 01:10:35,510
+And we'll index the noise level with t, so higher noise
+
+1753
+01:10:35,510 --> 01:10:37,590
+means higher t.
+
+1754
+01:10:37,590 --> 01:10:40,540
+I'll just use supervised learning to reverse the process,
+
+1755
+01:10:40,540 --> 01:10:46,080
+and this learns a mapping from random noise to images.
+
+1756
+01:10:46,080 --> 01:10:50,172
+And to sample an image, I simply can sample a random noise vector
+
+1757
+01:10:50,172 --> 01:10:51,880
+and put it through that mapping that I've
+
+1758
+01:10:51,880 --> 01:10:54,910
+learned, that reverse diffusion process, as it's known.
+
+1759
+01:10:54,910 --> 01:10:56,660
+OK, so here, again, is what it looks like.
+
+1760
+01:10:56,660 --> 01:11:00,000
+I create a data set of noisy and less noisy images
+
+1761
+01:11:00,000 --> 01:11:03,560
+by having started with less noisy images and adding noise.
+
+1762
+01:11:03,560 --> 01:11:05,500
+And I do supervised learning on that.
+
+1763
+01:11:05,500 --> 01:11:08,900
+That could be as simple as just, like, mean squared regression,
+
+1764
+01:11:08,900 --> 01:11:12,620
+try to predict, according to L, which might be the squared loss,
+
+1765
+01:11:12,620 --> 01:11:14,620
+the less noisy image from the more noisy image.
+
+1766
+01:11:14,620 --> 01:11:16,828
+And you could do this with any data, not just images.
+
+1767
+01:11:16,828 --> 01:11:18,120
+It's just an example.
+
+1768
+01:11:18,120 --> 01:11:19,440
+OK.
+
+1769
+01:11:19,440 --> 01:11:21,800
+And this converts generative modeling
+
+1770
+01:11:21,800 --> 01:11:26,280
+into a bunch of supervised, tiny little prediction problems.
+
+1771
+01:11:26,280 --> 01:11:26,780
+OK.
+
+1772
+01:11:26,780 --> 01:11:28,530
+I'll get to the question in just a second.
+
+1773
+01:11:31,080 --> 01:11:32,440
+So-- yeah.
+
+1774
+01:11:32,440 --> 01:11:32,940
+OK.
+
+1775
+01:11:32,940 --> 01:11:33,980
+Actually, I'll do the question now.
+
+1776
+01:11:33,980 --> 01:11:34,480
+Yeah.
+
+1777
+01:11:34,480 --> 01:11:35,080
+Go ahead.
+
+1778
+01:11:35,080 --> 01:11:37,330
+AUDIENCE: I wanted to ask, so in each step,
+
+1779
+01:11:37,330 --> 01:11:41,663
+is each step the same model?
+
+1780
+01:11:41,663 --> 01:11:43,330
+Or are there a bunch of different models
+
+1781
+01:11:43,330 --> 01:11:45,010
+doing each step individually?
+
+1782
+01:11:45,010 --> 01:11:47,170
+PHILLIP ISOLA: So is each step the same model?
+
+1783
+01:11:47,170 --> 01:11:51,270
+Is f the same function for all t, or is it different for t?
+
+1784
+01:11:51,270 --> 01:11:52,930
+Either option is fine.
+
+1785
+01:11:52,930 --> 01:11:55,250
+The most common option is you make f a function
+
+1786
+01:11:55,250 --> 01:11:57,930
+of x, and you condition on t.
+
+1787
+01:11:57,930 --> 01:12:01,490
+So you just tell the network what timestep you're on.
+
+1788
+01:12:01,490 --> 01:12:03,950
+But that's a modeling choice.
+
+1789
+01:12:03,950 --> 01:12:05,950
+It's not fundamental.
+
+1790
+01:12:05,950 --> 01:12:06,450
+OK.
+
+1791
+01:12:06,450 --> 01:12:08,130
+So if I--
+
+1792
+01:12:08,130 --> 01:12:10,730
+I'll get to that equation in a minute.
+
+1793
+01:12:10,730 --> 01:12:13,010
+But anyway, if I want to sample a new image,
+
+1794
+01:12:13,010 --> 01:12:15,530
+well, I've converted all of my data at the end,
+
+1795
+01:12:15,530 --> 01:12:17,290
+at t equals big T-- meaning, like,
+
+1796
+01:12:17,290 --> 01:12:19,030
+as t goes to infinity, it turns--
+
+1797
+01:12:19,030 --> 01:12:21,690
+if I'm adding Gaussian noise, it asymptotically
+
+1798
+01:12:21,690 --> 01:12:26,650
+becomes a unit Gaussian, if I do it with the right scaling.
+
+1799
+01:12:26,650 --> 01:12:29,490
+And that means that I can now, if I reverse the process,
+
+1800
+01:12:29,490 --> 01:12:31,110
+start with a unit Gaussian sample,
+
+1801
+01:12:31,110 --> 01:12:33,410
+roll the dice, which are unit Gaussian variables,
+
+1802
+01:12:33,410 --> 01:12:35,380
+and then I denoise with my learned function.
+
+1803
+01:12:35,380 --> 01:12:38,540
+And every unit Gaussian sample gives me a different noisy
+
+1804
+01:12:38,540 --> 01:12:41,237
+image, which are like the latent variables that
+
+1805
+01:12:41,237 --> 01:12:42,820
+specify all the properties of the data
+
+1806
+01:12:42,820 --> 01:12:45,740
+that you will generate in the end.
+
+1807
+01:12:45,740 --> 01:12:48,220
+So sampling is really easy.
+
+1808
+01:12:48,220 --> 01:12:51,020
+It's just slow because you have to do this, run
+
+1809
+01:12:51,020 --> 01:12:53,060
+the denoising neural network, over and over
+
+1810
+01:12:53,060 --> 01:12:55,180
+and over again, like, for t time steps.
+
+1811
+01:12:55,180 --> 01:12:58,933
+And when these first came out, t was large, like, a thousand.
+
+1812
+01:12:58,933 --> 01:13:01,600
+Now people are showing how to do this with t being pretty small,
+
+1813
+01:13:01,600 --> 01:13:03,820
+like, even going down to 1.
+
+1814
+01:13:03,820 --> 01:13:06,520
+But you typically have to do a few time steps.
+
+1815
+01:13:06,520 --> 01:13:07,020
+OK.
+
+1816
+01:13:07,020 --> 01:13:11,140
+So here's the Gaussian diffusion model mathematically.
+
+1817
+01:13:11,140 --> 01:13:14,555
+So we're going to define a data generating process that
+
+1818
+01:13:14,555 --> 01:13:16,180
+starts from a simple distribution, unit
+
+1819
+01:13:16,180 --> 01:13:18,660
+Gaussian, and maps to data.
+
+1820
+01:13:18,660 --> 01:13:23,100
+And we're going to train it by training the denoiser that
+
+1821
+01:13:23,100 --> 01:13:26,540
+predicts the less noisy image from the more noisy image,
+
+1822
+01:13:26,540 --> 01:13:30,020
+to invert the noiser, which is a simple deterministic process
+
+1823
+01:13:30,020 --> 01:13:34,020
+that adds Gaussian noise to an image.
+
+1824
+01:13:34,020 --> 01:13:36,600
+And we can condition the denoiser on the timestep
+
+1825
+01:13:36,600 --> 01:13:39,240
+so it knows, What is the current noise level?
+
+1826
+01:13:39,240 --> 01:13:42,940
+And that helps it be a better predictor of what the true data
+
+1827
+01:13:42,940 --> 01:13:45,020
+point should have been.
+
+1828
+01:13:45,020 --> 01:13:49,540
+So the forward process is simply add
+
+1829
+01:13:49,540 --> 01:13:51,820
+a Gaussian noise, which is a unit Gaussian,
+
+1830
+01:13:51,820 --> 01:13:54,860
+epsilon t, and scale that noise according
+
+1831
+01:13:54,860 --> 01:13:59,800
+to some scale beta, which can be time-varying as well.
+
+1832
+01:13:59,800 --> 01:14:01,300
+And there's some engineering details
+
+1833
+01:14:01,300 --> 01:14:03,860
+about how you select beta.
+
+1834
+01:14:03,860 --> 01:14:05,940
+But in general, you can do this in such a way
+
+1835
+01:14:05,940 --> 01:14:08,980
+that at the end of the day, you will get unit Gaussian
+
+1836
+01:14:08,980 --> 01:14:13,240
+noise, asymptotically, as t goes to infinity.
+
+1837
+01:14:13,240 --> 01:14:15,003
+OK, the reverse process.
+
+1838
+01:14:15,003 --> 01:14:16,420
+In fact, with the reverse process,
+
+1839
+01:14:16,420 --> 01:14:20,900
+you're going to treat every little step as a small Gaussian
+
+1840
+01:14:20,900 --> 01:14:23,540
+max likelihood density modeling problem.
+
+1841
+01:14:23,540 --> 01:14:25,460
+So the reverse process, f is not going
+
+1842
+01:14:25,460 --> 01:14:27,555
+to just predict the noiseless image--
+
+1843
+01:14:27,555 --> 01:14:29,680
+or, not going to just predict the less noisy image.
+
+1844
+01:14:29,680 --> 01:14:33,270
+It's going to predict the mean of a Gaussian distribution
+
+1845
+01:14:33,270 --> 01:14:35,950
+over the less noisy image.
+
+1846
+01:14:35,950 --> 01:14:38,050
+This is just-- there's various reasons,
+
+1847
+01:14:38,050 --> 01:14:41,150
+but this gives kind of a nice, mathematical, probabilistic
+
+1848
+01:14:41,150 --> 01:14:43,710
+interpretation to what's going on.
+
+1849
+01:14:43,710 --> 01:14:46,750
+OK, so the next denoised timestep
+
+1850
+01:14:46,750 --> 01:14:48,990
+will be a sample from a Gaussian whose mean
+
+1851
+01:14:48,990 --> 01:14:51,050
+is the output of my neural network denoiser.
+
+1852
+01:14:54,890 --> 01:14:57,990
+So people like to use these terms,
+
+1853
+01:14:57,990 --> 01:15:01,910
+p for one of the processes and q for the reverse process.
+
+1854
+01:15:01,910 --> 01:15:04,950
+And it connects to the standard notation and things
+
+1855
+01:15:04,950 --> 01:15:06,530
+like called variational inference.
+
+1856
+01:15:06,530 --> 01:15:08,447
+But you don't have to worry about it too much.
+
+1857
+01:15:08,447 --> 01:15:11,990
+We'll just say the forward process is q, which, x of t
+
+1858
+01:15:11,990 --> 01:15:15,650
+is a Gaussian centered on x of t minus 1.
+
+1859
+01:15:15,650 --> 01:15:17,790
+And the reverse process I'm trying to learn
+
+1860
+01:15:17,790 --> 01:15:21,190
+is another Gaussian, but it's centered on a function
+
+1861
+01:15:21,190 --> 01:15:22,790
+of the noisy image.
+
+1862
+01:15:22,790 --> 01:15:23,290
+OK.
+
+1863
+01:15:23,290 --> 01:15:26,190
+So the forward process is just add noise,
+
+1864
+01:15:26,190 --> 01:15:27,790
+and the reverse process is predict
+
+1865
+01:15:27,790 --> 01:15:31,280
+the mean of a reverse Gaussian, so
+
+1866
+01:15:31,280 --> 01:15:35,400
+predict the mean and then sample from that Gaussian.
+
+1867
+01:15:35,400 --> 01:15:36,530
+OK.
+
+1868
+01:15:36,530 --> 01:15:38,280
+There's a lot of variations and other ways
+
+1869
+01:15:38,280 --> 01:15:40,280
+you could do this, this kind of vanilla Gaussian
+
+1870
+01:15:40,280 --> 01:15:43,280
+diffusion model.
+
+1871
+01:15:43,280 --> 01:15:47,440
+And if you want, I wrote a very vanilla version of this.
+
+1872
+01:15:47,440 --> 01:15:50,000
+So you can play with the Colab if you want.
+
+1873
+01:15:50,000 --> 01:15:54,000
+But now, I think there's probably better ones out there.
+
+1874
+01:15:54,000 --> 01:15:56,960
+I want to make the connection between diffusion models
+
+1875
+01:15:56,960 --> 01:15:59,000
+and autoregressive models.
+
+1876
+01:15:59,000 --> 01:16:00,920
+So they're almost the same thing.
+
+1877
+01:16:00,920 --> 01:16:04,080
+So both of them use a very simple trick.
+
+1878
+01:16:04,080 --> 01:16:07,040
+You change generative modeling of a high-dimensional structured
+
+1879
+01:16:07,040 --> 01:16:11,680
+object into a sequence of very, very simple modeling problems.
+
+1880
+01:16:11,680 --> 01:16:16,200
+In autoregressive modeling, you convert your data
+
+1881
+01:16:16,200 --> 01:16:20,360
+into a sequence of simple categorical density modeling
+
+1882
+01:16:20,360 --> 01:16:22,860
+problems, a.k.a. classification problems.
+
+1883
+01:16:25,800 --> 01:16:26,300
+OK.
+
+1884
+01:16:26,300 --> 01:16:29,740
+Again, you're free to choose other types of simple sequences,
+
+1885
+01:16:29,740 --> 01:16:31,680
+but that's just the most common choice.
+
+1886
+01:16:31,680 --> 01:16:32,700
+So think of it this way.
+
+1887
+01:16:32,700 --> 01:16:35,260
+You start with a structured data object,
+
+1888
+01:16:35,260 --> 01:16:39,340
+and you remove one data point at a time until you get to nothing,
+
+1889
+01:16:39,340 --> 01:16:42,065
+and then that supervises the reverse process.
+
+1890
+01:16:42,065 --> 01:16:44,440
+Diffusion model, you start with a structured, complicated
+
+1891
+01:16:44,440 --> 01:16:44,980
+object.
+
+1892
+01:16:44,980 --> 01:16:48,920
+You add noise kind of globally, to every data point, until you
+
+1893
+01:16:48,920 --> 01:16:52,120
+get to a very simple distribution you
+
+1894
+01:16:52,120 --> 01:16:54,480
+can sample from, and then you supervise
+
+1895
+01:16:54,480 --> 01:16:55,585
+it to reverse the process.
+
+1896
+01:16:55,585 --> 01:16:56,960
+This is your training data that's
+
+1897
+01:16:56,960 --> 01:16:58,585
+going to supervise the reverse process.
+
+1898
+01:16:58,585 --> 01:17:00,085
+This is your training data that will
+
+1899
+01:17:00,085 --> 01:17:01,413
+supervise the reverse process.
+
+1900
+01:17:01,413 --> 01:17:02,580
+This is easy to sample from.
+
+1901
+01:17:02,580 --> 01:17:04,780
+You're just sampling one pixel color.
+
+1902
+01:17:04,780 --> 01:17:05,600
+OK.
+
+1903
+01:17:05,600 --> 01:17:07,840
+Let's say I have 256 possible colors.
+
+1904
+01:17:07,840 --> 01:17:09,800
+I just take a random--
+
+1905
+01:17:09,800 --> 01:17:12,840
+I have a categorical distribution
+
+1906
+01:17:12,840 --> 01:17:16,580
+over the 256 possible colors that occur in natural images.
+
+1907
+01:17:16,580 --> 01:17:17,480
+Super easy.
+
+1908
+01:17:17,480 --> 01:17:20,160
+And then I just reverse the process
+
+1909
+01:17:20,160 --> 01:17:24,120
+by trying to classify the next pixel given the previous pixel.
+
+1910
+01:17:24,120 --> 01:17:27,050
+So the whole point is that a common strategy
+
+1911
+01:17:27,050 --> 01:17:31,130
+in generative modeling is turn a complicated structure
+
+1912
+01:17:31,130 --> 01:17:34,910
+of distribution into a sequence of simple distributions,
+
+1913
+01:17:34,910 --> 01:17:37,150
+and model that sequence of simple distributions.
+
+1914
+01:17:40,610 --> 01:17:43,410
+OK.
+
+1915
+01:17:43,410 --> 01:17:43,910
+OK.
+
+1916
+01:17:43,910 --> 01:17:46,157
+So in the last two minutes, I'll just do GANs.
+
+1917
+01:17:46,157 --> 01:17:46,990
+They're very simple.
+
+1918
+01:17:46,990 --> 01:17:48,130
+Don't worry.
+
+1919
+01:17:48,130 --> 01:17:50,853
+I know there's a lot in this lecture, but I'm hoping that--
+
+1920
+01:17:50,853 --> 01:17:52,270
+I want to give you the intuitions,
+
+1921
+01:17:52,270 --> 01:17:54,665
+and then in the problem sets and in the readings,
+
+1922
+01:17:54,665 --> 01:17:56,290
+you can dig a little more into the math
+
+1923
+01:17:56,290 --> 01:17:57,570
+and you can work it out.
+
+1924
+01:17:57,570 --> 01:18:01,650
+So GANs are a whole other class of generative model.
+
+1925
+01:18:01,650 --> 01:18:06,005
+GANs are a-- OK.
+
+1926
+01:18:06,005 --> 01:18:08,130
+I'll tell you what they are, and then I'll ask you,
+
+1927
+01:18:08,130 --> 01:18:09,390
+Are they direct or indirect?
+
+1928
+01:18:09,390 --> 01:18:11,490
+So they start with a latent variable, which
+
+1929
+01:18:11,490 --> 01:18:15,770
+is a vector of random numbers, and they map it
+
+1930
+01:18:15,770 --> 01:18:18,370
+through a generator network to an image.
+
+1931
+01:18:18,370 --> 01:18:20,050
+And then they play this game where
+
+1932
+01:18:20,050 --> 01:18:23,220
+they ask another neural network to decide if the image looks
+
+1933
+01:18:23,220 --> 01:18:26,700
+like a real data point or a synthetic data point sampled
+
+1934
+01:18:26,700 --> 01:18:27,580
+from the model.
+
+1935
+01:18:27,580 --> 01:18:30,840
+So is g a direct or indirect approach?
+
+1936
+01:18:30,840 --> 01:18:32,660
+Who thinks direct?
+
+1937
+01:18:32,660 --> 01:18:35,500
+OK, who thinks indirect?
+
+1938
+01:18:35,500 --> 01:18:36,740
+Ooh interesting.
+
+1939
+01:18:36,740 --> 01:18:37,720
+Maybe it's more subtle.
+
+1940
+01:18:37,720 --> 01:18:37,900
+OK.
+
+1941
+01:18:37,900 --> 01:18:40,067
+I would have called it direct because we're directly
+
+1942
+01:18:40,067 --> 01:18:45,180
+mapping from a random variable to a sample from a distribution.
+
+1943
+01:18:45,180 --> 01:18:47,160
+But with d, it becomes a little more confusing.
+
+1944
+01:18:47,160 --> 01:18:49,820
+So maybe either answer could have an interpretation
+
+1945
+01:18:49,820 --> 01:18:50,940
+which is correct.
+
+1946
+01:18:50,940 --> 01:18:54,900
+So g tries to synthesize synthetic images that
+
+1947
+01:18:54,900 --> 01:18:58,100
+fool d and--
+
+1948
+01:18:58,100 --> 01:18:59,700
+that's a typo. g--
+
+1949
+01:18:59,700 --> 01:19:01,320
+sorry, that should be d.
+
+1950
+01:19:05,140 --> 01:19:07,420
+d tries to identify the fakes
+
+1951
+01:19:07,420 --> 01:19:08,380
+OK.
+
+1952
+01:19:08,380 --> 01:19:10,080
+So why should that work?
+
+1953
+01:19:10,080 --> 01:19:13,987
+That should work because if g is able to make output data
+
+1954
+01:19:13,987 --> 01:19:15,820
+points which are indistinguishable from your
+
+1955
+01:19:15,820 --> 01:19:18,260
+training data points, then it must
+
+1956
+01:19:18,260 --> 01:19:21,670
+be that you're outputting things that
+
+1957
+01:19:21,670 --> 01:19:23,870
+are from the same distribution.
+
+1958
+01:19:23,870 --> 01:19:25,510
+You can prove that, in fact.
+
+1959
+01:19:25,510 --> 01:19:28,770
+So d plays this game. d is a classifier for,
+
+1960
+01:19:28,770 --> 01:19:32,910
+Is it a sample from g, my synthetic data,
+
+1961
+01:19:32,910 --> 01:19:34,970
+or is it a sample from the real world,
+
+1962
+01:19:34,970 --> 01:19:37,070
+a real photo of flamingos?
+
+1963
+01:19:37,070 --> 01:19:39,890
+This is just a binary softmax classifier.
+
+1964
+01:19:39,890 --> 01:19:44,830
+I'm going to try to maximize the probability I place on real
+
+1965
+01:19:44,830 --> 01:19:47,010
+and minimize the probability I place on fake,
+
+1966
+01:19:47,010 --> 01:19:51,710
+and that will be a classifier of real versus fake.
+
+1967
+01:19:51,710 --> 01:20:01,270
+And g tries to fool d by trying to minimize the accuracy that d
+
+1968
+01:20:01,270 --> 01:20:04,110
+will get on fake, synthetic images.
+
+1969
+01:20:04,110 --> 01:20:09,070
+So g just minimizes the exact same objective
+
+1970
+01:20:09,070 --> 01:20:10,670
+that d was maximizing.
+
+1971
+01:20:10,670 --> 01:20:16,430
+So d is going to try to place, basically, low probability
+
+1972
+01:20:16,430 --> 01:20:18,350
+on this being a real image.
+
+1973
+01:20:18,350 --> 01:20:21,598
+And g will simply try to place-- cause
+
+1974
+01:20:21,598 --> 01:20:23,890
+d to place high probability on this being a real image.
+
+1975
+01:20:23,890 --> 01:20:26,150
+So it'll try to update its parameters
+
+1976
+01:20:26,150 --> 01:20:29,683
+to make an image that causes d to get a low score on that,
+
+1977
+01:20:29,683 --> 01:20:33,070
+on that synthetic photo.
+
+1978
+01:20:33,070 --> 01:20:36,130
+So this is a min-max game.
+
+1979
+01:20:36,130 --> 01:20:37,370
+It's an adversarial game.
+
+1980
+01:20:37,370 --> 01:20:39,950
+But think of it more like a student and a teacher.
+
+1981
+01:20:39,950 --> 01:20:42,250
+d is the teacher, and g is the student.
+
+1982
+01:20:42,250 --> 01:20:43,750
+The teacher is saying, hey, you need
+
+1983
+01:20:43,750 --> 01:20:45,190
+to make a realistic painting, and you
+
+1984
+01:20:45,190 --> 01:20:46,130
+didn't get it quite right.
+
+1985
+01:20:46,130 --> 01:20:47,090
+The shadows are wrong.
+
+1986
+01:20:47,090 --> 01:20:49,810
+So g will update its parameters to make realistic shadows.
+
+1987
+01:20:49,810 --> 01:20:51,268
+And then d will say, oh, that looks
+
+1988
+01:20:51,268 --> 01:20:54,330
+indistinguishable from what I consider realistic art,
+
+1989
+01:20:54,330 --> 01:20:56,910
+so therefore, you've done well.
+
+1990
+01:20:56,910 --> 01:21:00,450
+So that's a GAN.
+
+1991
+01:21:00,450 --> 01:21:02,690
+I think-- this is just a summary figure of it.
+
+1992
+01:21:02,690 --> 01:21:03,770
+I should stop there.
+
+1993
+01:21:03,770 --> 01:21:06,353
+And we'll continue with two more lectures on generative models
+
+1994
+01:21:06,353 --> 01:21:08,180
+next week.

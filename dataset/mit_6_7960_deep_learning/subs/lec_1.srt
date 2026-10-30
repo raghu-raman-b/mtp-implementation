@@ -1,0 +1,5367 @@
+1
+00:00:00,000 --> 00:00:01,985
+[SQUEAKING]
+
+2
+00:00:01,985 --> 00:00:02,975
+[RUSTLING]
+
+3
+00:00:02,975 --> 00:00:05,945
+[CLICKING]
+
+4
+00:00:13,180 --> 00:00:15,600
+SARA BEERY: So why are we all here?
+
+5
+00:00:15,600 --> 00:00:21,200
+Deep learning has clearly been exploding in society.
+
+6
+00:00:21,200 --> 00:00:23,400
+Machine learning generally is something
+
+7
+00:00:23,400 --> 00:00:28,040
+that, when I started studying it about 13 years ago, didn't work,
+
+8
+00:00:28,040 --> 00:00:30,360
+and now it works.
+
+9
+00:00:30,360 --> 00:00:35,360
+So how many of you here in this room used AI in the last week?
+
+10
+00:00:35,360 --> 00:00:39,560
+Yeah, almost everybody, probably everybody.
+
+11
+00:00:39,560 --> 00:00:43,920
+And we're seeing massive advances in everything from
+
+12
+00:00:43,920 --> 00:00:49,940
+AI-assisted text generation to 3D reconstruction,
+
+13
+00:00:49,940 --> 00:00:55,460
+things like NeRF, things like AlphaGo, generating images,
+
+14
+00:00:55,460 --> 00:01:00,890
+helping with writing code, playing games.
+
+15
+00:01:00,890 --> 00:01:03,850
+This has really started to touch almost every dimension
+
+16
+00:01:03,850 --> 00:01:08,370
+of society, and it's definitely very exciting to see.
+
+17
+00:01:08,370 --> 00:01:10,090
+And I think that hopefully, all of us
+
+18
+00:01:10,090 --> 00:01:14,570
+will learn a lot more about what that means in this course.
+
+19
+00:01:14,570 --> 00:01:17,010
+So what is deep learning?
+
+20
+00:01:17,010 --> 00:01:22,250
+First, I would argue that one necessary component
+
+21
+00:01:22,250 --> 00:01:25,290
+of deep learning is the idea of neural networks.
+
+22
+00:01:25,290 --> 00:01:28,290
+And these are a class of machine learning architectures
+
+23
+00:01:28,290 --> 00:01:31,490
+that basically use stacks of linear transformations
+
+24
+00:01:31,490 --> 00:01:35,570
+interleaved with pointwise non-linearities.
+
+25
+00:01:35,570 --> 00:01:39,330
+And these have really been a building block
+
+26
+00:01:39,330 --> 00:01:43,090
+for a lot of the progress that we saw in the last slide.
+
+27
+00:01:43,090 --> 00:01:45,650
+But the other really important dimension of deep learning
+
+28
+00:01:45,650 --> 00:01:48,250
+is the idea of differential programming.
+
+29
+00:01:48,250 --> 00:01:50,810
+And this is essentially a programming paradigm
+
+30
+00:01:50,810 --> 00:01:53,810
+where we parameterize parts of the program
+
+31
+00:01:53,810 --> 00:01:56,490
+and then let gradient-based optimization
+
+32
+00:01:56,490 --> 00:01:59,510
+tune the parameters to basically optimize that program
+
+33
+00:01:59,510 --> 00:02:04,190
+or find some of, at least, local optimal for that program.
+
+34
+00:02:04,190 --> 00:02:06,510
+And these two things together is what
+
+35
+00:02:06,510 --> 00:02:08,392
+we posit make up deep learning.
+
+36
+00:02:08,392 --> 00:02:10,350
+And we're really going to dig into both of them
+
+37
+00:02:10,350 --> 00:02:11,990
+in this course.
+
+38
+00:02:11,990 --> 00:02:14,990
+So our philosophy for this is that breakthroughs
+
+39
+00:02:14,990 --> 00:02:18,350
+in deep learning have been driven by a mixture of theory
+
+40
+00:02:18,350 --> 00:02:20,710
+and practice, and both dimensions
+
+41
+00:02:20,710 --> 00:02:24,670
+are really vital for future progress in the field.
+
+42
+00:02:24,670 --> 00:02:27,190
+And so along those lines, this course
+
+43
+00:02:27,190 --> 00:02:30,030
+should hopefully provide both a theoretical grounding
+
+44
+00:02:30,030 --> 00:02:33,110
+in important deep learning building blocks,
+
+45
+00:02:33,110 --> 00:02:37,390
+as well as give you practice implementing, understanding,
+
+46
+00:02:37,390 --> 00:02:40,190
+and using those blocks.
+
+47
+00:02:40,190 --> 00:02:42,270
+OK, there's still a lot of people
+
+48
+00:02:42,270 --> 00:02:44,610
+in the back who are packed in.
+
+49
+00:02:44,610 --> 00:02:47,510
+I don't know if there's any way to come further forward.
+
+50
+00:02:47,510 --> 00:02:51,150
+If not, we'll do our best.
+
+51
+00:02:51,150 --> 00:02:56,110
+So the class's coursework is going to be 65% problem sets.
+
+52
+00:02:56,110 --> 00:02:57,290
+You'll have five psets.
+
+53
+00:02:57,290 --> 00:02:59,920
+Each will be about one to two weeks long.
+
+54
+00:02:59,920 --> 00:03:02,300
+And then there will be some combination of pen and paper
+
+55
+00:03:02,300 --> 00:03:04,240
+or, more realistically, maybe Overleaf,
+
+56
+00:03:04,240 --> 00:03:07,360
+as well as code that you will need to do and submit.
+
+57
+00:03:07,360 --> 00:03:10,058
+And then 35% of the grade will be a final project.
+
+58
+00:03:10,058 --> 00:03:11,600
+And this is a research project that's
+
+59
+00:03:11,600 --> 00:03:13,880
+focused on deeper understanding of some of the topics
+
+60
+00:03:13,880 --> 00:03:15,920
+that we cover in the course.
+
+61
+00:03:15,920 --> 00:03:18,940
+You'll be asked to propose something for that project.
+
+62
+00:03:18,940 --> 00:03:21,640
+So there'll be an initial project proposal.
+
+63
+00:03:21,640 --> 00:03:24,200
+And then the final project will be a blog post
+
+64
+00:03:24,200 --> 00:03:26,360
+that's going to demonstrate novel experimentation
+
+65
+00:03:26,360 --> 00:03:27,680
+and visualization.
+
+66
+00:03:27,680 --> 00:03:29,920
+And the hope here is that I don't know,
+
+67
+00:03:29,920 --> 00:03:32,760
+many of you-- how many of you are machine learning researchers
+
+68
+00:03:32,760 --> 00:03:35,160
+who have already written a machine learning paper,
+
+69
+00:03:35,160 --> 00:03:37,580
+as first author, or anywhere on the author list?
+
+70
+00:03:37,580 --> 00:03:39,413
+OK, so some.
+
+71
+00:03:39,413 --> 00:03:41,580
+These days, when you write a machine learning paper,
+
+72
+00:03:41,580 --> 00:03:43,040
+more often than not, you also have
+
+73
+00:03:43,040 --> 00:03:45,320
+to write a blog post about that paper.
+
+74
+00:03:45,320 --> 00:03:47,640
+And that's intended to be catchy, make
+
+75
+00:03:47,640 --> 00:03:52,020
+people understand the material, but really get them engaged.
+
+76
+00:03:52,020 --> 00:03:54,120
+And so one of the reasons that we have this
+
+77
+00:03:54,120 --> 00:03:55,880
+as the format of our final project
+
+78
+00:03:55,880 --> 00:03:59,250
+is to reflect on the fact that this is the reality we live
+
+79
+00:03:59,250 --> 00:04:01,310
+in today, that in machine learning research,
+
+80
+00:04:01,310 --> 00:04:05,450
+being able to write a blog-style description of the work
+
+81
+00:04:05,450 --> 00:04:07,610
+that you're doing and not reduce any
+
+82
+00:04:07,610 --> 00:04:09,970
+of the technical complexity or the information
+
+83
+00:04:09,970 --> 00:04:13,130
+that's given across, but just do this in this slightly
+
+84
+00:04:13,130 --> 00:04:15,810
+more visual and maybe even interactive format is
+
+85
+00:04:15,810 --> 00:04:20,250
+a really valuable skill, and one that we hope this can help us
+
+86
+00:04:20,250 --> 00:04:21,170
+think about.
+
+87
+00:04:21,170 --> 00:04:25,850
+And we'll allow groups, but only up to two.
+
+88
+00:04:25,850 --> 00:04:28,250
+And another important component--
+
+89
+00:04:28,250 --> 00:04:29,990
+we are not able to provide compute.
+
+90
+00:04:29,990 --> 00:04:32,990
+We may be able to provide some very limited compute,
+
+91
+00:04:32,990 --> 00:04:34,570
+but that's TBD.
+
+92
+00:04:34,570 --> 00:04:37,010
+So do not plan your final project
+
+93
+00:04:37,010 --> 00:04:39,370
+to be something where you need to get state of the art
+
+94
+00:04:39,370 --> 00:04:44,250
+by crunching a huge architecture on a bunch of huge data sets,
+
+95
+00:04:44,250 --> 00:04:46,010
+because it's just not going to work.
+
+96
+00:04:46,010 --> 00:04:48,410
+You're not going to be able to outcompete OpenAI
+
+97
+00:04:48,410 --> 00:04:50,030
+on this research project.
+
+98
+00:04:50,030 --> 00:04:50,530
+[LAUGHS]
+
+99
+00:04:50,530 --> 00:04:54,770
+So this does not mean you can't do good research.
+
+100
+00:04:54,770 --> 00:04:56,970
+And it's important to get creative here.
+
+101
+00:04:56,970 --> 00:04:59,190
+And I think it's actually a really valuable skill,
+
+102
+00:04:59,190 --> 00:05:03,030
+particularly as certain types of large-scale deep learning become
+
+103
+00:05:03,030 --> 00:05:06,470
+more and more centralized, to think about how you can still do
+
+104
+00:05:06,470 --> 00:05:09,830
+impactful machine learning research in a way that is not
+
+105
+00:05:09,830 --> 00:05:13,230
+just "bigger is better."
+
+106
+00:05:13,230 --> 00:05:18,070
+All right, any questions about coursework or logistics?
+
+107
+00:05:18,070 --> 00:05:18,870
+Yeah.
+
+108
+00:05:18,870 --> 00:05:20,790
+AUDIENCE: Is the final project expected
+
+109
+00:05:20,790 --> 00:05:24,807
+to be a mix of practical and theoretical research?
+
+110
+00:05:24,807 --> 00:05:27,390
+SARA BEERY: So the question was, is the final project expected
+
+111
+00:05:27,390 --> 00:05:30,710
+to be a mix of practical and theoretical research?
+
+112
+00:05:30,710 --> 00:05:32,290
+I think it depends.
+
+113
+00:05:32,290 --> 00:05:35,590
+It depends on what you want to propose as your final project.
+
+114
+00:05:35,590 --> 00:05:37,390
+But I think we're pretty open.
+
+115
+00:05:37,390 --> 00:05:39,610
+What we want is for them to be innovative,
+
+116
+00:05:39,610 --> 00:05:42,410
+but that innovation can be in an applied sense,
+
+117
+00:05:42,410 --> 00:05:44,250
+or it can be in a more theoretical sense.
+
+118
+00:05:44,250 --> 00:05:46,550
+OK, so I'm going to do a really high-level overview
+
+119
+00:05:46,550 --> 00:05:50,670
+of the schedule, just to give you a rough sense.
+
+120
+00:05:50,670 --> 00:05:53,960
+So today, we're really covering basic interest stuff-- course
+
+121
+00:05:53,960 --> 00:05:57,760
+overview, a rough introduction to what neural networks are
+
+122
+00:05:57,760 --> 00:05:59,600
+and basic building blocks, and, particularly
+
+123
+00:05:59,600 --> 00:06:01,058
+in the context of signposting, what
+
+124
+00:06:01,058 --> 00:06:03,560
+we expect you've seen before, because this is not an intro
+
+125
+00:06:03,560 --> 00:06:04,660
+to deep learning class.
+
+126
+00:06:04,660 --> 00:06:08,680
+This is advanced graduate-level deep learning.
+
+127
+00:06:08,680 --> 00:06:12,040
+And then we're going to go into how you actually
+
+128
+00:06:12,040 --> 00:06:14,800
+train a neural net, then approximation
+
+129
+00:06:14,800 --> 00:06:17,360
+theory, some different architectures, things
+
+130
+00:06:17,360 --> 00:06:19,960
+like grids, graphs.
+
+131
+00:06:19,960 --> 00:06:22,640
+Then we'll hear from Jeremy about scaling rules
+
+132
+00:06:22,640 --> 00:06:23,980
+for optimization.
+
+133
+00:06:23,980 --> 00:06:26,720
+And then we'll look at generalization theory, more
+
+134
+00:06:26,720 --> 00:06:29,040
+architectures, getting into transformers.
+
+135
+00:06:29,040 --> 00:06:32,400
+We'll do a really fun lecture by Phil called the hacker's guide
+
+136
+00:06:32,400 --> 00:06:35,400
+to deep learning that I think is quite useful.
+
+137
+00:06:35,400 --> 00:06:37,440
+And then we'll talk about memory.
+
+138
+00:06:37,440 --> 00:06:39,697
+And then we'll get into representation learning.
+
+139
+00:06:39,697 --> 00:06:42,280
+So there, we're going to look at reconstruction based and then
+
+140
+00:06:42,280 --> 00:06:45,560
+similarity based and then theory of representation learning.
+
+141
+00:06:45,560 --> 00:06:48,460
+Then we'll have a little bit of a series on generative models,
+
+142
+00:06:48,460 --> 00:06:51,520
+the basics, how representation learning interacts
+
+143
+00:06:51,520 --> 00:06:53,610
+with generative modeling, thinking
+
+144
+00:06:53,610 --> 00:06:55,440
+about conditional models.
+
+145
+00:06:55,440 --> 00:06:57,690
+Then we'll talk about generalization, and particularly
+
+146
+00:06:57,690 --> 00:06:59,810
+out-of-distribution generalization.
+
+147
+00:06:59,810 --> 00:07:01,490
+We'll touch on transfer learning,
+
+148
+00:07:01,490 --> 00:07:04,050
+both from a models and a data perspective.
+
+149
+00:07:04,050 --> 00:07:06,525
+We'll hear about large language models.
+
+150
+00:07:06,525 --> 00:07:09,150
+We'll have some guest lectures towards the end of the semester,
+
+151
+00:07:09,150 --> 00:07:10,970
+and those are TBD.
+
+152
+00:07:10,970 --> 00:07:14,010
+Then we'll hear about scaling laws, automatic gradient
+
+153
+00:07:14,010 --> 00:07:16,063
+descent, and potentially the past and future
+
+154
+00:07:16,063 --> 00:07:17,730
+of deep learning, though I think there's
+
+155
+00:07:17,730 --> 00:07:19,730
+some discussion as to whether that's going
+
+156
+00:07:19,730 --> 00:07:22,130
+to be a different lecture.
+
+157
+00:07:22,130 --> 00:07:24,410
+And then, I think kind of importantly,
+
+158
+00:07:24,410 --> 00:07:28,102
+right towards the end, we will have class-wide project office
+
+159
+00:07:28,102 --> 00:07:29,810
+hours where we'll have a bunch of the TAs
+
+160
+00:07:29,810 --> 00:07:31,490
+and the instructors all come, and we
+
+161
+00:07:31,490 --> 00:07:36,130
+can do open discussion around projects before they're due.
+
+162
+00:07:36,130 --> 00:07:40,330
+So the next thing is that we're going to host PyTorch tutorials.
+
+163
+00:07:40,330 --> 00:07:43,050
+This is intended for if you're not familiar with PyTorch,
+
+164
+00:07:43,050 --> 00:07:44,830
+and you think you need a refresher.
+
+165
+00:07:44,830 --> 00:07:47,953
+And we strongly recommend that if this is the case,
+
+166
+00:07:47,953 --> 00:07:50,370
+or if you even think it might be the case, that you attend
+
+167
+00:07:50,370 --> 00:07:53,070
+one of the two PyTorch tutorials we're going to offer next week.
+
+168
+00:07:53,070 --> 00:07:54,990
+So the question is if PyTorch is a requirement,
+
+169
+00:07:54,990 --> 00:07:56,490
+or you're allowed to use any other frameworks.
+
+170
+00:07:56,490 --> 00:07:58,830
+So you're probably welcome to use any other frameworks
+
+171
+00:07:58,830 --> 00:08:01,150
+in your final project, but some of the problem sets
+
+172
+00:08:01,150 --> 00:08:03,630
+specifically will have code that's
+
+173
+00:08:03,630 --> 00:08:07,030
+already built into PyTorch, and you're filling parts of that in.
+
+174
+00:08:07,030 --> 00:08:08,870
+So unless you want to rewrite all of it
+
+175
+00:08:08,870 --> 00:08:11,850
+in JAX or something, which more power to you,
+
+176
+00:08:11,850 --> 00:08:13,830
+I would recommend that you definitely
+
+177
+00:08:13,830 --> 00:08:17,910
+make sure that you are familiar with PyTorch.
+
+178
+00:08:17,910 --> 00:08:19,648
+OK.
+
+179
+00:08:19,648 --> 00:08:21,690
+Cool, so I'm going to talk about course policies.
+
+180
+00:08:21,690 --> 00:08:23,350
+And this stuff is important.
+
+181
+00:08:23,350 --> 00:08:25,710
+And it's also all on the web page.
+
+182
+00:08:25,710 --> 00:08:28,590
+But I think essentially, what we want to touch on
+
+183
+00:08:28,590 --> 00:08:31,230
+is what our collaboration policy is first.
+
+184
+00:08:31,230 --> 00:08:34,950
+So everyone is required to write an individual pset.
+
+185
+00:08:34,950 --> 00:08:37,169
+So when you're actually working on your problem sets,
+
+186
+00:08:37,169 --> 00:08:39,030
+do not work on something together and then
+
+187
+00:08:39,030 --> 00:08:41,010
+both submit the exact same thing.
+
+188
+00:08:41,010 --> 00:08:46,170
+You can work on the actual-- the content,
+
+189
+00:08:46,170 --> 00:08:48,450
+you can discuss that with peers, TAs, and instructors,
+
+190
+00:08:48,450 --> 00:08:49,950
+but the problem sets you submit need
+
+191
+00:08:49,950 --> 00:08:53,080
+to be your own independent and individual work.
+
+192
+00:08:53,080 --> 00:08:55,740
+And that also applies to the code that you write.
+
+193
+00:08:55,740 --> 00:08:57,420
+So you can discuss the code with others,
+
+194
+00:08:57,420 --> 00:08:59,860
+but you need to each write your own code separately.
+
+195
+00:08:59,860 --> 00:09:01,860
+There was some confusion about this in the past.
+
+196
+00:09:01,860 --> 00:09:04,760
+Just make sure that you're not taking the code someone else
+
+197
+00:09:04,760 --> 00:09:08,680
+wrote, running it, and then submitting a pset on it.
+
+198
+00:09:08,680 --> 00:09:11,800
+You should absolutely not copy or share complete solutions,
+
+199
+00:09:11,800 --> 00:09:14,640
+and you also should not ask someone else, hey, this
+
+200
+00:09:14,640 --> 00:09:16,640
+is my solution, is it right?
+
+201
+00:09:16,640 --> 00:09:18,140
+And you shouldn't do that in person,
+
+202
+00:09:18,140 --> 00:09:20,200
+and you also shouldn't ask, Is this
+
+203
+00:09:20,200 --> 00:09:22,520
+correct? on Piazza or Canvas.
+
+204
+00:09:22,520 --> 00:09:24,660
+So again, the idea is, it's your independent work,
+
+205
+00:09:24,660 --> 00:09:26,560
+your independent thought.
+
+206
+00:09:26,560 --> 00:09:29,440
+And I think it matters more that you've gone through that process
+
+207
+00:09:29,440 --> 00:09:31,720
+independently than actually getting it correct
+
+208
+00:09:31,720 --> 00:09:34,698
+because you'll learn from the feedback on your psets
+
+209
+00:09:34,698 --> 00:09:37,240
+better if you submit something that you came up with yourself
+
+210
+00:09:37,240 --> 00:09:41,320
+and get feedback on it than if you copy somebody.
+
+211
+00:09:41,320 --> 00:09:44,117
+And then if you work with anyone on the pset other than TAs
+
+212
+00:09:44,117 --> 00:09:46,200
+and instructors, we ask that you write their names
+
+213
+00:09:46,200 --> 00:09:47,100
+at the top of the pset.
+
+214
+00:09:47,100 --> 00:09:49,020
+So if you have a study group, you're all working together--
+
+215
+00:09:49,020 --> 00:09:50,600
+we don't care if this is 10 people.
+
+216
+00:09:50,600 --> 00:09:52,960
+We don't care if it's, in this class, 100 people.
+
+217
+00:09:52,960 --> 00:09:55,180
+But we just want to know who was working together.
+
+218
+00:09:55,180 --> 00:09:58,580
+I'd be impressed if you managed to come up with a 100-person
+
+219
+00:09:58,580 --> 00:10:00,980
+collaborative group.
+
+220
+00:10:00,980 --> 00:10:06,180
+So AI assistance-- we take the exact same policy
+
+221
+00:10:06,180 --> 00:10:08,900
+about things like ChatGPT or other AI assistants
+
+222
+00:10:08,900 --> 00:10:10,740
+that we do with humans.
+
+223
+00:10:10,740 --> 00:10:13,000
+So it's a deep learning class.
+
+224
+00:10:13,000 --> 00:10:16,380
+You should be trying out the latest technology.
+
+225
+00:10:16,380 --> 00:10:17,900
+The idea is not that we're teaching
+
+226
+00:10:17,900 --> 00:10:20,540
+you to ignore what's happening.
+
+227
+00:10:20,540 --> 00:10:25,320
+But we do want you to treat them like a human collaborator.
+
+228
+00:10:25,320 --> 00:10:27,720
+Don't ask them to answer the question for you.
+
+229
+00:10:27,720 --> 00:10:31,020
+Just try to imagine from an ethics perspective
+
+230
+00:10:31,020 --> 00:10:33,460
+that this is like a peer in the class.
+
+231
+00:10:33,460 --> 00:10:35,400
+So don't say, what is the solution to this?
+
+232
+00:10:35,400 --> 00:10:36,940
+Don't say, write the code for me,
+
+233
+00:10:36,940 --> 00:10:38,523
+because you wouldn't go to your friend
+
+234
+00:10:38,523 --> 00:10:41,140
+and say, please write my code for me.
+
+235
+00:10:41,140 --> 00:10:45,840
+But you're super welcome to use them as a discussion partner.
+
+236
+00:10:45,840 --> 00:10:49,000
+Ask them questions that are contextual.
+
+237
+00:10:49,000 --> 00:10:50,290
+Go back and forth.
+
+238
+00:10:50,290 --> 00:10:51,070
+That's all fine.
+
+239
+00:10:51,070 --> 00:10:56,150
+But don't treat AI collaboration as if they're not
+
+240
+00:10:56,150 --> 00:10:57,350
+a human collaborator.
+
+241
+00:10:57,350 --> 00:10:58,670
+Think of it that way first.
+
+242
+00:10:58,670 --> 00:11:02,392
+Is this something I would ask my friend in the class?
+
+243
+00:11:02,392 --> 00:11:04,350
+And then just like you can come to office hours
+
+244
+00:11:04,350 --> 00:11:06,850
+and ask a human questions about the lecture
+
+245
+00:11:06,850 --> 00:11:09,030
+material, clarifications about questions, tips
+
+246
+00:11:09,030 --> 00:11:11,310
+for getting started, you're welcome to do the same
+
+247
+00:11:11,310 --> 00:11:13,590
+with AI assistants.
+
+248
+00:11:13,590 --> 00:11:16,150
+Again, you're not allowed to ask an expert friend
+
+249
+00:11:16,150 --> 00:11:17,430
+to do your homework for you.
+
+250
+00:11:17,430 --> 00:11:21,110
+Don't ask AI to do your homework for you.
+
+251
+00:11:21,110 --> 00:11:24,470
+If you're ever unclear, imagine the AI is a human
+
+252
+00:11:24,470 --> 00:11:26,510
+and apply that same norm.
+
+253
+00:11:26,510 --> 00:11:30,455
+And if you work with any AI on a pset, similarly to the fact
+
+254
+00:11:30,455 --> 00:11:31,830
+that we're writing with humans we
+
+255
+00:11:31,830 --> 00:11:34,670
+collaborated with, please write down which AI
+
+256
+00:11:34,670 --> 00:11:36,310
+and how you used it.
+
+257
+00:11:36,310 --> 00:11:38,890
+And, of course, this is a bit vague, but again,
+
+258
+00:11:38,890 --> 00:11:41,790
+just kind of honor code.
+
+259
+00:11:41,790 --> 00:11:45,150
+Any questions about AI collaboration,
+
+260
+00:11:45,150 --> 00:11:48,520
+or is that reasonably clear?
+
+261
+00:11:48,520 --> 00:11:49,220
+Yeah.
+
+262
+00:11:49,220 --> 00:11:51,380
+AUDIENCE: I had a question on the last page.
+
+263
+00:11:51,380 --> 00:11:55,053
+So can we show our work to the TAs to [INAUDIBLE]?
+
+264
+00:11:55,053 --> 00:11:55,720
+SARA BEERY: Yes.
+
+265
+00:11:55,720 --> 00:11:58,785
+You're very welcome to show your work to the TAs.
+
+266
+00:11:58,785 --> 00:12:00,160
+The TAs are not going to tell you
+
+267
+00:12:00,160 --> 00:12:01,618
+how to answer the question, though,
+
+268
+00:12:01,618 --> 00:12:05,120
+but they will work with you to help you hopefully figure it out
+
+269
+00:12:05,120 --> 00:12:06,480
+on your own.
+
+270
+00:12:06,480 --> 00:12:07,920
+Why are we here?
+
+271
+00:12:07,920 --> 00:12:10,880
+[LAUGHS] What's the goal?
+
+272
+00:12:10,880 --> 00:12:12,640
+So what do we want to do?
+
+273
+00:12:12,640 --> 00:12:17,640
+Why are we all interested in things like deep learning?
+
+274
+00:12:17,640 --> 00:12:20,680
+One perspective is that we're interested in modeling
+
+275
+00:12:20,680 --> 00:12:24,320
+complex phenomena in the real world.
+
+276
+00:12:24,320 --> 00:12:26,400
+What are complex phenomena?
+
+277
+00:12:26,400 --> 00:12:28,220
+Well, you interact with them every day,
+
+278
+00:12:28,220 --> 00:12:30,800
+things like natural language, images,
+
+279
+00:12:30,800 --> 00:12:33,560
+or visual data in general, videos.
+
+280
+00:12:33,560 --> 00:12:37,140
+DNA, ecosystems are complex phenomena.
+
+281
+00:12:37,140 --> 00:12:40,280
+Climate change is a complex phenomenon.
+
+282
+00:12:40,280 --> 00:12:44,720
+Why is it hard to model complex phenomena in the real world?
+
+283
+00:12:44,720 --> 00:12:46,320
+They're complex.
+
+284
+00:12:46,320 --> 00:12:51,300
+[LAUGHS] And so maybe one existence proof
+
+285
+00:12:51,300 --> 00:12:54,740
+for deep learning as a solution to modeling complex phenomena--
+
+286
+00:12:54,740 --> 00:12:57,160
+possibly, we could talk about the human brain.
+
+287
+00:12:57,160 --> 00:12:59,210
+All of you are here at MIT, which
+
+288
+00:12:59,210 --> 00:13:01,460
+means you're pretty good at modeling complex phenomena
+
+289
+00:13:01,460 --> 00:13:02,880
+in your brain, I'm guessing.
+
+290
+00:13:05,660 --> 00:13:10,780
+So first, today, I'm going to just briefly go over
+
+291
+00:13:10,780 --> 00:13:12,240
+how we got where we are today.
+
+292
+00:13:12,240 --> 00:13:15,140
+This is a brief history of the field of AI,
+
+293
+00:13:15,140 --> 00:13:17,060
+deep learning in general.
+
+294
+00:13:17,060 --> 00:13:19,140
+And then I'm going to go over what we expect
+
+295
+00:13:19,140 --> 00:13:21,100
+you have already seen before.
+
+296
+00:13:21,100 --> 00:13:23,240
+It's OK if you haven't seen these things before,
+
+297
+00:13:23,240 --> 00:13:26,500
+but we would expect you then to go and brush up on them.
+
+298
+00:13:26,500 --> 00:13:28,940
+So if there's anything that I talk about, and you're like,
+
+299
+00:13:28,940 --> 00:13:31,640
+oh, I have never seen that, we expect that.
+
+300
+00:13:31,640 --> 00:13:34,700
+That's something you can go look at some of the OpenCourseWare
+
+301
+00:13:34,700 --> 00:13:39,180
+courses at MIT, go find lots of resources online, and pick it up
+
+302
+00:13:39,180 --> 00:13:40,903
+before you go into this class.
+
+303
+00:13:40,903 --> 00:13:42,820
+And then I'll also talk about what we actually
+
+304
+00:13:42,820 --> 00:13:45,190
+cover in the class.
+
+305
+00:13:45,190 --> 00:13:47,290
+So a brief history of neural networks--
+
+306
+00:13:47,290 --> 00:13:49,830
+and I think a fun way to go through this
+
+307
+00:13:49,830 --> 00:13:52,790
+is looking at this on a plot of enthusiasm
+
+308
+00:13:52,790 --> 00:13:55,030
+for neural networks over time.
+
+309
+00:13:55,030 --> 00:13:58,990
+So if we go way back to 1958, Rosenblatt
+
+310
+00:13:58,990 --> 00:14:04,270
+introduced the perceptron in Psychological Review.
+
+311
+00:14:04,270 --> 00:14:09,750
+And the perceptron was the first neural network, arguably.
+
+312
+00:14:09,750 --> 00:14:11,310
+And what this was intending to do
+
+313
+00:14:11,310 --> 00:14:15,790
+was recognize or categorize images.
+
+314
+00:14:15,790 --> 00:14:18,550
+And the idea was essentially that you
+
+315
+00:14:18,550 --> 00:14:22,590
+could take some combination of representations--
+
+316
+00:14:22,590 --> 00:14:25,390
+in this case, particularly pixels--
+
+317
+00:14:25,390 --> 00:14:28,310
+sum them, put them through some non-linearity,
+
+318
+00:14:28,310 --> 00:14:30,910
+and get out a categorization.
+
+319
+00:14:30,910 --> 00:14:32,990
+And really, we'll see throughout the course
+
+320
+00:14:32,990 --> 00:14:37,430
+and even today, this idea still forms the building block
+
+321
+00:14:37,430 --> 00:14:39,610
+for most of the deep learning that we do.
+
+322
+00:14:39,610 --> 00:14:42,830
+And these perceptrons are components
+
+323
+00:14:42,830 --> 00:14:44,800
+in many, many, many different types
+
+324
+00:14:44,800 --> 00:14:48,000
+of capacities within things like ChatGPT.
+
+325
+00:14:48,000 --> 00:14:50,740
+When this paper came out back in 1958,
+
+326
+00:14:50,740 --> 00:14:52,680
+people were incredibly enthusiastic.
+
+327
+00:14:52,680 --> 00:14:55,800
+It made waves.
+
+328
+00:14:55,800 --> 00:15:00,000
+And then in 1972, Minsky and Papert
+
+329
+00:15:00,000 --> 00:15:03,880
+wrote a book called Perceptrons, Expanded Edition.
+
+330
+00:15:03,880 --> 00:15:07,280
+And this book takes a very critical lens to the idea
+
+331
+00:15:07,280 --> 00:15:09,480
+that a perceptron could be seriously considered
+
+332
+00:15:09,480 --> 00:15:10,880
+a model of the brain.
+
+333
+00:15:10,880 --> 00:15:14,560
+And it also carefully and mathematically describes
+
+334
+00:15:14,560 --> 00:15:16,720
+and characterizes the limitations
+
+335
+00:15:16,720 --> 00:15:19,280
+of what a perceptron can model.
+
+336
+00:15:19,280 --> 00:15:22,600
+And it did so, so carefully and so critically
+
+337
+00:15:22,600 --> 00:15:26,400
+that all of a sudden, enthusiasm for machine learning really
+
+338
+00:15:26,400 --> 00:15:27,680
+took a dip.
+
+339
+00:15:27,680 --> 00:15:32,720
+So in the '70s, we were not excited about neural networks.
+
+340
+00:15:32,720 --> 00:15:37,880
+But then in 1986, this book came out called Parallel Distributed
+
+341
+00:15:37,880 --> 00:15:38,840
+Processing.
+
+342
+00:15:38,840 --> 00:15:42,160
+And this was fundamental because it introduces
+
+343
+00:15:42,160 --> 00:15:45,100
+the concept of backpropagation.
+
+344
+00:15:45,100 --> 00:15:47,020
+And this was really the thing that
+
+345
+00:15:47,020 --> 00:15:49,780
+enabled multilayer perceptrons, so not just
+
+346
+00:15:49,780 --> 00:15:51,460
+a single perceptron, but actually
+
+347
+00:15:51,460 --> 00:15:54,540
+multiple perceptrons stacked on top of each other
+
+348
+00:15:54,540 --> 00:15:57,860
+to actually be reasonably trained, reasonably fit,
+
+349
+00:15:57,860 --> 00:16:00,180
+this concept of being able to backpropagate
+
+350
+00:16:00,180 --> 00:16:03,580
+a gradient through multiple layers of perceptrons.
+
+351
+00:16:03,580 --> 00:16:05,460
+And what this enabled you to solve
+
+352
+00:16:05,460 --> 00:16:07,793
+were things like the XOR problem.
+
+353
+00:16:07,793 --> 00:16:09,460
+For the first time, you could reasonably
+
+354
+00:16:09,460 --> 00:16:11,140
+solve categorization problems that
+
+355
+00:16:11,140 --> 00:16:14,660
+were not separable from a linear classifier.
+
+356
+00:16:14,660 --> 00:16:16,980
+They pointed to backpropagation as a breakthrough.
+
+357
+00:16:16,980 --> 00:16:20,580
+It led us actually handle things where
+
+358
+00:16:20,580 --> 00:16:25,820
+you need multiple different boundaries and these nonlinear
+
+359
+00:16:25,820 --> 00:16:28,580
+boundaries to be drawn, which is only possible if you
+
+360
+00:16:28,580 --> 00:16:30,540
+have multiple layers of a perceptron.
+
+361
+00:16:30,540 --> 00:16:32,820
+You'll never be able to solve the XOR
+
+362
+00:16:32,820 --> 00:16:36,620
+problem with a single-layer neural network.
+
+363
+00:16:36,620 --> 00:16:38,860
+And everyone got really excited again.
+
+364
+00:16:38,860 --> 00:16:42,575
+So in the '80s, yet again, machine learning was something
+
+365
+00:16:42,575 --> 00:16:44,950
+that people were pumped about, and particularly this deep
+
+366
+00:16:44,950 --> 00:16:48,190
+learning neural network perspective on machine learning.
+
+367
+00:16:48,190 --> 00:16:54,150
+In 1998, Yann LeCun put out convolutional neural networks.
+
+368
+00:16:54,150 --> 00:16:56,830
+There's an awesome demo that he has on his web page.
+
+369
+00:16:56,830 --> 00:17:00,270
+I'm sure many of you have heard of Yann LeCun.
+
+370
+00:17:00,270 --> 00:17:04,390
+And this seems like it would mean
+
+371
+00:17:04,390 --> 00:17:07,750
+that everyone was really excited about neural networks again.
+
+372
+00:17:07,750 --> 00:17:11,069
+But if you go to NeurIPS in 2000,
+
+373
+00:17:11,069 --> 00:17:14,310
+this is the premier conference on machine learning.
+
+374
+00:17:14,310 --> 00:17:16,390
+It evolved from an interdisciplinary conference,
+
+375
+00:17:16,390 --> 00:17:22,470
+which was on basically the science of the brain
+
+376
+00:17:22,470 --> 00:17:25,710
+and machine learning to specifically just a machine
+
+377
+00:17:25,710 --> 00:17:27,109
+learning conference.
+
+378
+00:17:27,109 --> 00:17:31,510
+If you look at that conference in 2000,
+
+379
+00:17:31,510 --> 00:17:35,030
+the most predictive words in papers in the title
+
+380
+00:17:35,030 --> 00:17:39,550
+for acceptance were "belief propagation" and "Gaussian."
+
+381
+00:17:39,550 --> 00:17:43,080
+And the title words most predictive of paper rejection
+
+382
+00:17:43,080 --> 00:17:45,720
+were "neural" and "network."
+
+383
+00:17:45,720 --> 00:17:47,080
+[LAUGHTER]
+
+384
+00:17:47,080 --> 00:17:49,940
+So this is what we called the AI winter.
+
+385
+00:17:49,940 --> 00:17:51,440
+And one of the reasons it was called
+
+386
+00:17:51,440 --> 00:17:54,060
+the AI winter is because even though we had the theory,
+
+387
+00:17:54,060 --> 00:17:56,520
+we had the building blocks, we didn't actually
+
+388
+00:17:56,520 --> 00:18:01,960
+have the ability to train them efficiently.
+
+389
+00:18:01,960 --> 00:18:04,560
+We didn't have the right programming perspective,
+
+390
+00:18:04,560 --> 00:18:07,680
+and we didn't have the right hardware.
+
+391
+00:18:07,680 --> 00:18:12,800
+But then in 2012, Alex Krizhevsky and his co-authors
+
+392
+00:18:12,800 --> 00:18:14,360
+published AlexNet.
+
+393
+00:18:14,360 --> 00:18:20,040
+And AlexNet was also another convolutional neural network.
+
+394
+00:18:20,040 --> 00:18:24,600
+But importantly, Alex Krizhevsky was a brilliant programmer,
+
+395
+00:18:24,600 --> 00:18:26,320
+and Alex Krizhevsky figured out how
+
+396
+00:18:26,320 --> 00:18:29,240
+to program GPUs, graphics processing units, that
+
+397
+00:18:29,240 --> 00:18:33,120
+have been developed to handle massive-scale parallel
+
+398
+00:18:33,120 --> 00:18:37,960
+multiplications for graphics, for video games,
+
+399
+00:18:37,960 --> 00:18:44,100
+and for high-resolution images.
+
+400
+00:18:44,100 --> 00:18:46,460
+But he figured out how to program those and repurposed
+
+401
+00:18:46,460 --> 00:18:50,220
+that hardware for the training of neural networks.
+
+402
+00:18:50,220 --> 00:18:53,660
+And I can't tell you how much of a shot heard around the world
+
+403
+00:18:53,660 --> 00:18:55,540
+this was in our field.
+
+404
+00:18:55,540 --> 00:18:59,940
+But this, for the first time, outperformed
+
+405
+00:18:59,940 --> 00:19:03,420
+every single other possible method
+
+406
+00:19:03,420 --> 00:19:06,780
+that was out there on ImageNet.
+
+407
+00:19:06,780 --> 00:19:09,380
+ImageNet-- how many of you have heard of ImageNet?
+
+408
+00:19:09,380 --> 00:19:10,340
+Yeah.
+
+409
+00:19:10,340 --> 00:19:12,800
+ImageNet was the first very large-scale data
+
+410
+00:19:12,800 --> 00:19:14,060
+set of its kind.
+
+411
+00:19:14,060 --> 00:19:16,180
+And I actually think that this is
+
+412
+00:19:16,180 --> 00:19:18,260
+an important component, what made
+
+413
+00:19:18,260 --> 00:19:20,140
+machine learning start to work.
+
+414
+00:19:20,140 --> 00:19:22,160
+And I would argue that, of course,
+
+415
+00:19:22,160 --> 00:19:25,760
+it was the theory and the programming,
+
+416
+00:19:25,760 --> 00:19:29,300
+the ability to actually efficiently fit these things.
+
+417
+00:19:29,300 --> 00:19:33,900
+But the other really vital component was the data.
+
+418
+00:19:33,900 --> 00:19:37,360
+Machine learning does not work without large-scale, curated,
+
+419
+00:19:37,360 --> 00:19:40,607
+labeled data in many capacities still,
+
+420
+00:19:40,607 --> 00:19:42,190
+though we're getting better and better
+
+421
+00:19:42,190 --> 00:19:44,150
+at self-supervised learning.
+
+422
+00:19:44,150 --> 00:19:48,910
+But so all of a sudden, we were back.
+
+423
+00:19:48,910 --> 00:19:50,450
+Everyone was enthusiastic again.
+
+424
+00:19:50,450 --> 00:19:52,470
+And actually, if you look, these were
+
+425
+00:19:52,470 --> 00:19:56,110
+hype cycles of about 28 years, both of them.
+
+426
+00:19:56,110 --> 00:20:00,990
+And so the question is, where are we going to be in 2028?
+
+427
+00:20:00,990 --> 00:20:04,350
+So it's 2024 now.
+
+428
+00:20:04,350 --> 00:20:08,030
+It's 2024, so in four years, where are we going to be?
+
+429
+00:20:08,030 --> 00:20:11,610
+So one argument would be, OK, we're in another hype cycle.
+
+430
+00:20:11,610 --> 00:20:15,030
+But I would actually argue that that's probably not true.
+
+431
+00:20:15,030 --> 00:20:17,990
+Another one would be that we're just way
+
+432
+00:20:17,990 --> 00:20:19,850
+off the deep end in terms of enthusiasm,
+
+433
+00:20:19,850 --> 00:20:23,830
+and by 2028, we'll be in some-- out in the stratosphere.
+
+434
+00:20:23,830 --> 00:20:26,710
+Or possibly we're doing something like this.
+
+435
+00:20:26,710 --> 00:20:28,430
+Maybe in 2028, we're going to hit
+
+436
+00:20:28,430 --> 00:20:31,452
+some new plane of enthusiasm, and then
+
+437
+00:20:31,452 --> 00:20:32,910
+we'll start to realize limitations,
+
+438
+00:20:32,910 --> 00:20:34,350
+and we'll oscillate again.
+
+439
+00:20:34,350 --> 00:20:35,696
+Yeah?
+
+440
+00:20:35,696 --> 00:20:38,340
+AUDIENCE: Could AI take over society by 2028?
+
+441
+00:20:38,340 --> 00:20:39,840
+SARA BEERY: [LAUGHS] So the question
+
+442
+00:20:39,840 --> 00:20:42,640
+is, will AI take over society by 2028?
+
+443
+00:20:42,640 --> 00:20:44,560
+My answer is, let's see.
+
+444
+00:20:44,560 --> 00:20:46,160
+[LAUGHS]
+
+445
+00:20:46,160 --> 00:20:47,800
+So what's deep learning today?
+
+446
+00:20:47,800 --> 00:20:51,560
+What are the components that make it up?
+
+447
+00:20:51,560 --> 00:20:55,080
+First, I think a really important one is Autograd.
+
+448
+00:20:55,080 --> 00:20:58,445
+These are coding languages like PyTorch and TensorFlow
+
+449
+00:20:58,445 --> 00:21:00,320
+that give us a really clever way to do things
+
+450
+00:21:00,320 --> 00:21:04,040
+like implement the chain rule in software, making
+
+451
+00:21:04,040 --> 00:21:06,480
+good use of available hardware.
+
+452
+00:21:06,480 --> 00:21:09,420
+And this has enabled us to do things
+
+453
+00:21:09,420 --> 00:21:11,940
+like approximate the gradient of any function,
+
+454
+00:21:11,940 --> 00:21:14,080
+even if it's an approximation.
+
+455
+00:21:14,080 --> 00:21:17,140
+These are a really important component of deep learning.
+
+456
+00:21:17,140 --> 00:21:19,383
+And if you do anything with deep learning,
+
+457
+00:21:19,383 --> 00:21:21,300
+I doubt that you're doing what Krizhevsky did.
+
+458
+00:21:21,300 --> 00:21:23,260
+I doubt that you're programming these things from scratch.
+
+459
+00:21:23,260 --> 00:21:25,635
+You're almost certainly working with existing programming
+
+460
+00:21:25,635 --> 00:21:28,640
+languages that are built for machine learning.
+
+461
+00:21:28,640 --> 00:21:32,678
+Its billion-plus data point datasets, things like LAION.
+
+462
+00:21:32,678 --> 00:21:34,720
+So that scale of data that I talked about before,
+
+463
+00:21:34,720 --> 00:21:37,740
+this is an incredibly important component of all of this.
+
+464
+00:21:37,740 --> 00:21:41,820
+Parallel training on thousands of GPUs--
+
+465
+00:21:41,820 --> 00:21:45,060
+again, this is what we're looking at today--
+
+466
+00:21:45,060 --> 00:21:46,920
+billion-plus parameter architectures,
+
+467
+00:21:46,920 --> 00:21:51,020
+and this number just keeps increasing, million-plus
+
+468
+00:21:51,020 --> 00:21:52,900
+dollar training costs.
+
+469
+00:21:52,900 --> 00:21:55,300
+So, of course, it's not public knowledge
+
+470
+00:21:55,300 --> 00:21:57,980
+how much it costs to train something like GPT 4.0.
+
+471
+00:21:57,980 --> 00:22:03,900
+But I would bet it's definitely in the many millions.
+
+472
+00:22:03,900 --> 00:22:06,467
+Shockingly good results-- I don't know about any of you.
+
+473
+00:22:06,467 --> 00:22:08,800
+I mean, I've been working in this field now for a while,
+
+474
+00:22:08,800 --> 00:22:13,380
+and I think we've been seeing results recently that I didn't
+
+475
+00:22:13,380 --> 00:22:16,860
+anticipate seeing in my lifetime from when I started, back when
+
+476
+00:22:16,860 --> 00:22:18,380
+things didn't work.
+
+477
+00:22:18,380 --> 00:22:20,360
+So that's been both exciting to see,
+
+478
+00:22:20,360 --> 00:22:23,372
+and also sometimes, I think, for many of us a bit overwhelming,
+
+479
+00:22:23,372 --> 00:22:25,580
+because you're like, oh, gosh, the problems I thought
+
+480
+00:22:25,580 --> 00:22:27,540
+were problems aren't problems anymore.
+
+481
+00:22:27,540 --> 00:22:29,580
+So what are the problems?
+
+482
+00:22:29,580 --> 00:22:33,180
+Of course, I work in the world of--
+
+483
+00:22:33,180 --> 00:22:36,710
+I work a lot on biodiversity loss
+
+484
+00:22:36,710 --> 00:22:38,423
+at a global scale using machine learning.
+
+485
+00:22:38,423 --> 00:22:40,590
+And I would say that biodiversity loss is definitely
+
+486
+00:22:40,590 --> 00:22:43,048
+still a problem, and one that machine learning is sometimes
+
+487
+00:22:43,048 --> 00:22:46,630
+helping, but often also hurting, because the carbon
+
+488
+00:22:46,630 --> 00:22:52,030
+costs of actually training these models is significant.
+
+489
+00:22:52,030 --> 00:22:56,250
+But all of these massive things-- massive
+
+490
+00:22:56,250 --> 00:22:57,310
+isn't necessary.
+
+491
+00:22:57,310 --> 00:22:59,950
+So things like Stable Diffusion are actually pretty lightweight
+
+492
+00:22:59,950 --> 00:23:01,890
+and were incredibly impactful.
+
+493
+00:23:01,890 --> 00:23:06,150
+So things don't always need to be big to be good.
+
+494
+00:23:06,150 --> 00:23:08,390
+And then I think another really important component
+
+495
+00:23:08,390 --> 00:23:11,510
+of deep learning today is the idea that it is primarily
+
+496
+00:23:11,510 --> 00:23:13,590
+an open source community where we have
+
+497
+00:23:13,590 --> 00:23:15,990
+what we call modular reuse.
+
+498
+00:23:15,990 --> 00:23:19,750
+So people take weights that were trained by one person with one
+
+499
+00:23:19,750 --> 00:23:20,370
+architecture.
+
+500
+00:23:20,370 --> 00:23:22,870
+They might take that and use that entire thing as a module
+
+501
+00:23:22,870 --> 00:23:24,990
+within another, larger system that
+
+502
+00:23:24,990 --> 00:23:27,230
+has many different components that are being
+
+503
+00:23:27,230 --> 00:23:29,670
+pulled from different things.
+
+504
+00:23:29,670 --> 00:23:32,447
+Now, I think that this open source perspective is really
+
+505
+00:23:32,447 --> 00:23:35,030
+something that's driven a lot of progress in machine learning.
+
+506
+00:23:35,030 --> 00:23:36,447
+But also one of the things that we
+
+507
+00:23:36,447 --> 00:23:38,850
+have been seeing in the last few years
+
+508
+00:23:38,850 --> 00:23:42,650
+is that things are less and less likely to be open source.
+
+509
+00:23:42,650 --> 00:23:45,130
+You might have an API, but you aren't necessarily
+
+510
+00:23:45,130 --> 00:23:47,930
+going to get the weights and the architecture for something
+
+511
+00:23:47,930 --> 00:23:50,770
+like GPT 4.0.
+
+512
+00:23:50,770 --> 00:23:53,410
+So for the rest of the lecture, this
+
+513
+00:23:53,410 --> 00:23:55,570
+is the signposting I'm going to use.
+
+514
+00:23:55,570 --> 00:23:58,795
+Looking back, this is what we expect you've seen before.
+
+515
+00:23:58,795 --> 00:24:00,170
+The green looking forward, that's
+
+516
+00:24:00,170 --> 00:24:02,170
+what we're going to cover in this class.
+
+517
+00:24:02,170 --> 00:24:05,170
+All right, pretty straightforward.
+
+518
+00:24:05,170 --> 00:24:07,330
+I expect you have seen gradient descent
+
+519
+00:24:07,330 --> 00:24:09,970
+before you come to this class.
+
+520
+00:24:09,970 --> 00:24:13,450
+So gradient descent essentially is the idea
+
+521
+00:24:13,450 --> 00:24:17,938
+that we're trying to optimize some cost function.
+
+522
+00:24:17,938 --> 00:24:19,730
+And the way we're going to do that is we're
+
+523
+00:24:19,730 --> 00:24:24,290
+finding some minimum over a set of all of our training data,
+
+524
+00:24:24,290 --> 00:24:27,650
+some minimum set of parameters, where then the loss is actually
+
+525
+00:24:27,650 --> 00:24:30,530
+minimized for all of those different data points.
+
+526
+00:24:30,530 --> 00:24:33,220
+So what this actually looks like in practice,
+
+527
+00:24:33,220 --> 00:24:35,300
+you're trying to find some theta star, which
+
+528
+00:24:35,300 --> 00:24:37,620
+is like your optimal set of model parameters
+
+529
+00:24:37,620 --> 00:24:39,320
+that minimize your cost function.
+
+530
+00:24:39,320 --> 00:24:41,620
+And so maybe you start somewhere random,
+
+531
+00:24:41,620 --> 00:24:44,900
+and then you calculate your gradient.
+
+532
+00:24:44,900 --> 00:24:47,820
+Now you update the weights of that model
+
+533
+00:24:47,820 --> 00:24:50,840
+in the direction of the gradient, and you step through,
+
+534
+00:24:50,840 --> 00:24:53,180
+et cetera, et cetera.
+
+535
+00:24:53,180 --> 00:24:56,620
+And I think many of you have probably seen this before,
+
+536
+00:24:56,620 --> 00:24:59,020
+and we'll talk in an upcoming lecture,
+
+537
+00:24:59,020 --> 00:25:01,020
+cover some of the different dimensions of things
+
+538
+00:25:01,020 --> 00:25:03,940
+like stochastic gradient descent, et cetera.
+
+539
+00:25:03,940 --> 00:25:08,260
+But we're assuming that you've seen this idea before,
+
+540
+00:25:08,260 --> 00:25:12,060
+probably in intro to ML lecture, for example.
+
+541
+00:25:12,060 --> 00:25:15,180
+Covering in this class, we'll go into a little bit more detail,
+
+542
+00:25:15,180 --> 00:25:17,060
+backprop and specifically this idea
+
+543
+00:25:17,060 --> 00:25:19,540
+of differential programming.
+
+544
+00:25:19,540 --> 00:25:21,980
+So what does it actually look like to build programming
+
+545
+00:25:21,980 --> 00:25:26,580
+languages that are structured around the idea of optimality
+
+546
+00:25:26,580 --> 00:25:29,780
+and optimizing through gradient descent for different components
+
+547
+00:25:29,780 --> 00:25:32,030
+of that architecture?
+
+548
+00:25:32,030 --> 00:25:33,910
+And I think one of the things that's fun
+
+549
+00:25:33,910 --> 00:25:37,470
+is thinking about what are you actually optimizing for,
+
+550
+00:25:37,470 --> 00:25:42,150
+and what are you pushing the gradients through to?
+
+551
+00:25:42,150 --> 00:25:47,910
+So here, one iteration of gradient descent
+
+552
+00:25:47,910 --> 00:25:50,590
+is essentially something like this,
+
+553
+00:25:50,590 --> 00:25:54,910
+and we have some learning rate.
+
+554
+00:25:54,910 --> 00:25:57,590
+And all of that, we're going to go into in a lot more detail
+
+555
+00:25:57,590 --> 00:26:00,430
+next Tuesday where we're going to be talking about,
+
+556
+00:26:00,430 --> 00:26:02,230
+where does this actually come through,
+
+557
+00:26:02,230 --> 00:26:05,630
+how do we think about what some of these choices are,
+
+558
+00:26:05,630 --> 00:26:08,950
+and how we actually build out the learning
+
+559
+00:26:08,950 --> 00:26:11,590
+structure for backprop.
+
+560
+00:26:11,590 --> 00:26:13,190
+I do expect that you've seen things
+
+561
+00:26:13,190 --> 00:26:16,110
+like multilayer perceptrons and nonlinearities, things
+
+562
+00:26:16,110 --> 00:26:18,430
+like ReLUs, before.
+
+563
+00:26:18,430 --> 00:26:21,710
+So computational neural network is often some form of vector
+
+564
+00:26:21,710 --> 00:26:23,670
+in, vector out.
+
+565
+00:26:23,670 --> 00:26:25,990
+And this arrow that goes from vector in to vector
+
+566
+00:26:25,990 --> 00:26:27,870
+out is a lot of what we're going to be
+
+567
+00:26:27,870 --> 00:26:30,370
+talking about in this class.
+
+568
+00:26:30,370 --> 00:26:33,570
+What computation does that cover?
+
+569
+00:26:33,570 --> 00:26:35,070
+How does that actually build out?
+
+570
+00:26:35,070 --> 00:26:36,695
+So one cool thing about neural networks
+
+571
+00:26:36,695 --> 00:26:40,490
+is that they often are reusing the same simple computational
+
+572
+00:26:40,490 --> 00:26:42,610
+units over and over again.
+
+573
+00:26:42,610 --> 00:26:46,250
+So there's often a lot of the same kinds of computation
+
+574
+00:26:46,250 --> 00:26:49,157
+that are being repeated and reused.
+
+575
+00:26:49,157 --> 00:26:51,490
+And what these actually look like, these building blocks
+
+576
+00:26:51,490 --> 00:26:54,130
+that are being used over and over again,
+
+577
+00:26:54,130 --> 00:26:57,610
+they're often some combination of a linear layer.
+
+578
+00:26:57,610 --> 00:27:00,250
+So here-- and we will be sticking with this type
+
+579
+00:27:00,250 --> 00:27:02,570
+of notation for the rest of the class--
+
+580
+00:27:02,570 --> 00:27:05,450
+what we call z sub j, so some component of this output
+
+581
+00:27:05,450 --> 00:27:08,570
+representation in that linear layer,
+
+582
+00:27:08,570 --> 00:27:13,490
+that would be a sum over i of some weight times each
+
+583
+00:27:13,490 --> 00:27:18,570
+of those input components-- basically, pretty simple.
+
+584
+00:27:18,570 --> 00:27:21,507
+And that can also be written essentially this way, where
+
+585
+00:27:21,507 --> 00:27:23,090
+you have some set of weights, and then
+
+586
+00:27:23,090 --> 00:27:25,110
+you also incorporate a bias term.
+
+587
+00:27:25,110 --> 00:27:27,210
+And this is a term that does not actually
+
+588
+00:27:27,210 --> 00:27:29,160
+take in any of those input components.
+
+589
+00:27:29,160 --> 00:27:31,500
+It's just a bias.
+
+590
+00:27:31,500 --> 00:27:34,780
+And that can also be written in a vectorized notation, which
+
+591
+00:27:34,780 --> 00:27:36,580
+makes everything much more simple.
+
+592
+00:27:36,580 --> 00:27:41,140
+So again, just with a focus on the notation, that output unit z
+
+593
+00:27:41,140 --> 00:27:46,100
+sub j is x, that input vector, transposed times
+
+594
+00:27:46,100 --> 00:27:49,220
+w sub j, so the set of weights that correspond to that output
+
+595
+00:27:49,220 --> 00:27:52,580
+component and that bias term.
+
+596
+00:27:52,580 --> 00:27:54,702
+And then what we consider theta-- so
+
+597
+00:27:54,702 --> 00:27:56,660
+that's all the parameters of the model-- that's
+
+598
+00:27:56,660 --> 00:28:01,140
+the set of all the weight terms and all the bias terms.
+
+599
+00:28:01,140 --> 00:28:02,748
+So what actually makes a neural net
+
+600
+00:28:02,748 --> 00:28:04,540
+a neural net is the fact that it's not just
+
+601
+00:28:04,540 --> 00:28:06,620
+linear combinations of inputs.
+
+602
+00:28:06,620 --> 00:28:10,860
+You also have some sort of nonlinear function
+
+603
+00:28:10,860 --> 00:28:12,920
+that is mapping your outputs.
+
+604
+00:28:12,920 --> 00:28:15,180
+And that's something like g sub z.
+
+605
+00:28:15,180 --> 00:28:16,620
+And in this case, that's something
+
+606
+00:28:16,620 --> 00:28:18,482
+like a pointwise non-linearity.
+
+607
+00:28:18,482 --> 00:28:20,940
+So that's an important dimension that these non-linearities
+
+608
+00:28:20,940 --> 00:28:23,140
+are usually pointwise.
+
+609
+00:28:23,140 --> 00:28:25,860
+So one possible non-linearity would be this one.
+
+610
+00:28:25,860 --> 00:28:29,990
+g sub z would be 1 if z is greater than 0, or 0 otherwise.
+
+611
+00:28:29,990 --> 00:28:32,650
+Is this a good choice of non-linearity for a neural net?
+
+612
+00:28:32,650 --> 00:28:33,357
+AUDIENCE: No.
+
+613
+00:28:33,357 --> 00:28:34,190
+SARA BEERY: Why not?
+
+614
+00:28:34,190 --> 00:28:36,030
+AUDIENCE: It's not differentiable?
+
+615
+00:28:36,030 --> 00:28:39,070
+SARA BEERY: Yeah, so it's not differentiable, exactly.
+
+616
+00:28:39,070 --> 00:28:43,890
+And why is the fact that it's not differentiable not good?
+
+617
+00:28:43,890 --> 00:28:44,390
+Yeah.
+
+618
+00:28:44,390 --> 00:28:47,350
+AUDIENCE: Because it hinders backpropagation.
+
+619
+00:28:47,350 --> 00:28:49,150
+SARA BEERY: It hinders backpropagation.
+
+620
+00:28:49,150 --> 00:28:51,070
+Why?
+
+621
+00:28:51,070 --> 00:28:53,470
+AUDIENCE: It makes the [INAUDIBLE] set
+
+622
+00:28:53,470 --> 00:28:55,430
+harder [INAUDIBLE].
+
+623
+00:28:55,430 --> 00:28:57,210
+SARA BEERY: Yeah, so the directionality.
+
+624
+00:28:57,210 --> 00:29:01,750
+If you're anywhere on this graph,
+
+625
+00:29:01,750 --> 00:29:04,550
+you don't know which way to go, essentially.
+
+626
+00:29:04,550 --> 00:29:05,950
+The gradient is zero.
+
+627
+00:29:05,950 --> 00:29:08,610
+So you can try to take a gradient ascent step.
+
+628
+00:29:08,610 --> 00:29:13,430
+You're not going to move because the gradient is zero, exactly.
+
+629
+00:29:13,430 --> 00:29:18,870
+So this roughly is called a perceptron, this linear input
+
+630
+00:29:18,870 --> 00:29:22,270
+plus a pointwise non-linearity.
+
+631
+00:29:22,270 --> 00:29:26,970
+And you actually can arguably do linear classification
+
+632
+00:29:26,970 --> 00:29:27,950
+with a perceptron.
+
+633
+00:29:27,950 --> 00:29:30,730
+So if you take a really simple version
+
+634
+00:29:30,730 --> 00:29:34,330
+of this where your input is just two-dimensional, x1, x2,
+
+635
+00:29:34,330 --> 00:29:37,610
+and you have some w1/w2 learned weight terms that you use
+
+636
+00:29:37,610 --> 00:29:39,910
+to combine to get z, which is your hidden unit,
+
+637
+00:29:39,910 --> 00:29:43,770
+and then you map that via a function to y,
+
+638
+00:29:43,770 --> 00:29:46,770
+you then define z as x transpose w plus b.
+
+639
+00:29:46,770 --> 00:29:51,170
+And y is now some function g of z.
+
+640
+00:29:51,170 --> 00:29:54,570
+What this looks like for any set of values
+
+641
+00:29:54,570 --> 00:29:56,970
+will be something like this, where you essentially
+
+642
+00:29:56,970 --> 00:29:58,610
+have almost a ramp.
+
+643
+00:29:58,610 --> 00:30:04,290
+It's a clear and standard gradient across.
+
+644
+00:30:04,290 --> 00:30:06,150
+Why would it look like this?
+
+645
+00:30:06,150 --> 00:30:10,750
+So why is it smooth and reasonably straight?
+
+646
+00:30:14,330 --> 00:30:17,890
+I maybe didn't pose that question super clearly.
+
+647
+00:30:17,890 --> 00:30:21,330
+So essentially, the reason that mapping it
+
+648
+00:30:21,330 --> 00:30:24,330
+looks like this is because it's a plane.
+
+649
+00:30:24,330 --> 00:30:28,940
+So any two-dimensional version of this
+
+650
+00:30:28,940 --> 00:30:33,780
+is going to be a plane with some orientation.
+
+651
+00:30:33,780 --> 00:30:36,200
+And then very straightforward, actually,
+
+652
+00:30:36,200 --> 00:30:38,140
+to turn that into a linear classifier,
+
+653
+00:30:38,140 --> 00:30:39,580
+because all you're doing is taking
+
+654
+00:30:39,580 --> 00:30:41,820
+some threshold on that plane.
+
+655
+00:30:41,820 --> 00:30:43,900
+So even a single-layer neural network
+
+656
+00:30:43,900 --> 00:30:46,040
+can perform linear classification
+
+657
+00:30:46,040 --> 00:30:47,580
+because now this threshold, that's
+
+658
+00:30:47,580 --> 00:30:50,320
+basically what that stepwise non-linearity is giving you.
+
+659
+00:30:50,320 --> 00:30:55,180
+It's giving you something that is thresholded at some value.
+
+660
+00:30:55,180 --> 00:30:57,160
+And so even with something quite simple,
+
+661
+00:30:57,160 --> 00:30:59,060
+you can do classification.
+
+662
+00:30:59,060 --> 00:31:02,655
+Now, that's assuming that your data is linearly separable.
+
+663
+00:31:02,655 --> 00:31:04,280
+So if you have training data like this,
+
+664
+00:31:04,280 --> 00:31:08,340
+which is linearly separable, and now you want to find some
+
+665
+00:31:08,340 --> 00:31:12,020
+optimal set of weights and biases that will minimize some
+
+666
+00:31:12,020 --> 00:31:16,500
+loss term where now, again, this loss is the difference between
+
+667
+00:31:16,500 --> 00:31:19,940
+the true value-- so here, the true value is 1 or 0--
+
+668
+00:31:19,940 --> 00:31:23,620
+and the functional mapping of the inputs to something
+
+669
+00:31:23,620 --> 00:31:25,128
+like that value.
+
+670
+00:31:25,128 --> 00:31:26,670
+If you have something like this, this
+
+671
+00:31:26,670 --> 00:31:28,150
+is what we'd call a bad fit.
+
+672
+00:31:28,150 --> 00:31:31,030
+You have 7 misclassifications.
+
+673
+00:31:31,030 --> 00:31:33,270
+You're wrong about more things than you're right.
+
+674
+00:31:33,270 --> 00:31:35,510
+And all of those red values, those
+
+675
+00:31:35,510 --> 00:31:38,950
+are going to give you a high value in your loss function.
+
+676
+00:31:38,950 --> 00:31:42,550
+Or you could find something that's like an OK fit,
+
+677
+00:31:42,550 --> 00:31:45,090
+less misclassifications.
+
+678
+00:31:45,090 --> 00:31:48,030
+And maybe this is something that your model updates to
+
+679
+00:31:48,030 --> 00:31:50,110
+after a single gradient step.
+
+680
+00:31:50,110 --> 00:31:53,070
+Your decision surface is linear, and now you're fiddling around
+
+681
+00:31:53,070 --> 00:31:56,990
+with what that classifier is--
+
+682
+00:31:56,990 --> 00:32:00,910
+basically, which values of weights and biases you need.
+
+683
+00:32:00,910 --> 00:32:02,427
+And then maybe after a few steps,
+
+684
+00:32:02,427 --> 00:32:04,510
+you would find something that is a good fit, where
+
+685
+00:32:04,510 --> 00:32:07,190
+you're not actually misclassifying anything.
+
+686
+00:32:07,190 --> 00:32:09,590
+So it is possible to do classification
+
+687
+00:32:09,590 --> 00:32:12,210
+of linear things, linearly separable things,
+
+688
+00:32:12,210 --> 00:32:14,310
+even with something like a perceptron that's
+
+689
+00:32:14,310 --> 00:32:16,670
+doing these really simple thresholding-based
+
+690
+00:32:16,670 --> 00:32:19,270
+non-linearities.
+
+691
+00:32:19,270 --> 00:32:21,870
+But like we said, this actually would
+
+692
+00:32:21,870 --> 00:32:24,970
+be really difficult to learn.
+
+693
+00:32:24,970 --> 00:32:29,850
+So instead, maybe you would try something like a tanh.
+
+694
+00:32:29,850 --> 00:32:33,930
+So this is another pointwise non-linearity.
+
+695
+00:32:33,930 --> 00:32:38,610
+And it was one of the earliest ones that people looked at.
+
+696
+00:32:38,610 --> 00:32:40,130
+The things that are nice about this
+
+697
+00:32:40,130 --> 00:32:42,970
+is it's bounded between minus 1 and 1, so none of the values
+
+698
+00:32:42,970 --> 00:32:44,747
+are super huge.
+
+699
+00:32:44,747 --> 00:32:46,330
+And you get saturation of the gradient
+
+700
+00:32:46,330 --> 00:32:48,070
+for super large or super small inputs.
+
+701
+00:32:48,070 --> 00:32:51,550
+You're not getting explosions necessarily.
+
+702
+00:32:51,550 --> 00:32:53,450
+But also, if you start out somewhere that's
+
+703
+00:32:53,450 --> 00:32:55,010
+really far from the center, you don't
+
+704
+00:32:55,010 --> 00:32:58,170
+have a lot of training signal because we're getting close to 0
+
+705
+00:32:58,170 --> 00:32:59,730
+in our gradient.
+
+706
+00:32:59,730 --> 00:33:01,730
+And so those gradients do go to 0
+
+707
+00:33:01,730 --> 00:33:04,690
+as we go to infinity in either direction.
+
+708
+00:33:04,690 --> 00:33:07,610
+The outputs are centered at 0.
+
+709
+00:33:07,610 --> 00:33:12,370
+So the tanh of z can also be written as 2 times the sigmoid
+
+710
+00:33:12,370 --> 00:33:13,890
+of 2z minus 1.
+
+711
+00:33:13,890 --> 00:33:16,450
+So let's look at what that sigmoid function looks like.
+
+712
+00:33:16,450 --> 00:33:19,810
+So in this case, this is a sigmoid, 1 over 1
+
+713
+00:33:19,810 --> 00:33:25,090
+plus e to the minus h or e to the minus--
+
+714
+00:33:25,090 --> 00:33:26,400
+the notation is wrong.
+
+715
+00:33:26,400 --> 00:33:28,500
+It should be minus z.
+
+716
+00:33:28,500 --> 00:33:31,420
+This can be interpreted as the firing rate of a neuron.
+
+717
+00:33:31,420 --> 00:33:34,280
+That was one interpretation of it initially.
+
+718
+00:33:34,280 --> 00:33:38,580
+It's bounded between 0 and 1, so it's not ever negative.
+
+719
+00:33:38,580 --> 00:33:40,620
+Again, you have saturation of that gradient
+
+720
+00:33:40,620 --> 00:33:43,460
+for super large or super small inputs.
+
+721
+00:33:43,460 --> 00:33:46,380
+And all those gradients go to 0.
+
+722
+00:33:46,380 --> 00:33:48,758
+And the outputs themselves are centered around 0.5.
+
+723
+00:33:48,758 --> 00:33:50,300
+So this is kind of poor conditioning.
+
+724
+00:33:50,300 --> 00:33:52,460
+It's slightly biased.
+
+725
+00:33:52,460 --> 00:33:55,140
+In practice, we don't actually use this.
+
+726
+00:33:55,140 --> 00:33:57,660
+So instead, in practice, what we often
+
+727
+00:33:57,660 --> 00:33:59,660
+use is something called a rectified linear unit,
+
+728
+00:33:59,660 --> 00:34:01,060
+or a ReLU.
+
+729
+00:34:01,060 --> 00:34:05,620
+And this is just the max of 0 and z.
+
+730
+00:34:05,620 --> 00:34:08,760
+And this is unbounded on the positive side,
+
+731
+00:34:08,760 --> 00:34:12,219
+so it can go all the way to infinity, which can result in,
+
+732
+00:34:12,219 --> 00:34:14,580
+for example, sometimes things like exploding gradients,
+
+733
+00:34:14,580 --> 00:34:16,460
+because the values can get very large.
+
+734
+00:34:16,460 --> 00:34:18,860
+But it's super efficient to implement.
+
+735
+00:34:18,860 --> 00:34:23,070
+Essentially, the derivatives are just that step function.
+
+736
+00:34:23,070 --> 00:34:25,860
+And it also seems to help speed up convergence.
+
+737
+00:34:25,860 --> 00:34:28,110
+So in that Krizhevsky paper, they showed that they got
+
+738
+00:34:28,110 --> 00:34:32,469
+something like a 6x speed-up using a ReLU over using
+
+739
+00:34:32,469 --> 00:34:34,830
+something like a tanh in terms of converging that model
+
+740
+00:34:34,830 --> 00:34:36,110
+and learning.
+
+741
+00:34:36,110 --> 00:34:39,050
+The drawback is that if you're strongly in the negative region,
+
+742
+00:34:39,050 --> 00:34:41,429
+the unit's what we call dead.
+
+743
+00:34:41,429 --> 00:34:44,429
+There is no gradient, and so you essentially
+
+744
+00:34:44,429 --> 00:34:46,750
+have this gradient collapse, where
+
+745
+00:34:46,750 --> 00:34:51,431
+you can no longer learn from that component of the vector.
+
+746
+00:34:51,431 --> 00:34:53,389
+But this is our default choice, and it's widely
+
+747
+00:34:53,389 --> 00:34:54,710
+used in current models.
+
+748
+00:34:54,710 --> 00:34:56,969
+There's lots of slight tweaks to this,
+
+749
+00:34:56,969 --> 00:34:59,870
+but this is really, really common.
+
+750
+00:34:59,870 --> 00:35:02,910
+So then the last thing I want to talk about in this section
+
+751
+00:35:02,910 --> 00:35:04,630
+is stacking layers.
+
+752
+00:35:04,630 --> 00:35:06,590
+So we talked about a single version
+
+753
+00:35:06,590 --> 00:35:09,590
+of this, where you have your linear projection,
+
+754
+00:35:09,590 --> 00:35:11,278
+and then you have a non-linearity.
+
+755
+00:35:11,278 --> 00:35:13,070
+But now you can take that, and you can just
+
+756
+00:35:13,070 --> 00:35:14,910
+stack another one on top of it.
+
+757
+00:35:14,910 --> 00:35:18,675
+So now both z and h are hidden units.
+
+758
+00:35:18,675 --> 00:35:20,550
+They're somewhere in the middle of the model.
+
+759
+00:35:20,550 --> 00:35:23,010
+We don't necessarily-- they're not seen
+
+760
+00:35:23,010 --> 00:35:25,730
+at the inputs or the outputs.
+
+761
+00:35:25,730 --> 00:35:27,210
+And essentially, then, you can also
+
+762
+00:35:27,210 --> 00:35:28,850
+remember that all of these things
+
+763
+00:35:28,850 --> 00:35:32,450
+are stacked on top of each other, almost in parallel
+
+764
+00:35:32,450 --> 00:35:34,610
+as well, because all of these inputs are mapping
+
+765
+00:35:34,610 --> 00:35:37,090
+to the different components of the output vector.
+
+766
+00:35:37,090 --> 00:35:40,490
+And so you have weights for all of those different dimensions.
+
+767
+00:35:40,490 --> 00:35:45,010
+So this means that h, our output of the first layer,
+
+768
+00:35:45,010 --> 00:35:48,370
+is going to be g, that pointwise non-linearity, applied
+
+769
+00:35:48,370 --> 00:35:54,050
+to now instead of vectorized w transpose x sub j to give us
+
+770
+00:35:54,050 --> 00:35:57,370
+the individual j-th component, you can actually just think
+
+771
+00:35:57,370 --> 00:35:59,910
+of this now as a matrix multiplied by a vector,
+
+772
+00:35:59,910 --> 00:36:02,810
+all of the weights for all of those different dimensions
+
+773
+00:36:02,810 --> 00:36:06,810
+multiplied by the vector x plus the vector of all your biases,
+
+774
+00:36:06,810 --> 00:36:07,810
+b1.
+
+775
+00:36:07,810 --> 00:36:10,690
+So now you have this cleaner notation.
+
+776
+00:36:10,690 --> 00:36:15,450
+And then now y is again g, that same pointwise non-linearity
+
+777
+00:36:15,450 --> 00:36:20,060
+applied on top of your outputs of your first thing,
+
+778
+00:36:20,060 --> 00:36:23,780
+but now with h, multiplied by that vector of all
+
+779
+00:36:23,780 --> 00:36:26,060
+your second-layer weights and added
+
+780
+00:36:26,060 --> 00:36:28,020
+with your second-layer bias term.
+
+781
+00:36:28,020 --> 00:36:31,175
+And so now, your set theta, your model representation,
+
+782
+00:36:31,175 --> 00:36:33,300
+is the set of all of the different weights from all
+
+783
+00:36:33,300 --> 00:36:35,620
+the different layers, as well as all the different biases in all
+
+784
+00:36:35,620 --> 00:36:36,495
+the different layers.
+
+785
+00:36:36,495 --> 00:36:37,780
+Oh, thank you.
+
+786
+00:36:37,780 --> 00:36:38,280
+Oh, yeah.
+
+787
+00:36:38,280 --> 00:36:39,198
+Thank you.
+
+788
+00:36:39,198 --> 00:36:40,740
+AUDIENCE: Based off your application,
+
+789
+00:36:40,740 --> 00:36:42,600
+how do you choose your activation function?
+
+790
+00:36:42,600 --> 00:36:44,740
+What are the parameters of what might be considered
+
+791
+00:36:44,740 --> 00:36:49,380
+a good model or, I guess, a good activation function
+
+792
+00:36:49,380 --> 00:36:52,820
+based off of what you want to use your model for?
+
+793
+00:36:52,820 --> 00:36:54,760
+SARA BEERY: So you're asking, in practice,
+
+794
+00:36:54,760 --> 00:36:58,420
+are there any best practices for choosing the non-linearity based
+
+795
+00:36:58,420 --> 00:37:02,100
+on different types of data.
+
+796
+00:37:02,100 --> 00:37:03,940
+I think in the literature, there's maybe--
+
+797
+00:37:03,940 --> 00:37:06,120
+you can see it coming out.
+
+798
+00:37:06,120 --> 00:37:12,220
+But often, people really do use ReLU quite a lot.
+
+799
+00:37:12,220 --> 00:37:17,150
+But I wouldn't say that there's any great general rules of thumb
+
+800
+00:37:17,150 --> 00:37:17,710
+there.
+
+801
+00:37:17,710 --> 00:37:25,690
+And often-- yeah.
+
+802
+00:37:25,690 --> 00:37:27,190
+I would say there's different things
+
+803
+00:37:27,190 --> 00:37:30,650
+that people have converged upon based on experimental success.
+
+804
+00:37:30,650 --> 00:37:33,715
+So you'll see in the literature like, oh, yeah,
+
+805
+00:37:33,715 --> 00:37:35,590
+everything in this line of work on these data
+
+806
+00:37:35,590 --> 00:37:38,350
+sets with these things, they're always using
+
+807
+00:37:38,350 --> 00:37:40,650
+one or the other component.
+
+808
+00:37:40,650 --> 00:37:42,250
+And then people build on that.
+
+809
+00:37:42,250 --> 00:37:44,690
+Sometimes that's called grad student gradient descent
+
+810
+00:37:44,690 --> 00:37:47,310
+[LAUGHS] because you're essentially
+
+811
+00:37:47,310 --> 00:37:49,790
+writing research papers and learning from those research
+
+812
+00:37:49,790 --> 00:37:53,110
+papers what parameters in terms of things like your activation
+
+813
+00:37:53,110 --> 00:37:54,170
+functions make sense.
+
+814
+00:37:54,170 --> 00:37:57,830
+But yeah, I don't know that I have great rules of thumb
+
+815
+00:37:57,830 --> 00:37:59,470
+of, oh, for this type of application,
+
+816
+00:37:59,470 --> 00:38:02,790
+you should always use this or that.
+
+817
+00:38:02,790 --> 00:38:03,950
+Do you?
+
+818
+00:38:03,950 --> 00:38:05,710
+AUDIENCE: Yeah, it's not a hard science.
+
+819
+00:38:05,710 --> 00:38:06,608
+SARA BEERY: Yeah.
+
+820
+00:38:06,608 --> 00:38:08,150
+AUDIENCE: But it's usually about what
+
+821
+00:38:08,150 --> 00:38:10,910
+makes the network more trainable rather than trying to model
+
+822
+00:38:10,910 --> 00:38:12,550
+a certain kind of data.
+
+823
+00:38:12,550 --> 00:38:14,630
+There are a couple of examples, like using
+
+824
+00:38:14,630 --> 00:38:18,210
+a sinusoidal non-linearity to pick out some for you,
+
+825
+00:38:18,210 --> 00:38:19,130
+if you'd like.
+
+826
+00:38:19,130 --> 00:38:21,490
+There are a few examples that do but usually not.
+
+827
+00:38:21,490 --> 00:38:25,450
+And [INAUDIBLE] does deep learning has a great answer
+
+828
+00:38:25,450 --> 00:38:26,262
+to that question.
+
+829
+00:38:26,262 --> 00:38:26,970
+SARA BEERY: Yeah.
+
+830
+00:38:26,970 --> 00:38:28,370
+So what Jeremy was saying is basically,
+
+831
+00:38:28,370 --> 00:38:29,470
+it's not a hard science.
+
+832
+00:38:29,470 --> 00:38:31,450
+We don't have theoretical guarantees
+
+833
+00:38:31,450 --> 00:38:34,250
+of this is what you should do.
+
+834
+00:38:34,250 --> 00:38:36,190
+But in practice, there are-- yeah,
+
+835
+00:38:36,190 --> 00:38:38,325
+there's counterexamples to that.
+
+836
+00:38:38,325 --> 00:38:40,450
+So if you know, for example, that your features are
+
+837
+00:38:40,450 --> 00:38:43,370
+sinusoidal, it maybe makes sense to try to pick out
+
+838
+00:38:43,370 --> 00:38:44,630
+Fourier representations.
+
+839
+00:38:44,630 --> 00:38:46,130
+You're working in the Fourier space,
+
+840
+00:38:46,130 --> 00:38:49,530
+then maybe you should use a sinusoidal activation.
+
+841
+00:38:49,530 --> 00:38:52,710
+Anyway, but yes, I wish that we better understood it.
+
+842
+00:38:52,710 --> 00:38:55,650
+And that's, I think, why we need a lot more research
+
+843
+00:38:55,650 --> 00:38:57,610
+on the theoretical side of understanding,
+
+844
+00:38:57,610 --> 00:39:02,210
+how do we actually choose these things appropriately
+
+845
+00:39:02,210 --> 00:39:04,570
+instead of maybe learning everything from scratch
+
+846
+00:39:04,570 --> 00:39:07,710
+or doing it experimentally, burning all those trees?
+
+847
+00:39:10,590 --> 00:39:11,090
+Cool.
+
+848
+00:39:11,090 --> 00:39:12,730
+So the parameters of our model are now
+
+849
+00:39:12,730 --> 00:39:14,188
+all the different layers of weights
+
+850
+00:39:14,188 --> 00:39:17,020
+and all the different layers of biases.
+
+851
+00:39:17,020 --> 00:39:20,060
+And so like we said, you can do linear classification
+
+852
+00:39:20,060 --> 00:39:21,040
+with a perceptron.
+
+853
+00:39:21,040 --> 00:39:23,020
+But the fun thing is-- oops--
+
+854
+00:39:23,020 --> 00:39:25,660
+you can do non-linear classification with a deep net,
+
+855
+00:39:25,660 --> 00:39:29,380
+even if that deep net is just a two-layer perceptron.
+
+856
+00:39:29,380 --> 00:39:33,340
+So here, now we've built a double-layer model, still
+
+857
+00:39:33,340 --> 00:39:34,480
+only in two dimensions.
+
+858
+00:39:34,480 --> 00:39:38,020
+So now we have mapped through essentially just
+
+859
+00:39:38,020 --> 00:39:40,500
+this simple non-linearity in between these two
+
+860
+00:39:40,500 --> 00:39:42,140
+different layers.
+
+861
+00:39:42,140 --> 00:39:44,020
+Now if we look at what this looks like,
+
+862
+00:39:44,020 --> 00:39:48,500
+that first layer is giving us one kind of ramp.
+
+863
+00:39:48,500 --> 00:39:50,540
+The second layer gives us a different ramp
+
+864
+00:39:50,540 --> 00:39:52,340
+because it's a different linear model.
+
+865
+00:39:52,340 --> 00:39:55,380
+And now if you do this non-linear combination of them,
+
+866
+00:39:55,380 --> 00:39:58,740
+essentially what you get out is you can actually map--
+
+867
+00:39:58,740 --> 00:40:01,780
+it's almost like think about the intersection of one ramp
+
+868
+00:40:01,780 --> 00:40:03,140
+with another ramp.
+
+869
+00:40:03,140 --> 00:40:07,460
+You get a kind of triangular, almost a pyramidal component
+
+870
+00:40:07,460 --> 00:40:10,520
+that will be higher than everything else.
+
+871
+00:40:10,520 --> 00:40:13,600
+And so now you can still take a simple threshold of that,
+
+872
+00:40:13,600 --> 00:40:16,237
+and now you can get out a non-linear classification.
+
+873
+00:40:16,237 --> 00:40:18,820
+And, of course, you can expand this into many more dimensions.
+
+874
+00:40:18,820 --> 00:40:21,680
+But this is, I think, some nice, simple intuition building
+
+875
+00:40:21,680 --> 00:40:25,640
+as to why you start getting non-linear models when you're
+
+876
+00:40:25,640 --> 00:40:30,600
+taking linear combinations, but with these non-linearities.
+
+877
+00:40:30,600 --> 00:40:31,320
+Cool.
+
+878
+00:40:31,320 --> 00:40:34,520
+So another-- so we expect that you've seen a lot of that
+
+879
+00:40:34,520 --> 00:40:35,400
+before.
+
+880
+00:40:35,400 --> 00:40:37,062
+But moving forward, one of the things
+
+881
+00:40:37,062 --> 00:40:38,520
+we are going to cover in this class
+
+882
+00:40:38,520 --> 00:40:41,120
+is what we can approximate.
+
+883
+00:40:41,120 --> 00:40:44,080
+So what do we know about what is possible to
+
+884
+00:40:44,080 --> 00:40:47,000
+approximate with deep learning?
+
+885
+00:40:47,000 --> 00:40:50,280
+So one dimension of that is representational power.
+
+886
+00:40:50,280 --> 00:40:52,000
+So you have a single layer.
+
+887
+00:40:52,000 --> 00:40:55,800
+You can do any linear decision surface.
+
+888
+00:40:55,800 --> 00:40:57,800
+If you have 2-plus layers, in theory,
+
+889
+00:40:57,800 --> 00:41:01,280
+you can actually represent any function.
+
+890
+00:41:01,280 --> 00:41:03,280
+And this is assuming, of course, that you
+
+891
+00:41:03,280 --> 00:41:05,040
+have some non-trivial non-linearity
+
+892
+00:41:05,040 --> 00:41:06,898
+between those layers because if you don't
+
+893
+00:41:06,898 --> 00:41:08,440
+have that non-linearity, it turns out
+
+894
+00:41:08,440 --> 00:41:11,520
+that a linear layer and another linear layer, this
+
+895
+00:41:11,520 --> 00:41:13,130
+is just a linear combination.
+
+896
+00:41:13,130 --> 00:41:14,210
+It's still linear.
+
+897
+00:41:14,210 --> 00:41:16,130
+So you need that non-linearity.
+
+898
+00:41:16,130 --> 00:41:18,750
+But doing that, you can actually approximate anything.
+
+899
+00:41:18,750 --> 00:41:20,210
+And one way to think about it is,
+
+900
+00:41:20,210 --> 00:41:24,970
+given some amount of capacity, some number
+
+901
+00:41:24,970 --> 00:41:28,350
+of different dimensions that you can do,
+
+902
+00:41:28,350 --> 00:41:30,470
+you can actually approximate any function.
+
+903
+00:41:30,470 --> 00:41:35,390
+This is a rough, hand-wavy intuition thing.
+
+904
+00:41:35,390 --> 00:41:44,843
+But as you're shrinking the size of these different vertical
+
+905
+00:41:44,843 --> 00:41:47,010
+things, you're getting something like a Riemann sum.
+
+906
+00:41:47,010 --> 00:41:48,610
+You can approximate any integral as long
+
+907
+00:41:48,610 --> 00:41:50,110
+as you have enough capacity in terms
+
+908
+00:41:50,110 --> 00:41:52,890
+of the number of small things that you're building up.
+
+909
+00:41:52,890 --> 00:41:57,450
+So this gets at basically one of the issues, which is efficiency.
+
+910
+00:41:57,450 --> 00:41:59,130
+So in theory, you could approximate
+
+911
+00:41:59,130 --> 00:42:03,490
+any complicated function with a sufficiently wide
+
+912
+00:42:03,490 --> 00:42:04,550
+two-layer network.
+
+913
+00:42:04,550 --> 00:42:06,970
+So this means not two dimensions, maybe thousands
+
+914
+00:42:06,970 --> 00:42:09,330
+or millions of dimensions.
+
+915
+00:42:09,330 --> 00:42:13,660
+But in practice, that's actually very inefficient.
+
+916
+00:42:13,660 --> 00:42:16,420
+So a narrow deep model, maybe something
+
+917
+00:42:16,420 --> 00:42:19,380
+that only has much fewer dimensions in terms
+
+918
+00:42:19,380 --> 00:42:22,360
+of the size of each vector or each input and output,
+
+919
+00:42:22,360 --> 00:42:25,420
+but now many, many, many more stacked layers,
+
+920
+00:42:25,420 --> 00:42:27,760
+you might be able to, with a lot less parameters,
+
+921
+00:42:27,760 --> 00:42:30,540
+approximate the same complex function.
+
+922
+00:42:30,540 --> 00:42:32,080
+In practice, we do find that's true.
+
+923
+00:42:32,080 --> 00:42:34,137
+More layers helps.
+
+924
+00:42:34,137 --> 00:42:36,220
+And we'll get into this a little bit in lecture 3,
+
+925
+00:42:36,220 --> 00:42:39,060
+which is about approximation theory, the theory of what
+
+926
+00:42:39,060 --> 00:42:41,482
+it is possible to approximate.
+
+927
+00:42:41,482 --> 00:42:42,940
+And then the other thing that we're
+
+928
+00:42:42,940 --> 00:42:45,420
+going to cover in this class is architectures.
+
+929
+00:42:45,420 --> 00:42:47,640
+So when we talk about deep networks,
+
+930
+00:42:47,640 --> 00:42:50,420
+really, often, we're talking about something that's roughly
+
+931
+00:42:50,420 --> 00:42:54,520
+like this, some cascade of repeated simple computations,
+
+932
+00:42:54,520 --> 00:42:56,860
+each of these linear and then linear models
+
+933
+00:42:56,860 --> 00:42:58,740
+with a non-linearity.
+
+934
+00:42:58,740 --> 00:43:00,540
+And then with every increasing layer,
+
+935
+00:43:00,540 --> 00:43:03,120
+we're getting more abstracted representations.
+
+936
+00:43:03,120 --> 00:43:05,740
+You're getting a higher capacity model.
+
+937
+00:43:05,740 --> 00:43:08,380
+And this means it can form more complex and abstract
+
+938
+00:43:08,380 --> 00:43:09,620
+calculations.
+
+939
+00:43:09,620 --> 00:43:13,660
+Whereas a shallow network, if it's not sufficiently wide,
+
+940
+00:43:13,660 --> 00:43:16,800
+it could maybe only efficiently compute simple things
+
+941
+00:43:16,800 --> 00:43:19,135
+like maybe finding edges, a deep network
+
+942
+00:43:19,135 --> 00:43:20,760
+could efficiently compute harder things
+
+943
+00:43:20,760 --> 00:43:24,640
+like recognizing this clownfish or translating English
+
+944
+00:43:24,640 --> 00:43:27,080
+to Chinese.
+
+945
+00:43:27,080 --> 00:43:29,760
+And so this classification of complex things,
+
+946
+00:43:29,760 --> 00:43:31,360
+essentially, your whole function f
+
+947
+00:43:31,360 --> 00:43:36,440
+of x is now this stacked or almost chain-like
+
+948
+00:43:36,440 --> 00:43:39,280
+mapping from your final layer, which is then
+
+949
+00:43:39,280 --> 00:43:42,400
+a functional mapping of your previous layer,
+
+950
+00:43:42,400 --> 00:43:46,160
+and in and in and in and in, all the way back to that input.
+
+951
+00:43:46,160 --> 00:43:47,720
+And there's a lot of different ways
+
+952
+00:43:47,720 --> 00:43:49,680
+that we've learned to build these mappings
+
+953
+00:43:49,680 --> 00:43:52,080
+for different types of problems and based
+
+954
+00:43:52,080 --> 00:43:54,260
+on the structure of the data we're trying to model.
+
+955
+00:43:54,260 --> 00:43:55,260
+And we'll get into that.
+
+956
+00:43:55,260 --> 00:43:58,540
+We'll talk about CNNs, GNNs, transformers, and RNNs,
+
+957
+00:43:58,540 --> 00:44:01,440
+so convolutional neural networks, graph neural networks,
+
+958
+00:44:01,440 --> 00:44:05,182
+transformers, and recurrent neural networks.
+
+959
+00:44:05,182 --> 00:44:06,640
+And then the other thing that we're
+
+960
+00:44:06,640 --> 00:44:08,265
+going to be talking about in this class
+
+961
+00:44:08,265 --> 00:44:12,250
+is when and why we can generalize.
+
+962
+00:44:12,250 --> 00:44:13,950
+So why do deep nets generalize?
+
+963
+00:44:13,950 --> 00:44:15,930
+Essentially, deep nets have so many parameters,
+
+964
+00:44:15,930 --> 00:44:18,190
+they could just act like lookup tables.
+
+965
+00:44:18,190 --> 00:44:20,350
+They would just regurgitate the training data.
+
+966
+00:44:20,350 --> 00:44:23,070
+But instead, they seem to learn rules that generalize.
+
+967
+00:44:23,070 --> 00:44:25,110
+And this actually defies classical theory.
+
+968
+00:44:25,110 --> 00:44:27,850
+So the classical theory basically
+
+969
+00:44:27,850 --> 00:44:31,710
+says that if your model is overparameterized,
+
+970
+00:44:31,710 --> 00:44:33,030
+it will overfit.
+
+971
+00:44:33,030 --> 00:44:37,570
+There's this capacity versus risk or error curve
+
+972
+00:44:37,570 --> 00:44:40,070
+where if you don't have enough capacity,
+
+973
+00:44:40,070 --> 00:44:41,770
+you're going to underfit the model.
+
+974
+00:44:41,770 --> 00:44:44,810
+And then with too much capacity, you're going to overfit.
+
+975
+00:44:44,810 --> 00:44:47,570
+But in practice-- and this is from this paper "Double
+
+976
+00:44:47,570 --> 00:44:48,850
+Descent"--
+
+977
+00:44:48,850 --> 00:44:53,610
+what we see is that in this modern interpolating regime,
+
+978
+00:44:53,610 --> 00:44:56,510
+we go past that point of being overparameterized,
+
+979
+00:44:56,510 --> 00:44:59,330
+and we're actually then able to actually pass
+
+980
+00:44:59,330 --> 00:45:01,450
+some interpolation threshold or ability
+
+981
+00:45:01,450 --> 00:45:03,090
+to have enough capacity in the model
+
+982
+00:45:03,090 --> 00:45:05,270
+to interpolate between the data points.
+
+983
+00:45:05,270 --> 00:45:08,460
+We're actually able to then potentially get even better,
+
+984
+00:45:08,460 --> 00:45:10,760
+even though the models are massively overparameterized.
+
+985
+00:45:10,760 --> 00:45:11,355
+Yeah.
+
+986
+00:45:11,355 --> 00:45:12,980
+AUDIENCE: What do you mean by capacity?
+
+987
+00:45:12,980 --> 00:45:13,980
+SARA BEERY: Capacity is the number
+
+988
+00:45:13,980 --> 00:45:15,440
+of parameters in the model.
+
+989
+00:45:15,440 --> 00:45:17,380
+So that's both the width and the depth,
+
+990
+00:45:17,380 --> 00:45:22,140
+basically how many values are captured in those model weights?
+
+991
+00:45:22,140 --> 00:45:23,500
+Yeah.
+
+992
+00:45:23,500 --> 00:45:26,180
+Yeah.
+
+993
+00:45:26,180 --> 00:45:27,900
+Yes, thank you.
+
+994
+00:45:27,900 --> 00:45:31,420
+AUDIENCE: And how does that relate to the size of the data
+
+995
+00:45:31,420 --> 00:45:33,140
+samples that you're passing?
+
+996
+00:45:33,140 --> 00:45:34,580
+SARA BEERY: Yeah.
+
+997
+00:45:34,580 --> 00:45:38,240
+So that is not a dimension on this plot,
+
+998
+00:45:38,240 --> 00:45:39,920
+but it definitely is also related.
+
+999
+00:45:39,920 --> 00:45:42,980
+So if you have-- but it's related
+
+1000
+00:45:42,980 --> 00:45:44,500
+in a different dimension.
+
+1001
+00:45:44,500 --> 00:45:47,420
+If you're learning from fewer data points,
+
+1002
+00:45:47,420 --> 00:45:51,760
+it's very easy to learn to maybe overfit to those data points.
+
+1003
+00:45:51,760 --> 00:45:54,760
+So you could think of that honestly, in another way,
+
+1004
+00:45:54,760 --> 00:45:57,100
+maybe as being a different dimension of capacity here,
+
+1005
+00:45:57,100 --> 00:45:59,720
+where it's like almost the capacity of your training data.
+
+1006
+00:45:59,720 --> 00:46:02,403
+But, of course, there's not a direct translation.
+
+1007
+00:46:02,403 --> 00:46:04,320
+But so if you don't have enough training data,
+
+1008
+00:46:04,320 --> 00:46:06,570
+you also can't learn to interpolate between those data
+
+1009
+00:46:06,570 --> 00:46:09,960
+points because you don't have enough coverage of the data
+
+1010
+00:46:09,960 --> 00:46:12,255
+distribution.
+
+1011
+00:46:12,255 --> 00:46:13,380
+I live in that world a lot.
+
+1012
+00:46:13,380 --> 00:46:16,680
+We often don't have enough data to learn
+
+1013
+00:46:16,680 --> 00:46:19,820
+a general representation without a lot of handy tricks.
+
+1014
+00:46:19,820 --> 00:46:22,000
+We will talk about some of those different tricks
+
+1015
+00:46:22,000 --> 00:46:23,708
+in this class, some of the different ways
+
+1016
+00:46:23,708 --> 00:46:26,800
+that we try to convince models not to overfit to data
+
+1017
+00:46:26,800 --> 00:46:30,560
+and try to learn to generalize beyond maybe what
+
+1018
+00:46:30,560 --> 00:46:31,992
+is captured in the data.
+
+1019
+00:46:31,992 --> 00:46:33,950
+But I think that dimension is really important,
+
+1020
+00:46:33,950 --> 00:46:36,240
+and it's one of the reasons that none of this
+
+1021
+00:46:36,240 --> 00:46:39,160
+was possible until we started building big enough data sets,
+
+1022
+00:46:39,160 --> 00:46:41,360
+where you had enough coverage of the space
+
+1023
+00:46:41,360 --> 00:46:43,520
+that you wanted to model in your data
+
+1024
+00:46:43,520 --> 00:46:46,460
+to be able to start interpolating between them.
+
+1025
+00:46:46,460 --> 00:46:46,960
+Yeah.
+
+1026
+00:46:46,960 --> 00:46:48,835
+AUDIENCE: Can you just clarify the difference
+
+1027
+00:46:48,835 --> 00:46:51,520
+between overfitting and overparameterized?
+
+1028
+00:46:51,520 --> 00:46:54,420
+SARA BEERY: Oh, yeah.
+
+1029
+00:46:54,420 --> 00:46:55,920
+So, I mean, I think this paper would
+
+1030
+00:46:55,920 --> 00:46:58,220
+be great to read to be able to really get into it.
+
+1031
+00:46:58,220 --> 00:47:00,720
+But essentially, the idea here is
+
+1032
+00:47:00,720 --> 00:47:02,280
+that in the previous literature, we
+
+1033
+00:47:02,280 --> 00:47:06,270
+said that at some point, if you had too many parameters,
+
+1034
+00:47:06,270 --> 00:47:09,450
+you were going to overfit and learn a model that actually
+
+1035
+00:47:09,450 --> 00:47:12,490
+generalized worse because based on the amount of data that you
+
+1036
+00:47:12,490 --> 00:47:17,010
+had, it was going to-- there's a classical example where you have
+
+1037
+00:47:17,010 --> 00:47:18,510
+three data points.
+
+1038
+00:47:18,510 --> 00:47:23,513
+And if you try to learn a 12-dimensional function,
+
+1039
+00:47:23,513 --> 00:47:25,930
+it will learn something like this to fit those data points
+
+1040
+00:47:25,930 --> 00:47:26,510
+perfectly.
+
+1041
+00:47:26,510 --> 00:47:28,690
+But actually, it's not likely to generalize
+
+1042
+00:47:28,690 --> 00:47:32,170
+because it's basically too spiky or too peaky.
+
+1043
+00:47:32,170 --> 00:47:34,250
+So that's the idea of overfitting.
+
+1044
+00:47:34,250 --> 00:47:36,370
+But this idea of overparameterized
+
+1045
+00:47:36,370 --> 00:47:39,450
+is basically instead of saying underfitting and overfitting,
+
+1046
+00:47:39,450 --> 00:47:42,090
+now we're saying that the new paradigm is underparametrized
+
+1047
+00:47:42,090 --> 00:47:43,630
+and overparameterized.
+
+1048
+00:47:43,630 --> 00:47:45,410
+And what they're basically saying
+
+1049
+00:47:45,410 --> 00:47:50,370
+is that you maybe can't be too overparameterized,
+
+1050
+00:47:50,370 --> 00:47:53,570
+though this perspective is one that doesn't
+
+1051
+00:47:53,570 --> 00:47:56,010
+take into account resources.
+
+1052
+00:47:56,010 --> 00:48:00,370
+So there's many, many people and places and places
+
+1053
+00:48:00,370 --> 00:48:02,970
+that are at MIT, but even actually in this class,
+
+1054
+00:48:02,970 --> 00:48:05,245
+where we don't have infinite compute resources.
+
+1055
+00:48:05,245 --> 00:48:06,620
+So actually, what you really want
+
+1056
+00:48:06,620 --> 00:48:08,820
+is some optimal point on this curve where
+
+1057
+00:48:08,820 --> 00:48:12,380
+you get good performance, but you're not maybe
+
+1058
+00:48:12,380 --> 00:48:14,140
+using resources that you don't have,
+
+1059
+00:48:14,140 --> 00:48:17,460
+super, super large memory GPUs.
+
+1060
+00:48:17,460 --> 00:48:19,260
+Yeah?
+
+1061
+00:48:19,260 --> 00:48:21,100
+AUDIENCE: When you gave the example of using
+
+1062
+00:48:21,100 --> 00:48:24,860
+two very wide layers versus multiple narrow ones,
+
+1063
+00:48:24,860 --> 00:48:27,680
+[INAUDIBLE] there's a rule of thumb about
+
+1064
+00:48:27,680 --> 00:48:30,420
+which is better for about the interpretability
+
+1065
+00:48:30,420 --> 00:48:31,700
+between the two?
+
+1066
+00:48:31,700 --> 00:48:33,260
+SARA BEERY: Yeah.
+
+1067
+00:48:33,260 --> 00:48:35,100
+OK, we're definitely going to get
+
+1068
+00:48:35,100 --> 00:48:38,260
+into this a lot more in some of the later lectures,
+
+1069
+00:48:38,260 --> 00:48:44,500
+these choices between breadth versus depth in models.
+
+1070
+00:48:44,500 --> 00:48:47,920
+But at a very high level, your intuition,
+
+1071
+00:48:47,920 --> 00:48:50,580
+I think, that you're getting at is correct.
+
+1072
+00:48:50,580 --> 00:48:54,602
+If you have only two layers--
+
+1073
+00:48:54,602 --> 00:48:56,060
+actually, maybe not, because if you
+
+1074
+00:48:56,060 --> 00:48:59,080
+have two almost infinite parameter layers,
+
+1075
+00:48:59,080 --> 00:49:02,540
+really, really high dimensional space is hard to interpret.
+
+1076
+00:49:02,540 --> 00:49:06,600
+If you have lower dimensional space over many, many different
+
+1077
+00:49:06,600 --> 00:49:09,580
+now stacked versions of these layers,
+
+1078
+00:49:09,580 --> 00:49:11,140
+it's also hard to interpret.
+
+1079
+00:49:11,140 --> 00:49:14,840
+So I would say like in ecology, for example, people often
+
+1080
+00:49:14,840 --> 00:49:16,520
+still use just generative additive
+
+1081
+00:49:16,520 --> 00:49:18,575
+models of a bunch of different linear things
+
+1082
+00:49:18,575 --> 00:49:20,200
+because they need the interpretability,
+
+1083
+00:49:20,200 --> 00:49:22,680
+or they feel like they do.
+
+1084
+00:49:22,680 --> 00:49:25,920
+And anytime you get to larger numbers
+
+1085
+00:49:25,920 --> 00:49:29,000
+of parameters in either dimension, that interpretability
+
+1086
+00:49:29,000 --> 00:49:31,265
+gets more difficult.
+
+1087
+00:49:31,265 --> 00:49:32,640
+AUDIENCE: I was just going to add
+
+1088
+00:49:32,640 --> 00:49:38,440
+that even in, let's say OpenAI, it's a closely guarded secret
+
+1089
+00:49:38,440 --> 00:49:40,720
+what recipe of width versus depth
+
+1090
+00:49:40,720 --> 00:49:43,760
+that they use in GPT whatever.
+
+1091
+00:49:43,760 --> 00:49:46,000
+If you can come up with a really scientific way
+
+1092
+00:49:46,000 --> 00:49:48,240
+to answer that question, you could go and get
+
+1093
+00:49:48,240 --> 00:49:49,040
+a job there and--
+
+1094
+00:49:49,040 --> 00:49:50,660
+SARA BEERY: Make 7 figures.
+
+1095
+00:49:50,660 --> 00:49:51,600
+[LAUGHS]
+
+1096
+00:49:51,600 --> 00:49:52,603
+AUDIENCE: [INAUDIBLE]
+
+1097
+00:49:52,603 --> 00:49:54,520
+SARA BEERY: Yeah, so what Jeremy is saying is,
+
+1098
+00:49:54,520 --> 00:49:58,080
+there's no perfect prescription or recipe for width versus depth
+
+1099
+00:49:58,080 --> 00:49:59,520
+and what's optimal.
+
+1100
+00:49:59,520 --> 00:50:02,010
+Yeah.
+
+1101
+00:50:02,010 --> 00:50:05,410
+So the simplicity hypothesis in classical theory
+
+1102
+00:50:05,410 --> 00:50:08,570
+basically says that big models learn complicated functions
+
+1103
+00:50:08,570 --> 00:50:09,990
+and overfit the data.
+
+1104
+00:50:09,990 --> 00:50:13,450
+And the emerging theory is that deep networks actually
+
+1105
+00:50:13,450 --> 00:50:16,027
+learn simple functions that generalize.
+
+1106
+00:50:16,027 --> 00:50:18,610
+And we're going to talk about this a lot more in a theoretical
+
+1107
+00:50:18,610 --> 00:50:21,510
+and a more experimental lecture around generalization,
+
+1108
+00:50:21,510 --> 00:50:24,570
+both in and out of distribution.
+
+1109
+00:50:24,570 --> 00:50:26,490
+So again, what I've expected you to see
+
+1110
+00:50:26,490 --> 00:50:29,970
+before-- softmax, cross-entropy loss-- basically,
+
+1111
+00:50:29,970 --> 00:50:32,222
+we have this model that we're trying
+
+1112
+00:50:32,222 --> 00:50:34,430
+to use to learn to classify something like clownfish.
+
+1113
+00:50:34,430 --> 00:50:37,778
+And we assume that we've seen some of these really basic loss
+
+1114
+00:50:37,778 --> 00:50:39,070
+functions that we use for this.
+
+1115
+00:50:39,070 --> 00:50:43,210
+So for example, if you have this as your last layer,
+
+1116
+00:50:43,210 --> 00:50:45,010
+and now you have some set of categories
+
+1117
+00:50:45,010 --> 00:50:47,370
+you're trying to learn to categorize over,
+
+1118
+00:50:47,370 --> 00:50:49,770
+the simple version of this is you take the argmax,
+
+1119
+00:50:49,770 --> 00:50:52,490
+and you say, OK, well, the thing that's darkest on here
+
+1120
+00:50:52,490 --> 00:50:54,450
+is clownfish.
+
+1121
+00:50:54,450 --> 00:50:57,130
+And then the loss that you would calculate
+
+1122
+00:50:57,130 --> 00:51:01,600
+is, OK, the actual correct ground truth label is clownfish,
+
+1123
+00:51:01,600 --> 00:51:04,460
+and then the error between those two, in this case, is zero.
+
+1124
+00:51:04,460 --> 00:51:05,400
+So it's small.
+
+1125
+00:51:05,400 --> 00:51:08,860
+So you've gotten the correct prediction.
+
+1126
+00:51:08,860 --> 00:51:12,300
+And then maybe, actually, the real ground truth label
+
+1127
+00:51:12,300 --> 00:51:14,718
+is grizzly bear, and you've said clownfish.
+
+1128
+00:51:14,718 --> 00:51:16,760
+Now what you'd want is for your loss to be large.
+
+1129
+00:51:16,760 --> 00:51:18,580
+So you want some loss function that
+
+1130
+00:51:18,580 --> 00:51:21,340
+does a good job of punishing you when you're wrong
+
+1131
+00:51:21,340 --> 00:51:24,660
+and not punishing you when you're right.
+
+1132
+00:51:24,660 --> 00:51:26,620
+And the way we actually do this often
+
+1133
+00:51:26,620 --> 00:51:31,320
+is if you assume the net output is some normalized vector,
+
+1134
+00:51:31,320 --> 00:51:33,380
+then you can think of this as a probability
+
+1135
+00:51:33,380 --> 00:51:37,300
+distribution over different possible object classes.
+
+1136
+00:51:37,300 --> 00:51:39,720
+And so what you want this loss function on the right,
+
+1137
+00:51:39,720 --> 00:51:42,020
+this is called cross-entropy loss.
+
+1138
+00:51:42,020 --> 00:51:43,980
+This essentially indicates the distance
+
+1139
+00:51:43,980 --> 00:51:47,740
+between what the model believes the output distribution should
+
+1140
+00:51:47,740 --> 00:51:50,760
+be and what the input distribution actually is,
+
+1141
+00:51:50,760 --> 00:51:53,840
+which in this case is what we call a one hot encoding,
+
+1142
+00:51:53,840 --> 00:51:56,860
+or essentially a vector that's 0 everywhere except for the place
+
+1143
+00:51:56,860 --> 00:51:59,238
+where it's correct, where it's 1.
+
+1144
+00:51:59,238 --> 00:52:01,280
+And so essentially, it's just telling the network
+
+1145
+00:52:01,280 --> 00:52:04,400
+to maximize the probability of the training data, which
+
+1146
+00:52:04,400 --> 00:52:07,200
+forces the output to be a reasonably good probability
+
+1147
+00:52:07,200 --> 00:52:09,940
+model of the object class, given the image,
+
+1148
+00:52:09,940 --> 00:52:12,280
+assuming you have enough training data.
+
+1149
+00:52:12,280 --> 00:52:15,140
+So what this looks like in practice, you say clownfish,
+
+1150
+00:52:15,140 --> 00:52:17,960
+the ground truth label is clownfish.
+
+1151
+00:52:17,960 --> 00:52:22,600
+Maybe this is your prediction, so now the score
+
+1152
+00:52:22,600 --> 00:52:24,720
+is basically saying, this is how much better
+
+1153
+00:52:24,720 --> 00:52:27,040
+you could have done--
+
+1154
+00:52:27,040 --> 00:52:28,740
+how much better you could have done,
+
+1155
+00:52:28,740 --> 00:52:31,760
+which is the difference between the amount of probability
+
+1156
+00:52:31,760 --> 00:52:33,000
+you gave the class clownfish.
+
+1157
+00:52:33,000 --> 00:52:34,420
+I'm putting probability in quotes here.
+
+1158
+00:52:34,420 --> 00:52:35,880
+It's super important to know that these are not
+
+1159
+00:52:35,880 --> 00:52:36,900
+true probabilities.
+
+1160
+00:52:36,900 --> 00:52:39,360
+They're scores.
+
+1161
+00:52:39,360 --> 00:52:42,360
+And then that red is the dimension
+
+1162
+00:52:42,360 --> 00:52:43,473
+that you could do better.
+
+1163
+00:52:43,473 --> 00:52:45,640
+And that's telling you the direction of the gradient
+
+1164
+00:52:45,640 --> 00:52:47,960
+you want to go in.
+
+1165
+00:52:47,960 --> 00:52:50,780
+So maybe grizzly bear, you got it correct.
+
+1166
+00:52:50,780 --> 00:52:51,620
+It's grizzly bear.
+
+1167
+00:52:51,620 --> 00:52:58,000
+Now the amount that's left over is small versus actually
+
+1168
+00:52:58,000 --> 00:53:02,487
+if it's chameleon, and you're saying iguana.
+
+1169
+00:53:02,487 --> 00:53:04,070
+Essentially, this thing is normalized,
+
+1170
+00:53:04,070 --> 00:53:06,330
+so if you put a lot more probability on one thing, then
+
+1171
+00:53:06,330 --> 00:53:07,788
+the correct answer, then you end up
+
+1172
+00:53:07,788 --> 00:53:10,330
+with a much smaller amount that now you're looking
+
+1173
+00:53:10,330 --> 00:53:12,810
+at the difference between it.
+
+1174
+00:53:12,810 --> 00:53:16,170
+And basically, the idea with all of this in deep learning
+
+1175
+00:53:16,170 --> 00:53:18,730
+is you're taking all these different weights
+
+1176
+00:53:18,730 --> 00:53:23,170
+in your massive model, and then you're fiddling around with them
+
+1177
+00:53:23,170 --> 00:53:25,170
+until you match the desired output for all
+
+1178
+00:53:25,170 --> 00:53:26,410
+your training data.
+
+1179
+00:53:26,410 --> 00:53:29,650
+You're basically just wiggling around all
+
+1180
+00:53:29,650 --> 00:53:30,810
+these different weights.
+
+1181
+00:53:30,810 --> 00:53:33,390
+So you're going through your training data,
+
+1182
+00:53:33,390 --> 00:53:36,250
+you're predicting something, you're calculating a loss,
+
+1183
+00:53:36,250 --> 00:53:38,995
+and you're doing this for many different data samples.
+
+1184
+00:53:38,995 --> 00:53:40,370
+And you're doing it over and over
+
+1185
+00:53:40,370 --> 00:53:42,330
+and over again until the model gets everything
+
+1186
+00:53:42,330 --> 00:53:46,930
+right, or as close to everything right as possible.
+
+1187
+00:53:46,930 --> 00:53:48,810
+We also expect that you've seen some amount
+
+1188
+00:53:48,810 --> 00:53:52,370
+of parallel processing and the idea of tensors before this.
+
+1189
+00:53:52,370 --> 00:53:54,570
+So this is the idea that a lot of this stuff,
+
+1190
+00:53:54,570 --> 00:53:56,950
+because it's repeated calculations,
+
+1191
+00:53:56,950 --> 00:53:58,310
+you can be done in batch.
+
+1192
+00:53:58,310 --> 00:54:01,430
+So each of these individual losses for the individual data
+
+1193
+00:54:01,430 --> 00:54:03,722
+points, well, it's all going to be summed anyway.
+
+1194
+00:54:03,722 --> 00:54:05,430
+So you can do it in parallel, and now you
+
+1195
+00:54:05,430 --> 00:54:09,950
+can take these batches and more efficiently calculate that sum.
+
+1196
+00:54:09,950 --> 00:54:13,950
+And so look, you take the same layer for all three of these,
+
+1197
+00:54:13,950 --> 00:54:16,310
+you can stack them, and now essentially you
+
+1198
+00:54:16,310 --> 00:54:20,470
+get this matrix that's features multiplied by images.
+
+1199
+00:54:20,470 --> 00:54:22,630
+And so that's what your tensors are.
+
+1200
+00:54:22,630 --> 00:54:24,550
+They're these multi-dimensional arrays,
+
+1201
+00:54:24,550 --> 00:54:26,910
+and every single layer is some representation
+
+1202
+00:54:26,910 --> 00:54:29,230
+of the input data.
+
+1203
+00:54:29,230 --> 00:54:31,090
+And actually, everything is a tensor.
+
+1204
+00:54:31,090 --> 00:54:33,470
+A tensor is just a multi-dimensional matrix.
+
+1205
+00:54:33,470 --> 00:54:36,990
+So you can say, OK, here's our mathematical representation
+
+1206
+00:54:36,990 --> 00:54:38,190
+of this model.
+
+1207
+00:54:38,190 --> 00:54:40,810
+But you can also just represent it this way.
+
+1208
+00:54:40,810 --> 00:54:44,650
+You have these vectors of your different input values,
+
+1209
+00:54:44,650 --> 00:54:46,330
+and now you have your batch dimension,
+
+1210
+00:54:46,330 --> 00:54:49,610
+which is now this vertical stacking of all those layers.
+
+1211
+00:54:49,610 --> 00:54:52,070
+And now you multiply that by your weights matrix,
+
+1212
+00:54:52,070 --> 00:54:53,790
+and you get out your output, and then
+
+1213
+00:54:53,790 --> 00:54:55,810
+you run that through a pointwise non-linearity,
+
+1214
+00:54:55,810 --> 00:54:58,460
+and then again, just another matrix multiplication.
+
+1215
+00:54:58,460 --> 00:55:00,480
+And then you get your output z2, and then you
+
+1216
+00:55:00,480 --> 00:55:02,320
+take that non-linearity, and you get y.
+
+1217
+00:55:02,320 --> 00:55:05,480
+So this is why the fact that GPUs
+
+1218
+00:55:05,480 --> 00:55:07,480
+can do so many multiplications in parallel
+
+1219
+00:55:07,480 --> 00:55:10,640
+was important, because we can rewrite all of these models
+
+1220
+00:55:10,640 --> 00:55:13,140
+as just essentially sets of multiplications.
+
+1221
+00:55:13,140 --> 00:55:15,040
+And we'll go into this in a lot more detail
+
+1222
+00:55:15,040 --> 00:55:16,490
+as well in the future.
+
+1223
+00:55:16,490 --> 00:55:18,240
+So what we're going to cover in this class
+
+1224
+00:55:18,240 --> 00:55:20,740
+is how deep networks represent data.
+
+1225
+00:55:20,740 --> 00:55:29,120
+So essentially, it's this idea, where
+
+1226
+00:55:29,120 --> 00:55:33,280
+deep networks are a more compact way of representing knowledge
+
+1227
+00:55:33,280 --> 00:55:34,400
+in data.
+
+1228
+00:55:34,400 --> 00:55:39,360
+And previous methods we saw were more like lookup tables.
+
+1229
+00:55:39,360 --> 00:55:41,160
+But there's other and maybe better ways
+
+1230
+00:55:41,160 --> 00:55:43,400
+to learn a mapping between input and output
+
+1231
+00:55:43,400 --> 00:55:47,640
+that basically assume that there are these lower-level building
+
+1232
+00:55:47,640 --> 00:55:50,880
+blocks that are useful for many different possible downstream
+
+1233
+00:55:50,880 --> 00:55:51,680
+tasks.
+
+1234
+00:55:51,680 --> 00:55:53,880
+So one nice example is the idea of trying
+
+1235
+00:55:53,880 --> 00:55:56,290
+to learn a classifier for the letter T.
+
+1236
+00:55:56,290 --> 00:55:58,470
+So if you want to learn to classify the letter T,
+
+1237
+00:55:58,470 --> 00:56:00,762
+you could try to build a classifier just for the letter
+
+1238
+00:56:00,762 --> 00:56:03,690
+T. Or you could take a classifier that classifies
+
+1239
+00:56:03,690 --> 00:56:06,450
+lines, and you could say, OK, here's a line,
+
+1240
+00:56:06,450 --> 00:56:09,090
+and then you could rotate, have a rotation of that classifier,
+
+1241
+00:56:09,090 --> 00:56:10,530
+and you'd say, here's a line.
+
+1242
+00:56:10,530 --> 00:56:13,410
+And now all you have to do is understand the connection point
+
+1243
+00:56:13,410 --> 00:56:14,550
+between these two lines.
+
+1244
+00:56:14,550 --> 00:56:19,770
+So that line classifier is reusable in some combination
+
+1245
+00:56:19,770 --> 00:56:21,390
+to get a T classifier.
+
+1246
+00:56:21,390 --> 00:56:22,830
+And that's the basic idea here.
+
+1247
+00:56:22,830 --> 00:56:27,550
+And actually in this post hoc way,
+
+1248
+00:56:27,550 --> 00:56:29,915
+we've analyzed what is learned in layers
+
+1249
+00:56:29,915 --> 00:56:31,790
+of things like convolutional neural networks.
+
+1250
+00:56:31,790 --> 00:56:34,690
+And we do see that you'll get low-level representations
+
+1251
+00:56:34,690 --> 00:56:35,870
+in the earlier layers.
+
+1252
+00:56:35,870 --> 00:56:38,330
+Then they get combined into more and more complex
+
+1253
+00:56:38,330 --> 00:56:42,290
+representations in those later layers.
+
+1254
+00:56:42,290 --> 00:56:44,150
+And you can actually see this as well.
+
+1255
+00:56:44,150 --> 00:56:48,170
+If you take an input image, and you take those,
+
+1256
+00:56:48,170 --> 00:56:52,650
+and you cluster them in some low-level representation
+
+1257
+00:56:52,650 --> 00:56:56,002
+of the space for each layer, the layers earlier on in the network
+
+1258
+00:56:56,002 --> 00:56:58,710
+are not going to cluster well by category, because they're really
+
+1259
+00:56:58,710 --> 00:57:00,350
+just categorizing things like, does it
+
+1260
+00:57:00,350 --> 00:57:04,550
+have directional orientations of light and dark gradients
+
+1261
+00:57:04,550 --> 00:57:05,710
+in the pixels?
+
+1262
+00:57:05,710 --> 00:57:08,210
+But actually, when you get towards the end of the network,
+
+1263
+00:57:08,210 --> 00:57:09,910
+it's learning more concepts, and that's
+
+1264
+00:57:09,910 --> 00:57:12,327
+where you start getting these clusters of different things
+
+1265
+00:57:12,327 --> 00:57:14,550
+like fish.
+
+1266
+00:57:14,550 --> 00:57:19,750
+And we will talk about actually how that representation learns
+
+1267
+00:57:19,750 --> 00:57:23,390
+and is structured through space in a bunch of different lectures
+
+1268
+00:57:23,390 --> 00:57:25,430
+on representation learning, where we talk about
+
+1269
+00:57:25,430 --> 00:57:29,655
+reconstruction, similarity, and theory.
+
+1270
+00:57:29,655 --> 00:57:32,030
+We're also going to cover generative models going forward
+
+1271
+00:57:32,030 --> 00:57:33,350
+in the class.
+
+1272
+00:57:33,350 --> 00:57:35,670
+And this is things like text-based and image-based
+
+1273
+00:57:35,670 --> 00:57:37,070
+generation.
+
+1274
+00:57:37,070 --> 00:57:39,470
+And we'll cover basics, representations,
+
+1275
+00:57:39,470 --> 00:57:42,670
+and conditional models.
+
+1276
+00:57:42,670 --> 00:57:44,590
+And then we're going to cover in this class
+
+1277
+00:57:44,590 --> 00:57:46,870
+how to think about weight reuse and some
+
+1278
+00:57:46,870 --> 00:57:48,670
+of the efficiencies in terms of training
+
+1279
+00:57:48,670 --> 00:57:50,630
+if you're able to reuse components
+
+1280
+00:57:50,630 --> 00:57:53,800
+of previously trained models.
+
+1281
+00:57:53,800 --> 00:57:57,380
+So here, again, this idea that, all right,
+
+1282
+00:57:57,380 --> 00:58:02,320
+well, you learned this thing to categorize pictures of animals,
+
+1283
+00:58:02,320 --> 00:58:04,560
+and now maybe you want to categorize
+
+1284
+00:58:04,560 --> 00:58:06,620
+some sort of satellite imagery, well,
+
+1285
+00:58:06,620 --> 00:58:10,360
+actually, a lot of those initial components about lines
+
+1286
+00:58:10,360 --> 00:58:13,000
+and orientations and structures, those
+
+1287
+00:58:13,000 --> 00:58:14,620
+are useful for both of these.
+
+1288
+00:58:14,620 --> 00:58:19,320
+So what do we really need to learn from scratch versus what
+
+1289
+00:58:19,320 --> 00:58:22,160
+is generally useful in terms of the representations that
+
+1290
+00:58:22,160 --> 00:58:24,343
+are learned?
+
+1291
+00:58:24,343 --> 00:58:25,760
+And this is really valuable if you
+
+1292
+00:58:25,760 --> 00:58:28,180
+don't have big data or big compute,
+
+1293
+00:58:28,180 --> 00:58:31,240
+if you can pre-generate representations that then you
+
+1294
+00:58:31,240 --> 00:58:34,320
+can learn on top of without needing to learn everything
+
+1295
+00:58:34,320 --> 00:58:36,920
+from scratch.
+
+1296
+00:58:36,920 --> 00:58:39,640
+And so we'll get into whether or not
+
+1297
+00:58:39,640 --> 00:58:42,380
+these things are generalizable or transferable
+
+1298
+00:58:42,380 --> 00:58:43,880
+in these transfer learning lectures,
+
+1299
+00:58:43,880 --> 00:58:46,400
+where we talk about models and data.
+
+1300
+00:58:46,400 --> 00:58:49,800
+And then finally, we'll talk about scaling.
+
+1301
+00:58:49,800 --> 00:58:53,890
+So when you think about the scale of a brain,
+
+1302
+00:58:53,890 --> 00:58:57,830
+something like this little worm only has 302 neurons,
+
+1303
+00:58:57,830 --> 00:59:02,650
+so you can think of that as 302 different values
+
+1304
+00:59:02,650 --> 00:59:03,850
+in its neural network.
+
+1305
+00:59:03,850 --> 00:59:06,570
+A fruit fly is 15,000.
+
+1306
+00:59:06,570 --> 00:59:09,970
+Human beings have 100 billion, roughly.
+
+1307
+00:59:09,970 --> 00:59:13,110
+Elephants have 250 billion neurons in their brains.
+
+1308
+00:59:13,110 --> 00:59:14,570
+I work with elephants a lot.
+
+1309
+00:59:14,570 --> 00:59:15,590
+They're amazing.
+
+1310
+00:59:18,530 --> 00:59:21,675
+And we'll talk about scale and deep learning
+
+1311
+00:59:21,675 --> 00:59:23,050
+and what this means, and actually
+
+1312
+00:59:23,050 --> 00:59:24,450
+get into some of the really great questions
+
+1313
+00:59:24,450 --> 00:59:26,130
+that different people asked in terms of,
+
+1314
+00:59:26,130 --> 00:59:30,210
+how does maybe scaling rules change when you're thinking
+
+1315
+00:59:30,210 --> 00:59:32,472
+about optimization, what are the laws of scaling,
+
+1316
+00:59:32,472 --> 00:59:33,930
+and how do we think about something
+
+1317
+00:59:33,930 --> 00:59:38,690
+like automatically learning how to best optimize a model?
+
+1318
+00:59:38,690 --> 00:59:39,730
+Great.
+
+1319
+00:59:39,730 --> 00:59:43,290
+So I tried to cover today how we got
+
+1320
+00:59:43,290 --> 00:59:46,790
+where we are today, basically just honestly mostly joking,
+
+1321
+00:59:46,790 --> 00:59:49,810
+but definitely a brief history of these fluctuation and hype
+
+1322
+00:59:49,810 --> 00:59:50,890
+cycles.
+
+1323
+00:59:50,890 --> 00:59:53,950
+I would say that everyone's pretty clear
+
+1324
+00:59:53,950 --> 00:59:58,670
+that we're currently in a really hypey part of the hype cycle.
+
+1325
+00:59:58,670 --> 01:00:03,610
+What we expected you maybe saw before and also very high level,
+
+1326
+01:00:03,610 --> 01:00:06,670
+some of the things we're going to cover in this class.
+
+1327
+01:00:06,670 --> 01:00:11,110
+So I'm happy to, if anyone has any final questions--
+
+1328
+01:00:11,110 --> 01:00:12,191
+yeah.
+
+1329
+01:00:12,191 --> 01:00:13,566
+AUDIENCE: Slightly underweighted,
+
+1330
+01:00:13,566 --> 01:00:17,110
+but would you be willing to share
+
+1331
+01:00:17,110 --> 01:00:19,930
+an estimate for how many data it will take this first lecture
+
+1332
+01:00:19,930 --> 01:00:22,148
+to get a million views?
+
+1333
+01:00:22,148 --> 01:00:24,190
+SARA BEERY: How long it'll take the first lecture
+
+1334
+01:00:24,190 --> 01:00:25,180
+to get how many views?
+
+1335
+01:00:25,180 --> 01:00:26,430
+AUDIENCE: Let's say a million.
+
+1336
+01:00:26,430 --> 01:00:28,150
+SARA BEERY: Well, I mean, honestly, the intro lecture
+
+1337
+01:00:28,150 --> 01:00:29,990
+is probably going to be the least watched
+
+1338
+01:00:29,990 --> 01:00:32,910
+of all the lectures [LAUGHS] because it's just
+
+1339
+01:00:32,910 --> 01:00:34,490
+a bunch of course logistics.
+
+1340
+01:00:34,490 --> 01:00:36,190
+We might even edit those out.
+
+1341
+01:00:36,190 --> 01:00:37,730
+But great question.
+
+1342
+01:00:37,730 --> 01:00:39,540
+I have no idea.

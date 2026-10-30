@@ -1,0 +1,803 @@
+1
+00:00:10,980 --> 00:00:21,210
+So as with the linear methods we will first start by looking at regression right,
+
+2
+00:00:21,210 --> 00:00:24,690
+so we will see how to use decision trees for doing regression. So far I have just told you how to do
+
+3
+00:00:24,690 --> 00:00:39,960
+the partitioning right. Let us look at regression tress,
+
+4
+00:01:38,100 --> 00:01:45,420
+so I split the region into four right, so I will first see if the data point that comes to
+
+5
+00:01:45,420 --> 00:01:52,110
+me right, whether it lies in region 1 or region 2 or region 3 or region 4and for each of those
+
+6
+00:01:52,110 --> 00:01:58,410
+regions I am going to have a some constant that I will output right, so if you think about it the
+
+7
+00:01:58,410 --> 00:02:04,860
+function that I will output from here right, so we will have one value in this region right one
+
+8
+00:02:04,860 --> 00:02:09,120
+value in this region right, another value in this region another while in this region so it
+
+9
+00:02:09,120 --> 00:02:15,540
+will be like a piece wise constant thing right. So people understand that right, you are not going
+
+10
+00:02:15,540 --> 00:02:21,000
+to test my 3D drawing skills right, so you can see that there will be one output for any point
+
+11
+00:02:21,000 --> 00:02:25,950
+in this region one output for any point in this region, one output for any point in this region,
+
+12
+00:02:25,950 --> 00:02:31,830
+one output for any point in this sense and in some sense it is similar to KNNs,
+
+13
+00:02:31,830 --> 00:02:36,840
+because you are assuming that there is a piece wise constant assumption about the
+
+14
+00:02:36,840 --> 00:02:46,320
+function that we are trying to model, right. By the second parametric or nonparametric,
+
+15
+00:02:49,370 --> 00:03:04,790
+parametric okay, what are the parameters, so is it parametric resonance is depends on N becomes
+
+16
+00:03:04,790 --> 00:03:12,380
+larger what happens, so we can apply one of those ideas here instead of fitting a piecewise constant
+
+17
+00:03:12,380 --> 00:03:20,570
+per region you can fit a linear function on that region right, I have done the splitting right,
+
+18
+00:03:20,570 --> 00:03:24,950
+so I am going to have some training data right, so some of the training data points will be here,
+
+19
+00:03:24,950 --> 00:03:29,000
+some will fall here some will fall here and some will fall here I can take all
+
+20
+00:03:29,000 --> 00:03:35,150
+the points in R1 and fit a plane to that. And I can take all the points in R2 and fit a
+
+21
+00:03:35,150 --> 00:03:44,810
+plane to that likewise for R3 and R 4will that be better or worse than fitting a constant? Better.
+
+22
+00:03:44,810 --> 00:03:53,180
+no actually it does not depend actually it is always better right, it is always better in
+
+23
+00:03:53,180 --> 00:03:57,320
+the worst case you will fit a constant I mean if constant is going to be really better you will fit
+
+24
+00:03:57,320 --> 00:04:00,410
+a constant because you are minimizing squared error and anyway end up doing that right.
+
+25
+00:04:00,410 --> 00:04:09,950
+So what is the problem with that little bit more work here that do more work and there is variance
+
+26
+00:04:09,950 --> 00:04:12,980
+the significant variance we will come to the variance bit yeah, but the significant variance
+
+27
+00:04:12,980 --> 00:04:22,160
+but such things are called model tree sometimes, model trees in fact you can do more complex stuff
+
+28
+00:04:22,160 --> 00:04:27,560
+itself it does not have to be linear, a linear is easy right, I can do any kind of regression
+
+29
+00:04:27,560 --> 00:04:34,130
+I want on this right, I can fit I can use a neural network if I want and to learn a curve
+
+30
+00:04:34,130 --> 00:04:40,010
+only on the data points that lie in R1 right. Not a good idea usually because I have already
+
+31
+00:04:40,010 --> 00:04:49,070
+divided my entire training data into at least 1 by 4 if not smaller right, I mean some of the regions
+
+32
+00:04:49,070 --> 00:04:54,290
+could have much smaller data some could have more right, but still I am cutting down on my training
+
+33
+00:04:54,290 --> 00:05:05,460
+set that is available so it is going to be harder to train okay, so I am going to erase this stuff
+
+34
+00:05:05,460 --> 00:05:45,190
+and try and generalize this or let me do it again. So I have n observations as you all know right,
+
+35
+00:05:45,190 --> 00:05:51,550
+so this is our usual setting so where the input comes from Rp and the output comes from
+
+36
+00:06:28,430 --> 00:06:31,820
+okay. So the function that we are trying to learn
+
+37
+00:06:31,820 --> 00:06:45,170
+is Cm and Rm right so sorry, the set of parameters that we have to estimate our Cm and Rm correct,
+
+38
+00:06:45,170 --> 00:06:53,690
+so we need to know where are we splitting, how are we splitting the region and having found
+
+39
+00:06:53,690 --> 00:07:27,040
+the regions right, what is the constant that we will fit within that region okay.
+
+40
+00:07:34,810 --> 00:07:41,740
+So there are the two questions determine the M regions and given the regions find the response
+
+41
+00:07:41,740 --> 00:07:48,880
+right, but one thing to note is unlike KNN or anything the M is not given to you right,
+
+42
+00:07:48,880 --> 00:07:53,260
+the M is something that you discover from the data and that is why I said it is nonparametric right,
+
+43
+00:07:53,260 --> 00:07:58,180
+you can actually have more regions if the data requires it you can have lesser regions M is
+
+44
+00:07:58,180 --> 00:08:06,790
+not given to a priori right, but sometimes as a regularizer you can decide to fix M as
+
+45
+00:08:06,790 --> 00:08:14,050
+well you can say I do not want a tree that is more than four levels d as a complex d
+
+46
+00:08:14,050 --> 00:08:21,910
+measure but again that is derived from the problem definition the model itself is not parametric.
+
+47
+00:08:21,910 --> 00:08:32,500
+So let us look at the second question first, because it is easier we actually have a proper
+
+48
+00:08:32,500 --> 00:09:14,880
+answer to the second question right. Right, so this is essentially what we are trying
+
+49
+00:09:14,880 --> 00:09:25,230
+to minimize right, and so we can try to do this region wise right, because the output
+
+50
+00:09:25,230 --> 00:09:29,220
+that I produce for one region does not depend on the output I produce for another region so
+
+51
+00:09:29,220 --> 00:09:37,470
+I can do this minimization region wise right, so I can pick yeah, every point would have it
+
+52
+00:09:37,470 --> 00:09:51,290
+is own box kind of that. Okay, yes. Could likely yeah, so we will come to that will
+
+53
+00:09:51,290 --> 00:09:55,430
+again address this question later, right. Yes, so assuming that there is some amount
+
+54
+00:09:55,430 --> 00:10:01,670
+of so you will not okay, let us step back into this you are going to get training data
+
+55
+00:10:01,670 --> 00:10:10,970
+at best what you would do is you would have regions set within a region only 1.6 right,
+
+56
+00:10:10,970 --> 00:10:17,120
+so that is not saying that I am going to fit it tightly around that point right, so all of
+
+57
+00:10:17,120 --> 00:10:21,380
+our for that might be only one point but still there will be some kind of regional segmentation
+
+58
+00:10:21,380 --> 00:10:26,420
+that is happening on the input data right. Second I have I am going to introduce some kind
+
+59
+00:10:26,420 --> 00:10:36,380
+of regularization that prevents me from doing that okay, so that will not be recap that is
+
+60
+00:10:36,380 --> 00:10:39,710
+exactly what he was asking so you could end up with that that is what I am saying and
+
+61
+00:10:39,710 --> 00:10:50,150
+we have to find some way of regularizing it so that you do not do that right. Right so if you
+
+62
+00:10:50,150 --> 00:10:54,710
+going to minimize this region wise but anyway right now I am talking about given a region
+
+63
+00:10:54,710 --> 00:11:06,770
+right so that is easy so we will not be over fitting things so given the region right.
+
+64
+00:11:06,770 --> 00:11:10,160
+So I am going to find out what should be the output of the mth region right,
+
+65
+00:11:10,160 --> 00:11:33,230
+Cm is the output of the mth region right, that is what we assumed, what should it be
+
+66
+00:12:00,140 --> 00:12:09,800
+give me a simpler I am fitting a constant I am not fitting a straight line here, average of all the
+
+67
+00:12:09,800 --> 00:12:26,210
+points okay, like average of all the points which lie in the region and take the yi is corresponding
+
+68
+00:12:26,210 --> 00:12:28,880
+to the points lying in the region and take the average okay, that is the best response
+
+69
+00:12:28,880 --> 00:12:35,630
+that is that is easy okay that is done. What is the harder part, finding the regions
+
+70
+00:12:35,630 --> 00:12:47,000
+right, in fact it can be shown that finding the best possible Rm set of RM right is actually
+
+71
+00:12:47,000 --> 00:12:55,010
+NP-complete right, and is NP-complete now in the again NP exactly NP-complete right,
+
+72
+00:12:55,010 --> 00:13:02,360
+so you can show that finding the best possible Rm is very, very hard right, so we have to come up
+
+73
+00:13:02,360 --> 00:13:21,320
+with some kind of approximation so essentially we use a greedy approximation. No, they just tell you
+
+74
+00:13:21,320 --> 00:13:26,720
+what XII I told you I told you what the training data is right, yeah this is all the training data
+
+75
+00:13:26,720 --> 00:13:33,290
+is you get xi, yi your job is to find the regions and find the region I find the response.
+
+76
+00:13:33,290 --> 00:13:47,220
+Yeah, yeah find the best region you can given it a region you can tell me what the
+
+77
+00:13:47,220 --> 00:13:52,050
+performance is right, but then finding what the best such segmentation is actually hard
+
+78
+00:13:52,050 --> 00:14:02,700
+you have to search through the combinatorial really many segmentations. So the way we do
+
+79
+00:14:02,700 --> 00:14:24,540
+it is following right, yeah, okay, now for a given M so I want to find the smallest M
+
+80
+00:14:24,540 --> 00:14:30,150
+such that I get that performance smallest region, smallest region yeah, the smallest
+
+81
+00:14:30,150 --> 00:14:33,540
+region said for which I get the performance that is really ideally what I am looking for right,
+
+82
+00:14:33,540 --> 00:14:46,560
+smallest M sorry, given an M finding the region yeah, in general that is also hard but I want to
+
+83
+00:14:46,560 --> 00:14:50,130
+find it for the smallest M as well. Ideally you want to find it for the
+
+84
+00:14:50,130 --> 00:14:55,830
+smallest, ideally like there is some data if you are right, like you would have to either specify
+
+85
+00:14:55,830 --> 00:15:03,330
+the M and then you find the best or you see that when the best and find the smallest M for which
+
+86
+00:15:04,440 --> 00:15:10,080
+you can. Ideally it should be find the best and then find the smallest M for which you can do
+
+87
+00:15:10,080 --> 00:15:16,020
+the best right, but we end up doing compromise on that as well so what will what we will do
+
+88
+00:15:16,020 --> 00:15:20,190
+is you just making me go do this all out of order by asking leading questions.
+
+89
+00:15:20,190 --> 00:15:28,290
+But what we are going to end up doing is we are going to say okay, here is a greedy algorithm
+
+90
+00:15:28,290 --> 00:15:36,240
+right, greedy algorithm find the best that the greedy algorithm can do okay. Now find
+
+91
+00:15:36,240 --> 00:15:44,430
+a smaller tree okay, that will achieve close to the greedy algorithms best performance again I
+
+92
+00:15:44,430 --> 00:15:48,360
+will have to make a compromiser I cannot say that give me the smallest tree that will give me the
+
+93
+00:15:48,360 --> 00:15:53,580
+same performance as the greedy algorithm. Because if that is exists one in fact greedy
+
+94
+00:15:53,580 --> 00:15:58,530
+algorithm would have found it right, along the way as it was growing right,
+
+95
+00:15:58,530 --> 00:16:04,950
+and therefore we have to say that okay give me a smaller tree right, that is close in performance
+
+96
+00:16:04,950 --> 00:16:12,420
+to what I get with the greedy algorithm right. See remember we already made an approximation by
+
+97
+00:16:12,420 --> 00:16:17,130
+assuming we are doing recursive partitioning right, so you cannot get the best possible
+
+98
+00:16:17,130 --> 00:16:23,250
+performance okay, that we have given up right by choosing a tree representation right.
+
+99
+00:16:23,250 --> 00:16:27,330
+So this is a lot of approximation that is why I said right, I mean there is no good understanding
+
+100
+00:16:27,330 --> 00:16:33,630
+of how decision trees eventually work if you ask me two specific questions like okay,
+
+101
+00:16:33,630 --> 00:16:39,120
+how good an approximation will this greedy algorithm converge to right, suppose my
+
+102
+00:16:39,120 --> 00:16:46,770
+performance the best possible performance on this the Bayesian optimal error on this dataset is say
+
+103
+00:16:46,770 --> 00:16:52,140
+93 percent performance I can see 7% is optimal error okay, how close to optimal error will a
+
+104
+00:16:52,140 --> 00:17:03,230
+decision tree algorithm get to no answer right. While you can answer some of those questions for
+
+105
+00:17:03,230 --> 00:17:27,170
+things like logistic regression and consider some splitting variable j so what I mean by splitting
+
+106
+00:17:27,170 --> 00:17:31,370
+variable the splitting variable is the question that I asked here, okay this variable here in
+
+107
+00:17:31,370 --> 00:17:37,850
+the question so x1 right or x2, so in this case of splitting variable is x1 here the splitting
+
+108
+00:17:37,850 --> 00:17:43,580
+variable is x2 okay, and what is the split point it is the number on the other side right so 0.6,
+
+109
+00:17:43,580 --> 00:17:51,740
+so in this case the splitting variable was x1 and the split point was 0.6 okay.
+
+110
+00:17:51,740 --> 00:18:26,510
+Consider some splitting variable j and a split point s, okay so I am splitting my input data
+
+111
+00:18:26,510 --> 00:18:33,650
+into two parts one where the jth variable is less than s, less than or equal to s the second
+
+112
+00:18:33,650 --> 00:18:38,870
+part where the jth variable is greater than s okay, let us still to get to two parts so what
+
+113
+00:18:38,870 --> 00:19:35,210
+we really want our j and s such that okay, I am seeking j and s is that if I fit the best value
+
+114
+00:19:35,210 --> 00:19:42,590
+for the points that lie in R1and if I fit the best value for the points that lie in R2 that is
+
+115
+00:19:42,590 --> 00:19:47,960
+what the inner minimum minimization is right the sum of this is minimized, so sum of the squared
+
+116
+00:19:47,960 --> 00:19:53,930
+errors over the two regions is minimized right ,so the j and s actually influence which data point
+
+117
+00:19:53,930 --> 00:20:00,800
+goes to R1which data point goes to R2 right. So once I decide which points go to R1 and R2 I
+
+118
+00:20:00,800 --> 00:20:10,490
+have a fixed optimization problem that I solve right, which one we already solved there. Yeah,
+
+119
+00:20:16,520 --> 00:20:21,560
+I am just talking with the full data set I am at the root right then we can worry about
+
+120
+00:20:21,560 --> 00:20:34,970
+the recursive splitting part right. So make sense for people so far yes, I want to find
+
+121
+00:20:34,970 --> 00:20:43,490
+j and s such that this happens right, how do you solve this minimization problem.
+
+122
+00:20:53,140 --> 00:21:07,660
+So we can do this. No, this is not classification right, this is actually a regression I am solving
+
+123
+00:21:07,660 --> 00:21:12,310
+right, so all these data points in our one I am going to output one value for
+
+124
+00:21:12,310 --> 00:21:15,850
+all the data points in R2 I am going to output another value so you can think of saying there
+
+125
+00:21:15,850 --> 00:21:19,690
+came grouping all R1 into one I am going to output one value and grouping R2 into
+
+126
+00:21:19,690 --> 00:21:23,980
+one I am going to output one value find the right grouping such that I can output a value
+
+127
+00:21:23,980 --> 00:21:36,820
+such that overall error is minimized okay. So the first thing know it can be slightly better
+
+128
+00:21:36,820 --> 00:21:43,120
+than that right, or worse I do not know I will tell you when depends a little better or not okay,
+
+129
+00:21:43,120 --> 00:21:48,880
+the first thing you have to note here is I am going to do this for each and every j that I
+
+130
+00:21:48,880 --> 00:21:55,510
+have okay, find the s and then I am going to pick the best j right I'm going to do
+
+131
+00:21:55,510 --> 00:21:59,590
+this in turn for j equals 1, j equals 2, j equals 3 from 1 to P I am going to do this,
+
+132
+00:21:59,590 --> 00:22:05,290
+and then find the best s and that will give me a value for the objective function, right.
+
+133
+00:22:05,290 --> 00:22:11,140
+And I can use this to compare which j is better that I do not have to do this jointly okay, so
+
+134
+00:22:11,140 --> 00:22:18,340
+that is the first thing you have to notice okay, so given a j right how will you find the right s,
+
+135
+00:22:22,790 --> 00:22:28,010
+so once you have fixed a j you can think of it as just a just a line right, I have to find that
+
+136
+00:22:28,010 --> 00:22:34,280
+s at some point so that I can split everything to one side to R1 everything to other side R2,
+
+137
+00:22:34,280 --> 00:22:41,900
+exactly so what are the steps I should choose for s, so he was talking about
+
+138
+00:22:41,900 --> 00:22:46,310
+recursive doubling that is one way of doing it if you have no other clue right.
+
+139
+00:22:46,310 --> 00:22:49,730
+And then you have to come back and then you have to search through thee so people know
+
+140
+00:22:49,730 --> 00:22:54,650
+about recursive doubling I start off by looking at 2 then 4 then 8 and I keep doing that at some
+
+141
+00:22:54,650 --> 00:22:59,840
+point some sign will change right so I mean I will be fitting it one way then I will actually
+
+142
+00:22:59,840 --> 00:23:04,520
+my error will start increasing again, so I stop and then now I will have a window
+
+143
+00:23:04,520 --> 00:23:09,620
+of some power of 2 right, so I have to look between 8 and 16 and then I will do a search
+
+144
+00:23:09,620 --> 00:23:13,040
+through that that is one way of doing it. But there is a slightly better way we can
+
+145
+00:23:13,040 --> 00:23:27,680
+do it any guesses something better than that imagine you are trying to do this not imagine
+
+146
+00:23:27,680 --> 00:23:39,320
+so remember that you are trying to do this from data, I give you a training data set. Exactly,
+
+147
+00:23:39,320 --> 00:23:45,890
+so order the training data along ascending order in that coordinate right, and then just
+
+148
+00:23:45,890 --> 00:23:55,670
+keep hopping on that. Suppose I have data here, here, here and here somewhere there right.
+
+149
+00:23:55,670 --> 00:24:02,150
+So now if you think about x2, let us say x2 is my, or x1 is my splitting criterion so there
+
+150
+00:24:02,150 --> 00:24:07,550
+are only five different values of x1that actually occur in my training data right,
+
+151
+00:24:07,550 --> 00:24:13,790
+so that is x1 equal to this, x1 equal to this, x1 equal to this, this and this right.
+
+152
+00:24:13,790 --> 00:24:24,140
+It does not matter if I consider any other values for x1 because that is one of these
+
+153
+00:24:24,140 --> 00:24:33,710
+five values will give me the same split, right suppose I consider this a splitting point does
+
+154
+00:24:33,710 --> 00:24:40,220
+not matter I could have as well consider that as my splitting point you see that right. So
+
+155
+00:24:40,220 --> 00:24:46,100
+I do not have to consider it have to go smoothly along x1 I can just use any one of the data points
+
+156
+00:24:46,100 --> 00:24:50,210
+that has come to me already right, so that is the easy way of searching for a splitting
+
+157
+00:24:50,210 --> 00:25:09,620
+point in x1essentially what we will do. Right, we just start it one of the reasons
+
+158
+00:25:09,620 --> 00:25:19,610
+I already used either less than or equal to here it is not easy, so how much work do we have to do
+
+159
+00:25:23,310 --> 00:25:42,870
+for finding one splitting point n into n logn or because the sorting part is it okay, you do not
+
+160
+00:25:42,870 --> 00:25:47,490
+have to sort here yeah, you do not want to sort here that is what yeah okay, you can get away you
+
+161
+00:25:47,490 --> 00:25:53,940
+can just go through whatever already good yeah, it does not have to sort here. No, if you sort I
+
+162
+00:25:53,940 --> 00:25:58,050
+mean the computation becomes a lot easier but for computing the complexity you do not have to sort,
+
+163
+00:25:58,050 --> 00:26:04,440
+right you can leave it as it is you can it is NP N for each feature and you have P features right,
+
+164
+00:26:04,440 --> 00:26:08,820
+so the amount of work you have to do is NP. But if you sort then life is a little easier but
+
+165
+00:26:08,820 --> 00:26:17,490
+you do not have to when you are writing the code you will know what I mean, but yeah an NP is the
+
+166
+00:26:17,490 --> 00:26:23,520
+amount of work you have to do for one feature one level right, great so now what we do I have found
+
+167
+00:26:23,520 --> 00:26:31,740
+the optimal j and optimal s have a the optimal and all our assumptions right, because I am actually
+
+168
+00:26:31,740 --> 00:26:36,570
+doing an exhaustive search over j and s right, I am not doing any approximation here I am doing an
+
+169
+00:26:36,570 --> 00:26:41,820
+exhaustive search so given the assumption that we are going to do something greedy and we are going
+
+170
+00:26:41,820 --> 00:26:45,750
+to split on one variable at a time so we are finding the best possible variables great.
+
+171
+00:26:45,750 --> 00:26:53,430
+Now what do I do, I actually create the two sets R1 and R2 at having found the best possible
+
+172
+00:26:53,430 --> 00:27:00,180
+splitting point and the splitting variable and the splitting value I find the two regions R1 and R2
+
+173
+00:27:00,180 --> 00:27:08,910
+and then I go into R1 I do the whole thing again, assuming that R1 is my entire data set likewise I
+
+174
+00:27:08,910 --> 00:27:16,230
+go into R2 and do the whole thing again assuming R2 is my entire data set right. Thus, it makes
+
+175
+00:27:16,230 --> 00:27:23,040
+sense to consider the j again the j that you split on say some jstar right does it make sense to
+
+176
+00:27:23,040 --> 00:27:29,340
+consider jstar again yes, what does not make sense is to consider jstar along with the same s.
+
+177
+00:27:29,340 --> 00:27:39,180
+In fact does not make sense to consider jstar along with any s greater or lesser depending on
+
+178
+00:27:39,180 --> 00:27:44,040
+which side you are right, so you can progressively you keep pruning your search based on, it but you
+
+179
+00:27:44,040 --> 00:27:47,340
+do not have to worry about it because it is automatically taken care of because you are
+
+180
+00:27:47,340 --> 00:27:52,530
+only looking at the values that are present in your data point, I am not written those things
+
+181
+00:27:52,530 --> 00:28:01,200
+down right, you want me to write down the whole process all of you remember it right, jstar is
+
+182
+00:28:01,200 --> 00:28:07,530
+the one that gives me the minimum in this that I am considering each feature in turn right.
+
+183
+00:28:07,530 --> 00:28:12,270
+So jstar is the feature that I finally choose to split on and sstar is the value that I finally
+
+184
+00:28:12,270 --> 00:28:27,510
+choose to split that jstar on okay. there is another question somewhere okay, good okay great,
+
+185
+00:28:27,510 --> 00:28:34,200
+so how far do we go so this is a question that we all had in our mind from the beginning right,
+
+186
+00:28:34,200 --> 00:28:40,530
+if I do not put any restrictions on it I will keep going until I have one data point per region
+
+187
+00:28:40,530 --> 00:28:58,980
+right, great yeah, so that is a really other people actually notice it could very well be
+
+188
+00:28:58,980 --> 00:29:07,140
+that the number of features ends right. How can you, yeah j can be repeated,
+
+189
+00:29:07,140 --> 00:29:13,020
+but if j cannot be repeated can end up with something like this there is only one data point
+
+190
+00:29:13,020 --> 00:29:24,790
+per leaf per region, where that is no more than one data point per region. Now you could do that
+
+191
+00:29:24,790 --> 00:29:32,050
+but answer my question, we are allowing features to be repeated right, can you still end up with a
+
+192
+00:29:32,050 --> 00:29:39,988
+point where you cannot grow the tree anymore but you have more than one data point per region.
+
+193
+00:29:39,988 --> 00:29:47,290
+If you keep getting your betting point as your border if your region you can traverse
+
+194
+00:29:47,290 --> 00:29:58,720
+any further. Not, they are the same data point we can repeat it I never said your exercise have to
+
+195
+00:29:58,720 --> 00:30:06,820
+be unique right, now it is not so it sounds like a trivial thing but no it is actually important I
+
+196
+00:30:06,820 --> 00:30:12,880
+mean you should think about it right, so this is very important in cases where the yi’s are
+
+197
+00:30:12,880 --> 00:30:21,100
+different the xi's are same and the yi’s are different there is no way you will get 100
+
+198
+00:30:21,100 --> 00:30:32,860
+percent correct maybe if you are assuming that it is a deterministic process truly underlying
+
+199
+00:30:32,860 --> 00:30:37,000
+process is deterministic and it is corrupted by noises, but what if it is a stochastic process
+
+200
+00:30:37,000 --> 00:30:42,400
+truly a stochastic process is generating all of these things for you right. Yeah,
+
+201
+00:30:42,400 --> 00:30:48,070
+sure you can you should there is no question of you allowing it is life happens to you.

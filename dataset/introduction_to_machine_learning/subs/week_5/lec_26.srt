@@ -1,0 +1,651 @@
+1
+00:00:00,000 --> 00:00:41,820
+Okay so we have been having discussions about neural networks off and on right,
+
+2
+00:00:41,820 --> 00:00:49,710
+the last time we had a discussion about ANNS was went and we did perceptions right. So,
+
+3
+00:00:49,710 --> 00:01:07,320
+basically so the whole class of solution methods which are lumped under ANNS are artificial neural
+
+4
+00:01:07,320 --> 00:01:21,810
+networks were primarily inspired by trying to emulate the brain architecture right yeah,
+
+5
+00:01:21,810 --> 00:01:28,830
+so then after a while the field split into two right one class of researchers who are looking at
+
+6
+00:01:28,830 --> 00:01:33,900
+neural networks as just computing elements right trying to interpret it in terms of linear algebra
+
+7
+00:01:33,900 --> 00:01:38,040
+right and partial analysis and other mathematical tools and then trying to understand what
+
+8
+00:01:38,040 --> 00:01:44,280
+computing these artificial elements were doing. And others who are still trying to make the neural
+
+9
+00:01:44,280 --> 00:01:50,580
+models biologically relevant right, so now the communities have become fairly divergent right,
+
+10
+00:01:50,580 --> 00:01:56,130
+so there are this set of people neuroscience people who are trying to build computational
+
+11
+00:01:56,130 --> 00:02:03,180
+models of the brain right and then there are machine learning people who just use neural
+
+12
+00:02:03,180 --> 00:02:12,600
+architectures without worrying anything about biological relevance right, so yeah we will
+
+13
+00:02:12,600 --> 00:02:17,370
+take the latter approach right there will not be looking too much about the biological relevance
+
+14
+00:02:17,370 --> 00:02:25,950
+of the neural networks I will just try to understand it in terms of computing.
+
+15
+00:02:25,950 --> 00:02:36,010
+So do not two people have ever been seen a neuron synapse did not write all those pictures so you do
+
+16
+00:02:36,010 --> 00:02:41,020
+not have to really tax my drawing skills right so I will not draw anything on the board about
+
+17
+00:02:41,020 --> 00:02:49,540
+the neurons right, so the whole idea behind all these biological neurons is that it is
+
+18
+00:02:49,540 --> 00:02:57,610
+pulling in inputs from a variety of other neurons right and some computation is goes
+
+19
+00:02:57,610 --> 00:03:03,910
+on within the neuron and there is a result of this it might actually fire right in which case
+
+20
+00:03:03,910 --> 00:03:09,580
+it will cause it another input to be activated for yet another neuron right or a set of other
+
+21
+00:03:09,580 --> 00:03:13,540
+neurons depending on who they are connected to. Then these neurons are all connected in a very
+
+22
+00:03:13,540 --> 00:03:18,160
+complex networks and even though it is a very simple computing element each neuron can be
+
+23
+00:03:18,160 --> 00:03:22,000
+thought of as a very simple computing element the whole the fact that they are connected together in
+
+24
+00:03:22,000 --> 00:03:28,330
+a large network allows them to do all kinds of cool things right, I mean if you really want to
+
+25
+00:03:28,330 --> 00:03:37,870
+know what a neural network can accomplish they stop and think what you can do right, so one of
+
+26
+00:03:37,870 --> 00:03:49,870
+the earliest, all of the earliest models of a neuron was the Mcculloch Pitts model right.
+
+27
+00:03:49,870 --> 00:03:58,150
+So it is a very simple model so it essentially it has a summation unit,
+
+28
+00:03:58,150 --> 00:04:22,060
+right so it has a set of inputs right and then it has not set off inhibitory signals okay
+
+29
+00:04:50,900 --> 00:04:55,910
+right, so it has a set of inputs right and a set of inhibitory signals if we what we
+
+30
+00:04:55,910 --> 00:05:00,590
+are talking about artificial neural networks and I started explaining the Mcculloch Pitts
+
+31
+00:05:00,590 --> 00:05:08,870
+model so you have a simple unit which has P inputs right and then it also has k inhibitory
+
+32
+00:05:08,870 --> 00:05:16,070
+inputs right, so what does this neuron do is essentially adds up these k inputs right.
+
+33
+00:05:16,070 --> 00:05:23,180
+And if the if they exceed a certain threshold right some threshold theta then it will output
+
+34
+00:05:23,180 --> 00:05:28,970
+a one if it is below a threshold theta it will output minus one or a zero depending
+
+35
+00:05:28,970 --> 00:05:32,930
+on how you are encoding it right and the inputs are all considered either to be one
+
+36
+00:05:32,930 --> 00:05:40,790
+or minus one or zero, depending on how we encode it,right.What are these inhibitory inputs for? If
+
+37
+00:05:40,790 --> 00:05:51,440
+any one of these inhibitory inputs was one there was no output. I mean zero okay yeah
+
+38
+00:05:51,440 --> 00:05:56,660
+if any one of these inhibitory outputs is inputs is one then there will be the output
+
+39
+00:05:56,660 --> 00:06:00,950
+will be minus one okay or zero depending on how we were encoding it again right.
+
+40
+00:06:00,950 --> 00:06:09,950
+So that is the basic Mcculloch Pitts model but then just to give you the historic perception
+
+41
+00:06:09,950 --> 00:06:18,710
+right and then what happened people modified this way to propose the perceptron right.
+
+42
+00:06:18,710 --> 00:06:46,540
+So if you think about what the perceptron does it is essentially saying that right so instead
+
+43
+00:06:46,540 --> 00:06:55,750
+of doing x one to x p and adding it up I am going to multiply it by beta one to beta p so x one beta
+
+44
+00:06:55,750 --> 00:07:01,930
+one plus x two beta 2 plus x three beta three and so on so forth now if this entire thing is
+
+45
+00:07:01,930 --> 00:07:11,080
+greater than a threshold okay I will output a plus one right the entire thing is lesser than
+
+46
+00:07:11,080 --> 00:07:22,300
+a threshold I will output minus one so what is the threshold beta zero right so another way of
+
+47
+00:07:22,300 --> 00:07:29,950
+doing it is to actually add a add another input label that beta zero I mean way is that as beta
+
+48
+00:07:29,950 --> 00:07:44,520
+zero and put a one and then and right okay. So you could think of it that way right so
+
+49
+00:07:44,520 --> 00:07:48,810
+usually it is written without the minus sign right that essentially means beta zero will be
+
+50
+00:07:48,810 --> 00:08:00,780
+a negative quantity okay so this is essentially what our perceptron this you can see it is very
+
+51
+00:08:00,780 --> 00:08:05,760
+closely related to the original Mcculloch Pitts model except that there are no inhibitory inputs
+
+52
+00:08:05,760 --> 00:08:12,240
+and they the actual inputs are weighted okay and we all know how to estimate the parameters
+
+53
+00:08:12,240 --> 00:08:19,680
+of the perceptron right how did we get there we use the gradient descent rule right.
+
+54
+00:08:50,390 --> 00:08:53,780
+We started with that error function and then we took the derivative
+
+55
+00:09:37,540 --> 00:09:53,230
+and quite look like the perceptron ruled as it does not quite look like the perceptron what it
+
+56
+00:09:53,230 --> 00:09:59,470
+do the perceptron update so wherever there was a missed classification what did you do with this we
+
+57
+00:09:59,470 --> 00:10:05,110
+just added those data points to added those data points times Yi to so we did essentially read Xi
+
+58
+00:10:05,110 --> 00:10:13,960
+Yi to the input right we did not do anything like this right no right, so what we essentially done
+
+59
+00:10:13,960 --> 00:10:21,100
+here is minimize the squared error all right. So this is another way of training perceptron. Is
+
+60
+00:10:21,100 --> 00:10:35,410
+it something wrong here? What is wrong here? yeah so with the perceptron training so we
+
+61
+00:10:35,410 --> 00:10:39,070
+did something very different from whatever I have done so far so it is perceptron training
+
+62
+00:10:39,070 --> 00:10:43,660
+algorithm we had a very different objective function that we were optimizing right,
+
+63
+00:10:43,660 --> 00:10:50,380
+so what were we trying to do people remember that you have a quiz like two days away should
+
+64
+00:10:50,380 --> 00:11:04,210
+have revised all of this by now yeah minimize, minimize what? minimize the distance to the hyper
+
+65
+00:11:04,210 --> 00:11:10,630
+plane of the misclassified points right. And the way you can minimize it is we get a
+
+66
+00:11:10,630 --> 00:11:16,540
+distance of zero total distance of zero is when all the points are correctly classified right,
+
+67
+00:11:16,540 --> 00:11:20,770
+so what we had actual objective function we wrote down was we are trying to minimize the distance
+
+68
+00:11:20,770 --> 00:11:25,450
+to the hyper plane of the misclassified points we remember we wrote it only over
+
+69
+00:11:25,450 --> 00:11:30,490
+the misclassified points right so in this case what we are doing you are writing a plane with
+
+70
+00:11:30,490 --> 00:11:40,960
+plain old squared error function right but this is actually the squared error there right.
+
+71
+00:11:40,960 --> 00:11:49,420
+If you think of it otherwise this is a non linearity right this is a non-linearity the
+
+72
+00:11:49,420 --> 00:11:56,530
+threshold is a non-linearity right I cant just take the derivative of z with respect
+
+73
+00:11:56,530 --> 00:12:04,360
+to x. Does it make sense? I cannot take the derivative of z with respect to x because that
+
+74
+00:12:04,360 --> 00:12:09,910
+is a nonlinear function of x right. So z is what
+
+75
+00:12:18,330 --> 00:12:26,490
+right and sign is a nonlinear functions non differentiable so I cannot really take the
+
+76
+00:12:26,490 --> 00:12:32,100
+derivative. So in fact what I have written down here is for a slightly modified model of
+
+77
+00:12:32,100 --> 00:12:39,420
+the neuron where the output is taken at this point okay the non-linearity is not there,
+
+78
+00:12:39,420 --> 00:12:57,650
+so one way of thinking about this is that is the output like it is like a straight line right,
+
+79
+00:12:57,650 --> 00:13:02,900
+so whatever comes as the input it will be produced as the output right, so fool yourself for a minute
+
+80
+00:13:02,900 --> 00:13:08,810
+that this line has a slope of 1 okay. So whatever comes as the input will go as
+
+81
+00:13:08,810 --> 00:13:12,650
+the output right in that case I can take the derivative of the output with respect to the
+
+82
+00:13:12,650 --> 00:13:20,240
+input does it make sense right, so this is not the perceptron by the way they are sometimes
+
+83
+00:13:20,240 --> 00:13:45,480
+called the but what is either line stand for any guesses adaptive closed linear adaptive
+
+84
+00:13:45,480 --> 00:13:51,030
+linear so it is called adaptive linear units so they are Adaline right so on the way you train
+
+85
+00:13:51,030 --> 00:13:58,440
+Adeline is just you straight forward gradient descent right and you end up with this okay.
+
+86
+00:13:58,440 --> 00:14:03,780
+So people are familiar with gradient descent right I do not have to explain gradient
+
+87
+00:14:03,780 --> 00:14:10,200
+descent to people everyone familiar with gradient descent right okay,
+
+88
+00:14:10,200 --> 00:14:25,050
+so why am I using eta here step size yeah. Why do I need a step size? okay so why would what
+
+89
+00:14:25,050 --> 00:14:43,670
+would produce oscillations? okay great yeah. So let us look at it in a 1 Dimenition. Suppose
+
+90
+00:14:43,670 --> 00:14:48,230
+I have a function that I want to optimize right let us assume that I cannot measure the gradient
+
+91
+00:14:48,230 --> 00:14:53,750
+properly and I am actually making estimates of the gradient right so I am somewhere here right
+
+92
+00:14:53,750 --> 00:15:03,860
+and I find the gradient what direction is the gradient here that way hey that is the way I
+
+93
+00:15:03,860 --> 00:15:09,230
+have to change x to go up right and what they have to do I have to move in the opposite direction.
+
+94
+00:15:09,230 --> 00:15:13,400
+So if I take a large step in the opposite direction what will happen is I will actually
+
+95
+00:15:13,400 --> 00:15:22,820
+end up this same look I will end up somewhere here now again I will I the x the gradient is
+
+96
+00:15:22,820 --> 00:15:30,440
+in that direction here again I take a large step I would end up here like I could keep going back
+
+97
+00:15:30,440 --> 00:15:36,290
+and forth then I might not actually converge okay that is it make sense in fact it is even
+
+98
+00:15:36,290 --> 00:15:44,840
+worse I could go back and forth and I might even diverge if I am taking very large steps
+
+99
+00:15:44,840 --> 00:15:49,010
+right so that is why I have to take small steps when you are following the gradient right.
+
+100
+00:15:49,010 --> 00:16:03,960
+And this these kinds of methods are called stochastic gradient. why? No,
+
+101
+00:16:03,960 --> 00:16:10,350
+it is essentially that so if you just think about it a little bit right where do these excise come
+
+102
+00:16:10,350 --> 00:16:17,790
+from for you not from some underlying distribution you do not know right so what you are essentially
+
+103
+00:16:17,790 --> 00:16:24,960
+doing is there is an error function which is the error function of beta on the entire input space
+
+104
+00:16:24,960 --> 00:16:30,330
+right what I am really trying to minimize is the error on the entire input space right but
+
+105
+00:16:30,330 --> 00:16:35,190
+I cannot compute that gradient because I do not have the data distribution I do not have the
+
+106
+00:16:35,190 --> 00:16:40,110
+the entire data set available to me right. I only have a sample and the sample was chosen
+
+107
+00:16:40,110 --> 00:16:44,580
+in a stochastic fashion, so if I am trying to minimize the error with respect to the entire
+
+108
+00:16:44,580 --> 00:16:50,010
+data so what I am actually finding out here is some sample radiantly it whatever sample data
+
+109
+00:16:50,010 --> 00:16:54,540
+said was given to me I am finding out the gradient with respect to that sample data right that is one
+
+110
+00:16:54,540 --> 00:16:59,490
+part right the second thing is typically I end up doing this one data point at a time instead
+
+111
+00:16:59,490 --> 00:17:04,230
+of doing it n data points. right if I spoke about this in perceptron, so when I am doing it
+
+112
+00:17:04,230 --> 00:17:09,420
+one data point at a time that is essentially not even the correct computation of the gradient.
+
+113
+00:17:09,420 --> 00:17:15,060
+So even given the data that is available to me I am only doing it one data point at a time that
+
+114
+00:17:15,060 --> 00:17:19,650
+means I am actually doing some incomplete computations of the gradients right and if
+
+115
+00:17:19,650 --> 00:17:25,470
+I take really tiny steps in the direction I am hoping that on an average I will move in
+
+116
+00:17:25,470 --> 00:17:32,670
+the right direction so if I had computed for all the data points and taken a step then well
+
+117
+00:17:32,670 --> 00:17:39,780
+given the data that is the best direction I can move in what if I computed one point at a time
+
+118
+00:17:39,780 --> 00:17:44,760
+then I have to really take tiny steps. So that I am sure that on an average I am
+
+119
+00:17:44,760 --> 00:18:00,880
+going in the right direction okay, so that is that is idea here, so remember this is useful
+
+120
+00:18:00,880 --> 00:18:11,260
+for the rest of the class so what is the problem with the perceptron people remember
+
+121
+00:18:18,380 --> 00:18:29,000
+let goodness in something as simple as Excel because it was not linearly separable right.
+
+122
+00:18:29,000 --> 00:18:35,750
+So it is not able to solve this is there some way you can think of solving this let us call this x1
+
+123
+00:18:35,750 --> 00:19:04,260
+and x2 should be minus 1. How do I move it to a different space change the basis function?
+
+124
+00:19:04,260 --> 00:19:09,150
+right I cannot rotating the axis would not be sufficient for me to still be not like I still not
+
+125
+00:19:09,150 --> 00:19:21,960
+be linearly separable right I think I said that right so what do we do now too many x primes on
+
+126
+00:19:21,960 --> 00:19:40,380
+the board yeah so I can define a new feature but what do what should I define will it one
+
+127
+00:19:51,620 --> 00:19:59,510
+x times okay x1 multiply minus x2 and x2 into multiply x1 okay.
+
+128
+00:19:59,510 --> 00:20:18,770
+So now what will happen if I do the projection of this data okay, so we are at this point go
+
+129
+00:20:18,770 --> 00:20:54,650
+minus 1 minus 1 minus 1 is it? so where would 1 go minus 1 minus 1 where would 2 go 2 is here,
+
+130
+00:20:55,730 --> 00:21:10,880
+so there will be minus 1 multiply minus 1 will be plus 1 okay then this will be plus 1 multiply plus
+
+131
+00:21:10,880 --> 00:21:21,680
+1 will be plus 1 is it okay does not sound very promising what about 4 is also plus 1 what about 3
+
+132
+00:21:46,880 --> 00:22:06,370
+which is plus 1. 4 so where will 4 go is my question 4 when there 4 is what plus 1
+
+133
+00:22:06,370 --> 00:22:20,080
+multiply plus 1 okay minus 1 multiply minus 1 plus 1 plus 1 that is 4 goes
+
+134
+00:22:20,080 --> 00:22:37,420
+there right now this is minus 1 that will be minus 1 is plus 1 yeah there you go what about
+
+135
+00:22:37,420 --> 00:23:20,120
+that k it is minus 1 minus 1. What are they the same? see you okay you negate x2 you first
+
+136
+00:23:20,120 --> 00:23:37,870
+negate x1 and then pick the product okay. Is essentially the same no see the idea is
+
+137
+00:23:37,870 --> 00:24:16,730
+that I want my x1 prime equals x1 and not x2 they are not the same thank okay now tell me
+
+138
+00:24:32,850 --> 00:24:43,290
+so we know that we can actually implement using a perceptron right you can implement or not using a
+
+139
+00:24:43,290 --> 00:25:07,700
+perceptron okay, so now do this so where will x1 prime be for 1? to next one is minus 1 not
+
+140
+00:25:07,700 --> 00:25:29,510
+x2 so there will be minus 1 right x2 prime will be minus 1 okay what about 2 minuns 1 that is
+
+141
+00:25:29,510 --> 00:26:17,210
+not the same thing okay does that make sense, so in this transformation where x1 prime x is x1a nd
+
+142
+00:26:17,210 --> 00:26:31,160
+not x2 right and x2 prime is not x1 and x2 right where true is plus 1 false is minus 1 and if you
+
+143
+00:26:31,160 --> 00:26:38,690
+do that then my projection will be 1 and 3 will get projected to minus 1 minus 1 and 2 and 4 will
+
+144
+00:26:38,690 --> 00:26:44,630
+get projected to the same coordinates as they were earlier in this modified space okay.
+
+145
+00:26:44,630 --> 00:26:51,230
+Now is this linearly separable right, so now I can separate this right, so I can essentially
+
+146
+00:26:51,230 --> 00:26:59,630
+construct a perceptron that does that so what have we done here is that xr is hard to solve using a
+
+147
+00:26:59,630 --> 00:27:09,590
+single perceptron but I can hookup several of them and I can solve the problem right,
+
+148
+00:27:09,590 --> 00:27:21,590
+so is that computable using a single perceptron yes or no that is computable using a semi
+
+149
+00:27:21,590 --> 00:27:33,500
+perceptron that is computable using a single perceptron huh first one is not yeah so I am
+
+150
+00:27:33,500 --> 00:27:44,450
+just giving people a chance to change their minds you need to for each of them one for the not do
+
+151
+00:27:44,450 --> 00:27:54,020
+you need to do a not can I feed in the x2 to do that can you do or not okay so if I can do x1
+
+152
+00:27:54,020 --> 00:28:07,520
+and x2 is it sufficient in invert the weight on x2 to get x1 and not x2 you think an answer anyway so
+
+153
+00:28:07,520 --> 00:28:23,030
+the point is essentially what I have done this I can actually build a perceptron that can compute
+
+154
+00:28:23,030 --> 00:28:30,050
+x1 prime. I can build another perceptron that can compute x2 prime so take these fill it to another
+
+155
+00:28:30,050 --> 00:28:47,900
+perceptron which will actually compute right. So essentially we have somebody sink another so
+
+156
+00:28:47,900 --> 00:28:53,060
+essentially we have found they have shown that I can actually put this perceptron in layers and
+
+157
+00:28:53,060 --> 00:29:01,070
+I can solve what was originally thought to be a problem that cannot be solved by perceptron right
+
+158
+00:29:01,070 --> 00:29:07,940
+if you remember I was telling you in the beginning neural networks are very powerful because they are
+
+159
+00:29:07,940 --> 00:29:12,050
+all hooked up in a very complex network right. Individually they need on saw a very simple
+
+160
+00:29:12,050 --> 00:29:16,760
+computing elements individually the neuron was a simple computing element and therefore you
+
+161
+00:29:16,760 --> 00:29:22,460
+could not find the answer to XOR but then by hooking them up in appropriate Cascades
+
+162
+00:29:22,460 --> 00:29:29,240
+you can find the solution to XOR right does it make sense, so sorry for the initial confusion
+
+163
+00:29:29,240 --> 00:29:38,810
+on the feature transformation but now it should be clear right yes okay great.

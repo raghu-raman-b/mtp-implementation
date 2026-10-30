@@ -1,0 +1,799 @@
+1
+00:00:02,130 --> 00:00:25,110
+We were talking about errors and round off errors and percentage errors. Now,
+
+2
+00:00:25,110 --> 00:00:30,750
+I will briefly show you that if we commit an error how that error
+
+3
+00:00:30,750 --> 00:00:40,560
+continuously gets accumulated and ultimately has a much larger effect.
+
+4
+00:00:40,560 --> 00:01:28,050
+For example, suppose the exact value is 9.9 8 and we compute 10 all right. So, the inherent error,
+
+5
+00:01:28,050 --> 00:01:43,380
+first the error actually is 0.0 2 right. Now, as we go on iterating suppose x 1
+
+6
+00:01:43,380 --> 00:02:08,160
+is 10 times x 0, then the exact value should be 99.8, but here we will get 100. So, you can see
+
+7
+00:02:08,160 --> 00:02:24,150
+that the error has increased to how much ?0.2. Now if the next iteration x 2 is again 10 times
+
+8
+00:02:24,150 --> 00:02:36,990
+x 1 then it will be 9 9 8 whereas, the computed value will be 1000. So, the error is becoming 2.
+
+9
+00:02:36,990 --> 00:02:46,680
+So, you see how with if we start with an inherent error how that error accumulates over time? Ok.
+
+10
+00:02:46,680 --> 00:03:02,280
+So, we can say a very important term is relative accumulation of error, which is accumulated error
+
+11
+00:03:06,690 --> 00:03:27,210
+divided by exact value for that iteration. For example in the first iteration the
+
+12
+00:03:27,210 --> 00:03:39,600
+accumulated error was 0.0 2 divided by the exact value which was 9.9 8, but later on it became 0.2
+
+13
+00:03:39,600 --> 00:03:57,600
+divided by 99.8. So, this is this was 0.002004, but whatever that is it is not that important
+
+14
+00:03:57,600 --> 00:04:05,070
+I do not want to confuse with you with this. Now there are some cases where this accumulation
+
+15
+00:04:05,070 --> 00:04:10,200
+of error actually goes on increasing. If the rate of accumulation error decreases or if
+
+16
+00:04:10,200 --> 00:04:24,210
+the rate of accumulated error increases, but the rate of relative error decreases,
+
+17
+00:04:24,210 --> 00:04:30,060
+then we call it a stable algorithm. However, I am not going into the details
+
+18
+00:04:30,060 --> 00:04:38,400
+and the intricacies of this, but this is just to give you an idea how the error propagates through
+
+19
+00:04:38,400 --> 00:04:45,930
+iterations. So, we must be very conscious about the rate of increase of this error .
+
+20
+00:04:45,930 --> 00:04:50,610
+With these words we move to the algorithm which
+
+21
+00:04:50,610 --> 00:04:56,550
+we are planning to discuss in this lecture that is a bisection method.
+
+22
+00:04:56,550 --> 00:05:10,050
+I have already told you that the bisection method is given a particular function, some function,
+
+23
+00:05:10,050 --> 00:05:19,650
+on this x and y axis.If I have some function that moves in this way then we start with any
+
+24
+00:05:19,650 --> 00:05:31,530
+two points any two points, arbitrary points here and maybe here, now these two points will not do.
+
+25
+00:05:31,530 --> 00:05:36,900
+Because if I select these two points then both of them are positive so,
+
+26
+00:05:36,900 --> 00:05:42,150
+that if I had selected this point for example, these two points x 0 and x 1
+
+27
+00:05:42,150 --> 00:05:47,580
+that would not have served my purpose because I do not know where the root is there or not.
+
+28
+00:05:47,580 --> 00:05:58,980
+So, I would rather select two points, which are of opposite signs and therefore,
+
+29
+00:05:58,980 --> 00:06:06,060
+I know that somewhere in between the root lies. So, I will take the midpoint of this,
+
+30
+00:06:06,060 --> 00:06:12,000
+somehow here, if this point is negative then I will keep the positive fixed and
+
+31
+00:06:12,000 --> 00:06:19,710
+I will find out the value of y. So, these two are opposite signs. So,
+
+32
+00:06:19,710 --> 00:06:23,880
+the root must be somewhere here. So, in that way I come to this one
+
+33
+00:06:23,880 --> 00:06:31,350
+and find out the value of the root here. In that way I go on dividing it till I come very
+
+34
+00:06:31,350 --> 00:06:37,950
+close to the root as it is being shown here. It is very close to the root. Now how close,
+
+35
+00:06:37,950 --> 00:06:45,270
+that will depend on my decision that is the basic approach of bisection method.
+
+36
+00:06:45,270 --> 00:06:54,840
+So, with that let us try to have a look at the algorithm, therefore, first we start,
+
+37
+00:06:54,840 --> 00:07:11,850
+we define the function f x and get the value of the interval A B that is there is a function. So,
+
+38
+00:07:11,850 --> 00:07:20,370
+here there is a function and the function can be long enough. So,
+
+39
+00:07:20,370 --> 00:07:27,840
+I take the limits, I have to find out the root within this interval
+
+40
+00:07:27,840 --> 00:07:37,020
+a and b and I find out how much error is required. So, how much error is acceptable.
+
+41
+00:07:37,020 --> 00:07:44,010
+So, this allowed error is the epsilon that I was talking of and also the number of iterations,
+
+42
+00:07:46,170 --> 00:07:55,350
+because it may be that in some case I am not finding the root, because I am going
+
+43
+00:07:55,350 --> 00:08:11,220
+on looking at say for example, this sort of scenario and my a is here my b is here.
+
+44
+00:08:11,220 --> 00:08:17,190
+Then; obviously, the root does not lie between this. So, I will go on doing this bisection
+
+45
+00:08:17,190 --> 00:08:24,000
+and again i am doing this bisection, for how long will I go on? But still it may be that
+
+46
+00:08:24,000 --> 00:08:30,690
+I might not find the root therefore, there is a maximum limit that is kept -number of iterations.
+
+47
+00:08:30,690 --> 00:08:41,580
+Now I initialise I to be 1, just some index to be 1 and then I call a subroutine or a function,
+
+48
+00:08:41,580 --> 00:08:50,370
+bisect the midpoint. So, here is a sub subroutine,
+
+49
+00:08:50,370 --> 00:08:57,870
+you see what it does? Or a function, What does it do here? It finds out between A and
+
+50
+00:08:57,870 --> 00:09:04,980
+B the midpoint and increments the iteration and prints the value of x 1. x 1 is a middle point.
+
+51
+00:09:04,980 --> 00:09:18,690
+So, if my function was like this and this was a this was b, then the root mass lies
+
+52
+00:09:18,690 --> 00:09:29,070
+somewhere here. I find out the midpoint of this. So, this becomes x 1. There is
+
+53
+00:09:29,070 --> 00:09:39,540
+a next one and what is the iteration? Next,is F; that means F mid less than 0?
+
+54
+00:09:39,540 --> 00:10:01,090
+So, there can be 2 things. Here I select this to be my b and this to be my a. Now;
+
+55
+00:10:01,090 --> 00:10:06,700
+obviously, if I take the midpoint then the midpoint will be somewhere here,
+
+56
+00:10:06,700 --> 00:10:19,900
+a and b are of different signs. If F mid is not less than 0, then a should be x; that means,
+
+57
+00:10:19,900 --> 00:10:28,420
+I will now move it on this side and this should be the next a and between these two I will have
+
+58
+00:10:28,420 --> 00:10:36,880
+to find out and every time I am trying to find out -whatever value of F X that I compute,
+
+59
+00:10:36,880 --> 00:10:45,040
+is it less than the absolute error ? If yes then - x , I am getting my
+
+60
+00:10:45,040 --> 00:10:51,070
+solution otherwise I am going on doing this. So, this is a flow chart of the whole thing,
+
+61
+00:10:51,070 --> 00:11:00,130
+but I think you will be more interested in looking at the algorithm. Let us look at the algorithm for
+
+62
+00:11:00,130 --> 00:11:09,160
+a second and the program. Here is algorithm,you see this is much more understandable to you.
+
+63
+00:11:09,160 --> 00:11:22,930
+I read x 1, x 2 and the error. Here x 1 and x 2 are the initial guesses all right. Here is
+
+64
+00:11:22,930 --> 00:11:36,040
+my thing, I have taken this is x 2, this is x 1. ‘e’ is absolute error; that means, how much
+
+65
+00:11:36,040 --> 00:11:47,680
+error is permissible, compute F 1 that is FX 1, compute for this function this value and f 2,
+
+66
+00:11:47,680 --> 00:12:04,320
+compute this value . If f 1 and f 2, the product of these two is greater than 0 ; that means,
+
+67
+00:12:04,320 --> 00:12:10,260
+my initial guesses are wrong, because both of them are positive, then I can do many things I will
+
+68
+00:12:10,260 --> 00:12:19,050
+instead of going to 11( my initial guesses are wrong) I will again ask for new guess all right.
+
+69
+00:12:19,050 --> 00:12:26,760
+So, I take a new guess and I find that it is less than 0. Then I take in this step
+
+70
+00:12:26,760 --> 00:12:36,120
+x 1 plus x 2 ,mid of that. So, suppose mid of that is this one and that is becoming x,
+
+71
+00:12:59,580 --> 00:13:18,510
+read this as fx 1 minus fx 2 divided by x is less than e then display x;
+
+72
+00:13:18,510 --> 00:13:28,560
+that means, if my error between these 2 points, the difference is less is 0.0
+
+73
+00:13:28,560 --> 00:13:37,770
+0 0 2 and that I can assume as 0 then I will display this particular value of x.
+
+74
+00:13:37,770 --> 00:13:45,870
+So, right now it is not the case otherwise I will make this f to be fx I take this all
+
+75
+00:13:45,870 --> 00:13:59,390
+right. Now between these two I again divide, I come here and in this way I go on alright. So,
+
+76
+00:13:59,390 --> 00:14:07,220
+you will be able to write the program as the program runs. So, just to show you (I am sure
+
+77
+00:14:07,220 --> 00:14:16,280
+you can write the program yourself )how can you translate this in the form of a code.
+
+78
+00:14:16,280 --> 00:14:26,960
+So, here you see let us try to understand this code it is a C program for the bisection method,
+
+79
+00:14:26,960 --> 00:14:37,430
+I have included a st stdio dot h, math dot h and there is some function, because I have to
+
+80
+00:14:37,430 --> 00:14:43,370
+find the root of a particular polynomial. So, for example, here it is given,this is
+
+81
+00:14:43,370 --> 00:14:54,740
+a polynomial. So, what is this polynomial it is x cube minus 4 x minus 9. So, that value
+
+82
+00:14:54,740 --> 00:15:02,810
+of fx has to be computed. So, the function is the fun; fun is the name of the function, then
+
+83
+00:15:02,810 --> 00:15:09,800
+there is another function bisection, this function performs and prints the result of one iteration.
+
+84
+00:15:09,800 --> 00:15:20,570
+So, it is a plus b by 2; now in an earlier lecture we had talked about this -what is this ?Because
+
+85
+00:15:20,570 --> 00:15:30,590
+here when I am calling this function, I am calling by reference how? I am just passing the address
+
+86
+00:15:30,590 --> 00:15:41,120
+x and whatever I do here once again is a part of revision you can see. If I come here -float
+
+87
+00:15:41,120 --> 00:15:48,950
+star x; that means what? x is some variable and I have just passed the address of that.
+
+88
+00:15:48,950 --> 00:15:56,990
+So, star x is the content of this; say 50. So, I passed it on and in the main function
+
+89
+00:15:56,990 --> 00:16:06,980
+I am passing on the address of x . This we have seen earlier. So, I am taking the midpoint and
+
+90
+00:16:06,980 --> 00:16:14,660
+incrementing the iteration; iteration is also a call by reference and float a float b are two
+
+91
+00:16:14,660 --> 00:16:20,540
+points in between which have been passed on. Now, what is being done in the main function?
+
+92
+00:16:20,540 --> 00:16:32,300
+In the main function I am setting the iteration to be 0 and here I am saying
+
+93
+00:16:32,300 --> 00:16:38,510
+how many iterations are permitted? Maximum number of iterations; x, a,
+
+94
+00:16:38,510 --> 00:16:50,120
+b, allowed error and some x 1 value is given. Enter the values of a, b,
+
+95
+00:16:50,120 --> 00:16:56,810
+allowed error and maximum iterations. So, all these I read - the range a and b between,
+
+96
+00:16:56,810 --> 00:17:06,230
+which points I have to do, a and b and how much is the allowed error and what is the
+
+97
+00:17:06,230 --> 00:17:14,030
+maximum number of iterations? Then with this I call bisection. What do I do? Bisection and x;
+
+98
+00:17:14,030 --> 00:17:24,410
+that means, this will give me the midpoint. I will call bisection here - a, b iterations.
+
+99
+00:17:24,410 --> 00:17:31,220
+So, a is being passed here, b is being passed here, and the number of iterations is being
+
+100
+00:17:31,220 --> 00:17:40,280
+passed here. Now here I am finding the midpoint and that midpoint is being returned here is
+
+101
+00:17:40,280 --> 00:17:54,470
+common and then here at this point I call the function; that is I am computing the polynomial.
+
+102
+00:17:54,470 --> 00:18:01,040
+If the polynomial ie the value of the polynomial at a, and the value
+
+103
+00:18:01,040 --> 00:18:06,890
+of the polynomial at x . there is a midpoint that is less than 0. So,
+
+104
+00:18:06,890 --> 00:18:25,890
+what happened? This was my scenario, here was a and here was b, now let me draw it.
+
+105
+00:18:25,890 --> 00:18:38,820
+So, here was b and here was a. So, now, what I do? I got the meet point somewhere here,
+
+106
+00:18:38,820 --> 00:18:46,170
+then the value of the function at this point and the value of the function at
+
+107
+00:18:46,170 --> 00:18:58,710
+this point is a negative. Therefore, I move this b to x. x is becoming b and I do the same thing.
+
+108
+00:18:58,710 --> 00:19:07,260
+Otherwise if it was on the other side I would have made x to be a. Is this clear?
+
+109
+00:19:07,260 --> 00:19:17,760
+Then again I call bisection. After calling bisection I find if the absolute error of x
+
+110
+00:19:17,760 --> 00:19:25,260
+1 minus x is less than the allowed error, then I will print the root.
+
+111
+00:19:25,260 --> 00:19:42,030
+So, this will go on until I exceed the maximum iteration. So,
+
+112
+00:19:42,030 --> 00:19:54,930
+this is how I code and all of you should be able to practice this yourself. Next we will move to
+
+113
+00:20:08,070 --> 00:20:20,490
+another algorithm, which is that another method, which is known as the Newton-Raphson method.
+
+114
+00:20:20,490 --> 00:20:27,990
+This method adopts a different approach to find
+
+115
+00:20:27,990 --> 00:20:32,100
+the root of the function let us try to understand this briefly.
+
+116
+00:20:32,100 --> 00:20:37,050
+So,
+
+117
+00:20:48,620 --> 00:20:58,640
+I have got a function like this; now Newton-Raphson method, what it does is,
+
+118
+00:20:58,640 --> 00:21:06,860
+it starts at some x 0 and the corresponding value
+
+119
+00:21:17,380 --> 00:21:31,480
+of the function at x 0 is f x 0. Now what it does it finds out the tangent at this point. So,
+
+120
+00:21:31,480 --> 00:21:43,990
+what would that tangent be? That tangent is nothing, but f prime x 0 , because
+
+121
+00:21:43,990 --> 00:21:53,020
+we know prime means d y dx. So, I draw the tangent here,
+
+122
+00:21:53,020 --> 00:22:06,070
+the tangent intersects the x axis at some point. Let this be the value x 1, I drew
+
+123
+00:22:06,070 --> 00:22:25,780
+the tangent and got the value x 1. I come here and from here and from here for f x 1 at every
+
+124
+00:22:25,780 --> 00:22:32,740
+stage have to check whether the value is close to 0 or not; obviously, this is not the case.
+
+125
+00:22:32,740 --> 00:22:43,990
+Therefore, I draw another tangent from here and what is this tangent? This tangent is f dash x 1;
+
+126
+00:22:43,990 --> 00:23:03,970
+derivative at this point. So, this becomes x 2, now I find out f x 2. Now I again compare whether
+
+127
+00:23:03,970 --> 00:23:21,280
+f x 2 to is very close to 0 or not. Still it is not the case. So, I draw a tangent at this point.
+
+128
+00:23:21,280 --> 00:23:40,780
+So, this is x 3 and I find out if x 3. Suppose this value f x 3 is very close to 0. Suppose
+
+129
+00:23:40,780 --> 00:23:47,050
+this is within my allowed error, then x 3 is the root. Otherwise if it was not there
+
+130
+00:23:47,050 --> 00:23:54,730
+from here again I would have to draw a tangent in this way it goes all right.
+
+131
+00:23:54,730 --> 00:24:02,950
+So, this is the essence of Newton-Raphsons method. So, what are you doing here? We
+
+132
+00:24:02,950 --> 00:24:11,050
+are taking a function starting with a point and finding a tangent to that curve to the
+
+133
+00:24:11,050 --> 00:24:18,790
+function at that point and see where that tangent intersects the x axis,
+
+134
+00:24:18,790 --> 00:24:27,160
+from there I find out f x 2 and then I go on doing this. So, I think this geometrical
+
+135
+00:24:27,160 --> 00:24:36,160
+exposition will be very helpful to you. So, next let us try to see how Newton-Raphson method works.
+
+136
+00:24:41,590 --> 00:24:52,330
+So, at every stage x n plus 1 is x n minus f x n by f dash x n,
+
+137
+00:24:52,330 --> 00:25:09,220
+why? Because of the simple reason that I had this curve and this was my x n,
+
+138
+00:25:09,220 --> 00:25:23,380
+from there I drew the tangent. So, this was f x n and I drew the tangent here,
+
+139
+00:25:23,380 --> 00:25:32,470
+then if I divide this and subtract from here I will get this x n plus 1 here.
+
+140
+00:25:32,470 --> 00:25:47,560
+So, you see it is coming in the other way because at every stage I am computing this. Next,
+
+141
+00:25:47,560 --> 00:25:57,220
+here x n is the current known value of x, f x n represents the value of the function,
+
+142
+00:25:57,220 --> 00:26:04,060
+f dashed x n is the derivative of the slope at that point, x n plus 1 represents the next
+
+143
+00:26:04,060 --> 00:26:10,840
+x value that you are trying to find. So, this expression is coming from the
+
+144
+00:26:10,840 --> 00:26:20,200
+fact that f x by d x, where d x is delta minus x therefore, the term f x by f dash
+
+145
+00:26:20,200 --> 00:26:28,360
+takes is actually the value of d x that means, by how much I should count down.
+
+146
+00:26:28,360 --> 00:26:36,850
+So, you can see from this expression f x by f prime x is f x by f x by delta x; that means,
+
+147
+00:26:36,850 --> 00:26:44,020
+the delta x; actually this is the delta x part and that means, how I am shifting this x. So,
+
+148
+00:26:44,020 --> 00:26:50,470
+the x was here and I am shifting it by delta x and coming here, again shifting it by delta
+
+149
+00:26:50,470 --> 00:27:07,200
+x and coming here like that I am going all right. So, suppose fx was x square minus 4, then f prime
+
+150
+00:27:07,200 --> 00:27:22,230
+x is obviously 2 x and x 0 was 6, suppose I assumed x 0 to be 6. So, here is how it goes.
+
+151
+00:27:22,230 --> 00:27:43,950
+First iteration x 0 is 6, f x 0 is supposed 32, 32 because 6 squared 36 minus 4. f prime x is what? f
+
+152
+00:27:43,950 --> 00:28:08,760
+prime x is 2 x that is 12. This is x n and the next value will be x n; that means, 6 minus 32
+
+153
+00:28:08,760 --> 00:28:19,110
+by 12. So, whatever that is I subtract and I get the 3.3 3 next iteration I come to 3.3 3.
+
+154
+00:28:19,110 --> 00:28:29,670
+So, it was something like this that I started with 6 and then I moved to 3.3 3. So, you see it
+
+155
+00:28:29,670 --> 00:28:41,130
+is converging very fast 3.3 3, then at 3.3 3 the value of fx 1 is 7.0 9, here if you compute this,
+
+156
+00:28:41,130 --> 00:28:52,470
+the derivative will be twice of this, that is 6.6 6, derivative is 2 x, 6.6 6. If I subtract this
+
+157
+00:28:52,470 --> 00:29:04,440
+6.6 6 divided by 7.0 9, subtract it from 3.3 3 is 2.2 7. So, my dx is 1.0 6. I go on like this and
+
+158
+00:29:04,440 --> 00:29:11,960
+ultimately I come to a dx of 0.01, I assume. So, next time it is 2.2 7. I start with that
+
+159
+00:29:11,960 --> 00:29:24,470
+again find the next value to be 2.2 7 so it will be 2.0 1 and with 2.0 1 I compute and gradually
+
+160
+00:29:24,470 --> 00:29:32,420
+you see the dx is coming down. As the dx is coming down; that means, I am approaching the
+
+161
+00:29:32,420 --> 00:29:41,450
+actual root. So, this is Newton-Raphson method and we can very easily code it.
+
+162
+00:29:41,450 --> 00:29:54,650
+So, here is an example. Now you can see this it starts with 6 goes to 3.3 3,
+
+163
+00:29:54,650 --> 00:30:06,950
+then from 3.3 3; I am coming to 2.2.7 then from 2.2.7, I am coming here and gradually
+
+164
+00:30:06,950 --> 00:30:14,990
+the error is not increasing. So, it is very much converging. So, I get the solution with 2.0 1.
+
+165
+00:30:17,000 --> 00:30:21,380
+So, quickly the algorithm will look like this - again I will read x,
+
+166
+00:30:21,380 --> 00:30:33,410
+the a maximum error allowed number of iterations and d. d is for checking the slope, here are the
+
+167
+00:30:33,410 --> 00:30:39,200
+comments - x is the initial guess, absolutely error is e, n is the number of iterations.
+
+168
+00:30:39,200 --> 00:30:51,500
+So, do in a loop, i to n in steps of 2, f x f is equal to f x and then f 1 is f prime
+
+169
+00:30:51,500 --> 00:30:58,880
+x. Now these are 2 functions, which you have to write and now why am I keeping this check?
+
+170
+00:30:58,880 --> 00:31:10,130
+Why am I keeping this check? f 1 which is a slope if f dashed x is too small; that means,
+
+171
+00:31:10,130 --> 00:31:22,970
+what that the slope is nearly horizontal; that means, I am not going to get something like
+
+172
+00:31:22,970 --> 00:31:30,800
+this. If I come to this point and try to find a slope of this, the slope will be very horizontal.
+
+173
+00:31:30,800 --> 00:31:35,810
+So, this is not a good choice. In that case I have to reduce it and come to a point,
+
+174
+00:31:35,810 --> 00:31:44,510
+where I can find a slope all right. Now, in that way I go on and find the whether it is coming
+
+175
+00:31:44,510 --> 00:31:54,680
+to the close to the root and go on. Now, if it goes on the iteration goes on say for example,
+
+176
+00:31:54,680 --> 00:32:03,620
+it is possible that I am missing the loop, coming close to that- say a curve like this.
+
+177
+00:32:03,620 --> 00:32:12,620
+The slope of the curve was such that I was trying to come here and somehow I miss the root,
+
+178
+00:32:12,620 --> 00:32:17,240
+I go to another point. So, that is another special case I need
+
+179
+00:32:17,240 --> 00:32:26,060
+not bother you with that right now. So, let us have a quick look at the program.
+
+180
+00:32:27,950 --> 00:32:34,730
+So, here we are trying to find out the root of a function
+
+181
+00:32:51,420 --> 00:32:59,310
+x log x to the base 10 minus 1.2. So, that is the function that function
+
+182
+00:32:59,310 --> 00:33:10,410
+is embodied in another C function. Now d f is nothing, but f dashed x.
+
+183
+00:33:10,410 --> 00:33:15,150
+So, if this function is given, I also keep f dashed x written. So,
+
+184
+00:33:15,150 --> 00:33:22,320
+this is f x, this is f dashed x. Now I know I have already pre coded them and that will
+
+185
+00:33:22,320 --> 00:33:33,270
+return me the value for different values of x. So, now again I read as scan f, i read the
+
+186
+00:33:33,270 --> 00:33:44,100
+initial x 0, the allowed error, the maximum iteration. Now, then in this loop what I do
+
+187
+00:33:44,100 --> 00:33:55,170
+I find fx by f dashed x and that is h -how much I should change the initial value. The
+
+188
+00:33:55,170 --> 00:34:01,560
+initial value was x 0 with which I started, I subtract that and come to the next point.
+
+189
+00:34:02,430 --> 00:34:14,190
+If absolute value at that point is less than error then that is a solution. Otherwise,
+
+190
+00:34:14,190 --> 00:34:26,460
+I will go up and repeat this. Now if I go on and ultimately if I overshoot the maximum iteration,
+
+191
+00:34:26,460 --> 00:34:36,660
+then I can say that the required solution does not converge or the iterations are inefficient.
+
+192
+00:34:36,660 --> 00:34:41,370
+So, Newton-Raphson usually gives us a very fast way of finding the root,
+
+193
+00:34:41,370 --> 00:34:50,400
+but sometimes it does not converge and that is one problem of that. However, there are
+
+194
+00:34:50,400 --> 00:34:57,690
+many other sophisticated ways of finding roots, just to summarise I would like to say that what
+
+195
+00:34:57,690 --> 00:35:08,430
+we have learnt in the past couple of lectures is that one of the major technological requirements,
+
+196
+00:35:08,430 --> 00:35:15,420
+a computational requirements are finding roots of polynomials for many solutions for many
+
+197
+00:35:15,420 --> 00:35:22,890
+engineering solutions. I have to solve equations. For that there are many methods we have just gone
+
+198
+00:35:22,890 --> 00:35:30,690
+through to simpler methods one is the bisection method and the other one that we saw just now
+
+199
+00:35:30,690 --> 00:35:38,640
+is the Newton-Raphson method. Next we look at something else called interpolation and
+
+200
+00:35:38,640 --> 00:35:40,740
+other things. Thank you.

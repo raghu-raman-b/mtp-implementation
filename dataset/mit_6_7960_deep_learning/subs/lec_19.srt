@@ -1,0 +1,6271 @@
+1
+00:00:00,000 --> 00:00:01,961
+[SQUEAKING]
+
+2
+00:00:01,961 --> 00:00:03,909
+[RUSTLING]
+
+3
+00:00:03,909 --> 00:00:05,370
+[CLICKING]
+
+4
+00:00:12,680 --> 00:00:15,440
+SARA BEERY: We're going to finish up our short series
+
+5
+00:00:15,440 --> 00:00:18,400
+on transfer learning today.
+
+6
+00:00:18,400 --> 00:00:23,080
+And the other logistical thing I did want to bring up
+
+7
+00:00:23,080 --> 00:00:27,400
+is I know that project proposals are due this Friday.
+
+8
+00:00:27,400 --> 00:00:30,534
+During our instructor meeting today, we put together a rubric
+
+9
+00:00:30,534 --> 00:00:32,159
+for those project proposals just to try
+
+10
+00:00:32,159 --> 00:00:34,617
+to give you guys a little bit more structured understanding
+
+11
+00:00:34,617 --> 00:00:37,200
+of what we're going to be evaluating those on.
+
+12
+00:00:37,200 --> 00:00:39,480
+So that's up on Piazza.
+
+13
+00:00:39,480 --> 00:00:41,560
+Essentially, it's like out of 10,
+
+14
+00:00:41,560 --> 00:00:43,000
+and there's five different things
+
+15
+00:00:43,000 --> 00:00:44,733
+that are each worth two points.
+
+16
+00:00:44,733 --> 00:00:46,400
+And then the other thing I wanted to say
+
+17
+00:00:46,400 --> 00:00:48,400
+is that this is actually, shockingly,
+
+18
+00:00:48,400 --> 00:00:51,280
+already my last lecture of the semester.
+
+19
+00:00:51,280 --> 00:00:53,480
+I don't know where the time goes,
+
+20
+00:00:53,480 --> 00:00:56,280
+but it has been really awesome getting
+
+21
+00:00:56,280 --> 00:00:58,220
+to lecture you this semester.
+
+22
+00:00:58,220 --> 00:01:01,580
+And I will probably see you towards the end of the semester
+
+23
+00:01:01,580 --> 00:01:04,080
+anyway, but yeah.
+
+24
+00:01:04,080 --> 00:01:05,720
+Time flies.
+
+25
+00:01:05,720 --> 00:01:06,220
+Cool.
+
+26
+00:01:06,220 --> 00:01:10,060
+So today, continuing that thread on thinking
+
+27
+00:01:10,060 --> 00:01:12,772
+about how we can transfer knowledge specifically
+
+28
+00:01:12,772 --> 00:01:14,980
+within the constraints of these deep learning models,
+
+29
+00:01:14,980 --> 00:01:17,420
+or these deep learning systems, today, we're
+
+30
+00:01:17,420 --> 00:01:19,620
+going to be specifically talking about how
+
+31
+00:01:19,620 --> 00:01:23,340
+we can transfer knowledge about the inputs to the system.
+
+32
+00:01:23,340 --> 00:01:26,260
+And so we're going to spend some time thinking about how
+
+33
+00:01:26,260 --> 00:01:28,220
+you can think about generative models
+
+34
+00:01:28,220 --> 00:01:33,900
+as another way to capture information about data inputs.
+
+35
+00:01:33,900 --> 00:01:37,860
+And then we're also going to talk a little bit about models
+
+36
+00:01:37,860 --> 00:01:41,260
+that learn to learn, so this idea of meta-learning
+
+37
+00:01:41,260 --> 00:01:44,220
+and how you can build models that are almost designed
+
+38
+00:01:44,220 --> 00:01:46,460
+to be good at transfer learning, designed
+
+39
+00:01:46,460 --> 00:01:48,500
+to be good at sharing information or learning
+
+40
+00:01:48,500 --> 00:01:50,460
+new things.
+
+41
+00:01:50,460 --> 00:01:51,080
+Cool.
+
+42
+00:01:51,080 --> 00:01:57,520
+So if we're thinking about knowledge about the inputs,
+
+43
+00:01:57,520 --> 00:01:59,120
+maybe one way to think about this
+
+44
+00:01:59,120 --> 00:02:02,840
+is if you know something about the distribution of inputs
+
+45
+00:02:02,840 --> 00:02:05,240
+you're going to expect, maybe there's
+
+46
+00:02:05,240 --> 00:02:07,640
+a way to actually use that to direct or accelerate
+
+47
+00:02:07,640 --> 00:02:11,760
+your learning or even directly target
+
+48
+00:02:11,760 --> 00:02:14,840
+a specific type of learning.
+
+49
+00:02:14,840 --> 00:02:21,760
+So you have a data set, and then we spent quite a few lectures
+
+50
+00:02:21,760 --> 00:02:23,880
+with Phil talking about this ability
+
+51
+00:02:23,880 --> 00:02:28,380
+to learn how to generate data from that same distribution,
+
+52
+00:02:28,380 --> 00:02:31,080
+this idea that you can use generative modeling.
+
+53
+00:02:31,080 --> 00:02:35,040
+And so now, that gives you access
+
+54
+00:02:35,040 --> 00:02:37,360
+to some model that then is able to sample
+
+55
+00:02:37,360 --> 00:02:40,280
+from that distribution.
+
+56
+00:02:40,280 --> 00:02:43,320
+And so here, at a first glance, this
+
+57
+00:02:43,320 --> 00:02:44,740
+might not seem that interesting.
+
+58
+00:02:44,740 --> 00:02:46,640
+You had data, and then you used it
+
+59
+00:02:46,640 --> 00:02:49,820
+to train a model that mimics the data that you already had.
+
+60
+00:02:49,820 --> 00:02:53,440
+But you already had the data, so how does it actually help?
+
+61
+00:02:53,440 --> 00:02:56,420
+How are you going to get more information out
+
+62
+00:02:56,420 --> 00:02:58,900
+of a system that's been trained to model
+
+63
+00:02:58,900 --> 00:03:02,500
+from a specific distribution?
+
+64
+00:03:02,500 --> 00:03:05,100
+But one of the interesting things
+
+65
+00:03:05,100 --> 00:03:08,740
+that you can think about this as is,
+
+66
+00:03:08,740 --> 00:03:14,460
+assuming that generative model is kind of very good,
+
+67
+00:03:14,460 --> 00:03:20,000
+you can almost think about the model itself as a new way,
+
+68
+00:03:20,000 --> 00:03:22,500
+or a new mechanism to access data,
+
+69
+00:03:22,500 --> 00:03:26,940
+going beyond the capabilities of the initial training data set.
+
+70
+00:03:26,940 --> 00:03:29,600
+So maybe you call it data plus plus.
+
+71
+00:03:29,600 --> 00:03:32,660
+And where does that additive value
+
+72
+00:03:32,660 --> 00:03:34,540
+that you're getting from a data generator
+
+73
+00:03:34,540 --> 00:03:37,860
+that you might not get from the data itself?
+
+74
+00:03:37,860 --> 00:03:40,420
+And here's an interesting quote.
+
+75
+00:03:40,420 --> 00:03:44,220
+So this is from the release of the first Stable Diffusion
+
+76
+00:03:44,220 --> 00:03:44,940
+model.
+
+77
+00:03:44,940 --> 00:03:48,020
+They said that, "This release is the culmination of many hours
+
+78
+00:03:48,020 --> 00:03:52,900
+of collective effort to create a single file that compresses
+
+79
+00:03:52,900 --> 00:03:57,600
+the visual information of humanity into a few gigabytes."
+
+80
+00:03:57,600 --> 00:04:00,320
+And that sounds pretty awesome.
+
+81
+00:04:00,320 --> 00:04:03,840
+So essentially, it's the idea that, actually,
+
+82
+00:04:03,840 --> 00:04:09,497
+a generative model is a really cool form of data compression.
+
+83
+00:04:09,497 --> 00:04:11,080
+So you can take that generative model,
+
+84
+00:04:11,080 --> 00:04:15,380
+and you can go from some latent variable to anything on Earth,
+
+85
+00:04:15,380 --> 00:04:19,660
+like any sort of visual-- all visual information of humanity,
+
+86
+00:04:19,660 --> 00:04:23,600
+then that is a shocking compression of everything.
+
+87
+00:04:23,600 --> 00:04:25,880
+You think about even just the storage capacity
+
+88
+00:04:25,880 --> 00:04:27,480
+of all the images on the internet
+
+89
+00:04:27,480 --> 00:04:30,320
+versus the storage capacity of a Stable Diffusion model.
+
+90
+00:04:30,320 --> 00:04:33,000
+That's a significant difference in terms
+
+91
+00:04:33,000 --> 00:04:36,000
+of what you're capturing.
+
+92
+00:04:36,000 --> 00:04:45,440
+So here, how do we think about what data plus plus means,
+
+93
+00:04:45,440 --> 00:04:50,400
+and how do we think about data as maybe like an object?
+
+94
+00:04:50,400 --> 00:04:57,140
+So if we start with some X, which
+
+95
+00:04:57,140 --> 00:05:00,860
+is the set of the original training data, which
+
+96
+00:05:00,860 --> 00:05:05,580
+is little x, z, which is a set of latent variables
+
+97
+00:05:05,580 --> 00:05:08,340
+that can correspond to the original training data
+
+98
+00:05:08,340 --> 00:05:14,580
+learned by our generative model, the mapping from z
+
+99
+00:05:14,580 --> 00:05:16,620
+to x-- so this is basically the mapping that
+
+100
+00:05:16,620 --> 00:05:20,920
+goes from some latent variable to a generated data point,
+
+101
+00:05:20,920 --> 00:05:24,100
+and that's G. That's the generative model we've learned.
+
+102
+00:05:24,100 --> 00:05:27,380
+And then if you also have G inverse-- essentially,
+
+103
+00:05:27,380 --> 00:05:30,980
+this inverse mapping that lets you go from data to its
+
+104
+00:05:30,980 --> 00:05:33,820
+associated latent variable--
+
+105
+00:05:33,820 --> 00:05:35,980
+you can actually define these.
+
+106
+00:05:35,980 --> 00:05:38,340
+You can take these and define operators
+
+107
+00:05:38,340 --> 00:05:41,780
+over those objects that enable us to do things
+
+108
+00:05:41,780 --> 00:05:46,500
+to the generator and the system of data plus generator of data
+
+109
+00:05:46,500 --> 00:05:49,380
+that we couldn't easily do to the data itself.
+
+110
+00:05:49,380 --> 00:05:53,480
+So for example, you can think about interpolation
+
+111
+00:05:53,480 --> 00:05:55,880
+over a data set.
+
+112
+00:05:55,880 --> 00:05:58,060
+Pretty standard definition of interpolation.
+
+113
+00:05:58,060 --> 00:05:59,640
+But now, you can think about maybe
+
+114
+00:05:59,640 --> 00:06:04,520
+some-- if you have one set of this, like X,
+
+115
+00:06:04,520 --> 00:06:09,920
+Mathcad X that's some data set, some latent space, a generator
+
+116
+00:06:09,920 --> 00:06:12,780
+for that latent space to data in the inverse.
+
+117
+00:06:12,780 --> 00:06:15,160
+If you have one of those, and you have another one that's
+
+118
+00:06:15,160 --> 00:06:17,140
+for some of different data set, possibly,
+
+119
+00:06:17,140 --> 00:06:19,680
+or a different generator, you can think about interpolating
+
+120
+00:06:19,680 --> 00:06:21,400
+between the two, right?
+
+121
+00:06:21,400 --> 00:06:23,560
+So some interpolation between those two things
+
+122
+00:06:23,560 --> 00:06:26,040
+would generate a new one.
+
+123
+00:06:26,040 --> 00:06:28,760
+And you can think about manipulation, right?
+
+124
+00:06:28,760 --> 00:06:32,580
+You can think about how you might add some bias term to that
+
+125
+00:06:32,580 --> 00:06:36,440
+that would give you, again, some whole new kind of object
+
+126
+00:06:36,440 --> 00:06:39,200
+for accessing and interacting with data.
+
+127
+00:06:39,200 --> 00:06:41,680
+You can think about composition.
+
+128
+00:06:41,680 --> 00:06:44,680
+So here, how do you actually kind of compose two things
+
+129
+00:06:44,680 --> 00:06:46,600
+is, of course, different from interpolating
+
+130
+00:06:46,600 --> 00:06:47,960
+between two things.
+
+131
+00:06:47,960 --> 00:06:54,060
+So now if you essentially are taking this space where
+
+132
+00:06:54,060 --> 00:06:58,920
+you have just these different data products or data objects,
+
+133
+00:06:58,920 --> 00:07:02,860
+you can think about really combining them and manipulating
+
+134
+00:07:02,860 --> 00:07:04,500
+them in interesting ways.
+
+135
+00:07:04,500 --> 00:07:07,260
+You can also think about optimization,
+
+136
+00:07:07,260 --> 00:07:12,940
+so how you might actually be able to explicitly find
+
+137
+00:07:12,940 --> 00:07:17,980
+some set of generator data, latent space inverse generator,
+
+138
+00:07:17,980 --> 00:07:22,380
+that's optimal for some given dimension of optimality.
+
+139
+00:07:22,380 --> 00:07:27,460
+And you can imagine taking that and bringing
+
+140
+00:07:27,460 --> 00:07:30,405
+it to bear on many, many different research
+
+141
+00:07:30,405 --> 00:07:32,780
+domains or problem domains that people are interested in.
+
+142
+00:07:32,780 --> 00:07:35,020
+Things like graphics, visualization,
+
+143
+00:07:35,020 --> 00:07:39,020
+data augmentation, counterfactual reasoning.
+
+144
+00:07:39,020 --> 00:07:42,460
+And all of this work is kind of somewhat in progress, actually.
+
+145
+00:07:42,460 --> 00:07:45,100
+So these are just some examples of papers
+
+146
+00:07:45,100 --> 00:07:48,460
+that start getting at these mechanisms of interpolation,
+
+147
+00:07:48,460 --> 00:07:52,480
+manipulation, composition, or optimization over generated data
+
+148
+00:07:52,480 --> 00:07:54,240
+objects.
+
+149
+00:07:54,240 --> 00:07:59,440
+So if we think about this space of generative models--
+
+150
+00:07:59,440 --> 00:08:01,320
+so here, this is now just visualizing
+
+151
+00:08:01,320 --> 00:08:02,653
+what we were just talking about.
+
+152
+00:08:02,653 --> 00:08:04,480
+We have some set of latent variables.
+
+153
+00:08:04,480 --> 00:08:06,300
+So these are maybe the controls, right?
+
+154
+00:08:06,300 --> 00:08:08,640
+This is kind of the way that you control
+
+155
+00:08:08,640 --> 00:08:10,840
+what you want to generate.
+
+156
+00:08:10,840 --> 00:08:13,600
+And maybe you've made some reasonable constraints
+
+157
+00:08:13,600 --> 00:08:20,080
+in your system so you can ensure that z is normally distributed.
+
+158
+00:08:20,080 --> 00:08:25,320
+Now, you have some generative model, G,
+
+159
+00:08:25,320 --> 00:08:28,960
+that will take any point in that latent space
+
+160
+00:08:28,960 --> 00:08:30,740
+and then synthesize an image.
+
+161
+00:08:30,740 --> 00:08:37,280
+So here, now, if you sampled a different point in latent space,
+
+162
+00:08:37,280 --> 00:08:40,480
+then you would sample a different image.
+
+163
+00:08:40,480 --> 00:08:44,080
+And so now, given the relationship
+
+164
+00:08:44,080 --> 00:08:47,860
+between dimensionality of movement in latent space
+
+165
+00:08:47,860 --> 00:08:49,860
+and the image that's generated, you
+
+166
+00:08:49,860 --> 00:08:52,940
+can think about this as a mechanism of control.
+
+167
+00:08:52,940 --> 00:08:56,700
+So maybe if you move along some controllable snippet
+
+168
+00:08:56,700 --> 00:08:59,180
+of the manifold of natural images,
+
+169
+00:08:59,180 --> 00:09:03,060
+you can explicitly do things like find some latent variable
+
+170
+00:09:03,060 --> 00:09:06,100
+in your latent space, some dimension in that latent space
+
+171
+00:09:06,100 --> 00:09:09,020
+that corresponds to something like pose
+
+172
+00:09:09,020 --> 00:09:13,760
+for this bird or orientation in some way.
+
+173
+00:09:13,760 --> 00:09:17,300
+And so maybe there's different dimensions
+
+174
+00:09:17,300 --> 00:09:20,780
+of this control in latent space that corresponds specifically
+
+175
+00:09:20,780 --> 00:09:25,220
+to disentangled factors of variation or change
+
+176
+00:09:25,220 --> 00:09:28,500
+in the space of those real generated images.
+
+177
+00:09:28,500 --> 00:09:33,280
+And so if you can find-- yeah?
+
+178
+00:09:33,280 --> 00:09:37,140
+AUDIENCE: On that slide, do you suppose that the two dimensions
+
+179
+00:09:37,140 --> 00:09:39,740
+are linearly independent?
+
+180
+00:09:39,740 --> 00:09:41,860
+And is it usually the case?
+
+181
+00:09:41,860 --> 00:09:44,400
+SARA BEERY: So your question is, are you
+
+182
+00:09:44,400 --> 00:09:48,920
+supposing that these dimensions in this kind of latent variable
+
+183
+00:09:48,920 --> 00:09:52,120
+space are linearly independent?
+
+184
+00:09:52,120 --> 00:09:54,080
+So I think the assumption here is
+
+185
+00:09:54,080 --> 00:10:00,000
+that there is some decomposable directions that are maybe
+
+186
+00:10:00,000 --> 00:10:03,440
+some projection of this where you can find orthogonality,
+
+187
+00:10:03,440 --> 00:10:05,440
+and that orthogonality then corresponds
+
+188
+00:10:05,440 --> 00:10:13,920
+to some very clean specific variables of variation
+
+189
+00:10:13,920 --> 00:10:16,040
+in the real image space.
+
+190
+00:10:16,040 --> 00:10:24,760
+In practice, sometimes, particularly for certain types
+
+191
+00:10:24,760 --> 00:10:30,800
+or certain categories of generative models, this is true,
+
+192
+00:10:30,800 --> 00:10:33,380
+but it's not necessarily easy to find.
+
+193
+00:10:33,380 --> 00:10:38,040
+So people will do this cherry picked thing
+
+194
+00:10:38,040 --> 00:10:40,200
+where they're like, hey, we found a dimension,
+
+195
+00:10:40,200 --> 00:10:41,720
+where if we move in this dimension,
+
+196
+00:10:41,720 --> 00:10:44,640
+you can see that it changes from day to night.
+
+197
+00:10:44,640 --> 00:10:46,160
+We'll talk more about some of these.
+
+198
+00:10:46,160 --> 00:10:48,380
+But I think one of the challenges of this
+
+199
+00:10:48,380 --> 00:10:51,980
+is, particularly as these latent spaces get higher dimensional,
+
+200
+00:10:51,980 --> 00:10:54,500
+being able to really explicitly disentangle
+
+201
+00:10:54,500 --> 00:10:56,700
+these dimensions of variation in a clean way can
+
+202
+00:10:56,700 --> 00:10:59,760
+be very difficult and can be highly heuristic.
+
+203
+00:10:59,760 --> 00:11:00,260
+Yeah.
+
+204
+00:11:02,820 --> 00:11:03,620
+Cool.
+
+205
+00:11:03,620 --> 00:11:07,740
+So if you have that, if you have this kind of model that takes
+
+206
+00:11:07,740 --> 00:11:11,620
+you from data to what we're calling data plus plus,
+
+207
+00:11:11,620 --> 00:11:16,860
+and you can map now from your actual image now into the latent
+
+208
+00:11:16,860 --> 00:11:19,900
+space itself-- so this is that G inverse--
+
+209
+00:11:19,900 --> 00:11:22,620
+now, you have the ability to ask these interesting counterfactual
+
+210
+00:11:22,620 --> 00:11:23,340
+questions.
+
+211
+00:11:23,340 --> 00:11:25,460
+What would it look like if assuming
+
+212
+00:11:25,460 --> 00:11:28,260
+that you have these measurable and actionable dimensions
+
+213
+00:11:28,260 --> 00:11:29,940
+of variation?
+
+214
+00:11:29,940 --> 00:11:32,400
+So here, now, you could say, OK.
+
+215
+00:11:32,400 --> 00:11:35,580
+What would it look like if we moved around
+
+216
+00:11:35,580 --> 00:11:36,605
+in this latent space?
+
+217
+00:11:36,605 --> 00:11:37,980
+How do these different dimensions
+
+218
+00:11:37,980 --> 00:11:42,160
+correspond to different maybe things
+
+219
+00:11:42,160 --> 00:11:45,080
+within the manifold of real images?
+
+220
+00:11:45,080 --> 00:11:47,160
+So here's some work where you can actually
+
+221
+00:11:47,160 --> 00:11:54,240
+show that you can improve your ability to categorize something
+
+222
+00:11:54,240 --> 00:11:59,800
+by building an ensemble over different generated variations
+
+223
+00:11:59,800 --> 00:12:02,320
+of that input data in some manifold.
+
+224
+00:12:02,320 --> 00:12:04,520
+And so you get some, essentially,
+
+225
+00:12:04,520 --> 00:12:08,760
+improved accuracy and robustness by taking a real input image
+
+226
+00:12:08,760 --> 00:12:12,060
+and then figuring out where that corresponds to in latent space,
+
+227
+00:12:12,060 --> 00:12:15,160
+and then moving around nearby in the neighborhood of that thing
+
+228
+00:12:15,160 --> 00:12:17,900
+to find some maybe different poses, different orientations,
+
+229
+00:12:17,900 --> 00:12:20,640
+slightly different realistic manipulations of that input
+
+230
+00:12:20,640 --> 00:12:23,120
+image, and then taking an ensemble.
+
+231
+00:12:23,120 --> 00:12:26,840
+So it's almost like you're building some robustness
+
+232
+00:12:26,840 --> 00:12:30,880
+into your categorizer based on some interesting dimensions
+
+233
+00:12:30,880 --> 00:12:33,680
+of data augmentation, almost like test time
+
+234
+00:12:33,680 --> 00:12:38,820
+augmentation within the generator itself,
+
+235
+00:12:38,820 --> 00:12:39,700
+which is interesting.
+
+236
+00:12:39,700 --> 00:12:41,200
+So there's some nice work that shows
+
+237
+00:12:41,200 --> 00:12:44,420
+that, OK, actually, exploring dimensions of latent space
+
+238
+00:12:44,420 --> 00:12:46,940
+can give you something that actually
+
+239
+00:12:46,940 --> 00:12:49,605
+is more than the original training data.
+
+240
+00:12:49,605 --> 00:12:51,980
+Though I think an interesting and important point here is
+
+241
+00:12:51,980 --> 00:12:55,620
+there's so much kind of knowledge baked into this.
+
+242
+00:12:55,620 --> 00:12:58,980
+The fact that something nearby in that image space
+
+243
+00:12:58,980 --> 00:13:02,560
+should be reasonably-- maybe the same category,
+
+244
+00:13:02,560 --> 00:13:04,260
+not actually break a category boundary
+
+245
+00:13:04,260 --> 00:13:07,380
+in some significant way, seems important.
+
+246
+00:13:07,380 --> 00:13:09,780
+And I often try to point out, some
+
+247
+00:13:09,780 --> 00:13:12,260
+of these assumptions that are built in, some of the ways
+
+248
+00:13:12,260 --> 00:13:13,200
+they might fail.
+
+249
+00:13:13,200 --> 00:13:17,100
+So if you are just trying to understand something like cat,
+
+250
+00:13:17,100 --> 00:13:18,475
+this is probably very reasonable.
+
+251
+00:13:18,475 --> 00:13:20,142
+If you're trying to understand something
+
+252
+00:13:20,142 --> 00:13:22,660
+about maybe a breed of cat, these dimensions of variation
+
+253
+00:13:22,660 --> 00:13:24,910
+might start to get more confusing in terms of breaking
+
+254
+00:13:24,910 --> 00:13:25,840
+that class boundary.
+
+255
+00:13:25,840 --> 00:13:27,500
+Because to me, as someone who spends
+
+256
+00:13:27,500 --> 00:13:29,700
+a lot of time thinking about animals,
+
+257
+00:13:29,700 --> 00:13:32,180
+the first image and the one in the middle
+
+258
+00:13:32,180 --> 00:13:33,725
+actually look like different breeds.
+
+259
+00:13:33,725 --> 00:13:35,100
+That difference in the morphology
+
+260
+00:13:35,100 --> 00:13:37,120
+with that extra length of the ears?
+
+261
+00:13:37,120 --> 00:13:41,155
+To me, if that's this type of cat, the fine grained level
+
+262
+00:13:41,155 --> 00:13:42,780
+of categorization you're interested in,
+
+263
+00:13:42,780 --> 00:13:44,360
+this might actually be more confusing
+
+264
+00:13:44,360 --> 00:13:46,043
+and potentially break that robustness.
+
+265
+00:13:46,043 --> 00:13:47,960
+So there's always some fundamental assumptions
+
+266
+00:13:47,960 --> 00:13:49,335
+about what you're actually trying
+
+267
+00:13:49,335 --> 00:13:52,640
+to do that are built in to the dimensions of variation that
+
+268
+00:13:52,640 --> 00:13:57,120
+are good or bad for a given problem.
+
+269
+00:13:57,120 --> 00:13:58,920
+And then there's this question of, how
+
+270
+00:13:58,920 --> 00:14:02,283
+do you discover these dimensions in a latent space, right?
+
+271
+00:14:02,283 --> 00:14:04,200
+So one interesting thing you could think about
+
+272
+00:14:04,200 --> 00:14:07,175
+is, if you're trying to discover an interesting dimension
+
+273
+00:14:07,175 --> 00:14:08,800
+of variation in a latent space, there's
+
+274
+00:14:08,800 --> 00:14:10,217
+ways you can do it experimentally.
+
+275
+00:14:10,217 --> 00:14:12,020
+You take an image of something.
+
+276
+00:14:12,020 --> 00:14:14,920
+You take an image of the same thing at night, for example,
+
+277
+00:14:14,920 --> 00:14:17,980
+and then you look at where those both mapped to in latent space.
+
+278
+00:14:17,980 --> 00:14:20,400
+And then you decide, you calculate
+
+279
+00:14:20,400 --> 00:14:24,020
+the vector of direction that goes from one to the other.
+
+280
+00:14:24,020 --> 00:14:26,640
+So now, you've almost calculated a vector of direction
+
+281
+00:14:26,640 --> 00:14:30,480
+that should correspond to this specific type of counterfactual.
+
+282
+00:14:30,480 --> 00:14:33,320
+And so then you can think about explicitly finding things
+
+283
+00:14:33,320 --> 00:14:37,300
+like dimensions of variation that zoom out on an image
+
+284
+00:14:37,300 --> 00:14:40,580
+or zoom in on an image or brighten it or darken it.
+
+285
+00:14:40,580 --> 00:14:43,500
+So in this case, they were able to find
+
+286
+00:14:43,500 --> 00:14:46,420
+corresponding specific shifts in the image that
+
+287
+00:14:46,420 --> 00:14:50,140
+can be used to then control images and ones that
+
+288
+00:14:50,140 --> 00:14:51,200
+are input agnostic.
+
+289
+00:14:51,200 --> 00:14:54,380
+So now, you can find this optimal direction or dimension
+
+290
+00:14:54,380 --> 00:14:58,260
+of variation by just kind of cropping images.
+
+291
+00:14:58,260 --> 00:15:00,375
+And then you take an ensemble of the directions
+
+292
+00:15:00,375 --> 00:15:02,500
+for each of those, and maybe you can find something
+
+293
+00:15:02,500 --> 00:15:03,440
+experimentally.
+
+294
+00:15:03,440 --> 00:15:07,160
+And so here, you have these dimensions of zoom.
+
+295
+00:15:07,160 --> 00:15:09,780
+You can find dimensions that correspond to shift even
+
+296
+00:15:09,780 --> 00:15:11,700
+across different input sizes.
+
+297
+00:15:11,700 --> 00:15:13,340
+You have dimensions that correspond
+
+298
+00:15:13,340 --> 00:15:15,340
+to brightening an image.
+
+299
+00:15:15,340 --> 00:15:18,020
+And then you have things like corresponding dimensions
+
+300
+00:15:18,020 --> 00:15:19,440
+of darkening an image.
+
+301
+00:15:19,440 --> 00:15:21,380
+So here, this is interesting, because I
+
+302
+00:15:21,380 --> 00:15:23,620
+would say that this is really capturing some very
+
+303
+00:15:23,620 --> 00:15:25,280
+specific bias in our data.
+
+304
+00:15:25,280 --> 00:15:29,620
+Because clearly, people are not taking pictures of volcanoes
+
+305
+00:15:29,620 --> 00:15:31,820
+in the dark that aren't erupting.
+
+306
+00:15:31,820 --> 00:15:34,640
+So when we try to make it dark, it thinks it needs to erupt,
+
+307
+00:15:34,640 --> 00:15:35,140
+right?
+
+308
+00:15:35,140 --> 00:15:36,800
+There's this clear bias that's just
+
+309
+00:15:36,800 --> 00:15:39,240
+built into the training data.
+
+310
+00:15:39,240 --> 00:15:40,880
+And there are some other cool examples
+
+311
+00:15:40,880 --> 00:15:42,940
+of this for other types of modalities as well.
+
+312
+00:15:42,940 --> 00:15:46,500
+So there's actually a really famous example from word2vec,
+
+313
+00:15:46,500 --> 00:15:50,520
+which is an embedding model for words like semantic meanings,
+
+314
+00:15:50,520 --> 00:15:53,720
+where there's a direction in the latent
+
+315
+00:15:53,720 --> 00:15:57,440
+space of models that will correspond to changing
+
+316
+00:15:57,440 --> 00:15:58,800
+the tense of the word.
+
+317
+00:15:58,800 --> 00:16:00,200
+So you can move in that direction
+
+318
+00:16:00,200 --> 00:16:03,240
+and go from swimming to swam and go
+
+319
+00:16:03,240 --> 00:16:06,600
+from walking to walk by moving the same direction
+
+320
+00:16:06,600 --> 00:16:09,360
+in that latent space for words.
+
+321
+00:16:09,360 --> 00:16:14,520
+So these types of examples of disentangled dimensions
+
+322
+00:16:14,520 --> 00:16:16,760
+of variation in latent space can be discovered
+
+323
+00:16:16,760 --> 00:16:18,320
+for many modalities and have been
+
+324
+00:16:18,320 --> 00:16:19,940
+discovered for many modalities.
+
+325
+00:16:23,280 --> 00:16:27,840
+And then there's kind of like these explicit latent
+
+326
+00:16:27,840 --> 00:16:31,580
+space vectors that are disentangling
+
+327
+00:16:31,580 --> 00:16:32,720
+these factors of variation.
+
+328
+00:16:32,720 --> 00:16:35,220
+So you have things like winter to spring,
+
+329
+00:16:35,220 --> 00:16:38,860
+or turning on the lights, going from day to night.
+
+330
+00:16:38,860 --> 00:16:40,940
+The volcano eruption vector.
+
+331
+00:16:40,940 --> 00:16:43,260
+Though, again, you'll note that you're
+
+332
+00:16:43,260 --> 00:16:46,660
+more likely to get a more aggressive looking
+
+333
+00:16:46,660 --> 00:16:51,060
+eruptions at nighttime than during the day.
+
+334
+00:16:51,060 --> 00:16:53,580
+So there's been a lot of research
+
+335
+00:16:53,580 --> 00:16:56,980
+into how to efficiently discover these dimensions of variation
+
+336
+00:16:56,980 --> 00:16:59,300
+within a latent space, these disentangled dimensions
+
+337
+00:16:59,300 --> 00:17:02,020
+of variation, so let's look at that in a little bit more
+
+338
+00:17:02,020 --> 00:17:03,620
+technical detail.
+
+339
+00:17:03,620 --> 00:17:07,700
+So you can take a GAN, like a generative adversarial network,
+
+340
+00:17:07,700 --> 00:17:11,859
+and you can walk in a straight line in a latent space
+
+341
+00:17:11,859 --> 00:17:15,260
+and visualize what it looks like to walk in that straight line.
+
+342
+00:17:15,260 --> 00:17:17,960
+And it kind of works, but it can be really cherry picking.
+
+343
+00:17:17,960 --> 00:17:21,099
+So some of those directions correspond
+
+344
+00:17:21,099 --> 00:17:23,140
+to stuff that just looks like trash
+
+345
+00:17:23,140 --> 00:17:25,540
+or is just not easily disentangled into something
+
+346
+00:17:25,540 --> 00:17:27,220
+that we can interpret.
+
+347
+00:17:27,220 --> 00:17:29,840
+And then there's some of fancier versions of a GAN,
+
+348
+00:17:29,840 --> 00:17:32,840
+like StyleGAN, where they actually explicitly noticed
+
+349
+00:17:32,840 --> 00:17:37,680
+that any layer of the model, any of those intermediate
+
+350
+00:17:37,680 --> 00:17:41,300
+representations, also represents a latent space for the model.
+
+351
+00:17:41,300 --> 00:17:45,080
+And so they determined that there's actually
+
+352
+00:17:45,080 --> 00:17:49,020
+earlier layers in the model that are better,
+
+353
+00:17:49,020 --> 00:17:52,480
+quote, unquote, latent representations than
+
+354
+00:17:52,480 --> 00:17:55,920
+the z representation, that initial input representation.
+
+355
+00:17:55,920 --> 00:18:00,060
+And so then we'll try and talk about why that might be,
+
+356
+00:18:00,060 --> 00:18:02,720
+why it might be better to actually think about the latent
+
+357
+00:18:02,720 --> 00:18:05,320
+space from somewhere intermediate in the model
+
+358
+00:18:05,320 --> 00:18:10,160
+versus explicitly with that input latent vector.
+
+359
+00:18:10,160 --> 00:18:16,040
+So if we have some natural image manifold, X,
+
+360
+00:18:16,040 --> 00:18:20,920
+so some nonlinear data space, and now,
+
+361
+00:18:20,920 --> 00:18:25,320
+we have some starting point, so this is the corresponding point
+
+362
+00:18:25,320 --> 00:18:28,140
+in that data natural image manifold corresponding
+
+363
+00:18:28,140 --> 00:18:29,900
+to this bird, this blue bird.
+
+364
+00:18:29,900 --> 00:18:32,580
+Maybe you have another point here.
+
+365
+00:18:32,580 --> 00:18:34,740
+This is corresponding to this fly.
+
+366
+00:18:34,740 --> 00:18:37,460
+So if you think about linear interpolation between these two
+
+367
+00:18:37,460 --> 00:18:43,660
+points, arguably, you're moving off the manifold of real images.
+
+368
+00:18:43,660 --> 00:18:48,740
+There's stuff in one end and in the other that
+
+369
+00:18:48,740 --> 00:18:52,860
+are more realistic looking, but this direct linear interpolation
+
+370
+00:18:52,860 --> 00:18:54,500
+in image space just gives you stuff
+
+371
+00:18:54,500 --> 00:18:58,060
+in the middle that's basically these obvious kind of just
+
+372
+00:18:58,060 --> 00:19:00,020
+additive images.
+
+373
+00:19:00,020 --> 00:19:03,740
+And it doesn't look anything like any realistic natural world
+
+374
+00:19:03,740 --> 00:19:04,280
+image would.
+
+375
+00:19:04,280 --> 00:19:05,780
+It just doesn't match the statistics
+
+376
+00:19:05,780 --> 00:19:07,420
+of real natural images.
+
+377
+00:19:07,420 --> 00:19:13,100
+So instead, if we have some sort of latent space that--
+
+378
+00:19:13,100 --> 00:19:15,600
+now, we've learned this data plus plus representation.
+
+379
+00:19:15,600 --> 00:19:18,840
+So now, we have a latent space that's well-behaved,
+
+380
+00:19:18,840 --> 00:19:22,900
+and we can map from that directly to that natural image
+
+381
+00:19:22,900 --> 00:19:24,340
+manifold.
+
+382
+00:19:24,340 --> 00:19:27,040
+Then, you can imagine that interpolating linearly
+
+383
+00:19:27,040 --> 00:19:29,920
+in the latent space would correspond to a nonlinear
+
+384
+00:19:29,920 --> 00:19:32,060
+interpolation in that data manifold space,
+
+385
+00:19:32,060 --> 00:19:34,320
+but it would ensure that you're mapping
+
+386
+00:19:34,320 --> 00:19:37,340
+within the manifold of real natural images the whole way.
+
+387
+00:19:37,340 --> 00:19:40,400
+Because by definition, we've constructed something
+
+388
+00:19:40,400 --> 00:19:42,200
+where any point in that latent space
+
+389
+00:19:42,200 --> 00:19:45,680
+will map to the natural image manifold.
+
+390
+00:19:45,680 --> 00:19:49,200
+So now, if you do that same interpolation-- and this is
+
+391
+00:19:49,200 --> 00:19:51,840
+from a paper called BigGAN back in 2018--
+
+392
+00:19:51,840 --> 00:19:55,800
+you do get stuff that at least looks a little bit more
+
+393
+00:19:55,800 --> 00:19:57,300
+like natural images.
+
+394
+00:19:57,300 --> 00:19:59,300
+But they might not really map to reality.
+
+395
+00:19:59,300 --> 00:20:02,780
+You get some really weird things like this half bird,
+
+396
+00:20:02,780 --> 00:20:04,840
+half fly thing where, basically, the model
+
+397
+00:20:04,840 --> 00:20:06,080
+is just doing its best.
+
+398
+00:20:06,080 --> 00:20:08,080
+It's doing its best to find some way
+
+399
+00:20:08,080 --> 00:20:10,480
+to reasonably interpolate between these two things
+
+400
+00:20:10,480 --> 00:20:13,280
+and stay within the constraints of that trained
+
+401
+00:20:13,280 --> 00:20:17,160
+natural image manifold mapping.
+
+402
+00:20:17,160 --> 00:20:20,255
+But that z space, so this z space
+
+403
+00:20:20,255 --> 00:20:21,880
+here where we're mapping from one point
+
+404
+00:20:21,880 --> 00:20:25,940
+to another in a linear way, might not
+
+405
+00:20:25,940 --> 00:20:30,560
+be the best way to organize the data to interpolate along.
+
+406
+00:20:30,560 --> 00:20:33,140
+And so let's look at why that might be.
+
+407
+00:20:33,140 --> 00:20:36,640
+So it goes back to the lecture from VAEs.
+
+408
+00:20:36,640 --> 00:20:39,460
+If you guys remember, you have this data distribution
+
+409
+00:20:39,460 --> 00:20:41,275
+that maps to a latent distribution,
+
+410
+00:20:41,275 --> 00:20:42,900
+and you have a latent distribution that
+
+411
+00:20:42,900 --> 00:20:44,780
+maps to a data distribution.
+
+412
+00:20:44,780 --> 00:20:47,500
+And so at the bottom, we're coloring the correspondence
+
+413
+00:20:47,500 --> 00:20:49,140
+between those two spaces, essentially,
+
+414
+00:20:49,140 --> 00:20:51,980
+like if you're going to map these two things back and forth.
+
+415
+00:20:51,980 --> 00:20:57,540
+So here, if I say the same color on the natural image manifold
+
+416
+00:20:57,540 --> 00:21:00,140
+of green, for example, would match the same color green
+
+417
+00:21:00,140 --> 00:21:01,860
+in the latent space.
+
+418
+00:21:01,860 --> 00:21:07,580
+So now, let's visualize what happens as this gets trained.
+
+419
+00:21:07,580 --> 00:21:10,860
+So here, if we're watching this thing get trained,
+
+420
+00:21:10,860 --> 00:21:16,180
+you can see how it's going from the natural image manifold
+
+421
+00:21:16,180 --> 00:21:17,120
+to that latent space.
+
+422
+00:21:17,120 --> 00:21:19,780
+It's almost like you've taken something and tried
+
+423
+00:21:19,780 --> 00:21:22,040
+to crumple it into a ball.
+
+424
+00:21:22,040 --> 00:21:24,480
+And so even though we've said explicitly
+
+425
+00:21:24,480 --> 00:21:26,600
+that, OK, everything in that latent space
+
+426
+00:21:26,600 --> 00:21:29,480
+should correspond to something on the natural image manifold,
+
+427
+00:21:29,480 --> 00:21:32,400
+actually, there's this weird stuff here.
+
+428
+00:21:32,400 --> 00:21:37,898
+There's danger zones where essentially, here, it's
+
+429
+00:21:37,898 --> 00:21:39,940
+going to be closer to the natural image manifold.
+
+430
+00:21:39,940 --> 00:21:41,920
+But if you're going from here to here,
+
+431
+00:21:41,920 --> 00:21:46,440
+there's going to maybe be seams in that linear interpolation
+
+432
+00:21:46,440 --> 00:21:52,040
+that will correspond to pretty jarring shifts
+
+433
+00:21:52,040 --> 00:21:55,000
+where things that are nearby in latent space
+
+434
+00:21:55,000 --> 00:21:57,640
+could potentially be quite far away from each other in data
+
+435
+00:21:57,640 --> 00:21:59,360
+space.
+
+436
+00:21:59,360 --> 00:22:01,940
+And so essentially, that z representation,
+
+437
+00:22:01,940 --> 00:22:05,060
+if you're doing linear interpolation across that seam,
+
+438
+00:22:05,060 --> 00:22:06,540
+it could be unnatural.
+
+439
+00:22:06,540 --> 00:22:10,000
+And that might be one of the ways
+
+440
+00:22:10,000 --> 00:22:12,560
+to motivate the discovery that they
+
+441
+00:22:12,560 --> 00:22:15,200
+found in the StyleGAN paper, which is essentially
+
+442
+00:22:15,200 --> 00:22:18,600
+that using some intermediate representation somewhere
+
+443
+00:22:18,600 --> 00:22:22,180
+in between that's not quite fully convex, but maybe
+
+444
+00:22:22,180 --> 00:22:25,980
+like a little bit less distorted--
+
+445
+00:22:25,980 --> 00:22:27,860
+so some kind of intermediate thing
+
+446
+00:22:27,860 --> 00:22:32,340
+where you're possibly less likely to jump across a seam
+
+447
+00:22:32,340 --> 00:22:35,820
+or fall into some danger zone.
+
+448
+00:22:35,820 --> 00:22:37,880
+Basically, just somewhere in between
+
+449
+00:22:37,880 --> 00:22:40,220
+might be the right place to interpolate and get
+
+450
+00:22:40,220 --> 00:22:43,740
+things that look more realistic and behave
+
+451
+00:22:43,740 --> 00:22:46,140
+in a more friendly way.
+
+452
+00:22:46,140 --> 00:22:48,780
+And empirically and qualitatively,
+
+453
+00:22:48,780 --> 00:22:51,180
+that's sometimes true.
+
+454
+00:22:51,180 --> 00:22:53,300
+It's our favorite way to say things, right?
+
+455
+00:22:53,300 --> 00:22:54,260
+Sometimes.
+
+456
+00:22:54,260 --> 00:22:56,960
+But it does actually correspond in some nice ways.
+
+457
+00:22:56,960 --> 00:23:02,200
+So here, this was a work where they took that w space,
+
+458
+00:23:02,200 --> 00:23:05,740
+that intermediate space, and they demonstrated that they
+
+459
+00:23:05,740 --> 00:23:09,500
+could use it using-- this was a work called StyleSpace--
+
+460
+00:23:09,500 --> 00:23:12,350
+to very cleanly isolate and disentangle
+
+461
+00:23:12,350 --> 00:23:13,600
+these dimensions of variation.
+
+462
+00:23:13,600 --> 00:23:15,683
+And they got some really nice qualitative results.
+
+463
+00:23:15,683 --> 00:23:19,040
+So here, they're able to vary things
+
+464
+00:23:19,040 --> 00:23:23,240
+at the level of granularity of hood styles or headlight types
+
+465
+00:23:23,240 --> 00:23:26,340
+or body colors or background.
+
+466
+00:23:29,120 --> 00:23:29,620
+Yeah.
+
+467
+00:23:29,620 --> 00:23:32,200
+So it does seem to suggest that basically
+
+468
+00:23:32,200 --> 00:23:37,440
+by removing some of those, like weird, badly behaved portions
+
+469
+00:23:37,440 --> 00:23:40,400
+of linear interpolation, by moving to this more intermediate
+
+470
+00:23:40,400 --> 00:23:42,040
+space, is beneficial when you're trying
+
+471
+00:23:42,040 --> 00:23:45,720
+to find these disentangled dimensions of variation.
+
+472
+00:23:45,720 --> 00:23:47,040
+Cool.
+
+473
+00:23:47,040 --> 00:23:51,780
+So now, let's talk about how you would label this generated data.
+
+474
+00:23:51,780 --> 00:23:55,180
+So you have a label for all your real images.
+
+475
+00:23:55,180 --> 00:23:57,120
+Well, maybe you don't, but assume you do.
+
+476
+00:23:57,120 --> 00:23:58,960
+Assume that the data you started from,
+
+477
+00:23:58,960 --> 00:24:00,877
+that you're training this generative model on,
+
+478
+00:24:00,877 --> 00:24:02,040
+you had labeled.
+
+479
+00:24:02,040 --> 00:24:05,800
+And now, you have some space in here
+
+480
+00:24:05,800 --> 00:24:08,220
+that corresponds to that real data.
+
+481
+00:24:08,220 --> 00:24:10,000
+But then there's a lot of other space
+
+482
+00:24:10,000 --> 00:24:14,040
+that corresponds to purely generated data.
+
+483
+00:24:14,040 --> 00:24:16,860
+So the argument here is that by construction,
+
+484
+00:24:16,860 --> 00:24:20,700
+that things that are close together in this manifold,
+
+485
+00:24:20,700 --> 00:24:22,880
+should be semantically related.
+
+486
+00:24:22,880 --> 00:24:26,040
+And so if you don't move too far on the manifold,
+
+487
+00:24:26,040 --> 00:24:30,220
+you should argue that the category should stay the same,
+
+488
+00:24:30,220 --> 00:24:32,420
+or at least this is the assumption.
+
+489
+00:24:32,420 --> 00:24:35,940
+And so then you can rely on the normal inductive bias
+
+490
+00:24:35,940 --> 00:24:37,940
+and machine learning that assigns similar labels
+
+491
+00:24:37,940 --> 00:24:40,160
+to nearby points, if it's reasonably well
+
+492
+00:24:40,160 --> 00:24:41,620
+semantically clustered.
+
+493
+00:24:41,620 --> 00:24:44,140
+So here, if you know, for example, these
+
+494
+00:24:44,140 --> 00:24:47,220
+are real data points where you know their true label,
+
+495
+00:24:47,220 --> 00:24:49,740
+then you could assume that things sampled
+
+496
+00:24:49,740 --> 00:24:52,180
+from those similar data points would actually
+
+497
+00:24:52,180 --> 00:24:54,300
+correspond to similar things.
+
+498
+00:24:54,300 --> 00:24:57,800
+And so here, maybe in this region,
+
+499
+00:24:57,800 --> 00:25:00,527
+yes, there's dimensions of variation that are captured,
+
+500
+00:25:00,527 --> 00:25:02,860
+but they're not changing the underlying semantic meaning
+
+501
+00:25:02,860 --> 00:25:06,100
+of the object itself, that these small variations are
+
+502
+00:25:06,100 --> 00:25:09,140
+more corresponding to these dimensions of variation
+
+503
+00:25:09,140 --> 00:25:14,560
+in the context, in maybe the scene, the visualization,
+
+504
+00:25:14,560 --> 00:25:20,240
+but it's not changing the category that's being captured.
+
+505
+00:25:20,240 --> 00:25:22,240
+And so this was explicitly explored
+
+506
+00:25:22,240 --> 00:25:26,640
+in this paper called DatasetGAN where they basically
+
+507
+00:25:26,640 --> 00:25:29,840
+trained a GAN on one type of data,
+
+508
+00:25:29,840 --> 00:25:34,760
+and then they wanted to solve a new task related to that data,
+
+509
+00:25:34,760 --> 00:25:38,400
+so specifically labeling the parts of a car
+
+510
+00:25:38,400 --> 00:25:41,000
+with semantic segmentation.
+
+511
+00:25:41,000 --> 00:25:43,520
+And so then what they did is they used StyleGAN
+
+512
+00:25:43,520 --> 00:25:46,120
+to efficiently label data in terms
+
+513
+00:25:46,120 --> 00:25:48,200
+of the semantic segmentation labels, which
+
+514
+00:25:48,200 --> 00:25:50,200
+can be quite expensive, by defining
+
+515
+00:25:50,200 --> 00:25:54,000
+an additional labeling arm, which is essentially
+
+516
+00:25:54,000 --> 00:25:56,960
+the output of a StyleGAN with just a few examples.
+
+517
+00:25:56,960 --> 00:26:00,400
+And then you can use that model to generate a really large data
+
+518
+00:26:00,400 --> 00:26:02,662
+set of images and corresponding labels.
+
+519
+00:26:02,662 --> 00:26:04,120
+They are weak labels, but there are
+
+520
+00:26:04,120 --> 00:26:08,740
+labels that are explicitly based on this well-structured,
+
+521
+00:26:08,740 --> 00:26:11,100
+well-aligned latent space.
+
+522
+00:26:11,100 --> 00:26:13,100
+And then you can train a part segmentation model
+
+523
+00:26:13,100 --> 00:26:15,420
+on the synthetic data and test it on the real data
+
+524
+00:26:15,420 --> 00:26:17,540
+and show that it's actually beneficial.
+
+525
+00:26:17,540 --> 00:26:21,340
+So being a little bit more specific about this,
+
+526
+00:26:21,340 --> 00:26:24,940
+essentially, if you're trying to train that labeling arm,
+
+527
+00:26:24,940 --> 00:26:27,660
+they do that using the latent space and then just
+
+528
+00:26:27,660 --> 00:26:31,820
+a really, really small number of manually labeled examples.
+
+529
+00:26:31,820 --> 00:26:33,540
+And this is valuable, particularly
+
+530
+00:26:33,540 --> 00:26:36,873
+because semantic segmentation labels are really expensive.
+
+531
+00:26:36,873 --> 00:26:38,540
+How many of you have ever actually tried
+
+532
+00:26:38,540 --> 00:26:42,100
+to label data for semantic segmentation?
+
+533
+00:26:42,100 --> 00:26:42,600
+Yeah.
+
+534
+00:26:42,600 --> 00:26:43,740
+It sucks.
+
+535
+00:26:43,740 --> 00:26:45,780
+It's super slow.
+
+536
+00:26:45,780 --> 00:26:48,380
+Especially the parts that are really fine
+
+537
+00:26:48,380 --> 00:26:50,480
+grained, like the boundaries of objects,
+
+538
+00:26:50,480 --> 00:26:54,500
+it just takes forever to really try to get it very correct.
+
+539
+00:26:54,500 --> 00:26:58,780
+And so being able to efficiently benefit from just a few of those
+
+540
+00:26:58,780 --> 00:27:02,500
+and then be able to generalize well is pretty valuable.
+
+541
+00:27:02,500 --> 00:27:06,500
+So essentially, here, you map human labels in the pixel space
+
+542
+00:27:06,500 --> 00:27:09,980
+through the network to some of these intermediate features that
+
+543
+00:27:09,980 --> 00:27:14,880
+have some sort of maintained spatial relationships
+
+544
+00:27:14,880 --> 00:27:16,480
+and arrangement.
+
+545
+00:27:16,480 --> 00:27:20,547
+So basically, you take the original data,
+
+546
+00:27:20,547 --> 00:27:22,880
+and then you run it through what they're calling a style
+
+547
+00:27:22,880 --> 00:27:24,255
+interpreter, but it's essentially
+
+548
+00:27:24,255 --> 00:27:26,000
+something like a StyleGAN.
+
+549
+00:27:26,000 --> 00:27:33,160
+That gets you a representation of these specific pixel vectors
+
+550
+00:27:33,160 --> 00:27:37,420
+that you can then train a model, a really efficient model,
+
+551
+00:27:37,420 --> 00:27:40,400
+predictive model, to map between those features and part labels.
+
+552
+00:27:40,400 --> 00:27:43,080
+So essentially, it's like relying on the fact
+
+553
+00:27:43,080 --> 00:27:45,320
+that training this generator forced the model
+
+554
+00:27:45,320 --> 00:27:49,720
+to learn a really well-behaved, well-aligned representation
+
+555
+00:27:49,720 --> 00:27:52,680
+space in terms of these dimensions of variation
+
+556
+00:27:52,680 --> 00:27:53,743
+and similarity.
+
+557
+00:27:53,743 --> 00:27:56,160
+And then they could show that you could really efficiently
+
+558
+00:27:56,160 --> 00:28:00,480
+train these accurate predictive models because the features
+
+559
+00:28:00,480 --> 00:28:03,560
+themselves were better organized and more semantically meaningful
+
+560
+00:28:03,560 --> 00:28:06,120
+than the pixels that you might be starting with.
+
+561
+00:28:06,120 --> 00:28:11,260
+So instead of trying to go from images and pixel labels
+
+562
+00:28:11,260 --> 00:28:14,460
+to a trained model that generates pixel labels given
+
+563
+00:28:14,460 --> 00:28:17,620
+this input image, you basically take the input image,
+
+564
+00:28:17,620 --> 00:28:19,920
+run it through to some intermediate feature space,
+
+565
+00:28:19,920 --> 00:28:21,878
+and then you've trained this really lightweight
+
+566
+00:28:21,878 --> 00:28:24,220
+predictive model to go from those features that
+
+567
+00:28:24,220 --> 00:28:25,980
+are learned by a generative model
+
+568
+00:28:25,980 --> 00:28:30,860
+to the correct semantic segmentation.
+
+569
+00:28:30,860 --> 00:28:33,020
+And they had some pretty nice examples
+
+570
+00:28:33,020 --> 00:28:34,920
+of how they were kind of able to do this.
+
+571
+00:28:34,920 --> 00:28:36,920
+And qualitatively and quantitatively,
+
+572
+00:28:36,920 --> 00:28:39,340
+they were able to show that this worked quite well,
+
+573
+00:28:39,340 --> 00:28:42,740
+and they got this kind of nice result, which
+
+574
+00:28:42,740 --> 00:28:48,180
+is that a single labeled GAN image was worth about 100
+
+575
+00:28:48,180 --> 00:28:51,900
+labeled regular images, just in terms of the training efficiency
+
+576
+00:28:51,900 --> 00:28:56,140
+versus the same amount of accuracy.
+
+577
+00:28:56,140 --> 00:29:00,570
+And these types of things are increasingly commonly explored,
+
+578
+00:29:00,570 --> 00:29:02,820
+particularly for these types of labels that are really
+
+579
+00:29:02,820 --> 00:29:05,300
+expensive to collect.
+
+580
+00:29:05,300 --> 00:29:08,800
+And interestingly, this question of,
+
+581
+00:29:08,800 --> 00:29:11,920
+how do you efficiently train these types of things based
+
+582
+00:29:11,920 --> 00:29:14,780
+on well-learned representation spaces or foundation models,
+
+583
+00:29:14,780 --> 00:29:16,882
+even ones that are not necessarily generative?
+
+584
+00:29:16,882 --> 00:29:18,340
+has also been really well explored.
+
+585
+00:29:18,340 --> 00:29:19,800
+And so these days, if you're trying
+
+586
+00:29:19,800 --> 00:29:23,080
+to do semantic segmentation, most people
+
+587
+00:29:23,080 --> 00:29:26,200
+start from something that's called SAM, the Segment Anything
+
+588
+00:29:26,200 --> 00:29:28,480
+Model, which is a model that relied essentially
+
+589
+00:29:28,480 --> 00:29:32,980
+on building a really large data set
+
+590
+00:29:32,980 --> 00:29:35,740
+using some pretty cute hacks for self-supervision.
+
+591
+00:29:35,740 --> 00:29:38,960
+You take an object, and you use copy paste augmentation
+
+592
+00:29:38,960 --> 00:29:41,700
+to guarantee that you have that correct mask now
+
+593
+00:29:41,700 --> 00:29:44,080
+in a bunch of different relationships and orientations.
+
+594
+00:29:44,080 --> 00:29:46,600
+You use some similar ideas from something
+
+595
+00:29:46,600 --> 00:29:50,720
+like DINOv2 that really captures fine grained semantic meaning
+
+596
+00:29:50,720 --> 00:29:52,680
+in those feature spaces, and then you're
+
+597
+00:29:52,680 --> 00:29:55,640
+able to learn a really generalizable and robust
+
+598
+00:29:55,640 --> 00:29:57,700
+segmentation model on top of that.
+
+599
+00:30:00,920 --> 00:30:01,700
+Cool.
+
+600
+00:30:01,700 --> 00:30:05,040
+So then you can also think about how
+
+601
+00:30:05,040 --> 00:30:08,460
+these generative models' data plus plus approach
+
+602
+00:30:08,460 --> 00:30:12,140
+can start to teach you how to explain things or increase
+
+603
+00:30:12,140 --> 00:30:15,180
+the interpretability of some of these dimensions.
+
+604
+00:30:15,180 --> 00:30:18,912
+So in standard classification, we take an image,
+
+605
+00:30:18,912 --> 00:30:20,620
+we run it through a classification model,
+
+606
+00:30:20,620 --> 00:30:22,560
+and it tries to predict cat.
+
+607
+00:30:22,560 --> 00:30:23,460
+It's like, OK.
+
+608
+00:30:23,460 --> 00:30:26,260
+It tries to predict a category.
+
+609
+00:30:26,260 --> 00:30:30,460
+But now, the question is, can we say something
+
+610
+00:30:30,460 --> 00:30:34,900
+interesting about why the image was classified as a cat using
+
+611
+00:30:34,900 --> 00:30:37,060
+this ability and this data plus plus space
+
+612
+00:30:37,060 --> 00:30:39,940
+to explore counterfactuals?
+
+613
+00:30:39,940 --> 00:30:42,147
+So here, you take the cat.
+
+614
+00:30:42,147 --> 00:30:43,980
+You take it from this data space and turn it
+
+615
+00:30:43,980 --> 00:30:45,780
+into this quote, unquote, data plus plus
+
+616
+00:30:45,780 --> 00:30:50,420
+space where now you have some maybe encoder, some generator.
+
+617
+00:30:50,420 --> 00:30:52,540
+So you're mapping through, essentially,
+
+618
+00:30:52,540 --> 00:30:56,860
+your G inverse and then through your G to get the same data.
+
+619
+00:30:56,860 --> 00:30:59,540
+But now what you can do is you can
+
+620
+00:30:59,540 --> 00:31:06,660
+look from this predicted class using-- from the generator,
+
+621
+00:31:06,660 --> 00:31:09,280
+looking at the classes that are predicted,
+
+622
+00:31:09,280 --> 00:31:15,320
+you can now explicitly try to perturb in the latent space
+
+623
+00:31:15,320 --> 00:31:18,920
+to understand how that would cause your prediction to change.
+
+624
+00:31:18,920 --> 00:31:22,600
+So this gives you some ranking of the changes in the latent
+
+625
+00:31:22,600 --> 00:31:24,840
+space and manipulations of these latent variables
+
+626
+00:31:24,840 --> 00:31:28,320
+that maximally lead to the idea of changing a concept.
+
+627
+00:31:28,320 --> 00:31:32,680
+So it helps you understand what maybe features of this image
+
+628
+00:31:32,680 --> 00:31:37,160
+are most identifiable as the category of interest.
+
+629
+00:31:37,160 --> 00:31:40,720
+And so here, this StylEx, it's like almost like StyleSpace
+
+630
+00:31:40,720 --> 00:31:42,160
+explanation approach.
+
+631
+00:31:42,160 --> 00:31:46,000
+It tries to find the topK StyleSpace directions, so
+
+632
+00:31:46,000 --> 00:31:51,160
+these latent space directions of variation, that will most affect
+
+633
+00:31:51,160 --> 00:31:53,600
+which class the model predicts.
+
+634
+00:31:53,600 --> 00:31:57,580
+And so here, there's some interesting stuff, right?
+
+635
+00:31:57,580 --> 00:32:02,260
+You can look at what happens if you open the mouth of the thing,
+
+636
+00:32:02,260 --> 00:32:04,980
+and it turns out that that is a really strong dimension
+
+637
+00:32:04,980 --> 00:32:08,040
+of variation for moving the prediction from cat to dog,
+
+638
+00:32:08,040 --> 00:32:12,980
+probably because dogs tend to pant a lot more than cats do.
+
+639
+00:32:12,980 --> 00:32:16,100
+So it's a very cute interpolation.
+
+640
+00:32:18,700 --> 00:32:23,940
+You can also look at changing something
+
+641
+00:32:23,940 --> 00:32:26,800
+about the size of the pupils relative to the eyes,
+
+642
+00:32:26,800 --> 00:32:28,860
+and that also shifts the probability
+
+643
+00:32:28,860 --> 00:32:30,740
+that you have something like a cat.
+
+644
+00:32:30,740 --> 00:32:34,840
+Or you can think about changing how pointy the ears are,
+
+645
+00:32:34,840 --> 00:32:37,340
+and that also tends to correspond
+
+646
+00:32:37,340 --> 00:32:39,140
+from an explainability standpoint
+
+647
+00:32:39,140 --> 00:32:42,120
+to why the model thinks it's a cat versus something else.
+
+648
+00:32:42,120 --> 00:32:46,380
+And so this kind of gives us this sense of-- it's
+
+649
+00:32:46,380 --> 00:32:50,380
+just another mechanism to try to probe the underlying
+
+650
+00:32:50,380 --> 00:32:52,680
+things that the model has learned or has understood.
+
+651
+00:32:52,680 --> 00:32:55,440
+And you can imagine that this does tell you, again,
+
+652
+00:32:55,440 --> 00:32:58,420
+something about the underlying bias in our training data,
+
+653
+00:32:58,420 --> 00:33:01,080
+because there are many cats that have ears that
+
+654
+00:33:01,080 --> 00:33:03,800
+are kind of shorter like that.
+
+655
+00:33:03,800 --> 00:33:06,820
+British shorthairs have short ears just like that.
+
+656
+00:33:06,820 --> 00:33:10,040
+But more often than not, something
+
+657
+00:33:10,040 --> 00:33:11,670
+that has long, pointy ears is a cat,
+
+658
+00:33:11,670 --> 00:33:13,920
+and maybe something with a shorter or folded over ears
+
+659
+00:33:13,920 --> 00:33:15,320
+might be a dog.
+
+660
+00:33:15,320 --> 00:33:17,540
+So it's capturing some dimensions of bias,
+
+661
+00:33:17,540 --> 00:33:20,933
+I think, in the data as well.
+
+662
+00:33:20,933 --> 00:33:22,600
+And so you can think about this in terms
+
+663
+00:33:22,600 --> 00:33:27,680
+of how we generate maybe class specific explanations.
+
+664
+00:33:27,680 --> 00:33:32,480
+So here, if you have something like a perceived age classifier,
+
+665
+00:33:32,480 --> 00:33:36,920
+then you can start really probing these weird dimensions
+
+666
+00:33:36,920 --> 00:33:42,380
+of bias and see how that affects the perceived age of a model.
+
+667
+00:33:42,380 --> 00:33:47,870
+So now, the model is predicting an age.
+
+668
+00:33:47,870 --> 00:33:51,040
+And so one of the things that's quite odd
+
+669
+00:33:51,040 --> 00:33:57,480
+here is you'll see specifically that thicker eyebrows are
+
+670
+00:33:57,480 --> 00:34:01,580
+corresponding responding to more youthful age.
+
+671
+00:34:01,580 --> 00:34:05,020
+Lighter skin is corresponding to more youthful age, though also
+
+672
+00:34:05,020 --> 00:34:09,060
+you'll note that it's lighter, but also sometimes less
+
+673
+00:34:09,060 --> 00:34:12,120
+textured, which is one of these dimensions.
+
+674
+00:34:12,120 --> 00:34:14,100
+It's not a super, super disentangled dimension
+
+675
+00:34:14,100 --> 00:34:15,179
+of variation.
+
+676
+00:34:15,179 --> 00:34:20,020
+Or something like adding glasses or very obviously going
+
+677
+00:34:20,020 --> 00:34:22,380
+to gray hair.
+
+678
+00:34:22,380 --> 00:34:24,370
+So these were all things that were learned
+
+679
+00:34:24,370 --> 00:34:26,620
+in terms of finding these dimensions of variation that
+
+680
+00:34:26,620 --> 00:34:29,820
+corresponded to specific types of prediction.
+
+681
+00:34:29,820 --> 00:34:31,820
+And it maybe makes sense.
+
+682
+00:34:31,820 --> 00:34:34,760
+Older people might be, in terms of your data bias,
+
+683
+00:34:34,760 --> 00:34:37,820
+more likely to have white hair.
+
+684
+00:34:37,820 --> 00:34:41,139
+That's something that's actually pretty ubiquitous.
+
+685
+00:34:41,139 --> 00:34:43,790
+But you could also imagine that some
+
+686
+00:34:43,790 --> 00:34:45,540
+of these dimensions of variation would not
+
+687
+00:34:45,540 --> 00:34:48,940
+be something you would want a model to necessarily learn.
+
+688
+00:34:48,940 --> 00:34:50,860
+These might capture dimensions of bias
+
+689
+00:34:50,860 --> 00:34:53,300
+that may be related to the fairness of the equity
+
+690
+00:34:53,300 --> 00:34:55,739
+of a model that we deploy.
+
+691
+00:34:55,739 --> 00:34:58,260
+So then what do you actually do with what you learn?
+
+692
+00:34:58,260 --> 00:35:01,400
+Well, one way we could look at this
+
+693
+00:35:01,400 --> 00:35:03,840
+is like, well, instead of looking
+
+694
+00:35:03,840 --> 00:35:05,720
+at things like these dimensions of variation
+
+695
+00:35:05,720 --> 00:35:08,240
+from internet images, can we take it
+
+696
+00:35:08,240 --> 00:35:10,920
+to scientific data or medical data?
+
+697
+00:35:10,920 --> 00:35:15,720
+So here, this is using that same type of explainability mechanism
+
+698
+00:35:15,720 --> 00:35:19,640
+from a generative model to try to understand
+
+699
+00:35:19,640 --> 00:35:23,880
+how to categorize different retinal fundus images.
+
+700
+00:35:23,880 --> 00:35:27,560
+And here, we're showing the top four examples of things
+
+701
+00:35:27,560 --> 00:35:29,880
+that real doctors are looking for
+
+702
+00:35:29,880 --> 00:35:34,240
+and then how you might actually change that image maximally
+
+703
+00:35:34,240 --> 00:35:36,640
+to correspond to something predictive
+
+704
+00:35:36,640 --> 00:35:39,760
+of a specific disease, for example.
+
+705
+00:35:39,760 --> 00:35:41,560
+And this is quite interesting because it
+
+706
+00:35:41,560 --> 00:35:43,620
+does actually-- if you show these to a doctor,
+
+707
+00:35:43,620 --> 00:35:45,972
+it does correspond with the types of even very
+
+708
+00:35:45,972 --> 00:35:47,680
+fine grained features that a doctor might
+
+709
+00:35:47,680 --> 00:35:50,520
+use to actually categorize a specific type of disease.
+
+710
+00:35:50,520 --> 00:35:53,260
+So from that sense, from an explainability standpoint,
+
+711
+00:35:53,260 --> 00:35:55,060
+it's almost a way to build trust in a model
+
+712
+00:35:55,060 --> 00:35:56,760
+because an expert would say, OK, yeah.
+
+713
+00:35:56,760 --> 00:35:57,680
+No, I do agree.
+
+714
+00:35:57,680 --> 00:36:01,420
+I do agree that is a reasonable dimension of variation
+
+715
+00:36:01,420 --> 00:36:05,660
+that I also would correspond to a specific type of disease.
+
+716
+00:36:05,660 --> 00:36:08,420
+It's almost a reassurance that the model isn't picking up
+
+717
+00:36:08,420 --> 00:36:11,220
+too many odd other correlative factors that
+
+718
+00:36:11,220 --> 00:36:15,220
+might be things that we don't want to model to correspond to.
+
+719
+00:36:15,220 --> 00:36:17,220
+But of course, one of the really big limitations
+
+720
+00:36:17,220 --> 00:36:20,180
+of all of these approaches is that you are
+
+721
+00:36:20,180 --> 00:36:22,880
+required to figure out how--
+
+722
+00:36:22,880 --> 00:36:25,660
+you have to discover those latent space variations
+
+723
+00:36:25,660 --> 00:36:27,540
+and then manually analyze or to find
+
+724
+00:36:27,540 --> 00:36:29,260
+what they might correspond to.
+
+725
+00:36:29,260 --> 00:36:31,520
+And that takes a lot of effort, right?
+
+726
+00:36:31,520 --> 00:36:33,180
+So getting to the point where they
+
+727
+00:36:33,180 --> 00:36:36,860
+had these examples of these specific dimensions of variation
+
+728
+00:36:36,860 --> 00:36:41,420
+that corresponded really well to these real diseases,
+
+729
+00:36:41,420 --> 00:36:45,900
+I'm sure it took a lot of handcrafting and a lot of time.
+
+730
+00:36:45,900 --> 00:36:49,540
+And so recent work tries to do similar types
+
+731
+00:36:49,540 --> 00:36:52,780
+of counterfactual reasoning or understanding.
+
+732
+00:36:52,780 --> 00:36:55,360
+But here, I'm actually just using
+
+733
+00:36:55,360 --> 00:36:58,120
+text conditioning for modern diffusion models,
+
+734
+00:36:58,120 --> 00:37:00,880
+or other types of conditioning using diffusion models, that
+
+735
+00:37:00,880 --> 00:37:03,360
+give us really simple and interpretable mechanisms
+
+736
+00:37:03,360 --> 00:37:06,600
+for control, though, of course, there's not always perfect
+
+737
+00:37:06,600 --> 00:37:08,840
+alignment between maybe your text control
+
+738
+00:37:08,840 --> 00:37:12,400
+and what actually gets generated by the generator.
+
+739
+00:37:12,400 --> 00:37:14,320
+But it does make this ability to test
+
+740
+00:37:14,320 --> 00:37:18,900
+these counterfactual hypotheses, in many ways, pretty efficient.
+
+741
+00:37:18,900 --> 00:37:22,000
+So I showed this work actually before,
+
+742
+00:37:22,000 --> 00:37:24,680
+but this is work where they very specifically looked
+
+743
+00:37:24,680 --> 00:37:28,200
+at using almost like human intelligence
+
+744
+00:37:28,200 --> 00:37:30,140
+to generate possible counterfactuals,
+
+745
+00:37:30,140 --> 00:37:32,480
+using text conditioning on generative images,
+
+746
+00:37:32,480 --> 00:37:36,640
+and then explicitly testing, quantitatively, the performance
+
+747
+00:37:36,640 --> 00:37:41,480
+of models given these different human-derived counterfactuals.
+
+748
+00:37:41,480 --> 00:37:45,480
+And they showed that it's just a really nice way to do,
+
+749
+00:37:45,480 --> 00:37:48,400
+essentially, interfaces with your data sets,
+
+750
+00:37:48,400 --> 00:37:52,210
+basically using the generator trained on top of data
+
+751
+00:37:52,210 --> 00:37:57,810
+as a direct investigation mechanism or interaction
+
+752
+00:37:57,810 --> 00:38:00,170
+mechanism with the underlying real data
+
+753
+00:38:00,170 --> 00:38:02,950
+set itself understanding the dimensions of bias.
+
+754
+00:38:05,530 --> 00:38:07,490
+Cool.
+
+755
+00:38:07,490 --> 00:38:09,810
+And then I think there's also this question of--
+
+756
+00:38:09,810 --> 00:38:11,430
+OK.
+
+757
+00:38:11,430 --> 00:38:14,210
+The data the generated data is potentially
+
+758
+00:38:14,210 --> 00:38:18,430
+useful for explainability or for our data set exploration.
+
+759
+00:38:18,430 --> 00:38:22,770
+But it is also useful for representation learning?
+
+760
+00:38:22,770 --> 00:38:26,547
+Can you learn from generated data in the same way
+
+761
+00:38:26,547 --> 00:38:29,130
+that you might be able to learn, or maybe even in a better way
+
+762
+00:38:29,130 --> 00:38:31,490
+than you might be able to learn, from real data?
+
+763
+00:38:31,490 --> 00:38:34,410
+And this is where it gets kind of complicated.
+
+764
+00:38:34,410 --> 00:38:36,930
+So here's a work where they basically said, OK, you
+
+765
+00:38:36,930 --> 00:38:40,810
+have some data set x, and then you're
+
+766
+00:38:40,810 --> 00:38:44,730
+going to train a generative model on top of that data set.
+
+767
+00:38:44,730 --> 00:38:47,675
+And the idea is somehow the generative model
+
+768
+00:38:47,675 --> 00:38:49,050
+trained on top of the data set is
+
+769
+00:38:49,050 --> 00:38:53,010
+going to capture either the same information as the data set,
+
+770
+00:38:53,010 --> 00:38:55,030
+or maybe arguably slightly more information
+
+771
+00:38:55,030 --> 00:38:57,430
+than the underlying data set.
+
+772
+00:38:57,430 --> 00:38:59,230
+And then that might actually be able to be
+
+773
+00:38:59,230 --> 00:39:02,050
+useful for representation learning.
+
+774
+00:39:02,050 --> 00:39:04,230
+So here, kind of similar to that other example
+
+775
+00:39:04,230 --> 00:39:06,570
+with the multi-view ensembling from GANs,
+
+776
+00:39:06,570 --> 00:39:08,510
+they're explicitly looking at your ability
+
+777
+00:39:08,510 --> 00:39:10,670
+to generate maybe the same real image
+
+778
+00:39:10,670 --> 00:39:14,590
+from different perspectives or from different views,
+
+779
+00:39:14,590 --> 00:39:20,030
+and then use that as the input to contrastive learning models.
+
+780
+00:39:20,030 --> 00:39:22,590
+So here, trying to learn a representation space
+
+781
+00:39:22,590 --> 00:39:24,750
+where you're saying, all right.
+
+782
+00:39:24,750 --> 00:39:27,628
+Here's two images from the same category.
+
+783
+00:39:27,628 --> 00:39:29,170
+Here's one from a different category.
+
+784
+00:39:29,170 --> 00:39:32,910
+And then you're training that contrastive style loss.
+
+785
+00:39:32,910 --> 00:39:33,590
+Yeah.
+
+786
+00:39:33,590 --> 00:39:35,710
+AUDIENCE: So is this trained from scratch,
+
+787
+00:39:35,710 --> 00:39:37,622
+or is this transfer learning to some degree?
+
+788
+00:39:37,622 --> 00:39:38,330
+SARA BEERY: Yeah.
+
+789
+00:39:38,330 --> 00:39:41,070
+That's an interesting way-- it's an interesting question.
+
+790
+00:39:41,070 --> 00:39:45,230
+I mean, arguably, this is a mechanism of transfer learning,
+
+791
+00:39:45,230 --> 00:39:46,262
+assuming that--
+
+792
+00:39:46,262 --> 00:39:48,470
+AUDIENCE: Well, I guess to get to the original model,
+
+793
+00:39:48,470 --> 00:39:51,130
+was that built on some pretrained model
+
+794
+00:39:51,130 --> 00:39:52,795
+for image analysis?
+
+795
+00:39:52,795 --> 00:39:54,170
+SARA BEERY: Which original model?
+
+796
+00:39:54,170 --> 00:39:57,030
+We're talking about kind of a system here.
+
+797
+00:39:57,030 --> 00:39:58,370
+AUDIENCE: [INAUDIBLE]
+
+798
+00:39:58,370 --> 00:40:00,370
+SARA BEERY: This generative model?
+
+799
+00:40:00,370 --> 00:40:04,650
+So let's assume for the sake of simplicity
+
+800
+00:40:04,650 --> 00:40:06,690
+that this is trained from scratch on that,
+
+801
+00:40:06,690 --> 00:40:09,710
+because otherwise, it gets even more complicated to understand.
+
+802
+00:40:09,710 --> 00:40:13,170
+And this actually, I think, is one of the difficulties
+
+803
+00:40:13,170 --> 00:40:17,090
+currently when people are trying to understand whether we can--
+
+804
+00:40:17,090 --> 00:40:19,970
+there's this kind of broader meta argument going
+
+805
+00:40:19,970 --> 00:40:21,930
+on in the community of whether it
+
+806
+00:40:21,930 --> 00:40:25,450
+is possible to get more information out
+
+807
+00:40:25,450 --> 00:40:30,250
+of a generator trained on data than the underlying data itself.
+
+808
+00:40:30,250 --> 00:40:31,910
+From an information theory perspective,
+
+809
+00:40:31,910 --> 00:40:34,010
+it's like, how could you possibly create something
+
+810
+00:40:34,010 --> 00:40:34,770
+from nothing?
+
+811
+00:40:34,770 --> 00:40:36,890
+If you have the data, and that's all the information you have,
+
+812
+00:40:36,890 --> 00:40:39,030
+you couldn't maybe get more information out of it.
+
+813
+00:40:39,030 --> 00:40:41,210
+But then there's kind of the counterargument, which
+
+814
+00:40:41,210 --> 00:40:43,730
+is actually like our architecture design,
+
+815
+00:40:43,730 --> 00:40:47,230
+and the design of the training systems
+
+816
+00:40:47,230 --> 00:40:49,750
+builds in knowledge that would not necessarily
+
+817
+00:40:49,750 --> 00:40:51,570
+have already been built in.
+
+818
+00:40:51,570 --> 00:40:54,350
+And actually, you could argue that the construction of things
+
+819
+00:40:54,350 --> 00:40:56,390
+like convolutional neural networks
+
+820
+00:40:56,390 --> 00:40:59,630
+fundamentally are an injection of additional knowledge
+
+821
+00:40:59,630 --> 00:41:03,470
+beyond just the underlying intermediate data.
+
+822
+00:41:03,470 --> 00:41:06,950
+We're building knowledge into the design of our architectures
+
+823
+00:41:06,950 --> 00:41:10,030
+and our loss functions based on our understanding of what,
+
+824
+00:41:10,030 --> 00:41:12,790
+for example, structure we expect to see.
+
+825
+00:41:12,790 --> 00:41:15,270
+So convolutional neural networks basically say,
+
+826
+00:41:15,270 --> 00:41:18,910
+we expect there to be local structure in images.
+
+827
+00:41:18,910 --> 00:41:23,870
+And so then the argument is, isn't data augmentation
+
+828
+00:41:23,870 --> 00:41:28,350
+a mechanism-- you could argue that random flipping is an image
+
+829
+00:41:28,350 --> 00:41:31,310
+generation algorithm, right?
+
+830
+00:41:31,310 --> 00:41:33,510
+I mean, depending on how you want
+
+831
+00:41:33,510 --> 00:41:36,250
+to define that, semantically, it is, right?
+
+832
+00:41:36,250 --> 00:41:37,590
+You've taken an image.
+
+833
+00:41:37,590 --> 00:41:42,190
+You've used some algorithm to generate a new image that you
+
+834
+00:41:42,190 --> 00:41:45,870
+guarantee still has fidelity to the class that you care about.
+
+835
+00:41:49,810 --> 00:41:55,930
+And then things like this copy paste, cut and paste
+
+836
+00:41:55,930 --> 00:41:57,890
+style data augmentation, that's even
+
+837
+00:41:57,890 --> 00:41:59,370
+getting maybe closer to something
+
+838
+00:41:59,370 --> 00:42:01,537
+like a learned generative model, because now, you're
+
+839
+00:42:01,537 --> 00:42:04,650
+building explicit assumptions about taking foreground objects
+
+840
+00:42:04,650 --> 00:42:06,630
+and putting them on different backgrounds.
+
+841
+00:42:06,630 --> 00:42:08,570
+This is like a really useful mechanism
+
+842
+00:42:08,570 --> 00:42:11,290
+for increasing the robustness of machine learning models, just
+
+843
+00:42:11,290 --> 00:42:14,290
+these engineering hacks about how we manipulate
+
+844
+00:42:14,290 --> 00:42:15,663
+the data during training.
+
+845
+00:42:15,663 --> 00:42:17,330
+And then maybe the argument is like, how
+
+846
+00:42:17,330 --> 00:42:18,970
+is that any different from something
+
+847
+00:42:18,970 --> 00:42:21,930
+like learning a generator that can interpolate maybe
+
+848
+00:42:21,930 --> 00:42:25,090
+in something closer to the image manifold?
+
+849
+00:42:25,090 --> 00:42:27,830
+So it's a bit semantic.
+
+850
+00:42:31,250 --> 00:42:33,270
+Anyway, I have been thinking about this a lot.
+
+851
+00:42:33,270 --> 00:42:35,770
+I have a grad student who's been looking at whether we can--
+
+852
+00:42:35,770 --> 00:42:37,210
+I really, really specifically want
+
+853
+00:42:37,210 --> 00:42:40,850
+to be able to learn, maybe using generative models,
+
+854
+00:42:40,850 --> 00:42:43,710
+to do a better job, a more robust job, of recognizing
+
+855
+00:42:43,710 --> 00:42:45,430
+rare things.
+
+856
+00:42:45,430 --> 00:42:47,350
+But now, you've really gotten yourself
+
+857
+00:42:47,350 --> 00:42:50,090
+in a chicken and egg problem.
+
+858
+00:42:50,090 --> 00:42:53,590
+Because the thing is rare, it's hard to train a generator that
+
+859
+00:42:53,590 --> 00:42:55,410
+does a good job of generating it,
+
+860
+00:42:55,410 --> 00:42:57,325
+and then the reverse is also true.
+
+861
+00:42:57,325 --> 00:42:59,950
+And there have been people that have shown that you can improve
+
+862
+00:42:59,950 --> 00:43:02,463
+rare categorization using generative models,
+
+863
+00:43:02,463 --> 00:43:04,630
+but they cheat, and they train the generative models
+
+864
+00:43:04,630 --> 00:43:07,220
+on a lot of data.
+
+865
+00:43:07,220 --> 00:43:10,070
+So far, we have been able to find ways
+
+866
+00:43:10,070 --> 00:43:12,750
+where you can get some gains in very specific constrained
+
+867
+00:43:12,750 --> 00:43:15,990
+scenarios, but it's not just naive and simple.
+
+868
+00:43:15,990 --> 00:43:18,750
+Anyway, the point here is that you
+
+869
+00:43:18,750 --> 00:43:22,110
+can take the classical contrastive learning approach
+
+870
+00:43:22,110 --> 00:43:24,750
+where we're using our knowledge-based image
+
+871
+00:43:24,750 --> 00:43:28,030
+generation, where we've done these specific types of warping
+
+872
+00:43:28,030 --> 00:43:32,670
+or whatever, random cropping, flipping, to the initial image
+
+873
+00:43:32,670 --> 00:43:35,510
+color jitter, in a way that we know doesn't necessarily
+
+874
+00:43:35,510 --> 00:43:36,810
+break the category boundary.
+
+875
+00:43:36,810 --> 00:43:39,430
+We still want it to be the same thing.
+
+876
+00:43:39,430 --> 00:43:42,530
+And here, we're instead going to move just a little bit
+
+877
+00:43:42,530 --> 00:43:48,130
+in some latent space to create now this mapping in data space
+
+878
+00:43:48,130 --> 00:43:50,850
+through what should be the manifold of real images,
+
+879
+00:43:50,850 --> 00:43:53,210
+and then use that as your transformation
+
+880
+00:43:53,210 --> 00:43:55,330
+for your contrastive learning model.
+
+881
+00:43:55,330 --> 00:43:55,910
+Yeah.
+
+882
+00:43:55,910 --> 00:43:58,618
+AUDIENCE: I had a question about this, which kind of relates back
+
+883
+00:43:58,618 --> 00:44:03,570
+to earlier when we talked about the idea of small local movement
+
+884
+00:44:03,570 --> 00:44:06,530
+in the latent space not crossing a boundary.
+
+885
+00:44:06,530 --> 00:44:12,050
+I mean, intuitively, if you have just a 2D latent space and a 10
+
+886
+00:44:12,050 --> 00:44:16,330
+class classification problem, you could imagine some very
+
+887
+00:44:16,330 --> 00:44:18,690
+naive pie chart that has 10 slices.
+
+888
+00:44:18,690 --> 00:44:21,170
+And there has to exist a boundary
+
+889
+00:44:21,170 --> 00:44:23,583
+somewhere between category 1 and category 2.
+
+890
+00:44:23,583 --> 00:44:24,250
+SARA BEERY: Yes.
+
+891
+00:44:24,250 --> 00:44:26,333
+AUDIENCE: So is this just a probabilistic argument
+
+892
+00:44:26,333 --> 00:44:29,090
+that in a high enough dimensional latent space,
+
+893
+00:44:29,090 --> 00:44:33,130
+the odds that you would sample a location where the boundary
+
+894
+00:44:33,130 --> 00:44:37,010
+shifts is so unlikely that you can get away
+
+895
+00:44:37,010 --> 00:44:40,390
+with this kind of approach to training for contrastive
+
+896
+00:44:40,390 --> 00:44:41,430
+learning?
+
+897
+00:44:41,430 --> 00:44:43,690
+SARA BEERY: Or I would even go beyond that,
+
+898
+00:44:43,690 --> 00:44:47,630
+and I would even say as long as you define
+
+899
+00:44:47,630 --> 00:44:50,510
+some dimension of movement--
+
+900
+00:44:50,510 --> 00:44:52,550
+as long as, most of the time, it's
+
+901
+00:44:52,550 --> 00:44:55,270
+not crossing a class boundary-- if it does cross a class
+
+902
+00:44:55,270 --> 00:44:57,050
+boundary a very small amount of the time
+
+903
+00:44:57,050 --> 00:44:59,150
+still, by the way we train these models,
+
+904
+00:44:59,150 --> 00:45:01,210
+it's almost like the noise will come out.
+
+905
+00:45:01,210 --> 00:45:05,070
+It's almost a mechanism for regularization.
+
+906
+00:45:05,070 --> 00:45:08,510
+Of course, there's counterarguments to that.
+
+907
+00:45:08,510 --> 00:45:10,870
+It depends on how egregious those boundaries are
+
+908
+00:45:10,870 --> 00:45:13,870
+and how frequently you're crossing them.
+
+909
+00:45:13,870 --> 00:45:14,370
+Yeah.
+
+910
+00:45:14,370 --> 00:45:17,230
+I would say as long as--
+
+911
+00:45:17,230 --> 00:45:19,910
+if you want to make a probabilistic argument,
+
+912
+00:45:19,910 --> 00:45:21,790
+and you want to map that to something that's
+
+913
+00:45:21,790 --> 00:45:25,950
+like a physical area argument, like the area of the model where
+
+914
+00:45:25,950 --> 00:45:29,470
+moving in a small amount corresponds to a reasonably
+
+915
+00:45:29,470 --> 00:45:31,750
+maintaining the category boundary
+
+916
+00:45:31,750 --> 00:45:34,190
+relative to the areas where you are crossing category
+
+917
+00:45:34,190 --> 00:45:38,030
+boundaries-- as long as that ratio is quite large,
+
+918
+00:45:38,030 --> 00:45:40,710
+then I imagine you would still learned something useful,
+
+919
+00:45:40,710 --> 00:45:41,950
+even if sometimes it's wrong.
+
+920
+00:45:41,950 --> 00:45:45,370
+It's just like how in the standard contrastive learning
+
+921
+00:45:45,370 --> 00:45:47,930
+objectives, we did see some improvement when
+
+922
+00:45:47,930 --> 00:45:51,550
+you could explicitly remove these false positive,
+
+923
+00:45:51,550 --> 00:45:54,090
+false negative type things where, within your batch,
+
+924
+00:45:54,090 --> 00:45:56,490
+you would have maybe two images of dogs.
+
+925
+00:45:56,490 --> 00:45:58,870
+And now, they're being treated as a different category
+
+926
+00:45:58,870 --> 00:46:00,370
+during your representation learning.
+
+927
+00:46:00,370 --> 00:46:02,203
+You're explicitly saying those things should
+
+928
+00:46:02,203 --> 00:46:04,610
+be far apart, though they actually
+
+929
+00:46:04,610 --> 00:46:08,770
+represent the same category.
+
+930
+00:46:08,770 --> 00:46:10,610
+If you could remove all of those,
+
+931
+00:46:10,610 --> 00:46:12,810
+the models did train better.
+
+932
+00:46:12,810 --> 00:46:14,530
+There were these nice examples where
+
+933
+00:46:14,530 --> 00:46:16,238
+you could show, if you removed these kind
+
+934
+00:46:16,238 --> 00:46:19,910
+of false characterizations by using supervision, for example,
+
+935
+00:46:19,910 --> 00:46:21,630
+you got better representation learning.
+
+936
+00:46:21,630 --> 00:46:24,130
+But the model's still able to learn useful representations
+
+937
+00:46:24,130 --> 00:46:26,970
+even when those do exist in there.
+
+938
+00:46:26,970 --> 00:46:29,610
+Yeah.
+
+939
+00:46:29,610 --> 00:46:30,110
+Cool.
+
+940
+00:46:30,110 --> 00:46:30,670
+So yeah.
+
+941
+00:46:30,670 --> 00:46:32,420
+Now, here, it's just a different mechanism
+
+942
+00:46:32,420 --> 00:46:34,050
+for constructing these positive pairs
+
+943
+00:46:34,050 --> 00:46:36,590
+to train your contrastive learning algorithm.
+
+944
+00:46:36,590 --> 00:46:40,950
+And so here, as opposed to your standard SimCLR type views
+
+945
+00:46:40,950 --> 00:46:44,310
+where you have two views of the same thing where it's maybe
+
+946
+00:46:44,310 --> 00:46:48,150
+cropped from different areas or warped in terms of the color,
+
+947
+00:46:48,150 --> 00:46:50,150
+now, you're taking latent views.
+
+948
+00:46:50,150 --> 00:46:53,930
+You're taking some ball around the real image.
+
+949
+00:46:53,930 --> 00:46:55,890
+And any dimension, you would move in that ball,
+
+950
+00:46:55,890 --> 00:46:58,190
+you could argue, would be a different view
+
+951
+00:46:58,190 --> 00:47:00,950
+of the same thing.
+
+952
+00:47:00,950 --> 00:47:05,375
+And then now, just how we might say,
+
+953
+00:47:05,375 --> 00:47:06,750
+OK, these are all different views
+
+954
+00:47:06,750 --> 00:47:08,167
+of the same thing for the purposes
+
+955
+00:47:08,167 --> 00:47:09,510
+of contrastive learning.
+
+956
+00:47:09,510 --> 00:47:11,510
+Here, you can say, these are all different views
+
+957
+00:47:11,510 --> 00:47:12,710
+of the same thing.
+
+958
+00:47:12,710 --> 00:47:16,590
+Now, one interesting dimension here, just generally,
+
+959
+00:47:16,590 --> 00:47:20,710
+is this question of diversity versus fidelity
+
+960
+00:47:20,710 --> 00:47:23,600
+when it comes to the usefulness of training signal.
+
+961
+00:47:23,600 --> 00:47:25,850
+This is also something I've been thinking about a lot.
+
+962
+00:47:25,850 --> 00:47:29,870
+So it's probably more useful to know
+
+963
+00:47:29,870 --> 00:47:32,870
+that two things that are more different from each other
+
+964
+00:47:32,870 --> 00:47:36,050
+are, in fact, the same than it is to know that two things that
+
+965
+00:47:36,050 --> 00:47:38,970
+are almost identical to each other are, in fact, the same.
+
+966
+00:47:38,970 --> 00:47:42,450
+So for example, if you look at this middle set
+
+967
+00:47:42,450 --> 00:47:45,570
+here, where these are all American robins,
+
+968
+00:47:45,570 --> 00:47:48,410
+the pose of this American robin in basically all of these
+
+969
+00:47:48,410 --> 00:47:49,350
+is nearly identical.
+
+970
+00:47:49,350 --> 00:47:52,270
+The construction of the image, the orientation,
+
+971
+00:47:52,270 --> 00:47:54,410
+et cetera, of the image is almost identical.
+
+972
+00:47:54,410 --> 00:47:56,690
+There's not a lot of diversity here.
+
+973
+00:47:56,690 --> 00:47:59,170
+And so actually from a learning signal perspective,
+
+974
+00:47:59,170 --> 00:48:02,370
+this might be less useful, arguably,
+
+975
+00:48:02,370 --> 00:48:06,150
+than something that also does something like random flipping.
+
+976
+00:48:06,150 --> 00:48:08,730
+And so I think there is this kind
+
+977
+00:48:08,730 --> 00:48:11,710
+of interesting challenge with these generative models,
+
+978
+00:48:11,710 --> 00:48:15,330
+broadly, with GANs, with diffusion models, et cetera.
+
+979
+00:48:15,330 --> 00:48:17,930
+Even with some of these personalization style
+
+980
+00:48:17,930 --> 00:48:21,290
+models that are trying to do a really nice job of capturing
+
+981
+00:48:21,290 --> 00:48:24,770
+something specific, often, there's
+
+982
+00:48:24,770 --> 00:48:27,130
+almost like a Pareto frontier with these models
+
+983
+00:48:27,130 --> 00:48:30,010
+when it comes to this trade off between diversity and fidelity.
+
+984
+00:48:30,010 --> 00:48:32,910
+And so you can't to get the model
+
+985
+00:48:32,910 --> 00:48:35,350
+to generate things that are really diverse, maybe
+
+986
+00:48:35,350 --> 00:48:39,830
+in terms of their context, or their scene structure,
+
+987
+00:48:39,830 --> 00:48:41,810
+without giving up fidelity.
+
+988
+00:48:41,810 --> 00:48:46,990
+You end up in this space where you can generate a robin that's
+
+989
+00:48:46,990 --> 00:48:48,650
+positioned differently in the scene,
+
+990
+00:48:48,650 --> 00:48:52,030
+maybe flying, different pose, and you can try
+
+991
+00:48:52,030 --> 00:48:53,370
+to force the model to do that.
+
+992
+00:48:53,370 --> 00:48:55,350
+And it will, but it probably won't actually
+
+993
+00:48:55,350 --> 00:48:58,830
+be very robin-like anymore if this is the input
+
+994
+00:48:58,830 --> 00:49:01,990
+image that you're working from.
+
+995
+00:49:01,990 --> 00:49:03,150
+Yeah.
+
+996
+00:49:03,150 --> 00:49:05,270
+AUDIENCE: In the latent space, when
+
+997
+00:49:05,270 --> 00:49:08,970
+you're moving around the image feature vector,
+
+998
+00:49:08,970 --> 00:49:11,870
+would you say that the images around it
+
+999
+00:49:11,870 --> 00:49:14,430
+belong to the same class?
+
+1000
+00:49:14,430 --> 00:49:16,230
+How do you know how far you can go?
+
+1001
+00:49:16,230 --> 00:49:20,110
+And that distance, is it the same for all classes?
+
+1002
+00:49:20,110 --> 00:49:22,430
+You can imagine for classes of one,
+
+1003
+00:49:22,430 --> 00:49:25,942
+one class is overrepresented compared to another class.
+
+1004
+00:49:25,942 --> 00:49:26,650
+SARA BEERY: Yeah.
+
+1005
+00:49:26,650 --> 00:49:28,030
+So the question is basically, how
+
+1006
+00:49:28,030 --> 00:49:31,290
+do you know how far you can go in the latent space
+
+1007
+00:49:31,290 --> 00:49:33,850
+and have it still map to the same category?
+
+1008
+00:49:33,850 --> 00:49:36,810
+And does that distance correspond--
+
+1009
+00:49:36,810 --> 00:49:38,890
+is the optimal amount of distance
+
+1010
+00:49:38,890 --> 00:49:40,570
+you could go for any given category
+
+1011
+00:49:40,570 --> 00:49:42,450
+the same across all categories?
+
+1012
+00:49:42,450 --> 00:49:46,010
+So I would say experimentally, in a lot of these papers,
+
+1013
+00:49:46,010 --> 00:49:48,310
+they're using this as a hyperparameter, right?
+
+1014
+00:49:48,310 --> 00:49:49,810
+They're basically saying, all right.
+
+1015
+00:49:49,810 --> 00:49:53,410
+We're going to define some radius in something
+
+1016
+00:49:53,410 --> 00:49:57,890
+like cosine distance, and we're going to sample
+
+1017
+00:49:57,890 --> 00:49:59,070
+within that radius.
+
+1018
+00:49:59,070 --> 00:50:02,382
+And we're going to test for different radiuses or radii.
+
+1019
+00:50:02,382 --> 00:50:04,090
+And then we're going to pick the one that
+
+1020
+00:50:04,090 --> 00:50:07,570
+does the best on our test data.
+
+1021
+00:50:07,570 --> 00:50:09,718
+That's a bit disappointing, because I actually
+
+1022
+00:50:09,718 --> 00:50:11,510
+think that's a really interesting question.
+
+1023
+00:50:11,510 --> 00:50:16,410
+How do you determine how far you can go before it crosses a class
+
+1024
+00:50:16,410 --> 00:50:17,150
+boundary?
+
+1025
+00:50:17,150 --> 00:50:21,050
+And almost by definition, you start
+
+1026
+00:50:21,050 --> 00:50:22,990
+getting into these really messy questions,
+
+1027
+00:50:22,990 --> 00:50:25,410
+particularly as these models are able to generate
+
+1028
+00:50:25,410 --> 00:50:29,610
+things that are realistic looking but impossible.
+
+1029
+00:50:32,510 --> 00:50:34,710
+Me and Phil actually argue about this quite a lot.
+
+1030
+00:50:34,710 --> 00:50:37,470
+If you had a picture of your mom,
+
+1031
+00:50:37,470 --> 00:50:40,050
+but you had another eye in the middle of her forehead,
+
+1032
+00:50:40,050 --> 00:50:42,670
+is it still your mom?
+
+1033
+00:50:42,670 --> 00:50:44,890
+What do you guys think?
+
+1034
+00:50:44,890 --> 00:50:46,770
+Is it still your mom if she has three eyes?
+
+1035
+00:50:50,550 --> 00:50:51,970
+There's not a right answer here.
+
+1036
+00:50:51,970 --> 00:50:55,070
+And so if some of the dimensions of interpolation
+
+1037
+00:50:55,070 --> 00:50:57,693
+you can move into are still kind of realistic looking,
+
+1038
+00:50:57,693 --> 00:51:00,110
+but actually impossible-- so maybe if you think about this
+
+1039
+00:51:00,110 --> 00:51:02,130
+from a species categorization perspective,
+
+1040
+00:51:02,130 --> 00:51:04,010
+you take like this American robin,
+
+1041
+00:51:04,010 --> 00:51:09,190
+and then you make the chest gray instead of red.
+
+1042
+00:51:09,190 --> 00:51:11,150
+That's not a real bird.
+
+1043
+00:51:11,150 --> 00:51:14,893
+So now, you have things that look like birds,
+
+1044
+00:51:14,893 --> 00:51:16,310
+but they don't actually correspond
+
+1045
+00:51:16,310 --> 00:51:19,030
+to any real category of bird.
+
+1046
+00:51:19,030 --> 00:51:21,210
+And so then what should that be categorized as?
+
+1047
+00:51:21,210 --> 00:51:24,190
+And so somehow, understanding the boundary
+
+1048
+00:51:24,190 --> 00:51:27,850
+of a class, a really important component to being able to do
+
+1049
+00:51:27,850 --> 00:51:31,850
+that is having representative data from all the dimensions
+
+1050
+00:51:31,850 --> 00:51:34,330
+of real variation for that class so you
+
+1051
+00:51:34,330 --> 00:51:36,590
+can define what the reasonable class boundary is.
+
+1052
+00:51:36,590 --> 00:51:39,250
+That's one of the reasons that few shot learning is so hard,
+
+1053
+00:51:39,250 --> 00:51:41,930
+because it often means we don't have
+
+1054
+00:51:41,930 --> 00:51:43,770
+a good, well understood representation
+
+1055
+00:51:43,770 --> 00:51:46,150
+space of the boundaries of the real class.
+
+1056
+00:51:46,150 --> 00:51:47,450
+And so we don't know.
+
+1057
+00:51:47,450 --> 00:51:50,530
+If you've never seen a picture of a bird as a juvenile,
+
+1058
+00:51:50,530 --> 00:51:54,790
+we don't know what the real class boundary should be.
+
+1059
+00:51:54,790 --> 00:51:55,290
+Yeah.
+
+1060
+00:51:55,290 --> 00:51:57,623
+AUDIENCE: Isn't that just like a fundamental shortcoming
+
+1061
+00:51:57,623 --> 00:52:00,650
+of classification as a learning objective?
+
+1062
+00:52:00,650 --> 00:52:04,810
+CLIP was almost a better idea where they're just
+
+1063
+00:52:04,810 --> 00:52:08,050
+saying that you should learn to embed text
+
+1064
+00:52:08,050 --> 00:52:11,970
+descriptions of images close to that embedding of the image,
+
+1065
+00:52:11,970 --> 00:52:15,490
+and you can capture more truth about the world.
+
+1066
+00:52:15,490 --> 00:52:17,068
+To your point about the robin chest--
+
+1067
+00:52:17,068 --> 00:52:18,110
+I mean, this isn't exact.
+
+1068
+00:52:18,110 --> 00:52:21,810
+But imagine you have an albino robin.
+
+1069
+00:52:21,810 --> 00:52:24,330
+That's still a robin, and a human can look at it
+
+1070
+00:52:24,330 --> 00:52:25,850
+and be like, yeah, that's a robin.
+
+1071
+00:52:25,850 --> 00:52:29,670
+But from your definition of the classification perspective,
+
+1072
+00:52:29,670 --> 00:52:30,190
+I doubt--
+
+1073
+00:52:30,190 --> 00:52:34,050
+I think you're right that for a specific type of classification,
+
+1074
+00:52:34,050 --> 00:52:35,550
+whatever you define that class to be
+
+1075
+00:52:35,550 --> 00:52:39,990
+is the extent to which the model can learn [INAUDIBLE].
+
+1076
+00:52:39,990 --> 00:52:42,842
+So isn't this just a shortcoming of classification?
+
+1077
+00:52:42,842 --> 00:52:43,550
+SARA BEERY: Yeah.
+
+1078
+00:52:43,550 --> 00:52:46,710
+So the argument is, basically, this challenge
+
+1079
+00:52:46,710 --> 00:52:49,190
+of being able to understand category boundaries
+
+1080
+00:52:49,190 --> 00:52:53,430
+is maybe a limitation of the underlying philosophical concept
+
+1081
+00:52:53,430 --> 00:52:56,590
+of trying to categorize things with some sort of list
+
+1082
+00:52:56,590 --> 00:52:58,350
+of specific categories.
+
+1083
+00:52:58,350 --> 00:53:03,070
+And actually, if you really want to get deep into it,
+
+1084
+00:53:03,070 --> 00:53:07,590
+there's a lot of literature from philosophy about the concept
+
+1085
+00:53:07,590 --> 00:53:08,870
+of categorization.
+
+1086
+00:53:08,870 --> 00:53:15,050
+And there's kind of these explicit differences of opinion
+
+1087
+00:53:15,050 --> 00:53:17,510
+when you look at historical philosophers around the idea
+
+1088
+00:53:17,510 --> 00:53:21,830
+that it's possible to categorize something as a list of all
+
+1089
+00:53:21,830 --> 00:53:25,075
+its attributes.
+
+1090
+00:53:25,075 --> 00:53:25,950
+So you could say, OK.
+
+1091
+00:53:25,950 --> 00:53:28,850
+A robin is a bird with a black face and a red chest
+
+1092
+00:53:28,850 --> 00:53:33,530
+and yellow feet and a round structure
+
+1093
+00:53:33,530 --> 00:53:35,550
+and a yellow eye with a black pupil.
+
+1094
+00:53:35,550 --> 00:53:39,690
+And so there's this idea that any object can
+
+1095
+00:53:39,690 --> 00:53:43,170
+be defined as a list of characteristics
+
+1096
+00:53:43,170 --> 00:53:45,370
+you're looking for.
+
+1097
+00:53:45,370 --> 00:53:47,370
+And then if you have the kind of mapping
+
+1098
+00:53:47,370 --> 00:53:50,190
+of the set of characteristics to the things you care about,
+
+1099
+00:53:50,190 --> 00:53:52,410
+then that's all you need.
+
+1100
+00:53:52,410 --> 00:53:53,970
+My argument is kind of like, that's
+
+1101
+00:53:53,970 --> 00:53:56,090
+the CLIP approach, in a way, because you're
+
+1102
+00:53:56,090 --> 00:53:58,090
+trying to learn something about the relationship
+
+1103
+00:53:58,090 --> 00:54:01,742
+between textual semantic concepts and things in images.
+
+1104
+00:54:01,742 --> 00:54:03,450
+And there's been a lot of work since CLIP
+
+1105
+00:54:03,450 --> 00:54:07,170
+that actually tries to really explicitly ground
+
+1106
+00:54:07,170 --> 00:54:10,970
+semantic concepts from text into the visual components that
+
+1107
+00:54:10,970 --> 00:54:12,170
+corresponds to.
+
+1108
+00:54:12,170 --> 00:54:17,130
+But I think the argument is that, no matter what, if you
+
+1109
+00:54:17,130 --> 00:54:22,430
+give me a list of a fixed list of attributes,
+
+1110
+00:54:22,430 --> 00:54:24,305
+and you try to map that to a category,
+
+1111
+00:54:24,305 --> 00:54:26,930
+you can basically come up with a counterexample that breaks it.
+
+1112
+00:54:30,115 --> 00:54:31,542
+And then there's the question of,
+
+1113
+00:54:31,542 --> 00:54:33,250
+where do you want to draw the boundaries?
+
+1114
+00:54:33,250 --> 00:54:37,110
+That somehow has to be related to some goal.
+
+1115
+00:54:37,110 --> 00:54:39,450
+So I'm getting really philosophical here.
+
+1116
+00:54:39,450 --> 00:54:46,750
+So if I showed you like an apple and a bell pepper,
+
+1117
+00:54:46,750 --> 00:54:51,350
+and there was a green apple and bell pepper and a red apple
+
+1118
+00:54:51,350 --> 00:54:55,430
+and bell pepper, there's multiple reasonable ways
+
+1119
+00:54:55,430 --> 00:54:59,077
+to split the set of groups.
+
+1120
+00:54:59,077 --> 00:55:00,910
+So in the end, it always just comes down to,
+
+1121
+00:55:00,910 --> 00:55:04,190
+what do you really need the representation space
+
+1122
+00:55:04,190 --> 00:55:05,330
+to do for you?
+
+1123
+00:55:05,330 --> 00:55:07,590
+And then what types of dimensions of variation
+
+1124
+00:55:07,590 --> 00:55:11,550
+do you want to capture there?
+
+1125
+00:55:11,550 --> 00:55:16,670
+And then the albino robin example is a great example
+
+1126
+00:55:16,670 --> 00:55:20,530
+of ways that we are very good at generalizing,
+
+1127
+00:55:20,530 --> 00:55:24,090
+but I would actually argue that models like CLIP still cannot
+
+1128
+00:55:24,090 --> 00:55:25,390
+capture effectively.
+
+1129
+00:55:28,130 --> 00:55:28,630
+Yeah.
+
+1130
+00:55:28,630 --> 00:55:31,270
+And then you could tell me, if you were a bird expert,
+
+1131
+00:55:31,270 --> 00:55:33,830
+oh, actually, that looks like it might be an albino robin,
+
+1132
+00:55:33,830 --> 00:55:35,455
+but that's actually this other species.
+
+1133
+00:55:35,455 --> 00:55:39,270
+And I'd believe you, because I don't know.
+
+1134
+00:55:39,270 --> 00:55:39,770
+Yeah.
+
+1135
+00:55:39,770 --> 00:55:43,075
+So I think this is really fascinating.
+
+1136
+00:55:43,075 --> 00:55:45,450
+I think it starts getting at some really interesting kind
+
+1137
+00:55:45,450 --> 00:55:47,370
+of meaty questions about, what do we really
+
+1138
+00:55:47,370 --> 00:55:50,130
+want from representations?
+
+1139
+00:55:50,130 --> 00:55:53,210
+And what does it really mean to move through a representation
+
+1140
+00:55:53,210 --> 00:55:54,490
+space?
+
+1141
+00:55:54,490 --> 00:55:59,490
+But so here, again, kind of going back to this idea of,
+
+1142
+00:55:59,490 --> 00:56:02,530
+do contrastive learning from real data based
+
+1143
+00:56:02,530 --> 00:56:04,250
+on some of heuristic set of rules
+
+1144
+00:56:04,250 --> 00:56:07,290
+that we say don't break the class boundary versus if you do
+
+1145
+00:56:07,290 --> 00:56:10,610
+it from generative data based on some experimental setup
+
+1146
+00:56:10,610 --> 00:56:15,250
+of parameters around how far you can move in any given direction,
+
+1147
+00:56:15,250 --> 00:56:18,470
+that you're able to now, instead of going from some data space
+
+1148
+00:56:18,470 --> 00:56:22,430
+to a representation space, go from some latent space
+
+1149
+00:56:22,430 --> 00:56:25,630
+into a data space into a representation space.
+
+1150
+00:56:25,630 --> 00:56:28,950
+And they were able to show that if you're
+
+1151
+00:56:28,950 --> 00:56:31,990
+doing linear transfer from ImageNet1000,
+
+1152
+00:56:31,990 --> 00:56:36,790
+you can get 43.9% top-1 accuracy here.
+
+1153
+00:56:36,790 --> 00:56:43,190
+But only using real data to train these models now mapping
+
+1154
+00:56:43,190 --> 00:56:44,698
+through these kind of information
+
+1155
+00:56:44,698 --> 00:56:46,990
+bottlenecks in a way of these different types of latent
+
+1156
+00:56:46,990 --> 00:56:48,810
+spaces, you can do pretty well.
+
+1157
+00:56:48,810 --> 00:56:52,270
+You can get 35.7% accuracy.
+
+1158
+00:56:52,270 --> 00:56:54,550
+But then if you add in that ability
+
+1159
+00:56:54,550 --> 00:56:57,470
+to move in that latent space, the accuracy
+
+1160
+00:56:57,470 --> 00:56:59,830
+goes up to about 42.6%.
+
+1161
+00:56:59,830 --> 00:57:02,115
+So here, you'll note neither of these
+
+1162
+00:57:02,115 --> 00:57:04,490
+are as good as just training on the real data themselves.
+
+1163
+00:57:04,490 --> 00:57:06,270
+So clearly, there's some limitations
+
+1164
+00:57:06,270 --> 00:57:07,830
+in terms of the mechanism.
+
+1165
+00:57:07,830 --> 00:57:10,590
+But the argument is that if you were
+
+1166
+00:57:10,590 --> 00:57:13,090
+able to build the system effectively,
+
+1167
+00:57:13,090 --> 00:57:17,010
+the ability to interpolate and have these reasonable dimensions
+
+1168
+00:57:17,010 --> 00:57:20,210
+of variation within that original latent space
+
+1169
+00:57:20,210 --> 00:57:22,210
+could potentially add a lot of value.
+
+1170
+00:57:22,210 --> 00:57:27,210
+This is a pretty significant boost in performance.
+
+1171
+00:57:27,210 --> 00:57:29,930
+So then the argument is that these deep generative views
+
+1172
+00:57:29,930 --> 00:57:33,650
+is one dimension of variation, just different viewpoints,
+
+1173
+00:57:33,650 --> 00:57:37,010
+can improve contrastive learning beyond only using standard data
+
+1174
+00:57:37,010 --> 00:57:37,950
+augmentation.
+
+1175
+00:57:37,950 --> 00:57:40,850
+And if the generative model is high quality,
+
+1176
+00:57:40,850 --> 00:57:42,450
+you could even potentially outperform
+
+1177
+00:57:42,450 --> 00:57:44,033
+learning from real data.
+
+1178
+00:57:44,033 --> 00:57:45,450
+But that, of course, means that we
+
+1179
+00:57:45,450 --> 00:57:48,650
+need the generator to be high quality, which
+
+1180
+00:57:48,650 --> 00:57:52,607
+it's not for many things that are uncommon.
+
+1181
+00:57:52,607 --> 00:57:54,190
+One of the things that is kind of fun,
+
+1182
+00:57:54,190 --> 00:57:56,110
+if you try and play with these models,
+
+1183
+00:57:56,110 --> 00:57:58,970
+is looking at what they understand
+
+1184
+00:57:58,970 --> 00:58:02,202
+and trying to get them to break out of their priors.
+
+1185
+00:58:02,202 --> 00:58:03,910
+So there's some classic examples of this.
+
+1186
+00:58:03,910 --> 00:58:07,990
+If you ask models to generate a bunch of pictures of birds,
+
+1187
+00:58:07,990 --> 00:58:09,790
+if you ask it to generate orioles,
+
+1188
+00:58:09,790 --> 00:58:11,790
+it'll give you baseball players, right?
+
+1189
+00:58:11,790 --> 00:58:14,830
+There's this semantic prior that gets
+
+1190
+00:58:14,830 --> 00:58:18,533
+broken by the training data in really interesting ways.
+
+1191
+00:58:18,533 --> 00:58:20,450
+But then there's also other interesting stuff.
+
+1192
+00:58:20,450 --> 00:58:25,030
+If you ask the model to generate a toucan with a short beak,
+
+1193
+00:58:25,030 --> 00:58:27,110
+it's really hard to get it to do it.
+
+1194
+00:58:27,110 --> 00:58:28,013
+It just won't.
+
+1195
+00:58:28,013 --> 00:58:28,930
+It's like, no, no, no.
+
+1196
+00:58:28,930 --> 00:58:33,310
+Toucan somehow overpowers these mechanisms of morphology.
+
+1197
+00:58:33,310 --> 00:58:37,470
+And I've also found that they're much better at generating
+
+1198
+00:58:37,470 --> 00:58:40,790
+dimensions-- they're much better at changing texture than shape.
+
+1199
+00:58:40,790 --> 00:58:42,350
+So it turns out that the models seem
+
+1200
+00:58:42,350 --> 00:58:44,630
+to have learned really strong shape priors that
+
+1201
+00:58:44,630 --> 00:58:48,470
+are hard to break out of for any given category,
+
+1202
+00:58:48,470 --> 00:58:51,630
+but they've gotten quite good at swapping textures
+
+1203
+00:58:51,630 --> 00:58:52,370
+for a category.
+
+1204
+00:58:52,370 --> 00:58:56,820
+So you can say, oh, make a baseball, but make it furry.
+
+1205
+00:58:56,820 --> 00:58:57,570
+And it's like, OK.
+
+1206
+00:58:57,570 --> 00:58:58,862
+It swaps the texture just fine.
+
+1207
+00:58:58,862 --> 00:59:02,330
+But if you say make a baseball, but make it star shaped,
+
+1208
+00:59:02,330 --> 00:59:03,907
+it gets a little harder.
+
+1209
+00:59:03,907 --> 00:59:05,490
+And I think that's really interesting.
+
+1210
+00:59:05,490 --> 00:59:06,865
+I think it's interesting to think
+
+1211
+00:59:06,865 --> 00:59:10,970
+about why shape might be encoded in a stronger way than texture.
+
+1212
+00:59:10,970 --> 00:59:14,650
+And there's some recent work that shows some really nice--
+
+1213
+00:59:14,650 --> 00:59:17,250
+in this space of trying to build effective
+
+1214
+00:59:17,250 --> 00:59:20,010
+data augmentation through generation.
+
+1215
+00:59:20,010 --> 00:59:22,730
+It just came out at ECCV.
+
+1216
+00:59:22,730 --> 00:59:30,110
+They basically use the scene structure as a fixed thing.
+
+1217
+00:59:30,110 --> 00:59:32,305
+So they mask out the entire dimension of the scene.
+
+1218
+00:59:32,305 --> 00:59:33,930
+So now, you're guaranteeing that you're
+
+1219
+00:59:33,930 --> 00:59:36,263
+going to have a realistic scene because it's a real one.
+
+1220
+00:59:36,263 --> 00:59:39,130
+So maybe you have two dogs sitting on a bench.
+
+1221
+00:59:39,130 --> 00:59:42,130
+Now, the way that they actually do their generation
+
+1222
+00:59:42,130 --> 00:59:47,690
+to get these new cases is they take each individual object,
+
+1223
+00:59:47,690 --> 00:59:50,570
+and then they change it to a different instance
+
+1224
+00:59:50,570 --> 00:59:52,010
+within the data set.
+
+1225
+00:59:52,010 --> 00:59:54,850
+So you basically say, I'm going to learn some personalization
+
+1226
+00:59:54,850 --> 00:59:58,250
+model for every individual dog in the data set,
+
+1227
+00:59:58,250 --> 01:00:00,490
+and then I'm going to condition on the mask
+
+1228
+01:00:00,490 --> 01:00:03,030
+that I have and generate it with that instance.
+
+1229
+01:00:03,030 --> 01:00:06,290
+So they basically call it instance augmented generation,
+
+1230
+01:00:06,290 --> 01:00:08,410
+and they do get some really nice results.
+
+1231
+01:00:08,410 --> 01:00:10,870
+And what it is, basically, it's breaking
+
+1232
+01:00:10,870 --> 01:00:13,910
+these correlations between scene structure
+
+1233
+01:00:13,910 --> 01:00:16,990
+and individual objects in a really realistic way.
+
+1234
+01:00:16,990 --> 01:00:20,990
+And the images do look reasonably correct.
+
+1235
+01:00:20,990 --> 01:00:24,450
+But the shape thing gets weird again.
+
+1236
+01:00:24,450 --> 01:00:29,270
+So because that data set has bird defined as a category,
+
+1237
+01:00:29,270 --> 01:00:31,890
+you can take any bird of any shape,
+
+1238
+01:00:31,890 --> 01:00:34,710
+and you can replace it with the texture, essentially,
+
+1239
+01:00:34,710 --> 01:00:36,170
+of a different bird.
+
+1240
+01:00:36,170 --> 01:00:37,890
+But birds are very different shapes,
+
+1241
+01:00:37,890 --> 01:00:41,250
+so it'll take something like a little round bird,
+
+1242
+01:00:41,250 --> 01:00:44,852
+and then it'll try to squash an eagle into that shape.
+
+1243
+01:00:44,852 --> 01:00:46,310
+And this is something that wouldn't
+
+1244
+01:00:46,310 --> 01:00:48,990
+happen if the granularity of their categories
+
+1245
+01:00:48,990 --> 01:00:52,690
+in the labeled space was a little bit more fine grained.
+
+1246
+01:00:52,690 --> 01:00:54,990
+And again, it's just built in assumptions
+
+1247
+01:00:54,990 --> 01:00:56,790
+about the amount of shape variation
+
+1248
+01:00:56,790 --> 01:00:59,590
+you might have within a given defined category of interest
+
+1249
+01:00:59,590 --> 01:01:01,270
+from a human perspective.
+
+1250
+01:01:01,270 --> 01:01:03,610
+Anyway, that's enough philosophy for now.
+
+1251
+01:01:03,610 --> 01:01:05,670
+So essentially, data plus plus says
+
+1252
+01:01:05,670 --> 01:01:09,970
+that you might be able to sample from an implicit generative
+
+1253
+01:01:09,970 --> 01:01:12,410
+model and use it to act like some
+
+1254
+01:01:12,410 --> 01:01:18,490
+of decorative or interactive or mechanism to get data
+
+1255
+01:01:18,490 --> 01:01:20,050
+with extra functionality.
+
+1256
+01:01:20,050 --> 01:01:22,070
+And so you can define operators on that,
+
+1257
+01:01:22,070 --> 01:01:24,670
+things like interpolation, extrapolation, manipulation,
+
+1258
+01:01:24,670 --> 01:01:26,890
+composition, optimization, and you
+
+1259
+01:01:26,890 --> 01:01:30,650
+can use it to label data potentially quite efficiently.
+
+1260
+01:01:30,650 --> 01:01:34,210
+So the argument here is that maybe everything you
+
+1261
+01:01:34,210 --> 01:01:35,930
+can do with regular data, you could also
+
+1262
+01:01:35,930 --> 01:01:40,330
+try to do with this generation-augmented data.
+
+1263
+01:01:40,330 --> 01:01:41,630
+And it might work better.
+
+1264
+01:01:41,630 --> 01:01:43,930
+But I think there's still a lot of research that
+
+1265
+01:01:43,930 --> 01:01:48,610
+needs to be done in this space to really achieve
+
+1266
+01:01:48,610 --> 01:01:51,170
+the benefits that we think there's potential for.
+
+1267
+01:01:51,170 --> 01:01:53,270
+We need generators that can learn with less data,
+
+1268
+01:01:53,270 --> 01:01:57,058
+and we need to better understand how
+
+1269
+01:01:57,058 --> 01:01:58,350
+these things are being learned.
+
+1270
+01:01:58,350 --> 01:01:58,930
+Yeah.
+
+1271
+01:01:58,930 --> 01:02:00,055
+AUDIENCE: So two questions.
+
+1272
+01:02:00,055 --> 01:02:01,030
+One on the bias.
+
+1273
+01:02:01,030 --> 01:02:04,050
+So I'm just curious to know, how can we figure out if there's
+
+1274
+01:02:04,050 --> 01:02:05,470
+biases in the training?
+
+1275
+01:02:05,470 --> 01:02:10,110
+Like in this case, we correlate darkness equals volcano eruption
+
+1276
+01:02:10,110 --> 01:02:12,470
+without seeing the images, because this
+
+1277
+01:02:12,470 --> 01:02:15,110
+is-- we can see it visually, but if the data set is
+
+1278
+01:02:15,110 --> 01:02:16,210
+so large we can't see it.
+
+1279
+01:02:16,210 --> 01:02:18,630
+And the second one is, how do we prioritize
+
+1280
+01:02:18,630 --> 01:02:20,890
+diversity versus accuracy?
+
+1281
+01:02:20,890 --> 01:02:23,070
+So the example you gave of a little bird
+
+1282
+01:02:23,070 --> 01:02:26,430
+with the eagle features, but it's the size of little bird.
+
+1283
+01:02:26,430 --> 01:02:29,910
+Is it great because it allows me to train for things
+
+1284
+01:02:29,910 --> 01:02:32,270
+that aren't even possible, so maybe my testing data
+
+1285
+01:02:32,270 --> 01:02:33,150
+will improve?
+
+1286
+01:02:33,150 --> 01:02:35,310
+But it's so far away from fidelity.
+
+1287
+01:02:35,310 --> 01:02:37,630
+Does that make this driven data bad?
+
+1288
+01:02:37,630 --> 01:02:38,470
+SARA BEERY: Yeah.
+
+1289
+01:02:38,470 --> 01:02:40,820
+So it's kind of like that question about the third eye
+
+1290
+01:02:40,820 --> 01:02:42,070
+in the middle of the forehead.
+
+1291
+01:02:42,070 --> 01:02:43,903
+If you start adding random eyes to your mom,
+
+1292
+01:02:43,903 --> 01:02:45,630
+and it makes the model more robust
+
+1293
+01:02:45,630 --> 01:02:51,030
+at recognizing your mom in real data, is that a problem?
+
+1294
+01:02:51,030 --> 01:02:53,510
+So with relation to the first thing,
+
+1295
+01:02:53,510 --> 01:02:55,430
+for example, that data set interfaces paper
+
+1296
+01:02:55,430 --> 01:02:58,070
+was a mechanism that tries to use the fact that you can
+
+1297
+01:02:58,070 --> 01:03:01,070
+interact with these systems with text
+
+1298
+01:03:01,070 --> 01:03:03,687
+to probe biases efficiently without needing to explicitly
+
+1299
+01:03:03,687 --> 01:03:04,770
+look through all the data.
+
+1300
+01:03:04,770 --> 01:03:06,562
+So I think there's ways people have thought
+
+1301
+01:03:06,562 --> 01:03:08,250
+of using generative models to help
+
+1302
+01:03:08,250 --> 01:03:10,330
+you find biases efficiently.
+
+1303
+01:03:10,330 --> 01:03:12,650
+And then with respect to the second one,
+
+1304
+01:03:12,650 --> 01:03:14,350
+I think it basically depends.
+
+1305
+01:03:18,410 --> 01:03:21,930
+There's some work that tries to demonstrate
+
+1306
+01:03:21,930 --> 01:03:24,170
+that even for really fine grained things like bird
+
+1307
+01:03:24,170 --> 01:03:28,290
+species, you can learn to generate data that
+
+1308
+01:03:28,290 --> 01:03:30,290
+is accurately of that bird species
+
+1309
+01:03:30,290 --> 01:03:37,343
+by using a classification model as guidance for the generator.
+
+1310
+01:03:37,343 --> 01:03:39,010
+But essentially, what that means is then
+
+1311
+01:03:39,010 --> 01:03:40,690
+you're building a generator that's
+
+1312
+01:03:40,690 --> 01:03:43,275
+optimized for a given classification model,
+
+1313
+01:03:43,275 --> 01:03:45,150
+and you can take that to its logical extreme,
+
+1314
+01:03:45,150 --> 01:03:47,330
+because it essentially means you can map out
+
+1315
+01:03:47,330 --> 01:03:50,650
+the boundaries of that classification model really
+
+1316
+01:03:50,650 --> 01:03:54,270
+explicitly moving into spaces that aren't super realistic.
+
+1317
+01:03:54,270 --> 01:03:57,850
+And then you can maybe get better performance
+
+1318
+01:03:57,850 --> 01:04:03,290
+for a given manifold or a given representation space.
+
+1319
+01:04:03,290 --> 01:04:07,350
+But it might not always correspond to things you want.
+
+1320
+01:04:07,350 --> 01:04:10,710
+So for example, you get better performance on crows
+
+1321
+01:04:10,710 --> 01:04:14,190
+when you add in images where it's like Bigfoot with a crow
+
+1322
+01:04:14,190 --> 01:04:15,070
+texture.
+
+1323
+01:04:15,070 --> 01:04:17,830
+And it kind of gets to this weird question of,
+
+1324
+01:04:17,830 --> 01:04:20,647
+we're getting better results on our test data,
+
+1325
+01:04:20,647 --> 01:04:22,230
+but is it actually going to correspond
+
+1326
+01:04:22,230 --> 01:04:26,230
+to better results in practice beyond this
+
+1327
+01:04:26,230 --> 01:04:28,030
+of fixed set of test data?
+
+1328
+01:04:28,030 --> 01:04:31,210
+And I think that gets kind of hard to quantify.
+
+1329
+01:04:31,210 --> 01:04:35,050
+So we're good at optimizing for metrics on test data sets,
+
+1330
+01:04:35,050 --> 01:04:38,390
+but I think it's much harder if you're moving to the real world.
+
+1331
+01:04:38,390 --> 01:04:41,190
+You could imagine it might actually be better in some ways
+
+1332
+01:04:41,190 --> 01:04:48,470
+to have things that aren't, I guess, different in ways that--
+
+1333
+01:04:48,470 --> 01:04:50,410
+weird and not realistic.
+
+1334
+01:04:50,410 --> 01:04:52,598
+Because maybe in the real world, you
+
+1335
+01:04:52,598 --> 01:04:54,390
+might be more likely to encounter something
+
+1336
+01:04:54,390 --> 01:04:57,170
+that actually does look a little bit like a small eagle,
+
+1337
+01:04:57,170 --> 01:04:59,430
+but it's actually something else entirely.
+
+1338
+01:04:59,430 --> 01:05:02,650
+So maybe the open endedness of the real world
+
+1339
+01:05:02,650 --> 01:05:06,210
+makes the question of maximizing the potential
+
+1340
+01:05:06,210 --> 01:05:08,290
+within a kind of a fixed, closed world
+
+1341
+01:05:08,290 --> 01:05:12,050
+setting a little bit less translatable.
+
+1342
+01:05:12,050 --> 01:05:12,550
+But yeah.
+
+1343
+01:05:12,550 --> 01:05:14,258
+I don't know if that kind of makes sense.
+
+1344
+01:05:14,258 --> 01:05:15,130
+I'm sort of ranting.
+
+1345
+01:05:15,130 --> 01:05:18,890
+But I do think that what is useful
+
+1346
+01:05:18,890 --> 01:05:22,010
+is going to be directly related to your task.
+
+1347
+01:05:22,010 --> 01:05:25,230
+So for different types of tasks, for different goals,
+
+1348
+01:05:25,230 --> 01:05:28,450
+useful data will be different.
+
+1349
+01:05:28,450 --> 01:05:29,650
+Yeah.
+
+1350
+01:05:29,650 --> 01:05:31,850
+AUDIENCE: Is image domain the bulk
+
+1351
+01:05:31,850 --> 01:05:34,330
+of where the cutting edge research is
+
+1352
+01:05:34,330 --> 01:05:39,098
+being done for this topic, or is that a pedagogical reason?
+
+1353
+01:05:39,098 --> 01:05:41,390
+SARA BEERY: Why am I showing a bunch of image examples?
+
+1354
+01:05:41,390 --> 01:05:42,410
+AUDIENCE: [INAUDIBLE].
+
+1355
+01:05:42,410 --> 01:05:45,910
+It would probably be harder to do these evaluations on text
+
+1356
+01:05:45,910 --> 01:05:47,690
+because you'd have to each read each one
+
+1357
+01:05:47,690 --> 01:05:49,410
+and see the differences.
+
+1358
+01:05:49,410 --> 01:05:50,290
+SARA BEERY: Yeah.
+
+1359
+01:05:50,290 --> 01:05:51,370
+That's interesting.
+
+1360
+01:05:51,370 --> 01:05:54,810
+So there definitely is research on generative text
+
+1361
+01:05:54,810 --> 01:05:57,330
+as data augmentation, but I think
+
+1362
+01:05:57,330 --> 01:05:59,290
+you're right that it's kind of harder--
+
+1363
+01:05:59,290 --> 01:06:03,910
+class boundaries and text is a little bit harder to define.
+
+1364
+01:06:03,910 --> 01:06:08,730
+And also, I could imagine if you think about generative songs,
+
+1365
+01:06:08,730 --> 01:06:13,590
+for example, maybe part of it is just the nuanced, messy space
+
+1366
+01:06:13,590 --> 01:06:16,310
+of what a category is.
+
+1367
+01:06:16,310 --> 01:06:19,270
+But there definitely is work on both generating data
+
+1368
+01:06:19,270 --> 01:06:22,030
+and using generative data for training in the tech space
+
+1369
+01:06:22,030 --> 01:06:26,470
+and in the audio space and in many other modalities as well.
+
+1370
+01:06:26,470 --> 01:06:27,570
+Lots of work.
+
+1371
+01:06:27,570 --> 01:06:29,350
+Actually, classical work that used
+
+1372
+01:06:29,350 --> 01:06:32,190
+generated data for training in medical imagery,
+
+1373
+01:06:32,190 --> 01:06:34,670
+because often, we had so few real data
+
+1374
+01:06:34,670 --> 01:06:37,830
+that really carefully handcrafted synthesizers of data
+
+1375
+01:06:37,830 --> 01:06:39,630
+were quite effective.
+
+1376
+01:06:39,630 --> 01:06:42,830
+There is kind of a much broader kind of interesting debate
+
+1377
+01:06:42,830 --> 01:06:47,030
+currently about what's called model collapse
+
+1378
+01:06:47,030 --> 01:06:49,530
+or manifold collapse where, essentially,
+
+1379
+01:06:49,530 --> 01:06:53,390
+if you start training a model on more data that's generated
+
+1380
+01:06:53,390 --> 01:06:55,990
+than data that's real-- which is a very clear concern
+
+1381
+01:06:55,990 --> 01:06:58,890
+today, because more and more of the text on the internet
+
+1382
+01:06:58,890 --> 01:07:01,490
+is generated text as opposed to real text--
+
+1383
+01:07:01,490 --> 01:07:04,330
+there's an entire line of research that essentially shows
+
+1384
+01:07:04,330 --> 01:07:10,610
+that once you go too far down the ratio of more
+
+1385
+01:07:10,610 --> 01:07:13,210
+of the data being generated than real,
+
+1386
+01:07:13,210 --> 01:07:14,750
+it becomes kind of a vicious cycle.
+
+1387
+01:07:14,750 --> 01:07:16,930
+And you can have these types of model collapse
+
+1388
+01:07:16,930 --> 01:07:19,770
+where you start to lose parts of your distribution
+
+1389
+01:07:19,770 --> 01:07:22,128
+that were captured in the real data because
+
+1390
+01:07:22,128 --> 01:07:24,170
+of the kind of distribution of the generated data
+
+1391
+01:07:24,170 --> 01:07:25,585
+based on the likelihood.
+
+1392
+01:07:25,585 --> 01:07:28,210
+And there's fascinating-- it's a pretty active area of research
+
+1393
+01:07:28,210 --> 01:07:29,730
+right now, this question of, what
+
+1394
+01:07:29,730 --> 01:07:33,970
+does it look like to have models trained from generated data?
+
+1395
+01:07:33,970 --> 01:07:37,830
+And what are the kind of failure modes that can result in?
+
+1396
+01:07:37,830 --> 01:07:38,330
+Cool.
+
+1397
+01:07:38,330 --> 01:07:40,610
+So in the last little bit, I'm going
+
+1398
+01:07:40,610 --> 01:07:43,810
+to talk a little bit about learning to learn quickly.
+
+1399
+01:07:43,810 --> 01:07:46,953
+So this idea of not just, what is a mechanism
+
+1400
+01:07:46,953 --> 01:07:47,870
+for transfer learning?
+
+1401
+01:07:47,870 --> 01:07:50,690
+But actually, how do you learn a model that
+
+1402
+01:07:50,690 --> 01:07:55,050
+is good at transfer learning, a model that adapts quickly?
+
+1403
+01:07:55,050 --> 01:07:58,550
+So here, the idea is that maybe instead
+
+1404
+01:07:58,550 --> 01:08:00,430
+of just taking the classical approach where
+
+1405
+01:08:00,430 --> 01:08:03,030
+you have learning, which is this middle part where you have
+
+1406
+01:08:03,030 --> 01:08:05,650
+a data set, a learner, you get some parameters,
+
+1407
+01:08:05,650 --> 01:08:07,778
+and then at inference time, you take your data set,
+
+1408
+01:08:07,778 --> 01:08:09,570
+you run it through a model with parameters,
+
+1409
+01:08:09,570 --> 01:08:13,950
+and you get predictions, you add this meta layer on top
+
+1410
+01:08:13,950 --> 01:08:15,890
+of taking a bunch of different data sets
+
+1411
+01:08:15,890 --> 01:08:17,590
+and training some of meta learner
+
+1412
+01:08:17,590 --> 01:08:19,910
+that has a different set of hyperparameters
+
+1413
+01:08:19,910 --> 01:08:25,390
+that then you transfer to any given learner and data set.
+
+1414
+01:08:25,390 --> 01:08:28,069
+And so one of the seminal works in this space
+
+1415
+01:08:28,069 --> 01:08:30,990
+was this work called MAML by Chelsea Finn--
+
+1416
+01:08:30,990 --> 01:08:34,710
+stands for model-agnostic meta-learning.
+
+1417
+01:08:34,710 --> 01:08:36,630
+And so far, we saw transfer learning as,
+
+1418
+01:08:36,630 --> 01:08:39,250
+given some prior model and representation,
+
+1419
+01:08:39,250 --> 01:08:41,510
+how can we quickly adapt it?
+
+1420
+01:08:41,510 --> 01:08:44,010
+And this was the first work that tried to ask,
+
+1421
+01:08:44,010 --> 01:08:47,710
+could we learn to do transfer learning effectively?
+
+1422
+01:08:47,710 --> 01:08:50,149
+So now, consider you're doing fine tuning.
+
+1423
+01:08:50,149 --> 01:08:53,710
+Given some initialization we, update it with SGD.
+
+1424
+01:08:53,710 --> 01:08:56,930
+MAML tries to learn an initialization such
+
+1425
+01:08:56,930 --> 01:08:59,689
+that it's easily adaptable with just a few steps
+
+1426
+01:08:59,689 --> 01:09:02,090
+of stochastic gradient descent.
+
+1427
+01:09:02,090 --> 01:09:04,890
+And so if you look at this algorithmically,
+
+1428
+01:09:04,890 --> 01:09:09,890
+essentially, you now are doing like a double loop
+
+1429
+01:09:09,890 --> 01:09:11,490
+in your optimization.
+
+1430
+01:09:11,490 --> 01:09:14,090
+So starting with your initialization,
+
+1431
+01:09:14,090 --> 01:09:18,870
+for any given data set that you're going to train over,
+
+1432
+01:09:18,870 --> 01:09:21,569
+you now run a few steps of SGD and then compute loss
+
+1433
+01:09:21,569 --> 01:09:23,130
+after those steps.
+
+1434
+01:09:23,130 --> 01:09:26,010
+And then you backprop through that back
+
+1435
+01:09:26,010 --> 01:09:30,850
+to your initial meta-learning initial set of parameters.
+
+1436
+01:09:30,850 --> 01:09:32,930
+So how do you actually backprop through something
+
+1437
+01:09:32,930 --> 01:09:38,130
+that's now like an inner loop within your larger loop?
+
+1438
+01:09:38,130 --> 01:09:41,689
+So if you're doing one step of stochastic gradient descent,
+
+1439
+01:09:41,689 --> 01:09:45,770
+you essentially can consider that a forwards pass
+
+1440
+01:09:45,770 --> 01:09:49,450
+over x plus the backwards of the forwards of x and theta
+
+1441
+01:09:49,450 --> 01:09:50,130
+plus theta.
+
+1442
+01:09:50,130 --> 01:09:54,530
+Essentially, remember when we took a single part of a model,
+
+1443
+01:09:54,530 --> 01:09:57,090
+and then we showed that if you wanted to do back propagation,
+
+1444
+01:09:57,090 --> 01:09:59,910
+you could basically unfold it, and it was essentially
+
+1445
+01:09:59,910 --> 01:10:03,430
+one big forward pass of going through forward
+
+1446
+01:10:03,430 --> 01:10:06,270
+and then backward of a model?
+
+1447
+01:10:06,270 --> 01:10:09,630
+So now if you want to do two steps of stochastic gradient
+
+1448
+01:10:09,630 --> 01:10:12,830
+descent, again, you're kind of nesting this.
+
+1449
+01:10:12,830 --> 01:10:15,630
+And so essentially, this is saying that you
+
+1450
+01:10:15,630 --> 01:10:19,910
+can backprop through backward.
+
+1451
+01:10:19,910 --> 01:10:21,667
+So if you're going forward and backward
+
+1452
+01:10:21,667 --> 01:10:22,750
+through a simple network--
+
+1453
+01:10:22,750 --> 01:10:24,910
+I don't know if you guys remember this.
+
+1454
+01:10:24,910 --> 01:10:27,513
+So here's that forward pass.
+
+1455
+01:10:27,513 --> 01:10:28,930
+Then, you have your backward pass.
+
+1456
+01:10:28,930 --> 01:10:31,290
+And then here, this is where we kind of unfold it.
+
+1457
+01:10:31,290 --> 01:10:36,350
+And so now, you can show that doing forward and backward
+
+1458
+01:10:36,350 --> 01:10:38,870
+through a simple network is just one forward pass.
+
+1459
+01:10:38,870 --> 01:10:44,030
+And then you can do this meta backward through everything.
+
+1460
+01:10:44,030 --> 01:10:46,430
+So it's possible.
+
+1461
+01:10:46,430 --> 01:10:48,630
+It's just expensive, essentially,
+
+1462
+01:10:48,630 --> 01:10:51,170
+is the main point here, because you're basically
+
+1463
+01:10:51,170 --> 01:10:55,038
+taking those nested loops of forward and backward,
+
+1464
+01:10:55,038 --> 01:10:56,830
+and you're just stretching all of them out.
+
+1465
+01:10:56,830 --> 01:11:00,890
+And you're now getting what is a very, very deep network
+
+1466
+01:11:00,890 --> 01:11:04,130
+that you're going to optimize through.
+
+1467
+01:11:04,130 --> 01:11:08,570
+Now, this type of computational complexity
+
+1468
+01:11:08,570 --> 01:11:10,730
+often means that the relative benefit
+
+1469
+01:11:10,730 --> 01:11:13,610
+of these types of meta-learning models-- though nice in theory,
+
+1470
+01:11:13,610 --> 01:11:16,712
+and you get really nice gains on maybe simple problems--
+
+1471
+01:11:16,712 --> 01:11:18,170
+it's often just too computationally
+
+1472
+01:11:18,170 --> 01:11:21,770
+expensive to really deploy.
+
+1473
+01:11:21,770 --> 01:11:26,770
+But there are a few examples of how people have actually
+
+1474
+01:11:26,770 --> 01:11:29,170
+used these types of meta-learning
+
+1475
+01:11:29,170 --> 01:11:31,490
+for real world applications.
+
+1476
+01:11:31,490 --> 01:11:33,462
+So in this case, in practice, I was
+
+1477
+01:11:33,462 --> 01:11:35,170
+saying the gains of the method, something
+
+1478
+01:11:35,170 --> 01:11:36,590
+like model-agnostic meta-learning,
+
+1479
+01:11:36,590 --> 01:11:38,530
+are often not worth the additional computational cost
+
+1480
+01:11:38,530 --> 01:11:40,210
+at training time, and sometimes can
+
+1481
+01:11:40,210 --> 01:11:43,370
+be worse than just like pretraining on all of those
+
+1482
+01:11:43,370 --> 01:11:46,530
+different data sets and then fine tuning.
+
+1483
+01:11:46,530 --> 01:11:51,170
+But Gabi Tseng introduced this geospatial embedding,
+
+1484
+01:11:51,170 --> 01:11:55,190
+essentially like a bit of a task-specific tokenizer,
+
+1485
+01:11:55,190 --> 01:11:57,630
+within that meta-learning objective
+
+1486
+01:11:57,630 --> 01:12:00,890
+that encoded some kind of task-specific context.
+
+1487
+01:12:00,890 --> 01:12:04,470
+And they showed that giving this task specificity
+
+1488
+01:12:04,470 --> 01:12:06,590
+within that meta-learning loop did give them
+
+1489
+01:12:06,590 --> 01:12:09,910
+some really nice gains when they were looking
+
+1490
+01:12:09,910 --> 01:12:12,270
+at crop type categorization for corn
+
+1491
+01:12:12,270 --> 01:12:14,110
+and a bunch of different countries.
+
+1492
+01:12:14,110 --> 01:12:16,510
+So here, these are a comparison of a bunch
+
+1493
+01:12:16,510 --> 01:12:17,890
+of different types of methods.
+
+1494
+01:12:17,890 --> 01:12:19,710
+But you can see at the top is kind
+
+1495
+01:12:19,710 --> 01:12:24,570
+of versus meta-learning or just pretraining a model, there,
+
+1496
+01:12:24,570 --> 01:12:25,970
+it's about the same.
+
+1497
+01:12:25,970 --> 01:12:29,150
+But this task conditioning that gives your model the ability
+
+1498
+01:12:29,150 --> 01:12:31,910
+to specialize effectively, maybe to a given country or part
+
+1499
+01:12:31,910 --> 01:12:34,847
+of the world, ends up being pretty effective.
+
+1500
+01:12:34,847 --> 01:12:36,930
+This is maybe-- I don't know if you guys remember,
+
+1501
+01:12:36,930 --> 01:12:38,710
+but we talked a bit about this idea
+
+1502
+01:12:38,710 --> 01:12:40,670
+of maybe learning a prior when we were talking
+
+1503
+01:12:40,670 --> 01:12:42,430
+about distribution shift.
+
+1504
+01:12:42,430 --> 01:12:44,070
+This is maybe a different mechanism
+
+1505
+01:12:44,070 --> 01:12:46,750
+of trying to learn something like a geospatial prior
+
+1506
+01:12:46,750 --> 01:12:49,730
+or some of useful contextualization
+
+1507
+01:12:49,730 --> 01:12:53,890
+so that your model can actually build some knowledge about how
+
+1508
+01:12:53,890 --> 01:12:56,210
+it should adapt for specific types of problems
+
+1509
+01:12:56,210 --> 01:12:59,290
+or types of tasks.
+
+1510
+01:12:59,290 --> 01:13:00,890
+And so there's also this question
+
+1511
+01:13:00,890 --> 01:13:03,810
+of meta-learning by sequence modeling.
+
+1512
+01:13:03,810 --> 01:13:06,290
+So definition of learning.
+
+1513
+01:13:06,290 --> 01:13:09,810
+Maybe we have a sequence of input
+
+1514
+01:13:09,810 --> 01:13:12,170
+and ground truth, input and ground truth
+
+1515
+01:13:12,170 --> 01:13:13,610
+for a bunch of things.
+
+1516
+01:13:13,610 --> 01:13:16,050
+And then you output some function such
+
+1517
+01:13:16,050 --> 01:13:18,610
+that if you give it a new input, it'll
+
+1518
+01:13:18,610 --> 01:13:20,980
+give you a new ground truth.
+
+1519
+01:13:20,980 --> 01:13:22,730
+So maybe this is kind of like that example
+
+1520
+01:13:22,730 --> 01:13:23,930
+we talked about when we were talking
+
+1521
+01:13:23,930 --> 01:13:26,410
+about autoregressive modeling for large language models
+
+1522
+01:13:26,410 --> 01:13:28,010
+where we could say, OK.
+
+1523
+01:13:28,010 --> 01:13:30,050
+We're going to show you an example of English
+
+1524
+01:13:30,050 --> 01:13:31,770
+and the translation in Spanish.
+
+1525
+01:13:31,770 --> 01:13:33,230
+I'm going to show you another example in English,
+
+1526
+01:13:33,230 --> 01:13:34,830
+another example of the translation in Spanish.
+
+1527
+01:13:34,830 --> 01:13:36,497
+Now, if I show you something in English,
+
+1528
+01:13:36,497 --> 01:13:38,650
+the model would automatically generate
+
+1529
+01:13:38,650 --> 01:13:40,510
+the translation in Spanish.
+
+1530
+01:13:40,510 --> 01:13:44,650
+This idea of sequence based in-context learning.
+
+1531
+01:13:44,650 --> 01:13:46,710
+And so here, if you have something
+
+1532
+01:13:46,710 --> 01:13:48,830
+like a recurrent neural network, the state
+
+1533
+01:13:48,830 --> 01:13:51,900
+plus the parameters of that recurrent neural network,
+
+1534
+01:13:51,900 --> 01:13:53,650
+or something like an autoregressive model,
+
+1535
+01:13:53,650 --> 01:13:58,050
+like predicting the next word, is f, that current state.
+
+1536
+01:13:58,050 --> 01:14:00,370
+And then you apply that f to your new input.
+
+1537
+01:14:00,370 --> 01:14:03,430
+You're basically saying, predict the next thing.
+
+1538
+01:14:03,430 --> 01:14:05,710
+And so then the hidden state of that RNN
+
+1539
+01:14:05,710 --> 01:14:09,670
+or that recurrent neural network is a model that arguably
+
+1540
+01:14:09,670 --> 01:14:11,230
+learns to learn, right?
+
+1541
+01:14:11,230 --> 01:14:13,590
+It takes some statistics of the sequence in general
+
+1542
+01:14:13,590 --> 01:14:17,070
+that enable it to predict what should come next.
+
+1543
+01:14:17,070 --> 01:14:19,270
+And this really is, I think, what
+
+1544
+01:14:19,270 --> 01:14:23,470
+GPT and a lot of these modern autoregressive models are doing.
+
+1545
+01:14:23,470 --> 01:14:25,770
+It's kind of a version of meta-learning at large scale.
+
+1546
+01:14:25,770 --> 01:14:27,603
+And you could argue that in-context learning
+
+1547
+01:14:27,603 --> 01:14:30,950
+is kind of just another mechanism of meta-learning.
+
+1548
+01:14:30,950 --> 01:14:33,410
+Because when these models are being trained,
+
+1549
+01:14:33,410 --> 01:14:36,470
+you're showing them a lot of different possible tasks
+
+1550
+01:14:36,470 --> 01:14:38,710
+or sequences and then asking them
+
+1551
+01:14:38,710 --> 01:14:43,330
+to learn how to really quickly and efficiently generate
+
+1552
+01:14:43,330 --> 01:14:44,610
+answers.
+
+1553
+01:14:44,610 --> 01:14:47,090
+What comes next for new sequences?
+
+1554
+01:14:47,090 --> 01:14:52,850
+So you could argue that there's a pretty similar motivation
+
+1555
+01:14:52,850 --> 01:14:57,010
+and potentially a much better actual output when you think
+
+1556
+01:14:57,010 --> 01:15:00,655
+about meta-learning through sequence modeling
+
+1557
+01:15:00,655 --> 01:15:02,530
+as opposed to meta-learning through this kind
+
+1558
+01:15:02,530 --> 01:15:05,870
+of inner and outer loop of training.
+
+1559
+01:15:05,870 --> 01:15:06,370
+Cool.
+
+1560
+01:15:06,370 --> 01:15:09,610
+So it's the end of the lecture I had for today.
+
+1561
+01:15:09,610 --> 01:15:12,250
+We learned today about generative models as data
+
+1562
+01:15:12,250 --> 01:15:14,030
+and some of the pros and cons of that,
+
+1563
+01:15:14,030 --> 01:15:15,970
+and we also talked about learning to learn,
+
+1564
+01:15:15,970 --> 01:15:17,810
+or meta-learning.
+
+1565
+01:15:17,810 --> 01:15:21,550
+And like I said, it's my last lecture of the course today.
+
+1566
+01:15:21,550 --> 01:15:24,130
+So it's been really fun teaching you all, and hopefully--
+
+1567
+01:15:24,130 --> 01:15:25,450
+I mean, I'll be around.
+
+1568
+01:15:25,450 --> 01:15:28,200
+[APPLAUSE]

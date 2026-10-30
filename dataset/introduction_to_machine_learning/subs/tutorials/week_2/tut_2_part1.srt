@@ -1,0 +1,639 @@
+1
+00:00:15,518 --> 00:00:17,200
+Hi everyone
+
+2
+00:00:17,200 --> 00:00:22,960
+welcome to the second tutorial of this of the introduction to machine learning course,
+
+3
+00:00:22,960 --> 00:00:30,240
+so in this tutorial we shall be taking a tour of the aspects of linear algebra which you would need
+
+4
+00:00:30,240 --> 00:00:39,760
+for the course we will cover a variety of concepts such as subspaces basis span and decomposition
+
+5
+00:00:39,760 --> 00:00:45,440
+a decompositions eigenvalues, eigenvectors over the course of the tutorial.
+
+6
+00:00:48,000 --> 00:00:54,160
+So the first question one would ask is, why we need linear algebra at all and what is
+
+7
+00:00:54,160 --> 00:01:01,200
+linear algebra? So you may have come across this in school or your +1 or +2 level but
+
+8
+00:01:01,200 --> 00:01:07,520
+just to recap I mean linear algebra is the branch of mathematics which deals with vectors and
+
+9
+00:01:08,800 --> 00:01:15,680
+vector spaces and linear mappings between these spaces so, why do we study linear algebra
+
+10
+00:01:15,680 --> 00:01:22,880
+here and especially the context of machine learning is firstly it gives us a way to
+
+11
+00:01:23,440 --> 00:01:30,080
+manipulate represent and operate sets of linear equations but why do these linear equations pop
+
+12
+00:01:30,080 --> 00:01:35,280
+up in machine learning in the first place, so the reason for that is in machine learning we are
+
+13
+00:01:35,920 --> 00:01:43,920
+represent our data as an n x p matrix where n is the number of data points and P is the number of
+
+14
+00:01:43,920 --> 00:01:51,920
+features so it is natural we have to use notions and formalisms developed in linear algebra.
+
+15
+00:01:51,920 --> 00:01:57,760
+What is the data even I mean the parameter is you use are represented as vectors so
+
+16
+00:01:59,040 --> 00:02:03,600
+as a result linear algebra has an important role to play in machine learning.
+
+17
+00:02:06,080 --> 00:02:13,280
+So you can see where a system of linear equations two equations and two variables 4x1 –
+
+18
+00:02:14,400 --> 00:02:24,480
+5x2 = -13 and -2x1+ 3x2 = 9, so we can right away see here that advantages of a matrix notation,
+
+19
+00:02:24,480 --> 00:02:29,280
+so if you see below you can represent the same system of two equations directly as one
+
+20
+00:02:29,280 --> 00:02:38,640
+equation in the form of ax = b where a is the set of coefficients and X is the 2 x 1 matrix
+
+21
+00:02:38,640 --> 00:02:44,480
+two rows and one column or you may also call it a 2-dimensional vector X 1 X 2.
+
+22
+00:02:45,280 --> 00:02:52,640
+So we can see that when you multiply the matrix A with X 1 X 2 the 2 x 1
+
+23
+00:02:52,640 --> 00:03:02,400
+matrix you will get back the same L.H.S or the set of two L.H.S and B the matrix B represents the RHS
+
+24
+00:03:03,040 --> 00:03:09,680
+so we can it is very easy to verify that if you represent this in matrices you can get you will
+
+25
+00:03:09,680 --> 00:03:18,240
+get back the original representation and from that representation you can get this so to solving this
+
+26
+00:03:18,240 --> 00:03:23,200
+in general without matrices how we would solve this is you will first solve for one variable
+
+27
+00:03:23,200 --> 00:03:30,480
+and then substitute to get the other but this using matrices you can even solve this directly,
+
+28
+00:03:30,480 --> 00:03:38,400
+so just multiply both the sides by a inverse. So you would get X and A-1 B of course the
+
+29
+00:03:38,400 --> 00:03:44,160
+nuance that you would have to care about is that all matrices do not have an inverse but if
+
+30
+00:03:44,880 --> 00:03:51,840
+but in most cases they do, so in that case you can directly get the solution of X in the form
+
+31
+00:03:51,840 --> 00:04:00,000
+of x = A-1 B were solving it just to one equation so as we said earlier I mean linear algebra gives
+
+32
+00:04:00,000 --> 00:04:05,600
+us this freedom to manipulate several equations at once and multiple variables.
+
+33
+00:04:08,960 --> 00:04:16,880
+A fundamental definition in linear algebra is that of a vector space a set of vectors V
+
+34
+00:04:17,680 --> 00:04:24,480
+is said to be a vector space if it is closed under the operations of vector addition
+
+35
+00:04:24,480 --> 00:04:30,800
+and scalar multiplication and in addition satisfies the axioms we have listed here,
+
+36
+00:04:31,680 --> 00:04:41,920
+like if we take two elements from this set X & Y then X + Y will also lie in the set V,
+
+37
+00:04:41,920 --> 00:04:48,080
+in addition to this if we take her in scalar alpha a real number that is and
+
+38
+00:04:48,720 --> 00:04:55,920
+multiply a vector from this set by with it then αy also belongs to v,
+
+39
+00:04:57,280 --> 00:05:04,000
+if both these properties are satisfied then the set of vectors is said to be closed with respect
+
+40
+00:05:04,000 --> 00:05:12,000
+to vector addition and scalar multiplication, now let us have a look at the axioms. The first one
+
+41
+00:05:12,000 --> 00:05:19,280
+is a commutative law, the commutative law states that if you pick any two elements from the set v,
+
+42
+00:05:19,280 --> 00:05:29,840
+x and y then x +y = y + x, the associative law says that if you pick any point
+
+43
+00:05:29,840 --> 00:05:40,080
+from this set X,Y, Z then X + Y added together + Z = X +Y + Z added together.
+
+44
+00:05:41,840 --> 00:05:45,360
+The additive identity loss is that there exists
+
+45
+00:05:45,360 --> 00:05:52,080
+an additive identity or a 0 so as to say in the set since that if you pick any element
+
+46
+00:05:52,080 --> 00:05:56,080
+from the set and add this 0 to it you get back the same element,
+
+47
+00:05:57,040 --> 00:06:04,800
+the additive inverse low states is that there exists for every element there exists another
+
+48
+00:06:05,600 --> 00:06:12,080
+for every element X there exists a corresponding x̅ such then X + x̅ = 0.
+
+49
+00:06:16,560 --> 00:06:23,360
+The fifth law is the distributive law, this law says that, if you have a real scalar α
+
+50
+00:06:23,920 --> 00:06:30,720
+with which you multiply the sum of two vectors X + Y then that should be equal to α x + α
+
+51
+00:06:31,360 --> 00:06:39,040
+y the second distributive law says that if you have the sum of two scalars multiplying a vector
+
+52
+00:06:39,040 --> 00:06:50,000
+X from the set (α + ß). x then that should be equal to α times X + ß times X, in associative
+
+53
+00:06:50,000 --> 00:06:56,240
+law says that if you will first multiply two scalars and then multiplying the vector with them
+
+54
+00:06:56,240 --> 00:07:02,880
+that should be equal to multiplying it first with the second scalar ß and then with α.
+
+55
+00:07:03,840 --> 00:07:09,520
+The unitary law says that on multiplication by the scalar real number one
+
+56
+00:07:10,240 --> 00:07:17,600
+you get back the same vector so this is important because you would want multiplication to force
+
+57
+00:07:17,600 --> 00:07:24,960
+any unexpected scaling like if you multiplied by the scalar K is a vector you can surely be
+
+58
+00:07:24,960 --> 00:07:29,840
+exactly K times it should not be say root kit.
+
+59
+00:07:34,720 --> 00:07:43,680
+A second related definition is that of a subspace, a subset W of a vector space V is
+
+60
+00:07:43,680 --> 00:07:52,000
+said to be a subspace if W is a vector space now this means that W should be closed under vector
+
+61
+00:07:52,000 --> 00:07:59,680
+addition and scalar multiplication it should also satisfy the eight axioms we stated earlier,
+
+62
+00:08:00,560 --> 00:08:06,240
+now the question that arises is do we need to verify all these eight conditions given that we
+
+63
+00:08:06,240 --> 00:08:14,400
+know that W is already a subset of a vector space. No, it is enough to check just for the following
+
+64
+00:08:14,400 --> 00:08:23,440
+two conditions firstly that W is non empty that in other words it has at least a single element.
+
+65
+00:08:24,240 --> 00:08:29,280
+And secondly that if I pick any two elements x and y from this set
+
+66
+00:08:29,920 --> 00:08:36,320
+and any real number α then x + α y should belong to W.
+
+67
+00:08:39,360 --> 00:08:46,000
+Now let us have a look at the definition of a norm, so intuitively a norm is a measure of
+
+68
+00:08:46,000 --> 00:08:53,600
+the length of a vector or its magnitude it is a function from this vector space which
+
+69
+00:08:53,600 --> 00:09:01,840
+mostly happens to be Rn where n is a dimension of a vector to the space of real numbers R,
+
+70
+00:09:02,480 --> 00:09:08,080
+so for a function to be a norm it should satisfy the four conditions which we have given here,
+
+71
+00:09:08,720 --> 00:09:14,800
+firstly it should be it should always be non-negative secondly it should be zero if
+
+72
+00:09:14,800 --> 00:09:21,840
+and only if the vector is zero. Thirdly for every for every vector
+
+73
+00:09:22,960 --> 00:09:29,840
+if you multiplied by a scalar its norm should get multiplied by the body modulus of the scalar by
+
+74
+00:09:29,840 --> 00:09:38,160
+modulus here we mean the absolute value and fourth being that if we take any pair of vectors in our
+
+75
+00:09:38,160 --> 00:09:47,920
+vector space which is Rn the norm of the sum of these two vectors should be less than some of
+
+76
+00:09:47,920 --> 00:09:56,960
+their norms which this is also known as triangle inequality. So this is namely related to the fact
+
+77
+00:09:56,960 --> 00:10:02,560
+that the third side of a triangle should always be less than some of the other two sides.
+
+78
+00:10:03,600 --> 00:10:10,800
+Now an example of a norm is the LP norm there you sum up the
+
+79
+00:10:11,920 --> 00:10:18,160
+absolute values along each dimension raised to P and then take the 1/P th root of this,
+
+80
+00:10:18,800 --> 00:10:26,720
+so when P = 2 you get the L2 norm which is the magnitude of a vector as we have
+
+81
+00:10:26,720 --> 00:10:34,320
+learnt in our earlier studies √ x2 + y2 if you are looking at just the space R2
+
+82
+00:10:36,640 --> 00:10:41,760
+there are other norms for instance there are norms defined for matrices as well
+
+83
+00:10:41,760 --> 00:10:50,480
+here we had defined all for effect for vectors so the Frobenius norm is a matrix norm so what
+
+84
+00:10:50,480 --> 00:10:56,480
+it does is it essentially sums up the squares of all the elements and then takes the root of that,
+
+85
+00:10:57,360 --> 00:11:03,280
+so this also happens to be equal to the trace of A-1 A now the trace
+
+86
+00:11:03,280 --> 00:11:07,040
+of a matrix is simply the some of its diagonal elements.
+
+87
+00:11:13,760 --> 00:11:21,920
+The span of a set of vectors is the set of all vectors which can be composed using these vectors
+
+88
+00:11:21,920 --> 00:11:26,640
+by using the operations of vector addition and scalar multiplication,
+
+89
+00:11:27,520 --> 00:11:35,200
+so the name span comes from the fact that this set of vectors spans a potentially
+
+90
+00:11:35,200 --> 00:11:43,760
+larger set of vectors which is then called a span. So to define this more formally it is the
+
+91
+00:11:43,760 --> 00:11:56,400
+set of all vectors V such that V = sum I = 1 to I = |x| α I xi where α I is a real number.
+
+92
+00:11:58,320 --> 00:12:07,600
+Now a related definition is that of range or column space, so if we think of a matrix each of
+
+93
+00:12:07,600 --> 00:12:16,880
+its columns is a vector so the set of all columns of a matrix is like a set of vectors
+
+94
+00:12:17,520 --> 00:12:25,120
+now the span of this set of vectors is called the range or column space of that matrix,
+
+95
+00:12:26,160 --> 00:12:37,200
+so if you consider the matrix given here the columns of this matrix A are 1, 5, 2 and 0, 4, 4,
+
+96
+00:12:38,000 --> 00:12:46,480
+so what would be this column space of this matrix, it would be this the span of the vectors 1, 5. 2
+
+97
+00:12:46,480 --> 00:12:53,120
+and 0, 4, 4 which is essentially the plane which is spanned by these two vectors.
+
+98
+00:12:56,560 --> 00:13:06,400
+If we have matrix A of dimensions m x n then the null space is the set of n x 1 vectors
+
+99
+00:13:06,400 --> 00:13:13,920
+which given M x 1 zero vector on B x A, in other words it is the set of
+
+100
+00:13:13,920 --> 00:13:22,240
+vectors X such that ax = 0 nullity is the rank or dimensionality of the null space
+
+101
+00:13:22,800 --> 00:13:28,160
+we will revisit the definition of nullity later once you defined rank more clearly,
+
+102
+00:13:28,720 --> 00:13:39,120
+another interesting fact about null spaces is that the null space of A is of dimension n while the
+
+103
+00:13:39,120 --> 00:13:46,400
+range of A or the column space as we defined it earlier is of dimension M or M x 1.
+
+104
+00:13:46,400 --> 00:13:55,440
+This means that vectors in R (AT) so note that AT is n X M So vector in the range of AT
+
+105
+00:13:57,200 --> 00:14:02,160
+will be of dimension n similar to the vectors in the null space
+
+106
+00:14:02,160 --> 00:14:09,920
+of A, so this means that the vectors in range of AT and null space of A
+
+107
+00:14:09,920 --> 00:14:15,840
+would both be of the dimension n x 1.
+
+108
+00:14:16,720 --> 00:14:21,680
+Let us consider an example to illustrate the concept of a null space,
+
+109
+00:14:21,680 --> 00:14:30,640
+consider the matrix A given here, A is a 3 x 2 matrix hence the null space of A will be made up
+
+110
+00:14:30,640 --> 00:14:43,040
+of vectors of dimension 2 or 2 x 1. Now we see that the on solving being we get u = 0, v = 0
+
+111
+00:14:44,000 --> 00:14:50,000
+this means that the null space only contains the 0 vector the two dimensional 0 vector 0,
+
+112
+00:14:50,000 --> 00:14:53,680
+0. Let us consider another
+
+113
+00:14:53,680 --> 00:15:03,440
+example to illustrate null space, take the matrix B which is a 3 x 3 matrix the null space would
+
+114
+00:15:03,440 --> 00:15:12,640
+consist of 3 x 1 vectors we leave the finding of the null space to the audiences as an exercise
+
+115
+00:15:13,280 --> 00:15:24,480
+however when on solving we get the null space to be the set of all vectors of the form x = c, y = C
+
+116
+00:15:24,480 --> 00:15:32,400
+and z = -C, where C is any real number and XYZ referred to the first second and third dimension
+
+117
+00:15:32,400 --> 00:15:33,120
+respectively.
+
+118
+00:15:35,360 --> 00:15:42,480
+Before we dive into defining linear independence recollect how we define the linear combination,
+
+119
+00:15:43,120 --> 00:15:49,920
+a set of vectors is linearly independent if no vector in the set can be produced
+
+120
+00:15:49,920 --> 00:15:53,360
+using the linear combination of the other vectors
+
+121
+00:15:53,360 --> 00:16:01,760
+in the set. Now let us have a look at the related concept of rank, so the column
+
+122
+00:16:01,760 --> 00:16:11,120
+rank of a m x n matrix A is the size of the largest linearly independent subset of columns.
+
+123
+00:16:11,840 --> 00:16:19,840
+Note that our columns here are m x 1 vectors the row rank is defined in a similar way for
+
+124
+00:16:19,840 --> 00:16:21,840
+rows.
+
+125
+00:16:23,760 --> 00:16:33,040
+Let us walk through some interesting properties of ranks, for any m x n matrix of real numbers the
+
+126
+00:16:33,040 --> 00:16:41,600
+column rank is equal to the row rank we refer to this quantity as the rank of the matrix, earlier
+
+127
+00:16:41,600 --> 00:16:48,080
+we had looked at the quantity called nullity, nullity is the rank of the null space of A
+
+128
+00:16:49,440 --> 00:16:53,280
+some other interesting properties of ranks are also listed here,
+
+129
+00:16:54,000 --> 00:17:00,800
+for instance the rank of a matrix is atmost the minimum of its two dimensions.
+
+130
+00:17:01,840 --> 00:17:03,840
+The row dimension and the column dimension
+
+131
+00:17:05,120 --> 00:17:13,280
+secondly the rank of a matrix is the same as the rank of its transpose, thirdly if you multiply two
+
+132
+00:17:13,280 --> 00:17:22,800
+matrices A and B the rank of the resultant matrix is atmost the minimum of the ranks of A and B if
+
+133
+00:17:22,800 --> 00:17:31,440
+you add up two matrices the rank of the resultant matrix is atmost the sum of the ranks of A and
+
+134
+00:17:31,440 --> 00:17:39,600
+B. A square matrix U of dimension n x n is defined
+
+135
+00:17:39,600 --> 00:17:48,080
+to the orthogonal if and only if the following two conditions hold firstly all pairs of distinct
+
+136
+00:17:48,080 --> 00:17:55,840
+columns should be orthogonal by columns being orthogonal we mean that the dot product of any
+
+137
+00:17:55,840 --> 00:18:06,000
+pair of distinct column vectors is zero in other words the I-1 VJ = 0 for all I not equal to J
+
+138
+00:18:06,960 --> 00:18:14,400
+the second condition is that the dot product of any column with itself or VI-1 VI = 1.
+
+139
+00:18:16,640 --> 00:18:20,800
+In other words all the column vectors should be normalized,
+
+140
+00:18:22,560 --> 00:18:32,160
+an interesting implication of a matrix being orthogonal is that UUT and UT U both end up
+
+141
+00:18:32,160 --> 00:18:42,880
+being equal to the n x n identity matrix I this also means that U-T = U-1 equals the transpose
+
+142
+00:18:42,880 --> 00:18:51,440
+of such an orthogonal matrix is also means inverse and additional interesting property is seen when
+
+143
+00:18:51,440 --> 00:19:03,440
+we multiply a M x 1 vector X by n x n orthogonal matrix Q the Euclidean or L2 norm of such a vector
+
+144
+00:19:03,440 --> 00:19:12,080
+X remains the same on multiplication by U. Intuitively we can understand this as orthogonal
+
+145
+00:19:12,080 --> 00:19:19,600
+matrices u performing only pure rotation on multiplying the vector X in other words they
+
+146
+00:19:19,600 --> 00:19:24,320
+only change the direction of a vector but do not change its magnitude.
+
+147
+00:19:28,160 --> 00:19:34,320
+We often encounter the quadratic form which is the vector equivalent of a quadratic function
+
+148
+00:19:34,880 --> 00:19:44,400
+the quadratic form with respect to the matrix A of a vector X then the matrix A is m x n and
+
+149
+00:19:44,400 --> 00:19:53,920
+the vector X is n x 1 is given by the real number XT AX based on the quadratic forms of
+
+150
+00:19:53,920 --> 00:19:59,707
+matrices we can classify them as positive definite negative definite positive semi
+
+151
+00:19:59,707 --> 00:20:05,840
+definite and negative semi definite. A matrix A is said to be positive definite
+
+152
+00:20:06,480 --> 00:20:14,560
+if its quadratic form is greater than zero for any vector X similarly we can define
+
+153
+00:20:14,560 --> 00:20:21,360
+it to be negative definite, a matrix A is positive semi definite if the quadratic form
+
+154
+00:20:21,360 --> 00:20:29,360
+is greater than equal to 0 for any vector X note that equality with 0 also hold here
+
+155
+00:20:30,880 --> 00:20:36,000
+One important property of positive and negative definite matrices
+
+156
+00:20:36,000 --> 00:20:43,600
+is that they are always full rank. An implication of this is that A-1 always exists,
+
+157
+00:20:46,160 --> 00:20:55,280
+for a matrix A which is of dimension m x n one can define a special matrix called a gram matrix,
+
+158
+00:20:56,080 --> 00:21:02,720
+the gram matrix is given by A-TA one of the property of the gram
+
+159
+00:21:02,720 --> 00:21:10,560
+matrix is that it is always positive semi definite, moreover if the number of rows
+
+160
+00:21:10,560 --> 00:21:29,840
+exceeds the number of columns in other words if m > = n this means that G is positive definite.

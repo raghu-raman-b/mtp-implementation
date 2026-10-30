@@ -1,0 +1,6755 @@
+1
+00:00:00,500 --> 00:00:01,988
+[SQUEAKING]
+
+2
+00:00:01,988 --> 00:00:03,476
+[RUSTLING]
+
+3
+00:00:03,476 --> 00:00:05,460
+[CLICKING]
+
+4
+00:00:12,920 --> 00:00:14,520
+JEREMY BERNSTEIN: Hello.
+
+5
+00:00:14,520 --> 00:00:17,240
+OK, I'm just going to start.
+
+6
+00:00:17,240 --> 00:00:23,320
+So here's a question.
+
+7
+00:00:23,320 --> 00:00:25,960
+And I'm genuinely asking, would you
+
+8
+00:00:25,960 --> 00:00:29,700
+rather to scale the width or the depth of your neural network?
+
+9
+00:00:32,920 --> 00:00:34,540
+Does anyone have any thoughts?
+
+10
+00:00:38,040 --> 00:00:40,480
+Wait, someone said something.
+
+11
+00:00:40,480 --> 00:00:43,600
+I heard someone say depth.
+
+12
+00:00:43,600 --> 00:00:44,400
+AUDIENCE: Depth.
+
+13
+00:00:44,400 --> 00:00:45,347
+JEREMY BERNSTEIN: Why?
+
+14
+00:00:45,347 --> 00:00:46,180
+AUDIENCE: No reason.
+
+15
+00:00:46,180 --> 00:00:47,720
+I know someone said it earlier.
+
+16
+00:00:47,720 --> 00:00:50,012
+JEREMY BERNSTEIN: Because you've heard "deep learning,"
+
+17
+00:00:50,012 --> 00:00:51,560
+so it sounds-- not wider, yeah.
+
+18
+00:00:51,560 --> 00:00:53,920
+[LAUGHTER]
+
+19
+00:00:53,920 --> 00:00:54,420
+OK.
+
+20
+00:00:54,420 --> 00:00:56,320
+But it's not really clear.
+
+21
+00:00:56,320 --> 00:01:00,630
+How do you even answer a question like that?
+
+22
+00:01:00,630 --> 00:01:01,830
+I don't know.
+
+23
+00:01:01,830 --> 00:01:06,510
+It's something we got to think about.
+
+24
+00:01:06,510 --> 00:01:14,430
+So in today's lecture, we're going to ask this question of,
+
+25
+00:01:14,430 --> 00:01:17,670
+what class of functions can a neural network express?
+
+26
+00:01:17,670 --> 00:01:19,710
+And you may have heard this statement
+
+27
+00:01:19,710 --> 00:01:22,150
+that neural networks are universal function
+
+28
+00:01:22,150 --> 00:01:23,750
+approximators.
+
+29
+00:01:23,750 --> 00:01:28,430
+So we're going to think about what that means.
+
+30
+00:01:28,430 --> 00:01:32,950
+And if a neural network is a universal function approximator
+
+31
+00:01:32,950 --> 00:01:34,990
+and it can approximate any function that we're
+
+32
+00:01:34,990 --> 00:01:37,430
+interested in, then how should we make decisions
+
+33
+00:01:37,430 --> 00:01:39,390
+about the architecture?
+
+34
+00:01:39,390 --> 00:01:42,270
+Does it matter how many layers there are?
+
+35
+00:01:42,270 --> 00:01:46,550
+Maybe a few layers is enough if you make them really wide.
+
+36
+00:01:46,550 --> 00:01:49,710
+Should you have lots of layers?
+
+37
+00:01:49,710 --> 00:01:52,090
+And ultimately, what do you want to do in practice?
+
+38
+00:01:52,090 --> 00:01:54,310
+And does thinking about neural networks
+
+39
+00:01:54,310 --> 00:01:57,310
+through this lens of universal function approximation
+
+40
+00:01:57,310 --> 00:02:00,340
+actually help you in practice?
+
+41
+00:02:00,340 --> 00:02:03,980
+I'm not going to claim to answer all of these questions,
+
+42
+00:02:03,980 --> 00:02:08,699
+but at least try to provide some beginning of a framework, one
+
+43
+00:02:08,699 --> 00:02:10,440
+framework for thinking about them.
+
+44
+00:02:14,380 --> 00:02:19,140
+So in machine learning, you can think of it a bit
+
+45
+00:02:19,140 --> 00:02:20,200
+like we have a puzzle.
+
+46
+00:02:20,200 --> 00:02:22,080
+And there are different pieces of the puzzle.
+
+47
+00:02:22,080 --> 00:02:23,538
+We're not going to solve the puzzle
+
+48
+00:02:23,538 --> 00:02:27,820
+until we understand all of the pieces and put them together.
+
+49
+00:02:27,820 --> 00:02:32,820
+And I broke it up here into three pieces.
+
+50
+00:02:32,820 --> 00:02:38,882
+Let's see, so the first is approximation.
+
+51
+00:02:38,882 --> 00:02:40,340
+This is the question of, does there
+
+52
+00:02:40,340 --> 00:02:44,260
+exist a neural network in my model family
+
+53
+00:02:44,260 --> 00:02:45,520
+that fits the training data?
+
+54
+00:02:45,520 --> 00:02:47,460
+So given my architecture, can it even
+
+55
+00:02:47,460 --> 00:02:49,540
+represent the function that I want,
+
+56
+00:02:49,540 --> 00:02:51,700
+that fits the training data?
+
+57
+00:02:51,700 --> 00:02:54,000
+The second question is optimization.
+
+58
+00:02:54,000 --> 00:02:56,070
+So let's suppose it does exist.
+
+59
+00:02:56,070 --> 00:03:00,490
+Then that's the question of, can I find it?
+
+60
+00:03:00,490 --> 00:03:02,270
+And third is generalization.
+
+61
+00:03:02,270 --> 00:03:03,390
+So suppose it exists.
+
+62
+00:03:03,390 --> 00:03:04,930
+Suppose I can find it.
+
+63
+00:03:04,930 --> 00:03:08,930
+Then it's like, does it do well on unseen data?
+
+64
+00:03:08,930 --> 00:03:11,130
+So I really want all of those things
+
+65
+00:03:11,130 --> 00:03:14,490
+to happen if I'm going to solve my machine learning problem.
+
+66
+00:03:14,490 --> 00:03:16,570
+But in this lecture, we're only going
+
+67
+00:03:16,570 --> 00:03:22,068
+to look at the first question about approximation.
+
+68
+00:03:22,068 --> 00:03:24,110
+But just to remind you that there is this puzzle.
+
+69
+00:03:24,110 --> 00:03:25,370
+We really want to solve the whole puzzle
+
+70
+00:03:25,370 --> 00:03:26,830
+and put the pieces together.
+
+71
+00:03:30,690 --> 00:03:33,930
+So here is a motivating problem.
+
+72
+00:03:33,930 --> 00:03:36,610
+So imagine I have two-dimensional data.
+
+73
+00:03:36,610 --> 00:03:39,290
+It's got two coordinates, x1 and x2.
+
+74
+00:03:39,290 --> 00:03:45,010
+And there's two classes, the red crosses and the green circles.
+
+75
+00:03:45,010 --> 00:03:48,210
+And I've come up with my, think of this
+
+76
+00:03:48,210 --> 00:03:50,450
+as a one-layer neural net.
+
+77
+00:03:50,450 --> 00:03:53,790
+It's just the w-transpose x plus b.
+
+78
+00:03:53,790 --> 00:03:56,080
+And then I take ReLU of that.
+
+79
+00:03:56,080 --> 00:03:58,460
+If that's my model, can I fit this data?
+
+80
+00:04:01,080 --> 00:04:02,320
+What's your name, sir?
+
+81
+00:04:02,320 --> 00:04:02,982
+AUDIENCE: Matt.
+
+82
+00:04:02,982 --> 00:04:03,940
+JEREMY BERNSTEIN: Matt?
+
+83
+00:04:03,940 --> 00:04:04,280
+AUDIENCE: Yeah.
+
+84
+00:04:04,280 --> 00:04:05,780
+JEREMY BERNSTEIN: Matt is saying no.
+
+85
+00:04:05,780 --> 00:04:06,960
+Why?
+
+86
+00:04:06,960 --> 00:04:10,560
+AUDIENCE: Don't you need two linear separation planes?
+
+87
+00:04:10,560 --> 00:04:12,060
+JEREMY BERNSTEIN: Yeah.
+
+88
+00:04:12,060 --> 00:04:15,440
+Because this thing, there's only one hyperplane
+
+89
+00:04:15,440 --> 00:04:18,120
+defined by w-transpose x.
+
+90
+00:04:18,120 --> 00:04:21,540
+And ReLU does not distort the shape of the hyperplane.
+
+91
+00:04:21,540 --> 00:04:23,860
+It just applies nonlinearity on the output.
+
+92
+00:04:26,800 --> 00:04:28,620
+This is basically a linear separator.
+
+93
+00:04:28,620 --> 00:04:31,980
+And this data is not linearly separable.
+
+94
+00:04:31,980 --> 00:04:36,800
+So this is supposed to be recap from lecture one.
+
+95
+00:04:36,800 --> 00:04:38,860
+So hopefully, it's reasonable.
+
+96
+00:04:38,860 --> 00:04:42,120
+But we cannot linearly separate this.
+
+97
+00:04:42,120 --> 00:04:44,680
+But what if I had a two-layer neural net?
+
+98
+00:04:44,680 --> 00:04:47,560
+Do you think I could maybe do it with two layers?
+
+99
+00:04:47,560 --> 00:04:48,720
+Potentially?
+
+100
+00:04:48,720 --> 00:04:49,240
+Yeah.
+
+101
+00:04:49,240 --> 00:04:49,540
+OK.
+
+102
+00:04:49,540 --> 00:04:50,940
+So I think we can do it with two layers,
+
+103
+00:04:50,940 --> 00:04:52,398
+but you may need to think about it.
+
+104
+00:04:52,398 --> 00:04:54,470
+But this is just supposed to be a refresher.
+
+105
+00:04:54,470 --> 00:04:56,670
+But it's saying we've got a kind of function
+
+106
+00:04:56,670 --> 00:04:59,272
+that we're trying to fit, and we have a model family.
+
+107
+00:04:59,272 --> 00:05:01,230
+And we're asking, does there exist the function
+
+108
+00:05:01,230 --> 00:05:04,470
+in that model family that can fit that data?
+
+109
+00:05:04,470 --> 00:05:06,150
+So it's a kind of warm-up for thinking
+
+110
+00:05:06,150 --> 00:05:12,030
+about this idea of function approximation.
+
+111
+00:05:12,030 --> 00:05:14,430
+I have a second motivating problem.
+
+112
+00:05:14,430 --> 00:05:19,350
+Does anyone recognize this function?
+
+113
+00:05:19,350 --> 00:05:21,270
+You recognize it?
+
+114
+00:05:21,270 --> 00:05:22,210
+What is it?
+
+115
+00:05:22,210 --> 00:05:25,190
+AUDIENCE: Isn't it Weierstrass' function?
+
+116
+00:05:25,190 --> 00:05:26,390
+JEREMY BERNSTEIN: Yeah.
+
+117
+00:05:26,390 --> 00:05:28,830
+It's Weierstrass' function, which
+
+118
+00:05:28,830 --> 00:05:31,250
+is everywhere continuous but nowhere differentiable.
+
+119
+00:05:31,250 --> 00:05:34,150
+It's a classic example of a pathological function.
+
+120
+00:05:34,150 --> 00:05:36,870
+And the question I wanted to ask is, do you
+
+121
+00:05:36,870 --> 00:05:39,530
+think you could fit this function with a neural network?
+
+122
+00:05:45,470 --> 00:05:47,590
+Does anyone have a thought?
+
+123
+00:05:47,590 --> 00:05:48,190
+Matt?
+
+124
+00:05:48,190 --> 00:05:51,540
+AUDIENCE: Wouldn't you have to go to infinity?
+
+125
+00:05:51,540 --> 00:05:53,420
+It would be like asymptotically, I guess?
+
+126
+00:05:53,420 --> 00:05:54,420
+JEREMY BERNSTEIN: It seems like you would need
+
+127
+00:05:54,420 --> 00:05:55,760
+some kind of asymptotic thing.
+
+128
+00:05:55,760 --> 00:05:58,560
+Yeah, honestly, I don't know what the answer is to this.
+
+129
+00:05:58,560 --> 00:06:02,020
+I just thought it was an interesting function.
+
+130
+00:06:02,020 --> 00:06:05,180
+And it's interesting to think, can I fit it with a neural net?
+
+131
+00:06:05,180 --> 00:06:08,380
+I guess I suppose the answer is, maybe.
+
+132
+00:06:08,380 --> 00:06:11,140
+And I thought a good final project, if someone wants
+
+133
+00:06:11,140 --> 00:06:14,340
+an idea, is to take all these pathological examples
+
+134
+00:06:14,340 --> 00:06:15,900
+that Weierstrass was thinking about
+
+135
+00:06:15,900 --> 00:06:18,160
+and see if you can fit them with a neural net.
+
+136
+00:06:18,160 --> 00:06:21,260
+But anyway, this is just more motivation, just something
+
+137
+00:06:21,260 --> 00:06:23,300
+to think about.
+
+138
+00:06:23,300 --> 00:06:25,160
+OK, so this is a fractal function.
+
+139
+00:06:25,160 --> 00:06:26,880
+It's defined recursively.
+
+140
+00:06:26,880 --> 00:06:28,100
+It's self-similar.
+
+141
+00:06:28,100 --> 00:06:30,340
+If you zoom into any piece of the function,
+
+142
+00:06:30,340 --> 00:06:32,160
+it resembles the whole function.
+
+143
+00:06:35,380 --> 00:06:39,460
+So we want to now formalize this approximation problem
+
+144
+00:06:39,460 --> 00:06:42,540
+that we've been talking about.
+
+145
+00:06:42,540 --> 00:06:47,300
+So given a family of curves G--
+
+146
+00:06:47,300 --> 00:06:49,490
+we think of these as the curves that we
+
+147
+00:06:49,490 --> 00:06:52,410
+want to be able to approximate ideally.
+
+148
+00:06:52,410 --> 00:06:54,910
+And we can choose what we want G to be.
+
+149
+00:06:54,910 --> 00:06:58,670
+We could choose it to rule out Weierstrass' function.
+
+150
+00:06:58,670 --> 00:07:00,590
+We could ask that G is differentiable.
+
+151
+00:07:00,590 --> 00:07:04,730
+Or we're free to pick whatever family of curves
+
+152
+00:07:04,730 --> 00:07:05,950
+we're interested in.
+
+153
+00:07:05,950 --> 00:07:08,050
+That's up to us.
+
+154
+00:07:08,050 --> 00:07:10,490
+And then we think of a family of neural networks
+
+155
+00:07:10,490 --> 00:07:14,030
+F. This is like, I'm going to say,
+
+156
+00:07:14,030 --> 00:07:17,410
+I care about a five-layer MLP, a five-layer multilayer
+
+157
+00:07:17,410 --> 00:07:19,370
+perceptron.
+
+158
+00:07:19,370 --> 00:07:20,670
+That could be my family.
+
+159
+00:07:20,670 --> 00:07:22,650
+So in other words, a neural architecture
+
+160
+00:07:22,650 --> 00:07:26,050
+could specify a family of functions.
+
+161
+00:07:26,050 --> 00:07:28,730
+And then I want to say, if I pick any curve
+
+162
+00:07:28,730 --> 00:07:32,330
+in my space of functions or set of functions
+
+163
+00:07:32,330 --> 00:07:34,250
+that I'm interested in, does there
+
+164
+00:07:34,250 --> 00:07:38,570
+exist a neural network in my family of neural networks
+
+165
+00:07:38,570 --> 00:07:44,490
+that can fit that function to some small error?
+
+166
+00:07:44,490 --> 00:07:48,080
+And we can come up with different notions of error.
+
+167
+00:07:48,080 --> 00:07:50,800
+And OK, here, epsilon, you should think of epsilon
+
+168
+00:07:50,800 --> 00:07:52,280
+as a small number.
+
+169
+00:07:52,280 --> 00:07:55,660
+So we choose epsilon, and we ask,
+
+170
+00:07:55,660 --> 00:07:59,960
+can we approximate any function in the family of curves G
+
+171
+00:07:59,960 --> 00:08:02,880
+to less than some small error?
+
+172
+00:08:02,880 --> 00:08:05,760
+And we have to ask, what do we mean by the error?
+
+173
+00:08:05,760 --> 00:08:09,440
+So we could pick whatever metric we want.
+
+174
+00:08:09,440 --> 00:08:14,100
+So one example, we could call the L-infinity error,
+
+175
+00:08:14,100 --> 00:08:19,360
+which would be the max over inputs of f of x minus g of x,
+
+176
+00:08:19,360 --> 00:08:20,940
+and then take the absolute value.
+
+177
+00:08:20,940 --> 00:08:26,080
+So this, think of it like L-infinity norm,
+
+178
+00:08:26,080 --> 00:08:27,960
+but for functions.
+
+179
+00:08:27,960 --> 00:08:30,680
+So it's the max discrepancy between the two functions
+
+180
+00:08:30,680 --> 00:08:33,400
+anywhere on the input space.
+
+181
+00:08:33,400 --> 00:08:38,720
+But another equally valid error measure, we
+
+182
+00:08:38,720 --> 00:08:41,539
+could call this the L infinity measure.
+
+183
+00:08:41,539 --> 00:08:44,920
+Another measure would be the L1 measure,
+
+184
+00:08:44,920 --> 00:08:47,190
+which would be the integral over the input
+
+185
+00:08:47,190 --> 00:08:51,110
+space of the absolute value of f of x minus g of x.
+
+186
+00:08:51,110 --> 00:08:52,590
+So that would be another valid way
+
+187
+00:08:52,590 --> 00:08:54,673
+to measure discrepancy, which is, I integrate over
+
+188
+00:08:54,673 --> 00:08:58,910
+the function and just sum up all the differences
+
+189
+00:08:58,910 --> 00:09:00,210
+along the whole axis.
+
+190
+00:09:03,510 --> 00:09:06,270
+So in this lecture, just for the purposes
+
+191
+00:09:06,270 --> 00:09:08,730
+of having something nice to present in the lecture,
+
+192
+00:09:08,730 --> 00:09:12,310
+we're going to pick a particular family of curves G,
+
+193
+00:09:12,310 --> 00:09:16,150
+that we're interested in whether neural nets can
+
+194
+00:09:16,150 --> 00:09:17,670
+approximate this family.
+
+195
+00:09:17,670 --> 00:09:21,470
+And these are the Lipschitz continuous functions.
+
+196
+00:09:21,470 --> 00:09:25,790
+So has anyone-- well, I think it's
+
+197
+00:09:25,790 --> 00:09:28,390
+nice to teach you about Lipschitz functions regardless
+
+198
+00:09:28,390 --> 00:09:29,810
+of neural net approximation.
+
+199
+00:09:29,810 --> 00:09:32,050
+So that's another nice reason to tell you about this.
+
+200
+00:09:32,050 --> 00:09:34,930
+So let's just think what a Lipschitz continuous function
+
+201
+00:09:34,930 --> 00:09:35,430
+is.
+
+202
+00:09:35,430 --> 00:09:39,093
+It's a particular notion of continuity.
+
+203
+00:09:39,093 --> 00:09:40,510
+So what we're going to do is we're
+
+204
+00:09:40,510 --> 00:09:48,260
+going to say that a function g from real numbers
+
+205
+00:09:48,260 --> 00:09:51,040
+to real numbers is L-Lipschitz.
+
+206
+00:09:51,040 --> 00:09:52,380
+So L is a number.
+
+207
+00:09:52,380 --> 00:09:53,920
+It's like, 10 or 5.
+
+208
+00:09:53,920 --> 00:09:57,220
+But it just measures how Lipschitz the function is.
+
+209
+00:09:57,220 --> 00:10:04,060
+We'll say it's L-Lipschitz if for any input point x,
+
+210
+00:10:04,060 --> 00:10:08,740
+the absolute value of g of x plus delta x minus g of x--
+
+211
+00:10:08,740 --> 00:10:11,560
+so think, if I change the inputs by a delta x,
+
+212
+00:10:11,560 --> 00:10:13,420
+I'm going to change the function.
+
+213
+00:10:13,420 --> 00:10:15,900
+And the amount that the function changes
+
+214
+00:10:15,900 --> 00:10:18,860
+is bounded by the Lipschitz constant times
+
+215
+00:10:18,860 --> 00:10:20,900
+the size of delta x.
+
+216
+00:10:20,900 --> 00:10:25,860
+So this we call Lipschitz continuity of g.
+
+217
+00:10:25,860 --> 00:10:30,100
+And there's an intuitive way to think about what this is saying.
+
+218
+00:10:30,100 --> 00:10:33,140
+Imagine taking delta x, take the limit
+
+219
+00:10:33,140 --> 00:10:35,820
+that delta x becomes really small.
+
+220
+00:10:35,820 --> 00:10:39,160
+Can anyone recognize what this looks a little bit like,
+
+221
+00:10:39,160 --> 00:10:41,560
+if we take the limit that delta x becomes small?
+
+222
+00:10:45,063 --> 00:10:46,730
+AUDIENCE: Is it that the slope is always
+
+223
+00:10:46,730 --> 00:10:48,327
+less than some constant L?
+
+224
+00:10:48,327 --> 00:10:49,410
+JEREMY BERNSTEIN: Exactly.
+
+225
+00:10:49,410 --> 00:10:50,550
+Yes, exactly.
+
+226
+00:10:50,550 --> 00:10:53,170
+So you should recognize that if I take the limit that delta
+
+227
+00:10:53,170 --> 00:10:57,130
+x goes to 0, it's a bit like saying that the derivative of g
+
+228
+00:10:57,130 --> 00:11:00,450
+is bounded by L. You should see a definition
+
+229
+00:11:00,450 --> 00:11:03,130
+of the derivative hiding in here.
+
+230
+00:11:03,130 --> 00:11:05,130
+So Lipschitz continuity is a kind
+
+231
+00:11:05,130 --> 00:11:08,770
+of generalization of the notion of having a bounded derivative.
+
+232
+00:11:08,770 --> 00:11:10,270
+Well, it may be equivalent actually,
+
+233
+00:11:10,270 --> 00:11:11,645
+but you need to think about that.
+
+234
+00:11:11,645 --> 00:11:13,410
+And just to draw a picture, let's
+
+235
+00:11:13,410 --> 00:11:17,010
+suppose that we set x to 0.
+
+236
+00:11:17,010 --> 00:11:21,730
+So we think about this x as being 0.
+
+237
+00:11:21,730 --> 00:11:26,450
+And then we ask how large can g of delta x be.
+
+238
+00:11:26,450 --> 00:11:29,290
+And what this definition says, if the function is L-Lipschitz,
+
+239
+00:11:29,290 --> 00:11:34,950
+we think about drawing the line like y equals Lx.
+
+240
+00:11:34,950 --> 00:11:41,440
+And similarly, we draw the other line y equals minus Lx.
+
+241
+00:11:41,440 --> 00:11:44,640
+And this definition implies that whatever function
+
+242
+00:11:44,640 --> 00:11:47,100
+we have-- oops, it's not supposed to be that squiggly.
+
+243
+00:11:47,100 --> 00:11:51,600
+It should be reasonably not too-- anyway.
+
+244
+00:11:51,600 --> 00:11:54,900
+The function had better lie within those bounds.
+
+245
+00:11:54,900 --> 00:11:58,100
+So the implication of the definition,
+
+246
+00:11:58,100 --> 00:11:59,900
+if the function goes through the origin,
+
+247
+00:11:59,900 --> 00:12:02,940
+it has to lie within those bounds.
+
+248
+00:12:02,940 --> 00:12:05,140
+But the same argument applies at any point.
+
+249
+00:12:05,140 --> 00:12:08,660
+So it places a cone kind of shape maybe,
+
+250
+00:12:08,660 --> 00:12:10,080
+or a kind of bow tie.
+
+251
+00:12:10,080 --> 00:12:12,440
+And the function has to belong to that bow tie
+
+252
+00:12:12,440 --> 00:12:15,240
+at any point along the function, if that makes sense.
+
+253
+00:12:15,240 --> 00:12:19,000
+You imagine translating the bow tie along.
+
+254
+00:12:19,000 --> 00:12:20,700
+So that's Lipschitz continuous.
+
+255
+00:12:20,700 --> 00:12:23,600
+And now I thought, well, another great thing to introduce you to
+
+256
+00:12:23,600 --> 00:12:27,920
+is how to generalize that notion to functions
+
+257
+00:12:27,920 --> 00:12:29,700
+with multiple inputs.
+
+258
+00:12:29,700 --> 00:12:32,600
+So now we're going to think about generalizing
+
+259
+00:12:32,600 --> 00:12:38,480
+this Lipschitz notion for g going from Rd to R.
+
+260
+00:12:38,480 --> 00:12:43,030
+And basically the inputs are now going to be in Rd,
+
+261
+00:12:43,030 --> 00:12:46,510
+and the delta x's are going to be in Rd.
+
+262
+00:12:46,510 --> 00:12:48,970
+And you see we don't really need to change anything here.
+
+263
+00:12:48,970 --> 00:12:50,530
+The output is still one dimensional,
+
+264
+00:12:50,530 --> 00:12:51,990
+so that still makes sense.
+
+265
+00:12:51,990 --> 00:12:56,150
+But this doesn't really make sense,
+
+266
+00:12:56,150 --> 00:12:58,610
+because you can't take the absolute value of a vector.
+
+267
+00:12:58,610 --> 00:13:00,690
+Or maybe you can, but that's not what we want.
+
+268
+00:13:03,750 --> 00:13:05,430
+What we're going to do is we're going
+
+269
+00:13:05,430 --> 00:13:09,630
+to change the absolute value to the norm of the vector delta x.
+
+270
+00:13:09,630 --> 00:13:12,070
+And I'm going to pick a particular norm that I really
+
+271
+00:13:12,070 --> 00:13:15,190
+like called the RMS norm.
+
+272
+00:13:15,190 --> 00:13:16,750
+So now, do you see that this is now
+
+273
+00:13:16,750 --> 00:13:18,830
+a valid definition, as long as I define
+
+274
+00:13:18,830 --> 00:13:21,910
+what I mean by the RMS norm?
+
+275
+00:13:21,910 --> 00:13:24,202
+So the idea is that because the x is a vectors,
+
+276
+00:13:24,202 --> 00:13:25,910
+we need to measure the size of the vector
+
+277
+00:13:25,910 --> 00:13:27,830
+on the right-hand side.
+
+278
+00:13:27,830 --> 00:13:34,710
+So I'm going to define the RMS norm of a vector x
+
+279
+00:13:34,710 --> 00:13:38,700
+to be the square root of 1 over d, which
+
+280
+00:13:38,700 --> 00:13:41,540
+is the dimension of the vector, times the sum
+
+281
+00:13:41,540 --> 00:13:47,740
+of the coordinates xi squared, which we can also
+
+282
+00:13:47,740 --> 00:13:50,140
+think of as just being 1 over square root d
+
+283
+00:13:50,140 --> 00:13:54,540
+times the Euclidean norm of x.
+
+284
+00:13:54,540 --> 00:13:57,340
+So I just want to introduce you to the idea
+
+285
+00:13:57,340 --> 00:13:59,560
+that if you have an object like a vector,
+
+286
+00:13:59,560 --> 00:14:03,420
+there's many different ways to talk about how large it is.
+
+287
+00:14:03,420 --> 00:14:05,660
+The Euclidean norm is one example,
+
+288
+00:14:05,660 --> 00:14:09,460
+but the Euclidean norm is kind of a dimensional object.
+
+289
+00:14:09,460 --> 00:14:11,700
+You can think about the RMS norm as a kind
+
+290
+00:14:11,700 --> 00:14:13,880
+of non-dimensional analog of the Euclidean norm.
+
+291
+00:14:13,880 --> 00:14:16,980
+Because if all the entries of the vector are 1, then
+
+292
+00:14:16,980 --> 00:14:20,260
+the RMS norm is 1, whereas the Euclidean norm would be like,
+
+293
+00:14:20,260 --> 00:14:21,340
+square root d.
+
+294
+00:14:21,340 --> 00:14:23,340
+But anyway, the point of this slide
+
+295
+00:14:23,340 --> 00:14:25,420
+is just to generalize Lipschitzness
+
+296
+00:14:25,420 --> 00:14:27,120
+to functions with multiple inputs,
+
+297
+00:14:27,120 --> 00:14:29,660
+and to point out that there's many different possible ways
+
+298
+00:14:29,660 --> 00:14:32,780
+to measure the size of something.
+
+299
+00:14:32,780 --> 00:14:39,130
+OK, but why were we even talking about this?
+
+300
+00:14:39,130 --> 00:14:40,970
+The point is that in this lecture,
+
+301
+00:14:40,970 --> 00:14:43,130
+in the first part of this lecture,
+
+302
+00:14:43,130 --> 00:14:48,930
+we are going to prove something akin to a universal function
+
+303
+00:14:48,930 --> 00:14:52,170
+approximation theorem.
+
+304
+00:14:52,170 --> 00:14:55,330
+And the class of functions g that we're
+
+305
+00:14:55,330 --> 00:14:59,690
+interested in approximating is going
+
+306
+00:14:59,690 --> 00:15:02,290
+to be the class of L-Lipschitz functions
+
+307
+00:15:02,290 --> 00:15:04,390
+that map from the hypercube.
+
+308
+00:15:04,390 --> 00:15:08,210
+The domain or the input space is the hypercube
+
+309
+00:15:08,210 --> 00:15:09,850
+to the real numbers.
+
+310
+00:15:09,850 --> 00:15:11,310
+So this is the hypercube.
+
+311
+00:15:11,310 --> 00:15:12,450
+And these are the reals.
+
+312
+00:15:12,450 --> 00:15:15,330
+And we're only considering L-Lipschitz functions, so
+
+313
+00:15:15,330 --> 00:15:18,410
+functions with bounded derivatives.
+
+314
+00:15:18,410 --> 00:15:21,570
+And what we're going to say is that if we pick an error
+
+315
+00:15:21,570 --> 00:15:24,770
+tolerance that we're interested in, then there exists
+
+316
+00:15:24,770 --> 00:15:30,410
+a three-layer ReLU network with a certain number of units such
+
+317
+00:15:30,410 --> 00:15:34,960
+that this integral notion of error--
+
+318
+00:15:34,960 --> 00:15:37,172
+summing up all the little pieces and adding up
+
+319
+00:15:37,172 --> 00:15:38,880
+all the absolute values of the difference
+
+320
+00:15:38,880 --> 00:15:40,880
+between our neural net and the function
+
+321
+00:15:40,880 --> 00:15:46,720
+g-- that integral is less than apparently 2 epsilon.
+
+322
+00:15:46,720 --> 00:15:49,900
+Does anyone have any questions about this?
+
+323
+00:15:49,900 --> 00:15:54,840
+We could dwell on it for a moment.
+
+324
+00:15:54,840 --> 00:15:58,380
+This is our goal basically for the next 20 minutes.
+
+325
+00:15:58,380 --> 00:16:01,320
+Hopefully, we're just going to try to prove this statement.
+
+326
+00:16:01,320 --> 00:16:04,020
+Why should we be interested in such a statement?
+
+327
+00:16:04,020 --> 00:16:05,340
+That's another question.
+
+328
+00:16:09,440 --> 00:16:10,460
+Yeah, go ahead.
+
+329
+00:16:10,460 --> 00:16:15,360
+AUDIENCE: The 0, 1, the mapping from 0 to 1 definition,
+
+330
+00:16:15,360 --> 00:16:17,580
+is that taking only values from 0 and 1?
+
+331
+00:16:17,580 --> 00:16:20,120
+Is that what that means?
+
+332
+00:16:20,120 --> 00:16:22,760
+JEREMY BERNSTEIN: The interval 0, 1, with square brackets
+
+333
+00:16:22,760 --> 00:16:27,040
+refers to the interval of the real line just between 0 and 1.
+
+334
+00:16:27,040 --> 00:16:29,980
+So that's just picking out an interval on the real line.
+
+335
+00:16:29,980 --> 00:16:32,000
+And then raising it to the power d
+
+336
+00:16:32,000 --> 00:16:34,930
+means that in all the dimensions of our d-dimensional space,
+
+337
+00:16:34,930 --> 00:16:36,210
+we pick out that interval.
+
+338
+00:16:36,210 --> 00:16:38,070
+So it's like picking out a cube in three
+
+339
+00:16:38,070 --> 00:16:40,070
+dimensions or a hypercube.
+
+340
+00:16:40,070 --> 00:16:44,590
+It's just supposed to be an abstract way of writing down
+
+341
+00:16:44,590 --> 00:16:48,110
+the hypercube in d-dimensional space, where all the axes are
+
+342
+00:16:48,110 --> 00:16:51,550
+between 0 and 1.
+
+343
+00:16:51,550 --> 00:16:54,277
+AUDIENCE: What is N here?
+
+344
+00:16:54,277 --> 00:16:55,110
+JEREMY BERNSTEIN: N?
+
+345
+00:16:58,550 --> 00:17:03,240
+Capital N is my symbol for the number of units.
+
+346
+00:17:03,240 --> 00:17:07,589
+By units, we mean the number of neurons in the ReLU MLP.
+
+347
+00:17:07,589 --> 00:17:11,750
+So N is the number of neurons in the three-layer network.
+
+348
+00:17:11,750 --> 00:17:12,944
+AUDIENCE: OK.
+
+349
+00:17:12,944 --> 00:17:14,569
+AUDIENCE: I have a couple of questions.
+
+350
+00:17:14,569 --> 00:17:18,150
+So first, are those neurons per layer
+
+351
+00:17:18,150 --> 00:17:20,435
+or are they the total number in the whole network?
+
+352
+00:17:20,435 --> 00:17:21,810
+JEREMY BERNSTEIN: It's the total.
+
+353
+00:17:21,810 --> 00:17:24,015
+But honestly, because it's three layers,
+
+354
+00:17:24,015 --> 00:17:25,890
+for the purpose of understanding the lecture,
+
+355
+00:17:25,890 --> 00:17:28,490
+you can just pretend that the number 3 is the number 1.
+
+356
+00:17:28,490 --> 00:17:31,560
+And that kind of question doesn't really matter so much.
+
+357
+00:17:31,560 --> 00:17:38,220
+But I really mean actually the sum total of the neurons.
+
+358
+00:17:38,220 --> 00:17:41,620
+AUDIENCE: So a second question is,
+
+359
+00:17:41,620 --> 00:17:44,000
+when you say three-layer ReLU network,
+
+360
+00:17:44,000 --> 00:17:45,560
+what precisely do you mean by that?
+
+361
+00:17:45,560 --> 00:17:48,780
+So are there three value functions in it?
+
+362
+00:17:48,780 --> 00:17:49,620
+For example--
+
+363
+00:17:49,620 --> 00:17:51,453
+JEREMY BERNSTEIN: I precisely mean the thing
+
+364
+00:17:51,453 --> 00:17:54,540
+with three weight matrices and two value
+
+365
+00:17:54,540 --> 00:17:56,500
+functions that follow the first weight matrix
+
+366
+00:17:56,500 --> 00:17:57,760
+and the second weight matrix.
+
+367
+00:17:57,760 --> 00:18:00,040
+And then the third weight matrix doesn't have a ReLU.
+
+368
+00:18:00,040 --> 00:18:00,582
+AUDIENCE: OK.
+
+369
+00:18:00,582 --> 00:18:03,100
+And then the final question I had is,
+
+370
+00:18:03,100 --> 00:18:05,488
+this theorem seems very specific.
+
+371
+00:18:05,488 --> 00:18:07,780
+I was just wondering if you could speak a little bit as
+
+372
+00:18:07,780 --> 00:18:10,383
+to what you brought up-- why do we care about this?
+
+373
+00:18:10,383 --> 00:18:11,300
+JEREMY BERNSTEIN: Yes.
+
+374
+00:18:11,300 --> 00:18:12,020
+AUDIENCE: [INAUDIBLE]
+
+375
+00:18:12,020 --> 00:18:14,040
+JEREMY BERNSTEIN: So that's a great question.
+
+376
+00:18:14,040 --> 00:18:17,940
+So the reason is because the way to prove this theorem
+
+377
+00:18:17,940 --> 00:18:19,500
+is not super involved.
+
+378
+00:18:19,500 --> 00:18:23,100
+So the point is to show you an example of such a theorem.
+
+379
+00:18:23,100 --> 00:18:26,460
+And you can see the whole proof and how it works.
+
+380
+00:18:26,460 --> 00:18:29,060
+And then I'll point you to some other references
+
+381
+00:18:29,060 --> 00:18:30,890
+where they do different calculations
+
+382
+00:18:30,890 --> 00:18:32,030
+or different things.
+
+383
+00:18:32,030 --> 00:18:33,670
+It's just to show you an example.
+
+384
+00:18:33,670 --> 00:18:36,470
+And then we're really going to think about, is this relevant?
+
+385
+00:18:36,470 --> 00:18:38,710
+I'm not claiming that this is an important result.
+
+386
+00:18:38,710 --> 00:18:40,755
+I'm just saying it's something you can prove.
+
+387
+00:18:40,755 --> 00:18:42,130
+And then we'll think a bit about,
+
+388
+00:18:42,130 --> 00:18:44,190
+is this an important result or not?
+
+389
+00:18:47,170 --> 00:18:47,855
+Yeah?
+
+390
+00:18:47,855 --> 00:18:49,730
+AUDIENCE: Does this theorem apply to networks
+
+391
+00:18:49,730 --> 00:18:51,610
+that are more than one layer?
+
+392
+00:18:51,610 --> 00:18:54,930
+In our notes from the first lecture,
+
+393
+00:18:54,930 --> 00:18:57,690
+there was a section about universal approximation theorem
+
+394
+00:18:57,690 --> 00:18:59,770
+for a single value layer, where you have
+
+395
+00:18:59,770 --> 00:19:02,950
+a given amount of value units.
+
+396
+00:19:02,950 --> 00:19:05,850
+And in that single layer, you could approximate a function
+
+397
+00:19:05,850 --> 00:19:07,270
+to arbitrary precision.
+
+398
+00:19:07,270 --> 00:19:08,450
+So does that apply?
+
+399
+00:19:08,450 --> 00:19:11,530
+Does this theorem apply to layers that are more than one?
+
+400
+00:19:11,530 --> 00:19:14,510
+JEREMY BERNSTEIN: This applies to a three-layer ReLU network.
+
+401
+00:19:14,510 --> 00:19:17,430
+So this is not the most general thing that you can prove.
+
+402
+00:19:17,430 --> 00:19:19,950
+The result that you're talking about is a different result.
+
+403
+00:19:19,950 --> 00:19:22,090
+This is just another result where
+
+404
+00:19:22,090 --> 00:19:24,690
+there's a proof, which we can put into some
+
+405
+00:19:24,690 --> 00:19:25,950
+slides and show to you.
+
+406
+00:19:25,950 --> 00:19:28,240
+It's just to get you thinking about how
+
+407
+00:19:28,240 --> 00:19:29,540
+such a result could look.
+
+408
+00:19:29,540 --> 00:19:30,820
+But there are other results.
+
+409
+00:19:30,820 --> 00:19:32,653
+There are probably more interesting versions
+
+410
+00:19:32,653 --> 00:19:34,880
+of this result. This is just a result,
+
+411
+00:19:34,880 --> 00:19:38,800
+but it's about three-layer network.
+
+412
+00:19:38,800 --> 00:19:45,200
+AUDIENCE: So for this, is it possible to shift the interval
+
+413
+00:19:45,200 --> 00:19:46,962
+or scale the interval?
+
+414
+00:19:46,962 --> 00:19:47,920
+JEREMY BERNSTEIN: Yeah.
+
+415
+00:19:47,920 --> 00:19:49,960
+Anytime you see the hypercube, you should think,
+
+416
+00:19:49,960 --> 00:19:51,980
+I can probably just rescale that.
+
+417
+00:19:51,980 --> 00:19:54,380
+And I'm going to change some scaling numbers.
+
+418
+00:19:54,380 --> 00:19:57,302
+I'd probably change maybe what the Lipschitz constant is.
+
+419
+00:19:57,302 --> 00:19:58,760
+Yeah, you should be able to rescale
+
+420
+00:19:58,760 --> 00:20:02,680
+it to be any hypercube that has arbitrary
+
+421
+00:20:02,680 --> 00:20:05,020
+sizes in different dimensions, basically,
+
+422
+00:20:05,020 --> 00:20:08,800
+or hypercuboid or something like that.
+
+423
+00:20:08,800 --> 00:20:09,500
+Yes.
+
+424
+00:20:13,680 --> 00:20:17,500
+AUDIENCE: Why do we want to constrain everything to cube?
+
+425
+00:20:17,500 --> 00:20:20,088
+Does this mean that everything should be finite?
+
+426
+00:20:20,088 --> 00:20:22,380
+JEREMY BERNSTEIN: Yeah, that's an interesting question.
+
+427
+00:20:25,440 --> 00:20:29,310
+Is that a toy thing about this theorem?
+
+428
+00:20:29,310 --> 00:20:31,910
+But actually, if you think about in real deep learning,
+
+429
+00:20:31,910 --> 00:20:37,630
+you usually normalize your inputs to be coordinate-wise,
+
+430
+00:20:37,630 --> 00:20:39,162
+about 1 in magnitude.
+
+431
+00:20:39,162 --> 00:20:40,870
+You could actually train a neural network
+
+432
+00:20:40,870 --> 00:20:42,453
+on an interesting problem and actually
+
+433
+00:20:42,453 --> 00:20:45,630
+project all the inputs to live within a hypercube, or maybe--
+
+434
+00:20:45,630 --> 00:20:47,170
+a hypercube.
+
+435
+00:20:47,170 --> 00:20:47,850
+Yeah, yeah.
+
+436
+00:20:47,850 --> 00:20:51,430
+So that part is actually a realistic assumption
+
+437
+00:20:51,430 --> 00:20:54,530
+that my data lives in a hypercube, for many problems,
+
+438
+00:20:54,530 --> 00:20:57,270
+not for all problems.
+
+439
+00:20:57,270 --> 00:20:58,903
+Yeah, last question.
+
+440
+00:20:58,903 --> 00:21:01,570
+AUDIENCE: So the 1 over epsilon to the d seems pretty important.
+
+441
+00:21:01,570 --> 00:21:04,492
+Do you know if you relax the L-Lipschitz that
+
+442
+00:21:04,492 --> 00:21:06,450
+will take a different definition of continuous,
+
+443
+00:21:06,450 --> 00:21:09,590
+do you still remain with that as the best you can do?
+
+444
+00:21:09,590 --> 00:21:13,470
+Or can you do better than that power law?
+
+445
+00:21:13,470 --> 00:21:14,870
+JEREMY BERNSTEIN: Yeah, I imagine
+
+446
+00:21:14,870 --> 00:21:18,030
+with more knowledge about the problem structure,
+
+447
+00:21:18,030 --> 00:21:20,570
+you can do much better.
+
+448
+00:21:23,510 --> 00:21:26,110
+I'm not trying to claim that this is an interesting result.
+
+449
+00:21:26,110 --> 00:21:27,870
+And we'll talk about the limitations.
+
+450
+00:21:27,870 --> 00:21:31,210
+And I think you would hope to do--
+
+451
+00:21:31,210 --> 00:21:31,925
+yeah, just look.
+
+452
+00:21:31,925 --> 00:21:34,050
+It's saying that you need N-- the number of neurons
+
+453
+00:21:34,050 --> 00:21:37,130
+you need, you take the Lipschitz constant,
+
+454
+00:21:37,130 --> 00:21:39,930
+and you raise it to the power of the dimension, which is really,
+
+455
+00:21:39,930 --> 00:21:41,570
+that could potentially be massive.
+
+456
+00:21:41,570 --> 00:21:44,830
+And also the smaller the error of tolerance you want,
+
+457
+00:21:44,830 --> 00:21:46,330
+the bigger the number of neurons you
+
+458
+00:21:46,330 --> 00:21:49,550
+need in a way that depends exponentially on the dimension.
+
+459
+00:21:49,550 --> 00:21:55,530
+So that's really bad dimension dependence.
+
+460
+00:21:55,530 --> 00:22:00,963
+And we don't, in practice, really want to do that ever.
+
+461
+00:22:00,963 --> 00:22:03,130
+Yeah, it's great to point out that the result itself
+
+462
+00:22:03,130 --> 00:22:06,050
+is not even the best possible result we might hope for.
+
+463
+00:22:06,050 --> 00:22:07,450
+Whether we can do better probably
+
+464
+00:22:07,450 --> 00:22:09,210
+depends on structure in the problem.
+
+465
+00:22:09,210 --> 00:22:11,210
+And I don't know even if under these conditions,
+
+466
+00:22:11,210 --> 00:22:15,610
+maybe there's something better, but I'm not sure.
+
+467
+00:22:15,610 --> 00:22:19,230
+OK, let's just plow ahead now for a little bit.
+
+468
+00:22:19,230 --> 00:22:24,440
+So the strategy that we're going to adopt for proving this result
+
+469
+00:22:24,440 --> 00:22:27,080
+is, first of all, we're going to pretend that our inputs are
+
+470
+00:22:27,080 --> 00:22:27,860
+one dimensional.
+
+471
+00:22:27,860 --> 00:22:30,402
+We're just going to treat the case of one-dimensional inputs,
+
+472
+00:22:30,402 --> 00:22:31,520
+one-dimensional outputs.
+
+473
+00:22:31,520 --> 00:22:34,380
+And we're going to forget about ReLU networks for a little bit.
+
+474
+00:22:34,380 --> 00:22:37,880
+And we're going to think about approximating our function just
+
+475
+00:22:37,880 --> 00:22:41,620
+with rectangles that we build up.
+
+476
+00:22:41,620 --> 00:22:43,440
+And you can see that you can approximate
+
+477
+00:22:43,440 --> 00:22:47,560
+a function by taking these rectangles
+
+478
+00:22:47,560 --> 00:22:50,200
+and putting them like this.
+
+479
+00:22:50,200 --> 00:22:53,157
+And you can see that as you make the width of each rectangle
+
+480
+00:22:53,157 --> 00:22:55,240
+smaller, you get a better and better approximation
+
+481
+00:22:55,240 --> 00:22:57,440
+to your function.
+
+482
+00:22:57,440 --> 00:22:59,960
+And that's something we can quantify quite easily.
+
+483
+00:22:59,960 --> 00:23:01,600
+The second step is then we're going
+
+484
+00:23:01,600 --> 00:23:03,600
+to generalize that rectangle construction
+
+485
+00:23:03,600 --> 00:23:07,760
+to multidimensional inputs, still ignoring ReLU networks.
+
+486
+00:23:07,760 --> 00:23:10,440
+And then the third step is we're going
+
+487
+00:23:10,440 --> 00:23:13,800
+to show that with a two-layer ReLU network,
+
+488
+00:23:13,800 --> 00:23:17,580
+you can approximate a hyperrectangle of that kind.
+
+489
+00:23:17,580 --> 00:23:19,880
+So then you can just use the third layer of the network
+
+490
+00:23:19,880 --> 00:23:22,670
+to linearly combine all of your rectangles
+
+491
+00:23:22,670 --> 00:23:24,950
+and you'll be able to approximate your function.
+
+492
+00:23:24,950 --> 00:23:26,852
+So this is the strategy.
+
+493
+00:23:26,852 --> 00:23:28,810
+First approximate the function with rectangles,
+
+494
+00:23:28,810 --> 00:23:31,390
+then approximate it with hyperrectangles.
+
+495
+00:23:31,390 --> 00:23:34,390
+Then show that a two-layer ReLU network can
+
+496
+00:23:34,390 --> 00:23:36,170
+approximate a hyperrectangle.
+
+497
+00:23:38,950 --> 00:23:42,570
+OK, let's just plow on, in the interest of time.
+
+498
+00:23:45,470 --> 00:23:50,150
+So the first step is to construct
+
+499
+00:23:50,150 --> 00:23:52,390
+these rectangular strips.
+
+500
+00:23:52,390 --> 00:23:55,710
+Each strip is centered on a discrete grid point.
+
+501
+00:23:55,710 --> 00:23:58,910
+And you can think that this is like building a function-- f
+
+502
+00:23:58,910 --> 00:24:03,210
+of x is the sum over alpha i times,
+
+503
+00:24:03,210 --> 00:24:05,990
+let's call this the i-th indicator.
+
+504
+00:24:05,990 --> 00:24:10,670
+What you should think is that alpha i is measuring the height
+
+505
+00:24:10,670 --> 00:24:14,030
+of the i-th rectangle alpha i.
+
+506
+00:24:14,030 --> 00:24:17,910
+And indicator i is the function, which
+
+507
+00:24:17,910 --> 00:24:22,860
+is 1, if the input is in this interval, and 0 otherwise.
+
+508
+00:24:22,860 --> 00:24:28,180
+And then if I sum up a bunch of these indicators of this form,
+
+509
+00:24:28,180 --> 00:24:31,160
+that corresponds to this approximation to the function.
+
+510
+00:24:33,760 --> 00:24:35,320
+Is that clear?
+
+511
+00:24:35,320 --> 00:24:35,820
+OK.
+
+512
+00:24:35,820 --> 00:24:39,580
+So the next step is basically what we're going to ask
+
+513
+00:24:39,580 --> 00:24:41,520
+is, if we approximate a function in this way--
+
+514
+00:24:41,520 --> 00:24:44,540
+let's say we make the left edge of the rectangle
+
+515
+00:24:44,540 --> 00:24:46,580
+actually touch the function.
+
+516
+00:24:46,580 --> 00:24:52,860
+We need to ask, how big is this gap?
+
+517
+00:24:52,860 --> 00:24:54,380
+How big can it be?
+
+518
+00:24:54,380 --> 00:24:57,100
+And the observation is--
+
+519
+00:24:57,100 --> 00:24:59,380
+OK, does anyone have an idea of how
+
+520
+00:24:59,380 --> 00:25:04,100
+to place a constraint on how large that difference can be?
+
+521
+00:25:04,100 --> 00:25:04,600
+Yeah?
+
+522
+00:25:04,600 --> 00:25:06,308
+AUDIENCE: We use the Lipschitz condition.
+
+523
+00:25:06,308 --> 00:25:08,297
+It would just be the area of the triangle.
+
+524
+00:25:08,297 --> 00:25:09,380
+JEREMY BERNSTEIN: Exactly.
+
+525
+00:25:09,380 --> 00:25:11,373
+So the observation is that we're assuming
+
+526
+00:25:11,373 --> 00:25:13,540
+that the function g that we're trying to approximate
+
+527
+00:25:13,540 --> 00:25:14,900
+is L-Lipschitz.
+
+528
+00:25:14,900 --> 00:25:17,140
+Like we said, that places a bound on how large
+
+529
+00:25:17,140 --> 00:25:18,510
+its derivative can be.
+
+530
+00:25:18,510 --> 00:25:21,690
+And that gives us a constraint on how big this triangle can be.
+
+531
+00:25:21,690 --> 00:25:24,650
+Or the triangle could go under, but it tells us
+
+532
+00:25:24,650 --> 00:25:26,630
+how big this thing can be.
+
+533
+00:25:30,210 --> 00:25:33,730
+And so we're going to ask, given N strips, where N,
+
+534
+00:25:33,730 --> 00:25:37,190
+we can ramp it up or we can make N as big as we want.
+
+535
+00:25:37,190 --> 00:25:40,050
+But given that we have N of them,
+
+536
+00:25:40,050 --> 00:25:42,130
+what is the approximation error?
+
+537
+00:25:42,130 --> 00:25:45,530
+And the claim is that the approximation error
+
+538
+00:25:45,530 --> 00:25:47,650
+is bounded by the Lipschitz constant divided
+
+539
+00:25:47,650 --> 00:25:51,890
+by 2 times the number of strips.
+
+540
+00:25:51,890 --> 00:25:55,470
+And so importantly, if the Lipschitz constant gets bigger,
+
+541
+00:25:55,470 --> 00:25:58,150
+then if I keep the number of strips the same,
+
+542
+00:25:58,150 --> 00:25:59,710
+the error would get bigger.
+
+543
+00:25:59,710 --> 00:26:02,830
+But if I make the number of rectangles larger,
+
+544
+00:26:02,830 --> 00:26:04,070
+the error would go down.
+
+545
+00:26:10,170 --> 00:26:13,370
+So to prove this, can you see that basically, we just need
+
+546
+00:26:13,370 --> 00:26:16,360
+to do the geometry of what this triangle can look like and then
+
+547
+00:26:16,360 --> 00:26:18,320
+sum it up over all the strips?
+
+548
+00:26:18,320 --> 00:26:20,960
+So let's just do that quickly.
+
+549
+00:26:20,960 --> 00:26:27,720
+So if we have N strips, each rectangle is width 1 over N.
+
+550
+00:26:27,720 --> 00:26:31,080
+And the height of the triangle, if you just
+
+551
+00:26:31,080 --> 00:26:33,340
+think through the definition of Lipschitzness,
+
+552
+00:26:33,340 --> 00:26:36,400
+you just multiply the width of the strip by L.
+
+553
+00:26:36,400 --> 00:26:39,600
+And that will give you the maximum possible height.
+
+554
+00:26:39,600 --> 00:26:44,080
+And then, of course, then the triangle has area--
+
+555
+00:26:44,080 --> 00:26:47,040
+What's the area of this triangle?
+
+556
+00:26:47,040 --> 00:26:48,260
+Can someone tell me?
+
+557
+00:26:48,260 --> 00:26:49,440
+[LAUGHTER]
+
+558
+00:26:49,440 --> 00:26:51,180
+Oh, wait I remember.
+
+559
+00:26:51,180 --> 00:26:54,140
+It's that 1/2 L over N squared, right?
+
+560
+00:26:54,140 --> 00:26:56,200
+The 1/2 base times height.
+
+561
+00:26:56,200 --> 00:26:58,700
+And this means that the total error--
+
+562
+00:26:58,700 --> 00:27:02,760
+remember that we're dealing with the L1 error of the function
+
+563
+00:27:02,760 --> 00:27:04,080
+approximation--
+
+564
+00:27:04,080 --> 00:27:09,920
+is just going to be like N times the error of each rectangle.
+
+565
+00:27:09,920 --> 00:27:14,100
+And that corresponds to actually the area of the triangle,
+
+566
+00:27:14,100 --> 00:27:15,970
+the maximum possible area of the triangle,
+
+567
+00:27:15,970 --> 00:27:17,550
+which is 1/2 L over N squared.
+
+568
+00:27:17,550 --> 00:27:23,510
+So this is just 1/2 L over N. OK,
+
+569
+00:27:23,510 --> 00:27:25,330
+now we just need to flip things around.
+
+570
+00:27:25,330 --> 00:27:28,050
+That's the largest possible thing the error could be.
+
+571
+00:27:28,050 --> 00:27:30,010
+But what we wanted is a statement of the form--
+
+572
+00:27:30,010 --> 00:27:35,150
+if we have this many rectangles, then the error cannot exceed
+
+573
+00:27:35,150 --> 00:27:36,190
+epsilon.
+
+574
+00:27:36,190 --> 00:27:39,110
+So we need to flip the statement around.
+
+575
+00:27:39,110 --> 00:27:43,710
+So that corresponds, the way you do it mentally is just you say,
+
+576
+00:27:43,710 --> 00:27:47,550
+epsilon is 1/2 L over N.
+
+577
+00:27:47,550 --> 00:27:49,630
+So then to achieve error epsilon, we just
+
+578
+00:27:49,630 --> 00:27:50,850
+rearrange this equation.
+
+579
+00:27:50,850 --> 00:27:56,190
+We get N needs to be greater than or equal to 1/2 L over
+
+580
+00:27:56,190 --> 00:27:56,890
+epsilon.
+
+581
+00:28:00,350 --> 00:28:04,150
+And if I don't care about this factor of 1/2,
+
+582
+00:28:04,150 --> 00:28:06,035
+I'm free to just also erase that factor,
+
+583
+00:28:06,035 --> 00:28:07,410
+because it doesn't really matter.
+
+584
+00:28:11,270 --> 00:28:14,820
+The form of this statement, is if I set N greater than L over
+
+585
+00:28:14,820 --> 00:28:18,980
+epsilon, then I will have an error epsilon less than 1/2 L
+
+586
+00:28:18,980 --> 00:28:22,300
+over N. So I'm just rearranging the equation and being careful
+
+587
+00:28:22,300 --> 00:28:25,100
+about the inequalities.
+
+588
+00:28:25,100 --> 00:28:28,440
+So this is step one.
+
+589
+00:28:28,440 --> 00:28:30,020
+We know how many rectangles we need
+
+590
+00:28:30,020 --> 00:28:32,780
+to get a certain error in the one-dimensional case
+
+591
+00:28:32,780 --> 00:28:34,460
+with one-dimensional inputs.
+
+592
+00:28:34,460 --> 00:28:36,820
+Let's think about how things change if we
+
+593
+00:28:36,820 --> 00:28:41,740
+have multidimensional inputs.
+
+594
+00:28:41,740 --> 00:28:49,420
+And the thing that changes is we now have this hyperrectangle,
+
+595
+00:28:49,420 --> 00:28:50,898
+just think 3D.
+
+596
+00:28:50,898 --> 00:28:52,940
+Whenever you need to think about high dimensions,
+
+597
+00:28:52,940 --> 00:28:56,520
+you just think about things in three dimensions.
+
+598
+00:29:00,940 --> 00:29:04,900
+What I'm doing, I'm just repeating the calculation,
+
+599
+00:29:04,900 --> 00:29:09,300
+the total error, and then I'm breaking it up into pieces.
+
+600
+00:29:09,300 --> 00:29:13,470
+So this piece is just the number of hyperrectangles.
+
+601
+00:29:16,770 --> 00:29:21,970
+This piece is the error per hyperrectangle.
+
+602
+00:29:21,970 --> 00:29:24,970
+No, we think about the hyperrectangle as having
+
+603
+00:29:24,970 --> 00:29:28,210
+a little cap on top, where the hyperrectangle differs
+
+604
+00:29:28,210 --> 00:29:33,170
+from the surface G.
+
+605
+00:29:33,170 --> 00:29:37,150
+And we know the surface area of the top of the hyperrectangle,
+
+606
+00:29:37,150 --> 00:29:40,130
+because it's just the width of the hyperrectangle raised
+
+607
+00:29:40,130 --> 00:29:42,510
+to the number of input dimensions.
+
+608
+00:29:42,510 --> 00:29:44,910
+So we know the surface area of the top of the rectangle.
+
+609
+00:29:44,910 --> 00:29:45,713
+That's easy.
+
+610
+00:29:45,713 --> 00:29:47,130
+And then we just use the Lipschitz
+
+611
+00:29:47,130 --> 00:29:49,330
+constant to measure the maximum possible height
+
+612
+00:29:49,330 --> 00:29:50,615
+of the hyperrectangle.
+
+613
+00:29:50,615 --> 00:29:52,490
+So it's just repeating exactly the same thing
+
+614
+00:29:52,490 --> 00:29:55,910
+that we did, except instead of the error being a triangle,
+
+615
+00:29:55,910 --> 00:29:58,230
+it's some kind of generalization of a triangle.
+
+616
+00:29:58,230 --> 00:30:01,090
+So I'll probably just leave people to think that through
+
+617
+00:30:01,090 --> 00:30:03,790
+by looking at the slides, if you want to think more about that.
+
+618
+00:30:03,790 --> 00:30:06,130
+But this is the height.
+
+619
+00:30:06,130 --> 00:30:07,830
+Let's call it the error cap.
+
+620
+00:30:20,728 --> 00:30:22,160
+Is this right?
+
+621
+00:30:24,390 --> 00:30:25,140
+Yeah, it is right.
+
+622
+00:30:25,140 --> 00:30:27,098
+And then if you think about, what's the surface
+
+623
+00:30:27,098 --> 00:30:29,020
+area of the top of the cap?
+
+624
+00:30:29,020 --> 00:30:31,840
+Well, if there's N hyperrectangles,
+
+625
+00:30:31,840 --> 00:30:34,740
+if I sum up all the surface areas of all of them,
+
+626
+00:30:34,740 --> 00:30:38,080
+I should get 1.
+
+627
+00:30:38,080 --> 00:30:40,600
+Yeah, so then the surface area of each one
+
+628
+00:30:40,600 --> 00:30:43,860
+should better be 1 over N. So we'll just call this the area.
+
+629
+00:30:43,860 --> 00:30:47,000
+If anyone wants to think through this more carefully, please
+
+630
+00:30:47,000 --> 00:30:49,220
+do so.
+
+631
+00:30:49,220 --> 00:30:52,150
+And the claim is that we've just done the same calculation.
+
+632
+00:30:52,150 --> 00:30:54,400
+The only remaining thing is to rearrange it in the way
+
+633
+00:30:54,400 --> 00:30:55,640
+that we just did.
+
+634
+00:30:55,640 --> 00:31:01,120
+And this would say that we should need L over epsilon
+
+635
+00:31:01,120 --> 00:31:02,480
+to the d.
+
+636
+00:31:02,480 --> 00:31:05,800
+So I do the same trick of setting
+
+637
+00:31:05,800 --> 00:31:10,310
+epsilon equal to this thing, and then just rearranging.
+
+638
+00:31:10,310 --> 00:31:15,990
+Now, let's just zoom out and just try
+
+639
+00:31:15,990 --> 00:31:18,470
+to assess where we're up to.
+
+640
+00:31:18,470 --> 00:31:20,270
+So what we're imagining is that we now
+
+641
+00:31:20,270 --> 00:31:23,730
+have a function g with multiple inputs and one output,
+
+642
+00:31:23,730 --> 00:31:27,230
+which we can think of as a surface.
+
+643
+00:31:27,230 --> 00:31:29,510
+That would be the case where there's
+
+644
+00:31:29,510 --> 00:31:31,210
+two inputs and one output.
+
+645
+00:31:31,210 --> 00:31:32,090
+It's like a surface.
+
+646
+00:31:32,090 --> 00:31:36,110
+And then in higher dimensions, it's a generalization of that.
+
+647
+00:31:36,110 --> 00:31:40,070
+And the claim is that if we want to approximate this
+
+648
+00:31:40,070 --> 00:31:42,750
+with N hyperrectangles and we want
+
+649
+00:31:42,750 --> 00:31:45,770
+to get a certain notion of the integral of the error,
+
+650
+00:31:45,770 --> 00:31:48,950
+that the number that we need to get an error epsilon
+
+651
+00:31:48,950 --> 00:31:51,110
+is L over epsilon to the d.
+
+652
+00:31:51,110 --> 00:31:53,750
+And this should remind you a lot of the thing which appeared
+
+653
+00:31:53,750 --> 00:31:55,670
+in the theorem statement.
+
+654
+00:31:55,670 --> 00:31:58,030
+And the reason for that is that the next step
+
+655
+00:31:58,030 --> 00:31:59,510
+is to show that we can approximate
+
+656
+00:31:59,510 --> 00:32:04,470
+the rectangle with a ReLU, with a two-layer ReLU network.
+
+657
+00:32:04,470 --> 00:32:06,780
+So the number of small two-layer ReLU
+
+658
+00:32:06,780 --> 00:32:09,575
+networks we're going to need is L over epsilon to the d.
+
+659
+00:32:09,575 --> 00:32:11,700
+And then we just need to count how many neurons are
+
+660
+00:32:11,700 --> 00:32:13,760
+in each of those ReLU networks.
+
+661
+00:32:16,740 --> 00:32:24,660
+So I just decided to just zoom over this.
+
+662
+00:32:24,660 --> 00:32:26,260
+Because I want to show you actually
+
+663
+00:32:26,260 --> 00:32:27,780
+how to construct this thing.
+
+664
+00:32:27,780 --> 00:32:32,580
+But basically the claim is that there's a one-layer--
+
+665
+00:32:32,580 --> 00:32:33,220
+is this one?
+
+666
+00:32:33,220 --> 00:32:35,140
+OK, we would call this a two-layer ReLU
+
+667
+00:32:35,140 --> 00:32:41,540
+network with a parameter c, a kind of weight c.
+
+668
+00:32:41,540 --> 00:32:43,940
+And if we take c to infinity--
+
+669
+00:32:43,940 --> 00:32:46,100
+which seems like a bit of a trick, but OK, that's
+
+670
+00:32:46,100 --> 00:32:47,740
+what we're going to do--
+
+671
+00:32:47,740 --> 00:32:50,140
+the claim is that that network converges
+
+672
+00:32:50,140 --> 00:32:55,340
+to this function, which is exactly this single rectangle
+
+673
+00:32:55,340 --> 00:32:56,580
+in one dimension.
+
+674
+00:32:56,580 --> 00:32:59,700
+So I just want to take a bit of a risk
+
+675
+00:32:59,700 --> 00:33:05,930
+by switching off and hoping that I'm able to reshare my iPad.
+
+676
+00:33:05,930 --> 00:33:12,730
+I'll just try to build this thing for you.
+
+677
+00:33:12,730 --> 00:33:15,730
+So this is a ReLU.
+
+678
+00:33:15,730 --> 00:33:17,450
+By the way, this kind of manipulation
+
+679
+00:33:17,450 --> 00:33:20,850
+is quite helpful on some of the homework problems, probably.
+
+680
+00:33:20,850 --> 00:33:21,950
+This, I really recommend.
+
+681
+00:33:21,950 --> 00:33:25,030
+I'm not being paid by this graphing software,
+
+682
+00:33:25,030 --> 00:33:27,690
+but it's really great.
+
+683
+00:33:27,690 --> 00:33:32,130
+And what I want to show you is, so here I've got ReLU of x.
+
+684
+00:33:32,130 --> 00:33:35,270
+And then I'm just going to subtract ReLU of x minus 1.
+
+685
+00:33:35,270 --> 00:33:39,130
+And you see it flattens it out.
+
+686
+00:33:39,130 --> 00:33:42,470
+And then say I want to curve it down,
+
+687
+00:33:42,470 --> 00:33:44,490
+so I subtract another ReLU.
+
+688
+00:33:44,490 --> 00:33:48,410
+And then I want to flatten off that little flat bit that's
+
+689
+00:33:48,410 --> 00:33:49,030
+not flat.
+
+690
+00:33:49,030 --> 00:33:50,590
+So I'm just going to add a ReLU.
+
+691
+00:33:50,590 --> 00:33:53,710
+And each time, I'm translating them one along.
+
+692
+00:33:56,250 --> 00:33:58,710
+But now I'm like, hey, that doesn't look like a rectangle.
+
+693
+00:33:58,710 --> 00:34:00,890
+The slopes are too non-slope--
+
+694
+00:34:00,890 --> 00:34:02,990
+I want them to be slopier or something.
+
+695
+00:34:06,320 --> 00:34:10,300
+OK, I'm going to insert a constant c, which is initially 1
+
+696
+00:34:10,300 --> 00:34:12,199
+so it's not changing anything.
+
+697
+00:34:12,199 --> 00:34:14,600
+And I'm just going to use this constant to increase
+
+698
+00:34:14,600 --> 00:34:18,760
+the slope of all the curves.
+
+699
+00:34:18,760 --> 00:34:21,315
+And let's put it between 1 and 10.
+
+700
+00:34:21,315 --> 00:34:22,940
+And then I'm just going to increase it.
+
+701
+00:34:22,940 --> 00:34:26,560
+And I'm like, oh, it's making the slopes slopier,
+
+702
+00:34:26,560 --> 00:34:31,719
+but it's also squeezing them together.
+
+703
+00:34:31,719 --> 00:34:38,840
+And so I can solve that problem just by translating them back,
+
+704
+00:34:38,840 --> 00:34:39,920
+I hope.
+
+705
+00:34:39,920 --> 00:34:41,699
+That doesn't look like what I wanted.
+
+706
+00:34:45,679 --> 00:34:47,242
+Let's see.
+
+707
+00:34:47,242 --> 00:34:48,659
+Oh, now it looks like what I want.
+
+708
+00:34:48,659 --> 00:34:51,600
+So I just translated them back.
+
+709
+00:34:51,600 --> 00:34:54,659
+And then I'm just going to let c get a little bigger,
+
+710
+00:34:54,659 --> 00:34:57,220
+maybe 1,000, and make it a bit bigger.
+
+711
+00:34:57,220 --> 00:34:58,680
+And you see, OK, I did it.
+
+712
+00:34:58,680 --> 00:35:01,000
+That's just combining ReLUs.
+
+713
+00:35:01,000 --> 00:35:03,270
+That's technically a two-layer neural net.
+
+714
+00:35:03,270 --> 00:35:06,230
+And I could approximate a square function.
+
+715
+00:35:06,230 --> 00:35:10,990
+So that's what this slide is doing, which I now
+
+716
+00:35:10,990 --> 00:35:12,330
+hope I can bring back.
+
+717
+00:35:16,390 --> 00:35:19,947
+So that is the demo of approximating.
+
+718
+00:35:19,947 --> 00:35:22,030
+And you can see that using that graphing software,
+
+719
+00:35:22,030 --> 00:35:23,470
+you can just play around with things
+
+720
+00:35:23,470 --> 00:35:24,595
+that you can figure it out.
+
+721
+00:35:24,595 --> 00:35:25,130
+Go ahead.
+
+722
+00:35:25,130 --> 00:35:26,505
+AUDIENCE: What's the relationship
+
+723
+00:35:26,505 --> 00:35:30,167
+between a two-layer ReLU network and a Riemann sum?
+
+724
+00:35:30,167 --> 00:35:31,750
+JEREMY BERNSTEIN: Yeah, so we're going
+
+725
+00:35:31,750 --> 00:35:35,790
+to use one copy of this two-layer network
+
+726
+00:35:35,790 --> 00:35:38,750
+to approximate each rectangle, to approximate one
+
+727
+00:35:38,750 --> 00:35:42,230
+of the rectangles in that Riemann sum kind of thing.
+
+728
+00:35:42,230 --> 00:35:43,990
+And then we're going to weight each.
+
+729
+00:35:43,990 --> 00:35:47,910
+And you have to insert factors to translate it to the position
+
+730
+00:35:47,910 --> 00:35:48,530
+that you want.
+
+731
+00:35:48,530 --> 00:35:50,590
+So you translate it, and then you multiply it
+
+732
+00:35:50,590 --> 00:35:54,290
+by a little scalar to get it to be the size that you want.
+
+733
+00:35:54,290 --> 00:35:58,230
+And that scalar would correspond to the third layer
+
+734
+00:35:58,230 --> 00:36:01,860
+in the network, to set the size of the rectangle, how tall it is
+
+735
+00:36:01,860 --> 00:36:03,540
+or what its height is.
+
+736
+00:36:03,540 --> 00:36:06,026
+Yeah?
+
+737
+00:36:06,026 --> 00:36:07,780
+AUDIENCE: Why do we restrict ourselves
+
+738
+00:36:07,780 --> 00:36:09,560
+to L-Lipschitz functions?
+
+739
+00:36:09,560 --> 00:36:13,887
+Wouldn't that be for any kind of function?
+
+740
+00:36:13,887 --> 00:36:16,220
+JEREMY BERNSTEIN: Yeah, it's to get a sense of the error
+
+741
+00:36:16,220 --> 00:36:17,520
+when things are finite.
+
+742
+00:36:17,520 --> 00:36:18,620
+Because we're not interested in actually
+
+743
+00:36:18,620 --> 00:36:21,120
+taking the limit that the number of strips goes to infinity.
+
+744
+00:36:21,120 --> 00:36:23,280
+We want to know for a finite number of strips.
+
+745
+00:36:23,280 --> 00:36:26,160
+So at least that's how we're using the Lipschitzness.
+
+746
+00:36:26,160 --> 00:36:29,880
+But, yeah, I think it's necessary.
+
+747
+00:36:29,880 --> 00:36:31,160
+I'm not 100% sure.
+
+748
+00:36:31,160 --> 00:36:33,740
+But we can maybe talk about that after the lecture.
+
+749
+00:36:33,740 --> 00:36:38,540
+Let me just keep going, because I'm a bit worried about time.
+
+750
+00:36:38,540 --> 00:36:39,840
+This is just half the lecture.
+
+751
+00:36:39,840 --> 00:36:42,048
+And I guess we're nearly halfway through the lecture,
+
+752
+00:36:42,048 --> 00:36:43,300
+so maybe we're doing OK.
+
+753
+00:36:43,300 --> 00:36:45,800
+So that was a one-dimensional rectangle.
+
+754
+00:36:45,800 --> 00:36:49,740
+But remember that we need to be able to approximate a rectangle
+
+755
+00:36:49,740 --> 00:36:51,900
+with a hyperrectangle.
+
+756
+00:36:51,900 --> 00:36:54,200
+In two dimensions, it's a kind of cube.
+
+757
+00:36:54,200 --> 00:36:56,680
+And in three dimensions, it's a hypercube kind of thing.
+
+758
+00:36:56,680 --> 00:36:57,180
+OK.
+
+759
+00:36:57,180 --> 00:37:00,458
+But there's another trick.
+
+760
+00:37:00,458 --> 00:37:02,750
+There seems like there's a lot of tricks going on here.
+
+761
+00:37:02,750 --> 00:37:04,375
+But another trick is, we basically take
+
+762
+00:37:04,375 --> 00:37:07,992
+a hyperrectangle that's aligned with one axis,
+
+763
+00:37:07,992 --> 00:37:09,450
+and we take a hyperrectangle that's
+
+764
+00:37:09,450 --> 00:37:11,070
+aligned with the other axis.
+
+765
+00:37:11,070 --> 00:37:14,210
+And we realize that only in the place
+
+766
+00:37:14,210 --> 00:37:17,010
+where they're both kind of on, if that makes sense, where they
+
+767
+00:37:17,010 --> 00:37:20,170
+cross each other, the height of the thing, if we just add them,
+
+768
+00:37:20,170 --> 00:37:21,330
+is 2.
+
+769
+00:37:21,330 --> 00:37:24,690
+And then the height of the thing where only one of them on is 1.
+
+770
+00:37:24,690 --> 00:37:26,670
+So do you see that's this picture?
+
+771
+00:37:26,670 --> 00:37:30,530
+We add them and we get this plus-shaped surface,
+
+772
+00:37:30,530 --> 00:37:32,810
+where in the very middle, it's height
+
+773
+00:37:32,810 --> 00:37:37,210
+2 and in the other places, it's either height 1 or height 0.
+
+774
+00:37:37,210 --> 00:37:39,850
+And so the observation is that we can then
+
+775
+00:37:39,850 --> 00:37:43,070
+add these rectangles in one dimension,
+
+776
+00:37:43,070 --> 00:37:48,010
+subtract 1, in this case, or in general d minus 1
+
+777
+00:37:48,010 --> 00:37:49,550
+and bring the surface down.
+
+778
+00:37:49,550 --> 00:37:53,010
+And then the only place which is kind of coming above the axis
+
+779
+00:37:53,010 --> 00:37:55,835
+is the place where they're all intersecting.
+
+780
+00:37:55,835 --> 00:37:57,460
+And then we're just going to threshold.
+
+781
+00:37:57,460 --> 00:37:59,860
+We're just going to apply ReLU on top of that.
+
+782
+00:37:59,860 --> 00:38:04,040
+And it's just going to pick out the place where they're all on.
+
+783
+00:38:04,040 --> 00:38:06,680
+Does that make sense?
+
+784
+00:38:06,680 --> 00:38:10,743
+So they'll only all be on where they all intersect.
+
+785
+00:38:10,743 --> 00:38:13,160
+And then we just shift the whole thing down and threshold,
+
+786
+00:38:13,160 --> 00:38:15,080
+just to slice off the top.
+
+787
+00:38:15,080 --> 00:38:17,780
+And it's going to give us that little cube by just slicing off.
+
+788
+00:38:17,780 --> 00:38:20,760
+And we can do all of that just by adding and doing a ReLU.
+
+789
+00:38:20,760 --> 00:38:22,060
+So that's the logic.
+
+790
+00:38:24,760 --> 00:38:29,840
+And now we're ready to assemble all the pieces.
+
+791
+00:38:29,840 --> 00:38:34,680
+So the top thing is the two-layer ReLU network that
+
+792
+00:38:34,680 --> 00:38:36,920
+can approximate a rectangle.
+
+793
+00:38:36,920 --> 00:38:42,460
+We can then sum these things over dimensions,
+
+794
+00:38:42,460 --> 00:38:46,860
+subtract d minus 1 like we just said, and then take a ReLU.
+
+795
+00:38:46,860 --> 00:38:50,240
+And this will now give us the hyperrectangle that we always
+
+796
+00:38:50,240 --> 00:38:52,620
+wanted with this constant c.
+
+797
+00:38:55,465 --> 00:38:57,590
+c is the thing that we're going to take to infinity
+
+798
+00:38:57,590 --> 00:39:00,730
+to make the slopes slopier.
+
+799
+00:39:04,830 --> 00:39:07,350
+And then finally, we're just going
+
+800
+00:39:07,350 --> 00:39:12,786
+to take linear combination of these things
+
+801
+00:39:12,786 --> 00:39:14,272
+with constants alpha i, which are
+
+802
+00:39:14,272 --> 00:39:16,230
+going to set the height of each hyperrectangle.
+
+803
+00:39:16,230 --> 00:39:20,830
+That corresponds to adding one more layer
+
+804
+00:39:20,830 --> 00:39:22,090
+on top of our network.
+
+805
+00:39:22,090 --> 00:39:25,510
+So you can see that in this construction,
+
+806
+00:39:25,510 --> 00:39:28,710
+there's a ReLU here and there's a ReLU here.
+
+807
+00:39:28,710 --> 00:39:30,590
+So it really is a three-layer network,
+
+808
+00:39:30,590 --> 00:39:32,750
+by the definition that we gave.
+
+809
+00:39:32,750 --> 00:39:35,550
+And then the final step is just to let this constant c grow
+
+810
+00:39:35,550 --> 00:39:37,750
+really large so that we really do
+
+811
+00:39:37,750 --> 00:39:40,350
+approximate the hyperrectangles.
+
+812
+00:39:40,350 --> 00:39:42,930
+And we can approximate our arbitrary surface.
+
+813
+00:39:45,550 --> 00:39:48,430
+Let's just recap where we got to.
+
+814
+00:39:48,430 --> 00:39:50,970
+We were going to try to prove this theorem.
+
+815
+00:39:53,580 --> 00:39:55,220
+And the general idea was we're going
+
+816
+00:39:55,220 --> 00:39:56,970
+to approximate these-- you could call them
+
+817
+00:39:56,970 --> 00:39:59,060
+bumps or these hyperrectangle functions-- we're
+
+818
+00:39:59,060 --> 00:40:01,680
+going to use ReLU to approximate those things.
+
+819
+00:40:01,680 --> 00:40:03,340
+And then the final step is going to be
+
+820
+00:40:03,340 --> 00:40:04,980
+to take a linear combination.
+
+821
+00:40:07,780 --> 00:40:10,280
+So I'm going to dwell here a little longer.
+
+822
+00:40:10,280 --> 00:40:13,820
+The intention of this slide was to think about some
+
+823
+00:40:13,820 --> 00:40:16,620
+of the limitations of what we just did.
+
+824
+00:40:16,620 --> 00:40:20,260
+I feel like some of them you already raised like throughout.
+
+825
+00:40:20,260 --> 00:40:25,220
+But does anyone want to discuss anything or point out?
+
+826
+00:40:25,220 --> 00:40:26,280
+Oh, yeah, go ahead.
+
+827
+00:40:26,280 --> 00:40:28,380
+AUDIENCE: So the two different layers of ReLUs
+
+828
+00:40:28,380 --> 00:40:31,820
+do very different functions over that?
+
+829
+00:40:36,122 --> 00:40:37,580
+JEREMY BERNSTEIN: Yeah, one of them
+
+830
+00:40:37,580 --> 00:40:40,860
+is about approximating the rectangle
+
+831
+00:40:40,860 --> 00:40:42,720
+to get the slopes of the sides.
+
+832
+00:40:42,720 --> 00:40:44,820
+And the other ReLU is more about slicing off
+
+833
+00:40:44,820 --> 00:40:47,180
+the top of the hyperrectangle.
+
+834
+00:40:47,180 --> 00:40:48,060
+AUDIENCE: OK, great.
+
+835
+00:40:50,692 --> 00:40:51,650
+JEREMY BERNSTEIN: Yeah?
+
+836
+00:40:51,650 --> 00:40:53,192
+AUDIENCE: Has there been any research
+
+837
+00:40:53,192 --> 00:40:56,650
+in determining if ReLU networks actually do something?
+
+838
+00:40:56,650 --> 00:40:57,970
+JEREMY BERNSTEIN: Well, yeah.
+
+839
+00:40:57,970 --> 00:40:59,637
+Let's talk about that on the next slide,
+
+840
+00:40:59,637 --> 00:41:01,290
+because I'm pretty doubtful.
+
+841
+00:41:01,290 --> 00:41:04,070
+It seems like quite a toy construction-- not a toy,
+
+842
+00:41:04,070 --> 00:41:06,830
+but it has a very deliberate intention,
+
+843
+00:41:06,830 --> 00:41:09,630
+which is proving this approximation thing.
+
+844
+00:41:09,630 --> 00:41:12,392
+And a lot of the steps seem a bit kind of fishy,
+
+845
+00:41:12,392 --> 00:41:13,850
+in terms of would this be something
+
+846
+00:41:13,850 --> 00:41:15,350
+that a neural network actually does,
+
+847
+00:41:15,350 --> 00:41:18,433
+like letting the constant c tend to infinity?
+
+848
+00:41:18,433 --> 00:41:20,350
+Usually you don't want the weights to blow up.
+
+849
+00:41:20,350 --> 00:41:22,142
+That would be a sign that something's going
+
+850
+00:41:22,142 --> 00:41:24,410
+wrong in your neural network.
+
+851
+00:41:24,410 --> 00:41:27,330
+So I wanted to list here a couple of these.
+
+852
+00:41:27,330 --> 00:41:32,730
+"c tends to infinity" seems a bit questionable.
+
+853
+00:41:32,730 --> 00:41:33,290
+Yeah?
+
+854
+00:41:33,290 --> 00:41:37,010
+AUDIENCE: [INAUDIBLE] going through the derivation
+
+855
+00:41:37,010 --> 00:41:38,110
+[INAUDIBLE].
+
+856
+00:41:38,110 --> 00:41:40,970
+So a few slides back, you set f of x
+
+857
+00:41:40,970 --> 00:41:43,293
+equal to the sum of all these rectangles?
+
+858
+00:41:43,293 --> 00:41:44,210
+JEREMY BERNSTEIN: Yes.
+
+859
+00:41:44,210 --> 00:41:46,430
+AUDIENCE: But also from my understanding,
+
+860
+00:41:46,430 --> 00:41:48,450
+at this close approximate g.
+
+861
+00:41:48,450 --> 00:41:52,320
+And so I was confused how the sum of the rectangles
+
+862
+00:41:52,320 --> 00:41:56,105
+is associated with this [INAUDIBLE].
+
+863
+00:41:56,105 --> 00:41:56,980
+Does that make sense?
+
+864
+00:41:56,980 --> 00:41:57,897
+JEREMY BERNSTEIN: Yes.
+
+865
+00:41:57,897 --> 00:41:59,740
+It's because of the use of these.
+
+866
+00:42:02,500 --> 00:42:04,840
+We're thinking about it symbolically,
+
+867
+00:42:04,840 --> 00:42:07,560
+as being a weighted sum of indicator functions.
+
+868
+00:42:07,560 --> 00:42:09,600
+So you think of the rectangle as being
+
+869
+00:42:09,600 --> 00:42:13,880
+a function, which is 1 if the input lies in this interval,
+
+870
+00:42:13,880 --> 00:42:15,640
+and 0 otherwise.
+
+871
+00:42:15,640 --> 00:42:17,960
+AUDIENCE: I see.
+
+872
+00:42:17,960 --> 00:42:21,820
+So I thought it said i and not the width of an indicator.
+
+873
+00:42:21,820 --> 00:42:23,072
+That clarifies it.
+
+874
+00:42:23,072 --> 00:42:25,280
+JEREMY BERNSTEIN: Yeah, sorry, I didn't spell it out.
+
+875
+00:42:25,280 --> 00:42:28,440
+There's an annotated version of the slides on the website where
+
+876
+00:42:28,440 --> 00:42:30,180
+it's a bit more spelled out.
+
+877
+00:42:30,180 --> 00:42:33,140
+But exactly, it's not an interval there.
+
+878
+00:42:33,140 --> 00:42:34,220
+It's an indicator.
+
+879
+00:42:34,220 --> 00:42:36,240
+AUDIENCE: And so if it's an indicator,
+
+880
+00:42:36,240 --> 00:42:42,002
+then we're summing the height at each point in the rectangle?
+
+881
+00:42:42,002 --> 00:42:42,960
+JEREMY BERNSTEIN: Yeah.
+
+882
+00:42:42,960 --> 00:42:46,760
+The way to think about it is, for a given input,
+
+883
+00:42:46,760 --> 00:42:49,790
+let's say this is our input, only this indicator
+
+884
+00:42:49,790 --> 00:42:51,250
+is triggered.
+
+885
+00:42:51,250 --> 00:42:53,010
+And then it gets scaled by its height.
+
+886
+00:42:53,010 --> 00:42:55,510
+So there's a sum of terms, but only one of them
+
+887
+00:42:55,510 --> 00:42:57,383
+will ever be active.
+
+888
+00:42:57,383 --> 00:42:58,050
+AUDIENCE: I see.
+
+889
+00:42:58,050 --> 00:43:00,450
+That makes sense.
+
+890
+00:43:00,450 --> 00:43:02,610
+JEREMY BERNSTEIN: OK, one last question, please.
+
+891
+00:43:02,610 --> 00:43:05,110
+AUDIENCE: How did you get the 4D [INAUDIBLE]?
+
+892
+00:43:05,110 --> 00:43:09,790
+JEREMY BERNSTEIN: Yeah, the 4D is about counting the number
+
+893
+00:43:09,790 --> 00:43:13,090
+of neurons in this construction.
+
+894
+00:43:13,090 --> 00:43:17,410
+And the point is that in the top purple bit, the rectangle,
+
+895
+00:43:17,410 --> 00:43:19,430
+there's four neurons.
+
+896
+00:43:19,430 --> 00:43:23,930
+Then, in the hyperrectangle, I'm summing over d of those terms,
+
+897
+00:43:23,930 --> 00:43:26,590
+so it gets 4 multiplied by d.
+
+898
+00:43:26,590 --> 00:43:30,130
+And then so each hyper rectangle needs 4d neurons.
+
+899
+00:43:30,130 --> 00:43:32,390
+And then I have the final term, which
+
+900
+00:43:32,390 --> 00:43:34,370
+is the number of hyperrectangles I need.
+
+901
+00:43:34,370 --> 00:43:36,270
+So that's why it's 4d.
+
+902
+00:43:36,270 --> 00:43:38,910
+Yeah, I hope it's right because I just tried to work out
+
+903
+00:43:38,910 --> 00:43:40,570
+the constant yesterday.
+
+904
+00:43:40,570 --> 00:43:42,510
+But let's see.
+
+905
+00:43:42,510 --> 00:43:45,510
+OK, let's just go ahead.
+
+906
+00:43:45,510 --> 00:43:48,400
+So I wanted to think of it.
+
+907
+00:43:48,400 --> 00:43:50,820
+Is this really realistic of what would actually
+
+908
+00:43:50,820 --> 00:43:51,717
+happen in training?
+
+909
+00:43:51,717 --> 00:43:53,300
+One of the questions is, if we're just
+
+910
+00:43:53,300 --> 00:43:55,140
+trying to say that a ReLU thing is going
+
+911
+00:43:55,140 --> 00:43:57,620
+to approximate a rectangle, then why wouldn't we
+
+912
+00:43:57,620 --> 00:44:00,980
+just use a rectangle as our basis function to begin with?
+
+913
+00:44:00,980 --> 00:44:05,300
+Because there's something kind of circuitous about not just
+
+914
+00:44:05,300 --> 00:44:06,200
+doing that.
+
+915
+00:44:06,200 --> 00:44:08,260
+So let's just pretend that we've created
+
+916
+00:44:08,260 --> 00:44:11,260
+a basis of these rectangles and that someone gave us
+
+917
+00:44:11,260 --> 00:44:14,600
+some data, some x's and y's, and we're going to fit it.
+
+918
+00:44:14,600 --> 00:44:16,940
+And just think about how the training would go.
+
+919
+00:44:16,940 --> 00:44:19,220
+And what I'm claiming is basically,
+
+920
+00:44:19,220 --> 00:44:21,140
+every time we see this data point,
+
+921
+00:44:21,140 --> 00:44:24,980
+this rectangle would get drawn down towards it.
+
+922
+00:44:24,980 --> 00:44:27,562
+And every time we see this one, this one would.
+
+923
+00:44:27,562 --> 00:44:29,520
+And every time we see this one, this one would.
+
+924
+00:44:29,520 --> 00:44:31,600
+And every time we see this one, we get this one.
+
+925
+00:44:31,600 --> 00:44:36,060
+But there's all these other ones which are never actually going
+
+926
+00:44:36,060 --> 00:44:37,340
+to move.
+
+927
+00:44:37,340 --> 00:44:42,180
+And so it's really kind of unnatural.
+
+928
+00:44:42,180 --> 00:44:44,780
+Visually, the obvious way to approximate this data
+
+929
+00:44:44,780 --> 00:44:46,550
+is just to draw a line through it,
+
+930
+00:44:46,550 --> 00:44:49,125
+not to take rectangles at each point
+
+931
+00:44:49,125 --> 00:44:50,750
+and move them up to the height of the--
+
+932
+00:44:50,750 --> 00:44:52,790
+So there's something unnatural about it.
+
+933
+00:44:52,790 --> 00:44:55,170
+But this is the construction that we
+
+934
+00:44:55,170 --> 00:44:57,693
+use to prove the theorem.
+
+935
+00:44:57,693 --> 00:44:59,610
+In particular, the thing I'm pointing out here
+
+936
+00:44:59,610 --> 00:45:03,223
+is that it seems like if you actually fit data this way,
+
+937
+00:45:03,223 --> 00:45:05,389
+the training performance is going to be really good,
+
+938
+00:45:05,389 --> 00:45:06,931
+but the generalization performance is
+
+939
+00:45:06,931 --> 00:45:07,890
+going to be really bad.
+
+940
+00:45:07,890 --> 00:45:13,350
+Because you're just fitting the data on tiny little strips,
+
+941
+00:45:13,350 --> 00:45:15,550
+which doesn't seem amazing.
+
+942
+00:45:19,450 --> 00:45:22,330
+OK, just to reassess where we're up to,
+
+943
+00:45:22,330 --> 00:45:24,930
+the goal was just to introduce you to one
+
+944
+00:45:24,930 --> 00:45:28,890
+particular function approximation result,
+
+945
+00:45:28,890 --> 00:45:29,990
+of which there are many.
+
+946
+00:45:29,990 --> 00:45:31,750
+There are many papers on this topic.
+
+947
+00:45:31,750 --> 00:45:33,970
+And there are some classic papers on this topic.
+
+948
+00:45:33,970 --> 00:45:37,490
+So one is called Barron's theorem, which uses something
+
+949
+00:45:37,490 --> 00:45:40,530
+about the Fourier representation of the function
+
+950
+00:45:40,530 --> 00:45:42,050
+that you're trying to fit.
+
+951
+00:45:42,050 --> 00:45:46,160
+And there's a classic result. So our construction there
+
+952
+00:45:46,160 --> 00:45:47,800
+was using three layers.
+
+953
+00:45:47,800 --> 00:45:50,193
+There's a classic result which uses two layers
+
+954
+00:45:50,193 --> 00:45:52,360
+to do universal function approximation, and actually
+
+955
+00:45:52,360 --> 00:45:56,360
+a more powerful result, from my understanding.
+
+956
+00:45:56,360 --> 00:46:00,517
+And it uses something called the Stone-Weierstrass theorem, which
+
+957
+00:46:00,517 --> 00:46:01,600
+I thought was interesting.
+
+958
+00:46:01,600 --> 00:46:04,120
+Because Weierstrass was this mathematician who,
+
+959
+00:46:04,120 --> 00:46:07,780
+I think he was alive in the 1800s, but I'm not 100% sure.
+
+960
+00:46:07,780 --> 00:46:09,960
+But he came up with that fractal curve
+
+961
+00:46:09,960 --> 00:46:13,020
+and was thinking about these analysis questions.
+
+962
+00:46:13,020 --> 00:46:16,320
+But he was actually, seemingly thinking about approximation
+
+963
+00:46:16,320 --> 00:46:16,860
+as well.
+
+964
+00:46:16,860 --> 00:46:21,760
+And he had a theorem, which was like, you can use polynomials
+
+965
+00:46:21,760 --> 00:46:25,200
+to approximate any continuous function or something like this.
+
+966
+00:46:25,200 --> 00:46:26,600
+And it's just kind of interesting
+
+967
+00:46:26,600 --> 00:46:29,520
+that this branch of math is related to a very
+
+968
+00:46:29,520 --> 00:46:32,640
+classical branch of math.
+
+969
+00:46:32,640 --> 00:46:35,480
+But that's all I have to say.
+
+970
+00:46:35,480 --> 00:46:38,360
+So on this slide, I want to ask--
+
+971
+00:46:38,360 --> 00:46:42,270
+is the thing that we just spent 45 minutes talking about,
+
+972
+00:46:42,270 --> 00:46:44,710
+is it actually important?
+
+973
+00:46:44,710 --> 00:46:48,230
+And here I'm just abbreviating UFA to be universal function
+
+974
+00:46:48,230 --> 00:46:49,090
+approximation.
+
+975
+00:46:49,090 --> 00:46:50,070
+Uh-huh?
+
+976
+00:46:50,070 --> 00:46:51,590
+AUDIENCE: Where does this lie--
+
+977
+00:46:51,590 --> 00:46:54,430
+I guess the universal function approximation theorem--
+
+978
+00:46:54,430 --> 00:46:58,910
+lie in accordance with using Taylor's approximation--
+
+979
+00:46:58,910 --> 00:47:00,670
+or Taylor's expansion of a function
+
+980
+00:47:00,670 --> 00:47:03,750
+and fitting a neural network using polynomials
+
+981
+00:47:03,750 --> 00:47:04,813
+for [INAUDIBLE] function?
+
+982
+00:47:04,813 --> 00:47:06,230
+JEREMY BERNSTEIN: Well, that would
+
+983
+00:47:06,230 --> 00:47:09,830
+be another way of just fitting the Taylor expansion up
+
+984
+00:47:09,830 --> 00:47:13,190
+to some degree, which is a bit like that Weierstrass
+
+985
+00:47:13,190 --> 00:47:17,050
+thing of using polynomials to fit a continuous function.
+
+986
+00:47:17,050 --> 00:47:19,030
+It's like a valid mathematical way
+
+987
+00:47:19,030 --> 00:47:22,310
+to approximate a function, using a Taylor series.
+
+988
+00:47:22,310 --> 00:47:24,790
+But it's just not what we're doing in deep learning.
+
+989
+00:47:24,790 --> 00:47:26,490
+In deep learning, we take a neural net.
+
+990
+00:47:26,490 --> 00:47:29,710
+It's just different.
+
+991
+00:47:29,710 --> 00:47:32,370
+Thinking about that question more, I think is great.
+
+992
+00:47:32,370 --> 00:47:37,030
+I don't have any really great comments.
+
+993
+00:47:37,030 --> 00:47:39,052
+Yeah, putting all of these different ways
+
+994
+00:47:39,052 --> 00:47:41,260
+of thinking about things and trying to reconcile them
+
+995
+00:47:41,260 --> 00:47:45,420
+is like a really productive thing to try to do.
+
+996
+00:47:45,420 --> 00:47:48,460
+So the point of here was to say, is universal function
+
+997
+00:47:48,460 --> 00:47:49,680
+approximation sufficient?
+
+998
+00:47:49,680 --> 00:47:52,557
+Is it like, OK, that was lecture 3--
+
+999
+00:47:52,557 --> 00:47:55,140
+now for the rest of the class, we'll just do applications now,
+
+1000
+00:47:55,140 --> 00:47:57,240
+because we understand the theory of deep learning?
+
+1001
+00:47:57,240 --> 00:47:59,540
+Probably not.
+
+1002
+00:47:59,540 --> 00:48:01,580
+So I wanted to give examples of other things
+
+1003
+00:48:01,580 --> 00:48:04,080
+which are universal function approximations.
+
+1004
+00:48:04,080 --> 00:48:08,900
+So other examples would be polynomials.
+
+1005
+00:48:08,900 --> 00:48:11,300
+Can anyone think of another example of something
+
+1006
+00:48:11,300 --> 00:48:13,980
+which seems like it's probably also a universal function
+
+1007
+00:48:13,980 --> 00:48:15,000
+approximator?
+
+1008
+00:48:18,520 --> 00:48:19,520
+AUDIENCE: Random search.
+
+1009
+00:48:19,520 --> 00:48:20,658
+[INAUDIBLE]
+
+1010
+00:48:20,658 --> 00:48:21,700
+JEREMY BERNSTEIN: Random?
+
+1011
+00:48:21,700 --> 00:48:25,340
+Yeah, how would you parameterize the space of functions?
+
+1012
+00:48:25,340 --> 00:48:28,040
+AUDIENCE: So in the previous example
+
+1013
+00:48:28,040 --> 00:48:30,180
+when we had the hypercube, we can just again
+
+1014
+00:48:30,180 --> 00:48:32,660
+segment it into N locations.
+
+1015
+00:48:32,660 --> 00:48:35,980
+And then when we train, we just get stuck at whatever point
+
+1016
+00:48:35,980 --> 00:48:37,412
+we got right.
+
+1017
+00:48:37,412 --> 00:48:38,370
+JEREMY BERNSTEIN: Yeah.
+
+1018
+00:48:38,370 --> 00:48:40,252
+So here we're not really doing training.
+
+1019
+00:48:40,252 --> 00:48:42,710
+We just want to think about what is the space of functions.
+
+1020
+00:48:42,710 --> 00:48:44,710
+So the space of functions you talked about there
+
+1021
+00:48:44,710 --> 00:48:48,230
+is linear combinations of these hyperrectangle bumps,
+
+1022
+00:48:48,230 --> 00:48:49,603
+which that's valid.
+
+1023
+00:48:49,603 --> 00:48:51,770
+It's a bit wordy, so I'm not going to write it down,
+
+1024
+00:48:51,770 --> 00:48:53,530
+but that's valid.
+
+1025
+00:48:53,530 --> 00:48:55,090
+The other one I wanted to point out
+
+1026
+00:48:55,090 --> 00:49:00,810
+is something like the space of Python programs.
+
+1027
+00:49:00,810 --> 00:49:02,910
+So programming languages are, in a sense,
+
+1028
+00:49:02,910 --> 00:49:04,750
+a universal function approximator.
+
+1029
+00:49:04,750 --> 00:49:07,770
+Does that mean that we've solved machine
+
+1030
+00:49:07,770 --> 00:49:09,690
+learning because program--
+
+1031
+00:49:09,690 --> 00:49:12,090
+it's like many, many things are universal function
+
+1032
+00:49:12,090 --> 00:49:13,630
+approximators.
+
+1033
+00:49:13,630 --> 00:49:15,022
+It's just a piece of the puzzle.
+
+1034
+00:49:15,022 --> 00:49:16,730
+That's the thing I'm trying to point out.
+
+1035
+00:49:16,730 --> 00:49:18,310
+Just because you've installed Python,
+
+1036
+00:49:18,310 --> 00:49:20,710
+you can't start doing machine learning.
+
+1037
+00:49:20,710 --> 00:49:22,270
+You need something else.
+
+1038
+00:49:26,010 --> 00:49:29,750
+And is it necessary for machine learning to work?
+
+1039
+00:49:29,750 --> 00:49:31,650
+So if your machine learning model
+
+1040
+00:49:31,650 --> 00:49:33,710
+is not a universal function approximator,
+
+1041
+00:49:33,710 --> 00:49:34,830
+should you be worried?
+
+1042
+00:49:38,960 --> 00:49:40,120
+Someone's saying no.
+
+1043
+00:49:40,120 --> 00:49:44,400
+Yeah, I sort of agree, but I'm honestly not sure.
+
+1044
+00:49:44,400 --> 00:49:47,220
+Yeah, I think it's just an interesting question to ask.
+
+1045
+00:49:47,220 --> 00:49:48,380
+Do we need it to be?
+
+1046
+00:49:48,380 --> 00:49:49,583
+My guess is not.
+
+1047
+00:49:49,583 --> 00:49:51,000
+My guess is probably we don't need
+
+1048
+00:49:51,000 --> 00:49:52,560
+to have a universal function approximator
+
+1049
+00:49:52,560 --> 00:49:53,540
+to do machine learning.
+
+1050
+00:49:53,540 --> 00:49:59,080
+But I think it's a little unclear how to answer that.
+
+1051
+00:49:59,080 --> 00:50:06,040
+So now I want to move on to the second half of the lecture,
+
+1052
+00:50:06,040 --> 00:50:09,080
+which is going to be thinking more
+
+1053
+00:50:09,080 --> 00:50:13,160
+about that question of width versus depth.
+
+1054
+00:50:13,160 --> 00:50:15,880
+So again, would you rather scale the width of your model
+
+1055
+00:50:15,880 --> 00:50:17,260
+or scale the depth?
+
+1056
+00:50:20,000 --> 00:50:23,160
+And again, we've just tried to prove in some sense
+
+1057
+00:50:23,160 --> 00:50:26,840
+that with a very small depth network, like depth 3,
+
+1058
+00:50:26,840 --> 00:50:28,740
+we can fit any function.
+
+1059
+00:50:28,740 --> 00:50:31,700
+So that's coming back to this question of,
+
+1060
+00:50:31,700 --> 00:50:35,040
+if three layers is enough, why would we ever want
+
+1061
+00:50:35,040 --> 00:50:37,490
+to have a deep network?
+
+1062
+00:50:37,490 --> 00:50:41,430
+Does anyone have a thought?
+
+1063
+00:50:41,430 --> 00:50:42,250
+What do you think?
+
+1064
+00:50:42,250 --> 00:50:43,430
+Yeah?
+
+1065
+00:50:43,430 --> 00:50:47,270
+AUDIENCE: I'm guessing because in the terms of nailing
+
+1066
+00:50:47,270 --> 00:50:52,310
+the network and stuff, you can approximate, I'm guessing,
+
+1067
+00:50:52,310 --> 00:50:56,350
+some sort of arbitrary nonlinearity, because you have
+
+1068
+00:50:56,350 --> 00:50:58,570
+pointwise nonlinearities in each of the neurons,
+
+1069
+00:50:58,570 --> 00:50:59,930
+you have function compositions.
+
+1070
+00:50:59,930 --> 00:51:05,190
+So those would help you to do a complex mapping.
+
+1071
+00:51:05,190 --> 00:51:09,150
+But width would be going back to the universal approximation
+
+1072
+00:51:09,150 --> 00:51:10,150
+theorem.
+
+1073
+00:51:10,150 --> 00:51:11,150
+JEREMY BERNSTEIN: Right.
+
+1074
+00:51:11,150 --> 00:51:11,710
+That's great.
+
+1075
+00:51:11,710 --> 00:51:13,250
+Let me just summarize.
+
+1076
+00:51:13,250 --> 00:51:13,750
+I forgot.
+
+1077
+00:51:13,750 --> 00:51:16,410
+I'm always supposed to summarize questions and comments,
+
+1078
+00:51:16,410 --> 00:51:17,410
+but I forgot about that.
+
+1079
+00:51:17,410 --> 00:51:21,910
+But basically, if we layer lots of layers,
+
+1080
+00:51:21,910 --> 00:51:24,250
+then we have a kind of compound effect.
+
+1081
+00:51:24,250 --> 00:51:26,010
+We have more nonlinearities.
+
+1082
+00:51:26,010 --> 00:51:27,510
+It seems like maybe that can give us
+
+1083
+00:51:27,510 --> 00:51:31,790
+a richer space of functions through compositionality.
+
+1084
+00:51:31,790 --> 00:51:33,010
+Yeah, that's a great point.
+
+1085
+00:51:33,010 --> 00:51:34,520
+Sorry, what was your--
+
+1086
+00:51:34,520 --> 00:51:36,820
+AUDIENCE: Maybe on surface what I think we can have is
+
+1087
+00:51:36,820 --> 00:51:38,660
+we can put on lines and dots.
+
+1088
+00:51:38,660 --> 00:51:43,860
+The width might be faster or take less memory.
+
+1089
+00:51:43,860 --> 00:51:47,155
+But if you don't, then that might be good.
+
+1090
+00:51:47,155 --> 00:51:48,780
+JEREMY BERNSTEIN: This is a great point
+
+1091
+00:51:48,780 --> 00:51:50,155
+that, if you think about building
+
+1092
+00:51:50,155 --> 00:51:53,760
+a machine learning system, width can be parallelized.
+
+1093
+00:51:53,760 --> 00:51:56,660
+It makes better use of parallel hardware.
+
+1094
+00:51:56,660 --> 00:51:59,940
+So from a systems perspective, if you can get away
+
+1095
+00:51:59,940 --> 00:52:02,100
+with a shallow network that's very wide,
+
+1096
+00:52:02,100 --> 00:52:06,620
+you would really love that, because you can parallelize it.
+
+1097
+00:52:06,620 --> 00:52:10,080
+And that's illustrative that there's different constraints.
+
+1098
+00:52:10,080 --> 00:52:13,900
+There's the, can I represent complex and interesting
+
+1099
+00:52:13,900 --> 00:52:14,458
+functions?
+
+1100
+00:52:14,458 --> 00:52:16,500
+And then there's the computational constraint of,
+
+1101
+00:52:16,500 --> 00:52:18,200
+how efficient is this to run?
+
+1102
+00:52:18,200 --> 00:52:21,280
+There's other constraints of that sort.
+
+1103
+00:52:24,380 --> 00:52:27,300
+So on this slide, I wanted to just
+
+1104
+00:52:27,300 --> 00:52:30,820
+think, what are the advantages of width?
+
+1105
+00:52:30,820 --> 00:52:32,830
+So one is parallelism.
+
+1106
+00:52:35,890 --> 00:52:40,090
+One is a three-layer neural net is a universal function
+
+1107
+00:52:40,090 --> 00:52:43,230
+approximator, or maybe even two layers is enough.
+
+1108
+00:52:47,970 --> 00:52:50,670
+Can anyone think of any other advantages of width?
+
+1109
+00:52:56,335 --> 00:52:58,210
+AUDIENCE: You get the feature representations
+
+1110
+00:52:58,210 --> 00:53:00,970
+that are nicer and more easily interpretable.
+
+1111
+00:53:00,970 --> 00:53:05,390
+JEREMY BERNSTEIN: Mm-hmm, easier to interpret.
+
+1112
+00:53:05,390 --> 00:53:06,890
+I'm trying to remember if there were
+
+1113
+00:53:06,890 --> 00:53:08,270
+any others that I thought of.
+
+1114
+00:53:08,270 --> 00:53:09,370
+Does anyone else have any?
+
+1115
+00:53:13,050 --> 00:53:17,568
+AUDIENCE: It appears [INAUDIBLE] gradients.
+
+1116
+00:53:17,568 --> 00:53:20,110
+JEREMY BERNSTEIN: Yeah, easier to train, that's a good point.
+
+1117
+00:53:23,730 --> 00:53:25,110
+Easier to optimize.
+
+1118
+00:53:29,590 --> 00:53:33,040
+Yeah, because whenever you do compound anything,
+
+1119
+00:53:33,040 --> 00:53:35,540
+it is very liable to get out of control.
+
+1120
+00:53:35,540 --> 00:53:38,160
+So making your network too deep without being
+
+1121
+00:53:38,160 --> 00:53:40,480
+careful about how you do that can actually
+
+1122
+00:53:40,480 --> 00:53:42,040
+just break the training.
+
+1123
+00:53:42,040 --> 00:53:44,760
+So if you just take a vanilla multilayer perceptron
+
+1124
+00:53:44,760 --> 00:53:47,860
+and make it 50 layers deep and just try to train it,
+
+1125
+00:53:47,860 --> 00:53:53,320
+you'll see it's very difficult to get it to train.
+
+1126
+00:53:53,320 --> 00:53:54,200
+OK.
+
+1127
+00:53:54,200 --> 00:53:57,840
+I can't think of any others, unless anyone else had.
+
+1128
+00:53:57,840 --> 00:54:02,200
+So the point of this slide was to say, well, OK, obviously wide
+
+1129
+00:54:02,200 --> 00:54:04,920
+is better than deep, right?
+
+1130
+00:54:04,920 --> 00:54:06,060
+That's obvious now.
+
+1131
+00:54:06,060 --> 00:54:09,660
+But then the next slide is supposed to say, is it?
+
+1132
+00:54:14,120 --> 00:54:17,395
+Because now in the last part of the lecture
+
+1133
+00:54:17,395 --> 00:54:19,020
+or almost the last part of the lecture,
+
+1134
+00:54:19,020 --> 00:54:20,812
+we're going to think about something called
+
+1135
+00:54:20,812 --> 00:54:25,320
+depth separation results, which is another potentially quite
+
+1136
+00:54:25,320 --> 00:54:30,750
+stylized theoretical result, but it is quite interesting.
+
+1137
+00:54:30,750 --> 00:54:34,750
+So remember that the universal function approximation results
+
+1138
+00:54:34,750 --> 00:54:37,310
+suggested that we need to make our network exponentially
+
+1139
+00:54:37,310 --> 00:54:40,150
+wide in order to be able to approximate everything
+
+1140
+00:54:40,150 --> 00:54:41,250
+that we want to.
+
+1141
+00:54:41,250 --> 00:54:43,310
+And that seems bad.
+
+1142
+00:54:43,310 --> 00:54:45,150
+So the point of a depth separation result
+
+1143
+00:54:45,150 --> 00:54:48,070
+is to say that there's actually a deep network that
+
+1144
+00:54:48,070 --> 00:54:52,870
+can represent a particular function quite efficiently.
+
+1145
+00:54:52,870 --> 00:54:54,870
+And if you tried to represent the same function
+
+1146
+00:54:54,870 --> 00:54:58,150
+with a three-layer network or a shallower network,
+
+1147
+00:54:58,150 --> 00:55:02,470
+you would need exponentially more neurons to do that.
+
+1148
+00:55:02,470 --> 00:55:07,910
+So the shape of a depth separation result,
+
+1149
+00:55:07,910 --> 00:55:12,610
+I'm just trying to break it up into stages, is first of all,
+
+1150
+00:55:12,610 --> 00:55:14,690
+we pick a property of a function.
+
+1151
+00:55:17,430 --> 00:55:19,750
+And the example we're going to think of
+
+1152
+00:55:19,750 --> 00:55:21,910
+is the number of linear regions.
+
+1153
+00:55:24,870 --> 00:55:27,220
+We think of the function as being piecewise linear.
+
+1154
+00:55:27,220 --> 00:55:30,140
+And how many linear pieces are there?
+
+1155
+00:55:30,140 --> 00:55:32,460
+And then we construct a deep network
+
+1156
+00:55:32,460 --> 00:55:36,980
+that has a lot of that property, but is not a particularly
+
+1157
+00:55:36,980 --> 00:55:38,360
+big network in some sense.
+
+1158
+00:55:38,360 --> 00:55:39,900
+It doesn't have a lot of neurons.
+
+1159
+00:55:39,900 --> 00:55:42,520
+And that is a constructive thing.
+
+1160
+00:55:42,520 --> 00:55:44,140
+We say, here is a neural network which
+
+1161
+00:55:44,140 --> 00:55:45,980
+has a lot of this property.
+
+1162
+00:55:45,980 --> 00:55:48,780
+And then we say, now we're going to prove that it's actually
+
+1163
+00:55:48,780 --> 00:55:51,900
+impossible for a shallow network to have that same property
+
+1164
+00:55:51,900 --> 00:55:55,940
+unless it has exponentially many neurons or a huge number
+
+1165
+00:55:55,940 --> 00:55:57,700
+of neurons.
+
+1166
+00:55:57,700 --> 00:55:59,440
+So that's the shape of this result.
+
+1167
+00:55:59,440 --> 00:56:03,020
+And again, there's a literature which just proves
+
+1168
+00:56:03,020 --> 00:56:05,340
+different varieties of this kind of result.
+
+1169
+00:56:05,340 --> 00:56:07,560
+And that's called depth separation results.
+
+1170
+00:56:07,560 --> 00:56:10,640
+We're just going to show you one particular example.
+
+1171
+00:56:13,580 --> 00:56:16,980
+So recall that a piecewise linear function
+
+1172
+00:56:16,980 --> 00:56:20,080
+is a function where if you break it up into segments,
+
+1173
+00:56:20,080 --> 00:56:21,600
+each segment is linear.
+
+1174
+00:56:21,600 --> 00:56:23,200
+And then they kind of stitch together.
+
+1175
+00:56:26,610 --> 00:56:29,690
+And we'll think about defining the number of kinks
+
+1176
+00:56:29,690 --> 00:56:31,730
+in such a function to mean--
+
+1177
+00:56:34,850 --> 00:56:38,810
+a kink is how many of these discontinuities
+
+1178
+00:56:38,810 --> 00:56:42,090
+are there in the derivative, how many places does
+
+1179
+00:56:42,090 --> 00:56:44,610
+the derivative suddenly change.
+
+1180
+00:56:44,610 --> 00:56:49,290
+And so for this function, you can see there's four kinks.
+
+1181
+00:56:49,290 --> 00:56:53,210
+And that's the property that we're going to pick.
+
+1182
+00:56:53,210 --> 00:56:55,130
+And we're going to show that there's
+
+1183
+00:56:55,130 --> 00:56:57,290
+a deep network with not very many neurons
+
+1184
+00:56:57,290 --> 00:56:58,453
+that has a lot of kinks.
+
+1185
+00:56:58,453 --> 00:57:00,870
+And if you want to have that many kinks in a wide network,
+
+1186
+00:57:00,870 --> 00:57:02,390
+you need exponentially many neurons.
+
+1187
+00:57:05,782 --> 00:57:07,990
+That's the strategy of what we're going to try to do.
+
+1188
+00:57:07,990 --> 00:57:11,310
+But the first claim is that ReLU networks are piecewise linear.
+
+1189
+00:57:11,310 --> 00:57:15,090
+So if you have a ReLU network with one input and one output,
+
+1190
+00:57:15,090 --> 00:57:17,650
+it will look something like this green curve.
+
+1191
+00:57:17,650 --> 00:57:22,650
+Can anyone tell me why that's the case?
+
+1192
+00:57:22,650 --> 00:57:24,500
+Or does anyone think it is the case?
+
+1193
+00:57:24,500 --> 00:57:26,420
+Or does anyone think it's not the case?
+
+1194
+00:57:36,120 --> 00:57:36,920
+Yeah?
+
+1195
+00:57:36,920 --> 00:57:39,560
+AUDIENCE: It's because the ReLU is essentially
+
+1196
+00:57:39,560 --> 00:57:41,460
+a linear function, but with a threshold.
+
+1197
+00:57:41,460 --> 00:57:45,040
+So when you add them, it creates some kind of shape.
+
+1198
+00:57:45,040 --> 00:57:47,400
+And the transformation that you did before
+
+1199
+00:57:47,400 --> 00:57:51,700
+is linear, so it's only going to distort it but in a linear way.
+
+1200
+00:57:51,700 --> 00:57:53,400
+JEREMY BERNSTEIN: Great.
+
+1201
+00:57:53,400 --> 00:57:55,760
+Yeah, I think with this kind of statement,
+
+1202
+00:57:55,760 --> 00:57:57,943
+with many sorts of statements-- yeah, exactly.
+
+1203
+00:57:57,943 --> 00:57:59,360
+But with many sorts of statements,
+
+1204
+00:57:59,360 --> 00:58:01,040
+we want to break them up into--
+
+1205
+00:58:04,200 --> 00:58:05,700
+I'm not sure what the right word is.
+
+1206
+00:58:05,700 --> 00:58:08,600
+But we want to be able to say, if f and g are
+
+1207
+00:58:08,600 --> 00:58:12,640
+both piecewise linear, then that implies that f composed with g
+
+1208
+00:58:12,640 --> 00:58:14,200
+is piecewise linear.
+
+1209
+00:58:14,200 --> 00:58:16,840
+If f and g are both piecewise linear,
+
+1210
+00:58:16,840 --> 00:58:20,120
+that implies that f plus g is piecewise linear.
+
+1211
+00:58:20,120 --> 00:58:23,150
+If f is piecewise linear, then alpha
+
+1212
+00:58:23,150 --> 00:58:25,050
+f is also piecewise linear.
+
+1213
+00:58:25,050 --> 00:58:27,670
+So you break up the construction of the function
+
+1214
+00:58:27,670 --> 00:58:30,710
+into a series of combinations, and you
+
+1215
+00:58:30,710 --> 00:58:32,310
+prove that the property is preserved
+
+1216
+00:58:32,310 --> 00:58:35,090
+under those combinations.
+
+1217
+00:58:35,090 --> 00:58:36,590
+And then that and then basically you
+
+1218
+00:58:36,590 --> 00:58:42,750
+realize that, OK, a ReLU neural network,
+
+1219
+00:58:42,750 --> 00:58:44,568
+the ReLU function is piecewise linear.
+
+1220
+00:58:44,568 --> 00:58:46,610
+And then it's just adding and multiplying things.
+
+1221
+00:58:46,610 --> 00:58:47,870
+So you're always going to get something
+
+1222
+00:58:47,870 --> 00:58:49,090
+that's piecewise linear.
+
+1223
+00:58:51,610 --> 00:58:54,310
+So based on that, let's now construct a depth separation
+
+1224
+00:58:54,310 --> 00:58:56,750
+based on counting the number of kinks.
+
+1225
+00:58:56,750 --> 00:59:00,670
+So I'll first give you the intuition
+
+1226
+00:59:00,670 --> 00:59:04,270
+and then write something a bit more formal.
+
+1227
+00:59:04,270 --> 00:59:06,590
+But first of all, think about the point of view
+
+1228
+00:59:06,590 --> 00:59:08,470
+of an individual neuron.
+
+1229
+00:59:08,470 --> 00:59:14,030
+And we're going to add one extra input neuron.
+
+1230
+00:59:14,030 --> 00:59:17,510
+And symbolically, then we think about feeding a function,
+
+1231
+00:59:17,510 --> 00:59:21,320
+like a one-dimensional function, as inputs.
+
+1232
+00:59:21,320 --> 00:59:23,780
+So we're going to think of the output of this neuron, y
+
+1233
+00:59:23,780 --> 00:59:27,940
+of x, as just being the summation of scalar multiples
+
+1234
+00:59:27,940 --> 00:59:31,820
+of the input functions.
+
+1235
+00:59:31,820 --> 00:59:37,340
+The observation of this slide is that if we add functions,
+
+1236
+00:59:37,340 --> 00:59:41,060
+at most, we add the number of kinks.
+
+1237
+00:59:41,060 --> 00:59:44,020
+And I'm just going to try to persuade you that that's
+
+1238
+00:59:44,020 --> 00:59:45,860
+the case with a picture.
+
+1239
+00:59:45,860 --> 00:59:47,860
+So here we're thinking of, the green function
+
+1240
+00:59:47,860 --> 00:59:49,580
+is our first function.
+
+1241
+00:59:49,580 --> 00:59:52,260
+And the blue function is our second function.
+
+1242
+00:59:52,260 --> 00:59:54,220
+And then the purple function shows the result
+
+1243
+00:59:54,220 --> 00:59:55,820
+of adding them together.
+
+1244
+00:59:55,820 --> 01:00:00,540
+And notice that the green function has one kink.
+
+1245
+01:00:00,540 --> 01:00:03,500
+The blue function has two kinks.
+
+1246
+01:00:03,500 --> 01:00:05,620
+And then the purple function, which is their sum,
+
+1247
+01:00:05,620 --> 01:00:07,140
+has three kinks.
+
+1248
+01:00:07,140 --> 01:00:09,180
+And nothing more, you can't have more than that,
+
+1249
+01:00:09,180 --> 01:00:12,680
+because you only can have kinks at the places
+
+1250
+01:00:12,680 --> 01:00:14,680
+where the functions that you're adding had them.
+
+1251
+01:00:14,680 --> 01:00:17,320
+So this is how we think about adding functions.
+
+1252
+01:00:17,320 --> 01:00:19,490
+We can at most add the number of kicks.
+
+1253
+01:00:19,490 --> 01:00:21,650
+But potentially the kicks could happen
+
+1254
+01:00:21,650 --> 01:00:24,355
+in the same place, in which case, it
+
+1255
+01:00:24,355 --> 01:00:26,730
+would be less than adding, because that wouldn't give you
+
+1256
+01:00:26,730 --> 01:00:27,750
+an extra one.
+
+1257
+01:00:27,750 --> 01:00:29,890
+But generally, if they're generally spaced out,
+
+1258
+01:00:29,890 --> 01:00:31,970
+then they would add.
+
+1259
+01:00:31,970 --> 01:00:36,570
+Next intuition, the effect of applying ReLU.
+
+1260
+01:00:36,570 --> 01:00:39,810
+So we think now that we have a function f.
+
+1261
+01:00:39,810 --> 01:00:42,010
+And then we just take ReLU of f.
+
+1262
+01:00:42,010 --> 01:00:46,670
+So we think that the output is ReLU of f of x, basically.
+
+1263
+01:00:46,670 --> 01:00:48,810
+So y of x is ReLU of f of x.
+
+1264
+01:00:48,810 --> 01:00:53,610
+And now the claim is that if we apply ReLU, at most,
+
+1265
+01:00:53,610 --> 01:00:56,950
+we double the number of kinks.
+
+1266
+01:00:56,950 --> 01:00:59,170
+And so this picture is supposed to illustrate.
+
+1267
+01:00:59,170 --> 01:01:02,530
+We think about the red function as being f.
+
+1268
+01:01:02,530 --> 01:01:08,970
+And then if we apply ReLU, we just chop off the positive part.
+
+1269
+01:01:08,970 --> 01:01:10,530
+And the observation is that if we
+
+1270
+01:01:10,530 --> 01:01:14,810
+had a linear region, that can at most get split up
+
+1271
+01:01:14,810 --> 01:01:17,900
+into two linear regions.
+
+1272
+01:01:17,900 --> 01:01:21,200
+And if you just count on this picture,
+
+1273
+01:01:21,200 --> 01:01:24,540
+I think you see that the red function had 1, 2, 3, 4,
+
+1274
+01:01:24,540 --> 01:01:32,948
+5 kinks, whereas the green function has 1, 2, 3, 4, 5, 6,
+
+1275
+01:01:32,948 --> 01:01:35,500
+7, 8, 9, 9 kinks.
+
+1276
+01:01:35,500 --> 01:01:38,020
+So you can see it did nearly double in this case.
+
+1277
+01:01:43,920 --> 01:01:47,600
+So now to be a bit more formal, we're
+
+1278
+01:01:47,600 --> 01:01:50,840
+going to imagine that we have a deep ReLU
+
+1279
+01:01:50,840 --> 01:01:52,520
+network with many layers.
+
+1280
+01:01:52,520 --> 01:01:57,880
+And we're going to examine one layer inside the network.
+
+1281
+01:01:57,880 --> 01:02:02,920
+And we're going to give a recursive definition of what
+
+1282
+01:02:02,920 --> 01:02:04,300
+this layer looks like.
+
+1283
+01:02:04,300 --> 01:02:07,760
+So the function at layer L is ReLU
+
+1284
+01:02:07,760 --> 01:02:11,160
+of the weight matrix times the function from the previous layer
+
+1285
+01:02:11,160 --> 01:02:13,880
+plus the bias.
+
+1286
+01:02:13,880 --> 01:02:18,500
+And this is going to be an n-dimensional vector.
+
+1287
+01:02:18,500 --> 01:02:22,800
+The weight matrix is going to be an n by n matrix.
+
+1288
+01:02:22,800 --> 01:02:25,780
+This is going to be an n-dimensional vector.
+
+1289
+01:02:25,780 --> 01:02:27,840
+And the bias is also an n-dimensional vector.
+
+1290
+01:02:27,840 --> 01:02:31,740
+So that's the shape of all of these things.
+
+1291
+01:02:31,740 --> 01:02:36,500
+And then we define this capital let
+
+1292
+01:02:36,500 --> 01:02:41,020
+KINKS-L to denote the maximum number of kinks over the n
+
+1293
+01:02:41,020 --> 01:02:43,120
+coordinates of the output.
+
+1294
+01:02:43,120 --> 01:02:45,380
+So remember, this is an n-dimensional vector.
+
+1295
+01:02:45,380 --> 01:02:48,220
+Each coordinate could have a certain number of kinks
+
+1296
+01:02:48,220 --> 01:02:50,140
+in its function, because each coordinate
+
+1297
+01:02:50,140 --> 01:02:53,860
+is a one-dimensional function.
+
+1298
+01:02:53,860 --> 01:02:57,140
+And then we define this variable to be the maximum
+
+1299
+01:02:57,140 --> 01:02:58,860
+over those coordinates.
+
+1300
+01:02:58,860 --> 01:03:02,420
+And maybe I'm just going to write it as a claim.
+
+1301
+01:03:02,420 --> 01:03:08,620
+But the claim is that KINKS-L can be no greater than 2 times
+
+1302
+01:03:08,620 --> 01:03:15,090
+the width times the maximum number of kinks in the input.
+
+1303
+01:03:15,090 --> 01:03:17,670
+So maybe you could think more about this.
+
+1304
+01:03:17,670 --> 01:03:21,150
+So the 2 comes from the doubling effect of the ReLU.
+
+1305
+01:03:21,150 --> 01:03:25,010
+And the n comes from the fact that you're adding n things.
+
+1306
+01:03:25,010 --> 01:03:27,010
+And then the trick is just to think about taking
+
+1307
+01:03:27,010 --> 01:03:29,390
+the max over each coordinate.
+
+1308
+01:03:32,970 --> 01:03:35,050
+And then the other observation is
+
+1309
+01:03:35,050 --> 01:03:38,130
+that the kinks at the input, the input
+
+1310
+01:03:38,130 --> 01:03:42,770
+is basically 1, because there's no kinks.
+
+1311
+01:03:42,770 --> 01:03:45,790
+Does that make sense?
+
+1312
+01:03:45,790 --> 01:03:47,050
+AUDIENCE: It should be 0.
+
+1313
+01:03:47,050 --> 01:03:48,230
+JEREMY BERNSTEIN: It should be 0, you're right.
+
+1314
+01:03:48,230 --> 01:03:49,250
+But it's not going to--
+
+1315
+01:03:54,962 --> 01:03:56,670
+Let's think about this after the lecture.
+
+1316
+01:03:56,670 --> 01:04:02,170
+But the point is that each time we can at most multiply by 2n.
+
+1317
+01:04:02,170 --> 01:04:08,290
+So I'm trying to get the answer that KINKS-L is no greater than
+
+1318
+01:04:08,290 --> 01:04:17,740
+2n to the power L. OK, well, if KINKS-0 is 0,
+
+1319
+01:04:17,740 --> 01:04:19,800
+it's still less than or equal to 1.
+
+1320
+01:04:19,800 --> 01:04:21,440
+[LAUGHTER]
+
+1321
+01:04:21,440 --> 01:04:24,620
+Yeah, it looks like some accounting problem.
+
+1322
+01:04:24,620 --> 01:04:26,380
+But you see what the argument is.
+
+1323
+01:04:26,380 --> 01:04:27,580
+I just need to figure out--
+
+1324
+01:04:27,580 --> 01:04:28,080
+Yeah?
+
+1325
+01:04:28,080 --> 01:04:29,788
+AUDIENCE: You could start with one layer.
+
+1326
+01:04:29,788 --> 01:04:31,372
+JEREMY BERNSTEIN: Yeah, you could just
+
+1327
+01:04:31,372 --> 01:04:33,180
+start with the base case being one layer.
+
+1328
+01:04:33,180 --> 01:04:34,560
+That's a great--
+
+1329
+01:04:34,560 --> 01:04:36,800
+AUDIENCE: You should make it segmented instead.
+
+1330
+01:04:36,800 --> 01:04:40,640
+Otherwise, the ReLU adds a kink where there was none.
+
+1331
+01:04:40,640 --> 01:04:45,160
+Well, 0 to 1 is more [INAUDIBLE].
+
+1332
+01:04:45,160 --> 01:04:46,720
+JEREMY BERNSTEIN: Yes.
+
+1333
+01:04:46,720 --> 01:04:47,560
+OK.
+
+1334
+01:04:47,560 --> 01:04:49,500
+Let's just talk more about this.
+
+1335
+01:04:49,500 --> 01:04:51,440
+But I think you get the intuition
+
+1336
+01:04:51,440 --> 01:04:52,780
+in making this rigorous.
+
+1337
+01:04:52,780 --> 01:04:54,322
+You just need to think about it a bit
+
+1338
+01:04:54,322 --> 01:04:58,120
+to work out what the base case should be.
+
+1339
+01:04:58,120 --> 01:05:01,440
+But I hope that the message gets across.
+
+1340
+01:05:01,440 --> 01:05:05,500
+So in principle, we showed this statement.
+
+1341
+01:05:09,560 --> 01:05:13,310
+As a reminder, n is the width, capital L is the depth,
+
+1342
+01:05:13,310 --> 01:05:18,890
+and KINKS-L should be the maximum over the coordinates.
+
+1343
+01:05:22,910 --> 01:05:25,790
+And so the thing we wanted to point out
+
+1344
+01:05:25,790 --> 01:05:34,530
+is that the upper bound grows at most polynomially in width,
+
+1345
+01:05:34,530 --> 01:05:37,870
+but exponentially in depth.
+
+1346
+01:05:37,870 --> 01:05:41,510
+So this is suggestive that there's a big benefit,
+
+1347
+01:05:41,510 --> 01:05:43,710
+if we're trying to maximize the number of kinks,
+
+1348
+01:05:43,710 --> 01:05:45,230
+in making the network deeper.
+
+1349
+01:05:45,230 --> 01:05:46,650
+Because every time we add a layer,
+
+1350
+01:05:46,650 --> 01:05:50,330
+we double things, rather than making it wider.
+
+1351
+01:05:50,330 --> 01:05:53,550
+So if our goal is to be able to approximate functions
+
+1352
+01:05:53,550 --> 01:05:56,990
+with many kinks, then it's better
+
+1353
+01:05:56,990 --> 01:06:01,750
+to make the network deeper rather than wider.
+
+1354
+01:06:01,750 --> 01:06:05,530
+Does anyone have an objection to what we've shown?
+
+1355
+01:06:05,530 --> 01:06:09,360
+Because it is just an upper bound.
+
+1356
+01:06:09,360 --> 01:06:10,860
+So the objection that you could have
+
+1357
+01:06:10,860 --> 01:06:12,880
+is like, that's just an upper bound.
+
+1358
+01:06:12,880 --> 01:06:14,740
+Maybe it's never attained.
+
+1359
+01:06:14,740 --> 01:06:17,242
+Maybe in practice, when you actually build a very deep ReLU
+
+1360
+01:06:17,242 --> 01:06:18,700
+network, it's very difficult to get
+
+1361
+01:06:18,700 --> 01:06:20,900
+there to be a lot of kinks in the output function.
+
+1362
+01:06:20,900 --> 01:06:26,220
+So the next step is to provide a construction
+
+1363
+01:06:26,220 --> 01:06:28,680
+to show you that, no, this can actually happen.
+
+1364
+01:06:28,680 --> 01:06:31,280
+And again, I'm just going to skip the slide.
+
+1365
+01:06:31,280 --> 01:06:36,060
+So again, the argument is that this g defined
+
+1366
+01:06:36,060 --> 01:06:39,080
+as a really small ReLU network in this form,
+
+1367
+01:06:39,080 --> 01:06:41,100
+if you plot what that actually amounts to,
+
+1368
+01:06:41,100 --> 01:06:43,980
+it amounts to a triangle.
+
+1369
+01:06:43,980 --> 01:06:47,440
+And the property of a triangle is that if you iterate it,
+
+1370
+01:06:47,440 --> 01:06:50,900
+you apply it to itself-- so you do g composed with g,
+
+1371
+01:06:50,900 --> 01:06:52,700
+you actually get two triangles.
+
+1372
+01:06:52,700 --> 01:06:55,020
+There should be no gap there.
+
+1373
+01:06:55,020 --> 01:06:57,980
+Let's see, you get two triangles.
+
+1374
+01:06:57,980 --> 01:07:01,780
+And if you do g composed with g composed with g,
+
+1375
+01:07:01,780 --> 01:07:04,060
+you get four triangles.
+
+1376
+01:07:04,060 --> 01:07:08,290
+So you need to think a little bit to see why that is.
+
+1377
+01:07:08,290 --> 01:07:10,510
+But actually, I think I didn't need to show you.
+
+1378
+01:07:10,510 --> 01:07:14,950
+But I was going to demonstrate it on the graphing website.
+
+1379
+01:07:14,950 --> 01:07:17,170
+But I think hopefully the claim is clear,
+
+1380
+01:07:17,170 --> 01:07:21,190
+that you can just with ReLUs, make a triangle function.
+
+1381
+01:07:21,190 --> 01:07:23,690
+And if you think about what happens to the triangle function
+
+1382
+01:07:23,690 --> 01:07:26,610
+when you compose it with itself, you just
+
+1383
+01:07:26,610 --> 01:07:29,810
+recursively get double as many triangles each time.
+
+1384
+01:07:29,810 --> 01:07:32,730
+So the point is that this is an explicit construction
+
+1385
+01:07:32,730 --> 01:07:36,370
+of a certain ReLU network, where when you compose it with itself
+
+1386
+01:07:36,370 --> 01:07:38,770
+many, many times, you actually keep
+
+1387
+01:07:38,770 --> 01:07:41,890
+doubling the number of kinks in the function.
+
+1388
+01:07:41,890 --> 01:07:46,790
+So it can really happen, at least with this one example.
+
+1389
+01:07:49,570 --> 01:07:51,490
+And then this is actually just running
+
+1390
+01:07:51,490 --> 01:07:54,410
+some numbers where I'm like, let's
+
+1391
+01:07:54,410 --> 01:07:56,290
+suppose that we take that triangle function
+
+1392
+01:07:56,290 --> 01:07:59,450
+and compose it with itself 500 times,
+
+1393
+01:07:59,450 --> 01:08:04,350
+that would give us at most 2 to the 500 kinks.
+
+1394
+01:08:04,350 --> 01:08:06,660
+No, it would actually give us that many kinks.
+
+1395
+01:08:06,660 --> 01:08:08,700
+It would really would give us that many.
+
+1396
+01:08:12,360 --> 01:08:15,260
+Actually, each g turns out to have two layers.
+
+1397
+01:08:15,260 --> 01:08:18,080
+So this would be a 1,000-layer MLP.
+
+1398
+01:08:18,080 --> 01:08:22,439
+And then if you compute using the bound that we constructed,
+
+1399
+01:08:22,439 --> 01:08:25,120
+if you took a three-layer MLP, how wide would it
+
+1400
+01:08:25,120 --> 01:08:27,899
+need to be in order to fit the same function,
+
+1401
+01:08:27,899 --> 01:08:30,520
+you'd find that it would need to have almost 10
+
+1402
+01:08:30,520 --> 01:08:34,520
+to the power 50 width in order to fit that same function.
+
+1403
+01:08:34,520 --> 01:08:36,540
+So this is the point.
+
+1404
+01:08:36,540 --> 01:08:38,880
+This is the depth separation.
+
+1405
+01:08:38,880 --> 01:08:40,640
+There's a function, which is not even that
+
+1406
+01:08:40,640 --> 01:08:41,819
+difficult to write down.
+
+1407
+01:08:41,819 --> 01:08:48,779
+It's just a triangle or self-composed many, many times.
+
+1408
+01:08:48,779 --> 01:08:51,692
+And if you wanted to get a shallow network to exactly
+
+1409
+01:08:51,692 --> 01:08:53,359
+approximate that function, it would need
+
+1410
+01:08:53,359 --> 01:08:56,600
+to be very, very, very wide.
+
+1411
+01:08:56,600 --> 01:08:58,660
+This is the reward for coming to the lecture,
+
+1412
+01:08:58,660 --> 01:09:02,080
+but this is also on the first problem set.
+
+1413
+01:09:02,080 --> 01:09:04,910
+So just maybe when you're solving the problem set,
+
+1414
+01:09:04,910 --> 01:09:08,790
+have a think about this.
+
+1415
+01:09:08,790 --> 01:09:13,670
+OK, I want to now think a bit more broadly.
+
+1416
+01:09:13,670 --> 01:09:16,590
+What does this not say?
+
+1417
+01:09:16,590 --> 01:09:18,910
+This depth separation is suggesting
+
+1418
+01:09:18,910 --> 01:09:20,430
+that there could be a big advantage
+
+1419
+01:09:20,430 --> 01:09:22,590
+to making things really deep.
+
+1420
+01:09:22,590 --> 01:09:24,910
+But it's not telling us that deep networks are
+
+1421
+01:09:24,910 --> 01:09:27,630
+very easy to train, and they might not be.
+
+1422
+01:09:27,630 --> 01:09:30,950
+So it's not telling us about optimization.
+
+1423
+01:09:30,950 --> 01:09:34,612
+And it's not telling us about generalization.
+
+1424
+01:09:34,612 --> 01:09:37,029
+It's not saying that the very deep networks would actually
+
+1425
+01:09:37,029 --> 01:09:39,510
+perform well on some particular data set
+
+1426
+01:09:39,510 --> 01:09:42,350
+that we want to apply them to.
+
+1427
+01:09:42,350 --> 01:09:45,830
+These are really just statements thinking about approximation.
+
+1428
+01:09:45,830 --> 01:09:47,770
+But this is not the end of the story.
+
+1429
+01:09:47,770 --> 01:09:50,050
+It's just one piece in this puzzle.
+
+1430
+01:09:53,510 --> 01:09:56,390
+Again, there's more theorems of this nature.
+
+1431
+01:09:56,390 --> 01:09:59,850
+And feel free to look more into them.
+
+1432
+01:09:59,850 --> 01:10:02,180
+The one at the bottom is interesting.
+
+1433
+01:10:02,180 --> 01:10:06,800
+Because a question you could have is like, OK,
+
+1434
+01:10:06,800 --> 01:10:14,140
+if increasing depth is so great, maybe I'll just pick width 3
+
+1435
+01:10:14,140 --> 01:10:19,700
+and just go really deep, and this will work really well.
+
+1436
+01:10:19,700 --> 01:10:24,100
+But what that paper shows is that if the input space has
+
+1437
+01:10:24,100 --> 01:10:27,540
+dimension n, you need a width of at least n
+
+1438
+01:10:27,540 --> 01:10:30,200
+to approximate any function basically.
+
+1439
+01:10:30,200 --> 01:10:33,540
+So there can be a minimum width that you really need.
+
+1440
+01:10:33,540 --> 01:10:35,620
+Anyway, there's some further reading,
+
+1441
+01:10:35,620 --> 01:10:39,900
+in case you're interested to go deeper on this topic.
+
+1442
+01:10:39,900 --> 01:10:47,060
+So in the last 15 minutes, I guess,
+
+1443
+01:10:47,060 --> 01:10:50,620
+I want to think about some more practical considerations.
+
+1444
+01:10:50,620 --> 01:10:52,540
+Those were the theoretical results.
+
+1445
+01:10:52,540 --> 01:10:54,863
+Maybe they're really interesting.
+
+1446
+01:10:54,863 --> 01:10:57,280
+But if you're actually building a machine learning system,
+
+1447
+01:10:57,280 --> 01:11:01,570
+I don't know if you need to think about those things.
+
+1448
+01:11:01,570 --> 01:11:04,583
+Maybe you do, which would be great.
+
+1449
+01:11:04,583 --> 01:11:06,250
+But we're more just trying to expose you
+
+1450
+01:11:06,250 --> 01:11:08,433
+to these different styles of thinking.
+
+1451
+01:11:08,433 --> 01:11:10,850
+But now let's think a little bit about some more practical
+
+1452
+01:11:10,850 --> 01:11:12,110
+considerations.
+
+1453
+01:11:12,110 --> 01:11:14,770
+So the trouble is in practice, if you're actually
+
+1454
+01:11:14,770 --> 01:11:17,065
+building a machine learning system,
+
+1455
+01:11:17,065 --> 01:11:18,690
+we were saying that there's these three
+
+1456
+01:11:18,690 --> 01:11:20,110
+pieces of the puzzle.
+
+1457
+01:11:20,110 --> 01:11:24,530
+And isn't it nice if we can neatly tackle them one by one?
+
+1458
+01:11:24,530 --> 01:11:28,610
+But out there in the real world, it's not like that.
+
+1459
+01:11:28,610 --> 01:11:32,970
+And basically, if you're training a system,
+
+1460
+01:11:32,970 --> 01:11:34,770
+you have all of these different issues
+
+1461
+01:11:34,770 --> 01:11:36,450
+conflated with each other.
+
+1462
+01:11:36,450 --> 01:11:38,950
+And if you've got a problem and you're training,
+
+1463
+01:11:38,950 --> 01:11:42,050
+you don't know if it's because your neural network actually
+
+1464
+01:11:42,050 --> 01:11:44,670
+can't approximate the thing that you're trying to approximate.
+
+1465
+01:11:44,670 --> 01:11:48,290
+You don't know if it's because the training is failing.
+
+1466
+01:11:48,290 --> 01:11:50,090
+Interestingly, you would know if it
+
+1467
+01:11:50,090 --> 01:11:51,667
+was because it's not generalizing,
+
+1468
+01:11:51,667 --> 01:11:54,250
+because you could just compute the training error and the test
+
+1469
+01:11:54,250 --> 01:11:56,083
+error, and you can see if they're different.
+
+1470
+01:11:56,083 --> 01:11:59,120
+So that one's easier to diagnose.
+
+1471
+01:11:59,120 --> 01:12:02,005
+But the point is that all of these things are conflated.
+
+1472
+01:12:02,005 --> 01:12:03,880
+And the other thing that we were going to say
+
+1473
+01:12:03,880 --> 01:12:08,000
+is, suppose that you work at a large language model startup
+
+1474
+01:12:08,000 --> 01:12:10,680
+and that your job is to make the LLM training as
+
+1475
+01:12:10,680 --> 01:12:13,280
+efficient as possible, then you actually
+
+1476
+01:12:13,280 --> 01:12:15,160
+really care about this question--
+
+1477
+01:12:15,160 --> 01:12:19,000
+should I make the network wider or should I make it deeper?
+
+1478
+01:12:19,000 --> 01:12:20,520
+For all those reasons that we talked
+
+1479
+01:12:20,520 --> 01:12:24,560
+about-- the computational cost of training,
+
+1480
+01:12:24,560 --> 01:12:27,160
+the computational cost of inference, in terms
+
+1481
+01:12:27,160 --> 01:12:30,480
+of making the model work well.
+
+1482
+01:12:30,480 --> 01:12:32,480
+In a sense, it's the most basic question
+
+1483
+01:12:32,480 --> 01:12:33,560
+that you're thinking about when you first
+
+1484
+01:12:33,560 --> 01:12:34,727
+learn about neural networks.
+
+1485
+01:12:34,727 --> 01:12:37,780
+But it's, to a large extent, an unsolved problem.
+
+1486
+01:12:41,200 --> 01:12:44,600
+And I wanted to talk a little bit about this paper
+
+1487
+01:12:44,600 --> 01:12:53,560
+by Kaplan and McCandlish from 2020, which, this figure, people
+
+1488
+01:12:53,560 --> 01:12:55,780
+got T-shirts where they just had this figure,
+
+1489
+01:12:55,780 --> 01:12:58,730
+and then they would try to spread the word about.
+
+1490
+01:12:58,730 --> 01:13:01,270
+And this is the figure, which is basically
+
+1491
+01:13:01,270 --> 01:13:05,650
+saying as you make GPT bigger, it gets better.
+
+1492
+01:13:05,650 --> 01:13:10,910
+And the point is that, in particular, the x-axis
+
+1493
+01:13:10,910 --> 01:13:13,698
+is compute, the amount of flops of compute,
+
+1494
+01:13:13,698 --> 01:13:15,990
+the size of your data set, and the number of parameters
+
+1495
+01:13:15,990 --> 01:13:17,070
+in the model.
+
+1496
+01:13:17,070 --> 01:13:19,830
+And the point is that the test loss, the y-axis,
+
+1497
+01:13:19,830 --> 01:13:24,070
+is always going down as you scale any of these axes.
+
+1498
+01:13:24,070 --> 01:13:28,230
+And the loss cannot go down forever because you can't have
+
+1499
+01:13:28,230 --> 01:13:29,350
+negative loss.
+
+1500
+01:13:29,350 --> 01:13:30,690
+The loss has to go to 0.
+
+1501
+01:13:30,690 --> 01:13:32,370
+So it has to saturate eventually.
+
+1502
+01:13:32,370 --> 01:13:34,970
+But back in 2020, they were saying, hey,
+
+1503
+01:13:34,970 --> 01:13:37,817
+the models keep getting better.
+
+1504
+01:13:37,817 --> 01:13:39,150
+We should pay attention to this.
+
+1505
+01:13:39,150 --> 01:13:43,990
+Because then all of these advances in LLMs came.
+
+1506
+01:13:43,990 --> 01:13:47,430
+ChatGPT was created and so on.
+
+1507
+01:13:47,430 --> 01:13:51,550
+But interestingly, they plot performance against parameters.
+
+1508
+01:13:51,550 --> 01:13:53,910
+In this top plot, it's not against width
+
+1509
+01:13:53,910 --> 01:13:55,590
+and it's not against depth.
+
+1510
+01:13:55,590 --> 01:13:59,100
+And the claim that they have in that paper
+
+1511
+01:13:59,100 --> 01:14:03,220
+is that within several orders of magnitude,
+
+1512
+01:14:03,220 --> 01:14:06,820
+the allocation of your compute budget between width and depth
+
+1513
+01:14:06,820 --> 01:14:07,940
+doesn't matter.
+
+1514
+01:14:07,940 --> 01:14:10,500
+All that matters is the number of parameters and number
+
+1515
+01:14:10,500 --> 01:14:11,260
+of flops.
+
+1516
+01:14:11,260 --> 01:14:15,100
+You can have a depth 20 network or a depth 10 network
+
+1517
+01:14:15,100 --> 01:14:19,400
+with a commensurate number of width, it doesn't matter.
+
+1518
+01:14:19,400 --> 01:14:22,980
+So that's kind of interesting, that you just run the experiment
+
+1519
+01:14:22,980 --> 01:14:26,140
+and you see that width versus depth, within a large range,
+
+1520
+01:14:26,140 --> 01:14:27,320
+seems not to matter.
+
+1521
+01:14:27,320 --> 01:14:31,900
+And they exemplify that with this lower plot.
+
+1522
+01:14:31,900 --> 01:14:34,620
+And the point is that once they subtract the embedding
+
+1523
+01:14:34,620 --> 01:14:37,680
+parameters-- so if we just focus in on the bottom-right plot,
+
+1524
+01:14:37,680 --> 01:14:42,420
+which is the model with the embedding layers not counted--
+
+1525
+01:14:42,420 --> 01:14:45,080
+roughly you get very similar performance.
+
+1526
+01:14:45,080 --> 01:14:48,400
+I think what basically they're saying-- beyond depth 6,
+
+1527
+01:14:48,400 --> 01:14:51,080
+it doesn't matter what the width is or what the depth is.
+
+1528
+01:14:51,080 --> 01:14:53,380
+The curves converge to each other.
+
+1529
+01:14:53,380 --> 01:14:56,770
+And all that matters is scaling up number of parameters.
+
+1530
+01:14:56,770 --> 01:15:01,550
+So this is just a very, very practical perspective,
+
+1531
+01:15:01,550 --> 01:15:08,210
+but from some very careful experimentalists
+
+1532
+01:15:08,210 --> 01:15:10,610
+about how things actually work in transformers.
+
+1533
+01:15:10,610 --> 01:15:13,370
+And you see it's basically saying--
+
+1534
+01:15:13,370 --> 01:15:16,390
+within a large range, width versus depth doesn't matter;
+
+1535
+01:15:16,390 --> 01:15:18,010
+all you care about is parameters.
+
+1536
+01:15:18,010 --> 01:15:23,170
+With that said, there's something
+
+1537
+01:15:23,170 --> 01:15:25,250
+I wanted to draw attention to, which
+
+1538
+01:15:25,250 --> 01:15:28,010
+is this idea of confounders.
+
+1539
+01:15:28,010 --> 01:15:29,930
+And there's another paper which people
+
+1540
+01:15:29,930 --> 01:15:32,050
+are also excited about, which people refer
+
+1541
+01:15:32,050 --> 01:15:34,710
+to as chinchilla scaling rules.
+
+1542
+01:15:34,710 --> 01:15:37,090
+The names keep getting stranger--
+
+1543
+01:15:37,090 --> 01:15:37,958
+[LAUGHTER]
+
+1544
+01:15:37,958 --> 01:15:38,750
+--for these things.
+
+1545
+01:15:38,750 --> 01:15:43,970
+But basically, they're interested in the same sort
+
+1546
+01:15:43,970 --> 01:15:47,250
+of questions as the previous paper I just showed you.
+
+1547
+01:15:47,250 --> 01:15:49,730
+But what they do is they question
+
+1548
+01:15:49,730 --> 01:15:52,200
+some of the results in that earlier paper.
+
+1549
+01:15:52,200 --> 01:15:54,200
+And one of the things that they suggest
+
+1550
+01:15:54,200 --> 01:15:56,680
+is that if you use a different learning rate
+
+1551
+01:15:56,680 --> 01:15:59,160
+schedule for the training, you can
+
+1552
+01:15:59,160 --> 01:16:04,120
+get slightly different, qualitatively
+
+1553
+01:16:04,120 --> 01:16:05,980
+different conclusions.
+
+1554
+01:16:05,980 --> 01:16:08,160
+So if you just had one learning rate schedule
+
+1555
+01:16:08,160 --> 01:16:11,060
+and now you do a different learning rate schedule,
+
+1556
+01:16:11,060 --> 01:16:14,640
+you draw different conclusions.
+
+1557
+01:16:14,640 --> 01:16:17,440
+And this is just to say that precisely answering
+
+1558
+01:16:17,440 --> 01:16:21,800
+any of these questions is very difficult,
+
+1559
+01:16:21,800 --> 01:16:24,880
+because there are so many parts of the training pipeline
+
+1560
+01:16:24,880 --> 01:16:26,400
+that we don't understand.
+
+1561
+01:16:26,400 --> 01:16:28,280
+So you may have one experimental setup
+
+1562
+01:16:28,280 --> 01:16:31,720
+and you say, hey, width versus depth doesn't matter.
+
+1563
+01:16:31,720 --> 01:16:34,080
+And then you change some detail about how you actually
+
+1564
+01:16:34,080 --> 01:16:34,940
+train the network.
+
+1565
+01:16:34,940 --> 01:16:37,520
+And now it's like oh, no, scaling width
+
+1566
+01:16:37,520 --> 01:16:40,420
+is a lot better because I fixed that issue.
+
+1567
+01:16:40,420 --> 01:16:43,360
+And I would call that a confounding issue, which is just
+
+1568
+01:16:43,360 --> 01:16:45,440
+some aspect of the training that we don't fully
+
+1569
+01:16:45,440 --> 01:16:49,240
+understand, but is having a bearing on the results.
+
+1570
+01:16:49,240 --> 01:16:52,290
+So this is just what I want to point out,
+
+1571
+01:16:52,290 --> 01:16:55,190
+is that really resolving these questions
+
+1572
+01:16:55,190 --> 01:16:58,910
+experimentally is really hard, because there can be
+
+1573
+01:16:58,910 --> 01:17:00,610
+so many confounding variables.
+
+1574
+01:17:00,610 --> 01:17:03,450
+And resolving them theoretically is also really hard,
+
+1575
+01:17:03,450 --> 01:17:06,750
+because you have to work out how to think about these things.
+
+1576
+01:17:06,750 --> 01:17:09,497
+And a lot of these problems are unsolved because of the fact
+
+1577
+01:17:09,497 --> 01:17:11,330
+that it's kind of hard to figure things out.
+
+1578
+01:17:14,190 --> 01:17:19,110
+So in conclusion, the summary.
+
+1579
+01:17:19,110 --> 01:17:21,930
+Oh, yeah, there's still another slide after this one.
+
+1580
+01:17:21,930 --> 01:17:25,870
+When you leave the lecture hall, try to do so quietly.
+
+1581
+01:17:25,870 --> 01:17:28,310
+Someone suggested that.
+
+1582
+01:17:28,310 --> 01:17:31,170
+OK, so the summary of the lecture is--
+
+1583
+01:17:34,070 --> 01:17:37,790
+a very wide shallow neural net, so a three-layer
+
+1584
+01:17:37,790 --> 01:17:41,990
+MLP that's wide enough can fit any function
+
+1585
+01:17:41,990 --> 01:17:44,510
+within some class of functions, quite
+
+1586
+01:17:44,510 --> 01:17:46,010
+a broad class of functions.
+
+1587
+01:17:49,360 --> 01:17:51,040
+Then, in the second half of the lecture,
+
+1588
+01:17:51,040 --> 01:17:54,300
+we said that deeper networks can fit certain kinds of functions
+
+1589
+01:17:54,300 --> 01:17:57,820
+with many fewer neurons because of their compositionality.
+
+1590
+01:17:57,820 --> 01:18:00,360
+And we called that a kind of depth separation result.
+
+1591
+01:18:00,360 --> 01:18:02,220
+So that was something interesting.
+
+1592
+01:18:02,220 --> 01:18:12,820
+And then the overall message that I am hoping to impart
+
+1593
+01:18:12,820 --> 01:18:17,940
+is basically, it's unclear how important these results are.
+
+1594
+01:18:17,940 --> 01:18:20,620
+It's unclear how they interact with optimization
+
+1595
+01:18:20,620 --> 01:18:24,020
+and with generalization, but it's still really interesting
+
+1596
+01:18:24,020 --> 01:18:27,930
+to think about them and to have that as part of your toolkit.
+
+1597
+01:18:27,930 --> 01:18:30,180
+If you're thinking about your machine learning system,
+
+1598
+01:18:30,180 --> 01:18:32,460
+a basic question is, can the network
+
+1599
+01:18:32,460 --> 01:18:34,020
+architecture that I have actually
+
+1600
+01:18:34,020 --> 01:18:37,460
+approximate the function that I'm asking it to approximate?
+
+1601
+01:18:37,460 --> 01:18:41,260
+That's quite a basic question.
+
+1602
+01:18:41,260 --> 01:18:43,540
+And I want to just conclude or to wrap up
+
+1603
+01:18:43,540 --> 01:18:46,220
+with a little preview for what's to come in the course.
+
+1604
+01:18:46,220 --> 01:18:48,530
+So I have a question.
+
+1605
+01:18:48,530 --> 01:18:51,690
+And it's, suppose that we have two machine learning
+
+1606
+01:18:51,690 --> 01:18:55,290
+problems-- one is an audio problem
+
+1607
+01:18:55,290 --> 01:18:58,630
+and one is an image classification problem.
+
+1608
+01:18:58,630 --> 01:19:01,850
+So the first little picture is like a waveform.
+
+1609
+01:19:01,850 --> 01:19:05,090
+And then we're transcribing it to say the word "hello."
+
+1610
+01:19:05,090 --> 01:19:08,050
+And then the second picture is like a photograph of a person.
+
+1611
+01:19:08,050 --> 01:19:12,810
+And then we're classifying that as, that's a human.
+
+1612
+01:19:12,810 --> 01:19:15,550
+And then the thought experiment is, in both cases,
+
+1613
+01:19:15,550 --> 01:19:21,030
+we could flatten those little pieces of data into vectors.
+
+1614
+01:19:21,030 --> 01:19:23,250
+OK, maybe the waveform is a vector.
+
+1615
+01:19:23,250 --> 01:19:25,570
+And then we can flatten that image of a person
+
+1616
+01:19:25,570 --> 01:19:27,170
+into another vector.
+
+1617
+01:19:27,170 --> 01:19:31,650
+And then we can just apply MLP to both.
+
+1618
+01:19:31,650 --> 01:19:33,650
+We can take a multilayer perceptron
+
+1619
+01:19:33,650 --> 01:19:37,510
+with really nonlinearity and try to fit the first problem.
+
+1620
+01:19:37,510 --> 01:19:39,770
+And then we can take another MLP and try
+
+1621
+01:19:39,770 --> 01:19:41,690
+to fit the second problem.
+
+1622
+01:19:41,690 --> 01:19:45,640
+And the argument is, OK, the MLP is a universal function
+
+1623
+01:19:45,640 --> 01:19:49,520
+approximator, so this is a great idea.
+
+1624
+01:19:49,520 --> 01:19:53,786
+And so I want to ask, do people think that is a good idea?
+
+1625
+01:19:53,786 --> 01:19:54,640
+AUDIENCE: No!
+
+1626
+01:19:54,640 --> 01:19:55,515
+JEREMY BERNSTEIN: No?
+
+1627
+01:19:55,515 --> 01:19:58,040
+[LAUGHS] Why not?
+
+1628
+01:19:58,040 --> 01:20:00,760
+But why not?
+
+1629
+01:20:00,760 --> 01:20:05,040
+AUDIENCE: You're not guaranteed to find the approximator.
+
+1630
+01:20:05,040 --> 01:20:07,265
+It exists, but you may not find it.
+
+1631
+01:20:07,265 --> 01:20:09,140
+JEREMY BERNSTEIN: Yeah, that's one objection.
+
+1632
+01:20:09,140 --> 01:20:11,500
+That's a great point, that it could exist,
+
+1633
+01:20:11,500 --> 01:20:12,820
+but we might not find it.
+
+1634
+01:20:16,240 --> 01:20:19,640
+AUDIENCE: I'd say efficiency, because although it
+
+1635
+01:20:19,640 --> 01:20:21,720
+is a universal function approximation
+
+1636
+01:20:21,720 --> 01:20:25,320
+in the [INAUDIBLE], it says you may or may not find
+
+1637
+01:20:25,320 --> 01:20:27,760
+that function in that space.
+
+1638
+01:20:27,760 --> 01:20:30,260
+To find it, you may need to tune certain parameters.
+
+1639
+01:20:30,260 --> 01:20:32,660
+It may take a while to find what you're looking for it.
+
+1640
+01:20:32,660 --> 01:20:37,423
+So after a certain cutoff, it may not be feasible.
+
+1641
+01:20:37,423 --> 01:20:38,840
+JEREMY BERNSTEIN: The objection is
+
+1642
+01:20:38,840 --> 01:20:41,100
+it could be inefficient to use an MLP.
+
+1643
+01:20:41,100 --> 01:20:44,310
+There might be potentially another the architecture
+
+1644
+01:20:44,310 --> 01:20:47,310
+that could be more efficient.
+
+1645
+01:20:47,310 --> 01:20:50,090
+And in particular, it could be adapted to the type of data.
+
+1646
+01:20:50,090 --> 01:20:51,053
+Sorry?
+
+1647
+01:20:51,053 --> 01:20:52,470
+AUDIENCE: I was just going to say,
+
+1648
+01:20:52,470 --> 01:20:56,990
+an MLP doesn't take advantage of the structure in the input data.
+
+1649
+01:20:56,990 --> 01:20:59,430
+So with an image, there's an inherent two-dimensional
+
+1650
+01:20:59,430 --> 01:21:00,370
+structure.
+
+1651
+01:21:00,370 --> 01:21:03,862
+And with a waveform, there's an inherent sequential structure.
+
+1652
+01:21:03,862 --> 01:21:05,570
+JEREMY BERNSTEIN: That's a great comment.
+
+1653
+01:21:05,570 --> 01:21:09,390
+So the comment is that the two different problems
+
+1654
+01:21:09,390 --> 01:21:11,090
+have different structure in the data.
+
+1655
+01:21:11,090 --> 01:21:13,598
+And perhaps we want to adapt the model family.
+
+1656
+01:21:13,598 --> 01:21:15,890
+And that's what I thought when I was writing the slide.
+
+1657
+01:21:15,890 --> 01:21:17,530
+And then I was like, but wait a minute,
+
+1658
+01:21:17,530 --> 01:21:20,170
+now we're just applying transformers to everything.
+
+1659
+01:21:20,170 --> 01:21:22,130
+So is that counter to that point?
+
+1660
+01:21:22,130 --> 01:21:24,810
+And then it was like, no, actually it's not.
+
+1661
+01:21:24,810 --> 01:21:27,430
+Because even if you apply a transformer to audio or you
+
+1662
+01:21:27,430 --> 01:21:30,310
+apply it to images, actually the preprocessing layer
+
+1663
+01:21:30,310 --> 01:21:32,830
+at the beginning of the network is very different.
+
+1664
+01:21:32,830 --> 01:21:36,350
+So if it's images, you have a special 2D patch kind
+
+1665
+01:21:36,350 --> 01:21:37,570
+of representation.
+
+1666
+01:21:37,570 --> 01:21:39,790
+And if it's audio, I assume they have some kind
+
+1667
+01:21:39,790 --> 01:21:41,790
+of better audio representation.
+
+1668
+01:21:41,790 --> 01:21:44,740
+So even if you just throw transformers at everything,
+
+1669
+01:21:44,740 --> 01:21:47,060
+actually this comment that you do
+
+1670
+01:21:47,060 --> 01:21:50,460
+adapt the architecture a little bit based on what the data is.
+
+1671
+01:21:50,460 --> 01:21:55,260
+So yeah, I really agree with that comment.
+
+1672
+01:21:55,260 --> 01:21:56,820
+But it was a big question.
+
+1673
+01:21:56,820 --> 01:21:59,240
+People even recently have been thinking about that-- wait,
+
+1674
+01:21:59,240 --> 01:22:00,520
+are transformers all we need?
+
+1675
+01:22:00,520 --> 01:22:02,760
+Maybe we don't need to model the data.
+
+1676
+01:22:02,760 --> 01:22:04,500
+But I think really, you still need
+
+1677
+01:22:04,500 --> 01:22:07,540
+to model the data little bit.
+
+1678
+01:22:07,540 --> 01:22:11,660
+And also transformers, you can ask how data hungry are they.
+
+1679
+01:22:11,660 --> 01:22:13,320
+Maybe there's a better model family
+
+1680
+01:22:13,320 --> 01:22:15,750
+which needs much less data in order to learn.
+
+1681
+01:22:15,750 --> 01:22:17,500
+So that was the final thought to leave you
+
+1682
+01:22:17,500 --> 01:22:19,260
+with is, perhaps we want to match
+
+1683
+01:22:19,260 --> 01:22:22,560
+the architecture to the problem that we're trying to solve,
+
+1684
+01:22:22,560 --> 01:22:24,080
+or the structure of the data.
+
+1685
+01:22:24,080 --> 01:22:26,460
+Perhaps it could be more computationally efficient.
+
+1686
+01:22:26,460 --> 01:22:29,860
+Perhaps it could make it easier to find the approximator
+
+1687
+01:22:29,860 --> 01:22:32,100
+that we're looking for.
+
+1688
+01:22:32,100 --> 01:22:33,560
+OK, that's the end of the lecture.
+
+1689
+01:22:33,560 --> 01:22:35,630
+Thank you, everyone.

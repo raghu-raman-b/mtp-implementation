@@ -1,0 +1,563 @@
+1
+00:00:15,250 --> 00:00:21,040
+Yeah so we started looking at linear classification and so last class we looked at logistic regression
+
+2
+00:00:21,040 --> 00:00:28,111
+right so you remember the assumptions that we made for logistic regressions we assume
+
+3
+00:00:28,111 --> 00:00:34,660
+that the log odds can be modeled as a linear function right.
+
+4
+00:00:34,660 --> 00:00:44,970
+So each the individual the probabilities were given by sigmoid functions right but the log
+
+5
+00:00:44,970 --> 00:00:50,350
+odds was assumed to be linear right that is where we started off with right and that gave
+
+6
+00:00:50,350 --> 00:00:55,850
+us a linear decision boundary right correct.
+
+7
+00:00:55,850 --> 00:01:01,020
+So the separating surface between two classes ended up being linear if people remember what
+
+8
+00:01:01,020 --> 00:01:06,680
+log odds was probability of class one divided by probability of class zero the log of that
+
+9
+00:01:06,680 --> 00:01:12,600
+assume that was linear right so that's the assumption we made in logistic regression
+
+10
+00:01:12,600 --> 00:01:19,820
+so today we look at another one of those discriminant based approaches so we already looked at two
+
+11
+00:01:19,820 --> 00:01:23,710
+one was linear regression on an indicator variable right.
+
+12
+00:01:23,710 --> 00:01:33,689
+The second one was logistic regression they look at the third popular classifier.
+
+13
+00:01:33,689 --> 00:01:40,740
+C:\Documents and Settings\user\Desktop\2017-09-13 13_23_18-0_16_17.1 Express Scribe Transcription
+
+14
+00:01:40,740 --> 00:01:41,740
+Software Pro (Unlicensed) Non-commercial .png
+
+15
+00:01:41,740 --> 00:01:46,200
+And also known as LDA unfortunately in machine learning there are two very popular algorithms
+
+16
+00:01:46,200 --> 00:01:52,140
+both of which are abbreviated as LDA so this was the older one okay linear discriminant
+
+17
+00:01:52,140 --> 00:01:57,439
+analysis there's also something called latent dirichlet allocation which we will not get
+
+18
+00:01:57,439 --> 00:02:04,759
+into maybe not mostly not right and which talks about a completely different approach
+
+19
+00:02:04,759 --> 00:02:08,410
+to modeling distributions okay it is nothing to do with classification it is more on modeling
+
+20
+00:02:08,410 --> 00:02:14,350
+distribution that’s also sometimes abbreviated as LDA so be context-sensitive when you use
+
+21
+00:02:14,350 --> 00:02:15,840
+LDA.
+
+22
+00:02:15,840 --> 00:02:23,290
+Right so if you remember so we are really interested in the probability of a class given
+
+23
+00:02:23,290 --> 00:02:28,100
+the data point right we are really interested in the probability of the class given the
+
+24
+00:02:28,100 --> 00:02:39,190
+data point and you can get this using Baye’s rule if you have the probability of the data
+
+25
+00:02:39,190 --> 00:02:44,620
+point given a class and what else?
+
+26
+00:02:44,620 --> 00:02:56,900
+probability yes we can fake that what else you need probability of the class right so
+
+27
+00:02:56,900 --> 00:03:00,060
+probability of the data point given class times probability of the class divided by
+
+28
+00:03:00,060 --> 00:03:03,660
+probability of the data point . Right so what we will do is we will start
+
+29
+00:03:03,660 --> 00:03:14,440
+by making assumptions on probability of the data point given the class is K okay. so these
+
+30
+00:03:14,440 --> 00:03:21,650
+are also known as class conditioned densities the class conditioned density of the data
+
+31
+00:03:21,650 --> 00:03:32,750
+point apologies for that so I am going to denote
+
+32
+00:03:32,750 --> 00:03:39,069
+by Fk of x probability of given that the class was k okay.
+
+33
+00:03:39,069 --> 00:03:46,671
+This is the class conditional density right and I am going to assume that pie K is the
+
+34
+00:03:46,671 --> 00:04:07,080
+prior probability of class K. Right
+
+35
+00:04:07,080 --> 00:04:17,959
+so we assumed that all data points belong to some class or way other so that's going
+
+36
+00:04:17,959 --> 00:05:07,520
+to be one so now I can write right so we have been using ‘l’ throughout so
+
+37
+00:05:07,520 --> 00:05:11,810
+that makes sense that is why I told you do not need the probability of the data right
+
+38
+00:05:11,810 --> 00:05:16,850
+I can always fake that by saying that since the data has to belong to some class right
+
+39
+00:05:16,850 --> 00:05:20,190
+so I can just sum over all the classes I will get the probability of the data.
+
+40
+00:05:20,190 --> 00:05:26,210
+So they essentially marginalizing over class and I get the probability of the data okay
+
+41
+00:05:26,210 --> 00:05:34,720
+and now depending on the kind of assumptions we make for our fk the form of fk right depending
+
+42
+00:05:34,720 --> 00:05:42,000
+on the kind of assumptions we make for the form of fk we will get different classifiers.
+
+43
+00:05:42,000 --> 00:05:54,389
+right so some of the most popular assumptions about fk are that fk is causing if K
+
+44
+00:05:54,389 --> 00:06:04,610
+is Gaussian right both LDA and a related method called QDA a any guesses what QDA is quadratic
+
+45
+00:06:04,610 --> 00:06:12,550
+discriminate analysis right both of them assume that the class condition density FK is given
+
+46
+00:06:12,550 --> 00:06:16,090
+by a single multivariate gaussian.
+
+47
+00:06:16,090 --> 00:06:22,569
+It is given by a single multivariate gaussian right you could also assume that the class
+
+48
+00:06:22,569 --> 00:06:30,230
+conditional densities come from mixtures so instead of a single Gaussian right you assume
+
+49
+00:06:30,230 --> 00:06:36,080
+that there are multiple gaussians which jointly generate the data for you right so people
+
+50
+00:06:36,080 --> 00:06:46,389
+are familiar with the concept of a mixture distribution yes no okay very simple it is
+
+51
+00:06:46,389 --> 00:06:52,660
+like let us do a little segue you here suppose I want to model this following distribution
+
+52
+00:06:52,660 --> 00:06:55,910
+over univariate data right.
+
+53
+00:06:55,910 --> 00:07:03,229
+So this single dimension right and they axis actually tells me the probability of seeing
+
+54
+00:07:03,229 --> 00:07:11,430
+something right but what I want to do something like that can you think of a parametric form
+
+55
+00:07:11,430 --> 00:07:16,080
+that will give me this kind of a distribution looks a little daunting right can you come
+
+56
+00:07:16,080 --> 00:07:20,759
+up with like a closed form expression for this it looks little daunting right but if
+
+57
+00:07:20,759 --> 00:07:30,880
+you think about it I can look at another Gaussian like that and I can suitably weigh that two
+
+58
+00:07:30,880 --> 00:07:35,350
+of them and I can combine their distributions right.
+
+59
+00:07:35,350 --> 00:07:40,570
+So the combined distribution will look like it has two peaks alright so this is essentially
+
+60
+00:07:40,570 --> 00:07:45,550
+the idea behind mixture distributions so if the form of the distribution I want seems
+
+61
+00:07:45,550 --> 00:07:51,280
+rather complex right and I want to have a simpler functional form for the represent
+
+62
+00:07:51,280 --> 00:07:57,639
+for the distribution I can think of writing it as a combination of several simpler distributions
+
+63
+00:07:57,639 --> 00:07:58,680
+right.
+
+64
+00:07:58,680 --> 00:08:05,990
+So likewise suppose my positive class look like this right so how will it look like in
+
+65
+00:08:05,990 --> 00:08:34,500
+in a 2D setting right so let us think of it so my data looks like this is the positive
+
+66
+00:08:34,500 --> 00:08:41,069
+class there's another class that comes to here okay so if you think about it this there
+
+67
+00:08:41,069 --> 00:08:46,130
+is more data points here right and then there are more data points here and there is a slight
+
+68
+00:08:46,130 --> 00:08:50,160
+region of lesser density in between the two right.
+
+69
+00:08:50,160 --> 00:08:55,410
+If I try to model this as a single Gaussian right and if I use any kind of maximum likelihood
+
+70
+00:08:55,410 --> 00:09:02,200
+estimate where will the peak go it peak probability will be somewhere here who is obviously incorrect
+
+71
+00:09:02,200 --> 00:09:06,370
+right so like where's the peak probability will be somewhere here for the negative class
+
+72
+00:09:06,370 --> 00:09:10,500
+which is obviously incorrect I suppose to that if I say that okay they're both the positive
+
+73
+00:09:10,500 --> 00:09:16,130
+class and the negative class are created by too Gaussians each right then the mixture
+
+74
+00:09:16,130 --> 00:09:20,410
+of this so I can have one Gaussian which has a peak somewhere here other Gaussian which
+
+75
+00:09:20,410 --> 00:09:24,810
+has a peak somewhere here likewise one for this and one for this and then I can combine
+
+76
+00:09:24,810 --> 00:09:26,720
+them using some kind of weighting mechanism.
+
+77
+00:09:26,720 --> 00:09:31,570
+All right so this is what we mean by mixture distributions giving you class densities okay
+
+78
+00:09:31,570 --> 00:09:36,450
+so you can think about this I mean I can have more arbitrarily complex kind of distributions
+
+79
+00:09:36,450 --> 00:09:40,551
+here and then instead of having two Gaussians I can say okay I am going to have ten and
+
+80
+00:09:40,551 --> 00:09:45,240
+also in they need not be Gaussian say could be other functional forms but the more complex
+
+81
+00:09:45,240 --> 00:10:02,100
+the forms I take the harder it is going to become solving this problem So fk if you remember
+
+82
+00:10:02,100 --> 00:10:09,191
+it's the probability of x given G right given that class is K right so this is a probability
+
+83
+00:10:09,191 --> 00:10:13,670
+that given the classes case so likewise so if I have two mixture of two Gaussians here
+
+84
+00:10:13,670 --> 00:10:18,840
+that’ll be the probability of the data point given that the class is X and here they are
+
+85
+00:10:18,840 --> 00:10:28,720
+given that the class is whatever right so that is what we are mapping here so mixtures
+
+86
+00:10:28,720 --> 00:10:45,410
+are fine if we still want to stay in a parametric space right well then yeah
+
+87
+00:10:45,410 --> 00:10:50,760
+so that is a hard problem right so usually you take some guess from whatever knowledge
+
+88
+00:10:50,760 --> 00:10:55,820
+you have about the domain right or you can do some preliminary experiments you can try
+
+89
+00:10:55,820 --> 00:11:00,440
+to run some kind of rough clustering by varying the number of clusters and trying to see whether
+
+90
+00:11:00,440 --> 00:11:04,630
+you can decide on the number of mixture components alternatively.
+
+91
+00:11:04,630 --> 00:11:17,060
+You could do nonparametric methods they are more complex but in the last 5, 6 years so
+
+92
+00:11:17,060 --> 00:11:22,399
+lots of tools have been developed to be able to handle these kinds of nonparametric reasoning
+
+93
+00:11:22,399 --> 00:11:28,260
+okay. so nonparametric is actually slightly misleading it does not mean that it does not
+
+94
+00:11:28,260 --> 00:11:34,620
+have any parameters okay it only means that it has an unbounded number of parameters okay
+
+95
+00:11:34,620 --> 00:11:39,351
+so it does not mean it doesn't have any parameters it is just that I do not fix it a prior like
+
+96
+00:11:39,351 --> 00:11:43,710
+we are fixing the mixture component I’m saying okay the Gaussians per class right
+
+97
+00:11:43,710 --> 00:11:48,089
+I fixed it okay when you fix these things we call them parametric and nonparametric
+
+98
+00:11:48,089 --> 00:11:54,120
+methods typically can add parameters if the data needs it right you can start off with
+
+99
+00:11:54,120 --> 00:11:55,370
+just one Gaussian okay.
+
+100
+00:11:55,370 --> 00:11:58,930
+And then figure out oh no I need more okay then I can add another Gaussian here I can
+
+101
+00:11:58,930 --> 00:12:02,220
+add another Gaussian ands on so forth right so that is essentially what nonparametric
+
+102
+00:12:02,220 --> 00:12:07,850
+methods bias right the ability to grow the number of parameters needed if it is supported
+
+103
+00:12:07,850 --> 00:12:12,209
+by the data the data warrants it right so obviously we'll have to be very careful about
+
+104
+00:12:12,209 --> 00:12:17,190
+doing things like over fitting the data but there are other ways of adjusting for it so
+
+105
+00:12:17,190 --> 00:12:21,529
+I like I said in the last five years a lot of powerful techniques have come up for nonparametric
+
+106
+00:12:21,529 --> 00:12:28,889
+reasoning but I'm not going to cover any of that in the class like I keep reminding you
+
+107
+00:12:28,889 --> 00:12:33,970
+people is intro to ml course right if at all we do an advanced topics in machine learning
+
+108
+00:12:33,970 --> 00:12:37,590
+course then we will probably cover some of that right there hoping to hire a few more
+
+109
+00:12:37,590 --> 00:12:49,010
+faculty members who can start taking all of these courses it was the most popular.
+
+110
+00:12:49,010 --> 00:12:52,519
+So I do not fix the bound a priori I do not say that okay you can use only three Gaussians
+
+111
+00:12:52,519 --> 00:12:57,430
+per class right so you can keep adding more Gaussians if the data warrants it that’s
+
+112
+00:12:57,430 --> 00:13:02,660
+what I meant unbounded so I don't put the bound a priori and obviously I mean that is
+
+113
+00:13:02,660 --> 00:13:07,579
+always a physical bound but in the modeling sense I don't bound it apriori I don't say
+
+114
+00:13:07,579 --> 00:13:11,959
+that oh you have to use ten Gaussians yeah .
+
+115
+00:13:11,959 --> 00:13:19,889
+So the most popular of assumptions that people typically make on FK is sometimes called the
+
+116
+00:13:19,889 --> 00:13:23,269
+Naive Bayes assumption we will deal with this separately and just putting it out here to
+
+117
+00:13:23,269 --> 00:13:28,600
+just to tell you that all of this come under the same class okay so the Naïve Bayes assumption
+
+118
+00:13:28,600 --> 00:13:35,800
+is essentially to factor my class condition density along each dimension assuming given
+
+119
+00:13:35,800 --> 00:13:40,709
+the class one dimension does not influence the other dimension.
+
+120
+00:13:40,709 --> 00:13:45,440
+Right so if I have two dimensions here X1 and X2 so I will say that I can write the
+
+121
+00:13:45,440 --> 00:13:52,240
+probability of x given K as probability of x1 given K times probability of x2 given K
+
+122
+00:13:52,240 --> 00:14:00,550
+that is a very strong assumption if you think about it and I'm saying given the class x1
+
+123
+00:14:00,550 --> 00:14:05,139
+is independent of x2 - if I don’t know the class it look like there is some dependence
+
+124
+00:14:05,139 --> 00:14:10,250
+between x1 and x2 but given K I'll ask you x1 is independent of x2 - so this is essentially
+
+125
+00:14:10,250 --> 00:14:14,470
+called the naive Bayes assumption because looks like a very simplistic assumption right
+
+126
+00:14:14,470 --> 00:14:15,720
+looks like a very naive assumption.
+
+127
+00:14:15,720 --> 00:14:20,310
+To make about the data so it's called Naive bayes and it turns out to be powerful in many
+
+128
+00:14:20,310 --> 00:14:24,630
+settings we will come back to Naive bayes separately in one of the later classes and
+
+129
+00:14:24,630 --> 00:15:05,529
+so right now I am going to go back to Gaussian right so I am going to assume that
+
+130
+00:15:05,529 --> 00:15:15,540
+so it looks familiar that's the Gaussian distribution okay so you have root two pi sigma okay.
+
+131
+00:15:15,540 --> 00:15:22,380
+So that is Λ so if I'm looking at a univariate Gaussian I will write the variance here looking
+
+132
+00:15:22,380 --> 00:15:28,930
+at multivariate Gaussian this is the covariance right this is the covariance matrix this is
+
+133
+00:15:28,930 --> 00:15:36,699
+multivariate Gaussian right and here again this is what X minus mu squared by sigma right
+
+134
+00:15:36,699 --> 00:15:42,250
+so this is the people must be familiar by now when I say X minus mu transpose X minus
+
+135
+00:15:42,250 --> 00:15:47,709
+that is actually this square right in the vector sense and then by sigma becomes sigma
+
+136
+00:15:47,709 --> 00:15:50,949
+inverse this is the covariance matrix.
+
+137
+00:15:50,949 --> 00:15:55,610
+So this is the called the multivariate Gaussian right so the univariate Gaussians are familiar
+
+138
+00:15:55,610 --> 00:16:01,300
+about is for this kind of scenario so the multivariate Gaussian will capture these kinds
+
+139
+00:16:01,300 --> 00:16:04,820
+of scenarios right so where the input rate of dimensions itself is 2 and now I have to
+
+140
+00:16:04,820 --> 00:16:14,130
+have a Gaussian that is actually jutting out of the window and the board yeah okay is it
+
+141
+00:16:14,130 --> 00:16:16,560
+people are okay with that.

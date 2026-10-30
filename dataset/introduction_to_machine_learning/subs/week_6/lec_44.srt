@@ -1,0 +1,775 @@
+1
+00:00:08,639 --> 00:00:16,660
+Okay, good.
+
+2
+00:00:16,660 --> 00:00:20,779
+So today we will look at some measures that are typically used in classification.
+
+3
+00:00:20,779 --> 00:00:27,099
+And so, I will primarily focus on two class problems okay.
+
+4
+00:00:27,099 --> 00:00:33,080
+The main reason is that more often than not the classification problems will encounter
+
+5
+00:00:33,080 --> 00:00:37,990
+is for two classes, you know want to identify it as belonging to a class or not belonging
+
+6
+00:00:37,990 --> 00:00:44,420
+to a class right so multiclass classification is little rarer to combine right.
+
+7
+00:00:44,420 --> 00:00:52,019
+And frankly two class classification has a lot more richer set of measures that people
+
+8
+00:00:52,019 --> 00:00:57,170
+have proposed and usually the ones that we use for multiclass classification or extensions
+
+9
+00:00:57,170 --> 00:01:01,000
+of these measures to multiclass okay.
+
+10
+00:01:01,000 --> 00:01:13,540
+So the first thing I want to introduce you to is something called the
+
+11
+00:01:13,540 --> 00:01:14,979
+confusion matrix okay.
+
+12
+00:01:14,979 --> 00:01:20,640
+So is nothing to do with the understanding of the course material or anything so far
+
+13
+00:01:20,640 --> 00:01:23,710
+okay, it is something completely different right.
+
+14
+00:01:23,710 --> 00:01:54,030
+So I say it is a 2 class problem, let us say the classes are 0 and 1 right.
+
+15
+00:01:54,030 --> 00:01:58,150
+So I am going to say that, so I am going to form this matrix so the true classes are on
+
+16
+00:01:58,150 --> 00:02:01,430
+the rows, the predicted classes are on the columns right.
+
+17
+00:02:01,430 --> 00:02:07,460
+I mean it does not matter if you do the transpose of this as long as you remember the meaning
+
+18
+00:02:07,460 --> 00:02:11,180
+of the numbers that going here okay.
+
+19
+00:02:11,180 --> 00:02:16,680
+Let us, I am going to change this slightly, so I am going to call class instead of calling
+
+20
+00:02:16,680 --> 00:02:19,319
+them 0 and 1 as we have done so far okay.
+
+21
+00:02:19,319 --> 00:02:26,220
+So I am going to call them positive and negative.
+
+22
+00:02:26,220 --> 00:02:32,590
+So it makes it little easier for me, so what is the positive class, typically the class
+
+23
+00:02:32,590 --> 00:02:36,340
+of interest to us right.
+
+24
+00:02:36,340 --> 00:02:39,790
+So what we will denote as positive class is the class of interest to us, what we denote
+
+25
+00:02:39,790 --> 00:02:42,569
+as negative class is the class that we do not want right.
+
+26
+00:02:42,569 --> 00:02:46,450
+So when I say that in some problem that the positive class is that person is suffering
+
+27
+00:02:46,450 --> 00:02:51,180
+from dengue, it does not mean that dengue is something positive okay.
+
+28
+00:02:51,180 --> 00:02:53,900
+It just means it is a class of interest to us, so just remember this okay.
+
+29
+00:02:53,900 --> 00:02:57,819
+So when I say positive class it is a class of interest okay.
+
+30
+00:02:57,819 --> 00:03:05,550
+And more often than not your positive class in the population will be small right, hopefully
+
+31
+00:03:05,550 --> 00:03:09,960
+right, I mean not too many of you have dengue right.
+
+32
+00:03:09,960 --> 00:03:13,690
+So the positive class will be small and the negative class will be large right.
+
+33
+00:03:13,690 --> 00:03:23,700
+So and we have to worry about getting the, what does it mean, of course yes.
+
+34
+00:03:23,700 --> 00:03:28,629
+I mean that is my interest, so I am a doctor, I need patients to pay me right.
+
+35
+00:03:28,629 --> 00:03:33,660
+So obviously the people were sick or more interesting to me then the people who are
+
+36
+00:03:33,660 --> 00:03:35,769
+healthy right.
+
+37
+00:03:35,769 --> 00:03:41,840
+So that is the class of interest and the negative class is the other class, I am not so much
+
+38
+00:03:41,840 --> 00:03:43,410
+interested in right.
+
+39
+00:03:43,410 --> 00:03:49,340
+So things that go in here right, so with the true class is positive right and I am also
+
+40
+00:03:49,340 --> 00:04:02,810
+predicting it to be positive okay, these things are called
+
+41
+00:04:02,810 --> 00:04:08,360
+true positive okay, otherwise known as we will denote them as TP right, there are true
+
+42
+00:04:08,360 --> 00:04:09,790
+positives okay.
+
+43
+00:04:09,790 --> 00:04:18,590
+And what about these guys, they are true negatives right.
+
+44
+00:04:18,590 --> 00:04:23,300
+They are actually true class is negative and the predicted class is negative there are
+
+45
+00:04:23,300 --> 00:04:24,300
+true negatives right.
+
+46
+00:04:24,300 --> 00:04:28,580
+So that is why I said, you just had to remember which the true positive, which is the true
+
+47
+00:04:28,580 --> 00:04:29,630
+negative and other things here.
+
+48
+00:04:29,630 --> 00:04:33,669
+So whether you write it this way or whether you write the transpose it does not matter
+
+49
+00:04:33,669 --> 00:04:37,780
+right, as long as you flip these three things, these two things around so what about these
+
+50
+00:04:37,780 --> 00:04:43,210
+guys, false right.
+
+51
+00:04:43,210 --> 00:04:57,830
+So what about this, some of you know about true positive false for everything right,
+
+52
+00:04:57,830 --> 00:05:02,390
+everyone has been telling me all of this, so where have we encountered this before,
+
+53
+00:05:02,390 --> 00:05:07,530
+nowhere so glaringly obvious okay good, great.
+
+54
+00:05:07,530 --> 00:05:16,050
+So now what is the most common classification thing that we know about this classification
+
+55
+00:05:16,050 --> 00:05:20,979
+error right so accuracy right so minus 1 the miss classification error is known as accuracy
+
+56
+00:05:20,979 --> 00:05:35,969
+right what will be the miss classification error here where n is the total number of
+
+57
+00:05:35,969 --> 00:05:58,310
+data points, right this is what miss classification so what about accuracy.
+
+58
+00:05:58,310 --> 00:06:04,390
+Yeah so n is the total number of radar points okay it is not the total number of negative
+
+59
+00:06:04,390 --> 00:06:09,380
+points in case somebody is worried about that but I need a symbol for total number of negative
+
+60
+00:06:09,380 --> 00:06:17,899
+points also I will introduce something later right this is known as accuracy right as you
+
+61
+00:06:17,899 --> 00:06:28,000
+can see is 1- miss classification error right and what are the other things that we know
+
+62
+00:06:28,000 --> 00:06:33,630
+of that are popular right so you can take a lot of different ratios of these numbers
+
+63
+00:06:33,630 --> 00:06:36,400
+right and come up with different evaluation measures right.
+
+64
+00:06:36,400 --> 00:06:53,979
+So I will talk about a few popular once so anyone know what prison is
+
+65
+00:06:53,979 --> 00:07:06,950
+true positive
+
+66
+00:07:06,950 --> 00:07:12,050
+so what does it mean so the classifier is going to tell you so many data points are
+
+67
+00:07:12,050 --> 00:07:17,339
+of the positive class right the classifier is telling you so many data points are of
+
+68
+00:07:17,339 --> 00:07:24,680
+the positive class how many of them are really positive right so the denominator is also
+
+69
+00:07:24,680 --> 00:07:30,890
+those points which the classifier is telling are positive, right so true positive plus
+
+70
+00:07:30,890 --> 00:07:34,620
+the false positive are all the points that the classifier tells you are positive and
+
+71
+00:07:34,620 --> 00:07:39,410
+the true positive are the once that are truly positive right this ratio give me the what
+
+72
+00:07:39,410 --> 00:07:42,680
+is called the precision right.
+
+73
+00:07:42,680 --> 00:07:48,060
+So precision can be defined per class if you will if you want to rights so here I am doing
+
+74
+00:07:48,060 --> 00:07:51,380
+this only for a two class thing that is why we are talking about positives but suppose
+
+75
+00:07:51,380 --> 00:07:56,550
+I had k class problem I can treat it like a 2 class problem and I can give you the precision
+
+76
+00:07:56,550 --> 00:08:02,310
+for any class, so suppose class I am interested in some class k okay I just keep that as the
+
+77
+00:08:02,310 --> 00:08:07,821
+positive class and everything else as a negative class right now I can create a true positive
+
+78
+00:08:07,821 --> 00:08:12,210
+true negatives, so I can actually talk about precision for class k precision class I and
+
+79
+00:08:12,210 --> 00:08:13,210
+so and so forth.
+
+80
+00:08:13,210 --> 00:08:17,620
+It can for a multi class problem I can talk about precision right but typically this defined
+
+81
+00:08:17,620 --> 00:08:26,899
+for 2 class problem, so there is a complementory measure for precision know as recall right
+
+82
+00:08:26,899 --> 00:08:43,010
+so what is recall all is negative, so what is recall essentially there are so many positive
+
+83
+00:08:43,010 --> 00:08:50,220
+points in the data right there are positive points in the data of these positive points
+
+84
+00:08:50,220 --> 00:08:55,580
+what fraction is the classifier telling you are positive.
+
+85
+00:08:55,580 --> 00:09:03,720
+Right we get that all the positive points in the data which is true positive + false
+
+86
+00:09:03,720 --> 00:09:09,160
+negative right how what fraction of it is the classifier telling you are positive so
+
+87
+00:09:09,160 --> 00:09:18,570
+that is recall right so one way of thinking about it is so precision recall actually originate
+
+88
+00:09:18,570 --> 00:09:23,290
+from information retrieval they are not originally for the classification domain they are originally
+
+89
+00:09:23,290 --> 00:09:28,180
+proposed as a measures for evaluating information retrieval, so what do you mean by information
+
+90
+00:09:28,180 --> 00:09:32,360
+retrieval so there is some repository of documents right.
+
+91
+00:09:32,360 --> 00:09:37,390
+Then you type in a search query right and then I give you back results corresponding
+
+92
+00:09:37,390 --> 00:09:43,760
+to that search query right suppose there are 10 results that I give to you right of this
+
+93
+00:09:43,760 --> 00:09:53,330
+10 how many truly relevant to the query, what is that precisions suppose there are 50 documents
+
+94
+00:09:53,330 --> 00:09:57,420
+in repository that are true relevant to the query how many of them appear in that 10 that
+
+95
+00:09:57,420 --> 00:10:03,500
+is recall right so that is why it is called recall so how many of them to by actually
+
+96
+00:10:03,500 --> 00:10:09,120
+recall from the repository so I have this huge repository of documents, how many of
+
+97
+00:10:09,120 --> 00:10:12,340
+the truly relevant documents to by recall from the repository so that is why is call
+
+98
+00:10:12,340 --> 00:10:20,650
+recall and procession you can see this is actually miss normal for people who are used
+
+99
+00:10:20,650 --> 00:10:33,190
+to measurements right, what is precision in measurements sorry, how there is no not enough
+
+100
+00:10:33,190 --> 00:10:35,670
+closeness in precision right.
+
+101
+00:10:35,670 --> 00:10:54,060
+No, elec guys come on how many elect guys are still in the class, 2,3,5,6,7,8 okay yeah,
+
+102
+00:10:54,060 --> 00:11:02,150
+so what is precision sorry, how we elects valid precision if we go to measurements right,
+
+103
+00:11:02,150 --> 00:11:06,440
+precession is essentially how many digits you are going to actually measure it to okay,
+
+104
+00:11:06,440 --> 00:11:10,610
+that is precision you did not be accurate okay, the accuracy tells you how correct you
+
+105
+00:11:10,610 --> 00:11:16,350
+are right, we can be less precise and very accurate and it can be very precise and very
+
+106
+00:11:16,350 --> 00:11:20,510
+inaccurate I mean I can give you absolutely random number to 10 decimal places so I will
+
+107
+00:11:20,510 --> 00:11:21,780
+be very precised, right.
+
+108
+00:11:21,780 --> 00:11:27,560
+But I cannot make any guarantees about the accuracy, but precession here is nothing to
+
+109
+00:11:27,560 --> 00:11:34,460
+do with that okay, so precession here is essentially all to do with correctness, right so if I
+
+110
+00:11:34,460 --> 00:11:37,250
+giving you 10 answers how many of them are correct.
+
+111
+00:11:37,250 --> 00:11:55,520
+So why is this is a good measure, when this is a good measure already I told you an example,
+
+112
+00:11:55,520 --> 00:12:00,900
+information retrieval right, so what characterizes information retrieval if you think about it,
+
+113
+00:12:00,900 --> 00:12:06,010
+why cannot I use accuracy in information retrieval as a measure, why do I need something new,
+
+114
+00:12:06,010 --> 00:12:07,010
+right.
+
+115
+00:12:07,010 --> 00:12:12,760
+Why cannot I use the following measure okay, I type in a query I give you back 10 results
+
+116
+00:12:12,760 --> 00:12:19,120
+okay that means of the remaining documents okay, so I have rejected all of them right,
+
+117
+00:12:19,120 --> 00:12:22,480
+so these 10 documents I have classified as being relevant to your query the remaining
+
+118
+00:12:22,480 --> 00:12:26,110
+documents I have classified as not relevant to your query, so among those I have classified
+
+119
+00:12:26,110 --> 00:12:29,840
+as a relevant how many are truly relevant, among those I classified as not relevant,
+
+120
+00:12:29,840 --> 00:12:33,500
+how many are truly not relevant and I can do an accuracy, right.
+
+121
+00:12:33,500 --> 00:12:41,360
+I can do miss classification error, so is that not a good measure for information retrieval.
+
+122
+00:12:41,360 --> 00:12:49,290
+Yeah, so there will be like I said 50 documents at extra relevant to your query but you might
+
+123
+00:12:49,290 --> 00:12:54,610
+have a 10 million document copy though if you Google you have several 100 billion documents
+
+124
+00:12:54,610 --> 00:12:59,580
+as your copyrights right, and of which 10 or 15 might be relevant to your query right.
+
+125
+00:12:59,580 --> 00:13:06,930
+So if I just use accuracy as a evaluation measure right, I need to be really, really
+
+126
+00:13:06,930 --> 00:13:12,110
+precise in the measurement sense to make out any difference between two algorithms, because
+
+127
+00:13:12,110 --> 00:13:14,540
+they mostly they will be correct.
+
+128
+00:13:14,540 --> 00:13:19,510
+And because of large fraction of the data I am going to say is irrelevant and I will
+
+129
+00:13:19,510 --> 00:13:25,320
+be correct right, suppose I have two million documents and I am returning 10 to you right,
+
+130
+00:13:25,320 --> 00:13:30,640
+and there are only 50 things that are relevant so basically I am right mostly right, a few
+
+131
+00:13:30,640 --> 00:13:36,410
+things I miss here and there but I am correctly most of the time, because I have said large
+
+132
+00:13:36,410 --> 00:13:43,170
+fraction of the irrelevant documents are truly irrelevant, right so that way I am good right,
+
+133
+00:13:43,170 --> 00:13:44,170
+so that is not a good measure.
+
+134
+00:13:44,170 --> 00:13:49,640
+So when there is extreme class imbalance right, accuracy is not a good measure right, only
+
+135
+00:13:49,640 --> 00:13:56,660
+1% of your data is of positive class then if I say everything is negative class I am
+
+136
+00:13:56,660 --> 00:14:13,840
+99% accurate, but my precession will be what, you can define it to be 0 but in mathematically
+
+137
+00:14:13,840 --> 00:14:16,860
+it will be undefined because I said everything is negative class I have no true positive,
+
+138
+00:14:16,860 --> 00:14:21,420
+no false positive okay, so but you can define it to be 0 if you want and recall will also
+
+139
+00:14:21,420 --> 00:14:26,740
+be 0 in that case, okay.
+
+140
+00:14:26,740 --> 00:14:33,070
+But quite often so what you will find is that if you try to increase you precision right,
+
+141
+00:14:33,070 --> 00:14:40,860
+your recall will fall, when you try to increase your recall your precession will fall right,
+
+142
+00:14:40,860 --> 00:14:50,390
+why is that so if you want to pull in more of the positive class right, if you try to
+
+143
+00:14:50,390 --> 00:14:54,920
+pull in more of the positive if you want to predict suppose there are 40 documents that
+
+144
+00:14:54,920 --> 00:14:58,900
+are relevant and I want to predict all 40 of them as a being relevant so the easiest
+
+145
+00:14:58,900 --> 00:15:02,860
+way to ensure that is predict everything as being relevant, right so may recall will be
+
+146
+00:15:02,860 --> 00:15:03,860
+very high.
+
+147
+00:15:03,860 --> 00:15:11,680
+Right which will be 100 percent right but the position will be too low depends on what
+
+148
+00:15:11,680 --> 00:15:15,970
+is my universe of documents precision will be too low so and if you want to have very
+
+149
+00:15:15,970 --> 00:15:27,440
+high precision what we have to do predict only sure documents select no documents that
+
+150
+00:15:27,440 --> 00:15:31,600
+go back and define zero base zero as one instead of defining it has zero right.
+
+151
+00:15:31,600 --> 00:15:36,990
+So we will define zero and zero minute ago and define it has one right because if undefined
+
+152
+00:15:36,990 --> 00:15:41,680
+you can do whatever you want with it right so select no documents is saying as 100% precise
+
+153
+00:15:41,680 --> 00:15:45,130
+obviously because you cannot point out the mistake I have made in giving documents back
+
+154
+00:15:45,130 --> 00:15:50,900
+to you so we will recall and we will suffer because recall will be zero right.
+
+155
+00:15:50,900 --> 00:15:55,779
+So there is always precision and recall right so we have to figure out where you want to
+
+156
+00:15:55,779 --> 00:16:07,731
+pitch your algorithm right so typically people draw what are known has PR curves right precision
+
+157
+00:16:07,731 --> 00:16:17,310
+and recall curves and how do you think this PR curves look like, like this, like this
+
+158
+00:16:17,310 --> 00:16:37,029
+yeah like that here it really want to be here right.
+
+159
+00:16:37,029 --> 00:16:44,480
+You do not have high precision and high recall but then you can compare algorithm so you
+
+160
+00:16:44,480 --> 00:16:51,279
+compares again this PR curves right for example again let us go on I will tell you little
+
+161
+00:16:51,279 --> 00:17:09,640
+bit more as we get long right
+
+162
+00:17:09,640 --> 00:17:16,679
+so there is another measure which is especially popular in medical literature call specificity
+
+163
+00:17:16,679 --> 00:17:38,010
+so what is specificity something different from what we are seeing so far it is
+
+164
+00:17:38,010 --> 00:17:45,630
+what does it mean yeah so what does it mean what does its schematic of this.
+
+165
+00:17:45,630 --> 00:17:50,660
+So schematics of this if I say that something is if I have a high sensitivity sorry if I
+
+166
+00:17:50,660 --> 00:17:56,030
+have high specificity it means that if I say something is negative then it is for truly
+
+167
+00:17:56,030 --> 00:18:08,430
+it is really negative right so why it is good thing to have exactly right so this is very
+
+168
+00:18:08,430 --> 00:18:15,010
+useful in medical test so I run the test and I said that you do not have malaria right
+
+169
+00:18:15,010 --> 00:18:18,410
+or well must be topical you do not have dengue right.
+
+170
+00:18:18,410 --> 00:18:21,170
+Then you really should not have dengue it should not be say okay he said he does not
+
+171
+00:18:21,170 --> 00:18:25,040
+have dengue but then really has as a 50 percent of chance he actually has dengue even though
+
+172
+00:18:25,040 --> 00:18:28,960
+the test says that you do not have dengue okay that is the bad thing to have right so
+
+173
+00:18:28,960 --> 00:18:33,900
+in such cases specificity is very important so if you are building a classifier right
+
+174
+00:18:33,900 --> 00:18:37,150
+that predicts whether a person is suffering from a particular disease or not.
+
+175
+00:18:37,150 --> 00:18:49,059
+Then it should have a high specificity okay the flips side of specificity
+
+176
+00:18:49,059 --> 00:19:01,860
+is right is a terminology that comes from medical domain right so sensitivity is true
+
+177
+00:19:01,860 --> 00:19:07,000
+positive by true positive plus false positive and specificity is too negative by true negative
+
+178
+00:19:07,000 --> 00:19:14,070
+by false negative okay it looks like at the other things that you leave out here okay
+
+179
+00:19:14,070 --> 00:19:17,870
+this is specificity this is sensitivity.
+
+180
+00:19:17,870 --> 00:19:22,720
+The two measures that you just like a precision and recall and information retrieval in medical
+
+181
+00:19:22,720 --> 00:19:28,910
+literature you have sensitivity and specificity okay sensitivity is just like precision well
+
+182
+00:19:28,910 --> 00:19:34,710
+specificity is the opposite of that right so sensitivity says okay how likely you have
+
+183
+00:19:34,710 --> 00:19:46,000
+to sensitivity is recall I think sensitivity is recall sorry yeah sensitivity is recall
+
+184
+00:19:46,000 --> 00:19:51,550
+so it just says how likely are you to diagnose the disease right.
+
+185
+00:19:51,550 --> 00:19:58,230
+If there are so many patients with this particular disease how likely I am to find a patient
+
+186
+00:19:58,230 --> 00:20:02,500
+with the disease right so what fraction of the patient is fully discover if there are
+
+187
+00:20:02,500 --> 00:20:07,610
+the disease so that is the sensitivity and specificity is essentially if at all you do
+
+188
+00:20:07,610 --> 00:20:15,830
+not have disease how likely is that you do not have disease okay right.
+
+189
+00:20:15,830 --> 00:20:22,799
+So for regression we already looked at a classify measure so more or less is the same thing
+
+190
+00:20:22,799 --> 00:20:27,299
+right so basically you look at squared error right so all the interesting things are with
+
+191
+00:20:27,299 --> 00:20:33,240
+the classification right for regression we look at a squared error or you can do an absolute
+
+192
+00:20:33,240 --> 00:20:41,290
+error also if you want to evaluate the how good your regression fit is you can do absolute
+
+193
+00:20:41,290 --> 00:20:46,559
+error we can do squared error whatever if we can use so one more thing which I want
+
+194
+00:20:46,559 --> 00:20:48,120
+to talk to you about.

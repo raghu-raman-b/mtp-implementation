@@ -1,0 +1,399 @@
+1
+00:00:00,000 --> 00:00:21,980
+So in minimum description length principle the idea behind is very simple right among equally
+
+2
+00:00:21,980 --> 00:00:28,490
+we already looked at it in some form or the other okay, so lasso is one way of thinking
+
+3
+00:00:28,490 --> 00:00:35,600
+of it as minimum description right among all equally good classifiers I would like to pick
+
+4
+00:00:35,600 --> 00:00:45,560
+the one that requires the least amount of bits to describe it right. So the description length
+
+5
+00:00:45,560 --> 00:00:55,280
+should be as small as possible given that it has some acceptable levels of performance right.
+
+6
+00:00:55,280 --> 00:01:01,280
+So if you think about it so what does this tell us well if the classifier is very complex then
+
+7
+00:01:01,280 --> 00:01:06,530
+I am going to need a lot of bits to describe it right if a neural network with a lot of weights
+
+8
+00:01:06,530 --> 00:01:11,420
+the support vector machine with a lot of support vectors right or a decision tree with a lot of
+
+9
+00:01:11,420 --> 00:01:18,140
+branches, so the more information you have the more detail the classifier is the more number
+
+10
+00:01:18,140 --> 00:01:24,890
+of bits I will need to describe it right. But then the better that it gets in performance
+
+11
+00:01:24,890 --> 00:01:29,630
+right ideally why would you want to make it more complex only because it is making fewer errors
+
+12
+00:01:29,630 --> 00:01:36,080
+right then you have to come up with some way of trading of this the description of the classifier
+
+13
+00:01:36,080 --> 00:01:45,770
+versus the error it makes right ,you have to have to specify what the classifier is you mean
+
+14
+00:01:45,770 --> 00:01:49,580
+you have to decide on how you want to specified suppose it is number of support vectors right so
+
+15
+00:01:49,580 --> 00:01:52,850
+I will have to tell you what are the individual support vectors you remember support vectors or
+
+16
+00:01:52,850 --> 00:01:59,510
+alpha times the Xi’s right xi yi right. So I need to tell you what the xi are I
+
+17
+00:01:59,510 --> 00:02:05,540
+need to tell you what the alpha are for me to specify a SVM completely to you all right. So
+
+18
+00:02:05,540 --> 00:02:13,910
+how many bits do I need for specifying those alpha and the xi, so the xi yi I can take it
+
+19
+00:02:13,910 --> 00:02:16,820
+as a product and I do not have to describe the way I separately but I need something to
+
+20
+00:02:16,820 --> 00:02:21,440
+describe that and maybe to describe the alpha also and or maybe I can describe alpha xi to
+
+21
+00:02:21,440 --> 00:02:26,690
+you if you can use that somehow to produce the inner product but if I have it there the kernel
+
+22
+00:02:26,690 --> 00:02:31,520
+version of it then I cannot do that right. So I account pre multiply the alpha into that
+
+23
+00:02:31,520 --> 00:02:35,900
+right if it is a linear thing I can do this I can give you alpha xi so there are things to
+
+24
+00:02:35,900 --> 00:02:39,980
+think about it so how do you encode this right, so you want to write a program to
+
+25
+00:02:39,980 --> 00:02:44,480
+implement SVM in end of the day right what is the point in me doing a learning algorithm and
+
+26
+00:02:44,480 --> 00:02:49,760
+then not letting you use it right. So for me to communicate to you how we implement
+
+27
+00:02:49,760 --> 00:02:56,930
+it I need to give you the description right. And the second part is the errors are there right,
+
+28
+00:02:56,930 --> 00:03:01,670
+so I make some mistakes right and I have to tell you on a training set let us say there is
+
+29
+00:03:01,670 --> 00:03:05,900
+a fixed training set and on that training set I also want to tell you what are the errors I
+
+30
+00:03:05,900 --> 00:03:13,310
+made right the smaller the amount of errors I make the lesser the number of bits n heat to
+
+31
+00:03:13,310 --> 00:03:22,250
+tell you how many errors I made, makes sense. So for me to make small errors I met need a
+
+32
+00:03:22,250 --> 00:03:26,600
+complex classifier that will need more bits for me to describe the classifier right.
+
+33
+00:03:26,600 --> 00:03:32,570
+So if you want to reduce the number of bits I want to describe the error I might increase
+
+34
+00:03:32,570 --> 00:03:44,480
+the number of bits I want for describing the classifier and vice versa, I am sorry just to
+
+35
+00:03:44,480 --> 00:03:48,080
+set up a trade-off on equal footing right I am just talking about information on both sides
+
+36
+00:03:48,080 --> 00:03:55,040
+now right. So that is I can make our classified arbitrarily complex right and we keep giving me
+
+37
+00:03:55,040 --> 00:03:58,730
+better and better error right or I can make a classified very simple than it can give me a
+
+38
+00:03:58,730 --> 00:04:03,260
+lot of error so how do I do the trade off ? Between discrete the size of the classifier and
+
+39
+00:04:03,260 --> 00:04:07,580
+the amount of error I make, so to put these things on an equal footing so that we can
+
+40
+00:04:07,580 --> 00:04:12,470
+compare let people talk about the amount of information required in both cases you
+
+41
+00:04:12,470 --> 00:04:15,680
+need some amount of information here and some amount of information here. So the
+
+42
+00:04:15,680 --> 00:04:19,790
+more information you need here the lesser you need here, so that is the trade-off right.
+
+43
+00:04:19,790 --> 00:04:25,430
+So that is the idea behind minimum description length right and this huge theory behind it right
+
+44
+00:04:25,430 --> 00:04:30,590
+it is actually a proper Bayesian approach and we talked about Bayesian learning at
+
+45
+00:04:30,590 --> 00:04:34,370
+some point we also talked about ml and map estimates and so on so forth you can show that
+
+46
+00:04:34,370 --> 00:04:39,860
+MDL is actually a proper Bayesian approach and people have derived a lot of complexity measures
+
+47
+00:04:39,860 --> 00:04:45,770
+performance measures based on MDL right. So I never talked about it earlier that but
+
+48
+00:04:45,770 --> 00:04:51,740
+I think you guys are all ready to now read up on your own about MDL right so the brief introduction
+
+49
+00:04:51,740 --> 00:05:00,470
+I gave should be sufficient right. So if you think just one minutes stop and think
+
+50
+00:05:00,470 --> 00:05:06,380
+about how people actually use machine learning right it is very heavily empirical right when
+
+51
+00:05:07,160 --> 00:05:15,830
+doing a lot of math and other things or pseudo math in the class so far right but really at the
+
+52
+00:05:15,830 --> 00:05:20,450
+end of the day when you start using it right it becomes heavily empirical it is actually a
+
+53
+00:05:20,450 --> 00:05:25,610
+very applied subject believe it or not I mean of course you guys are all finding it out now
+
+54
+00:05:25,610 --> 00:05:29,660
+with all the programming assignments but it is actually a very, very applied thing.
+
+55
+00:05:29,660 --> 00:05:43,820
+So whenever we have these kinds of empirical work right so you have to do our experiments
+
+56
+00:05:43,820 --> 00:05:54,110
+right you really have to do experiments there is nothing like you know an analytical solution
+
+57
+00:05:54,110 --> 00:05:59,060
+to your machine learning problem right. So when they give you a data set right you really have
+
+58
+00:05:59,060 --> 00:06:03,290
+to experiment with the data to figure out what is it that you are going to do so all
+
+59
+00:06:03,290 --> 00:06:08,330
+the theory and everything that we study now is all fine but when you actually get down to doing
+
+60
+00:06:08,330 --> 00:06:11,570
+something you have to run experiments you have to do all kinds of things.
+
+61
+00:06:11,570 --> 00:06:24,240
+So you have to do experiments you also have to do some kind of some kind of exploratory
+
+62
+00:06:24,240 --> 00:06:29,880
+analysis. So in fact we have not really talked about exploratory analysis at all
+
+63
+00:06:29,880 --> 00:06:34,440
+in this in this course I have to do a lot of different things, so I actually do that
+
+64
+00:06:34,440 --> 00:06:39,720
+whenever I teach my flavor of data mining I do that so what do you do with external
+
+65
+00:06:39,720 --> 00:06:43,950
+analysis right so there are many things that you have to do first you have to figure out.
+
+66
+00:06:43,950 --> 00:06:51,150
+So how distributed variables are you know so we have to figure out so what is the range of the
+
+67
+00:06:51,150 --> 00:06:55,110
+variables I give you data right I do not do you do not really know what the data is all about I
+
+68
+00:06:55,110 --> 00:07:01,260
+just give you an the simple form is I give you an excel file at the complex form is I give you like
+
+69
+00:07:01,260 --> 00:07:06,420
+few terabytes of data on a disk right but then let us say I give you a file and then you have
+
+70
+00:07:06,420 --> 00:07:12,990
+to figure out what are the different variables are there right and what kind of values do they
+
+71
+00:07:12,990 --> 00:07:19,650
+take right and what is the variance of these values right or their outliers on these is
+
+72
+00:07:19,650 --> 00:07:23,640
+that some values that I can ignore right. So the whole bunch of things that you have
+
+73
+00:07:23,640 --> 00:07:29,400
+to core and do some kind of exploration right or that way variables that are important to my
+
+74
+00:07:29,400 --> 00:07:34,140
+prediction maybe know about then we talked about some variable feature selection and
+
+75
+00:07:34,140 --> 00:07:38,190
+things like that but all of this you have to do essentially you have to understand
+
+76
+00:07:38,190 --> 00:07:42,450
+the data before you even think of what is the machine learning algorithm I am going to use.
+
+77
+00:07:42,450 --> 00:07:46,560
+So if I give you some data you do not just straight away plug it into a decision tree
+
+78
+00:07:46,560 --> 00:07:51,870
+algorithm or straightaway plug it into an SVM right so you have to go around try to
+
+79
+00:07:51,870 --> 00:07:56,400
+understand what the data is all about right. So that is part of it is through exploratory
+
+80
+00:07:56,400 --> 00:08:02,220
+analysis and say a little bit more later but as far as experiments are concerned
+
+81
+00:08:02,220 --> 00:08:32,100
+typically they fall under typically they fall under two kinds of experiments.
+
+82
+00:08:32,100 --> 00:08:40,080
+So there is the manipulation experiments and observations experiments to who do you think
+
+83
+00:08:40,080 --> 00:08:55,410
+this mean so in observation experiment I basically try to figure out correlations I try to figure out
+
+84
+00:08:55,410 --> 00:09:00,060
+associations between variables right I would make a lot of observations and then I try to say okay
+
+85
+00:09:00,060 --> 00:09:04,920
+if this variable whenever this variable was at this level then the output was at that level
+
+86
+00:09:04,920 --> 00:09:09,840
+right so maybe I can observe the whether, so it is essentially trying to find associations between
+
+87
+00:09:22,040 --> 00:09:31,220
+right associations between factors and effects. So what do I do in manipulation experiments in
+
+88
+00:09:31,220 --> 00:09:36,170
+manipulation experiments is essentially these are things where I have some control over some
+
+89
+00:09:36,170 --> 00:09:41,360
+of the variables that constitute the experiment right, so typically I set up these kinds of
+
+90
+00:09:41,360 --> 00:09:48,830
+manipulation experiments whenever I want to test a theory a causal hypothesis right whenever we
+
+91
+00:09:48,830 --> 00:09:55,550
+want to say that A causes B right. So I cannot stop yelled you know from happening right.
+
+92
+00:09:55,550 --> 00:10:03,350
+So I mean those kinds of that does not make any sense but I can say something like okay, so by
+
+93
+00:10:03,350 --> 00:10:09,320
+learning algorithm A is better than my learning algorithm B right whenever the load on my system
+
+94
+00:10:09,320 --> 00:10:20,180
+is high right. So I can actually make a hypothesis like this that A is better than B whenever the
+
+95
+00:10:20,180 --> 00:10:38,720
+load on the system is high right, no I have made my models I have model A I have model B I want to
+
+96
+00:10:38,720 --> 00:10:42,350
+make a make a statement that saying that yeah is better than B forget about under heavy load.
+
+97
+00:10:42,350 --> 00:10:46,250
+I want to make a statement that okay you have a learning algorithm A he has learning algorithm B I
+
+98
+00:10:46,250 --> 00:10:50,840
+want to make a statement that learning algorithm A is better than learning algorithm B. So when
+
+99
+00:10:50,840 --> 00:11:01,520
+will I make such a statement when can he make such a statement haha right, so that is the
+
+100
+00:11:01,520 --> 00:11:06,020
+whole thing that we are going to worry about here I am going to test what I mean what I call.

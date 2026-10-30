@@ -1,0 +1,5107 @@
+1
+00:00:00,500 --> 00:00:01,970
+[SQUEAKING]
+
+2
+00:00:01,970 --> 00:00:03,930
+[RUSTLING]
+
+3
+00:00:03,930 --> 00:00:07,360
+[CLICKING]
+
+4
+00:00:12,848 --> 00:00:14,140
+JEREMY BERNSTEIN: Hi, everyone.
+
+5
+00:00:14,140 --> 00:00:15,520
+So today, I'm actually just going
+
+6
+00:00:15,520 --> 00:00:18,600
+to tell you about some of my research, which
+
+7
+00:00:18,600 --> 00:00:20,320
+is about deep learning.
+
+8
+00:00:20,320 --> 00:00:26,580
+And again, you can take everything out--
+
+9
+00:00:26,580 --> 00:00:29,980
+you don't have to fully trust me in this lecture.
+
+10
+00:00:29,980 --> 00:00:31,860
+And maybe you should be skeptical.
+
+11
+00:00:35,000 --> 00:00:43,200
+So the idea that I want to talk about is the idea of the way
+
+12
+00:00:43,200 --> 00:00:46,280
+that we build neural networks is kind of like a LEGO set,
+
+13
+00:00:46,280 --> 00:00:48,060
+where we have all these little pieces,
+
+14
+00:00:48,060 --> 00:00:51,440
+all these building blocks, and we piece them together,
+
+15
+00:00:51,440 --> 00:00:56,377
+and we can build a transformer, for example.
+
+16
+00:00:56,377 --> 00:00:57,960
+But we could take those pieces, and we
+
+17
+00:00:57,960 --> 00:00:59,310
+could build something else.
+
+18
+00:00:59,310 --> 00:01:03,790
+There's definitely this modular structure.
+
+19
+00:01:03,790 --> 00:01:07,670
+So if that's how we build neural networks,
+
+20
+00:01:07,670 --> 00:01:10,350
+why don't we also build our theoretical understanding
+
+21
+00:01:10,350 --> 00:01:15,190
+of them in exactly the same way?
+
+22
+00:01:15,190 --> 00:01:18,790
+And arguably, if you want to have a theoretical understanding
+
+23
+00:01:18,790 --> 00:01:21,910
+of deep learning that really applies to any neural network
+
+24
+00:01:21,910 --> 00:01:23,990
+that you actually find in the wild,
+
+25
+00:01:23,990 --> 00:01:28,113
+you better build the theory in the same way
+
+26
+00:01:28,113 --> 00:01:29,530
+that you build the neural network.
+
+27
+00:01:29,530 --> 00:01:31,110
+Otherwise, how can it possibly hope
+
+28
+00:01:31,110 --> 00:01:33,310
+to describe actual neural networks
+
+29
+00:01:33,310 --> 00:01:37,430
+that you find out in the wild?
+
+30
+00:01:37,430 --> 00:01:41,150
+So what does that mean to build the theory in the same way
+
+31
+00:01:41,150 --> 00:01:42,730
+as you build the neural network?
+
+32
+00:01:45,630 --> 00:01:49,830
+So the idea is if you think about an individual piece
+
+33
+00:01:49,830 --> 00:01:52,910
+of LEGO, imagine if you had a full theoretical
+
+34
+00:01:52,910 --> 00:01:56,070
+characterization of that single object, which
+
+35
+00:01:56,070 --> 00:01:59,920
+is maybe reasonable because it's a simple little piece.
+
+36
+00:02:02,900 --> 00:02:06,420
+Then, if we think about what are the operations that we have
+
+37
+00:02:06,420 --> 00:02:09,900
+for combining little pieces of LEGO
+
+38
+00:02:09,900 --> 00:02:14,140
+to build more complicated structures, and the two
+
+39
+00:02:14,140 --> 00:02:17,820
+that we're going to think about is what we call a series
+
+40
+00:02:17,820 --> 00:02:20,180
+combination, or putting one on top of the other,
+
+41
+00:02:20,180 --> 00:02:26,000
+or a parallel combination, which is putting them side by side.
+
+42
+00:02:30,660 --> 00:02:34,820
+And then we should ask, what properties of an individual LEGO
+
+43
+00:02:34,820 --> 00:02:37,940
+piece do we actually care about, or of an individual layer
+
+44
+00:02:37,940 --> 00:02:38,840
+in a neural network?
+
+45
+00:02:38,840 --> 00:02:39,920
+What do we care about?
+
+46
+00:02:42,700 --> 00:02:46,780
+So a layer in a neural network has an input.
+
+47
+00:02:46,780 --> 00:02:50,200
+It has weights and an output.
+
+48
+00:02:54,500 --> 00:02:57,870
+And the question that we're going to ask is how--
+
+49
+00:02:57,870 --> 00:03:00,120
+the thing that we're really going to care about is how
+
+50
+00:03:00,120 --> 00:03:04,160
+sensitive is the output of the layer in this case to both
+
+51
+00:03:04,160 --> 00:03:06,120
+changing the input-- so you think about adding
+
+52
+00:03:06,120 --> 00:03:09,200
+a perturbation to the input--
+
+53
+00:03:09,200 --> 00:03:13,120
+or what if we perturb the weights?
+
+54
+00:03:13,120 --> 00:03:17,080
+The question is, how much does the output change?
+
+55
+00:03:17,080 --> 00:03:19,880
+And think that the change in output
+
+56
+00:03:19,880 --> 00:03:23,605
+gets contributions both from the change in the inputs
+
+57
+00:03:23,605 --> 00:03:25,480
+and the change in the weights and potentially
+
+58
+00:03:25,480 --> 00:03:27,500
+the interactions of those two things.
+
+59
+00:03:31,160 --> 00:03:33,900
+And what I want to argue is that, first of all,
+
+60
+00:03:33,900 --> 00:03:35,180
+no one understands this.
+
+61
+00:03:35,180 --> 00:03:37,360
+It's a really basic question about neural networks,
+
+62
+00:03:37,360 --> 00:03:40,220
+but no one teaches you about it.
+
+63
+00:03:40,220 --> 00:03:42,400
+No one understands it.
+
+64
+00:03:42,400 --> 00:03:45,680
+But it's a really important question
+
+65
+00:03:45,680 --> 00:03:47,260
+for a variety of different reasons.
+
+66
+00:03:47,260 --> 00:03:50,280
+But one of them is optimization because, if you think about it,
+
+67
+00:03:50,280 --> 00:03:52,720
+training a neural network involves changing the weights
+
+68
+00:03:52,720 --> 00:03:57,140
+and changing the weights of all the different layers.
+
+69
+00:03:57,140 --> 00:03:59,390
+And another reason you should care about this question
+
+70
+00:03:59,390 --> 00:04:01,890
+is things like robustness.
+
+71
+00:04:01,890 --> 00:04:04,110
+People talk about adversarial examples,
+
+72
+00:04:04,110 --> 00:04:06,550
+where you change the input to the network and the output
+
+73
+00:04:06,550 --> 00:04:08,170
+changes dramatically.
+
+74
+00:04:08,170 --> 00:04:10,310
+So it's another question of understanding
+
+75
+00:04:10,310 --> 00:04:12,170
+the sensitivity of the network.
+
+76
+00:04:18,630 --> 00:04:20,968
+And so the high-level way that I want
+
+77
+00:04:20,968 --> 00:04:22,510
+to think about this question is let's
+
+78
+00:04:22,510 --> 00:04:24,550
+say that we can characterize that information
+
+79
+00:04:24,550 --> 00:04:28,350
+for an individual piece of the network,
+
+80
+00:04:28,350 --> 00:04:31,910
+can we extend this understanding to combinations?
+
+81
+00:04:31,910 --> 00:04:36,710
+So if we put the bricks or we put the layers into a series
+
+82
+00:04:36,710 --> 00:04:39,830
+combination, that's a little more complicated
+
+83
+00:04:39,830 --> 00:04:42,390
+because now there's two.
+
+84
+00:04:42,390 --> 00:04:45,455
+Each piece has its own weight space.
+
+85
+00:04:45,455 --> 00:04:46,830
+If we combine them, we're somehow
+
+86
+00:04:46,830 --> 00:04:50,430
+combining the weight space.
+
+87
+00:04:50,430 --> 00:04:55,540
+And similarly for putting them in parallel,
+
+88
+00:04:55,540 --> 00:04:59,380
+we get an object with a combined weight space.
+
+89
+00:04:59,380 --> 00:05:02,800
+And now there's-- you think of this as duplicating the input,
+
+90
+00:05:02,800 --> 00:05:06,080
+sending it to both of the pieces,
+
+91
+00:05:06,080 --> 00:05:09,740
+and then we get two outputs now.
+
+92
+00:05:09,740 --> 00:05:12,900
+And if you think about it, somehow the series combination
+
+93
+00:05:12,900 --> 00:05:15,880
+is somehow a bit more coupled than the parallel combination,
+
+94
+00:05:15,880 --> 00:05:20,540
+but we've still got to think about both of these things.
+
+95
+00:05:20,540 --> 00:05:22,960
+And then if we can really do this,
+
+96
+00:05:22,960 --> 00:05:27,500
+if we can really understand the properties of individual pieces
+
+97
+00:05:27,500 --> 00:05:29,700
+and then how those properties get transformed
+
+98
+00:05:29,700 --> 00:05:32,500
+through combinations, then we can really
+
+99
+00:05:32,500 --> 00:05:35,620
+think of a deep learning library, something
+
+100
+00:05:35,620 --> 00:05:38,540
+like PyTorch or Jax.
+
+101
+00:05:38,540 --> 00:05:42,140
+You should really think of it like a LEGO set,
+
+102
+00:05:42,140 --> 00:05:43,940
+where you've got all these layers,
+
+103
+00:05:43,940 --> 00:05:48,060
+and each layer should have its own theoretical description.
+
+104
+00:05:48,060 --> 00:05:51,370
+And then we should have a system of rules
+
+105
+00:05:51,370 --> 00:05:54,810
+for if you combine layers, the new object that you get
+
+106
+00:05:54,810 --> 00:05:56,150
+has these properties.
+
+107
+00:05:58,770 --> 00:06:00,790
+And then once you've got those things,
+
+108
+00:06:00,790 --> 00:06:02,810
+you should be able to build whatever you want.
+
+109
+00:06:02,810 --> 00:06:06,250
+You can go and take this library and build whatever
+
+110
+00:06:06,250 --> 00:06:09,265
+fanciful creation you like.
+
+111
+00:06:09,265 --> 00:06:10,390
+And that should be allowed.
+
+112
+00:06:10,390 --> 00:06:12,348
+And you should have a theoretical understanding
+
+113
+00:06:12,348 --> 00:06:15,850
+of that thing automatically.
+
+114
+00:06:15,850 --> 00:06:20,690
+So that's how we're thinking about deep learning.
+
+115
+00:06:20,690 --> 00:06:25,270
+And there's actually a practical payoff already in certain axes.
+
+116
+00:06:25,270 --> 00:06:27,810
+So I just want to tell you a little bit about that
+
+117
+00:06:27,810 --> 00:06:30,530
+because otherwise you wouldn't know whether or not
+
+118
+00:06:30,530 --> 00:06:33,170
+you should bother listening.
+
+119
+00:06:33,170 --> 00:06:37,890
+So what I want to claim is that if you adopt this perspective,
+
+120
+00:06:37,890 --> 00:06:40,330
+it provides an easy way to fix these scaling
+
+121
+00:06:40,330 --> 00:06:42,050
+issues that people have.
+
+122
+00:06:42,050 --> 00:06:46,490
+So we talked a bit about this in one of the earlier lectures
+
+123
+00:06:46,490 --> 00:06:47,110
+in the class.
+
+124
+00:06:47,110 --> 00:06:48,568
+But you have these issues where you
+
+125
+00:06:48,568 --> 00:06:52,070
+scale the width of building blocks in the network
+
+126
+00:06:52,070 --> 00:06:57,670
+and the whole optimization landscape kind of drifts,
+
+127
+00:06:57,670 --> 00:07:02,110
+even though the performance is getting better,
+
+128
+00:07:02,110 --> 00:07:04,310
+the minima in the optimization landscape
+
+129
+00:07:04,310 --> 00:07:08,010
+is shifting to a different optimal learning rate.
+
+130
+00:07:10,550 --> 00:07:12,430
+And then, actually, people have recently
+
+131
+00:07:12,430 --> 00:07:14,910
+taken some of these ideas and packaged them
+
+132
+00:07:14,910 --> 00:07:20,550
+with some other ideas but got much faster training.
+
+133
+00:07:20,550 --> 00:07:22,950
+So this also relates to the homework problem
+
+134
+00:07:22,950 --> 00:07:26,170
+about the steepest descent algorithms.
+
+135
+00:07:26,170 --> 00:07:28,770
+But this is all in the last couple of months,
+
+136
+00:07:28,770 --> 00:07:33,590
+but this is showing a comparison of training speed.
+
+137
+00:07:33,590 --> 00:07:37,710
+And the baseline is llm.c, which is like Andrej Karpathy's
+
+138
+00:07:37,710 --> 00:07:41,710
+extremely high-performance C implementation,
+
+139
+00:07:41,710 --> 00:07:44,830
+but with some of these ideas about steepest descent
+
+140
+00:07:44,830 --> 00:07:49,160
+algorithms based on norms and spectral descent-type things,
+
+141
+00:07:49,160 --> 00:07:51,080
+they actually got way faster training.
+
+142
+00:07:51,080 --> 00:07:53,100
+So this is a huge wall clock speedup
+
+143
+00:07:53,100 --> 00:07:57,400
+in training by integrating some of these ideas.
+
+144
+00:07:57,400 --> 00:07:59,100
+So this is just to give you a sense
+
+145
+00:07:59,100 --> 00:08:01,600
+that actually maybe some of this stuff matters.
+
+146
+00:08:09,480 --> 00:08:13,580
+So far, I've tried to put across this-- oh yeah, go ahead.
+
+147
+00:08:13,580 --> 00:08:16,380
+AUDIENCE: In this method, you showed that it was much faster
+
+148
+00:08:16,380 --> 00:08:17,620
+than the other one.
+
+149
+00:08:17,620 --> 00:08:20,720
+Do they know why it's so much faster,
+
+150
+00:08:20,720 --> 00:08:23,800
+or just they found that this is faster, but not really sure why?
+
+151
+00:08:26,500 --> 00:08:28,520
+JEREMY BERNSTEIN: Partly understand why.
+
+152
+00:08:28,520 --> 00:08:30,340
+Yeah, we partly understand why.
+
+153
+00:08:30,340 --> 00:08:34,020
+Basically, the difference between the faster curves
+
+154
+00:08:34,020 --> 00:08:36,000
+are using this spectral descent algorithm,
+
+155
+00:08:36,000 --> 00:08:38,940
+which uses steepest descent under the spectral norm, which
+
+156
+00:08:38,940 --> 00:08:40,200
+was in the homework problem.
+
+157
+00:08:40,200 --> 00:08:42,179
+And if you believe that the geometry
+
+158
+00:08:42,179 --> 00:08:45,450
+of an individual linear layer is somehow
+
+159
+00:08:45,450 --> 00:08:49,450
+described by the spectral norm, then that would explain why.
+
+160
+00:08:49,450 --> 00:08:51,670
+So it's just integrating that idea.
+
+161
+00:08:58,170 --> 00:09:00,430
+But we'll go a little more into things.
+
+162
+00:09:00,430 --> 00:09:02,410
+But I first want to zoom out.
+
+163
+00:09:02,410 --> 00:09:04,850
+And so we talked about optimization theory earlier
+
+164
+00:09:04,850 --> 00:09:08,330
+in the class, but I want to try to connect optimization
+
+165
+00:09:08,330 --> 00:09:12,230
+theory to this idea of building neural networks like a LEGO set.
+
+166
+00:09:15,330 --> 00:09:20,090
+So if you remember, let's say that we have our loss function,
+
+167
+00:09:20,090 --> 00:09:22,150
+which is like this L symbol.
+
+168
+00:09:22,150 --> 00:09:25,170
+And we've got an n-dimensional parameter space.
+
+169
+00:09:25,170 --> 00:09:27,610
+And then the loss function maps the set of parameters
+
+170
+00:09:27,610 --> 00:09:29,250
+to a real number.
+
+171
+00:09:29,250 --> 00:09:32,890
+And let's say that we can Taylor expand the loss.
+
+172
+00:09:32,890 --> 00:09:35,730
+So if you remember, there's the first-order term,
+
+173
+00:09:35,730 --> 00:09:39,090
+and then there's the Hessian term,
+
+174
+00:09:39,090 --> 00:09:42,560
+and then there's higher-order terms in the Taylor expansion.
+
+175
+00:09:42,560 --> 00:09:44,880
+And if you remember, what we said is,
+
+176
+00:09:44,880 --> 00:09:49,320
+what if we could come up with a norm and a sharpness parameter
+
+177
+00:09:49,320 --> 00:09:52,827
+lambda such that we can upper bound-- at least
+
+178
+00:09:52,827 --> 00:09:55,160
+we can upper bound that second order piece in the Taylor
+
+179
+00:09:55,160 --> 00:09:56,700
+expansion using this norm?
+
+180
+00:09:59,600 --> 00:10:03,820
+So yeah, we were saying, what if we could do this?
+
+181
+00:10:03,820 --> 00:10:05,320
+What would it mean?
+
+182
+00:10:05,320 --> 00:10:09,040
+And in particular, can we find a norm and a sharpness parameter
+
+183
+00:10:09,040 --> 00:10:10,940
+such that this is a really tight upper bound?
+
+184
+00:10:10,940 --> 00:10:13,440
+That would also be really great because then we can actually
+
+185
+00:10:13,440 --> 00:10:16,360
+think of using this bound as an actual description of the loss
+
+186
+00:10:16,360 --> 00:10:19,560
+function.
+
+187
+00:10:19,560 --> 00:10:21,800
+Well, if we could do that, what we said
+
+188
+00:10:21,800 --> 00:10:24,480
+and what we spent time on the homework thinking about
+
+189
+00:10:24,480 --> 00:10:29,900
+is this thing called steepest descent optimization algorithms,
+
+190
+00:10:29,900 --> 00:10:34,440
+using particular norms that we can think about picking
+
+191
+00:10:34,440 --> 00:10:38,520
+an update step to minimize this, the linearization of the loss,
+
+192
+00:10:38,520 --> 00:10:41,780
+plus the penalty term that involves the norm.
+
+193
+00:10:41,780 --> 00:10:46,600
+And then we can think about if I pick this norm,
+
+194
+00:10:46,600 --> 00:10:48,047
+I get this optimization algorithm.
+
+195
+00:10:48,047 --> 00:10:50,380
+If I pick this other norm, I get this other optimization
+
+196
+00:10:50,380 --> 00:10:53,660
+algorithm.
+
+197
+00:10:53,660 --> 00:10:57,740
+So how should we actually produce such a norm?
+
+198
+00:10:57,740 --> 00:10:59,880
+What is a good norm for a neural network?
+
+199
+00:10:59,880 --> 00:11:02,420
+Why would we favor one norm over a different norm?
+
+200
+00:11:02,420 --> 00:11:05,660
+I think that's an important question.
+
+201
+00:11:05,660 --> 00:11:07,660
+So that's what we're going to try to think about
+
+202
+00:11:07,660 --> 00:11:10,200
+over the next few slides.
+
+203
+00:11:13,900 --> 00:11:18,220
+And just remember that-- so we're trying to produce a norm
+
+204
+00:11:18,220 --> 00:11:21,707
+and a sharpness parameter such that the second-order piece
+
+205
+00:11:21,707 --> 00:11:23,540
+in the Taylor expansion of our loss function
+
+206
+00:11:23,540 --> 00:11:28,620
+is upper bounded by that object in the red box.
+
+207
+00:11:28,620 --> 00:11:30,700
+So how are we going to think about this?
+
+208
+00:11:30,700 --> 00:11:33,660
+Well, first of all, remember that, in deep learning, we have
+
+209
+00:11:33,660 --> 00:11:35,820
+what's called a composite loss function.
+
+210
+00:11:35,820 --> 00:11:38,690
+So the total loss is the error measure composed
+
+211
+00:11:38,690 --> 00:11:40,230
+with the neural network.
+
+212
+00:11:40,230 --> 00:11:44,010
+So that the error measure is l and the neural network is f.
+
+213
+00:11:44,010 --> 00:11:45,883
+So it's a composite structure.
+
+214
+00:11:45,883 --> 00:11:48,050
+And then also remember that we have something called
+
+215
+00:11:48,050 --> 00:11:49,550
+the Gauss-Newton decomposition.
+
+216
+00:11:49,550 --> 00:11:53,610
+So whenever you have a composite loss function where
+
+217
+00:11:53,610 --> 00:11:58,130
+both parts of it are suitably differentiable,
+
+218
+00:11:58,130 --> 00:12:01,810
+we can decompose the second-order term in the loss
+
+219
+00:12:01,810 --> 00:12:03,570
+function into two pieces.
+
+220
+00:12:03,570 --> 00:12:07,590
+So the first one involves the curvature of the neural network,
+
+221
+00:12:07,590 --> 00:12:09,650
+and the second piece involves the curvature
+
+222
+00:12:09,650 --> 00:12:11,930
+of the error measure.
+
+223
+00:12:11,930 --> 00:12:14,570
+So that step one is just like, because we have a composite,
+
+224
+00:12:14,570 --> 00:12:18,850
+we have the Gauss-Newton decomposition.
+
+225
+00:12:18,850 --> 00:12:24,890
+So step two is now let's suppose that we know a really good norm
+
+226
+00:12:24,890 --> 00:12:26,890
+on the output of the network.
+
+227
+00:12:26,890 --> 00:12:28,852
+And maybe that's reasonable because the output
+
+228
+00:12:28,852 --> 00:12:30,310
+of the network is often something--
+
+229
+00:12:30,310 --> 00:12:32,030
+it's a simple thing like a vector,
+
+230
+00:12:32,030 --> 00:12:34,570
+like either the network tends to output a vector
+
+231
+00:12:34,570 --> 00:12:36,190
+or it outputs a real number.
+
+232
+00:12:36,190 --> 00:12:38,690
+So we can usually come up with a good norm.
+
+233
+00:12:38,690 --> 00:12:40,440
+AUDIENCE: So what would it mean for a norm
+
+234
+00:12:40,440 --> 00:12:42,380
+to be bad in this instance?
+
+235
+00:12:46,632 --> 00:12:48,340
+JEREMY BERNSTEIN: That's a good question.
+
+236
+00:12:51,520 --> 00:12:55,040
+Well, at least if you just have the output of the network,
+
+237
+00:12:55,040 --> 00:12:57,240
+and it's a vector with the kind of there's
+
+238
+00:12:57,240 --> 00:12:59,640
+no obvious extra structure on that thing other
+
+239
+00:12:59,640 --> 00:13:03,280
+than it's a vector, there's only a few norms you would really
+
+240
+00:13:03,280 --> 00:13:05,640
+think of, Lp norms, basically.
+
+241
+00:13:05,640 --> 00:13:07,660
+But if you have a more complicated object,
+
+242
+00:13:07,660 --> 00:13:10,040
+like a full neural network, there's a whole zoo of norms
+
+243
+00:13:10,040 --> 00:13:11,620
+that you might think of.
+
+244
+00:13:11,620 --> 00:13:14,520
+So it's at least like maybe you give the output
+
+245
+00:13:14,520 --> 00:13:20,600
+the infinity norm, the L2 norm, the RMS norm, the L1 norm.
+
+246
+00:13:20,600 --> 00:13:22,780
+There's not many other obvious choices.
+
+247
+00:13:26,680 --> 00:13:29,380
+So that's what I mean.
+
+248
+00:13:29,380 --> 00:13:31,580
+And again, I may be wrong about these things,
+
+249
+00:13:31,580 --> 00:13:36,750
+so be a little skeptical because this is just the way that we've
+
+250
+00:13:36,750 --> 00:13:40,550
+started thinking about it.
+
+251
+00:13:40,550 --> 00:13:45,550
+So the point is that if we have a norm on the output,
+
+252
+00:13:45,550 --> 00:13:47,950
+we can take the Gauss-Newton decomposition,
+
+253
+00:13:47,950 --> 00:13:56,670
+and then we can actually bound the two terms.
+
+254
+00:13:56,670 --> 00:14:00,630
+And the reason that we can do that
+
+255
+00:14:00,630 --> 00:14:09,670
+is essentially because you can read the term in orange
+
+256
+00:14:09,670 --> 00:14:13,070
+as being a dot product between the curvature of the model
+
+257
+00:14:13,070 --> 00:14:16,350
+and the linearization of the error measure.
+
+258
+00:14:16,350 --> 00:14:18,710
+And then you can apply the Cauchy-Schwarz inequality
+
+259
+00:14:18,710 --> 00:14:21,350
+to that term.
+
+260
+00:14:21,350 --> 00:14:24,790
+So the norm on the derivative of the error measure
+
+261
+00:14:24,790 --> 00:14:26,470
+is actually a dual norm corresponding
+
+262
+00:14:26,470 --> 00:14:29,630
+to the dual norm of the norm and network outputs.
+
+263
+00:14:29,630 --> 00:14:34,090
+And similarly, you can think about the purple term
+
+264
+00:14:34,090 --> 00:14:39,470
+as being like a vector times a matrix times a vector,
+
+265
+00:14:39,470 --> 00:14:42,090
+and there's an operator norm upper bound on that thing.
+
+266
+00:14:42,090 --> 00:14:46,810
+So basically, anyway, long story short,
+
+267
+00:14:46,810 --> 00:14:50,110
+you can bound these terms if you have a norm on a network output.
+
+268
+00:14:54,690 --> 00:14:57,433
+So that's step two is just observing
+
+269
+00:14:57,433 --> 00:14:58,850
+that you can upper bound the terms
+
+270
+00:14:58,850 --> 00:15:00,430
+in the Gauss-Newton decomposition,
+
+271
+00:15:00,430 --> 00:15:05,610
+so no approximations, just an upper bound.
+
+272
+00:15:05,610 --> 00:15:10,090
+So step three is just restating where we got up to.
+
+273
+00:15:10,090 --> 00:15:13,430
+We've upper bounded the terms in the Gauss-Newton decomposition.
+
+274
+00:15:13,430 --> 00:15:15,970
+And then we can now actually-- remember,
+
+275
+00:15:15,970 --> 00:15:21,090
+our original problem was finding this red box
+
+276
+00:15:21,090 --> 00:15:24,090
+finding this upper bound on the second-order piece of the loss
+
+277
+00:15:24,090 --> 00:15:25,070
+function.
+
+278
+00:15:25,070 --> 00:15:28,890
+But we've actually reduced our problem because now
+
+279
+00:15:28,890 --> 00:15:36,320
+if we can upper bound the first term in orange
+
+280
+00:15:36,320 --> 00:15:38,338
+with a norm using a norm on the weights,
+
+281
+00:15:38,338 --> 00:15:40,880
+so if we can produce a norm on the weights which upper bounds
+
+282
+00:15:40,880 --> 00:15:47,360
+that first orange term and if we can produce a norm on the weight
+
+283
+00:15:47,360 --> 00:15:55,600
+space to upper bound this last term in purple,
+
+284
+00:15:55,600 --> 00:16:00,240
+if we can do that, you can plug those
+
+285
+00:16:00,240 --> 00:16:02,860
+into the upper bound on the Gauss-Newton decomposition.
+
+286
+00:16:02,860 --> 00:16:04,960
+It will give us an upper bound on the curvature
+
+287
+00:16:04,960 --> 00:16:06,342
+of the overall loss function.
+
+288
+00:16:06,342 --> 00:16:08,800
+So we've kind of reduced the problem which we didn't really
+
+289
+00:16:08,800 --> 00:16:12,580
+know how to solve now into at least a different problem,
+
+290
+00:16:12,580 --> 00:16:15,800
+and then the question is, can we solve that other problem?
+
+291
+00:16:15,800 --> 00:16:20,160
+And then I've just written beneath these two expressions
+
+292
+00:16:20,160 --> 00:16:23,000
+that the first one is asking that the network is Lipschitz
+
+293
+00:16:23,000 --> 00:16:26,160
+smooth in its weights, and the second one
+
+294
+00:16:26,160 --> 00:16:28,040
+is asking that the network is Lipschitz
+
+295
+00:16:28,040 --> 00:16:31,590
+continuous in its weights.
+
+296
+00:16:31,590 --> 00:16:36,070
+I'll just pause briefly.
+
+297
+00:16:36,070 --> 00:16:38,230
+So it's just to say that we started out
+
+298
+00:16:38,230 --> 00:16:40,933
+with a problem about the overall loss function.
+
+299
+00:16:40,933 --> 00:16:42,350
+We upper bounded this thing called
+
+300
+00:16:42,350 --> 00:16:44,830
+the Gauss-Newton decomposition.
+
+301
+00:16:44,830 --> 00:16:46,830
+And then we related the terms in that
+
+302
+00:16:46,830 --> 00:16:48,490
+to properties of the network.
+
+303
+00:16:53,290 --> 00:16:55,430
+This is supposed to be a more pictorial or somehow
+
+304
+00:16:55,430 --> 00:16:58,350
+visual description of what's going on.
+
+305
+00:16:58,350 --> 00:17:01,150
+So we said that we reduced to wanting
+
+306
+00:17:01,150 --> 00:17:04,109
+to have these conditions on our neural network, so
+
+307
+00:17:04,109 --> 00:17:09,030
+a norm on the weight space such that the network is Lipschitz
+
+308
+00:17:09,030 --> 00:17:12,589
+smooth and Lipschitz continuous in that norm.
+
+309
+00:17:12,589 --> 00:17:15,670
+AUDIENCE: So if it's Lipschitz smooth and Lipschitz continuous,
+
+310
+00:17:15,670 --> 00:17:22,030
+that guarantees existence of such alphas and deltas?
+
+311
+00:17:22,030 --> 00:17:23,990
+JEREMY BERNSTEIN: Yes, but--
+
+312
+00:17:23,990 --> 00:17:28,060
+AUDIENCE: For any norm or [INAUDIBLE]?
+
+313
+00:17:28,060 --> 00:17:30,740
+JEREMY BERNSTEIN: Well, you could take these actually
+
+314
+00:17:30,740 --> 00:17:34,240
+as the definitions of Lipschitz smooth and Lipschitz continuous
+
+315
+00:17:34,240 --> 00:17:36,340
+and once you have them in one norm,
+
+316
+00:17:36,340 --> 00:17:38,740
+you can automatically produce them in any other norm
+
+317
+00:17:38,740 --> 00:17:40,720
+because all the norms are equivalent
+
+318
+00:17:40,720 --> 00:17:44,220
+but it may be a much tighter guarantee
+
+319
+00:17:44,220 --> 00:17:46,140
+in 1 norm than another norm.
+
+320
+00:17:46,140 --> 00:17:48,940
+So we really want to find a norm on the weight space
+
+321
+00:17:48,940 --> 00:17:55,020
+such that these conditions hold very, very tightly.
+
+322
+00:17:55,020 --> 00:17:57,360
+But just to describe pictorially what's going on,
+
+323
+00:17:57,360 --> 00:18:00,340
+so we've got a neural network, and we
+
+324
+00:18:00,340 --> 00:18:04,540
+think about passing an input into it, and it has weights
+
+325
+00:18:04,540 --> 00:18:06,148
+and it has an output.
+
+326
+00:18:06,148 --> 00:18:07,940
+And what you can think of doing is actually
+
+327
+00:18:07,940 --> 00:18:12,538
+Taylor expanding the neural network in its weights.
+
+328
+00:18:12,538 --> 00:18:14,580
+So remember, previously, we were Taylor expanding
+
+329
+00:18:14,580 --> 00:18:16,380
+the loss in the weights, but now we've
+
+330
+00:18:16,380 --> 00:18:18,780
+mapped things to actually just thinking directly
+
+331
+00:18:18,780 --> 00:18:21,340
+about the network.
+
+332
+00:18:21,340 --> 00:18:24,060
+And these Lipschitz conditions are
+
+333
+00:18:24,060 --> 00:18:29,200
+asking for upper bounds on the terms in the Taylor expansion
+
+334
+00:18:29,200 --> 00:18:31,040
+in a particular norm.
+
+335
+00:18:31,040 --> 00:18:33,600
+So can we produce a norm on the weight space
+
+336
+00:18:33,600 --> 00:18:37,840
+such that we get nice, convenient upper bounds
+
+337
+00:18:37,840 --> 00:18:39,160
+on these terms?
+
+338
+00:18:39,160 --> 00:18:41,580
+And so forgetting everything that we talked about,
+
+339
+00:18:41,580 --> 00:18:44,280
+about optimization, just directly looking at this slide
+
+340
+00:18:44,280 --> 00:18:46,260
+and just directly thinking about it,
+
+341
+00:18:46,260 --> 00:18:49,200
+wouldn't it be great if we had a norm on the weights that
+
+342
+00:18:49,200 --> 00:18:51,840
+could predict the magnitude of these terms in the Taylor
+
+343
+00:18:51,840 --> 00:18:52,680
+expansion?
+
+344
+00:18:52,680 --> 00:18:54,760
+If we had such a norm, it would mean
+
+345
+00:18:54,760 --> 00:18:56,762
+that whenever you were going to change
+
+346
+00:18:56,762 --> 00:18:58,220
+the weights of your neural network,
+
+347
+00:18:58,220 --> 00:19:00,360
+you would have a direct way to predict
+
+348
+00:19:00,360 --> 00:19:02,000
+how much the output of the network
+
+349
+00:19:02,000 --> 00:19:04,700
+can change up to first and second order.
+
+350
+00:19:04,700 --> 00:19:07,400
+So there's just a direct argument
+
+351
+00:19:07,400 --> 00:19:09,760
+that having such a norm would be a really useful thing
+
+352
+00:19:09,760 --> 00:19:12,240
+to have because we can now predict what our network is
+
+353
+00:19:12,240 --> 00:19:14,560
+going to do in response to changing the weights.
+
+354
+00:19:14,560 --> 00:19:17,680
+And then all of the preceding argument was saying,
+
+355
+00:19:17,680 --> 00:19:21,480
+one of the use cases for having these relationships
+
+356
+00:19:21,480 --> 00:19:25,470
+is that we can build an optimization theory around them,
+
+357
+00:19:25,470 --> 00:19:27,590
+but they can be useful for other reasons as well.
+
+358
+00:19:27,590 --> 00:19:30,602
+They're useful anytime you want to be able to just predict
+
+359
+00:19:30,602 --> 00:19:32,310
+what changing the weights of your network
+
+360
+00:19:32,310 --> 00:19:34,250
+is going to do to the overall function.
+
+361
+00:19:44,550 --> 00:19:48,710
+So what we've tried to argue is that having these conditions
+
+362
+00:19:48,710 --> 00:19:51,550
+would be useful, and it would help us build an optimization
+
+363
+00:19:51,550 --> 00:19:54,230
+theory, but it seems like, actually, how on Earth
+
+364
+00:19:54,230 --> 00:19:57,830
+would we produce a norm, which is a really good norm
+
+365
+00:19:57,830 --> 00:20:01,510
+for this reason because it seems that neural networks are really
+
+366
+00:20:01,510 --> 00:20:03,770
+complicated, so how are we going to do that?
+
+367
+00:20:03,770 --> 00:20:05,470
+It seems really hard.
+
+368
+00:20:05,470 --> 00:20:06,118
+Go ahead.
+
+369
+00:20:06,118 --> 00:20:08,410
+AUDIENCE: I don't even know if my question makes sense,
+
+370
+00:20:08,410 --> 00:20:12,110
+but I would like to know if people have used this approach
+
+371
+00:20:12,110 --> 00:20:15,743
+to find approximation for other types of problems,
+
+372
+00:20:15,743 --> 00:20:17,910
+so say [INAUDIBLE] neural network or something else,
+
+373
+00:20:17,910 --> 00:20:19,368
+you didn't know how to approximate,
+
+374
+00:20:19,368 --> 00:20:21,300
+and then you found [INAUDIBLE] and has
+
+375
+00:20:21,300 --> 00:20:22,598
+this worked in [INAUDIBLE].
+
+376
+00:20:22,598 --> 00:20:24,140
+JEREMY BERNSTEIN: Yeah, what I'll say
+
+377
+00:20:24,140 --> 00:20:26,920
+is that a lot of classical optimization,
+
+378
+00:20:26,920 --> 00:20:31,340
+once you start to get into it, is all about finding a distance
+
+379
+00:20:31,340 --> 00:20:32,980
+measure for your problem.
+
+380
+00:20:32,980 --> 00:20:35,280
+And once you've got a really good distance measure,
+
+381
+00:20:35,280 --> 00:20:38,320
+you can start to design clever algorithms.
+
+382
+00:20:41,740 --> 00:20:44,540
+And people have that idea in deep learning
+
+383
+00:20:44,540 --> 00:20:45,820
+but haven't really--
+
+384
+00:20:45,820 --> 00:20:48,220
+it's not really borne fruit, I would say.
+
+385
+00:20:48,220 --> 00:20:52,400
+But it is a very classical idea to do this general thing.
+
+386
+00:20:52,400 --> 00:20:56,060
+And then there is you can look up composite optimization
+
+387
+00:20:56,060 --> 00:20:58,440
+theory, and there's lots of papers about it.
+
+388
+00:20:58,440 --> 00:21:03,140
+But I would say that it's not really borne
+
+389
+00:21:03,140 --> 00:21:04,600
+fruit in the deep learning.
+
+390
+00:21:04,600 --> 00:21:09,440
+But it's definitely that idea is very abundant, I would say.
+
+391
+00:21:14,743 --> 00:21:17,160
+If you think about it, that's why we have different norms.
+
+392
+00:21:17,160 --> 00:21:20,470
+Why do we have the L1 norm and L2 norm?
+
+393
+00:21:20,470 --> 00:21:21,930
+Because somehow, they're supposed
+
+394
+00:21:21,930 --> 00:21:25,690
+to characterize the structure of different problems.
+
+395
+00:21:25,690 --> 00:21:28,590
+If they didn't, we would just only have one of them.
+
+396
+00:21:28,590 --> 00:21:30,610
+So that's like why there's a whole zoo of norms
+
+397
+00:21:30,610 --> 00:21:34,270
+is to somehow use them to characterize different problems.
+
+398
+00:21:40,490 --> 00:21:43,850
+So this is where the whole LEGO thing comes
+
+399
+00:21:43,850 --> 00:21:46,290
+back again because it's like, how on Earth
+
+400
+00:21:46,290 --> 00:21:48,530
+are we going to come up with a norm on the weight
+
+401
+00:21:48,530 --> 00:21:50,250
+space of our whole network?
+
+402
+00:21:50,250 --> 00:21:53,590
+Well, what if we can break it up into stages?
+
+403
+00:21:53,590 --> 00:21:57,650
+So if we first think about the activation spaces,
+
+404
+00:21:57,650 --> 00:21:59,330
+again, those are more like simple
+
+405
+00:21:59,330 --> 00:22:01,350
+just vectors in a simple network.
+
+406
+00:22:01,350 --> 00:22:05,250
+So as we said, it's kind of easier
+
+407
+00:22:05,250 --> 00:22:07,090
+to give those norms because there's not
+
+408
+00:22:07,090 --> 00:22:10,830
+that many options, like L2, L infinity, L1, RMS.
+
+409
+00:22:13,530 --> 00:22:16,730
+Now let's think about the tensor spaces, like the matrix spaces,
+
+410
+00:22:16,730 --> 00:22:18,410
+for example, in the network.
+
+411
+00:22:18,410 --> 00:22:21,190
+Once we've picked norms on the activation spaces,
+
+412
+00:22:21,190 --> 00:22:24,550
+there's actually a way to induce something called
+
+413
+00:22:24,550 --> 00:22:26,510
+an induced operator norm.
+
+414
+00:22:26,510 --> 00:22:30,110
+But there's a procedure for taking two norms on the input
+
+415
+00:22:30,110 --> 00:22:32,190
+and output of a linear operator and coming up
+
+416
+00:22:32,190 --> 00:22:34,150
+with a norm on the operator.
+
+417
+00:22:34,150 --> 00:22:37,110
+It's called induced operator norm.
+
+418
+00:22:37,110 --> 00:22:39,150
+AUDIENCE: So the activation functions usually
+
+419
+00:22:39,150 --> 00:22:41,230
+don't have weights.
+
+420
+00:22:41,230 --> 00:22:42,270
+JEREMY BERNSTEIN: Yes.
+
+421
+00:22:42,270 --> 00:22:44,905
+AUDIENCE: So, I guess, what are we norming?
+
+422
+00:22:44,905 --> 00:22:47,030
+JEREMY BERNSTEIN: So when I talk about activations,
+
+423
+00:22:47,030 --> 00:22:49,030
+I just meant the feature vectors.
+
+424
+00:22:49,030 --> 00:22:50,630
+But then if you think about--
+
+425
+00:22:54,350 --> 00:22:56,170
+yeah, so I just meant the feature vectors.
+
+426
+00:22:56,170 --> 00:23:03,590
+But when it comes to including-- if you want to think of a ReLU
+
+427
+00:23:03,590 --> 00:23:06,950
+nonlinearity as a LEGO block, it will just be a LEGO block
+
+428
+00:23:06,950 --> 00:23:10,090
+with the weight space is just the 0 vector space,
+
+429
+00:23:10,090 --> 00:23:11,850
+or it just has a trivial weight space.
+
+430
+00:23:17,700 --> 00:23:21,860
+But we really need a norm not on each individual layer
+
+431
+00:23:21,860 --> 00:23:23,860
+separately, although that's kind of already
+
+432
+00:23:23,860 --> 00:23:26,235
+an interesting thing to think about is what norm would we
+
+433
+00:23:26,235 --> 00:23:28,180
+give to each individual layer, but we really
+
+434
+00:23:28,180 --> 00:23:30,300
+want a norm on the full weight vector.
+
+435
+00:23:30,300 --> 00:23:32,460
+So we really need a procedure for taking
+
+436
+00:23:32,460 --> 00:23:35,420
+all of these layer-wise norms and combining them
+
+437
+00:23:35,420 --> 00:23:41,220
+into one meganorm and on the whole neural net.
+
+438
+00:23:41,220 --> 00:23:44,920
+So that's what we tried to figure out how to do.
+
+439
+00:23:44,920 --> 00:23:49,420
+So there's this idea of starting with very granular norms
+
+440
+00:23:49,420 --> 00:23:52,820
+and then combining them until we have one norm that describes
+
+441
+00:23:52,820 --> 00:23:54,000
+the full weight space.
+
+442
+00:23:58,780 --> 00:24:00,500
+So part two of the talk is I'm going
+
+443
+00:24:00,500 --> 00:24:05,340
+to try to make this more like a formal procedure.
+
+444
+00:24:05,340 --> 00:24:10,060
+So we call it the theory of modules.
+
+445
+00:24:10,060 --> 00:24:13,760
+And so this is another perspective on this LEGO idea.
+
+446
+00:24:13,760 --> 00:24:15,930
+But there's something called combinator pattern
+
+447
+00:24:15,930 --> 00:24:21,050
+in programming, which is the idea of building
+
+448
+00:24:21,050 --> 00:24:24,010
+complex structures by taking simple things
+
+449
+00:24:24,010 --> 00:24:25,510
+and combining them.
+
+450
+00:24:25,510 --> 00:24:27,670
+And you think that there's an abstract type,
+
+451
+00:24:27,670 --> 00:24:29,433
+and you can build very simple things which
+
+452
+00:24:29,433 --> 00:24:30,850
+are members of that type, and then
+
+453
+00:24:30,850 --> 00:24:32,725
+you combine them and you get new things which
+
+454
+00:24:32,725 --> 00:24:35,850
+belong to that type.
+
+455
+00:24:35,850 --> 00:24:38,650
+So for us, the abstract type is something
+
+456
+00:24:38,650 --> 00:24:42,130
+called a module, which has inputs weights and an output.
+
+457
+00:24:42,130 --> 00:24:45,470
+And that can be an individual layer in a neural network,
+
+458
+00:24:45,470 --> 00:24:47,210
+or it can be a whole neural network
+
+459
+00:24:47,210 --> 00:24:50,270
+that both of those things would be modules.
+
+460
+00:24:52,810 --> 00:24:56,870
+And then given two modules, we have these combination rules.
+
+461
+00:24:56,870 --> 00:25:01,490
+So there's composition, which is like series, combination.
+
+462
+00:25:01,490 --> 00:25:04,050
+And concatenation is the name that we
+
+463
+00:25:04,050 --> 00:25:06,430
+gave to parallel combination.
+
+464
+00:25:10,130 --> 00:25:12,008
+And again, it's just like the LEGO bricks.
+
+465
+00:25:12,008 --> 00:25:13,800
+It's like putting them on top of each other
+
+466
+00:25:13,800 --> 00:25:15,300
+or putting them next to each other.
+
+467
+00:25:18,120 --> 00:25:22,440
+And this is just to show you actually you
+
+468
+00:25:22,440 --> 00:25:25,000
+can build interesting little--
+
+469
+00:25:25,000 --> 00:25:26,700
+you can think of them also as circuits.
+
+470
+00:25:26,700 --> 00:25:29,000
+But if you want to add two modules,
+
+471
+00:25:29,000 --> 00:25:31,680
+you can put them in parallel, and then you can compose them
+
+472
+00:25:31,680 --> 00:25:33,840
+with an addition module.
+
+473
+00:25:33,840 --> 00:25:37,280
+So it's like a kind of little circuit.
+
+474
+00:25:37,280 --> 00:25:39,360
+Scalar multiplication-- you can take a module
+
+475
+00:25:39,360 --> 00:25:41,920
+and you can compose it with a special module, which
+
+476
+00:25:41,920 --> 00:25:43,620
+just multiplies by scalar.
+
+477
+00:25:47,320 --> 00:25:50,080
+And then you can combine these things
+
+478
+00:25:50,080 --> 00:25:52,602
+to build a residual block.
+
+479
+00:25:52,602 --> 00:25:54,060
+So it kind of just looks like this.
+
+480
+00:25:54,060 --> 00:26:01,180
+So it's like some concatenations and compositions.
+
+481
+00:26:01,180 --> 00:26:02,680
+But essentially, then, you can think
+
+482
+00:26:02,680 --> 00:26:05,440
+about taking that little circuit and composing it with itself
+
+483
+00:26:05,440 --> 00:26:09,600
+a bunch of times to build a residual network.
+
+484
+00:26:09,600 --> 00:26:11,140
+And this is just to give you an idea
+
+485
+00:26:11,140 --> 00:26:14,420
+that actually those simple kind of binary combination rules
+
+486
+00:26:14,420 --> 00:26:17,180
+are actually enough to build all the neural networks
+
+487
+00:26:17,180 --> 00:26:18,200
+that you want to build.
+
+488
+00:26:22,460 --> 00:26:26,900
+AUDIENCE: [INAUDIBLE], I guess we're adding [INAUDIBLE].
+
+489
+00:26:26,900 --> 00:26:28,860
+I guess we could just have modules
+
+490
+00:26:28,860 --> 00:26:31,540
+that have two inputs then?
+
+491
+00:26:31,540 --> 00:26:33,460
+JEREMY BERNSTEIN: Yeah, a module having
+
+492
+00:26:33,460 --> 00:26:35,860
+two inputs we would think of as the input as being
+
+493
+00:26:35,860 --> 00:26:38,180
+a single tuple.
+
+494
+00:26:38,180 --> 00:26:41,180
+So the input space can have whatever structure you want.
+
+495
+00:26:41,180 --> 00:26:43,980
+AUDIENCE: Just concatenate operational [INAUDIBLE]?
+
+496
+00:26:43,980 --> 00:26:46,480
+JEREMY BERNSTEIN: Yeah, so it just has to be a vector space,
+
+497
+00:26:46,480 --> 00:26:48,120
+but in the abstract sense.
+
+498
+00:26:55,060 --> 00:26:59,020
+So this is to say that we can build--
+
+499
+00:26:59,020 --> 00:27:00,860
+then we have this kind of categorization
+
+500
+00:27:00,860 --> 00:27:04,280
+of different types of modules that we find interesting.
+
+501
+00:27:04,280 --> 00:27:11,570
+So atoms-- this is the name that we give to the simple layers
+
+502
+00:27:11,570 --> 00:27:14,290
+that you write by hand, like a linear layer, a convolution
+
+503
+00:27:14,290 --> 00:27:16,890
+layer, an embedding layer.
+
+504
+00:27:16,890 --> 00:27:20,190
+Bonds are just the ones with the kind of trivial weight space.
+
+505
+00:27:20,190 --> 00:27:23,850
+So things like nonlinearities don't have weights.
+
+506
+00:27:23,850 --> 00:27:27,370
+And a functional attention is the part
+
+507
+00:27:27,370 --> 00:27:29,450
+of attention without the weights.
+
+508
+00:27:29,450 --> 00:27:33,170
+And then you could compose it with some linear modules
+
+509
+00:27:33,170 --> 00:27:37,090
+and so on if you want to build an actual attention module.
+
+510
+00:27:37,090 --> 00:27:40,330
+And then compounds is the name that we give to anything
+
+511
+00:27:40,330 --> 00:27:42,350
+you build by combinations.
+
+512
+00:27:44,970 --> 00:27:47,130
+And this is just a recap that what we
+
+513
+00:27:47,130 --> 00:27:49,625
+really what we've said that-- the thing that we care about
+
+514
+00:27:49,625 --> 00:27:51,250
+or the thing that we want to know about
+
+515
+00:27:51,250 --> 00:27:53,350
+is the sensitivity information.
+
+516
+00:27:53,350 --> 00:27:57,090
+If I change the inputs and I change the weights,
+
+517
+00:27:57,090 --> 00:27:59,150
+how much does the output change?
+
+518
+00:27:59,150 --> 00:28:00,570
+Can we predict how much the output
+
+519
+00:28:00,570 --> 00:28:02,290
+changes from knowing how much we change
+
+520
+00:28:02,290 --> 00:28:04,970
+the inputs and the weights?
+
+521
+00:28:04,970 --> 00:28:07,760
+And can we do this in particular for any module?
+
+522
+00:28:07,760 --> 00:28:10,520
+So let's suppose that we can do it for the basic building
+
+523
+00:28:10,520 --> 00:28:11,440
+blocks.
+
+524
+00:28:11,440 --> 00:28:13,600
+Can we do it for any compound module
+
+525
+00:28:13,600 --> 00:28:19,380
+or anything built from our LEGO set
+
+526
+00:28:19,380 --> 00:28:20,940
+is the analogy we were making.
+
+527
+00:28:29,360 --> 00:28:32,700
+So I worked recently with a pure mathematician, basically.
+
+528
+00:28:32,700 --> 00:28:35,600
+So it's quite an abstract or formal way
+
+529
+00:28:35,600 --> 00:28:37,420
+of going about solving this problem.
+
+530
+00:28:37,420 --> 00:28:42,140
+But essentially, we've come up with these definitions.
+
+531
+00:28:42,140 --> 00:28:43,640
+So just to remind you, a module is
+
+532
+00:28:43,640 --> 00:28:46,160
+something with inputs, weights, and an output.
+
+533
+00:28:46,160 --> 00:28:50,040
+But we also give it some metadata,
+
+534
+00:28:50,040 --> 00:28:54,340
+like its forward function, a sensitivity number,
+
+535
+00:28:54,340 --> 00:28:58,180
+which is supposed to measure the input-output sensitivity.
+
+536
+00:28:58,180 --> 00:29:02,060
+So it's one of the Lipschitz constants.
+
+537
+00:29:02,060 --> 00:29:04,470
+The mass is supposed to be a kind of hyperparameter which
+
+538
+00:29:04,470 --> 00:29:07,770
+sets how important this module is compared to other modules,
+
+539
+00:29:07,770 --> 00:29:10,110
+how much it will contribute to learning.
+
+540
+00:29:10,110 --> 00:29:11,950
+And then we're asking that it should have
+
+541
+00:29:11,950 --> 00:29:14,750
+a norm on the weight space.
+
+542
+00:29:14,750 --> 00:29:19,590
+And anything with these attributes is a valid module
+
+543
+00:29:19,590 --> 00:29:22,910
+but because, in our library, we don't
+
+544
+00:29:22,910 --> 00:29:24,610
+want to have really horrible functions,
+
+545
+00:29:24,610 --> 00:29:27,890
+we want to have nice functions that people can use,
+
+546
+00:29:27,890 --> 00:29:30,830
+and so that's why we have this second definition, which
+
+547
+00:29:30,830 --> 00:29:35,670
+is a module being well-normed.
+
+548
+00:29:35,670 --> 00:29:37,883
+So these are the good modules, the ones
+
+549
+00:29:37,883 --> 00:29:39,550
+that we actually like to use and that we
+
+550
+00:29:39,550 --> 00:29:43,390
+want to include in our library.
+
+551
+00:29:43,390 --> 00:29:45,090
+So for a module to be well-normed,
+
+552
+00:29:45,090 --> 00:29:48,550
+it needs to have a notion of a norm on its input space
+
+553
+00:29:48,550 --> 00:29:54,030
+and a norm on its output space, which corresponds to roughly
+
+554
+00:29:54,030 --> 00:29:56,310
+saying you want to know how the inputs behave
+
+555
+00:29:56,310 --> 00:29:58,190
+and how the outputs behave, or how
+
+556
+00:29:58,190 --> 00:30:01,550
+you want the outputs to behave.
+
+557
+00:30:01,550 --> 00:30:08,130
+And then we'll basically say that a module is well-normed
+
+558
+00:30:08,130 --> 00:30:12,170
+if it's one Lipschitz in its weights
+
+559
+00:30:12,170 --> 00:30:14,390
+and if it's Lipschitz in its inputs
+
+560
+00:30:14,390 --> 00:30:16,730
+where the sensitivity number assigned to the module
+
+561
+00:30:16,730 --> 00:30:19,822
+is Lipschitz constant.
+
+562
+00:30:19,822 --> 00:30:21,530
+So the way that we're thinking about this
+
+563
+00:30:21,530 --> 00:30:25,330
+is like when we say that a LEGO brick has a theory associated
+
+564
+00:30:25,330 --> 00:30:28,530
+with it, it basically means that a LEGO
+
+565
+00:30:28,530 --> 00:30:31,890
+brick has these attributes.
+
+566
+00:30:31,890 --> 00:30:35,530
+And the second definition says that the attributes
+
+567
+00:30:35,530 --> 00:30:38,570
+are based on constraints with respect to each other.
+
+568
+00:30:38,570 --> 00:30:42,250
+And if the LEGO brick satisfies these constraints,
+
+569
+00:30:42,250 --> 00:30:43,417
+we'll put it in our library.
+
+570
+00:30:43,417 --> 00:30:45,167
+And if it doesn't, we'll just throw it out
+
+571
+00:30:45,167 --> 00:30:46,270
+because we don't like it.
+
+572
+00:30:49,330 --> 00:30:52,250
+So I want to give you some examples of what this actually
+
+573
+00:30:52,250 --> 00:30:53,030
+looks like.
+
+574
+00:30:53,030 --> 00:30:56,090
+So these are some--
+
+575
+00:30:56,090 --> 00:31:00,720
+first of all, the linear module, the most classic
+
+576
+00:31:00,720 --> 00:31:03,160
+does a matrix vector multiplication.
+
+577
+00:31:03,160 --> 00:31:07,080
+We'll say that it has sensitivity 1 and mass 1.
+
+578
+00:31:07,080 --> 00:31:09,840
+And we'll give it this kind of funky norm,
+
+579
+00:31:09,840 --> 00:31:12,100
+this rescaled spectral norm.
+
+580
+00:31:14,800 --> 00:31:18,040
+And then we need to ask, is this module well-normed or not?
+
+581
+00:31:18,040 --> 00:31:20,140
+Do we want to put it into our library or not?
+
+582
+00:31:23,160 --> 00:31:26,400
+And so the claim is that if you set the input and output
+
+583
+00:31:26,400 --> 00:31:28,160
+norm to be the RMS norm, which is kind
+
+584
+00:31:28,160 --> 00:31:31,680
+of a natural choice for feature vectors inside a neural network,
+
+585
+00:31:31,680 --> 00:31:33,640
+then the linear module is well-normed
+
+586
+00:31:33,640 --> 00:31:37,220
+if it has bounded inputs and if the weights are bounded.
+
+587
+00:31:39,840 --> 00:31:43,140
+So yeah, I'm still kind of thinking about this topic,
+
+588
+00:31:43,140 --> 00:31:44,920
+but it's kind of interesting that one
+
+589
+00:31:44,920 --> 00:31:48,040
+of the basic things that, in an actual neural net, that you do
+
+590
+00:31:48,040 --> 00:31:52,900
+is you normalize all the feature vectors everywhere explicitly.
+
+591
+00:31:52,900 --> 00:31:54,400
+People don't really know why they're
+
+592
+00:31:54,400 --> 00:31:57,220
+doing that other than somehow, intuitively,
+
+593
+00:31:57,220 --> 00:31:58,950
+it's going to make things more stable
+
+594
+00:31:58,950 --> 00:32:00,430
+and stop things blowing up.
+
+595
+00:32:00,430 --> 00:32:02,270
+But this is pointing out that if you
+
+596
+00:32:02,270 --> 00:32:05,230
+want to have Lipschitz guarantees for a linear module,
+
+597
+00:32:05,230 --> 00:32:07,830
+the inputs and the weights must be bounded.
+
+598
+00:32:07,830 --> 00:32:11,010
+If they're not, it can be arbitrarily sensitive.
+
+599
+00:32:17,030 --> 00:32:20,790
+So a useful counterpoint is an embedding module
+
+600
+00:32:20,790 --> 00:32:22,643
+because, at first glance, it looks
+
+601
+00:32:22,643 --> 00:32:24,810
+like it's kind of the same thing as a linear module.
+
+602
+00:32:24,810 --> 00:32:29,910
+You can write it as a matrix vector multiplication.
+
+603
+00:32:29,910 --> 00:32:31,470
+But the difference is that you think
+
+604
+00:32:31,470 --> 00:32:33,750
+about an embedding layer in a neural network
+
+605
+00:32:33,750 --> 00:32:36,790
+is you pass in a one hot vector, and it picks out
+
+606
+00:32:36,790 --> 00:32:38,610
+one of the columns of the matrix,
+
+607
+00:32:38,610 --> 00:32:42,190
+and that's the embedding that corresponds to that token.
+
+608
+00:32:42,190 --> 00:32:45,350
+So it has an embedding layer has a very different semantics
+
+609
+00:32:45,350 --> 00:32:48,230
+to a linear layer.
+
+610
+00:32:48,230 --> 00:32:52,350
+And one of the ways that gets expressed
+
+611
+00:32:52,350 --> 00:32:54,950
+is by giving the weight space of an embedding module
+
+612
+00:32:54,950 --> 00:33:00,540
+a different norm to a linear module.
+
+613
+00:33:00,540 --> 00:33:03,820
+And similarly, when we ask if the module is well-normed
+
+614
+00:33:03,820 --> 00:33:07,000
+or not, we'll put a different norm on the input space.
+
+615
+00:33:07,000 --> 00:33:08,900
+And the way we think about this is
+
+616
+00:33:08,900 --> 00:33:11,300
+that the input vector to an embedding layer
+
+617
+00:33:11,300 --> 00:33:14,560
+is a one hot vector, which is a bit like a probability vector.
+
+618
+00:33:14,560 --> 00:33:16,120
+So we give it the L1 norm.
+
+619
+00:33:19,820 --> 00:33:22,380
+And then it's basically with that choice
+
+620
+00:33:22,380 --> 00:33:25,700
+of input norm and output norm.
+
+621
+00:33:25,700 --> 00:33:29,340
+It's well-known that under the same conditions of like unit
+
+622
+00:33:29,340 --> 00:33:32,300
+inputs and unit weights.
+
+623
+00:33:32,300 --> 00:33:35,540
+AUDIENCE: Actually, I just finished trying to figure out
+
+624
+00:33:35,540 --> 00:33:38,860
+the well-normed module definition before--
+
+625
+00:33:38,860 --> 00:33:41,660
+there's a diamond, like a rotated square.
+
+626
+00:33:41,660 --> 00:33:42,500
+What does that mean?
+
+627
+00:33:42,500 --> 00:33:45,980
+JEREMY BERNSTEIN: That means contract over any tensor indices
+
+628
+00:33:45,980 --> 00:33:48,380
+which are shared between the--
+
+629
+00:33:48,380 --> 00:33:51,605
+it's just like a tensor contraction.
+
+630
+00:33:51,605 --> 00:33:52,480
+Does that make sense?
+
+631
+00:33:52,480 --> 00:33:56,190
+It's like if there are two vectors, it's a dot product.
+
+632
+00:33:56,190 --> 00:33:57,770
+If it's a matrix and a vector, it's
+
+633
+00:33:57,770 --> 00:33:59,890
+a matrix vector multiplication.
+
+634
+00:33:59,890 --> 00:34:02,830
+If it's a matrix and a matrix where the indices are the same,
+
+635
+00:34:02,830 --> 00:34:05,770
+it's like sum over the [INAUDIBLE] indices.
+
+636
+00:34:05,770 --> 00:34:10,889
+It's just like the objects in a neural network
+
+637
+00:34:10,889 --> 00:34:13,150
+have a whole zoo of different shapes.
+
+638
+00:34:13,150 --> 00:34:17,710
+And it's hard to come up with a notation to express that.
+
+639
+00:34:17,710 --> 00:34:19,409
+So it's just like a shorthand for figure
+
+640
+00:34:19,409 --> 00:34:22,150
+out what kind of multiplication you actually want to do here.
+
+641
+00:34:27,530 --> 00:34:30,090
+AUDIENCE: Do you not run into issues
+
+642
+00:34:30,090 --> 00:34:33,810
+when you optimize this with boundary value problems,
+
+643
+00:34:33,810 --> 00:34:37,969
+where, let's say, you're at the boundary of your input space
+
+644
+00:34:37,969 --> 00:34:41,370
+being less than or equal to 1 and your gradient is
+
+645
+00:34:41,370 --> 00:34:45,150
+like trying to push you outside of the boundary?
+
+646
+00:34:45,150 --> 00:34:47,150
+JEREMY BERNSTEIN: Yeah, that's a great question.
+
+647
+00:34:47,150 --> 00:34:50,810
+So that the short answer is we've
+
+648
+00:34:50,810 --> 00:34:53,750
+not actually implemented this part really faithfully yet.
+
+649
+00:34:53,750 --> 00:34:55,889
+So when we actually implement it at the moment,
+
+650
+00:34:55,889 --> 00:34:58,130
+we just let everything go outside the boundary.
+
+651
+00:34:58,130 --> 00:35:00,990
+But I want to do that.
+
+652
+00:35:00,990 --> 00:35:04,030
+And the idea is to design like manifold optimization algorithms
+
+653
+00:35:04,030 --> 00:35:08,910
+where the weights stay on this like well-normed manifold.
+
+654
+00:35:08,910 --> 00:35:10,950
+And then, because of that, that gives you
+
+655
+00:35:10,950 --> 00:35:12,617
+guarantees about how the outputs behave.
+
+656
+00:35:12,617 --> 00:35:14,617
+And then you can think about those as the inputs
+
+657
+00:35:14,617 --> 00:35:15,750
+to the next layer.
+
+658
+00:35:15,750 --> 00:35:18,090
+And there's a way to make everything consistent.
+
+659
+00:35:18,090 --> 00:35:19,890
+We just haven't done it yet.
+
+660
+00:35:27,510 --> 00:35:31,590
+So yeah, so far, it's different aspects of the whole theory
+
+661
+00:35:31,590 --> 00:35:33,810
+seem to be useful.
+
+662
+00:35:33,810 --> 00:35:36,130
+But there's not like a complete version,
+
+663
+00:35:36,130 --> 00:35:38,770
+which is where everything is consistent in practice.
+
+664
+00:35:44,230 --> 00:35:46,710
+So the reason for setting up those abstract definitions
+
+665
+00:35:46,710 --> 00:35:49,750
+of what is a module and what is a well-normed module
+
+666
+00:35:49,750 --> 00:35:54,240
+is that we want to have combination rules which
+
+667
+00:35:54,240 --> 00:35:56,680
+somehow automatically preserve those properties.
+
+668
+00:35:56,680 --> 00:35:59,460
+So if you take two well-normed modules in your library
+
+669
+00:35:59,460 --> 00:36:02,180
+and compose them, the new thing that you get
+
+670
+00:36:02,180 --> 00:36:07,980
+is automatically satisfies the definition of being well normed.
+
+671
+00:36:07,980 --> 00:36:10,660
+And so the types of things that we want to show
+
+672
+00:36:10,660 --> 00:36:13,120
+are that the combination rules are associative.
+
+673
+00:36:13,120 --> 00:36:16,820
+So if you do compose a chain of things,
+
+674
+00:36:16,820 --> 00:36:18,840
+you get the same fundamental object,
+
+675
+00:36:18,840 --> 00:36:23,620
+whichever order you take those compositions, for example.
+
+676
+00:36:23,620 --> 00:36:26,460
+We want the space of modules to be kind of closed
+
+677
+00:36:26,460 --> 00:36:31,620
+under combinations, the space of well-normed modules
+
+678
+00:36:31,620 --> 00:36:34,820
+to be closed under combinations.
+
+679
+00:36:34,820 --> 00:36:37,780
+And then we want that mass parameter that one of those
+
+680
+00:36:37,780 --> 00:36:41,140
+attributes to allow us to tune how
+
+681
+00:36:41,140 --> 00:36:43,180
+much different modules contribute relative
+
+682
+00:36:43,180 --> 00:36:43,920
+to each other.
+
+683
+00:36:43,920 --> 00:36:46,860
+And intuitively think about that as giving you
+
+684
+00:36:46,860 --> 00:36:49,510
+the freedom to tune learning rates at different layers
+
+685
+00:36:49,510 --> 00:36:50,990
+if you want to do that.
+
+686
+00:36:53,530 --> 00:36:58,190
+And so we came up with these rules.
+
+687
+00:36:58,190 --> 00:37:00,330
+So again, these are just definitions.
+
+688
+00:37:00,330 --> 00:37:03,190
+And the kind of style of what this is,
+
+689
+00:37:03,190 --> 00:37:05,910
+is come up with really, really clever definitions.
+
+690
+00:37:05,910 --> 00:37:09,330
+And then everything else is easy.
+
+691
+00:37:09,330 --> 00:37:13,250
+So the definitions are kind of the hard part.
+
+692
+00:37:13,250 --> 00:37:19,570
+So for composing modules or putting modules in series,
+
+693
+00:37:19,570 --> 00:37:21,270
+you compose the forward functions,
+
+694
+00:37:21,270 --> 00:37:23,130
+which seems kind of natural.
+
+695
+00:37:23,130 --> 00:37:24,810
+The sensitivity, which is supposed
+
+696
+00:37:24,810 --> 00:37:28,190
+to be the input to output Lipschitz constant,
+
+697
+00:37:28,190 --> 00:37:31,330
+those multiply, which is kind of like if you compose things,
+
+698
+00:37:31,330 --> 00:37:33,190
+you multiply that Lipschitz constant.
+
+699
+00:37:33,190 --> 00:37:35,370
+So that's maybe intuitive.
+
+700
+00:37:35,370 --> 00:37:38,970
+Mass is like, you have to think about it a little more.
+
+701
+00:37:38,970 --> 00:37:43,270
+And then the important thing is that we use a max norm.
+
+702
+00:37:43,270 --> 00:37:45,050
+So when we compose modules, we want
+
+703
+00:37:45,050 --> 00:37:47,940
+to have a norm on the joint weight space.
+
+704
+00:37:47,940 --> 00:37:51,360
+Then we pick the max norm with a special weighting.
+
+705
+00:37:51,360 --> 00:37:54,200
+So there's coefficients p and q, which
+
+706
+00:37:54,200 --> 00:37:57,800
+weight the two different norms in the max.
+
+707
+00:37:57,800 --> 00:38:01,440
+And p and q depend on the mass ratios, which that's
+
+708
+00:38:01,440 --> 00:38:03,080
+the idea that the mass allows you
+
+709
+00:38:03,080 --> 00:38:04,800
+to tune the importance of the two
+
+710
+00:38:04,800 --> 00:38:07,040
+different modules in the composition,
+
+711
+00:38:07,040 --> 00:38:11,520
+and the scalar p also couples to the sensitivity
+
+712
+00:38:11,520 --> 00:38:12,920
+of the second module.
+
+713
+00:38:12,920 --> 00:38:15,780
+So that's like, if you compose two things,
+
+714
+00:38:15,780 --> 00:38:18,880
+but the second one is very, very sensitive to its inputs.
+
+715
+00:38:18,880 --> 00:38:21,065
+Somehow, the first one should know about that
+
+716
+00:38:21,065 --> 00:38:22,440
+because if you're going to change
+
+717
+00:38:22,440 --> 00:38:24,920
+the weights of the first one, you hopefully
+
+718
+00:38:24,920 --> 00:38:27,440
+want to know that the second one is really, really sensitive
+
+719
+00:38:27,440 --> 00:38:29,000
+or it's very insensitive.
+
+720
+00:38:29,000 --> 00:38:33,320
+So it's like just another view on really trying
+
+721
+00:38:33,320 --> 00:38:35,920
+to characterize the sensitivity of how things behave when you
+
+722
+00:38:35,920 --> 00:38:37,340
+combine them with each other.
+
+723
+00:38:40,040 --> 00:38:44,320
+AUDIENCE: So we explained the intuition for sensitivity
+
+724
+00:38:44,320 --> 00:38:45,900
+in terms of [? functions. ?] What's
+
+725
+00:38:45,900 --> 00:38:48,460
+the main intuition for mass?
+
+726
+00:38:48,460 --> 00:38:50,500
+JEREMY BERNSTEIN: Yeah, the intuition for mass
+
+727
+00:38:50,500 --> 00:38:53,840
+is if you just forget about all of this
+
+728
+00:38:53,840 --> 00:38:56,435
+and you say you're going to train a transformer
+
+729
+00:38:56,435 --> 00:38:58,560
+and you think about the structure of a transformer,
+
+730
+00:38:58,560 --> 00:39:01,180
+it's got like the kind of body of the network
+
+731
+00:39:01,180 --> 00:39:03,440
+is like residual blocks.
+
+732
+00:39:03,440 --> 00:39:05,320
+There's an embedding layer at the beginning,
+
+733
+00:39:05,320 --> 00:39:07,358
+and there's a linear layer at the output.
+
+734
+00:39:07,358 --> 00:39:08,900
+And then you say like, OK, now I want
+
+735
+00:39:08,900 --> 00:39:12,300
+to scale the number of blocks.
+
+736
+00:39:12,300 --> 00:39:13,980
+And let's say you want to even scale
+
+737
+00:39:13,980 --> 00:39:17,820
+the number of blocks to the point where there's millions
+
+738
+00:39:17,820 --> 00:39:20,900
+of blocks, but there's only one embedding layer and one output
+
+739
+00:39:20,900 --> 00:39:23,100
+layer.
+
+740
+00:39:23,100 --> 00:39:26,500
+The claim is that it's not obvious whether in the limit
+
+741
+00:39:26,500 --> 00:39:28,658
+of a really large number of blocks.
+
+742
+00:39:28,658 --> 00:39:30,700
+Should you even still be training the input layer
+
+743
+00:39:30,700 --> 00:39:31,520
+and the output layer?
+
+744
+00:39:31,520 --> 00:39:32,860
+Should they now become negligible
+
+745
+00:39:32,860 --> 00:39:33,980
+because you want all the learning
+
+746
+00:39:33,980 --> 00:39:35,140
+to happen in the middle?
+
+747
+00:39:35,140 --> 00:39:37,540
+Or actually, the embedding layer plays
+
+748
+00:39:37,540 --> 00:39:39,620
+a really interesting and different functional
+
+749
+00:39:39,620 --> 00:39:42,000
+role to the blocks, so even if you have a lot of blocks,
+
+750
+00:39:42,000 --> 00:39:43,630
+you still want to train the embeddings.
+
+751
+00:39:43,630 --> 00:39:45,950
+It's not obvious what the answer to that question is.
+
+752
+00:39:45,950 --> 00:39:50,410
+I find it difficult to know.
+
+753
+00:39:50,410 --> 00:39:52,430
+So that's why there's a degree of freedom,
+
+754
+00:39:52,430 --> 00:39:54,930
+which is letting you tune how much you
+
+755
+00:39:54,930 --> 00:39:56,570
+want the embedding to be important
+
+756
+00:39:56,570 --> 00:39:58,970
+relative to the blocks.
+
+757
+00:39:58,970 --> 00:40:02,150
+AUDIENCE: So it's being defined as the thing that you add up,
+
+758
+00:40:02,150 --> 00:40:05,330
+regardless of whether it's composition or concatenation.
+
+759
+00:40:05,330 --> 00:40:09,290
+So in that case, could you say if you had a set of blocks,
+
+760
+00:40:09,290 --> 00:40:10,970
+and you're trying to analyze it, and you
+
+761
+00:40:10,970 --> 00:40:12,850
+doubled all of their masses, would that
+
+762
+00:40:12,850 --> 00:40:14,890
+give you the same analysis?
+
+763
+00:40:14,890 --> 00:40:18,210
+JEREMY BERNSTEIN: Yeah, it would.
+
+764
+00:40:18,210 --> 00:40:19,270
+Analysis goes through.
+
+765
+00:40:19,270 --> 00:40:22,010
+But it would just mean that when you train the network
+
+766
+00:40:22,010 --> 00:40:24,970
+under this norm, using this norm to help you train it,
+
+767
+00:40:24,970 --> 00:40:28,010
+that the amount of contribution towards learning of the blocks
+
+768
+00:40:28,010 --> 00:40:31,690
+would double compared to the things whose mass you
+
+769
+00:40:31,690 --> 00:40:32,858
+don't double.
+
+770
+00:40:32,858 --> 00:40:34,650
+AUDIENCE: Oh, but if there's no other thing
+
+771
+00:40:34,650 --> 00:40:35,710
+that you don't double--
+
+772
+00:40:35,710 --> 00:40:37,335
+JEREMY BERNSTEIN: Then nothing changes.
+
+773
+00:40:37,335 --> 00:40:37,890
+Exactly.
+
+774
+00:40:41,720 --> 00:40:43,935
+AUDIENCE: Follow-up question on this.
+
+775
+00:40:43,935 --> 00:40:46,060
+How do you determine the mass for different blocks?
+
+776
+00:40:46,060 --> 00:40:49,360
+So I am assuming here that mass incorporates
+
+777
+00:40:49,360 --> 00:40:53,960
+some-- defines the richness of a certain block in terms
+
+778
+00:40:53,960 --> 00:40:56,780
+of its feature representation or ability?
+
+779
+00:40:56,780 --> 00:40:58,280
+JEREMY BERNSTEIN: What it determines
+
+780
+00:40:58,280 --> 00:41:01,160
+is how much that block during training
+
+781
+00:41:01,160 --> 00:41:03,800
+is going to influence the features of anything
+
+782
+00:41:03,800 --> 00:41:06,520
+that it contributes to, any kind of super module
+
+783
+00:41:06,520 --> 00:41:09,200
+that it contributes to.
+
+784
+00:41:09,200 --> 00:41:12,360
+And sort of like a degree of freedom
+
+785
+00:41:12,360 --> 00:41:14,860
+that we couldn't really see a theoretical way to get rid of,
+
+786
+00:41:14,860 --> 00:41:17,720
+so it's something you have to tune.
+
+787
+00:41:17,720 --> 00:41:19,340
+But when we actually did experiments,
+
+788
+00:41:19,340 --> 00:41:24,180
+we just tuned the mass of all of the blocks together.
+
+789
+00:41:24,180 --> 00:41:26,080
+So we give each--
+
+790
+00:41:26,080 --> 00:41:28,820
+if all of the blocks have mass m and there's l blocks,
+
+791
+00:41:28,820 --> 00:41:31,960
+each block gets mass m divided by l.
+
+792
+00:41:31,960 --> 00:41:34,500
+So there's one number, which is the mass of all the blocks.
+
+793
+00:41:34,500 --> 00:41:37,080
+And then we fix the input layer to have mass 1 and the output
+
+794
+00:41:37,080 --> 00:41:39,080
+layer to have mass 1.
+
+795
+00:41:39,080 --> 00:41:42,270
+AUDIENCE: So if you have a block that's linear that has mass 1,
+
+796
+00:41:42,270 --> 00:41:44,570
+and you have a block as a convolution,
+
+797
+00:41:44,570 --> 00:41:46,710
+that would also have the same--
+
+798
+00:41:46,710 --> 00:41:47,990
+JEREMY BERNSTEIN: Yes.
+
+799
+00:41:47,990 --> 00:41:51,230
+And we do that for simplicity because it's
+
+800
+00:41:51,230 --> 00:41:55,670
+a pain if you-- but the current understanding is maybe
+
+801
+00:41:55,670 --> 00:41:58,210
+it would work better if you tune them separately.
+
+802
+00:41:58,210 --> 00:42:04,510
+But you can tune them in groups if you want to.
+
+803
+00:42:04,510 --> 00:42:06,730
+So concatenation is kind of analogous,
+
+804
+00:42:06,730 --> 00:42:09,070
+but it doesn't have the coupling because they
+
+805
+00:42:09,070 --> 00:42:10,530
+don't compose with each other.
+
+806
+00:42:10,530 --> 00:42:12,750
+So it's a little bit simpler.
+
+807
+00:42:12,750 --> 00:42:16,310
+But the point of the point of these definitions
+
+808
+00:42:16,310 --> 00:42:19,410
+is that you take these definitions.
+
+809
+00:42:19,410 --> 00:42:21,290
+You take the definition of well-normedness,
+
+810
+00:42:21,290 --> 00:42:24,470
+and you can prove that if you compose two things that
+
+811
+00:42:24,470 --> 00:42:27,530
+are well-normed, then the composition is also well-normed.
+
+812
+00:42:27,530 --> 00:42:29,830
+So they preserve that property.
+
+813
+00:42:29,830 --> 00:42:32,350
+And they have another-- there's another advantage which
+
+814
+00:42:32,350 --> 00:42:37,770
+is that you can work this theory through to second order.
+
+815
+00:42:37,770 --> 00:42:40,050
+So you define what you mean by the sharpness.
+
+816
+00:42:40,050 --> 00:42:44,210
+It's a bit like the reciprocal of the smoothness.
+
+817
+00:42:44,210 --> 00:42:48,130
+But you say that the module is alpha, beta, gamma sharp
+
+818
+00:42:48,130 --> 00:42:50,570
+if it's second derivatives.
+
+819
+00:42:50,570 --> 00:42:53,310
+In other words, it's Lipschitz smooth
+
+820
+00:42:53,310 --> 00:42:55,290
+if the module is Lipschitz smooth with respect
+
+821
+00:42:55,290 --> 00:42:57,410
+to its weight norm and input norm.
+
+822
+00:42:57,410 --> 00:43:00,490
+But because a module has two arguments,
+
+823
+00:43:00,490 --> 00:43:05,390
+we can give it three sharpness coefficients,
+
+824
+00:43:05,390 --> 00:43:09,430
+which correspond to varying just the weights,
+
+825
+00:43:09,430 --> 00:43:10,910
+varying the weights and the input,
+
+826
+00:43:10,910 --> 00:43:12,150
+or varying just the input.
+
+827
+00:43:12,150 --> 00:43:15,672
+So that's why there's three sharpness coefficients.
+
+828
+00:43:15,672 --> 00:43:17,130
+And you can think of these as being
+
+829
+00:43:17,130 --> 00:43:19,110
+like generalized top eigenvalues.
+
+830
+00:43:19,110 --> 00:43:25,210
+So oftentimes, when people talk about the sharpness
+
+831
+00:43:25,210 --> 00:43:28,930
+of the Hessian in deep learning, what they're meaning
+
+832
+00:43:28,930 --> 00:43:32,710
+is how big is the largest eigenvalue of the Hessian.
+
+833
+00:43:32,710 --> 00:43:35,690
+But somehow, that's like a Euclidean constant.
+
+834
+00:43:35,690 --> 00:43:38,880
+And if you don't believe that the geometry of the weight space
+
+835
+00:43:38,880 --> 00:43:41,640
+is a Euclidean geometry, then you shouldn't necessarily even
+
+836
+00:43:41,640 --> 00:43:43,760
+care about the top eigenvalue.
+
+837
+00:43:43,760 --> 00:43:48,000
+And you need some kind of generalized notion.
+
+838
+00:43:48,000 --> 00:43:53,840
+And the point is that if a module is well-normed and has
+
+839
+00:43:53,840 --> 00:43:56,640
+these sharpness coefficients, there's an automatic way
+
+840
+00:43:56,640 --> 00:44:00,000
+to determine what the sharpness coefficients are of compositions
+
+841
+00:44:00,000 --> 00:44:02,680
+and concatenations.
+
+842
+00:44:02,680 --> 00:44:05,160
+And then you can use that to show that the overall loss
+
+843
+00:44:05,160 --> 00:44:13,660
+function is Lipschitz smooth and some other things.
+
+844
+00:44:19,320 --> 00:44:27,200
+So that was a lot of building a theory and not really clear
+
+845
+00:44:27,200 --> 00:44:30,080
+if it's going to be useful.
+
+846
+00:44:30,080 --> 00:44:34,670
+So the next two parts are talking about different ways
+
+847
+00:44:34,670 --> 00:44:39,510
+that we've been trying to apply this theory.
+
+848
+00:44:39,510 --> 00:44:42,390
+And in some sense, the theory is intended
+
+849
+00:44:42,390 --> 00:44:44,290
+to try to solve these problems as well.
+
+850
+00:44:47,190 --> 00:44:49,290
+So now I want to think about scaling.
+
+851
+00:44:49,290 --> 00:44:51,290
+So you want to scale your training.
+
+852
+00:44:51,290 --> 00:44:54,310
+You want to make your transformer as big as possible.
+
+853
+00:44:54,310 --> 00:44:56,910
+And that's this idea, even in the natural world,
+
+854
+00:44:56,910 --> 00:44:59,570
+that big things with bigger brains
+
+855
+00:44:59,570 --> 00:45:02,370
+are supposed to be more intelligent.
+
+856
+00:45:02,370 --> 00:45:05,210
+And the African elephant is, according to Wikipedia,
+
+857
+00:45:05,210 --> 00:45:09,070
+is the organism with the most neurons.
+
+858
+00:45:09,070 --> 00:45:12,247
+And then we've got this recipe for
+
+859
+00:45:12,247 --> 00:45:13,830
+artificial general intelligence, where
+
+860
+00:45:13,830 --> 00:45:16,150
+it's like, get the biggest supercomputer that you can
+
+861
+00:45:16,150 --> 00:45:18,270
+and scrape all the data and then train
+
+862
+00:45:18,270 --> 00:45:21,830
+the really big transformer.
+
+863
+00:45:21,830 --> 00:45:24,990
+And that's this problem that we talked about it in the earlier
+
+864
+00:45:24,990 --> 00:45:28,350
+lecture, but the training properties of the system
+
+865
+00:45:28,350 --> 00:45:30,910
+can drift as you scale up.
+
+866
+00:45:30,910 --> 00:45:34,660
+So even though with the case of width, even as the network gets
+
+867
+00:45:34,660 --> 00:45:37,680
+wider, the performance is getting better,
+
+868
+00:45:37,680 --> 00:45:40,580
+but the optimal step size, which is on the x-axis,
+
+869
+00:45:40,580 --> 00:45:42,580
+is just drifting.
+
+870
+00:45:42,580 --> 00:45:47,218
+And sometimes, if you scale badly in depth,
+
+871
+00:45:47,218 --> 00:45:49,760
+the performance can get worse as you make the network deeper.
+
+872
+00:45:49,760 --> 00:45:51,260
+So we want to try to have a way that
+
+873
+00:45:51,260 --> 00:45:54,900
+solves some of these problems.
+
+874
+00:45:54,900 --> 00:46:00,020
+So our thesis for good scaling-- why is scaling bad?
+
+875
+00:46:00,020 --> 00:46:04,600
+Our thesis is scaling well is actually not difficult.
+
+876
+00:46:04,600 --> 00:46:09,220
+It's just about really understanding the Lipschitz
+
+877
+00:46:09,220 --> 00:46:11,620
+properties of the system, which is the thing that people
+
+878
+00:46:11,620 --> 00:46:14,900
+don't really understand.
+
+879
+00:46:14,900 --> 00:46:19,500
+And so the thesis is that if you have Lipschitz guarantees
+
+880
+00:46:19,500 --> 00:46:22,800
+for your network which are tight,
+
+881
+00:46:22,800 --> 00:46:25,180
+meaning that it's not like a really loose band that's
+
+882
+00:46:25,180 --> 00:46:28,580
+kind of useless, and if the Lipschitz constants are
+
+883
+00:46:28,580 --> 00:46:33,200
+non-dimensional, which basically means that as you change
+
+884
+00:46:33,200 --> 00:46:35,960
+the scale of the system, the Lipschitz constant is staying
+
+885
+00:46:35,960 --> 00:46:41,520
+fixed, it's not varying, then if you normalize the updates
+
+886
+00:46:41,520 --> 00:46:46,313
+in the corresponding norm, that will give you good scaling.
+
+887
+00:46:46,313 --> 00:46:48,480
+You kind of call it a thesis because it's not really
+
+888
+00:46:48,480 --> 00:46:49,060
+a theorem.
+
+889
+00:46:49,060 --> 00:46:50,540
+It's just like what we think.
+
+890
+00:46:54,480 --> 00:46:57,218
+So we want to have Lipschitz constants
+
+891
+00:46:57,218 --> 00:46:58,760
+for the overall neural network, which
+
+892
+00:46:58,760 --> 00:47:02,040
+are independent of the scaling dimensions.
+
+893
+00:47:02,040 --> 00:47:04,280
+And what we really want is to believe
+
+894
+00:47:04,280 --> 00:47:06,600
+that the bounds that these Lipschitz bounds
+
+895
+00:47:06,600 --> 00:47:10,240
+are going to be tight, and the amount of tightness
+
+896
+00:47:10,240 --> 00:47:12,700
+that the bounds have is not dependent on scale.
+
+897
+00:47:16,440 --> 00:47:20,440
+So then, if we can have that, then the norm
+
+898
+00:47:20,440 --> 00:47:25,600
+on the overall module, which those bounds hold in.
+
+899
+00:47:25,600 --> 00:47:27,960
+If we control that norm of the weight updates,
+
+900
+00:47:27,960 --> 00:47:30,750
+we'll be able to predict how much the outputs change.
+
+901
+00:47:30,750 --> 00:47:34,130
+So that's one of the reasons we were setting this thing up.
+
+902
+00:47:34,130 --> 00:47:40,110
+So in other words, this is the example
+
+903
+00:47:40,110 --> 00:47:43,670
+that we mainly think about, but if the neural network is
+
+904
+00:47:43,670 --> 00:47:46,570
+1 Lipschitz, meaning that the Lipschitz constant is 1,
+
+905
+00:47:46,570 --> 00:47:48,750
+so one is a really great number, which
+
+906
+00:47:48,750 --> 00:47:55,230
+is an example of a number, which is nondimensional,
+
+907
+00:47:55,230 --> 00:48:02,130
+then if we control the weight norm of our weight updates,
+
+908
+00:48:02,130 --> 00:48:04,030
+we'll be able to predict that output
+
+909
+00:48:04,030 --> 00:48:06,370
+norm of the change in outputs.
+
+910
+00:48:09,190 --> 00:48:14,950
+And this is just showing you some of the papers
+
+911
+00:48:14,950 --> 00:48:17,170
+where we wrote about some of this stuff.
+
+912
+00:48:17,170 --> 00:48:19,570
+But we broke up the problem into these two pieces.
+
+913
+00:48:19,570 --> 00:48:21,750
+What are the properties of an individual layer?
+
+914
+00:48:21,750 --> 00:48:26,820
+And how do we keep them under composition and concatenation?
+
+915
+00:48:26,820 --> 00:48:29,340
+And this is just saying that, actually, some of them
+
+916
+00:48:29,340 --> 00:48:31,900
+put a little bit on the homework, this idea
+
+917
+00:48:31,900 --> 00:48:34,380
+that this particular scaled spectral norm is
+
+918
+00:48:34,380 --> 00:48:37,180
+a really good norm for getting Lipschitz
+
+919
+00:48:37,180 --> 00:48:39,280
+guarantees on a linear layer.
+
+920
+00:48:43,500 --> 00:48:48,240
+And this paper that I worked on with Philip and also
+
+921
+00:48:48,240 --> 00:48:49,740
+with some other collaborators, which
+
+922
+00:48:49,740 --> 00:48:54,380
+is about the idea of combining things.
+
+923
+00:48:54,380 --> 00:48:57,380
+And we actually built this software package, which is still
+
+924
+00:48:57,380 --> 00:48:58,980
+a work in progress, but it's the idea
+
+925
+00:48:58,980 --> 00:49:00,820
+that all of those rules, everything
+
+926
+00:49:00,820 --> 00:49:04,000
+that I was showing you, are things that can be programmed.
+
+927
+00:49:04,000 --> 00:49:05,960
+So you can actually build this library.
+
+928
+00:49:05,960 --> 00:49:08,220
+So you think about it as building this LEGO set,
+
+929
+00:49:08,220 --> 00:49:12,220
+where you can combine-- so this is an example of building an MLP
+
+930
+00:49:12,220 --> 00:49:17,540
+by combining layers and nonlinearities to get--
+
+931
+00:49:17,540 --> 00:49:22,220
+this MLP would then be a compound module.
+
+932
+00:49:22,220 --> 00:49:25,370
+And then you would automatically get its forward function
+
+933
+00:49:25,370 --> 00:49:28,610
+through taking the composition, but you also
+
+934
+00:49:28,610 --> 00:49:30,110
+get this normalized function.
+
+935
+00:49:30,110 --> 00:49:32,050
+So when we compose things, we automatically
+
+936
+00:49:32,050 --> 00:49:33,630
+build a norm on the weight space.
+
+937
+00:49:33,630 --> 00:49:37,330
+And then we can use that norm to normalize.
+
+938
+00:49:37,330 --> 00:49:42,310
+And so this is our simple programming example.
+
+939
+00:49:42,310 --> 00:49:45,670
+And the claim is that because we did this clever normalization,
+
+940
+00:49:45,670 --> 00:49:47,130
+the training will now scale better
+
+941
+00:49:47,130 --> 00:49:49,270
+without needing to retrain the learning rate.
+
+942
+00:49:54,090 --> 00:49:58,330
+And you can basically build it on top of different programming
+
+943
+00:49:58,330 --> 00:49:59,450
+languages.
+
+944
+00:49:59,450 --> 00:50:03,330
+It can be put on top of PyTorch.
+
+945
+00:50:03,330 --> 00:50:05,630
+And this is some empirical evidence.
+
+946
+00:50:18,670 --> 00:50:22,390
+What we're showing here is actual width sweep.
+
+947
+00:50:22,390 --> 00:50:25,030
+So we're increasing the width of the network.
+
+948
+00:50:25,030 --> 00:50:31,950
+And the left plot is just training nanoGPT,
+
+949
+00:50:31,950 --> 00:50:35,308
+which is Karpathy's transformer-- sorry, go ahead.
+
+950
+00:50:35,308 --> 00:50:36,850
+AUDIENCE: I didn't mean to interrupt.
+
+951
+00:50:36,850 --> 00:50:37,725
+[INAUDIBLE] question.
+
+952
+00:50:43,312 --> 00:50:45,270
+JEREMY BERNSTEIN: The point is that if you just
+
+953
+00:50:45,270 --> 00:50:48,930
+take like nanoGPT, which is this GitHub repository,
+
+954
+00:50:48,930 --> 00:50:51,550
+and you try changing the width, the optimal learning
+
+955
+00:50:51,550 --> 00:50:54,150
+rate is going to drift.
+
+956
+00:50:54,150 --> 00:50:57,450
+The middle plot is our own transformer implementation,
+
+957
+00:50:57,450 --> 00:51:00,110
+which has some tweaks to the architecture to make it actually
+
+958
+00:51:00,110 --> 00:51:02,710
+Lipschitz.
+
+959
+00:51:02,710 --> 00:51:06,550
+And then the third plot is adding normalization
+
+960
+00:51:06,550 --> 00:51:10,310
+on top of the optimization.
+
+961
+00:51:10,310 --> 00:51:11,990
+And the point is, this is supposed
+
+962
+00:51:11,990 --> 00:51:15,150
+to be saying that by adding this normalization, we kind fix
+
+963
+00:51:15,150 --> 00:51:18,710
+the drift in the learning rate.
+
+964
+00:51:18,710 --> 00:51:21,820
+AUDIENCE: So I guess from the perspective of a gradient that
+
+965
+00:51:21,820 --> 00:51:25,780
+has not been normalized, when you apply normalization,
+
+966
+00:51:25,780 --> 00:51:29,460
+it's as if you are changing the learning rate.
+
+967
+00:51:29,460 --> 00:51:32,700
+JEREMY BERNSTEIN: Yes.
+
+968
+00:51:32,700 --> 00:51:34,943
+Yeah, that's the one perspective.
+
+969
+00:51:34,943 --> 00:51:37,360
+AUDIENCE: I guess it would be like changing learning rate,
+
+970
+00:51:37,360 --> 00:51:39,777
+but in a way that's functionally dependent on the gradient
+
+971
+00:51:39,777 --> 00:51:40,540
+itself.
+
+972
+00:51:40,540 --> 00:51:42,260
+JEREMY BERNSTEIN: Yes.
+
+973
+00:51:42,260 --> 00:51:44,380
+And it changes the learning rate in a way
+
+974
+00:51:44,380 --> 00:51:47,220
+which depends on what the architecture of the network is.
+
+975
+00:51:47,220 --> 00:51:49,740
+So depending on-- different layers
+
+976
+00:51:49,740 --> 00:51:52,380
+will get gradients rescaled by different amounts.
+
+977
+00:51:52,380 --> 00:51:54,780
+AUDIENCE: So learning rate here is a scaling
+
+978
+00:51:54,780 --> 00:51:55,822
+of that entire process.
+
+979
+00:51:55,822 --> 00:51:56,780
+JEREMY BERNSTEIN: Yeah.
+
+980
+00:52:00,780 --> 00:52:06,140
+And this is to say that things also work in scaling depth.
+
+981
+00:52:06,140 --> 00:52:10,340
+So the baseline nanoGPT performance-- it kind of is not
+
+982
+00:52:10,340 --> 00:52:11,920
+so bad if you just scale depth.
+
+983
+00:52:11,920 --> 00:52:15,320
+It works reasonably well, but it's a little bit messier.
+
+984
+00:52:15,320 --> 00:52:19,370
+And this is just to say that-- so in the middle plot, which
+
+985
+00:52:19,370 --> 00:52:21,750
+is without applying our normalization procedure,
+
+986
+00:52:21,750 --> 00:52:26,130
+Adam coincidentally does pretty well in terms of depth scaling,
+
+987
+00:52:26,130 --> 00:52:28,270
+and then adding the normalization on top,
+
+988
+00:52:28,270 --> 00:52:30,670
+things stay pretty much the same, actually.
+
+989
+00:52:36,650 --> 00:52:38,850
+So this is good because this is pretty much
+
+990
+00:52:38,850 --> 00:52:41,190
+what we built this whole thing to be able to do.
+
+991
+00:52:41,190 --> 00:52:43,650
+So it's kind of we knew these things were going
+
+992
+00:52:43,650 --> 00:52:46,290
+to work because we had an intuitive understanding of how
+
+993
+00:52:46,290 --> 00:52:49,210
+to do scaling, and then we kind of built the theory in order
+
+994
+00:52:49,210 --> 00:52:51,630
+to do this.
+
+995
+00:52:51,630 --> 00:52:55,170
+So it's like, kind of knew this was going to work.
+
+996
+00:52:55,170 --> 00:52:59,210
+That's just saying we do some other things in the paper.
+
+997
+00:52:59,210 --> 00:53:01,530
+We spent a whole lot of effort to try to build
+
+998
+00:53:01,530 --> 00:53:02,892
+this theoretical framework.
+
+999
+00:53:02,892 --> 00:53:04,850
+And the idea that we have now is actually maybe
+
+1000
+00:53:04,850 --> 00:53:08,770
+it's going to be useful for other things.
+
+1001
+00:53:08,770 --> 00:53:11,970
+And something I'm really excited about now
+
+1002
+00:53:11,970 --> 00:53:18,560
+is this idea of duality and what we call modular duality.
+
+1003
+00:53:18,560 --> 00:53:20,020
+So what does that mean?
+
+1004
+00:53:22,960 --> 00:53:25,980
+And this is the thing which led to the big training speed-up.
+
+1005
+00:53:25,980 --> 00:53:30,600
+So that's why we care about this, or one of the reasons.
+
+1006
+00:53:30,600 --> 00:53:35,600
+So if you remember that we suppose now
+
+1007
+00:53:35,600 --> 00:53:37,800
+that we came up with a norm such that
+
+1008
+00:53:37,800 --> 00:53:41,520
+we could upper bound the error in the linearization
+
+1009
+00:53:41,520 --> 00:53:45,320
+of our objective function.
+
+1010
+00:53:45,320 --> 00:53:47,880
+And then we remember that because we did this
+
+1011
+00:53:47,880 --> 00:53:51,200
+on the homework, that you can then derive steepest descent
+
+1012
+00:53:51,200 --> 00:53:53,280
+optimization algorithms by solving
+
+1013
+00:53:53,280 --> 00:53:55,120
+the argmin of this thing, finding
+
+1014
+00:53:55,120 --> 00:53:58,640
+the minimizer of this thing.
+
+1015
+00:53:58,640 --> 00:54:01,240
+And then you remember, because you did it on the homework,
+
+1016
+00:54:01,240 --> 00:54:05,040
+that you can decouple the solutions for that problem
+
+1017
+00:54:05,040 --> 00:54:06,020
+into two pieces.
+
+1018
+00:54:06,020 --> 00:54:09,160
+One is evaluating a dual norm, and the other
+
+1019
+00:54:09,160 --> 00:54:12,940
+is evaluating at argmax over a set of unit vectors.
+
+1020
+00:54:15,880 --> 00:54:17,380
+And so we think about the purple box
+
+1021
+00:54:17,380 --> 00:54:19,080
+as roughly being the step size.
+
+1022
+00:54:19,080 --> 00:54:24,340
+And we can call this the second thing-- we can actually
+
+1023
+00:54:24,340 --> 00:54:27,500
+call it a duality map.
+
+1024
+00:54:27,500 --> 00:54:28,920
+And what does that mean?
+
+1025
+00:54:37,420 --> 00:54:40,380
+Basically, there's this idea in more classical optimization
+
+1026
+00:54:40,380 --> 00:54:43,180
+theory that the gradient is a dual vector
+
+1027
+00:54:43,180 --> 00:54:46,900
+and the weights are a regular vector.
+
+1028
+00:54:46,900 --> 00:54:48,540
+And the only thing that you're allowed
+
+1029
+00:54:48,540 --> 00:54:54,440
+to do with dual vectors and regular vectors is combine them.
+
+1030
+00:54:54,440 --> 00:54:56,980
+Well, basically, the dual vector is a linear map
+
+1031
+00:54:56,980 --> 00:55:00,020
+that takes a regular vector and returns a real number.
+
+1032
+00:55:00,020 --> 00:55:01,860
+And that's borne out here by saying
+
+1033
+00:55:01,860 --> 00:55:05,020
+that if you have a gradient, the thing a gradient
+
+1034
+00:55:05,020 --> 00:55:08,100
+is really, really what it's really good for is taking dot
+
+1035
+00:55:08,100 --> 00:55:11,580
+products with weights and describing the linearization
+
+1036
+00:55:11,580 --> 00:55:12,700
+of the function.
+
+1037
+00:55:12,700 --> 00:55:15,150
+That's the only thing that you should ever really trust
+
+1038
+00:55:15,150 --> 00:55:17,690
+the gradient will tell you is the linearization
+
+1039
+00:55:17,690 --> 00:55:18,710
+of your function.
+
+1040
+00:55:18,710 --> 00:55:20,270
+The idea that you can take a gradient
+
+1041
+00:55:20,270 --> 00:55:21,770
+and just do gradient descent with it
+
+1042
+00:55:21,770 --> 00:55:25,450
+is generically a bad idea and something
+
+1043
+00:55:25,450 --> 00:55:28,290
+that we should all forget.
+
+1044
+00:55:28,290 --> 00:55:30,570
+So that's like this idea of--
+
+1045
+00:55:30,570 --> 00:55:33,850
+and it's the idea that a dual vector, even though it
+
+1046
+00:55:33,850 --> 00:55:36,357
+may have the same dimensions, technically
+
+1047
+00:55:36,357 --> 00:55:38,690
+you could add and subtract them because technically they
+
+1048
+00:55:38,690 --> 00:55:41,190
+have the same dimensions, it can still be a bad idea.
+
+1049
+00:55:45,130 --> 00:55:49,110
+What we need is a kind of formal procedure.
+
+1050
+00:55:49,110 --> 00:55:52,270
+We need a procedure for converting dual vectors,
+
+1051
+00:55:52,270 --> 00:55:55,850
+like the gradient, back to the primal space
+
+1052
+00:55:55,850 --> 00:55:59,790
+such that we can add and subtract them.
+
+1053
+00:55:59,790 --> 00:56:02,230
+But we should not just directly add and subtract them.
+
+1054
+00:56:02,230 --> 00:56:05,930
+But this is an example of such a procedure.
+
+1055
+00:56:05,930 --> 00:56:09,593
+And just looking at this argmax, what
+
+1056
+00:56:09,593 --> 00:56:11,010
+you can think of it as saying is I
+
+1057
+00:56:11,010 --> 00:56:14,520
+want to take a step of unit norm which
+
+1058
+00:56:14,520 --> 00:56:20,080
+maximizes the linear improvement of my objective function.
+
+1059
+00:56:20,080 --> 00:56:23,960
+And just subtracting the gradient from the weights
+
+1060
+00:56:23,960 --> 00:56:25,960
+may not solve that problem.
+
+1061
+00:56:25,960 --> 00:56:27,900
+AUDIENCE: Is that your beef with that
+
+1062
+00:56:27,900 --> 00:56:30,740
+because we're doing nonlinear optimization, therefore,
+
+1063
+00:56:30,740 --> 00:56:33,880
+you have no guarantee that your gradient plus the step size
+
+1064
+00:56:33,880 --> 00:56:35,242
+results in an improvement?
+
+1065
+00:56:35,242 --> 00:56:37,700
+JEREMY BERNSTEIN: Well, for a sufficiently small step size,
+
+1066
+00:56:37,700 --> 00:56:39,620
+it will give you an improvement.
+
+1067
+00:56:39,620 --> 00:56:43,840
+It may just be really suboptimal because it may not solve--
+
+1068
+00:56:43,840 --> 00:56:47,158
+there's a sense in which this thing is an optimal procedure
+
+1069
+00:56:47,158 --> 00:56:49,700
+just in the sense that there is an optimization problem here.
+
+1070
+00:56:49,700 --> 00:56:50,860
+There's a max.
+
+1071
+00:56:50,860 --> 00:56:52,360
+There's an argmax.
+
+1072
+00:56:52,360 --> 00:56:55,320
+So the solution the thing will solve some kind
+
+1073
+00:56:55,320 --> 00:56:57,060
+of optimality criteria.
+
+1074
+00:56:57,060 --> 00:57:00,360
+If you pick a good norm, it's like an optimality criterion
+
+1075
+00:57:00,360 --> 00:57:02,080
+that you really care about.
+
+1076
+00:57:02,080 --> 00:57:06,560
+And just moving in the gradient direction
+
+1077
+00:57:06,560 --> 00:57:09,140
+is equivalent to saying that this is the Euclidean norm.
+
+1078
+00:57:09,140 --> 00:57:13,590
+And so the optimization space in neural networks
+
+1079
+00:57:13,590 --> 00:57:17,830
+is really unlikely to have a Euclidean structure.
+
+1080
+00:57:17,830 --> 00:57:19,090
+So that's the argument.
+
+1081
+00:57:23,910 --> 00:57:26,550
+And this is just a picture where it's
+
+1082
+00:57:26,550 --> 00:57:28,690
+suggested by some other ideas in optimization.
+
+1083
+00:57:28,690 --> 00:57:32,188
+But you think about the weight space--
+
+1084
+00:57:32,188 --> 00:57:33,730
+the space that the gradient lives in,
+
+1085
+00:57:33,730 --> 00:57:36,250
+you think of it as being a very distorted version.
+
+1086
+00:57:36,250 --> 00:57:38,550
+So even though it may have the same dimensionality
+
+1087
+00:57:38,550 --> 00:57:40,550
+as the weight space, the things that
+
+1088
+00:57:40,550 --> 00:57:43,990
+live in the gradient space kind of maybe
+
+1089
+00:57:43,990 --> 00:57:45,610
+are stretched and distorted.
+
+1090
+00:57:45,610 --> 00:57:50,042
+So we need some procedure to undistort them
+
+1091
+00:57:50,042 --> 00:57:52,250
+before we're going to subtract them from the weights.
+
+1092
+00:57:55,230 --> 00:57:57,790
+So this is just to say that you should never do this
+
+1093
+00:57:57,790 --> 00:57:59,830
+ever again unless you're really sure
+
+1094
+00:57:59,830 --> 00:58:01,370
+that your space is Euclidean.
+
+1095
+00:58:04,190 --> 00:58:06,330
+And that you should always think,
+
+1096
+00:58:06,330 --> 00:58:13,850
+what is this dualization procedure that I really need
+
+1097
+00:58:13,850 --> 00:58:15,270
+to think through what it is?
+
+1098
+00:58:18,090 --> 00:58:19,950
+In a sense, this should not be surprising
+
+1099
+00:58:19,950 --> 00:58:22,740
+because everyone tells you, if you're
+
+1100
+00:58:22,740 --> 00:58:24,490
+going to do deep learning, you should just
+
+1101
+00:58:24,490 --> 00:58:25,670
+use the Adam optimizer.
+
+1102
+00:58:25,670 --> 00:58:29,278
+No one ever tells you to use regular gradient descent,
+
+1103
+00:58:29,278 --> 00:58:31,070
+so there should be some idea that there is,
+
+1104
+00:58:31,070 --> 00:58:32,770
+intuitively, we all know there's something
+
+1105
+00:58:32,770 --> 00:58:34,270
+bad about regular gradient descent,
+
+1106
+00:58:34,270 --> 00:58:35,770
+we just don't quite know what it is.
+
+1107
+00:58:39,610 --> 00:58:44,530
+So this second thing is supposed to pass the type check.
+
+1108
+00:58:44,530 --> 00:58:48,290
+And the question is, how do we come up
+
+1109
+00:58:48,290 --> 00:58:51,370
+with such a dualization procedure for a neural net?
+
+1110
+00:58:51,370 --> 00:58:54,890
+Well, if we built this, we had this recursive procedure
+
+1111
+00:58:54,890 --> 00:58:58,610
+for inducing a norm on the weight space
+
+1112
+00:58:58,610 --> 00:58:59,750
+of the full neural network.
+
+1113
+00:58:59,750 --> 00:59:01,970
+So maybe there's a corresponding procedure
+
+1114
+00:59:01,970 --> 00:59:06,720
+for recursively constructing a duality map.
+
+1115
+00:59:06,720 --> 00:59:08,640
+So that's what we wanted to propose.
+
+1116
+00:59:08,640 --> 00:59:13,320
+So it's the idea that, given individual layers, if you
+
+1117
+00:59:13,320 --> 00:59:15,720
+have a norm on the weights of an individual layer,
+
+1118
+00:59:15,720 --> 00:59:19,560
+you can solve a duality map for that layer.
+
+1119
+00:59:19,560 --> 00:59:21,620
+And that's what you did on the homework
+
+1120
+00:59:21,620 --> 00:59:23,800
+because we said that we're going to give
+
+1121
+00:59:23,800 --> 00:59:26,497
+the linear layers a spectral norm,
+
+1122
+00:59:26,497 --> 00:59:29,080
+and then we're going to solve the duality map that corresponds
+
+1123
+00:59:29,080 --> 00:59:30,300
+to the spectral norm.
+
+1124
+00:59:33,160 --> 00:59:36,140
+And then once we've solved those layer-wise duality maps,
+
+1125
+00:59:36,140 --> 00:59:39,360
+it turns out that there is a valid recursive
+
+1126
+00:59:39,360 --> 00:59:41,280
+procedure for combining them to come up
+
+1127
+00:59:41,280 --> 00:59:47,480
+with a duality map on the full architecture, which I didn't
+
+1128
+00:59:47,480 --> 00:59:49,880
+write it down in the slides, but maybe it's
+
+1129
+00:59:49,880 --> 00:59:51,340
+something fun to think about.
+
+1130
+00:59:55,640 --> 00:59:58,960
+AUDIENCE: So this would mean that the dualization of g
+
+1131
+00:59:58,960 --> 01:00:02,294
+always has a norm of 1.
+
+1132
+01:00:02,294 --> 01:00:03,110
+Oh, never mind.
+
+1133
+01:00:03,110 --> 01:00:08,230
+JEREMY BERNSTEIN: Yeah, it's because we broke things up
+
+1134
+01:00:08,230 --> 01:00:10,030
+into two pieces.
+
+1135
+01:00:10,030 --> 01:00:12,272
+AUDIENCE: Oh, so it's a projection in that space?
+
+1136
+01:00:12,272 --> 01:00:13,230
+JEREMY BERNSTEIN: Sure.
+
+1137
+01:00:13,230 --> 01:00:17,990
+So we broke up solving this argument.
+
+1138
+01:00:17,990 --> 01:00:21,990
+We broke it up into solving an argmax over unit vectors
+
+1139
+01:00:21,990 --> 01:00:24,090
+and then multiplying by the dual norm.
+
+1140
+01:00:26,630 --> 01:00:28,270
+So there's also a recursive procedure
+
+1141
+01:00:28,270 --> 01:00:30,230
+for computing the dual norm.
+
+1142
+01:00:30,230 --> 01:00:32,803
+I just didn't talk about that on the slide.
+
+1143
+01:00:32,803 --> 01:00:34,470
+AUDIENCE: So I guess I'm interpreting it
+
+1144
+01:00:34,470 --> 01:00:37,830
+as we're finding whatever coordinate the projection
+
+1145
+01:00:37,830 --> 01:00:42,133
+of the gradient maximizes--
+
+1146
+01:00:42,133 --> 01:00:43,550
+I guess I'm just looking at argmax
+
+1147
+01:00:43,550 --> 01:00:45,450
+of that in the next slide.
+
+1148
+01:00:45,450 --> 01:00:53,630
+We're looking at the argmax of the inner product,
+
+1149
+01:00:53,630 --> 01:00:57,803
+interpreting that as some of projection.
+
+1150
+01:00:57,803 --> 01:00:59,470
+JEREMY BERNSTEIN: It doesn't necessarily
+
+1151
+01:00:59,470 --> 01:01:02,460
+have to be a projection.
+
+1152
+01:01:02,460 --> 01:01:05,100
+Actually, maybe it is, in some sense--
+
+1153
+01:01:05,100 --> 01:01:08,060
+yes, maybe it is in the projection.
+
+1154
+01:01:08,060 --> 01:01:10,980
+Definitely the one on the homework was a projection.
+
+1155
+01:01:10,980 --> 01:01:13,740
+Yeah, I think, for norms, it probably usually
+
+1156
+01:01:13,740 --> 01:01:15,200
+is a projection.
+
+1157
+01:01:19,140 --> 01:01:22,040
+So yeah, I need to just think through that.
+
+1158
+01:01:22,040 --> 01:01:24,100
+But I think you're probably right that you
+
+1159
+01:01:24,100 --> 01:01:25,980
+can think of it as taking the gradient
+
+1160
+01:01:25,980 --> 01:01:27,840
+and projecting it to the unit norm ball
+
+1161
+01:01:27,840 --> 01:01:29,760
+but also distorting the direction.
+
+1162
+01:01:37,500 --> 01:01:44,220
+But yeah, this is supposed to be you think about it as you've
+
+1163
+01:01:44,220 --> 01:01:47,220
+got some Lipschitz guarantee and some Lipschitz smoothness
+
+1164
+01:01:47,220 --> 01:01:52,900
+guarantee, which tell you how much the neural network
+
+1165
+01:01:52,900 --> 01:01:57,900
+output is going to respond to changing its weights.
+
+1166
+01:01:57,900 --> 01:02:00,640
+And so that, in particular, one of the things that
+
+1167
+01:02:00,640 --> 01:02:02,480
+tells you is when the second-order changes
+
+1168
+01:02:02,480 --> 01:02:05,480
+and the network output become important relative to the first
+
+1169
+01:02:05,480 --> 01:02:08,520
+order changes, so a sensible thing to do
+
+1170
+01:02:08,520 --> 01:02:10,920
+is to take an optimization step which
+
+1171
+01:02:10,920 --> 01:02:13,320
+squeezes as much kind of juice out
+
+1172
+01:02:13,320 --> 01:02:17,120
+of the linearization as possible while
+
+1173
+01:02:17,120 --> 01:02:19,080
+making sure that the second-order network
+
+1174
+01:02:19,080 --> 01:02:21,250
+effects don't dominate the first-order effects,
+
+1175
+01:02:21,250 --> 01:02:23,000
+because the gradient really only tells you
+
+1176
+01:02:23,000 --> 01:02:24,580
+about the first-order effects.
+
+1177
+01:02:24,580 --> 01:02:26,460
+So that's an intuitive description.
+
+1178
+01:02:26,460 --> 01:02:29,860
+And if you can solve that problem for individual layers,
+
+1179
+01:02:29,860 --> 01:02:33,540
+how do you solve it for a full network?
+
+1180
+01:02:33,540 --> 01:02:36,000
+And I'm just claiming that there's a recursive procedure
+
+1181
+01:02:36,000 --> 01:02:37,100
+for doing that.
+
+1182
+01:02:40,360 --> 01:02:44,320
+And this is just to say, to tell you a little backstory,
+
+1183
+01:02:44,320 --> 01:02:46,480
+at least, why I became interested in this,
+
+1184
+01:02:46,480 --> 01:02:49,040
+is because there's an optimization algorithm
+
+1185
+01:02:49,040 --> 01:02:51,240
+that people at Google proposed called
+
+1186
+01:02:51,240 --> 01:02:57,040
+Shampoo, which won this speed challenge at this industry
+
+1187
+01:02:57,040 --> 01:03:00,190
+benchmarking competition.
+
+1188
+01:03:00,190 --> 01:03:05,432
+But if you read the paper that proposes this method this,
+
+1189
+01:03:05,432 --> 01:03:07,390
+first of all, the method that they actually use
+
+1190
+01:03:07,390 --> 01:03:10,110
+is totally different to the method in the paper.
+
+1191
+01:03:10,110 --> 01:03:13,790
+And it kind of feels like maybe there's not,
+
+1192
+01:03:13,790 --> 01:03:15,550
+let's say, a complete understanding
+
+1193
+01:03:15,550 --> 01:03:18,190
+of what the method is doing.
+
+1194
+01:03:18,190 --> 01:03:20,390
+So I just wanted to look at this method
+
+1195
+01:03:20,390 --> 01:03:22,870
+and strip away some of the things which people don't
+
+1196
+01:03:22,870 --> 01:03:23,690
+actually use.
+
+1197
+01:03:23,690 --> 01:03:26,990
+And it looks like the core primitive in this algorithm
+
+1198
+01:03:26,990 --> 01:03:30,070
+is basically, for linear layers, it does this funny gradient
+
+1199
+01:03:30,070 --> 01:03:33,270
+transformation.
+
+1200
+01:03:33,270 --> 01:03:36,510
+And then realizing that this funny gradient transformation is
+
+1201
+01:03:36,510 --> 01:03:39,950
+actually equivalent to that homework problem
+
+1202
+01:03:39,950 --> 01:03:43,970
+that you all did, but when you read the paper,
+
+1203
+01:03:43,970 --> 01:03:45,330
+they don't frame it that way.
+
+1204
+01:03:45,330 --> 01:03:47,430
+So it's kind of interesting.
+
+1205
+01:03:47,430 --> 01:03:50,870
+But it seems to really speed up the training.
+
+1206
+01:03:50,870 --> 01:03:53,830
+So basically, what the claim is that hiding inside
+
+1207
+01:03:53,830 --> 01:03:56,220
+of this optimization algorithm that people at Google
+
+1208
+01:03:56,220 --> 01:03:59,960
+are really excited about is this very simple primitive.
+
+1209
+01:04:02,620 --> 01:04:06,560
+And because we were working on this modular norm stuff,
+
+1210
+01:04:06,560 --> 01:04:08,660
+it's very easy to implement this type of algorithm
+
+1211
+01:04:08,660 --> 01:04:10,900
+because we just override the normalize function
+
+1212
+01:04:10,900 --> 01:04:17,540
+of a linear module to do this spectral operation.
+
+1213
+01:04:17,540 --> 01:04:21,277
+And then I implemented it in a simple notebook, just as
+
+1214
+01:04:21,277 --> 01:04:22,860
+a proof of concept, and could actually
+
+1215
+01:04:22,860 --> 01:04:25,920
+see that doing this special normalization,
+
+1216
+01:04:25,920 --> 01:04:28,952
+it actually leads to training much faster than the thing
+
+1217
+01:04:28,952 --> 01:04:30,660
+in the middle, which is just like a naive
+
+1218
+01:04:30,660 --> 01:04:33,380
+form of spectral normalization.
+
+1219
+01:04:33,380 --> 01:04:36,700
+And both of them are much better than just vanilla gradient
+
+1220
+01:04:36,700 --> 01:04:37,360
+descent.
+
+1221
+01:04:39,940 --> 01:04:44,460
+And then there's this open-source neural network
+
+1222
+01:04:44,460 --> 01:04:46,220
+speedrunning community.
+
+1223
+01:04:46,220 --> 01:04:51,340
+And this person, Keller Jordan, made a really, really fast
+
+1224
+01:04:51,340 --> 01:04:56,070
+implementation of this spectral dualization procedure.
+
+1225
+01:04:56,070 --> 01:04:57,690
+It turns out, at the moment, it's
+
+1226
+01:04:57,690 --> 01:05:01,830
+the fastest way to train nanoGPT on this speedrun.
+
+1227
+01:05:01,830 --> 01:05:04,730
+So it's seems that's actually--
+
+1228
+01:05:04,730 --> 01:05:07,090
+the worry with the technique is maybe, in principle,
+
+1229
+01:05:07,090 --> 01:05:08,465
+it's the right thing to be doing.
+
+1230
+01:05:08,465 --> 01:05:13,410
+But it's so expensive to do these spectral normalization
+
+1231
+01:05:13,410 --> 01:05:15,355
+operations that it's practically useless.
+
+1232
+01:05:15,355 --> 01:05:16,730
+But it turns out there's actually
+
+1233
+01:05:16,730 --> 01:05:20,050
+a way to implement this dualization procedure really
+
+1234
+01:05:20,050 --> 01:05:24,410
+fast using an iterative method.
+
+1235
+01:05:24,410 --> 01:05:27,732
+So this is to say that what I told you--
+
+1236
+01:05:27,732 --> 01:05:29,190
+when we wrote this modular package,
+
+1237
+01:05:29,190 --> 01:05:32,730
+we actually kind of did it wrong because when
+
+1238
+01:05:32,730 --> 01:05:35,530
+we said that we should normalize,
+
+1239
+01:05:35,530 --> 01:05:37,270
+that is actually not optimal.
+
+1240
+01:05:37,270 --> 01:05:40,290
+We should actually do this dualization procedure.
+
+1241
+01:05:40,290 --> 01:05:44,082
+And it should recursively compute the dualization
+
+1242
+01:05:44,082 --> 01:05:45,790
+based on the architecture of the network.
+
+1243
+01:05:45,790 --> 01:05:48,750
+So we still need to update the package to do that.
+
+1244
+01:05:52,270 --> 01:05:57,863
+So in conclusion, yeah, I really like this idea
+
+1245
+01:05:57,863 --> 01:06:00,030
+that we should think about building a neural network
+
+1246
+01:06:00,030 --> 01:06:02,750
+as building LEGO, and that you should
+
+1247
+01:06:02,750 --> 01:06:04,210
+be able to build whatever you want,
+
+1248
+01:06:04,210 --> 01:06:07,230
+and you should be able to have a theoretical understanding
+
+1249
+01:06:07,230 --> 01:06:10,550
+of what you build, and it should be
+
+1250
+01:06:10,550 --> 01:06:16,030
+based on thinking about just how you combine individual bricks.
+
+1251
+01:06:16,030 --> 01:06:18,890
+And so far, we've been thinking about these scaling issues
+
+1252
+01:06:18,890 --> 01:06:23,210
+and now, apparently, also these training speed records.
+
+1253
+01:06:26,230 --> 01:06:29,270
+And I think that this idea has not really
+
+1254
+01:06:29,270 --> 01:06:31,650
+proliferated at all really.
+
+1255
+01:06:31,650 --> 01:06:36,230
+But I think it can be a more generally useful idea.
+
+1256
+01:06:36,230 --> 01:06:41,277
+So if you want to save energy and money and time,
+
+1257
+01:06:41,277 --> 01:06:43,110
+a good way to do that is to make your models
+
+1258
+01:06:43,110 --> 01:06:44,590
+really low precision.
+
+1259
+01:06:44,590 --> 01:06:48,630
+there's no one has a theoretical understanding of how
+
+1260
+01:06:48,630 --> 01:06:50,840
+precision in a neural network should behave.
+
+1261
+01:06:50,840 --> 01:06:58,300
+So as far as I can tell, all the research is just trying stuff.
+
+1262
+01:06:58,300 --> 01:07:00,580
+But intuitively, precision and continuity
+
+1263
+01:07:00,580 --> 01:07:02,260
+are very closely, very intimately
+
+1264
+01:07:02,260 --> 01:07:06,322
+related concepts because if you want
+
+1265
+01:07:06,322 --> 01:07:07,780
+to quantize as much as you can, you
+
+1266
+01:07:07,780 --> 01:07:11,220
+need to know what discretization scale the space
+
+1267
+01:07:11,220 --> 01:07:15,140
+is kind of continuous on or something like that.
+
+1268
+01:07:15,140 --> 01:07:18,232
+And similarly, these classic adversarial robustness things,
+
+1269
+01:07:18,232 --> 01:07:19,940
+I think, should also be related to having
+
+1270
+01:07:19,940 --> 01:07:22,300
+a good understanding of the continuity
+
+1271
+01:07:22,300 --> 01:07:24,940
+properties of the space.
+
+1272
+01:07:24,940 --> 01:07:29,860
+So you want to cast these as questions of module sensitivity.
+
+1273
+01:07:29,860 --> 01:07:32,920
+And I want to turn this into an open-source project.
+
+1274
+01:07:32,920 --> 01:07:35,500
+So I made this website, but it doesn't have very much
+
+1275
+01:07:35,500 --> 01:07:36,640
+information there yet.
+
+1276
+01:07:36,640 --> 01:07:39,240
+But anyway, that's it.
+
+1277
+01:07:39,240 --> 01:07:41,430
+So yeah, thanks.

@@ -1,0 +1,487 @@
+1
+00:00:00,000 --> 00:00:16,860
+So if you remember I
+
+2
+00:00:16,860 --> 00:00:26,070
+asked you to note the fact that I am using a inner product there right xiTx is less the inner product
+
+3
+00:00:26,070 --> 00:00:35,340
+of two vectors and the way I wrote the dual also I had only inner products in there right so in
+
+4
+00:00:35,340 --> 00:00:39,990
+fact if I want to evaluate the dual I need to only know the inner products of the two vectors
+
+5
+00:00:39,990 --> 00:00:46,260
+likewise if I want to finally evaluate them use the classifier that I learn I still need to only
+
+6
+00:00:46,260 --> 00:00:52,110
+find inner products right. So if I can come up with a way of efficiently
+
+7
+00:00:52,110 --> 00:01:09,160
+computing this inner products right I can do something interesting so what is that so what
+
+8
+00:01:09,160 --> 00:01:21,040
+do we normally do to make linear classifiers more powerful basis transformations this is somebody
+
+9
+00:01:21,040 --> 00:01:27,280
+said basis transformation right so I can just take my H, right replace it with some function H(x)
+
+10
+00:01:27,280 --> 00:01:31,960
+that gives me a larger basis right it could be just replace it with the square right.
+
+11
+00:01:31,960 --> 00:01:38,560
+I take x and replace it with x2 right and then I will get a larger basis and now it turns out
+
+12
+00:01:38,560 --> 00:02:08,940
+that i can do a lot of math but I can get up get with get a dual that looks like this so that is
+
+13
+00:02:08,940 --> 00:02:14,790
+the inner product notation right so if I can compute the inner product so i can just solve
+
+14
+00:02:14,790 --> 00:02:23,550
+the same kind of optimization problem right but I can do this in some other transformed space okay.
+
+15
+00:02:23,550 --> 00:02:55,300
+So likewise our f(x) is going to be so essentially what I need to know is H(x) for whatever pair x
+
+16
+00:02:55,300 --> 00:03:02,830
+and x’ that i would like to consider right so in the training it is the pairs of training points
+
+17
+00:03:02,830 --> 00:03:09,490
+right while I am actually using it is one of the support point and the input data that I am looking
+
+18
+00:03:09,490 --> 00:03:13,600
+at right so at any point I just take this pairs of data points and I need to compute the inner
+
+19
+00:03:13,600 --> 00:03:25,030
+product right. So I am going to call this as some function which is a kind of a distance function
+
+20
+00:03:25,030 --> 00:03:37,510
+or a similarity measure between H(x) and H(x’) right such similarity measures are also called
+
+21
+00:03:37,510 --> 00:03:47,650
+as kernels right so kernels are nothing but I mean so we might have heard of kernels in the context
+
+22
+00:03:47,650 --> 00:03:52,660
+of support vector machines we have been trying to use this libsvm or any of the other tools for some
+
+23
+00:03:52,660 --> 00:03:57,640
+projects over the summer you have heard of kernels right kernels are nothing but similarity functions
+
+24
+00:03:57,640 --> 00:04:04,630
+okay so the nice thing about the kernels that we use right is that they actually operate on x
+
+25
+00:04:04,630 --> 00:04:19,450
+and x’ okay they operate on x and x’ but they are computing the inner product of H(x) and H(x’) did
+
+26
+00:04:19,450 --> 00:04:25,450
+you see that they are going to work with x and x’ right but they will be computing the inner
+
+27
+00:04:25,450 --> 00:04:32,170
+product of H(x) and H(x’). So I will give you an example so the kernel function K should be
+
+28
+00:04:32,170 --> 00:04:52,620
+symmetric right and positive semi-definite okay positive definite semi definite is fine in some
+
+29
+00:04:52,620 --> 00:05:02,670
+cases positive definite people number remember what positive definite is right, right and that
+
+30
+00:05:02,670 --> 00:05:16,110
+if it is semi definite it essentially we want the quadratic forms to be to be positive.
+
+31
+00:05:16,110 --> 00:05:22,740
+We do not want to take xTAx and suddenly find it is negative so it is in fact you remember I told
+
+32
+00:05:22,740 --> 00:05:28,440
+the xTAx is usually the quadratic form that we are trying right and that will actually messes
+
+33
+00:05:28,440 --> 00:05:34,350
+up big time in the computation if the quadratic form becomes negative then we will have problems
+
+34
+00:05:34,350 --> 00:05:40,770
+in all the optimization thing going through okay so that is the, the mechanistic reason
+
+35
+00:05:40,770 --> 00:05:45,150
+for wanting it to be positive semi-definite. There is a much more fundamental reason for it
+
+36
+00:05:45,150 --> 00:05:50,880
+which I have not developed the math or the intuition for you to understand so it has
+
+37
+00:05:50,880 --> 00:05:55,080
+to come at a later course so hopefully in the kernel methods course if you are taking it you
+
+38
+00:05:55,080 --> 00:06:01,530
+will figure out why that is needed okay so there are many choices which you can use for the kernels
+
+39
+00:07:07,030 --> 00:07:16,090
+so there is something called the polynomial kernel which is essentially one plus inner product of x,
+
+40
+00:07:16,090 --> 00:07:21,790
+x prime whole raise to the power d so d is a parameter you can have d of two three four
+
+41
+00:07:21,790 --> 00:07:27,430
+you can even have D of one is essentially here whatever we have solved. So far right
+
+42
+00:07:27,430 --> 00:07:32,650
+you could have d you two three four whatever and the next one is called the Gaussian kernel or the
+
+43
+00:07:32,650 --> 00:07:43,990
+RBF kernel right so where the distance is given by E-γ X-X prime square norm of X minus X prime
+
+44
+00:07:43,990 --> 00:07:51,400
+squared is essentially the Gaussian without your the normalizing factor right so that is why it is
+
+45
+00:07:51,400 --> 00:07:55,030
+called the RBF kernel so if you want to call it the Gaussian kernel you actually have to make it
+
+46
+00:07:55,030 --> 00:08:01,720
+Gaussian otherwise called the RBF kernel. And then this is called the, the neural network
+
+47
+00:08:01,720 --> 00:08:07,960
+kernel or the sigmoidal kernel sometimes not just the hyperbolic tangent right this is Kappa
+
+48
+00:08:07,960 --> 00:08:13,360
+one and Kappa two some constant some arbitrary constants k1 and k2 which are your parameters
+
+49
+00:08:13,360 --> 00:08:20,590
+that you choose and this is x, x’ inner product okay so these are some of the popular kernels
+
+50
+00:08:20,590 --> 00:08:24,970
+which can be used for any generic data but then depending on the kind of data that you
+
+51
+00:08:24,970 --> 00:08:29,740
+are looking at right where the data comes from people do develop speech the specialized kernels
+
+52
+00:08:29,740 --> 00:08:33,010
+they for examples for string data people have come up with a lot of kernels.
+
+53
+00:08:33,010 --> 00:08:37,780
+When you want to compare strings how do I look at similarity between strings so the nice thing
+
+54
+00:08:37,780 --> 00:08:42,880
+about whatever we have done so far is that you can apply this not just to data that comes from
+
+55
+00:08:42,880 --> 00:08:49,390
+Rp right you been assuming so far that your x comes from some p dimensional real space as long
+
+56
+00:08:49,390 --> 00:08:55,390
+as you can define a proper kernel right you can apply this, this max margin classification.
+
+57
+00:08:55,390 --> 00:09:00,850
+That we have done to any kind of data does not have to come from a real-valued space okay which
+
+58
+00:09:00,850 --> 00:09:05,470
+is not true of many of the other things you are looked at right all those inherently depend on
+
+59
+00:09:05,470 --> 00:09:12,100
+the fact that the data is real value right because of this nice what is called the kernel trick right
+
+60
+00:09:12,100 --> 00:09:18,220
+so you could do all of this nice things so as long as you can define appropriate kernel that you can
+
+61
+00:09:18,220 --> 00:09:22,780
+actually apply this to any kind of data so that is one very powerful idea.
+
+62
+00:09:23,370 --> 00:09:46,020
+So just to convince you so let us look at the polynomial kernel of degree two right operating
+
+63
+00:09:46,020 --> 00:09:52,620
+on vectors of two dimension okay there are 2 2's here ok so the degree is two the d is
+
+64
+00:09:52,620 --> 00:09:57,150
+two and the p is also two but they need not necessarily be the same that I could have
+
+65
+00:09:57,150 --> 00:10:16,640
+had a much larger thing but it was easy for me to write something so this is what
+
+66
+00:10:16,640 --> 00:11:15,700
+1 + right now just squared it now if you think of H we get the following right.
+
+67
+00:11:15,700 --> 00:11:23,020
+So what is this function H it is essentially the quadratic basis expansion right so i have two,
+
+68
+00:11:23,020 --> 00:11:39,670
+two features x1 x2 right so i give so remember that x, x is x1 x2 right they consider of two
+
+69
+00:11:39,670 --> 00:11:46,570
+coordinates x1 and x2 right so this is essentially the quadratic expansion the first thing is one the
+
+70
+00:11:46,570 --> 00:11:51,940
+second coordinate is x1 third coordinate is x2 so it keeps it as it is okay then fourth
+
+71
+00:11:51,940 --> 00:11:57,520
+coordinate is x12 first coordinate is x2 the sixth coordinate is x1 x2 it is done
+
+72
+00:11:57,520 --> 00:12:04,720
+all the quadratic basis expansion right. Now if I make this operate on x and x’ and take
+
+73
+00:12:04,720 --> 00:12:16,390
+the inner product so what will be the terms 1, 2 x1x1’ , 2x2x2’ , x12 x2x1’2, x2x2’2,
+
+74
+00:12:16,390 --> 00:12:35,110
+2x1x1’x2x2’ is exactly what we have here right so what is the nice thing about it is I can
+
+75
+00:12:35,110 --> 00:12:42,100
+essentially compute the inner product of x and x’ first add 1 and square it so numerically what I
+
+76
+00:12:42,100 --> 00:12:46,390
+will end up with is the same as what i would have ended up with if i had done the basis
+
+77
+00:12:46,390 --> 00:12:52,300
+expansion right and then taken the inner product that makes sense right.
+
+78
+00:12:52,300 --> 00:12:56,770
+If i had just taken whatever is a vector so original vectors let us say I have some 2,
+
+79
+00:12:56,770 --> 00:13:07,090
+3 and 4,5 so instead of doing this basis expansion and then computing the inner product right I can
+
+80
+00:13:07,090 --> 00:13:17,520
+just take the inner product right away right this is essentially what the answer would be so this
+
+81
+00:13:17,520 --> 00:13:25,530
+well for degree 2 it might not seem great what about degree 15 polynomial I have essentially
+
+82
+00:13:25,530 --> 00:13:28,680
+doing similar amounts of computation except that I have to rise something to
+
+83
+00:13:28,680 --> 00:13:41,700
+the power of 15 right so is any questions. So far any questions so far they are all good
+
+84
+00:13:41,700 --> 00:13:56,490
+that is basis expansion if you if you thought something else about basis expansion please
+
+85
+00:13:56,490 --> 00:14:04,080
+correct it this is basis expansion right so i take the original data okay I then since I said
+
+86
+00:14:04,080 --> 00:14:08,520
+you could have a new component set or sine x cos x mean does not matter right you could think of
+
+87
+00:14:08,520 --> 00:14:12,450
+variety of different ways of expanding the bases in this case I am just doing the quadratic basis
+
+88
+00:14:12,450 --> 00:14:20,280
+expansion right is it clear to people. So whatever we have done so far and so this
+
+89
+00:14:20,280 --> 00:14:23,700
+whole idea for kernel and other things are arriving rather straightforward so
+
+90
+00:14:23,700 --> 00:14:32,910
+what I cannot write now for you is what is the basis expansion for the RBF kernel it turns out
+
+91
+00:14:32,910 --> 00:14:40,890
+that the computation is doing is actually in an infinite dimensional vector space okay so here
+
+92
+00:14:40,890 --> 00:14:45,630
+the computation is a six dimensional space and I took some data point from a two dimensional space
+
+93
+00:14:46,830 --> 00:14:53,550
+computation in a six dimensional space right. And I gave you back the answer but all the time
+
+94
+00:14:53,550 --> 00:14:57,930
+doing computation only in a two-dimensional space and I only took the inner product of
+
+95
+00:14:57,930 --> 00:15:03,870
+these two and then added 12 so I am essentially doing computations only R2 right well the actual
+
+96
+00:15:03,870 --> 00:15:08,730
+number I am returning to you is the result of computation done in R6 that is why it is called
+
+97
+00:15:08,730 --> 00:15:13,980
+the kernel trick right so likewise the RBF kernel I will do something in whatever is the original
+
+98
+00:15:13,980 --> 00:15:18,390
+dimensional space you give me but the resulting computation has an interpretation in some infinite
+
+99
+00:15:18,390 --> 00:15:23,760
+dimensional vector space case it is not even easy to write it down so that is why the RBF
+
+100
+00:15:23,760 --> 00:15:32,790
+kernel powerful they work on a variety of data right but they are not all powerful this have
+
+101
+00:15:32,790 --> 00:15:40,290
+to be careful about it right so, so that is all there is to support vector machines so we have
+
+102
+00:15:40,290 --> 00:15:44,250
+done this support vector machines as well. So I don't know if people who have used libsvm
+
+103
+00:15:44,250 --> 00:15:52,680
+or one such tool for that for most RBF kernels you would have to tune two parameters one is C
+
+104
+00:15:52,680 --> 00:16:00,660
+which we already saw right that is essentially how much penalty you are giving to the thing other one
+
+105
+00:16:00,660 --> 00:16:07,440
+you will tune is γ essentially this right it is some kind of a width parameter for your Gaussian
+
+106
+00:16:07,440 --> 00:16:14,070
+this how wide you are Gaussian is it just it is controls that so that is γ so those are the two
+
+107
+00:16:14,070 --> 00:16:20,340
+parameters you tune and for polynomial kernels you have a d and you have your C right and for
+
+108
+00:16:20,340 --> 00:16:27,930
+Sigmoidal kernels you have constants k1 k2 and you have C and this form of defining a support
+
+109
+00:16:27,930 --> 00:16:33,420
+vector machine is called as C-SVM okay. There are other ways other constraints that you
+
+110
+00:16:33,420 --> 00:16:40,020
+can impose on it not just the penalty on the ’s you can impose penalty on the number of support
+
+111
+00:16:40,020 --> 00:16:45,510
+vectors you consider right you want to say so suppose I run the data and it comes back and
+
+112
+00:16:45,510 --> 00:16:50,850
+says okay everything is a support vector right so that is not something interesting how can
+
+113
+00:16:50,850 --> 00:16:54,660
+everything be a support vector can all the data points be equal distance from the separating hyper
+
+114
+00:16:54,660 --> 00:17:01,410
+plane not if you are considering linear but when I am considering RBF kernels right the separating
+
+115
+00:17:01,410 --> 00:17:09,300
+hyper plane can be very very complex right. So in which case you might end up with a lot of
+
+116
+00:17:09,300 --> 00:17:13,050
+support vectors typically I do not know if you have not thought too much about it and
+
+117
+00:17:13,050 --> 00:17:16,470
+you are setting some very high values for C and trying to run this thing you will end up
+
+118
+00:17:16,470 --> 00:17:22,620
+with like sixty percent of your data as being support vectors so instead of trying to do that
+
+119
+00:17:22,620 --> 00:17:27,060
+empirically second on why only 20 support vector so let me try different see differential γ and
+
+120
+00:17:27,060 --> 00:17:35,640
+so on so forth you can use something called the nu-SVM not new the Greek nu SVM which gives you
+
+121
+00:17:35,640 --> 00:17:40,630
+a upper bound on the number of support vectors you are going to get you can say do the best you can
+
+122
+00:17:40,630 --> 00:17:45,640
+but do not give me more than 30 support vectors something like that to that effect okay.

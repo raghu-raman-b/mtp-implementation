@@ -1,0 +1,627 @@
+1
+00:00:10,980 --> 00:00:21,240
+Hello everyone and welcome to this NPTEL course on an introduction to
+
+2
+00:00:21,240 --> 00:00:26,790
+machine learning in this course we will have a quick introduction to machine
+
+3
+00:00:26,790 --> 00:00:33,750
+learning and this will not be very deep in a mathematical sense but it will have some
+
+4
+00:00:33,750 --> 00:00:39,720
+amount of mathematical rigor. And what we will be doing in this course is covering
+
+5
+00:00:39,720 --> 00:00:44,670
+different paradigms of machine learning and with special emphasis on classification and
+
+6
+00:00:44,670 --> 00:00:50,310
+regression tasks and also we will introduce you to various other machine learning paradigms.
+
+7
+00:00:50,310 --> 00:00:57,510
+In this introductory lecture set of lectures I will give a very
+
+8
+00:00:57,510 --> 00:01:01,470
+quick overview of the different kinds of machine learning paradigms and therefore
+
+9
+00:01:01,470 --> 00:01:08,250
+I call this lectures machine learning, a brief introduction with emphasis on brief
+
+10
+00:01:08,250 --> 00:01:16,020
+So the rest of the course would be a more elongated introduction to machine learning right.
+
+11
+00:01:16,020 --> 00:01:21,990
+So what is machine learning? So I will start off with a canonical definition put out by
+
+12
+00:01:21,990 --> 00:01:32,850
+Tom Mitchell in 97 and so a machine or an agent I deliberately leave the beginning undefined because
+
+13
+00:01:32,850 --> 00:01:39,270
+you could also apply this to non machines like biological agents so an agent is said to learn
+
+14
+00:01:39,270 --> 00:01:47,010
+from experience with respect to some class of tasks right and the performance measure P if
+
+15
+00:01:47,010 --> 00:01:53,820
+the learners performance tasks in the class as measured by P improves with experience.
+
+16
+00:01:53,820 --> 00:02:01,170
+So what we get from this first thing is we have to define learning with respect
+
+17
+00:02:01,170 --> 00:02:07,860
+to a specific class of tasks right it could be answering exams in a particular subject
+
+18
+00:02:07,860 --> 00:02:15,060
+right or it could be diagnosing patients of a specific illness right. So but we have to be
+
+19
+00:02:15,060 --> 00:02:22,200
+very careful about defining the set of tasks on which we are going to define this learning right,
+
+20
+00:02:22,200 --> 00:02:28,320
+and the second thing we need is of a performance measure P right so in the absence of a performance
+
+21
+00:02:28,320 --> 00:02:34,230
+measure P you would start to make vague statement like oh I think something is happening right that
+
+22
+00:02:34,230 --> 00:02:38,790
+seems to be a change and something learned; there is some learning going on and stuff like that.
+
+23
+00:02:38,790 --> 00:02:46,440
+So if you want to be more clear about measuring whether learning is happening or not you first
+
+24
+00:02:46,440 --> 00:02:52,950
+need to define some kind of a performance criteria right. So for example if you talk about answering
+
+25
+00:02:52,950 --> 00:02:57,570
+questions in an exam your performance criterion could very well be the number of marks that you
+
+26
+00:02:57,570 --> 00:03:05,700
+get or if you talk about diagnosing illness then your performance measure would be the number of
+
+27
+00:03:05,700 --> 00:03:11,970
+patients that you say are the number of patients who did not have adverse reaction to the drugs
+
+28
+00:03:11,970 --> 00:03:16,410
+you gave them there could be variety of ways of defining performance measures depending on
+
+29
+00:03:16,410 --> 00:03:22,770
+what you are looking for right and the third important component here is experience right.
+
+30
+00:03:22,770 --> 00:03:29,190
+So with experience the performance has to improve and so what we mean by experience
+
+31
+00:03:29,190 --> 00:03:34,140
+here in the case of writing exams it could be writing more exams right so the more the
+
+32
+00:03:34,140 --> 00:03:37,560
+number of exams you write the better you write it, the better you get it – test
+
+33
+00:03:37,560 --> 00:03:44,070
+taking or it could be a patient's in the case of diagnosing illnesses like the
+
+34
+00:03:44,070 --> 00:03:49,800
+more patients that you look at the better you become at diagnosing illness right.
+
+35
+00:03:49,800 --> 00:03:54,930
+So these are the three components so you need a class of tasks you need a performance measure
+
+36
+00:03:54,930 --> 00:04:02,940
+and you need some well-defined experience so this kind of learning right where you are
+
+37
+00:04:02,940 --> 00:04:07,440
+learning to improve your performance based on experience is known as a;
+
+38
+00:04:07,440 --> 00:04:15,030
+this kind of learning where you are trying to where you learn to improve
+
+39
+00:04:15,030 --> 00:04:17,910
+your performance with experience is known as inductive learning.
+
+40
+00:04:17,910 --> 00:04:25,290
+And then the basis of inductive learning goes back several centuries people have
+
+41
+00:04:25,290 --> 00:04:31,470
+been debating about inductive learning for hundreds of years now and are only more
+
+42
+00:04:31,470 --> 00:04:41,090
+recently we have started to have more quantified mechanisms of learning right. So but one thing
+
+43
+00:04:41,090 --> 00:04:45,200
+I always point out to people is that if you take this definition with a pinch of salt,
+
+44
+00:04:45,200 --> 00:04:56,960
+so for example you could think about the task as fitting your foot comfortably right.
+
+45
+00:04:56,960 --> 00:05:08,210
+So you could talk about whether a slipper fits your foot comfortably or let me put so I always
+
+46
+00:05:08,210 --> 00:05:14,870
+say that you should take this definition with a pinch of salt because take the example of a
+
+47
+00:05:14,870 --> 00:05:20,960
+slipper you know, so the slipper is supposed to give protection to your foot right and
+
+48
+00:05:20,960 --> 00:05:26,180
+a performance measure for the slipper would be whether it is fitting the leg comfortably or not
+
+49
+00:05:26,180 --> 00:05:32,660
+or whether it is you know as people say there is biting your leg or is it chafing your feet right
+
+50
+00:05:32,660 --> 00:05:39,050
+and with experience you know as the slipper knows more and more about your foot as you keep wearing
+
+51
+00:05:39,050 --> 00:05:44,240
+the slippers for longer periods of time it becomes better at the task of fitting your foot right as
+
+52
+00:05:44,240 --> 00:05:49,340
+measured by whether it is chafing your foot or whether it is biting your foot or not right.
+
+53
+00:05:49,340 --> 00:05:56,000
+So would you say that the slipper is learned to fit to your foot well by
+
+54
+00:05:56,000 --> 00:06:03,110
+this definition yes right so we have to take this with a pinch of salt and so not every
+
+55
+00:06:03,110 --> 00:06:11,180
+system that confirms to this definition of learning can be said to learn usually okay.
+
+56
+00:06:11,180 --> 00:06:15,860
+So going on so there are different machine learning paradigms that we will talk about
+
+57
+00:06:15,860 --> 00:06:24,716
+and the first one is supervised learning where you learn an input to output map right so you
+
+58
+00:06:24,716 --> 00:06:30,020
+are given some kind of an input it could be a description of the patient who comes to comes
+
+59
+00:06:30,020 --> 00:06:34,280
+to the clinic and the output that have to produce is whether the patient has a certain disease or
+
+60
+00:06:34,280 --> 00:06:39,560
+not so this we have to learn this kind of an input to output map or the input could be some kind of
+
+61
+00:06:39,560 --> 00:06:44,360
+equation right and then output would be the answer to the question or it could be a true or false
+
+62
+00:06:44,360 --> 00:06:48,050
+question I give you a description of the question you have to give me true or false as the output.
+
+63
+00:06:48,050 --> 00:06:52,370
+And in supervised learning what you essentially do is on a mapping from
+
+64
+00:06:52,370 --> 00:06:57,710
+this input to the required output right. If the output that you are looking for happens
+
+65
+00:06:57,710 --> 00:07:02,420
+to be a categorical output like whether he has a disease or does not have a disease or
+
+66
+00:07:02,420 --> 00:07:06,110
+whether the answer is true or false then the supervised learning problem is called
+
+67
+00:07:06,110 --> 00:07:12,620
+the classification problem right and if the output happens to be a continuous value like,
+
+68
+00:07:12,620 --> 00:07:18,890
+so how long will this product last before it fails right or what is the expected rainfall
+
+69
+00:07:18,890 --> 00:07:24,080
+tomorrow right so these kinds of problems they would be called as regression problems.
+
+70
+00:07:24,080 --> 00:07:29,870
+These are supervised learning problems where the output is a continuous value and these are
+
+71
+00:07:29,870 --> 00:07:33,620
+called as regression problems. So we will look at in more detail classification and regression
+
+72
+00:07:33,620 --> 00:07:38,450
+as we go on right. So the second class of problems are known as unsupervised learning
+
+73
+00:07:38,450 --> 00:07:44,240
+problems right where the goal is not really to produce an output in response to an input but
+
+74
+00:07:44,240 --> 00:07:49,940
+given a set of in data right we have to discover patterns in the data right. So that is more of;
+
+75
+00:07:49,940 --> 00:07:54,770
+that is called unsupervised learning – there is no real desired output
+
+76
+00:07:54,770 --> 00:07:58,730
+that we are looking for right we are more interested in finding patterns in the data.
+
+77
+00:07:58,730 --> 00:08:05,540
+So clustering right is one task one unsupervised learning task where you
+
+78
+00:08:05,540 --> 00:08:09,950
+are interested in finding cohesive groups among the input pattern right,
+
+79
+00:08:09,950 --> 00:08:14,900
+for example I might be looking at customers who come to my shop right and I want to figure
+
+80
+00:08:14,900 --> 00:08:19,190
+out if there are categories of customers like so maybe college students could be one category and
+
+81
+00:08:20,780 --> 00:08:24,380
+IT professionals could be another category and so on so forth and when I'm looking at
+
+82
+00:08:24,380 --> 00:08:28,670
+these kinds of grouping in my data, so I would call that a clustering task right.
+
+83
+00:08:28,670 --> 00:08:33,920
+So the other popular unsupervised learning paradigm is known as the Association rule
+
+84
+00:08:33,920 --> 00:08:38,150
+mining or frequent pattern mining where you are interested in finding a frequent
+
+85
+00:08:38,150 --> 00:08:45,140
+co-occurrence of items right in the data that is given to you so whenever A comes
+
+86
+00:08:45,140 --> 00:08:50,270
+to my shop B also comes to my shop right. So those kinds of co-occurrence so I can
+
+87
+00:08:50,270 --> 00:08:56,000
+always say that okay if I see A then there is likely very likely that B is also in my
+
+88
+00:08:56,000 --> 00:09:00,260
+shop somewhere you know so I can learn these kinds of associations between data right.
+
+89
+00:09:00,260 --> 00:09:05,420
+And again we look at this later in more detail these are I mean there
+
+90
+00:09:05,420 --> 00:09:09,230
+are many different variants on supervised and unsupervised learning but these are the
+
+91
+00:09:09,230 --> 00:09:14,390
+main ones that we look at so the third form of learning which is called reinforcement
+
+92
+00:09:14,390 --> 00:09:19,400
+learning it is neither supervised or unsupervised in nature and typically
+
+93
+00:09:19,400 --> 00:09:24,080
+these are problems where you are learning to control the behavior of a system and I will
+
+94
+00:09:24,080 --> 00:09:30,500
+give you more intuition into reinforcement learning now in one of the later modules.
+
+95
+00:09:30,500 --> 00:09:37,190
+So like I said earlier, for every task right, so you need to have some kind
+
+96
+00:09:37,190 --> 00:09:41,030
+of a performance measure so if you are looking at classification the performance
+
+97
+00:09:41,030 --> 00:09:46,490
+measure is going to be classification error so typically right. So we will talk about many,
+
+98
+00:09:46,490 --> 00:09:51,290
+many different performance measures in the duration of this course but the typical
+
+99
+00:09:51,290 --> 00:09:55,910
+performance measure you would want to use this classification error – it's how many of the items
+
+100
+00:09:55,910 --> 00:10:01,310
+or how many of the patients did I get incorrect so how many of them who are not having the disease
+
+101
+00:10:01,310 --> 00:10:05,810
+did I predict they had the disease and how many of them that had the disease that I missed right.
+
+102
+00:10:05,810 --> 00:10:09,260
+So that would be one of the measures that I would use and that would be the measure
+
+103
+00:10:09,260 --> 00:10:16,880
+that we want to use but we will see later that often that is not is not possible to actually
+
+104
+00:10:16,880 --> 00:10:22,190
+learn directly with respect to this measure. So we use other forms right and likewise for
+
+105
+00:10:22,190 --> 00:10:28,220
+regression again so we have the prediction error suppose I say it is going to rain like
+
+106
+00:10:28,220 --> 00:10:34,460
+23 millimeters and then it ends up raining like 49centimeters I do not know so that is
+
+107
+00:10:34,460 --> 00:10:42,530
+a huge prediction error right and in terms of clustering so this is a little becomes a
+
+108
+00:10:42,530 --> 00:10:47,240
+little trickier to define performance measures we don't know what is a good
+
+109
+00:10:47,240 --> 00:10:52,010
+clustering algorithm because we do not know what how to measure the quality of clusters.
+
+110
+00:10:52,010 --> 00:10:57,410
+So people come up with all different kinds of measures and so one of the more popular ones
+
+111
+00:10:57,410 --> 00:11:04,670
+is a scatter or spread of the cluster that essentially tells you how spread out the
+
+112
+00:11:04,670 --> 00:11:09,560
+points are that belong to a single group if you remember we are supposed to find cohesive groups,
+
+113
+00:11:09,560 --> 00:11:14,270
+so if the group is not that cohesive it's not all of them are not together then you
+
+114
+00:11:14,270 --> 00:11:20,790
+would say the clustering is of a poorer quality and if you have other ways of measuring things
+
+115
+00:11:20,790 --> 00:11:25,920
+like I was telling you, so if you know that people are college students right
+
+116
+00:11:25,920 --> 00:11:31,620
+and then you can figure out that how many what fraction of your cluster or college students.
+
+117
+00:11:31,620 --> 00:11:36,510
+So you can do this kind of external evaluations so one measure that people use popularly there
+
+118
+00:11:36,510 --> 00:11:41,130
+is known as purity right. And in the Association rule mining we use variety
+
+119
+00:11:41,130 --> 00:11:44,370
+of measures called support and confidence that takes a little bit of work to explain
+
+120
+00:11:44,370 --> 00:11:50,430
+support in confidence so I will defer it and I talked about Association rules in detail.
+
+121
+00:11:50,430 --> 00:11:55,560
+And in more in the reinforcement learning tasks so if we remember I told you it is learning to
+
+122
+00:11:55,560 --> 00:12:00,720
+control so you are going to have a cost for controlling the system and also the measure
+
+123
+00:12:00,720 --> 00:12:06,210
+here is cost and you would like to minimize the cost that you are going to accrue while
+
+124
+00:12:06,210 --> 00:12:09,150
+controlling the system. So these are the basic machine learning tasks.
+
+125
+00:12:09,150 --> 00:12:14,250
+So there are several challenges when you are trying to build a build a machine learning
+
+126
+00:12:14,250 --> 00:12:19,560
+solution right so a few of these I have listed on this slide right the first one
+
+127
+00:12:19,560 --> 00:12:23,880
+is you have to think about how good is a model that you have learned right so
+
+128
+00:12:23,880 --> 00:12:29,820
+I talked about a few measures on the previous slide but often those are not sufficient there
+
+129
+00:12:29,820 --> 00:12:33,600
+are other practical considerations that come into play and we will look at some
+
+130
+00:12:33,600 --> 00:12:42,060
+of these towards the a middle of the course somewhere right and the bulk of the time would
+
+131
+00:12:42,060 --> 00:12:46,470
+be spent on answering the second question which is how do I choose a model right.
+
+132
+00:12:46,470 --> 00:12:51,690
+So given some kind of data which will be the experience that we are talking about so given
+
+133
+00:12:51,690 --> 00:12:58,260
+this experience how would I choose how would I choose a model right that somehow learns what I
+
+134
+00:12:58,260 --> 00:13:02,670
+want to do right so how that improves itself with experience and so on so how do I choose this model
+
+135
+00:13:02,670 --> 00:13:07,680
+and how do I actually find the parameters of the model that gives me the right answer right.
+
+136
+00:13:07,680 --> 00:13:12,960
+So this is what we will spend much of our time on in this course and then there are a whole bunch
+
+137
+00:13:12,960 --> 00:13:20,130
+of other things that you really have to answer to be able to build a useful machine learning,
+
+138
+00:13:20,130 --> 00:13:25,530
+useful data analytics or data mining solutions questions like do I have enough data do I
+
+139
+00:13:25,530 --> 00:13:32,340
+have enough experience to say that my model is good right. Is the data of sufficient quality,
+
+140
+00:13:32,340 --> 00:13:37,920
+there could be errors in the data right. Suppose I have medical data and age is recorded as 225,
+
+141
+00:13:37,920 --> 00:13:43,440
+so what does that mean it could be 225 days in which case it is a reasonable number it could
+
+142
+00:13:43,440 --> 00:13:48,600
+be 22.5 years again is a reasonable number or 22.5 months is reasonable.
+
+143
+00:13:48,600 --> 00:13:53,790
+But if it is 225 years it's not a reasonable number so there is something wrong in the data
+
+144
+00:13:53,790 --> 00:14:00,060
+right so how do you handle these things or noise in images right or missing values so I will talk
+
+145
+00:14:00,060 --> 00:14:06,090
+briefly about handling missing values later in the course but this is as I mentioned in
+
+146
+00:14:06,090 --> 00:14:13,110
+the beginning is a machine learning course right and this is primarily concerned about
+
+147
+00:14:13,110 --> 00:14:17,310
+the algorithms of machine learning and the and the math and the intuition behind those
+
+148
+00:14:17,310 --> 00:14:23,220
+and not necessarily about the questions of building a practical systems based on this.
+
+149
+00:14:23,220 --> 00:14:28,410
+So I will be talking about many of these issues during the course but just that I
+
+150
+00:14:28,410 --> 00:14:35,070
+want to reiterate that will not be the focus right. And so the next challenge I have listed
+
+151
+00:14:35,070 --> 00:14:40,800
+here is how confident can I be of the results and about that I certainly we will talk a
+
+152
+00:14:40,800 --> 00:14:49,380
+little bit because the whole premise of reporting machine learning results depends on how confident
+
+153
+00:14:49,380 --> 00:14:53,910
+you can be of the results right and the last question am I describing the data correctly.
+
+154
+00:14:54,780 --> 00:15:02,160
+So that is a very, very domain dependent and the question that you can answer only with
+
+155
+00:15:02,160 --> 00:15:10,110
+your experience as a machine learning or a data sciences professional or with time right, so but
+
+156
+00:15:10,110 --> 00:15:16,470
+there are typical questions that you would like to ask that are there on the slides so from the next
+
+157
+00:15:16,470 --> 00:15:22,590
+in the next module we look at the different learning paradigms in slightly more detail.

@@ -1,0 +1,547 @@
+1
+00:00:10,660 --> 00:00:25,390
+So, we were discussing about the Bubble Sort Algorithm and the approach as was discussed
+
+2
+00:00:25,390 --> 00:00:35,200
+in the last class was that every element, every iteration pushes the heavier element at the bottom
+
+3
+00:00:35,200 --> 00:00:46,570
+and the lighter elements therefore, goes go up. So, we had shown an example a couple of examples
+
+4
+00:00:46,570 --> 00:01:02,500
+by which we can show that the heavier elements go down and the other lighter elements go up , we had
+
+5
+00:01:02,500 --> 00:01:10,540
+given a number of examples to that effect. So, if there be 50 here I do not know this visible,
+
+6
+00:01:10,540 --> 00:01:24,640
+let me write it here 50 here and 6 here and say 12 here and 7 here then what will happen is 50 will
+
+7
+00:01:24,640 --> 00:01:33,580
+be swapped with 6 because 50 is heavier than 6. So, larger than 6. So, first it will be 6 and 50
+
+8
+00:01:33,580 --> 00:01:43,840
+and then 50 will be compared with 12 again there will be a swap. So, there will be 12,50. 50 will
+
+9
+00:01:43,840 --> 00:01:51,850
+be compared with 7. So, it will be 7, 50 in that way ultimately the 50 if it is heaviest will come
+
+10
+00:01:51,850 --> 00:02:00,700
+at the bottom. So, we swap only if the element at the top is heavier there by heaviest element is
+
+11
+00:02:00,700 --> 00:02:07,630
+coming to the top and the others which are less than this heaviest element will be going at the
+
+12
+00:02:07,630 --> 00:02:15,790
+top, the bottom moves upward. Now, we are going to write the algorithm for this or the program,
+
+13
+00:02:15,790 --> 00:02:21,820
+for this before writing the program we need to understand a very interesting and fundamental
+
+14
+00:02:21,820 --> 00:02:33,870
+concept of C programming that is pointers. We will not formally introduce pointers here, but
+
+15
+00:02:33,870 --> 00:02:44,520
+we will be talking about pointers in a different way in a context of this bubble sort. Now, what
+
+16
+00:02:44,520 --> 00:02:54,870
+is a pointer? Pointer is something that points. Now suppose there is a variable here,suppose the
+
+17
+00:02:54,870 --> 00:03:08,700
+variable is named v and till now we have seen that we can write declare the variable as int v. So,
+
+18
+00:03:08,700 --> 00:03:25,290
+v has got a particular address may be that address is 1000, 1000 is the address of v. Now, if I say
+
+19
+00:03:25,290 --> 00:03:42,660
+int v equals 50; that means, in the address 1000 50 is written. Now, suppose we have got this
+
+20
+00:03:42,660 --> 00:03:57,600
+address v and which is an integer. But I am not declaring v as such, but there is another variable
+
+21
+00:03:57,600 --> 00:04:16,980
+p, which will always point to some integer. So, p will point to this v. P is pointing at this v. In
+
+22
+00:04:16,980 --> 00:04:35,680
+that case I can say p is a pointer to v now. So, therefore, what did I say?I said that v is stored
+
+23
+00:04:35,680 --> 00:04:56,440
+in the location 1000, now pointer p this variable p therefore, stores the value 1000. Now this v is
+
+24
+00:04:56,440 --> 00:05:11,770
+of type integer. So, v is a pointer to an integer v that we know because I have earlier said that
+
+25
+00:05:11,770 --> 00:05:26,590
+v is an integer. So, I can very well say int v, but what is the type of p , p is a pointer to v,
+
+26
+00:05:26,590 --> 00:05:47,860
+which is an integer. So, we write that as int star p, what does it mean? It means that p is a pointer
+
+27
+00:05:47,860 --> 00:06:01,930
+to an integer, if I write it ,it is not concerned with v only. It says that p is a pointer to an
+
+28
+00:06:01,930 --> 00:06:22,230
+integer. So, what is the value of p now?Value of p is 1000. What is the address of p the address
+
+29
+00:06:22,230 --> 00:06:30,300
+of p? Now where is this p ?This is in location 1000 and where is this ?This might be in location
+
+30
+00:06:30,300 --> 00:06:46,710
+2000. Therefore, what is the address of p? &of p is 2000, we know that this and operator gives us
+
+31
+00:06:46,710 --> 00:06:54,630
+the address, we have encountered this during scan f when we were discussing about scan f right. So,
+
+32
+00:06:54,630 --> 00:07:06,330
+let us have this diagram to understand the concept of pointer suppose there are different things
+
+33
+00:07:06,330 --> 00:07:19,350
+written in different pages of the book. This 1 page, this is another page ,this is another page
+
+34
+00:07:19,350 --> 00:07:35,960
+and this is another page, each of these pages have got a page number. Now I have got a table where
+
+35
+00:07:35,960 --> 00:07:44,690
+suppose- this has got some content a, this has got some other story b, this has got some other story
+
+36
+00:07:44,690 --> 00:07:52,490
+c, this has got some other story d. Therefore, the content of each of this pages are the stories a,
+
+37
+00:07:52,490 --> 00:08:14,380
+b, c, or d.But which page I am looking at ?Suppose here is a table of page numbers. So, I have got a
+
+38
+00:08:14,380 --> 00:08:35,980
+4 pages. So, the pages are 1 2 3 4. Now, suppose I just want to come to this page number. So,
+
+39
+00:08:35,980 --> 00:08:44,020
+this page number does not tell me what story is there, but this page number tells me that I have
+
+40
+00:08:44,020 --> 00:08:52,570
+to go to this page. This entry is telling me, this particular page number is telling me that,
+
+41
+00:08:52,570 --> 00:08:59,290
+I have to go to this page.This is telling me that I have to go to this page and this is telling
+
+42
+00:08:59,290 --> 00:09:13,720
+me that I have to go to this page. So, what are these? What are these things? These are nothing,
+
+43
+00:09:13,720 --> 00:09:30,580
+but pointers to pages and what is ‘a’ is a content of the page. So,
+
+44
+00:09:30,580 --> 00:09:47,860
+a b c or d say is content of page 4 and these are pointers to the pages; that means, if I want to
+
+45
+00:09:47,860 --> 00:09:55,690
+go to page 4- where should I go? Because this page may be located at some other table may be,
+
+46
+00:09:55,690 --> 00:10:03,340
+suppose this pages of a book are torn out and have been kept on different tables ok. So,
+
+47
+00:10:03,340 --> 00:10:10,060
+page number 1 is giving me the table address. So, that it is on this particular table. So,
+
+48
+00:10:10,060 --> 00:10:22,660
+it can be on table t 1, this can be on table t 2, may be the third page is on table t 4 and
+
+49
+00:10:22,660 --> 00:10:32,950
+this is on table t 5 it is possible. If I want to read the first page I will come here -the
+
+50
+00:10:32,950 --> 00:10:42,460
+first entry this is the point in to table t 1. So, and I go to table t 1 and to find this particular
+
+51
+00:10:42,460 --> 00:10:50,020
+page and read the content in that . So, these are pointers to pages, but these pointers also
+
+52
+00:10:50,020 --> 00:10:56,650
+have to be in some memory location -let me draw the diagram in different way now ,suppose this is
+
+53
+00:10:56,650 --> 00:11:10,870
+my memory and I have got 4 variables. Suppose I have got 4 integer variables and each integer
+
+54
+00:11:10,870 --> 00:11:18,730
+variable takes 2 bytes.I am showing 2 bytes here one after the other all right, this is
+
+55
+00:11:18,730 --> 00:11:39,020
+the variable v 1, this is the variable v 2, this is the variable v 3 and this is the variable v
+
+56
+00:11:39,020 --> 00:11:58,610
+4 . Similarly let me just change the colour. Let this be in locations- v 1 is in location 1000
+
+57
+00:11:58,610 --> 00:12:07,580
+assuming that an integer takes 2 bytes, this one is in location 1002, this one is in location 1004
+
+58
+00:12:12,350 --> 00:12:35,720
+and this is in location 1006. Let me extend my table bit, now suppose I have got here 4 integers.
+
+59
+00:13:26,280 --> 00:13:46,950
+So here I have got p 1 is a pointer variable- since it is a integer let me say- p 2 p 3 and
+
+60
+00:13:46,950 --> 00:14:06,420
+p 4. I am not bothering about how many locations it is taking. I am now not bothering about this
+
+61
+00:14:06,420 --> 00:14:12,420
+division here 2 bytes am just showing those 2 bytes together that will be easier for me to write
+
+62
+00:14:21,840 --> 00:14:35,790
+all right. So, here the p 1 is storing the value 1000 why? p 1 is a pointer to this variable. So,
+
+63
+00:14:35,790 --> 00:14:44,640
+this p 1 tells me not the value of v 1, but it tells me where is v 1 located. So,
+
+64
+00:14:44,640 --> 00:14:55,560
+1000 is a position where v 1 is located. So, p 1 is storing that pointer and p 2 is say 1002,
+
+65
+00:14:55,560 --> 00:15:08,010
+p 3 is 1004 and p 4 is 1006. Now these locations also have got address- suppose these addresses are
+
+66
+00:15:08,010 --> 00:15:33,750
+5000, 5002, 5004 and 5006 this 5006 ok. So, please try to understand when I say p 1- what is p 1? p
+
+67
+00:15:33,750 --> 00:15:52,200
+1 is a pointer to an integer. So, int star p 1; that means, that p 1 is an integer all right and
+
+68
+00:15:56,340 --> 00:16:04,290
+p 1 is a pointer to an integer variable . It could be a floating point variable. So,
+
+69
+00:16:04,290 --> 00:16:41,490
+had it been a floating point number. Now suppose each of them is a float. So, float v 1. So, v
+
+70
+00:16:50,720 --> 00:17:05,780
+1 is a floating point number. So, then if p 1 points to v 1, then I should write float star p 1;
+
+71
+00:17:05,780 --> 00:17:14,870
+that means, p 1 is pointing to a floating point number . So, since it is a floating point number
+
+72
+00:17:14,870 --> 00:17:34,430
+,if I say now &p1 what will I get? what is the address of p 1? what is the address of p 1 address
+
+73
+00:17:34,430 --> 00:17:47,510
+of p 1 is 5000 and what is star p 1? What is the meaning of this? Please do not be confused. This
+
+74
+00:17:47,510 --> 00:17:56,000
+star and this star has got two different meanings, this star means it is just saying that p 1 is a
+
+75
+00:17:56,000 --> 00:18:03,800
+pointer, pointer to what type of variable? Pointer to a floating point type of variable. So, for v 1
+
+76
+00:18:03,800 --> 00:18:14,300
+am just writing -float v 1 so; that means, that v 1 is purely a floating point number not a pointer,
+
+77
+00:18:14,300 --> 00:18:26,300
+but when I say float star p 1, then p 1 is a pointer to some floating number. Now, what is star
+
+78
+00:18:26,300 --> 00:18:41,900
+p 1 in this case what is a content of p ?Content of p 1 is 1000 So, let me just repeat it once
+
+79
+00:18:41,900 --> 00:19:08,520
+again. So, we have seen in declaration something like int star p 1 int v 1. Now; that means, p 1
+
+80
+00:19:08,520 --> 00:19:17,580
+is a pointer ,suppose located at location 5000 and p 1 is a pointer to a variable v 1, which is also
+
+81
+00:19:17,580 --> 00:19:29,460
+an integer- v 1 located at location thousand. This two lines are just meaning these two things- this
+
+82
+00:19:29,460 --> 00:19:35,970
+two pictures, this 5000 or 1000 this part is not known to us, because that is known by the compiler
+
+83
+00:19:35,970 --> 00:19:44,460
+not by us, but logically , this is the picture, leave aside this 5000 and 1000 ,only these 2 parts
+
+84
+00:19:44,460 --> 00:20:06,690
+are declared by this. Now if I say star p 1; that means, the content of p 1, whatever is the content
+
+85
+00:20:06,690 --> 00:20:19,020
+of p 1 -now if I make p 1 to point to v 1 in that case if I make p 1 point to v 1. So, what will
+
+86
+00:20:19,020 --> 00:20:29,250
+that be? Content of p 1 should be assigned to &of v 1. The &of v 1 will give me the address of this
+
+87
+00:20:29,250 --> 00:20:37,110
+and the content of p 1 will get that. Therefore, this 1000 will be written over here; that means,
+
+88
+00:20:37,110 --> 00:20:46,140
+this pointer is pointed to this v 1. I will not go in to further details of this right now,
+
+89
+00:20:46,140 --> 00:20:55,110
+we will come to this as an when the context comes later. Right now we this in mind let us go back to
+
+90
+00:20:55,110 --> 00:21:02,100
+the algorithm of bubble sort, what is being done on the algorithm of bubble sort. . Let us try to
+
+91
+00:21:02,100 --> 00:21:13,385
+understand each of the functions -first thing is we have got this standard equation. Now, first
+
+92
+00:21:13,385 --> 00:21:21,950
+I will start with this function void bubble sort -bubble sort is void, because it is not returning
+
+93
+00:21:21,950 --> 00:21:34,280
+any value ,it is just sorting some element -what array? x array and the size of the array is n,
+
+94
+00:21:34,280 --> 00:21:45,920
+int ij these are 2 local variable because they are using used as indexes of these two loop. In this
+
+95
+00:21:45,920 --> 00:21:58,400
+loop what is happening?- for I assigned n minus 1 to 0; i minus minus; what does that mean? That
+
+96
+00:21:58,400 --> 00:22:18,860
+means, if I have an array here this is my array I have got I pointing here. Because, that is the
+
+97
+00:22:18,860 --> 00:22:26,300
+size of the array minus 1.So, i is pointing here and it will go up to 0. So, gradually it will go
+
+98
+00:22:26,300 --> 00:22:37,730
+in this direction up. That is what the first for loop is saying. First for loop is saying that I
+
+99
+00:22:37,730 --> 00:22:49,040
+is starting from the bottom and going up upto 0 as long as it is greater than 0 and then for j
+
+100
+00:22:49,040 --> 00:23:04,070
+equal to 0 to j less than i ;j plus plus.If xj is greater than xj plus 1; that means, what if xj is
+
+101
+00:23:04,070 --> 00:23:22,720
+greater than xj plus 1. So, let us again go back to this j is starting from 0 and I am comparing
+
+102
+00:23:22,720 --> 00:23:42,820
+this value 50 with the value 2 with j plus 1.This is j plus 1 if xj is greater than xj plus 1, what
+
+103
+00:23:42,820 --> 00:23:53,950
+would I do I would swap. Let us go into here if xj is greater than xj plus 1 I am swapping xj and xj
+
+104
+00:23:53,950 --> 00:24:03,160
+plus 1, I will come to the swap function later am assuming that the swap is working correctly- that
+
+105
+00:24:03,160 --> 00:24:10,120
+means it is swapping them. So, what is happening? So, this loop will go on- j equal to 0 then j will
+
+106
+00:24:10,120 --> 00:24:34,110
+be 1 and in that way it will go on. So, next when I swap it becomes 2 and 50. Now, I have got other
+
+107
+00:24:34,110 --> 00:24:44,550
+values now j is being incremented. So, now, this is becoming j and this is becoming j plus 1- in
+
+108
+00:24:44,550 --> 00:24:54,473
+that way this swapping will be done. Suppose this is 70. So, there will be no swap no swap. So, let
+
+109
+00:24:54,473 --> 00:25:01,981
+us see here, if this condition does not hold -swap is not taking place.I am going back to this loop
+
+110
+00:25:12,810 --> 00:25:25,590
+.Now, 70 remains here . So, now, j changes and j plus 1 is pointing here now there will be a
+
+111
+00:25:25,590 --> 00:25:35,820
+swap here. So, this is 12 say -12 and 70 will be swapped. So, 2,50,12 70 in this way I will
+
+112
+00:25:35,820 --> 00:25:43,770
+go on up to this point and next. So, ultimately in this iteration ultimately I will have this
+
+113
+00:25:43,770 --> 00:25:52,170
+heaviest element say 70 is the heaviest element, then I will be decremented and I will come here
+
+114
+00:25:52,170 --> 00:26:00,120
+and then from this zone again I will do the same thing as I did till now . Exactly that
+
+115
+00:26:00,120 --> 00:26:12,780
+is being done here. So, I will be doing this and then I will decrement n little bit and I will go
+
+116
+00:26:12,780 --> 00:26:23,130
+on doing this. I will be then looping- doing the same loop again for 1 level less I mean the last
+
+117
+00:26:23,130 --> 00:26:29,130
+element is already having the heaviest element. So, I will do it among the remaining part. So,
+
+118
+00:26:29,130 --> 00:26:36,420
+this part this part is already covered. So, I have decremented it. So, I will be now playing in this
+
+119
+00:26:36,420 --> 00:26:47,010
+zone and once that is done this part will also be coveredI will be playing in this zone .Every time
+
+120
+00:26:47,010 --> 00:26:57,300
+am deciding on the zone , n, n minus 1 n minus 2 like that it is going on and every time I am
+
+121
+00:26:57,300 --> 00:27:04,860
+doing this loop for each of the pair wise element comparison and they are by am pushing the heaviest
+
+122
+00:27:04,860 --> 00:27:16,050
+element at the bottom. That is the code for bubble sort how it works this swap keeps a I have not
+
+123
+00:27:16,050 --> 00:27:23,220
+saying this swap. Earlier we have seen that if we do swap in any arbitrary way. For example,
+
+124
+00:27:23,220 --> 00:27:45,450
+if I want to swap 2 variables say I write swap int a, int b- let me do it here , if I just
+
+125
+00:27:45,450 --> 00:28:29,690
+do swap int a, int b and inside I use another variable temp, temp gets a , a is stored here
+
+126
+00:28:35,580 --> 00:28:51,240
+a gets b and then temp has been remembered there. So, b gets temp and so, this was my function
+
+127
+00:28:52,080 --> 00:29:04,290
+return. So, here suppose a (when it came) it was called with x and y s. So, main program called
+
+128
+00:29:04,290 --> 00:29:20,040
+swap with x and y and x was 5, y was 7 right. So, x was a location -here 5 and y was a location 7.
+
+129
+00:29:20,040 --> 00:29:30,120
+Now when it came here ‘a’ was a local location and I know that the functions are called by value so,
+
+130
+00:29:30,120 --> 00:29:55,590
+5 was copied in a and 7 was copied in b and then by this temp became 5, b became 5 and b
+
+131
+00:29:55,590 --> 00:30:02,250
+was stored in a. This was stored in this -these became 7 and this again became 5 -all right.That
+
+132
+00:30:03,018 --> 00:30:12,630
+is how it was done. So, a was 5 so, temp was 5. 7 went over here to a and here 5 was copied again
+
+133
+00:30:12,630 --> 00:30:19,560
+here- this was fine. So, this swapping was done by a by b and then when I returned no change is
+
+134
+00:30:19,560 --> 00:30:27,450
+reflected in x and y -that was the problem. So, we will now see how the swap function can
+
+135
+00:30:27,450 --> 00:30:37,260
+be implemented.Another point is I have just done return and a function can return only 1 value. I
+
+136
+00:30:37,260 --> 00:30:47,190
+could not return a and b to the main function. So, how can the thing be managed. So, that after the
+
+137
+00:30:47,190 --> 00:30:52,830
+swapping the result is reflected back in the main function. We will see that in the next lecture.

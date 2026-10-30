@@ -1,0 +1,183 @@
+1
+00:00:11,030 --> 00:00:18,920
+So now we know that trees are great candidates for boosting as well if you are using gradient
+
+2
+00:00:18,920 --> 00:00:24,980
+boosting right. But trees are great candidates for bagging as well right. So what is the important
+
+3
+00:00:24,980 --> 00:00:36,050
+property in bagging that we talked about, what does bagging help us to, reduce variance right.
+
+4
+00:00:36,050 --> 00:00:43,340
+So bagging allows us to reduce variance, and in fact you can show that the reduction in
+
+5
+00:00:43,340 --> 00:00:52,220
+variance is highest if the classifiers that you are building okay, or not correlated right.
+
+6
+00:00:52,220 --> 00:00:57,170
+So I am building many, many classifiers and the classifiers are predicting the same output right.
+
+7
+00:00:57,170 --> 00:01:04,430
+So if the classifier parameter set I am estimating or somehow if we can make them uncorrelated right,
+
+8
+00:01:04,430 --> 00:01:11,120
+then the reduction in variance is maximum it kind of intuitive right. If the classifiers are
+
+9
+00:01:11,120 --> 00:01:14,240
+very correlated then there is no point, they are not really different classifiers right,
+
+10
+00:01:14,240 --> 00:01:17,030
+they are going to give me the same output, so the variance will be high.
+
+11
+00:01:17,030 --> 00:01:21,380
+So if you can somehow make the classifiers uncorrelated, then the reduction in
+
+12
+00:01:21,380 --> 00:01:27,140
+variance is high right. So there is actually a very specific relation between the amount
+
+13
+00:01:27,140 --> 00:01:33,140
+of correlation between the classifiers and how much you pay in terms of the reduction variance
+
+14
+00:01:33,140 --> 00:01:36,860
+right. So I am not going to derive that, I just pointing it out to you, so if you want you can
+
+15
+00:01:36,860 --> 00:01:45,020
+look it up it is there in ESF right. And if you think about what we are doing with bagging right,
+
+16
+00:01:45,020 --> 00:01:50,870
+we are taking one data set right and you are sampling with replacement from that right.
+
+17
+00:01:50,870 --> 00:01:56,360
+So the probability of the trees that you are generating being correlated express rather high,
+
+18
+00:01:56,360 --> 00:02:02,450
+the probability of the trees that you are generating being correlated is rather high.
+
+19
+00:02:02,450 --> 00:02:08,060
+So it can be come up with some way in which we can reduce the correlation between the trees
+
+20
+00:02:08,060 --> 00:02:15,500
+that you are constructing right. So I am going to be doing bagging right,
+
+21
+00:02:17,970 --> 00:02:47,520
+but the goal is to reduce correlation between trees right. So the people who
+
+22
+00:02:47,520 --> 00:02:53,070
+came up with the random forest had a very, very simple idea for doing this right, you start doing
+
+23
+00:02:53,070 --> 00:02:57,840
+bagging as you would normally do okay. So you have your data set, then you create a bag by sampling
+
+24
+00:02:59,100 --> 00:03:03,990
+with replacement from that data. And now when you start building the tree on this data set,
+
+25
+00:03:03,990 --> 00:03:32,420
+so what you do is at every node right, sample some P features from your feature set, we use
+
+26
+00:03:32,420 --> 00:03:41,540
+P for the regular feature description right. So let me use a different, so we have total of
+
+27
+00:03:41,540 --> 00:03:49,010
+P features right your data points come from some RP space, you use randomly sample some T features
+
+28
+00:03:49,010 --> 00:03:56,660
+from that P features okay. Find out which is the best split point, which is a best split variable
+
+29
+00:03:56,660 --> 00:04:06,380
+among these P features alone, split the data go down to each of the subsets repeat the same
+
+30
+00:04:06,380 --> 00:04:13,070
+process, sample and other T variables right not necessarily this joint, and just sample
+
+31
+00:04:13,070 --> 00:04:19,010
+again okay, sample again T more variables okay. And then try to find out which is the best split
+
+32
+00:04:19,010 --> 00:04:24,920
+point among these T variables and keep doing this. So what does this get us see if you had actually
+
+33
+00:04:24,920 --> 00:04:30,020
+worked with the same data set right, which I mean if I just done bagging at the root level
+
+34
+00:04:30,020 --> 00:04:36,500
+it is highly likely that each one of the bagged trees would have picked the same attribute right,
+
+35
+00:04:36,500 --> 00:04:40,790
+just because you have sampled it again right. So it does not mean that the very
+
+36
+00:04:40,790 --> 00:04:45,230
+predictive attributes will get discarded. So at the higher levels of the trees it will
+
+37
+00:04:45,230 --> 00:04:52,640
+look very similar right. But now you are getting rid of that I said okay, I have chosen randomly
+
+38
+00:04:52,640 --> 00:04:58,940
+I have chosen T variables and only from them I am choosing the best variable therefore I am reducing
+
+39
+00:04:58,940 --> 00:05:05,210
+the chances that the trees will look similar. And in fact we can show that this leads to significant
+
+40
+00:05:05,210 --> 00:05:12,590
+reduction in the variance, in the bagged estimate and random forests end up performing very well.
+
+41
+00:05:12,590 --> 00:05:16,970
+In fact random forests are competitive with gradient boosted trees in some applications and
+
+42
+00:05:16,970 --> 00:05:22,730
+vice versa right. So boosted trees are better than random forests in some applications and
+
+43
+00:05:22,730 --> 00:05:27,500
+random forests are better than boosted trees in some applications. And because some time,
+
+44
+00:05:27,500 --> 00:05:32,030
+till sometime back there are very efficient random forest libraries and people use random
+
+45
+00:05:32,030 --> 00:05:36,590
+forests a lot right. But now there are also very nice libraries available for gradient
+
+46
+00:05:36,590 --> 00:05:41,840
+booster decision trees. And therefore, try everything and see which works right.

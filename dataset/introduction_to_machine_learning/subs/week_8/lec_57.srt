@@ -1,0 +1,987 @@
+1
+00:00:16,360 --> 00:00:23,760
+Okay So people remember what we mentioned by the Bayesian classifier or the Bayes optimal
+
+2
+00:00:23,760 --> 00:00:35,250
+classifier this is the very first class and we talked about nearest neighbor methods and
+
+3
+00:00:35,250 --> 00:01:37,210
+so I told you right something like this that if people remember right and then we said
+
+4
+00:01:37,210 --> 00:01:43,950
+hey we cannot find this normally because this is not supported in our training data right
+
+5
+00:01:43,950 --> 00:01:48,880
+we will probably get one ‘x’ it how do you know what is its class.
+
+6
+00:01:48,880 --> 00:01:52,299
+The probability of the class is given a data point because you are going to get only one
+
+7
+00:01:52,299 --> 00:01:57,340
+data point in one sample of the data point in your training and therefore we said we
+
+8
+00:01:57,340 --> 00:02:00,810
+will take an average over a region and so on so forth.
+
+9
+00:02:00,810 --> 00:02:03,690
+We will use that estimate over a region for finding the probability.
+
+10
+00:02:03,690 --> 00:02:12,880
+So, this is this is how we motivated what KNN right the K nearest neighbor classifier
+
+11
+00:02:12,880 --> 00:02:13,880
+right.
+
+12
+00:02:13,880 --> 00:02:19,610
+So now I am going to take a slightly different tack right, so what we want we want probability
+
+13
+00:02:19,610 --> 00:02:31,130
+of right ‘g’ given ‘x’, we want probability of ‘g’ given ‘x’ right, So we have
+
+14
+00:02:31,130 --> 00:02:40,660
+our friend the Reverend how many of you know that Thomas Bayes was actually a ordained
+
+15
+00:02:40,660 --> 00:03:01,040
+priest okay, so we have Reverend base to help us out right, so is essentially.
+
+16
+00:03:01,040 --> 00:03:11,520
+Right so then we have a lot of quantities that we can estimate here you can estimate
+
+17
+00:03:11,520 --> 00:03:20,150
+this from data right how will you estimate that from data, how will you estimate that
+
+18
+00:03:20,150 --> 00:03:21,150
+from data.
+
+19
+00:03:21,150 --> 00:03:23,910
+Okay we will come to that, Can you estimate this from data?
+
+20
+00:03:23,910 --> 00:03:30,989
+Obviously right whatever fraction of a particular classes you can do that or you can make assumptions
+
+21
+00:03:30,989 --> 00:03:36,410
+about the class densities and you can estimate the parameters of those from the data and
+
+22
+00:03:36,410 --> 00:03:37,410
+so on so forth.
+
+23
+00:03:37,410 --> 00:03:45,570
+That is fairly straightforward to estimate right, so what about this guy?
+
+24
+00:03:45,570 --> 00:03:59,740
+But in general I mean if you want to do the if you wanted to do the max, yes if you don’t
+
+25
+00:03:59,740 --> 00:04:05,190
+want to do the max then this becomes a question is how do I go about estimating this right.
+
+26
+00:04:05,190 --> 00:04:12,870
+So there is one way of doing this how do you do that, so you can assume that you have a
+
+27
+00:04:12,870 --> 00:04:29,460
+is what is probability of ‘x’.
+
+28
+00:04:29,460 --> 00:04:42,349
+That essentially some of the numerator for all possible ‘g’ so I get my denominator
+
+29
+00:04:42,349 --> 00:04:50,100
+so this I can do so all we need to know is how to estimate that right, so can you estimate
+
+30
+00:04:50,100 --> 00:05:09,620
+that it easy enough.
+
+31
+00:05:09,620 --> 00:05:20,630
+Find the distribution of data points given the class, see the main problem that will
+
+32
+00:05:20,630 --> 00:05:29,690
+happen in this case is that you will run into sparsity issues right, so what is going to
+
+33
+00:05:29,690 --> 00:05:37,300
+happen you say and what is going to happen is you
+
+34
+00:05:37,300 --> 00:05:43,850
+are going to run into sparsity issues because you will not see enough of the data space
+
+35
+00:05:43,850 --> 00:05:45,919
+right.
+
+36
+00:05:45,919 --> 00:05:50,039
+Often enough it for me to know I might get one sample here one sample there and so on
+
+37
+00:05:50,039 --> 00:05:54,780
+so forth but I might not cover the entire data distribution for me to get a good estimate
+
+38
+00:05:54,780 --> 00:05:59,720
+of the probability distribution this is especially true when you are talking about really high
+
+39
+00:05:59,720 --> 00:06:04,660
+dimensional spaces right suppose I have now be we are assuming X comes from some R power
+
+40
+00:06:04,660 --> 00:06:13,050
+p right so if p is a hundred dimensional thing p is 100 , so if X is a data point in R power
+
+41
+00:06:13,050 --> 00:06:18,779
+100 right, so what is going to happen data points are really sparse in this vast space
+
+42
+00:06:18,779 --> 00:06:19,779
+right.
+
+43
+00:06:19,779 --> 00:06:23,899
+So for me to estimate that becomes hard, so what I have to do is I have to start making
+
+44
+00:06:23,899 --> 00:06:31,340
+some kind of assumptions about this distribution so I cannot just say that I will be able to
+
+45
+00:06:31,340 --> 00:06:35,270
+estimate it off hand right I have to make some kind of assumption about this distribution
+
+46
+00:06:35,270 --> 00:06:45,159
+I have to say hey so what do we call these distributions they are called
+
+47
+00:06:45,159 --> 00:06:57,110
+somebody louder put your hand up okay that is not bad idea just say louder
+
+48
+00:06:57,110 --> 00:07:00,890
+class condition distribution so we typically call them class condition distribution because
+
+49
+00:07:00,890 --> 00:07:05,380
+their probability of x conditioned on the class right.
+
+50
+00:07:05,380 --> 00:07:11,620
+So sometimes you also call them what likelihood yeah I thought somebody would say likelihood
+
+51
+00:07:11,620 --> 00:07:15,870
+before anything else but people are just keeping quiet, so this also called the likelihood
+
+52
+00:07:15,870 --> 00:07:19,210
+but is the class conditional distribution right so what is the difference between likelihood
+
+53
+00:07:19,210 --> 00:07:31,409
+and class condition distribution
+
+54
+00:07:31,409 --> 00:07:44,349
+so likelihood is a function of ‘g’ right I remember I kept repeating that multiple
+
+55
+00:07:44,349 --> 00:07:48,599
+times when we looked at likelihood when I am conditioning it on some parameters θ okay
+
+56
+00:07:48,599 --> 00:07:51,810
+but it is actually a function of θ so ‘x’ is the same.
+
+57
+00:07:51,810 --> 00:07:54,349
+But when I am talking about class conditional distribution I am talking about probability
+
+58
+00:07:54,349 --> 00:08:02,810
+of X okay it is a actually a function of x conditioned on g okay good will just go back
+
+59
+00:08:02,810 --> 00:08:10,030
+so the most the simplest assumption that we make.
+
+60
+00:08:10,030 --> 00:08:24,430
+To get this to be tractable is called the Naive Bayes assumption right, so what
+
+61
+00:08:24,430 --> 00:08:37,750
+does the Naive Bayes assumption tell you it says that
+
+62
+00:08:37,750 --> 00:09:06,970
+given the class label given the class label
+
+63
+00:09:06,970 --> 00:09:13,050
+given the class label the features are independent of each other right.
+
+64
+00:09:13,050 --> 00:09:40,930
+So what does this tell us it says that if I have probability of that I can write this
+
+65
+00:09:40,930 --> 00:09:53,800
+as this is called as Naive Bayes assumption right.
+
+66
+00:09:53,800 --> 00:09:58,509
+So once I do this now it becomes very easy to for me to estimate parameters right, so
+
+67
+00:09:58,509 --> 00:10:08,980
+what I will do now okay in how many data points has “x_i” taken a particular value of
+
+68
+00:10:08,980 --> 00:10:13,529
+that particular class right, so I first segregate all the data points by class and then okay
+
+69
+00:10:13,529 --> 00:10:19,839
+in class one in how many data points did “x_i” take the value of zero in class one how many
+
+70
+00:10:19,839 --> 00:10:23,829
+data points did “x_i” take the value of one and class two how many in the how many
+
+71
+00:10:23,829 --> 00:10:26,550
+data points did “x_i” take the value of zero and “x_i” I take the value of one
+
+72
+00:10:26,550 --> 00:10:27,550
+so on so forth.
+
+73
+00:10:27,550 --> 00:10:33,180
+Do you want me to say “x_i” takes the value of 0 “x_i” takes a value of 1, “x_i”
+
+74
+00:10:33,180 --> 00:10:35,170
+takes a value of 2, “x_i” takes the value 3.
+
+75
+00:10:35,170 --> 00:10:40,230
+I know that just takes a lot of time so just making it binary so that it is easier for
+
+76
+00:10:40,230 --> 00:10:45,310
+me to speak right, so it could be anything right, so “x_i” could be real value this
+
+77
+00:10:45,310 --> 00:10:52,069
+for example our always our setting is our R power p right in that case what do you do
+
+78
+00:10:52,069 --> 00:11:04,629
+some binning you could look good in fact that is one very valid option infact even though
+
+79
+00:11:04,629 --> 00:11:10,810
+many text books do not recommend that but not that they do not there is not that actively
+
+80
+00:11:10,810 --> 00:11:14,210
+not recommend it just they do not even talk about it okay.
+
+81
+00:11:14,210 --> 00:11:18,500
+But that is actually a valid option and I will tell you why in a minute but the usually
+
+82
+00:11:18,500 --> 00:11:24,540
+recommended option is to have some kind of parametric form for these marginal distributions
+
+83
+00:11:24,540 --> 00:11:29,300
+these are conditional marginal and if you think about it these are basically marginal
+
+84
+00:11:29,300 --> 00:11:35,569
+if so this was the Joint Distribution right then this is just the marginal that is the
+
+85
+00:11:35,569 --> 00:11:39,259
+conditional Joint Distribution, so this is a conditional marginal so for the conditional
+
+86
+00:11:39,259 --> 00:11:45,120
+marginal they ask you to assume some kind of parametric form and the usual one that
+
+87
+00:11:45,120 --> 00:11:49,640
+they suggest is a Gaussian right.
+
+88
+00:11:49,640 --> 00:12:48,379
+Usually this is some kind of a Gaussian form for this conditional marginal right can you
+
+89
+00:12:48,379 --> 00:13:01,560
+read it at the back can okay you can read it okay fine now because the thumb didn’t
+
+90
+00:13:01,560 --> 00:13:05,779
+stay up long enough so I was not able to make sure which direction it was you just did something
+
+91
+00:13:05,779 --> 00:13:28,830
+like that and right but then what is the problem in using a Gaussian all of you know the problem
+
+92
+00:13:28,830 --> 00:13:43,000
+just think for a minute or lesser okay not a big issue there is a much bigger issue.
+
+93
+00:13:43,000 --> 00:13:50,620
+Too much inductive bias but the wrong kind of inductive bias why is it wrong what do
+
+94
+00:13:50,620 --> 00:13:58,559
+you know about the Gaussian.
+
+95
+00:13:58,559 --> 00:14:06,339
+Sorry close so what does it mean in terms unimodal right the Gaussian is unimodal right
+
+96
+00:14:06,339 --> 00:14:11,430
+suppose there are two different values of “x_i”which are separated right which are
+
+97
+00:14:11,430 --> 00:14:17,699
+very probable right for this particular class if you use the Gaussian what will you estimate
+
+98
+00:14:17,699 --> 00:14:25,410
+the most probable point as, is there mean okay, so if say 3 is very popular very likely
+
+99
+00:14:25,410 --> 00:14:29,980
+to occur and 5 is very likely to occur your Gaussian will say 4 is the most probable value
+
+100
+00:14:29,980 --> 00:14:34,760
+for x given the class right , so you do not want that to happen right.
+
+101
+00:14:34,760 --> 00:14:40,209
+So that is the reason I said binning makes sense but then the problem is you have to
+
+102
+00:14:40,209 --> 00:14:43,899
+find the right kinds of bins because when you are using the discrete distribution there
+
+103
+00:14:43,899 --> 00:14:49,089
+is no I mean it can be multimodal right I mean it is no notion of like you unimodality
+
+104
+00:14:49,089 --> 00:14:52,709
+there right so I could have one output having very high probability another output having
+
+105
+00:14:52,709 --> 00:14:55,800
+very high probability I could have like 10 different outputs having high probability
+
+106
+00:14:55,800 --> 00:14:58,920
+is everything else having low probability it could be anything right.
+
+107
+00:14:58,920 --> 00:15:03,360
+So there that I do not have to worry about these but then the problem here is hard to
+
+108
+00:15:03,360 --> 00:15:14,260
+find the right binning so that is a whole set of lectures by themselves, right so how
+
+109
+00:15:14,260 --> 00:15:19,149
+do you how do you bin your input variables there are many ways in which you can bin input
+
+110
+00:15:19,149 --> 00:15:23,459
+variables in there you have to keep coming up with clever tricks depending on the application
+
+111
+00:15:23,459 --> 00:15:29,339
+you have and so on so for this is actually not trivial right and you could do that.
+
+112
+00:15:29,339 --> 00:15:40,519
+But of course the Gaussian is just a simple example
+
+113
+00:15:40,519 --> 00:15:47,200
+if you know that the data is going to be multimodal right what should you be using?
+
+114
+00:15:47,200 --> 00:15:51,089
+mixture of Gaussian not a single Gaussian is a mixture of Gaussian and we will get you
+
+115
+00:15:51,089 --> 00:16:13,730
+will get there right, so how well you think Naive Bayes would work seems to be a very
+
+116
+00:16:13,730 --> 00:16:25,369
+simplistic assumption is even called Naive Bayes even though I have actually never heard
+
+117
+00:16:25,369 --> 00:16:33,249
+used in any papers or any literature so T.Friedman says that it is also known as the Idiot Bayes
+
+118
+00:16:33,249 --> 00:16:34,559
+algorithm.
+
+119
+00:16:34,559 --> 00:16:45,230
+So Naive Bases sounds a little better more sophisticated right yeah do you think Naïve
+
+120
+00:16:45,230 --> 00:16:51,519
+Bayes will work well.
+
+121
+00:16:51,519 --> 00:16:56,830
+It did work pretty really well right weren’t you amazed you didn’t know how simplistic
+
+122
+00:16:56,830 --> 00:17:14,390
+it was at the time compare it against SVM's did not we compared against the SVM’s should
+
+123
+00:17:14,390 --> 00:17:19,450
+so it turns out that the let us say for examples like text classification where you are the
+
+124
+00:17:19,450 --> 00:17:28,069
+data dimensions are inherently very high right it is incredibly hard to beat Navie Bayes
+
+125
+00:17:28,069 --> 00:17:30,970
+you know it looks like it is something so simplistic right.
+
+126
+00:17:30,970 --> 00:17:35,750
+I mean look at the assumption you are making I have a lot of texts I want to classify them
+
+127
+00:17:35,750 --> 00:17:42,570
+as politics or sports okay that is one very simple problem that is out there is a standard
+
+128
+00:17:42,570 --> 00:17:46,580
+problem that people use for text classification is a standard data assets I want to classify
+
+129
+00:17:46,580 --> 00:17:53,200
+a news article as being sports or politics and do what am I saying here so given that
+
+130
+00:17:53,200 --> 00:17:59,370
+it is sports the probability that i will see cricket is independent of the probability
+
+131
+00:17:59,370 --> 00:18:01,480
+that I will see football.
+
+132
+00:18:01,480 --> 00:18:05,909
+Not only that the probability I will say cricket is independent of the probability i will see
+
+133
+00:18:05,909 --> 00:18:16,850
+say Dhoni in the document sounds like nonsense right well if you are talking about Indian
+
+134
+00:18:16,850 --> 00:18:27,279
+media yes right but in general right so it seems very surprisingly, so that is because
+
+135
+00:18:27,279 --> 00:18:32,070
+we are trying to assign all kinds of semantics to what is happening and but the algorithms
+
+136
+00:18:32,070 --> 00:18:36,270
+that we are trying to use whether it be SVM or anything else or really not into the semantics
+
+137
+00:18:36,270 --> 00:18:39,850
+of these things right, so we are only worried about it because we have all these others
+
+138
+00:18:39,850 --> 00:18:42,720
+the knowledge base super structures that we have built.
+
+139
+00:18:42,720 --> 00:18:45,960
+And that we are trying to look at the data through that right at the end of the day if
+
+140
+00:18:45,960 --> 00:18:52,460
+you look at it is more a question of things occurring together co-occurring and in a very
+
+141
+00:18:52,460 --> 00:18:58,779
+large document space right so the probability of any words co-occurring right is kind of
+
+142
+00:18:58,779 --> 00:19:04,590
+diminishing right, so if i do not know it is a document about cricket right and if i
+
+143
+00:19:04,590 --> 00:19:10,980
+see the word Dhoni then I will say okay now maybe the probability of me seeing something
+
+144
+00:19:10,980 --> 00:19:15,740
+with actually a sports related term goes up because I did not know whether it was a sports
+
+145
+00:19:15,740 --> 00:19:20,620
+document or a politics document before I looked at it right.
+
+146
+00:19:20,620 --> 00:19:24,900
+But given that I know it is a sports document and the probability of me seeing this anyway
+
+147
+00:19:24,900 --> 00:19:32,789
+be higher it is not going to change appreciably because the word Dhoni appeared you see the
+
+148
+00:19:32,789 --> 00:19:37,120
+reasoning if I had not known anything about the document because the word Dhoni appeared
+
+149
+00:19:37,120 --> 00:19:44,289
+in it right the likelihood that it is a sports document goes up right well given the nature
+
+150
+00:19:44,289 --> 00:19:49,720
+of Indian cricket the probability that is politics has not gone to zero yet right so
+
+151
+00:19:49,720 --> 00:19:56,500
+but if I had known that it is already at the sports document knowing that okay it is Dhoni
+
+152
+00:19:56,500 --> 00:19:59,840
+the words Dhoni appeared in it really does not appreciably change the other probabilities
+
+153
+00:19:59,840 --> 00:20:00,840
+okay.
+
+154
+00:20:00,840 --> 00:20:06,130
+So that is essentially the idea here because the number of words are very very large if
+
+155
+00:20:06,130 --> 00:20:10,740
+there are only like ten possible words or ten possible values these features can take
+
+156
+00:20:10,740 --> 00:20:15,120
+then there will be appreciable change even if I know that value for one features but
+
+157
+00:20:15,120 --> 00:20:22,690
+each of those words can take something like 10,000 different outcomes so it ends up becoming
+
+158
+00:20:22,690 --> 00:20:27,960
+actually a pretty good approximation right when you are doing it in practice if you remember
+
+159
+00:20:27,960 --> 00:20:33,700
+I told you something like KNN would be bad if you are in 100 dimensional space or a thousand
+
+160
+00:20:33,700 --> 00:20:35,149
+dimensional space.
+
+161
+00:20:35,149 --> 00:20:42,309
+And imagine text is a very large dimensional problem right, so what will be the typical
+
+162
+00:20:42,309 --> 00:20:52,360
+dimension for text classification yeah so naively modeling it you can get 24,000 right
+
+163
+00:20:52,360 --> 00:20:55,670
+you can do some kind of feature reduction and so on so forth try to reduce it to smaller
+
+164
+00:20:55,670 --> 00:21:02,350
+state space but still it I pretty large right 10’s of 1000 dimensions so if you try to
+
+165
+00:21:02,350 --> 00:21:10,950
+do KNN in that things are not going to work that well but people still do that right so
+
+166
+00:21:10,950 --> 00:21:14,840
+all this cosine similarity based retrieval systems and other things that people used
+
+167
+00:21:14,840 --> 00:21:18,170
+to do in the past but all nearest neighbor kind of techniques.
+
+168
+00:21:18,170 --> 00:21:23,390
+And not that they do not work but something like Naive Bayes when you want to do classification
+
+169
+00:21:23,390 --> 00:21:27,980
+works tremendously well in this you can see this I’m challenging you go try it out against
+
+170
+00:21:27,980 --> 00:21:33,279
+SVM right you will find that maybe there is like a couple of percentage difference right
+
+171
+00:21:33,279 --> 00:21:38,610
+and the math is so much simpler there are a few things which I should point out about
+
+172
+00:21:38,610 --> 00:21:44,130
+Naive Bayes one of the biggest advantage of Naïve Bayes is that I can have mixed mode
+
+173
+00:21:44,130 --> 00:21:49,600
+data and I can have some of the attributes being discrete valued some of the attributes
+
+174
+00:21:49,600 --> 00:21:51,110
+being continuous valued and everything.
+
+175
+00:21:51,110 --> 00:21:55,850
+And it is very it is fine for Naive Bayes so what other classifier can you say that?
+
+176
+00:21:55,850 --> 00:22:00,830
+trees right anything that is based on trees are also pretty robust when it has kind of
+
+177
+00:22:00,830 --> 00:22:05,800
+mixed and you do not even have to do any kind of normalization of those attributes also
+
+178
+00:22:05,800 --> 00:22:10,630
+and I can just keep each attribute one thing can run from one to a million other one can
+
+179
+00:22:10,630 --> 00:22:18,660
+run from 0 to 0.1 is all fine right when I am looking at other more numeric classifiers
+
+180
+00:22:18,660 --> 00:22:22,640
+in the sense of the kind of computations that they do they do distance-based computations
+
+181
+00:22:22,640 --> 00:22:23,649
+and things like that.
+
+182
+00:22:23,649 --> 00:22:28,919
+There I have to normalize things a neural networks if something goes from one to a million
+
+183
+00:22:28,919 --> 00:22:34,340
+and other one is going from 0 to 0.1 the feature that runs from one to a million will overpower
+
+184
+00:22:34,340 --> 00:22:40,039
+the feature the runs from 0 to 0.1 right I should Ideally be normalizing everything to
+
+185
+00:22:40,039 --> 00:22:45,779
+0 to 1 right so those kinds of things I do not have to do in Naïve Bayes it is all clean
+
+186
+00:22:45,779 --> 00:22:51,130
+and nothing the second thing I do not have to do is any kind of feature encoding normally
+
+187
+00:22:51,130 --> 00:22:55,159
+i do not have to do any feature encoding I do not have to convert this into some kind
+
+188
+00:22:55,159 --> 00:22:56,159
+of code.
+
+189
+00:22:56,159 --> 00:23:01,279
+So I do not have to take red and convert it into some code, code words so that I can feed
+
+190
+00:23:01,279 --> 00:23:08,220
+it into my neural network wait how will I feed right into my neural network you have
+
+191
+00:23:08,220 --> 00:23:13,350
+to encode it somehow right whether you use the RGB value for the color or whether you
+
+192
+00:23:13,350 --> 00:23:16,309
+use some other encoding for the color we will have to do something about it right I do not
+
+193
+00:23:16,309 --> 00:23:23,440
+have to worry about all of that thing this the same thing in addition trees as well right.
+
+194
+00:23:23,440 --> 00:23:49,940
+So that is one thing the second thing I want to talk about second thing I want to talk
+
+195
+00:23:49,940 --> 00:24:01,380
+about is how do you handle missing values right if ‘x’is continuous if ‘x_i’
+
+196
+00:24:01,380 --> 00:24:05,750
+is continuous we are all fine right we are anyway using a Gaussian the Gaussian has a
+
+197
+00:24:05,750 --> 00:24:09,620
+infinite supports or something else which you have never seen in the training data comes
+
+198
+00:24:09,620 --> 00:24:15,279
+will always assign some probability to it but what about discrete value things right,
+
+199
+00:24:15,279 --> 00:24:20,850
+so I have trained you I have trained my classifier by looking at data right that has red, blue
+
+200
+00:24:20,850 --> 00:24:21,850
+and green.
+
+201
+00:24:21,850 --> 00:24:31,399
+In that thing and in the test time somebody comes along with yellow what do I do I can
+
+202
+00:24:31,399 --> 00:24:50,030
+assign it a probability of 0 and it says different so what if I do not have all the ‘x_i’
+
+203
+00:24:50,030 --> 00:24:53,149
+one more example I mean things like neural networks would cover that right I mean something
+
+204
+00:24:53,149 --> 00:24:58,830
+I have not seen before hand as long as have some encoding for it will just take care of
+
+205
+00:24:58,830 --> 00:25:08,980
+it I do not need to have actually seen it in the training phase we do not know “x_i”
+
+206
+00:25:08,980 --> 00:25:13,139
+is going to come or not say we have to somehow account for all the unseen “x_i” somehow.
+
+207
+00:25:13,139 --> 00:25:16,820
+So there are multiple ways in handling this in Naïve Bayes one thing which you can do
+
+208
+00:25:16,820 --> 00:25:23,710
+is you can just ignore that attribute do not multiply it in and make it zero just ignore
+
+209
+00:25:23,710 --> 00:25:28,350
+it look at all the attributes you do know the probabilities for okay and then multiply
+
+210
+00:25:28,350 --> 00:25:35,570
+that is a problem with it what is the problem sorry you are assuming the probability is
+
+211
+00:25:35,570 --> 00:25:38,850
+1 right, so you will be overestimating the probability, so you will have to come up with
+
+212
+00:25:38,850 --> 00:25:43,010
+some mechanism by which you will normalize that right if you are using lesser features
+
+213
+00:25:43,010 --> 00:25:46,880
+that they come up with some mechanism by which you are normalizing them right.
+
+214
+00:25:46,880 --> 00:25:54,649
+So that is something which will have to think about the other one is called smoothing right
+
+215
+00:25:54,649 --> 00:25:59,549
+smoothing is essentially similar to what [Student] was saying earlier is that you assume that
+
+216
+00:25:59,549 --> 00:26:05,059
+everything is everything that you could possibly see right has occurred at least once in the
+
+217
+00:26:05,059 --> 00:26:11,510
+training that means that you will give it some probability at least you will not make
+
+218
+00:26:11,510 --> 00:26:16,400
+it zero and will also take care of this overestimating problem you will not make it one it will make
+
+219
+00:26:16,400 --> 00:26:21,039
+it like 1/10,000 or something that will be very small probability that you are signed
+
+220
+00:26:21,039 --> 00:26:26,470
+to all the unseen values in the training data.
+
+221
+00:26:26,470 --> 00:26:32,470
+So when it test time at least you will not assign zero value to that data point right
+
+222
+00:26:32,470 --> 00:26:37,529
+if everything else is very probable except that the color is yellow right so you will
+
+223
+00:26:37,529 --> 00:26:40,799
+not make the probability 0 the probability will get depressed significantly but it at
+
+224
+00:26:40,799 --> 00:26:46,730
+least not go to 0 okay, so this is one thing the problem is smoothing is the following
+
+225
+00:26:46,730 --> 00:26:52,510
+if there are lot of values that you do not see I suppose that there is color I see only
+
+226
+00:26:52,510 --> 00:27:02,860
+four colors in training but my actual color spaces 256 right so I mean obviously right
+
+227
+00:27:02,860 --> 00:27:12,039
+or my actual colors space is 64,000 okay and I see only four colors in training what will
+
+228
+00:27:12,039 --> 00:27:13,409
+happen.
+
+229
+00:27:13,409 --> 00:27:21,130
+I am just talking about practical issues here if I do smoothly in such a situation what
+
+230
+00:27:21,130 --> 00:27:24,909
+happens obviously it means you are training data is messed up so you have to think about
+
+231
+00:27:24,909 --> 00:27:31,030
+it but if you use smoothing blindly in this situation what will happen exactly you will
+
+232
+00:27:31,030 --> 00:27:35,299
+smooth the heck out of your probability distribution right you are taking this probability of one
+
+233
+00:27:35,299 --> 00:27:40,509
+you are dividing it among 64,000 guys, so everybody should get a count of one at least
+
+234
+00:27:40,509 --> 00:27:47,159
+right suppose I have 10,000 training points right the best account I can hope for is if
+
+235
+00:27:47,159 --> 00:27:54,010
+all the 10,000 of same color it will get 10000 by 64,000 .
+
+236
+00:27:54,010 --> 00:28:05,460
+No it will get10000 by 74000 each one of the 64,000 I will count at least once and actual
+
+237
+00:28:05,460 --> 00:28:11,370
+10,000 has happened so 74,000 it will be 10,000 by 74,000 will be the probability for the
+
+238
+00:28:11,370 --> 00:28:16,470
+color which occurred in all your training data points okay that is a really small value
+
+239
+00:28:16,470 --> 00:28:19,909
+for the color so smoothing you have to be very careful when you apply smoothing right
+
+240
+00:28:19,909 --> 00:28:24,039
+so if there are too many unobserved values and smooth it blindly like so you will essentially
+
+241
+00:28:24,039 --> 00:28:26,890
+lose all the information in the training data you will have to come up with other mechanisms
+
+242
+00:28:26,890 --> 00:28:31,440
+like [Student] was pointing out there is something wrong with your training data first right.
+
+243
+00:28:31,440 --> 00:28:37,600
+So you have to go back and try to fix that see if we can generate more representative
+
+244
+00:28:37,600 --> 00:28:45,080
+sample so that is those are the things that you should look at right, so anything else
+
+245
+00:28:45,080 --> 00:28:51,870
+right so we have we know how to do P(g) right so we know how to do P(x) once we know how
+
+246
+00:28:51,870 --> 00:28:55,950
+to do this and this we know how to do by doing this so parameter estimation is taken care
+
+247
+00:28:55,950 --> 00:28:59,080
+of and this all the ancillary things.

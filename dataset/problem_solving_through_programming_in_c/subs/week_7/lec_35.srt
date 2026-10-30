@@ -1,0 +1,723 @@
+1
+00:00:12,340 --> 00:00:23,530
+In the earlier lectures, we had discussed about one dimensional array as well as 2
+
+2
+00:00:23,530 --> 00:00:30,130
+dimensional array, we have seen how one dimensional array can be stored, read
+
+3
+00:00:30,130 --> 00:00:39,190
+and printed and as well as we saw how a linear search can be applied over one dimensional array.
+
+4
+00:00:39,190 --> 00:00:46,420
+Similarly we have seen for 2 dimensional arrays how it can be read, it can be stored,
+
+5
+00:00:46,420 --> 00:00:57,400
+it is stored in row major form and how it can be printed. Now today we will start discussing on a
+
+6
+00:00:57,400 --> 00:01:11,830
+very important and vital component of programming and also of the C language that is functions. The
+
+7
+00:01:11,830 --> 00:01:19,870
+concept of functions is very general and we will have to first look at it from the general
+
+8
+00:01:19,870 --> 00:01:28,390
+angle why it is required, what is a function? And then we can look at some of the details of
+
+9
+00:01:28,390 --> 00:01:37,390
+this the implementation of this concept in the C language. So, first let us start with functions.
+
+10
+00:01:38,200 --> 00:01:47,350
+So, we will we will start to visualise a task.
+
+11
+00:01:47,350 --> 00:01:57,730
+Suppose I have got a big task alright which I have to implement by programming. Now any
+
+12
+00:01:57,730 --> 00:02:08,650
+task this is one task this task may be too complicated. And for any human programmer or
+
+13
+00:02:08,650 --> 00:02:16,540
+any human being to solve this task from the beginning till end in one shot may
+
+14
+00:02:16,540 --> 00:02:25,390
+be difficult. Often what we do we break up this task into a set of smaller sub tasks,
+
+15
+00:02:26,410 --> 00:02:49,750
+different sub tasks? And each of this sub tasks are smaller enough, small enough. So,
+
+16
+00:02:49,750 --> 00:02:59,740
+that we can manage it better each of these are possibly better managed, alright.
+
+17
+00:02:59,740 --> 00:03:16,360
+We can say if you think of a program segment a part of a program. If the task is broken big
+
+18
+00:03:16,360 --> 00:03:23,350
+task is broken down into a small task a number of small tasks, then it is easier to write the
+
+19
+00:03:23,350 --> 00:03:33,955
+program for each of these smaller tasks. And each of these tasks can be independently tested for it
+
+20
+00:03:33,955 --> 00:03:39,940
+is correctness, whether it is working properly or not each of these can be separately tested.
+
+21
+00:03:39,940 --> 00:03:46,840
+And then if all these are connected together if all these are connected together one after
+
+22
+00:03:46,840 --> 00:03:55,000
+another and then I can ultimately get this enter task done. So, instead of addressing the whole
+
+23
+00:03:55,000 --> 00:04:05,500
+task into execute the whole task, or implement the whole task, as a single task it is often advisable
+
+24
+00:04:05,500 --> 00:04:14,530
+to break it down into a number of subtasks. Now let us talk about programming, now if we
+
+25
+00:04:14,530 --> 00:04:23,740
+want to know what is a when we say the term function, if we take the English meaning of
+
+26
+00:04:23,740 --> 00:04:32,650
+that function is means doing something. So, it is a also a task therefore, this entire function can
+
+27
+00:04:32,650 --> 00:04:39,670
+be broken down into smaller functions and each of this functions can be implemented independently.
+
+28
+00:04:39,670 --> 00:04:54,640
+So, the advantage that we get by this means is that we can divide the problem into smaller
+
+29
+00:04:54,640 --> 00:05:06,190
+parts and thereby we can conquer the small, we can conquer the smaller sub segments and
+
+30
+00:05:06,190 --> 00:05:21,070
+in the process, we in the process we achieve the complete task that is the first thing. So,
+
+31
+00:05:21,070 --> 00:05:43,540
+by this it is easier to implement and also easier to test or verify.
+
+32
+00:05:43,540 --> 00:05:52,780
+We can check whether each of these components are working correctly or not. Now when we find
+
+33
+00:05:52,780 --> 00:05:57,670
+that all the components are working correctly and if they are connected together correctly,
+
+34
+00:05:57,670 --> 00:06:04,420
+then we will have the entire problem solved correctly that is the first
+
+35
+00:06:04,420 --> 00:06:14,170
+advantage of writing a complex program broken down into smaller functions.
+
+36
+00:06:15,790 --> 00:06:24,820
+Now the other advantage is suppose I had 2 implement one task.
+
+37
+00:06:24,820 --> 00:06:35,230
+And in order to implement this big task, I had to write a number of functions smaller
+
+38
+00:06:35,230 --> 00:06:50,620
+functions. Say 3 smaller functions together implement this big function alright. So,
+
+39
+00:06:50,620 --> 00:06:58,360
+let us call them f 1 function 1, f 2 for function 2 and f 3 for function 3.
+
+40
+00:06:58,360 --> 00:07:10,750
+Now suppose I have now this problem has been solved by solving each of these 3 functions,
+
+41
+00:07:10,750 --> 00:07:17,860
+each of these 3 functions have been written and tested and consequently they have been
+
+42
+00:07:17,860 --> 00:07:27,970
+connected together and we have got the complete function. Now suppose another friend of yours
+
+43
+00:07:27,970 --> 00:07:38,170
+wants to write another task solve another task say this was this was also a task.
+
+44
+00:07:38,170 --> 00:07:45,640
+So, this is also a function I am writing that as capital F 1 and there is another friend of
+
+45
+00:07:45,640 --> 00:07:55,870
+yours who is trying to complete, another task which we are naming as F 2. Now in order to
+
+46
+00:07:55,870 --> 00:08:04,450
+develop F 2, he finds that I have to solve some problems some sub problems, which are solved by f
+
+47
+00:08:04,450 --> 00:08:21,610
+1 and another sub problem which is solved by f 3, might be that this sub problem requires f 1, f 3
+
+48
+00:08:26,130 --> 00:08:32,850
+and say another function which was not written by anybody till now f 4.
+
+49
+00:08:32,850 --> 00:08:46,800
+Now; obviously, since f 1 has been written and tested he the writer of f 2 did not write f 1
+
+50
+00:08:46,800 --> 00:08:55,650
+again, because that f 1 this f 1 can be used for this purpose similarly this f 3 can be
+
+51
+00:08:55,650 --> 00:09:07,020
+used for this purpose, and only effort that he has to spend is to write f 4. Thus the functions
+
+52
+00:09:07,020 --> 00:09:22,590
+which are written already right can be reused. So, this reusability is another very important
+
+53
+00:09:22,590 --> 00:09:36,540
+advantage of writing functions. Now we have said that in order to solve F 1 or F 2 we
+
+54
+00:09:36,540 --> 00:09:45,900
+have to write we will have to independently write and test smallest functions and connect
+
+55
+00:09:45,900 --> 00:09:53,040
+them together. What do I mean by connecting them together let us try to understand that.
+
+56
+00:09:53,040 --> 00:10:16,530
+So, say we have a function that is to be done developed and we find that this part
+
+57
+00:10:16,530 --> 00:10:29,370
+has to be this part; this task has to be solved by some function. So,
+
+58
+00:10:29,370 --> 00:10:38,460
+I write a function here for this part; let me do it again.
+
+59
+00:10:38,460 --> 00:10:51,990
+This is my whole problem that I have to solve. So, I am solving some things here some steps I am
+
+60
+00:10:51,990 --> 00:11:01,830
+solving. And then I find here there is something that has to be done which is not very easy. So,
+
+61
+00:11:01,830 --> 00:11:10,680
+for that I came at this point and for this I need to write a function or might be there
+
+62
+00:11:10,680 --> 00:11:15,285
+is a function already existing in my library, which has been writ
+
+63
+00:11:15,285 --> 00:11:25,440
+ten by somebody else, which I can reuse. Now in that case and also say here after
+
+64
+00:11:25,440 --> 00:11:34,650
+doing that here I can do a couple of simpler tasks and then here I come to another point,
+
+65
+00:11:34,650 --> 00:11:43,410
+which requires it to be independently solved and written. So, I need a function for that and then
+
+66
+00:11:43,410 --> 00:11:50,640
+after that I will do some more simple things and my task will be over say this is a situation.
+
+67
+00:11:50,640 --> 00:12:01,830
+So, when I come here I will have to I means this program, which is a main tasks main task that
+
+68
+00:12:01,830 --> 00:12:11,820
+I have to solve. So, since we have seen the name main in our description for C earlier,
+
+69
+00:12:11,820 --> 00:12:20,370
+let me also name this to be main and I am just for nothing I am just putting some parenthesis here.
+
+70
+00:12:20,370 --> 00:12:28,890
+So, main is a main task that I have to do and at this point I am doing something’s and here
+
+71
+00:12:28,890 --> 00:12:36,570
+I need the help of this, now remember. That this function whose name is say f
+
+72
+00:12:36,570 --> 00:12:49,920
+f 1 that can be used by my main function or somebody else main function also. Therefore,
+
+73
+00:12:49,920 --> 00:13:01,170
+when I need this to be executed with my data, then I must whatever data I have
+
+74
+00:13:01,170 --> 00:13:05,850
+prepared here that some of that I will have to pass on to this here.
+
+75
+00:13:08,220 --> 00:13:23,910
+And this will solve this subtask and then I will have to; that means, a this must give back
+
+76
+00:13:23,910 --> 00:13:31,980
+whatever it computed to the main task and the main task will continued doing simple things here. So,
+
+77
+00:13:31,980 --> 00:13:42,000
+you see that there are 2 links; one is going in the function, another is coming out or some
+
+78
+00:13:42,000 --> 00:13:54,570
+data that is being returned by this function. This is being returned by this function. Then
+
+79
+00:13:54,570 --> 00:14:01,290
+I carry out some tasks simpler tasks here and at this point I find now I need help.
+
+80
+00:14:01,290 --> 00:14:13,110
+So, some part of the data from here will be used by the function f 2 and that has to
+
+81
+00:14:13,110 --> 00:14:26,550
+come to f 2 here and f 2 will carry out the task and will return to the point here. Now
+
+82
+00:14:26,550 --> 00:14:35,400
+about this return you should observe one thing, that the function was called from this point,
+
+83
+00:14:35,400 --> 00:14:45,450
+we call this thing to be a function call function call with some data being passed
+
+84
+00:14:45,450 --> 00:14:53,850
+on to this. And function calls or function invocation and after invocation this function
+
+85
+00:14:53,850 --> 00:15:02,910
+works and it returns where does it return? It returns to the point in the main task
+
+86
+00:15:02,910 --> 00:15:10,470
+just after the point from where it was called. It was called from here. So,
+
+87
+00:15:10,470 --> 00:15:17,430
+it comes here and then returns to the next point just after the after this call. So,
+
+88
+00:15:17,430 --> 00:15:23,700
+this is a calling point and this a return point. Similarly for here you see that it is executing
+
+89
+00:15:23,700 --> 00:15:33,750
+and at this point it is being called. And after execution the control is
+
+90
+00:15:33,750 --> 00:15:39,750
+returned into the immediately after the point from where it was called.
+
+91
+00:15:41,220 --> 00:15:51,030
+So, this is one important thing to understand the other important thing is that let me draw
+
+92
+00:15:51,030 --> 00:16:13,540
+it again here. I have got my main task and this is my main and here is another main task,
+
+93
+00:16:13,540 --> 00:16:24,730
+some other main task not written by me, but somebody else this is of mister A and this
+
+94
+00:16:24,730 --> 00:16:30,130
+is of mister B for mister B there is he has written another main.
+
+95
+00:16:30,130 --> 00:16:47,230
+Now mister A or mister B both will require this function f. Now the task the purpose of
+
+96
+00:16:47,230 --> 00:17:01,060
+what this task does is same for example, this task is computes the average of some numbers,
+
+97
+00:17:01,060 --> 00:17:08,320
+10 numbers, 5 numbers whatever it is or may be floating point numbers, integer numbers,
+
+98
+00:17:08,320 --> 00:17:14,080
+whatever it is it computes the average. So, let me let me quickly rename it not
+
+99
+00:17:14,080 --> 00:17:28,390
+keeping it wage any longer let me call it, average or for a specific purpose,
+
+100
+00:17:28,390 --> 00:17:39,430
+I want to write it inside the reason will be clear immediately this computes the average.
+
+101
+00:17:39,430 --> 00:17:51,130
+Now mister a wants to use this average function for some data for 3 data he wants to compute
+
+102
+00:17:51,130 --> 00:18:10,280
+the average of 3 integers, suppose this one this one computes the average of 3 integers, but the
+
+103
+00:18:10,280 --> 00:18:22,460
+integers can vary right. So, this also wants to find the average of 3 integers to make it simple.
+
+104
+00:18:22,460 --> 00:18:33,260
+But the in numbers for which A wants to compute the averages different from the numbers that B
+
+105
+00:18:33,260 --> 00:18:45,140
+will compute the average for, but this a v g is common to both therefore, suppose the
+
+106
+00:18:45,140 --> 00:18:59,240
+numbers that some integers say are a b and c and here this person wants to find the average of
+
+107
+00:18:59,240 --> 00:19:10,520
+3 integers which are p q and r 3 variable names. Now this average cannot remember p q r or a b c it
+
+108
+00:19:10,520 --> 00:19:22,520
+will simply just like think of a box with 3 pipes coming in and data will come in through there. So,
+
+109
+00:19:22,520 --> 00:19:34,520
+he just names this average for he names these pipes as x this is y and this is z. So,
+
+110
+00:19:34,520 --> 00:19:43,280
+when this function main wants to compute the average of a b c he must send a through the
+
+111
+00:19:43,280 --> 00:19:55,910
+pipe x b through the pipe y and c through the pipe z and you will get the average computed,
+
+112
+00:19:55,910 --> 00:20:02,750
+and the average will be returned from the point where it was called from this point
+
+113
+00:20:02,750 --> 00:20:21,230
+immediately after that it will go back clear. Now when let me change the colour, now when the
+
+114
+00:20:21,230 --> 00:20:29,300
+function main B; B wants to compute the average he wants to compute the average of p q r. So,
+
+115
+00:20:29,300 --> 00:20:38,360
+p will be sent to the pipe x, q will be sent to the pipe y, and r will be sent to the pipe
+
+116
+00:20:38,360 --> 00:20:47,510
+z. And the average will be computed suppose it was called from this point, from this point,
+
+117
+00:20:47,510 --> 00:20:56,420
+this average was called. So, then it will return the to this point with the
+
+118
+00:20:56,420 --> 00:21:01,190
+value of the average with the value of the average whatever is computed here.
+
+119
+00:21:01,190 --> 00:21:12,920
+Therefore, so if this is clear then let us come to 2 more terms.
+
+120
+00:21:12,920 --> 00:21:43,230
+They are that this function main A, A is main was sending a, b, c to the function as parameters we
+
+121
+00:21:43,230 --> 00:22:02,100
+call it as parameters. And this function which is our average function is not biased to a,
+
+122
+00:22:04,500 --> 00:22:14,310
+it has got it knows that it needs 3 inputs and there are 3 input pipes, 3 input positions.
+
+123
+00:22:14,310 --> 00:22:36,480
+So, these x y z are arguments this we call as arguments alright; that means,
+
+124
+00:22:36,480 --> 00:22:41,670
+this average when it is written it has got 3 input pipes. So,
+
+125
+00:22:41,670 --> 00:22:48,510
+we can write simply like this function name average with 3 parameter arguments
+
+126
+00:22:48,510 --> 00:22:59,040
+x y and z. Now who ever calls it we will have to establish the mapping, between the
+
+127
+00:22:59,040 --> 00:23:17,750
+parameters that it wants to pass the parameters it wants to pass to the through the arguments.
+
+128
+00:23:17,750 --> 00:23:30,770
+So, the connection that we had shown in the earlier diagram which was where both the programs,
+
+129
+00:23:30,770 --> 00:23:46,580
+were both the programs are accessing it. So, each of these parameters should
+
+130
+00:23:46,580 --> 00:23:58,880
+the parameters should be matching with this arguments. Let us come to this once again say.
+
+131
+00:23:58,880 --> 00:24:23,700
+So, here is main of A and here is main of B, I repeat what I was saying till now and this
+
+132
+00:24:23,700 --> 00:24:31,530
+has got p q r now, you must be must have realised now, what are these p q r? When
+
+133
+00:24:31,530 --> 00:24:43,980
+I use this function average, which has got 3 arguments x y z which are nothing,
+
+134
+00:24:43,980 --> 00:24:54,720
+but 3 pipes which are arguments and when I call from some point, when I call this
+
+135
+00:24:54,720 --> 00:25:04,620
+function average then I have to pass these parameters p q r to these arguments x y z.
+
+136
+00:25:04,620 --> 00:25:24,060
+So, p will go to x q will go to y and z r will go to z, on the other hand when a is calling when a
+
+137
+00:25:24,060 --> 00:25:36,630
+is calling, what is happening, when a is calling then a had the a b c to be passed on to this. So,
+
+138
+00:25:36,630 --> 00:25:56,670
+a goes to x, b goes to y and c goes to z. Now since now if you just think these are 3 pipes,
+
+139
+00:25:56,670 --> 00:26:07,320
+now the pipes are every pipe has got a width. So, if I want to fit smaller pipe into a bigger
+
+140
+00:26:07,320 --> 00:26:14,760
+pipe that would not fit. So, the width of diameter of both the pipes must fit together,
+
+141
+00:26:14,760 --> 00:26:23,280
+what do I mean by that, what I mean by that is that whatever arguments are whatever are the
+
+142
+00:26:23,280 --> 00:26:39,480
+types of the arguments that must match the types of the parameters or in other words
+
+143
+00:26:39,480 --> 00:26:44,550
+the types of the parameters also must match the types of the arguments. So, that the pipes fit
+
+144
+00:26:44,550 --> 00:26:52,980
+there should not be any mismatch over there. So, let us take little more deeper look here.
+
+145
+00:26:52,980 --> 00:27:03,120
+So, suppose I have got a main function here I am not so much bothered about the same types now
+
+146
+00:27:03,120 --> 00:27:31,530
+and the main function is running and here I want to say result is average of a b c and etcetera,
+
+147
+00:27:31,530 --> 00:27:38,820
+etcetera, etcetera, etcetera and we end here. And let us assume that here I have declared int a,
+
+148
+00:27:38,820 --> 00:27:53,970
+b, c both of them are integers. Now we have got the function which is average.
+
+149
+00:27:53,970 --> 00:28:05,070
+Now, this average of 3 integers can be a float. So, I just write I will explain it a little later
+
+150
+00:28:05,070 --> 00:28:28,860
+float average x, y, z and I can say int x, y, z and whatever I am computing average here and. So,
+
+151
+00:28:28,860 --> 00:28:45,610
+thus this is simple you can have int sum and sum equals x plus y plus z, and average is equal to
+
+152
+00:28:45,610 --> 00:28:57,130
+x plus y plus z by 3. Then I write returned, why do I write returned I will come to that.
+
+153
+00:28:57,130 --> 00:29:08,670
+Now look at the 2 things a I will talk about this part a little later. Here I am I have declared a
+
+154
+00:29:08,670 --> 00:29:18,460
+b c to be integers. So, in the memory for a b and c 2 bytes or 4 bytes as the system may
+
+155
+00:29:18,460 --> 00:29:32,110
+demand that type of that much memory has been given. Now when I write here a v g; that means,
+
+156
+00:29:32,110 --> 00:29:43,330
+I am invoking or calling this function a v g. And I am passing on a v g requires 3 parameters x,
+
+157
+00:29:43,330 --> 00:29:54,280
+y, z and x, y, z are all integers. And I could have written there is another way of writing it
+
+158
+00:29:54,280 --> 00:30:00,850
+that I could have written here int x int y int z that is also possible, but later we will see.
+
+159
+00:30:02,080 --> 00:30:13,630
+So, a, b, c there is a correspondence between a, b and c with x, y and z. And they are matching in
+
+160
+00:30:13,630 --> 00:30:23,110
+the type then this computation. So, we come here then follow my blue line this is being computed
+
+161
+00:30:23,110 --> 00:30:38,770
+and ultimately the value of average is computed. Look that the value is being computed in a v g
+
+162
+00:30:38,770 --> 00:30:47,260
+which is also the name of the function. So, in a way you can say that the name of the function
+
+163
+00:30:47,260 --> 00:30:55,900
+is just like a variable that is holding the value, that is holding the value. So,
+
+164
+00:30:55,900 --> 00:31:04,600
+that average any variable that is holding a value must have a type that is why since average of
+
+165
+00:31:04,600 --> 00:31:10,930
+3 integers can be a float therefore, we have to assign a type to the name of the function.
+
+166
+00:31:10,930 --> 00:31:21,160
+Designating what type of value it is returning. So, here we can see that it will compute average
+
+167
+00:31:21,160 --> 00:31:27,490
+and then there is a statement new statement that you are encountering here is returned,
+
+168
+00:31:27,490 --> 00:31:34,390
+where is it returning it is returning to the point from where it is called at is this point.
+
+169
+00:31:35,890 --> 00:31:48,300
+So, the average, suppose if the values are 1 2 and 3 then the average is 2. So, then 2 goes to this a
+
+170
+00:31:48,300 --> 00:31:56,560
+v g and that a v g is being transferred to result. Now if I do print result here 2 will be printed.
+
+171
+00:31:58,870 --> 00:32:08,110
+So, this is to give you an idea of what is meant by in calling a function invoking a function,
+
+172
+00:32:08,110 --> 00:32:16,960
+what is meant by returning from a function, and what are parameters and arguments.
+
+173
+00:32:16,960 --> 00:32:23,590
+We will see more of this in the subsequent lectures, but you should also understand
+
+174
+00:32:23,590 --> 00:32:31,660
+why we do this reasons at 2 fold as I said one is to divide or break down a complex
+
+175
+00:32:31,660 --> 00:32:37,780
+problem into manageable sub problems, and the second and test them independently,
+
+176
+00:32:37,780 --> 00:32:46,360
+and the other issue is other advantage big advantage is that once we make a thing a function,
+
+177
+00:32:46,360 --> 00:32:53,320
+which is tested we can keep it for being reused that is a very very important thing.
+
+178
+00:32:53,320 --> 00:33:04,840
+And this concept is general over different languages like; we have got class etcetera
+
+179
+00:33:04,840 --> 00:33:12,250
+which we can reuse a number of times. And this is this idea the implementations are varying
+
+180
+00:33:12,250 --> 00:33:19,450
+from language to language, but the concept is common and is used in different languages.
+
+181
+00:33:19,450 --> 00:33:23,470
+Thank you and we will continue with functions in the subsequent lectures.

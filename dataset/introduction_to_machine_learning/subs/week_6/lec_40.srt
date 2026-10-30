@@ -1,0 +1,383 @@
+1
+00:00:11,030 --> 00:00:17,450
+So the next thing would not talk about is instability.
+
+2
+00:00:17,450 --> 00:00:30,050
+So Decision trees are pretty unstable so what we mean by not stable all of you know what we
+
+3
+00:00:30,050 --> 00:00:36,410
+may not, stable small changes in the training data will could cause potentially large changes
+
+4
+00:00:36,410 --> 00:00:41,720
+in the decision tree, so what could happen things that you split at the root might go somewhere down
+
+5
+00:00:41,720 --> 00:00:47,540
+because of some changes in the data right and if the data you start out with small where is the
+
+6
+00:00:47,540 --> 00:00:53,600
+sample size is small then the variation is going to be very high right. So I said any
+
+7
+00:00:53,600 --> 00:01:03,620
+way of getting around it some of it some of some regularization helps to some extent the solve
+
+8
+00:01:03,620 --> 00:01:10,760
+the pruning and stuff helps to some extent. But still not a lot right because the variance
+
+9
+00:01:10,760 --> 00:01:14,300
+is really high these things is really unstable but still trees are very useful,
+
+10
+00:01:14,300 --> 00:01:26,900
+so what we will do is we look at a very specific technique so that that is what we are going to
+
+11
+00:01:26,900 --> 00:01:35,780
+do one of the ways of doing it yeah so there is a very specific technique called bagging right,
+
+12
+00:01:35,780 --> 00:01:42,950
+so that not the next not the next four classes from now okay I will do bagging in more detail
+
+13
+00:01:42,950 --> 00:01:48,950
+right but the basic idea is that to minimize variance is not just with trees you could
+
+14
+00:01:48,950 --> 00:01:53,450
+do it with any unstable classifier. So what you do is instead of training
+
+15
+00:01:53,450 --> 00:01:57,590
+it on the data that is given to you train on slightly different versions of the data
+
+16
+00:01:57,590 --> 00:02:02,180
+right maybe you can just take say 70 percent of the data randomly choose 70 percent of the data
+
+17
+00:02:02,180 --> 00:02:06,620
+and then train a tree randomly choose another seventy percent train another tree keep doing
+
+18
+00:02:06,620 --> 00:02:13,340
+this and then somehow combine the class labels predicted by all the copies of the trees.
+
+19
+00:02:13,340 --> 00:02:20,750
+That you have trained so this allows you to have slightly more stable classifier what is the
+
+20
+00:02:20,750 --> 00:02:33,850
+problem with this yes anything else yes anyone else and I think I heard somebody say that you
+
+21
+00:02:33,850 --> 00:02:39,700
+lose the biggest advantage of decision trees, which is simple comprehensibility so instead
+
+22
+00:02:39,700 --> 00:02:45,760
+of having 13 or 15 trees or 100 trees now again you have the problem of keeping your job and your
+
+23
+00:02:45,760 --> 00:02:51,400
+manager ask to explain what happened right so now I have 100 trees and somehow they make this
+
+24
+00:02:51,400 --> 00:03:13,860
+magical prediction and you do not know. So that is a problem so smoothness in your
+
+25
+00:03:13,860 --> 00:03:17,790
+prediction is something that you are looking for a condition trees are not going to give, you that
+
+26
+00:03:17,790 --> 00:03:24,090
+right there will always be this jagged jumping around especially regression trees right, so when
+
+27
+00:03:24,090 --> 00:03:28,980
+you are talking about making some predictions if you are using a piecewise constant fit right for
+
+28
+00:03:28,980 --> 00:03:33,420
+every region you are going to have some amount of jumping around so if you are looking for a
+
+29
+00:03:33,420 --> 00:03:38,550
+smooth function for doing your prediction this is not going to work so you have to do some kind
+
+30
+00:03:38,550 --> 00:03:44,670
+of post-processing after you build the tree in order to smooth the predictions right.
+
+31
+00:03:44,670 --> 00:03:48,330
+And there is nothing you can do this nature of the beast so the trees are so much convenient
+
+32
+00:03:48,330 --> 00:03:54,120
+in other ways but smoothness is a problem, so if you are looking for a smooth fit right for
+
+33
+00:03:54,120 --> 00:04:13,970
+your prediction that is not going to happen and problem of having repeated sub trees,
+
+34
+00:04:13,970 --> 00:04:29,840
+so what do I mean by that multi way splits it does not have to be multi waste receiver in
+
+35
+00:04:29,840 --> 00:04:40,250
+binary splits you can get into this problem think of XOR right how will XOR look like right I will
+
+36
+00:04:40,250 --> 00:04:45,980
+split on x1 if x1 is 0 I will go down the left branch x1 is 1 I will go down the right branch
+
+37
+00:04:45,980 --> 00:04:52,550
+and then what do I do in the left branch. I will text on the test on x2 if x2 is 0 I will
+
+38
+00:04:52,550 --> 00:04:56,570
+go down one branch x2 is one I will go down the other branch and likewise I will test on x2 on
+
+39
+00:04:56,570 --> 00:05:00,860
+the other side with 0 I will go down one branch I will go is 1 I will go to the otherwise so we
+
+40
+00:05:00,860 --> 00:05:06,050
+can think of it these two sub trees are kind of similar right, so it could very well be that I
+
+41
+00:05:06,050 --> 00:05:11,240
+split on one attribute but everything underneath it could be similar the tree structure is very
+
+42
+00:05:11,240 --> 00:05:15,650
+similar but I cannot collapse it because I end up with different conclusions right.
+
+43
+00:05:15,650 --> 00:05:25,820
+So if x, x1 was 0 and x2 are 0 I would be outputting 0 right but x2 us 1 and x1 was
+
+44
+00:05:25,820 --> 00:05:30,080
+0 I would be outputting one so the outcomes are different so I cannot really club the two trees
+
+45
+00:05:30,080 --> 00:05:36,230
+but then the test that I do are exactly the same right, so this shin trees are prone to
+
+46
+00:05:36,230 --> 00:05:42,770
+having this kind of repeated sub trees right so you could have the same test set of tests that
+
+47
+00:05:42,770 --> 00:05:49,790
+are actually implemented in many different points in the tree so it just makes it three
+
+48
+00:05:49,790 --> 00:05:53,060
+more complex. But there might be other ways of reordering
+
+49
+00:05:53,060 --> 00:05:57,110
+things, so that you get with the simply the XOR is a bad case right so if you reorder
+
+50
+00:05:57,110 --> 00:06:01,700
+x are you still get with this we still end up with the same kind of repeated structure but
+
+51
+00:06:01,700 --> 00:06:06,080
+there might be other cases where you might have just done the splitting in the normal way but
+
+52
+00:06:06,080 --> 00:06:10,550
+end up with too much repeated structures but if you had we flip the ordering of some variables
+
+53
+00:06:10,550 --> 00:06:14,750
+even though it is not the best variable to pick at some point but you might end up with a more
+
+54
+00:06:14,750 --> 00:06:21,470
+compact tree but finding that is finding that is very hard finding that ordering is
+
+55
+00:06:21,470 --> 00:06:25,070
+very hard as I so you have to just live with it just pointing out some of the caveats.
+
+56
+00:06:31,910 --> 00:06:37,970
+So far we have assumed that we are dealing with the 0/1 loss function so what is the
+
+57
+00:06:37,970 --> 00:06:48,890
+0/1 loss function for classification right yeah as good as a mile I mean I do not care there is
+
+58
+00:06:48,890 --> 00:06:53,180
+no ordering in my class labels if I miss if I do not predict it correctly I penalize you with one
+
+59
+00:06:53,180 --> 00:06:58,430
+if I predicted correctly it 0 but there might be cases where some miss classifications are
+
+60
+00:06:58,430 --> 00:07:06,950
+more acceptable for you than others right so what do you do in such cases they so you are
+
+61
+00:07:06,950 --> 00:07:20,360
+going to have some kind of a loss value right. So I am going to have some kind of some LKK prime
+
+62
+00:07:20,360 --> 00:07:26,090
+which is essentially the prowl loss that I will suffer by classifying the data into k prime when
+
+63
+00:07:26,090 --> 00:07:32,090
+it is actually class k correct so I am going to have this so how do I accommodate that in
+
+64
+00:07:32,090 --> 00:07:41,570
+the decision tree setup, how do I account how to accommodate that in the SVM setup optimal
+
+65
+00:07:41,570 --> 00:07:53,820
+hyperplanes by the way if I am missing one thing we never actually talked about how you
+
+66
+00:07:53,820 --> 00:08:02,400
+use SVM for multiple classes I will ask me the question what is the margin maximum margin.
+
+67
+00:08:02,400 --> 00:08:09,150
+What is a margin mean and you have multiple classes that is a topic for another day I
+
+68
+00:08:09,150 --> 00:08:16,170
+will come back to that but yeah, so as she is not immediately clear right so how we do that
+
+69
+00:08:16,170 --> 00:08:21,840
+so suppose you have neural networks like we all know about neural networks right, all of
+
+70
+00:08:21,840 --> 00:08:26,130
+you are familiar with back prop by now I suppose right so how will you accommodate
+
+71
+00:08:26,130 --> 00:08:41,230
+this kind of thing in back prop I think of ways of doing it, so it turns out there is
+
+72
+00:08:41,230 --> 00:08:48,520
+no easy way of doing any of these but what you can do is at least in decision trees.
+
+73
+00:08:48,520 --> 00:08:58,900
+Try to incorporate this when you are computing your GINI index or your what information gain
+
+74
+00:08:58,900 --> 00:09:03,220
+whatever right, so whenever you are looking when you are doing that so you can figure out okay what
+
+75
+00:09:03,220 --> 00:09:09,610
+is the probability that I will miss classify this so what is the GINI index expression that we have
+
+76
+00:09:38,300 --> 00:09:42,710
+right, so this is what we had right so this is essentially this was the probability that
+
+77
+00:09:42,710 --> 00:09:55,970
+a data point in region m will be in class K right times the probability that data point
+
+78
+00:09:55,970 --> 00:10:00,620
+in region M will not be in class K right. So as another way I can write this which is
+
+79
+00:10:00,620 --> 00:10:28,180
+essentially right so probability that the point is k plus k and probability that is K prime so
+
+80
+00:10:28,180 --> 00:10:35,080
+essentially from here to here what I need to do is take out all the terms where with Pmk hat and some
+
+81
+00:10:35,080 --> 00:10:42,910
+out some of our the remaining so which will be 1 minus Pmk hat right, so that is essentially what
+
+82
+00:10:42,910 --> 00:10:49,330
+I did so for each k, I take Pmk hat out from here and sum over the remaining things and I will get
+
+83
+00:10:49,330 --> 00:10:57,280
+this expression okay so this is some way of saying let okay the original probability is k okay.
+
+84
+00:10:57,280 --> 00:11:02,920
+And the estimated probability is K prime this is the someway of looking at it so here what I can do
+
+85
+00:11:02,920 --> 00:11:09,160
+is I can add my LKK prime, so you have to actually work this out for all of the measures that you are
+
+86
+00:11:09,160 --> 00:11:17,200
+going to work with so if you are going to have a neural network mean squared error criterion you
+
+87
+00:11:17,200 --> 00:11:22,930
+are minimizing or cross the deviance at your cross entropy or minimizing whatever is error function
+
+88
+00:11:22,930 --> 00:11:30,820
+you are minimizing lot to figure out what is the appropriate way to use this class information this
+
+89
+00:11:30,820 --> 00:11:44,560
+class specific loss information okay. There was a not equal to the right yeah, okay
+
+90
+00:11:44,560 --> 00:11:54,520
+without this yes they are equal without this year equal so essentially what is what I am doing here
+
+91
+00:11:54,520 --> 00:12:01,960
+is so for every k right I am writing one term like this so he this I can simplify like this right,
+
+92
+00:12:31,630 --> 00:12:35,230
+so that is Pm1 hat sum k prime not equals 1 P mk prime hat plus P hat m2 sum k prime
+
+93
+00:12:35,230 --> 00:12:46,150
+not equals P mk prime hat right like that I can do that so I will get case terms and
+
+94
+00:12:46,150 --> 00:12:53,200
+this summation is essentially 1 minus Pm1 hat and this summation is 1 minus Pm hat
+
+95
+00:12:53,200 --> 00:12:59,110
+to write like that so that is essentially what I get here right so like that you have
+
+96
+00:12:59,110 --> 00:13:03,070
+to work it out for everything so if we have a different loss function okay.

@@ -1,0 +1,819 @@
+1
+00:00:24,340 --> 00:00:32,200
+Right, so last class we were looking at performance measures right and then I
+
+2
+00:00:32,200 --> 00:00:39,400
+started talking about setting up experiments in order to say something about, in order to
+
+3
+00:00:39,400 --> 00:00:43,870
+measure performance of algorithms and why you will want to setup experiments right,
+
+4
+00:00:43,870 --> 00:00:52,060
+and being an empirical subject how experiments are very important right. And so the whole idea
+
+5
+00:00:52,060 --> 00:00:56,200
+behind all of these experiments is that we really want to measure.
+
+6
+00:00:56,200 --> 00:01:12,010
+So we want to measure performance on a population right, I want to measure
+
+7
+00:01:12,010 --> 00:01:28,210
+performance on a population, but all I get to do is test on a sample right. So whatever is
+
+8
+00:01:28,210 --> 00:01:31,690
+the situation right, whether we do cross validation, or whether you do bootstrap,
+
+9
+00:01:31,690 --> 00:01:36,100
+or whether you just set aside a validation set, whatever it is, it is a sample that you
+
+10
+00:01:36,100 --> 00:01:40,420
+are testing on. And what I am really interested in knowing is, how will my algorithm perform
+
+11
+00:01:40,420 --> 00:01:45,820
+on the entire population as a whole right. So I give you this P(x,y) right, so I want to
+
+12
+00:01:45,820 --> 00:01:49,240
+know, well I do not give you the P(x,y) that is the whole problem right. So there is this P(x,y)
+
+13
+00:01:49,900 --> 00:01:54,400
+and I want to know how the performance will be with respect to that underlying sampling
+
+14
+00:01:54,400 --> 00:01:59,350
+distribution. And I do not have axis to that P(x,y), therefore I will always be testing on
+
+15
+00:01:59,350 --> 00:02:06,490
+a sample right. But I am really interested in performance on a population right. So what we
+
+16
+00:02:06,490 --> 00:02:11,800
+are doing with hypothesis testing here, this is essentially trying to say that how much can you
+
+17
+00:02:11,800 --> 00:02:19,720
+infer about the performance on the population from the test results on a sample right.
+
+18
+00:02:19,720 --> 00:02:26,140
+So how confident can you be that whatever you are getting as the test result on a sample is
+
+19
+00:02:26,140 --> 00:02:34,540
+the performance on the population right. So that is essentially what we are trying
+
+20
+00:02:34,540 --> 00:02:47,230
+to here right. So in statistics terminology the test on a sample right, gives you what is
+
+21
+00:02:47,230 --> 00:03:03,310
+called a statistic right. And the performance on a population is in some sense that is a kind of a
+
+22
+00:03:03,310 --> 00:03:10,000
+parameter that what is the average prediction error right, on the entire population.
+
+23
+00:03:10,000 --> 00:03:13,930
+So that is the parameter that you want to estimate and what you have is, what is the prediction error
+
+24
+00:03:13,930 --> 00:03:21,190
+on a sample okay, that is the statistic okay. So the more common restriction that people can
+
+25
+00:03:21,190 --> 00:03:31,690
+make is average versus mean right. So average is essentially a statistic right, so the mean is a
+
+26
+00:03:31,690 --> 00:03:37,000
+performance thing right, it is actually over the entire distribution right. And you take samples
+
+27
+00:03:37,000 --> 00:03:41,050
+and you take the average of the samples, you use that as the mean of the distribution right.
+
+28
+00:03:41,050 --> 00:03:45,880
+So we just use it as it is, but that is not correct right. So because when I take a sample
+
+29
+00:03:45,880 --> 00:03:50,740
+average okay, there is some probability that it will be close to the true mean of the distribution
+
+30
+00:03:50,740 --> 00:03:58,000
+right. So the statistic will be the average and the parameter that you are interested in would be
+
+31
+00:03:58,000 --> 00:04:09,550
+the mean okay. So what are the factors that will influence this, how confident you can be about
+
+32
+00:04:09,550 --> 00:04:14,920
+the parameters from the statistics? Sample size is one, anything else?
+
+33
+00:04:19,720 --> 00:04:31,810
+How? Yeah, no but I am going to take a lot of samples, somebody else said something else.
+
+34
+00:04:31,810 --> 00:04:39,790
+No, no variance, who said variance? Yeah, so the variance of the underlying distribution right,
+
+35
+00:04:39,790 --> 00:04:45,130
+so how variable is underlying distribution. So for that I probably have to compensate for that and I
+
+36
+00:04:45,130 --> 00:04:53,650
+need to take a larger sample and things like that. So the variability also is assured right.
+
+37
+00:04:53,650 --> 00:04:58,900
+So this is something under my control, this is something that is not okay. So
+
+38
+00:04:58,900 --> 00:05:10,780
+these are the things you should remember right. So we talked about two things that you wanted
+
+39
+00:05:10,780 --> 00:05:29,360
+to do okay. So in the hypothesis testing, so what we are really interested in doing
+
+40
+00:05:29,360 --> 00:05:34,250
+is actually answering some kind of yes or no questions right, I have an hypothesis okay.
+
+41
+00:05:34,250 --> 00:05:39,320
+So my learning algorithm is better than the other learning algorithms. So algorithm 1 is
+
+42
+00:05:39,320 --> 00:05:45,860
+better than algorithm 2, yes or no okay, right. And I give you an answer, I say yes okay. I also
+
+43
+00:05:45,860 --> 00:05:51,440
+would like to know what is the probability that the answer was wrong okay. So that is essentially
+
+44
+00:05:51,440 --> 00:05:56,480
+what I am trying to do in hypothesis testing. So I will ask you an yes or no question right.
+
+45
+00:05:56,480 --> 00:06:00,710
+So this question usually is of the following form, people have already done some amount
+
+46
+00:06:00,710 --> 00:06:07,670
+of hypothesis testing and have it done something some null hypothesis alternate hypothesis reject
+
+47
+00:06:07,670 --> 00:06:17,390
+one in favor of the other no yes okay. Yeah people have done the course in terms
+
+48
+00:06:17,390 --> 00:06:25,670
+would know this but apart from that nothing in Electrical signal processing no okay right so
+
+49
+00:06:25,670 --> 00:06:28,700
+the basically is yes or no question will be of this following form right so I will have
+
+50
+00:06:28,700 --> 00:06:34,910
+one basic assumption right which is both the algorithms or the same right and then
+
+51
+00:06:34,910 --> 00:06:38,870
+have an alternate assumption which will say that algorithm 1 is better algorithm 2.
+
+52
+00:06:38,870 --> 00:06:48,440
+So the question I ask is should I aspect to the basic assumption or should I reject it but not
+
+53
+00:06:48,440 --> 00:06:53,600
+blindly reject it should I reject it in favor of the alternate assumption that I have right are
+
+54
+00:06:53,600 --> 00:06:59,660
+they equal are is 1 better than 2, right I could also post my alternative question in
+
+55
+00:06:59,660 --> 00:07:06,830
+different way I can say or they equal or they not equal okay so that confidence with which I
+
+56
+00:07:06,830 --> 00:07:12,290
+can answers these two questions will be different for the same data right so 1 case the question
+
+57
+00:07:12,290 --> 00:07:17,120
+was or they equal or is 1 better than 2. So in other case the question was or they
+
+58
+00:07:17,120 --> 00:07:24,920
+equal or they not equal so in the in both these cases the confidence with which I can answer this
+
+59
+00:07:24,920 --> 00:07:29,540
+will be different for the same data that I have, right so we will see why that is the case as we
+
+60
+00:07:29,540 --> 00:07:34,820
+go along but the questions will be of this form right so yes do you aspect this or do you reject
+
+61
+00:07:34,820 --> 00:07:44,620
+this okay and if I choose to aspect this what is the probability that I was wrong okay.
+
+62
+00:07:44,620 --> 00:07:50,260
+So I do not want to aspect the something if the probability is to blow I will just
+
+63
+00:07:50,260 --> 00:07:55,990
+basically say I am sorry I cannot say anything that is statistically sound about these two
+
+64
+00:07:55,990 --> 00:07:59,680
+algorithms given the experiments that we have run okay you will give me some data it will say
+
+65
+00:07:59,680 --> 00:08:03,280
+I cannot say something statistically sound about this given whatever you have told me
+
+66
+00:08:03,280 --> 00:08:10,300
+because the probability of me making errors is fairly large so how large is fairly large.
+
+67
+00:08:10,300 --> 00:08:21,610
+Yeah but typically I do not wanted to be even large than 5% okay usually I want to be even
+
+68
+00:08:21,610 --> 00:08:28,660
+smaller 1% right why is that the case because as you will see which we go along we will be
+
+69
+00:08:28,660 --> 00:08:34,750
+making a lot of approximation assumptions so that we an get things in tractable form so
+
+70
+00:08:34,750 --> 00:08:38,620
+given that we are making so many assumptions we would at least the probability of error
+
+71
+00:08:38,620 --> 00:08:44,050
+to be very small so that we can be assume of something good okay something reasonable.
+
+72
+00:08:44,050 --> 00:08:49,390
+Right so is that fine so we ask yes or no question and you look at the probability that
+
+73
+00:08:49,390 --> 00:09:07,380
+is hypothesis testing the second one is parameter estimation right so here it is not enough for me
+
+74
+00:09:07,380 --> 00:09:13,620
+to answer weather program 1 is better than program 2 right I want to know what is the
+
+75
+00:09:13,620 --> 00:09:20,550
+average performance I program one right let us say it I just looking at running times okay so
+
+76
+00:09:20,550 --> 00:09:24,510
+I have some program that is suppose to crutch a lot of numbers and give some output and I want
+
+77
+00:09:24,510 --> 00:09:28,950
+to look at the running time of this program, Right so I want to find out what is the average
+
+78
+00:09:28,950 --> 00:09:33,660
+mean running time or the expected running time of the program on any sample given from a population,
+
+79
+00:09:33,660 --> 00:09:39,780
+right but then I only have some 20 samples on which I run this program okay I can take
+
+80
+00:09:39,780 --> 00:09:45,390
+the average of the running tine on this 20 samples but I want to know what will
+
+81
+00:09:45,390 --> 00:09:50,640
+be the running time on any sample I give you from the population right.
+
+82
+00:09:50,640 --> 00:10:00,600
+So how like right how far away is this estimate on 20 samples from the true mean running time of this
+
+83
+00:10:00,600 --> 00:10:07,620
+program so this is what we mean by parameter estimation right this is why I code sub here
+
+84
+00:10:07,620 --> 00:10:14,940
+okay there slightly different usage here really not at very fundamental level they are not but
+
+85
+00:10:14,940 --> 00:10:17,940
+at least they are very different from the way we have been using it so far right so we have
+
+86
+00:10:17,940 --> 00:10:24,000
+been talking about when you say parameters we have been taking about like wait say in network or the
+
+87
+00:10:24,000 --> 00:10:27,390
+alphas in support vector machine and so forth. But here when you talk about parameter I actually
+
+88
+00:10:27,390 --> 00:10:32,070
+mean the performance parameters that we are interested in right so the second thing which we
+
+89
+00:10:32,070 --> 00:10:47,310
+want is essentially parameter estimation where I am looking at some kind of a interval right
+
+90
+00:10:47,310 --> 00:10:57,900
+around my statistic, right and I should tell you that okay with some amount of confidence right the
+
+91
+00:10:57,900 --> 00:11:04,980
+true parameter lies in this interval around the statistics so it is like saying that okay so I
+
+92
+00:11:04,980 --> 00:11:13,650
+run this all my tests on this sample data and I get the performance as say 3.3 seconds okay.
+
+93
+00:11:13,650 --> 00:11:21,300
+Then I will say it is 3.3 plus minus 0.5 seconds okay so then the true mean will lie somewhere in
+
+94
+00:11:21,300 --> 00:11:28,620
+that interval okay with the high probability right you can see that the 2 question are related so the
+
+95
+00:11:28,620 --> 00:11:34,980
+first question again says how can I reject can I say 1 is better than 2 right second 1 I am saying
+
+96
+00:11:35,580 --> 00:11:40,320
+no I want to know what exactly is a performance of 1 and in both cases I am looking at some kind of
+
+97
+00:11:40,320 --> 00:11:55,410
+a confidence core of comparing these two does it make sense great I can repeat confidence core.
+
+98
+00:11:55,410 --> 00:12:00,570
+But I will tell you more about later okay that is the rest of the lecture is going to
+
+99
+00:12:00,570 --> 00:12:12,930
+be telling you about how to get this confidence mission right. So I will repeat something which
+
+100
+00:12:12,930 --> 00:12:16,890
+I gave as an example in the last class right, so let us say I have two algorithms right,
+
+101
+00:12:16,890 --> 00:12:20,940
+I am going to call them new and old okay, so I have two algorithms.
+
+102
+00:12:20,940 --> 00:12:37,830
+Okay, this two algorithms new and old okay, so the old one is running for a while okay,
+
+103
+00:12:37,830 --> 00:12:42,360
+the old one I have used the old for a while and I know I am running for a long time right,
+
+104
+00:12:42,360 --> 00:12:47,010
+and I have some measure of how good the old ones performance is going to be right,
+
+105
+00:12:47,010 --> 00:12:50,700
+so I know them mean performance of the old algorithm because I have been running it for
+
+106
+00:12:50,700 --> 00:12:56,460
+a long time right, and I also know the kind of this standard deviation of the performance
+
+107
+00:12:56,460 --> 00:12:59,280
+because I have to chained a lot and lot of sample let us assume that right.
+
+108
+00:12:59,280 --> 00:13:04,530
+And the example I think I gave in the class so it is on intrusion detection right, I said there is
+
+109
+00:13:04,530 --> 00:13:10,500
+some algorithm that has been running for a while right, and then it gives you some performance it
+
+110
+00:13:10,500 --> 00:13:15,990
+catches and say 84% of all the intrusions right, and then I propose a new algorithm it is runs
+
+111
+00:13:15,990 --> 00:13:22,170
+for like 10 days and it catches 87% of all the intrusions, so it is new one is better than the
+
+112
+00:13:22,170 --> 00:13:35,100
+old one right, is it clear. So the question so the old one has a okay, I have numbers here.
+
+113
+00:13:39,970 --> 00:13:45,310
+So I do not have fully worked out things the old one has some 84% performance the new one has 89,
+
+114
+00:13:45,310 --> 00:13:55,120
+so it is a new one better than the old right, does not matter this number do not really matter okay,
+
+115
+00:13:55,120 --> 00:13:59,980
+do not get hang up on these just for illustration purposes. So I am going
+
+116
+00:13:59,980 --> 00:14:13,090
+pose it a little more formally now right, so by so this is as we had 84 and 89 I am going
+
+117
+00:14:13,090 --> 00:14:22,360
+to call these as munew and muold right, so I am sorry, I should be very careful okay.
+
+118
+00:14:24,250 --> 00:14:30,160
+And I do not know munew okay, I only mu old I have some more estimated it to be 84 because I have a
+
+119
+00:14:30,160 --> 00:14:37,930
+lot of experience with the old thing and munew I do not know, what I do know is a statistic right,
+
+120
+00:14:37,930 --> 00:14:45,670
+so I already munew is do you know some xbar new which is 89, I have a statistic where it
+
+121
+00:14:45,670 --> 00:14:50,710
+run it on some 10 samples and I know that the performance is 89 right. So now what
+
+122
+00:14:50,710 --> 00:14:58,510
+we do is I formulate a hypothesis, right. So what is the base hypothesis I am going to
+
+123
+00:14:58,510 --> 00:15:19,900
+formulate, seriously I mean all of you have done some probability in statistic
+
+124
+00:15:19,900 --> 00:15:31,150
+course right, okay did you guys did not do all of this, not in the PRP is it,
+
+125
+00:15:31,150 --> 00:15:36,130
+okay I guess it is not a statistic course okay, it is probability and random process there is no
+
+126
+00:15:36,130 --> 00:15:44,560
+statistic in it, okay fine. Because I did it in my very first maths course in under grade and I
+
+127
+00:15:44,560 --> 00:16:01,570
+am not CS student so, right so you formulate a null hypothesis I am going to say muold equals
+
+128
+00:16:01,570 --> 00:16:31,580
+munew okay. Then I am going to formulate an alternate hypothesis okay.
+
+129
+00:16:53,580 --> 00:17:08,010
+So I get a statistics okay, I get one measurement of new right, of this right so x bar new so here
+
+130
+00:17:08,010 --> 00:17:15,300
+is the question is sample of size N so that is the important thing that we have note here. So
+
+131
+00:17:15,300 --> 00:17:25,800
+next thing I want to really figure out is suppose my null hypotheses is true,
+
+132
+00:17:25,800 --> 00:17:39,450
+okay what is the probability that I would have got a performance of x bar new on a sample of size N
+
+133
+00:17:45,020 --> 00:17:56,210
+sorry, this new mu hold is less than mu new I am sorry.
+
+134
+00:17:56,210 --> 00:18:04,760
+mu new is exactly equal to mu new that essentially there is no difference in the two algorithms,
+
+135
+00:18:04,760 --> 00:18:14,900
+greater than mu new when you are do it okay proposing a new algorithm right at least you
+
+136
+00:18:14,900 --> 00:18:21,590
+are assuming is not better that is a very settle point here right so the question I really want
+
+137
+00:18:21,590 --> 00:18:32,660
+to ask is mu new better than new old right. So if new was lesser than mu old right what
+
+138
+00:18:32,660 --> 00:18:38,870
+is the question I am asking can I accept the null hypothesis right or can I reject
+
+139
+00:18:38,870 --> 00:18:45,770
+it in favor of the alternate hypothesis. So that is the question I ask right so mu new
+
+140
+00:18:45,770 --> 00:18:50,510
+is actually less than mu old as we will see when we go along then we will say that no I
+
+141
+00:18:50,510 --> 00:18:58,040
+cannot reject it right I favor of the alternate hypothesis basically then we have to go back your
+
+142
+00:18:58,040 --> 00:19:02,210
+test basically falls up here your basic assumption was wrong then you have to go back and redo in the
+
+143
+00:19:02,210 --> 00:19:08,660
+test right. So a safer question to ask is new old not equal to mu new but that not of interest to
+
+144
+00:19:08,660 --> 00:19:12,875
+you right you really want to establish whether new is better than old or new is worse than old you do
+
+145
+00:19:12,875 --> 00:19:17,180
+not want to know new is different from old. That is not interesting question for you right
+
+146
+00:19:17,180 --> 00:19:21,590
+so you remember yesterday or the last class I was telling you about it need to be very clear of what
+
+147
+00:19:21,590 --> 00:19:28,070
+is the question you are asking in the experiment right. So running in experiment you need to be
+
+148
+00:19:28,070 --> 00:19:33,350
+very clear out what is that we are looking for in the experiment right, so for example so I am
+
+149
+00:19:33,350 --> 00:19:39,560
+going to point you next to a really fantastic book on empirical methods in AI right.
+
+150
+00:19:39,560 --> 00:19:43,970
+Explaining all of these things to you which will usually the statistic book is in a very
+
+151
+00:19:43,970 --> 00:19:47,960
+dry statistical sense right and it very mathematical sense they actually trick
+
+152
+00:19:47,960 --> 00:19:53,030
+real experiments at they run on different kind of machine learning and AI settings right and then
+
+153
+00:19:53,030 --> 00:19:58,910
+talk about introduce this topics very slowly to you right in fact I think I have already did one
+
+154
+00:19:58,910 --> 00:20:03,320
+chapter from this book last class and today we are going to do another chapter from the book.
+
+155
+00:20:03,320 --> 00:20:09,080
+So I will just want it read it I am not going to the full book do not worry, but I did a course
+
+156
+00:20:09,080 --> 00:20:14,540
+during my PHD I did a course entire course based on that book, so if this is person how quite told
+
+157
+00:20:14,540 --> 00:20:19,010
+you does not when believes very strongly in feeling effects and the course itself was on
+
+158
+00:20:19,010 --> 00:20:29,750
+empirical methods right and so he ask this dialog nice dialog that he ask in the book right so there
+
+159
+00:20:29,750 --> 00:20:34,370
+are two people talking and then one guy say hey what are you trying to do? And he say then the
+
+160
+00:20:34,370 --> 00:20:41,120
+researcher to replies I am trying to run this experiment I want to figure out if algorithm
+
+161
+00:20:41,120 --> 00:20:45,470
+one faster than algorithm two okay. Then he says how will do how do algorithm
+
+162
+00:20:45,470 --> 00:20:48,650
+one is better than algorithm two, then he say how wily u do this? Then he says this
+
+163
+00:20:48,650 --> 00:20:53,030
+not describing I am going to set up this experiment so that on this data set I will
+
+164
+00:20:53,030 --> 00:20:56,600
+run this algorithm ten times and this data set I am run this algorithm and then I will
+
+165
+00:20:56,600 --> 00:21:00,410
+make this measurements. So then he ask why are refined or why are you doing this experiment?
+
+166
+00:21:01,640 --> 00:21:05,180
+Again that guy is replied oh! I am trying to do this to figure out if algorithm one
+
+167
+00:21:05,180 --> 00:21:11,030
+is faster than or algorithm one better than algorithm two okay. But then there is a other
+
+168
+00:21:11,030 --> 00:21:15,260
+conversation between two people and they asking hey what are you doing this? Oh! I have this new
+
+169
+00:21:15,260 --> 00:21:23,030
+method I heard this new method for estimating some significant of some biological markers I am trying
+
+170
+00:21:23,030 --> 00:21:26,780
+to figure out whether this is better than that. Then he says how are you going to do this? Then
+
+171
+00:21:26,780 --> 00:21:31,310
+he goes about describing the experiment setup then he says, why are you doing this? And then he says,
+
+172
+00:21:31,310 --> 00:21:36,770
+oh! I heard that this particular method uses technique X for doing this and therefore that
+
+173
+00:21:36,770 --> 00:21:39,380
+is supposed to be better, so I am trying to figure out whether that
+
+174
+00:21:39,380 --> 00:21:44,180
+assumption there on which this algorithm is based on right is that valid or not?
+
+175
+00:21:45,410 --> 00:21:48,860
+So there is very certain difference between the two conversation right the first one essentially
+
+176
+00:21:48,860 --> 00:21:53,780
+that guy wants to know it is faster or not right, does not really have any deeper scientific that
+
+177
+00:21:53,780 --> 00:21:59,600
+he is asking right. So in the second case this person actually has some other valid scientific
+
+178
+00:21:59,600 --> 00:22:02,660
+question that they are asking and reducing experimentation as a way of answering this
+
+179
+00:22:02,660 --> 00:22:08,000
+scientific question right and that is the really reason you should do this experiments not just for
+
+180
+00:22:08,000 --> 00:22:16,910
+making measurements for measurement sake okay. So it Is not directly related to your question
+
+181
+00:22:16,910 --> 00:22:21,950
+but I have just using that as a excuse to talk about the story so you should
+
+182
+00:22:21,950 --> 00:22:26,000
+be very careful about why you are setting up this experiments and what you are alternate hypothesis
+
+183
+00:22:26,000 --> 00:22:31,700
+depending on how we studied of then you have to interpret the results you are getting okay.
+
+184
+00:22:31,700 --> 00:22:40,730
+Let us move on to point 3 okay assuming that you are null hypothesis is true right how
+
+185
+00:22:40,730 --> 00:22:47,090
+lightly is it that you would have seen this performance this statistics x bar new right
+
+186
+00:23:57,370 --> 00:24:05,830
+so assume null hypothesis is true and then you try to figure out how well the mean performance
+
+187
+00:24:05,830 --> 00:24:13,570
+be distributed so if I run the algorithm so when you are old that assuming as null
+
+188
+00:24:13,570 --> 00:24:22,840
+hypothesis is true so new or old should give me the same performance if I run this on sample of
+
+189
+00:24:22,840 --> 00:24:28,090
+size N okay so I take sample one size of N run it I take a sample two of size n and I run the
+
+190
+00:24:28,090 --> 00:24:30,730
+algorithm and I take sample three of size N and I run algorithm and so on so forth.
+
+191
+00:24:30,730 --> 00:24:36,460
+And for each of this I am going to get some average performance right so how
+
+192
+00:24:36,460 --> 00:24:42,220
+well those averages be distributed right for every sample I draw I am going to get
+
+193
+00:24:42,220 --> 00:24:45,850
+a different performance and how well that performance be distributed right so that
+
+194
+00:24:45,850 --> 00:24:50,590
+is the question that I want to ask so I assume so I have to set up this distribution and that
+
+195
+00:24:50,590 --> 00:25:08,050
+is called the sampling distribution okay so what is the sampling distribution again.
+
+196
+00:25:14,720 --> 00:25:21,680
+I heard some voice from somewhere I cannot locate who what is the sampling distribution it is the
+
+197
+00:25:21,680 --> 00:25:30,680
+distribution of the mean performance on samples of data okay of the whatever algorithm we are
+
+198
+00:25:30,680 --> 00:25:36,170
+talking about so it is the distribution of the mean of the performance on samples of data of a
+
+199
+00:25:36,170 --> 00:25:41,870
+particular size if I change N the sampling distribution could also change right I am
+
+200
+00:25:41,870 --> 00:25:50,240
+looking at a distribution right note that the means by themselves do not mean much okay.
+
+201
+00:25:50,240 --> 00:26:11,870
+So then the use the sampling distribution to calculate the probability of obtaining X new so
+
+202
+00:26:11,870 --> 00:26:16,790
+once I have a distribution I can figure out what is the probability of seeing bar new under this
+
+203
+00:26:16,790 --> 00:27:15,110
+distribution right okay so couple of things that we have to decide on here so the first thing is
+
+204
+00:27:15,110 --> 00:27:20,900
+the most tricky part of all the hypothesis testing is how to come up with the sampling distribution
+
+205
+00:27:20,900 --> 00:27:29,270
+right how do you come up with the sampling distribution that is the tricky part.

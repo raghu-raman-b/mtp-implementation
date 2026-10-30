@@ -1,0 +1,527 @@
+1
+00:00:11,000 --> 00:00:32,660
+I want to talk about multi-class classification and so there are some classifiers that we looked
+
+2
+00:00:32,660 --> 00:00:40,340
+at which are naturally multi class classifiers right, which are they you know neural networks
+
+3
+00:00:40,340 --> 00:00:45,350
+yeah with a little bit of work here they are multi class something which is more immediately
+
+4
+00:00:45,350 --> 00:00:51,170
+multi-class this decision trees is immediately multi-class right no need to worry any fiddling
+
+5
+00:00:51,170 --> 00:00:56,900
+around with anything else Na ve bayes and all the Bayesian classification that we looked at read
+
+6
+00:00:56,900 --> 00:01:02,870
+all those are immediately multi class classifiers and then there are things which we looked at which
+
+7
+00:01:02,870 --> 00:01:13,760
+are inherently two class classifiers right. SVM's is one of those every popular of those and
+
+8
+00:01:13,760 --> 00:01:20,150
+any other two class classifiers that you know logistic regression is inherently a two class
+
+9
+00:01:20,150 --> 00:01:24,470
+classifier but we have multi class variants of it I did the two class classifier in detail in
+
+10
+00:01:24,470 --> 00:01:29,540
+class right but there are multi class variants of logistic regression but again the two class
+
+11
+00:01:29,540 --> 00:01:34,610
+one is the one that is best understood right and any kind of discriminate function based
+
+12
+00:01:34,610 --> 00:01:38,930
+classification that we looked at right are inherently to class classifiers right.
+
+13
+00:01:38,930 --> 00:01:44,090
+You mean you can think of ways of converting them into multi-class classification but inherently to
+
+14
+00:01:44,090 --> 00:01:50,480
+class classifiers right so suppose I give you a very powerful mechanism for constructing a
+
+15
+00:01:50,480 --> 00:01:57,830
+binary classifier, can you solve the multi-class classification problem using that let us make
+
+16
+00:01:57,830 --> 00:02:03,230
+it even more concrete I give you an SVM right I will give you this packaged code for an SVM right
+
+17
+00:02:03,230 --> 00:02:08,000
+I am telling you this is the best possible SVM implementation but it does only binary
+
+18
+00:02:08,000 --> 00:02:12,950
+classification can you use that and convert it into a multi-class classification think how do
+
+19
+00:02:12,950 --> 00:02:30,280
+you do that? what is the advantage of one versus one? potentially be balanced right. hopefully
+
+20
+00:02:30,280 --> 00:02:35,470
+I mean depends right so you still have an unbalanced class classification problem I
+
+21
+00:02:35,470 --> 00:02:42,430
+might have 30 classes in which each class has 10 data points and one class has 10,000 right.
+
+22
+00:02:42,430 --> 00:02:48,880
+So then one versus one will be a problem then right but one versus all will always be a
+
+23
+00:02:48,880 --> 00:02:52,900
+problem even if you have equal number of data points in every class one versus all will be a
+
+24
+00:02:52,900 --> 00:03:08,470
+imbalance problem right but the disadvantage of one versus one? how many classifiers you
+
+25
+00:03:08,470 --> 00:03:19,120
+need in one versus one? n choose 2 , right? so that is a large number of classifiers I give
+
+26
+00:03:19,120 --> 00:03:25,210
+you a hand 100 class classification problem right so how many classifies will you need
+
+27
+00:03:25,210 --> 00:03:36,300
+within 1 versus 1 large number right. So you are in the time and we actually
+
+28
+00:03:36,300 --> 00:03:42,480
+want to the classified we need not run them all like at the time interval timer feel to
+
+29
+00:03:42,480 --> 00:03:48,750
+the creation which would probably be a one-time process yeah we would need all okay and when you
+
+30
+00:03:48,750 --> 00:03:51,660
+run when you actually want to classify how many do you need how many would be actually
+
+31
+00:03:51,660 --> 00:04:10,468
+if I whenever you guys while you get rid of but one person any person do you how come because you
+
+32
+00:04:10,468 --> 00:04:11,777
+for example if you have class A B C and D huh, I will run the classifier for a versus b a versus
+
+33
+00:04:11,777 --> 00:04:28,030
+c a versus b then you run it for a versus B you through one of them out then suppose it
+
+34
+00:04:28,030 --> 00:04:30,030
+was yeah b versus c and one come over here. You could do that right but then for that you
+
+35
+00:04:30,030 --> 00:04:34,380
+have to be little bit careful because the guarantees that you would have or slightly
+
+36
+00:04:34,380 --> 00:04:41,730
+weaker right so this is really not called 1vs1 okay so that is one version of running 1 vs
+
+37
+00:04:41,730 --> 00:04:48,480
+1which is called a tournament is essentially what you are suggesting is run at tournament
+
+38
+00:04:48,480 --> 00:04:54,360
+right. So you train lot of 1vs1 classifiers and then you run a tournament so you need to train
+
+39
+00:04:54,360 --> 00:04:59,400
+that many classifies but we are deploying it you will have fewer numbers to use right.
+
+40
+00:04:59,400 --> 00:05:06,180
+But the problem with that is suppose you have A versus B classifier was weak right then you
+
+41
+00:05:06,180 --> 00:05:11,400
+would throw out A incorrectly and suppose we are running A versus B and then B won but if
+
+42
+00:05:11,400 --> 00:05:17,520
+you have done here A versus C and A versus D also A might win against all of those right and then B
+
+43
+00:05:17,520 --> 00:05:23,310
+might lose to C and D then it becomes an issue right so a would have gotten two votes well be
+
+44
+00:05:23,310 --> 00:05:28,680
+would have got only one vote and then what do you do right so classifies are good then
+
+45
+00:05:28,680 --> 00:05:33,630
+tournaments or be great if classifiers are weak and you have problem in tournament that you might
+
+46
+00:05:33,630 --> 00:05:38,610
+eliminate things a little early right. And then another problem in the tournament
+
+47
+00:05:38,610 --> 00:05:47,100
+is you can identify only the most likely class but if I wanted to give ranking of class labels
+
+48
+00:05:47,100 --> 00:05:54,600
+okay that cannot be done with tournaments okay but if you have hundreds of class labels right,
+
+49
+00:05:54,600 --> 00:06:01,260
+so you have some you have to give up on something so essentially give up on the
+
+50
+00:06:01,260 --> 00:06:04,290
+correctness and they essentially try to run a tournament if you have a lot of class labels
+
+51
+00:06:04,290 --> 00:06:09,180
+try running a tournament on this right. So the scikit- learn implemented tournament
+
+52
+00:06:09,180 --> 00:06:24,060
+automatically you know in this one versus one yeah that is that is fine what about SVMs? It supports
+
+53
+00:06:24,060 --> 00:06:28,500
+multi class SVMs but there is nothing called multi class SVM here we have to do one of these
+
+54
+00:06:28,500 --> 00:06:34,500
+I will take it back that is a multi classifier we will take it back but there is not work
+
+55
+00:06:34,500 --> 00:06:48,090
+scikit-learn yeah so but this might be something you might want to employ okay now going back.
+
+56
+00:06:48,090 --> 00:06:57,090
+So I told you that it is possible that we have severe class imbalance in a 100class
+
+57
+00:06:57,090 --> 00:07:01,770
+classification problem even right, so you have one class that has like a million data
+
+58
+00:07:01,770 --> 00:07:06,570
+points and each of the other classes have like a thousand data points right so what would you
+
+59
+00:07:06,570 --> 00:07:14,520
+do in that case so we spoke about some ways of fixing the problem right the class imbalance
+
+60
+00:07:14,520 --> 00:07:21,720
+problem so weighing some one class more than the other under sampling over sampling did we
+
+61
+00:07:21,720 --> 00:07:30,690
+talk about this at some point I vaguely remember discussing class imbalance in the class, no we
+
+62
+00:07:30,690 --> 00:07:34,590
+discuss class imbalance in the class right. So there are different ways of fixing that you
+
+63
+00:07:34,590 --> 00:07:40,380
+could try that alternatively you could try some kind of a hierarchical classification right,
+
+64
+00:07:40,380 --> 00:07:46,500
+so what you do in hierarchical classification is you essentially try to split the classes into two
+
+65
+00:07:46,500 --> 00:07:51,480
+groups okay. And then say that okay first level I will see whether it goes into group one or whether
+
+66
+00:07:51,480 --> 00:07:56,760
+it goes to group to the next level or in within group one I will try to assign it to a specific
+
+67
+00:07:56,760 --> 00:08:01,860
+class right or I can split it in to groups three and four and then within that group three I will
+
+68
+00:08:01,860 --> 00:08:04,620
+assign it to a specific class right, you could do some kind of error K classification right.
+
+69
+00:08:04,620 --> 00:08:14,010
+So what is the challenge here? So sorry choosing the hierarchies yes using the groups right so
+
+70
+00:08:14,010 --> 00:08:18,420
+unless the groups come to you somehow from the domain itself right sometimes you could have
+
+71
+00:08:18,420 --> 00:08:24,720
+like people classify web pages right and then you can go and look into some open directory project
+
+72
+00:08:24,720 --> 00:08:29,070
+or something like that and there are nicely classified web pages for you right. So you
+
+73
+00:08:29,070 --> 00:08:33,480
+have a hierarchy of web pages there you can then look at the classification down the hierarchy.
+
+74
+00:08:33,480 --> 00:08:37,890
+So you will start off with saying okay entertainment versus news and then within
+
+75
+00:08:37,890 --> 00:08:42,540
+news you could have say politics sports and then within entertainment you will have movies and I
+
+76
+00:08:42,540 --> 00:08:48,960
+do not know and sports comes into the news or entertainment. So wherever right so you
+
+77
+00:08:48,960 --> 00:08:53,550
+could I will have this kind of hierarchies and then you can use this hierarchy to give you your
+
+78
+00:08:53,550 --> 00:08:58,590
+hierarchical classification right in the absence of that right how would you want to do this?
+
+79
+00:08:58,590 --> 00:09:06,120
+If you want to induce the hierarchy I give you a flat set of 100 labels if you want to induce
+
+80
+00:09:06,120 --> 00:09:12,960
+a hierarchy on this hundred labels how would you do this? Hmm, based on the number of data points,
+
+81
+00:09:21,370 --> 00:09:30,160
+clustering it is clustering so what do you do with clustering how do you do clustering
+
+82
+00:09:30,160 --> 00:09:41,080
+in this case just cluster of the data points blindly that person you are essentially solving
+
+83
+00:09:41,080 --> 00:09:47,560
+we do not know which way to solve it right so how will you cluster it here people are
+
+84
+00:09:47,560 --> 00:09:55,120
+throwing up all kinds of terms now right. So the point is you have, so the intuition is
+
+85
+00:09:55,120 --> 00:09:59,020
+the following I have this class conditional densities I know okay this is class one what
+
+86
+00:09:59,020 --> 00:10:03,100
+are the data upon this is class to what are the data points right, so I would like to group them
+
+87
+00:10:03,100 --> 00:10:08,800
+in such a way that the class condition densities belonging to one group are very different from
+
+88
+00:10:08,800 --> 00:10:15,280
+the class conditional densities belonging to the other group right does that make sense right.
+
+89
+00:10:15,280 --> 00:10:31,270
+Suppose my data is like this right so I have all my class one here class two here class four here
+
+90
+00:10:31,270 --> 00:10:42,760
+and class five data points are here right four okay, so which what is what is a grouping that
+
+91
+00:10:42,760 --> 00:10:47,290
+suggest to you itself suggests itself to you one and two should be one thing and three and
+
+92
+00:10:47,290 --> 00:10:51,115
+four should be the other right. So if you think about it so this is the class condition if we
+
+93
+00:10:51,115 --> 00:10:55,600
+are assuming these are drawn from Gaussians and I will have a mean here and some variance over
+
+94
+00:10:55,600 --> 00:11:00,160
+this and the mean will be somewhere here and some covariance oh these look closer
+
+95
+00:11:00,160 --> 00:11:07,360
+right then the means of these distributions. So that is a basic idea one way of achieving this
+
+96
+00:11:07,360 --> 00:11:13,510
+is to say that okay I will do clustering right and then I look at the class labels that fall together
+
+97
+00:11:13,510 --> 00:11:20,440
+right which class labels fall together more often this is very nicely done right. So what if my
+
+98
+00:11:20,440 --> 00:11:34,680
+classes are actually like this the classes look like this now it is harder to harder to separate
+
+99
+00:11:34,680 --> 00:11:41,040
+them out right, so what you can possibly end up doing something like this and I find some clusters
+
+100
+00:11:41,040 --> 00:11:46,260
+some groups of data points like that. Now predominantly in this I have class
+
+101
+00:11:46,260 --> 00:11:51,540
+one predominantly in this I have class two predominantly in this I have class three
+
+102
+00:11:51,540 --> 00:11:55,920
+in predominantly this whatever prominently in this class three class four now I start
+
+103
+00:11:55,920 --> 00:12:06,330
+looking at which is which of the clusters are similar and then I can do some kind of predict
+
+104
+00:12:06,330 --> 00:12:12,420
+which values the training data is given to you right. So you have the training data you are
+
+105
+00:12:12,420 --> 00:12:15,510
+just being clustering on the training data. So the training data will tell you what the class
+
+106
+00:12:15,510 --> 00:12:23,100
+labels are right, this is there is this really a formal way of doing it I am just giving you
+
+107
+00:12:23,100 --> 00:12:34,140
+tips practical tips forgetting addressing some very large problems, sorry so I have done these
+
+108
+00:12:34,140 --> 00:12:37,740
+clusters now right I have clusters and I can I can figure out which clusters are similar to
+
+109
+00:12:37,740 --> 00:12:42,210
+which cluster which clusters are close that I have some description like suppose I am using some kind
+
+110
+00:12:42,210 --> 00:12:46,380
+of a Gaussian model for describing my clusters I will of some description of the clusters right.
+
+111
+00:12:46,380 --> 00:12:50,910
+So I can I can now figure out which cluster is close to which cluster I will talk about
+
+112
+00:12:50,910 --> 00:13:01,590
+hierarchical clustering depending on today or Friday, Friday stands for next class okay. So
+
+113
+00:13:01,590 --> 00:13:08,250
+today or Friday I will talk about the hierarchical clustering then you can see that okay there are
+
+114
+00:13:08,250 --> 00:13:12,690
+four clusters and then these two clusters get merged first and then these two clusters get
+
+115
+00:13:12,690 --> 00:13:17,430
+merged so at that point I can say hey okay now I am going to say all the classes which
+
+116
+00:13:17,430 --> 00:13:23,820
+are more prevalent in these two clusters should go together the classes that are more prevalent
+
+117
+00:13:23,820 --> 00:13:31,820
+in these two clusters should go together. The data points it belong to those clusters
+
+118
+00:13:31,820 --> 00:13:36,260
+you go and build a classifier right first classifier you build on all the data points
+
+119
+00:13:36,260 --> 00:13:43,280
+that separates these two clusters from these two clusters that spacing so I do not want to
+
+120
+00:13:43,280 --> 00:13:47,150
+do a distinction at the very beginning I do not want to do a distinction between this and that
+
+121
+00:13:47,150 --> 00:13:52,070
+this and this and so on so forth right. Then how does this help us in class imbalance?
+
+122
+00:14:32,740 --> 00:14:41,230
+Yeah what if you originally you had class imbalance what if originally
+
+123
+00:14:41,230 --> 00:14:44,530
+1 class had a million points and all the other classes had a thousand points
+
+124
+00:14:44,530 --> 00:14:57,790
+each, yeah if that is supported if the data supports that million and this is
+
+125
+00:14:57,790 --> 00:15:03,070
+extreme but say ten thousand to one class about the we do get real data like that.
+
+126
+00:15:18,810 --> 00:15:26,450
+I did not get it, we were making clusters right on the glass labels so it does not matter what the
+
+127
+00:15:26,450 --> 00:15:32,718
+size of the cluster is so all points belonging to same level would fall into in the same cluster.
+
+128
+00:15:32,718 --> 00:15:39,920
+How it goes is class imbalance, no it will not cause imbalance I am asking how will it relieve
+
+129
+00:15:39,920 --> 00:15:49,430
+you from class imbalance we are getting is less than has only see I am not I am not using the
+
+130
+00:15:49,430 --> 00:15:56,210
+clustering itself to do the classification right I am only doing the clustering turn that I can
+
+131
+00:15:56,210 --> 00:16:01,430
+group the class labels and then I go back and try to solve the classification problem after
+
+132
+00:16:01,430 --> 00:16:12,830
+that yeah. So I suppose all of you are going to try out different things.

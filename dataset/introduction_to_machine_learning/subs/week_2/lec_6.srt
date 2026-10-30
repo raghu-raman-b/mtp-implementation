@@ -1,0 +1,535 @@
+1
+00:00:00,000 --> 00:00:16,470
+In this module we are going to
+
+2
+00:00:16,470 --> 00:00:21,840
+look at the case where the output variable is drawn from a discrete space or in other words
+
+3
+00:00:21,840 --> 00:00:26,070
+we are going to look at the classification problem as before the input is coming from a P dimensional
+
+4
+00:00:26,070 --> 00:00:33,480
+space RP the output which I am denoting by G here I am going to assume is coming from some space G
+
+5
+00:00:33,480 --> 00:00:40,800
+which is a discrete value right it could be Buys a computer or does not by a computer so capital the
+
+6
+00:00:40,800 --> 00:00:45,810
+script G could just consists of buys a computer does not by computer or it should consist of like
+
+7
+00:00:45,810 --> 00:00:51,420
+5 different outcomes has the disease a mild form of the disease a severe form of the disease does
+
+8
+00:00:51,420 --> 00:00:56,580
+not have the disease and soon so forth right. So it could be a variety of outcomes but a small
+
+9
+00:00:56,580 --> 00:01:01,710
+discrete set, so that space is denoted by script g well capital g is the random variable
+
+10
+00:01:01,710 --> 00:01:09,120
+corresponding to the output right then like before we are going to have a joint distribution on the
+
+11
+00:01:09,120 --> 00:01:13,710
+input on the output right and the training data is going to consist of pairs x1 g1 x2
+
+12
+00:01:13,710 --> 00:01:20,670
+g2 all the way up to xn and Gn and the goal here is to learn a function f(x) that is going
+
+13
+00:01:20,670 --> 00:01:28,680
+to take you from a P-dimensional input space R to the discrete space script g right.
+
+14
+00:01:28,680 --> 00:01:37,740
+And so the thing that we have to look at now is what is an appropriate loss function in this
+
+15
+00:01:37,740 --> 00:01:42,810
+case so what is an appropriate loss function in this case since we are talking about the discrete
+
+16
+00:01:42,810 --> 00:01:49,860
+output right so I really cannot talk about squared error as a loss function even though in cases
+
+17
+00:01:49,860 --> 00:01:55,290
+where the discrete values have been encoded as numeric outputs people do use squared error and we
+
+18
+00:01:55,290 --> 00:01:59,430
+will see that later right so people do use squared error is an appropriate measure as long as your
+
+19
+00:01:59,430 --> 00:02:06,870
+space g has been encoded numerically right. So but in general so we are going to define
+
+20
+00:02:06,870 --> 00:02:29,530
+the loss in as a k by k matrix where k is the cardinality of the discrete space script g that
+
+21
+00:02:29,530 --> 00:02:35,920
+we are looking at, so suppose there are 5 classes then my last matrix is going to be a 5 by 5 matrix
+
+22
+00:02:35,920 --> 00:02:57,670
+right so that the thing here is it is going to have zeros on zeros on the diagonal right and so
+
+23
+00:02:57,670 --> 00:03:06,940
+the klth at entry in the loss matrix essentially is the cost that you incur of classifying the
+
+24
+00:03:06,940 --> 00:03:20,050
+output k as n so the true output is k but you output you say l right so that is essentially
+
+25
+00:03:20,050 --> 00:03:27,910
+the cost of classifying k as l so that is denoted by the klth entry of the loss matrix right.
+
+26
+00:03:27,910 --> 00:03:38,620
+So frequently the most popular loss function that you use is known as the 0 - 1 loss function right
+
+27
+00:03:38,620 --> 00:03:44,620
+so the 0-1 loss function essentially says that suppose I have three classes right,
+
+28
+00:03:50,230 --> 00:03:56,290
+so my loss function would look like this right, so if I if I classified
+
+29
+00:03:56,290 --> 00:04:01,690
+to the right class I get a penalty of zero but if I classify to the wrong class right
+
+30
+00:04:01,690 --> 00:04:06,460
+I get a penalty of one regardless of which wrong class I classify to so this entry says
+
+31
+00:04:06,460 --> 00:04:11,710
+that okay the data point actually belongs to class one I have classified it as class two
+
+32
+00:04:11,710 --> 00:04:17,260
+what is the penalty so 1 data point belongs to class 1 I classify it as class 3 what is
+
+33
+00:04:17,260 --> 00:04:20,650
+the penalty one and so on so forth so this is called the 0-1 loss function
+
+34
+00:04:20,650 --> 00:04:24,850
+because all the entries in the loss matrix are either 0 or 1 right.
+
+35
+00:04:24,850 --> 00:04:45,630
+So what we are again going to look at is the expected prediction error of f hat right and we
+
+36
+00:04:45,630 --> 00:04:53,550
+can do the same thing that we did earlier so I can start conditioning it on x right so the expected
+
+37
+00:04:53,550 --> 00:05:09,600
+prediction error and then the expectation of g given x which essentially becomes a
+
+38
+00:05:48,330 --> 00:05:55,260
+right so the loss of g, f hat given that the input is x but
+
+39
+00:05:55,260 --> 00:05:58,020
+if you think about it this is not a continuous distribution this is
+
+40
+00:05:58,020 --> 00:06:02,700
+actually a discrete distribution because g can take only finitely many values,
+
+41
+00:06:02,700 --> 00:06:08,490
+so instead of writing it out as this expectation I can actually simplify that and write it as
+
+42
+00:06:45,290 --> 00:06:49,490
+right. So this is a loss that i will incur if k
+
+43
+00:06:49,490 --> 00:06:56,240
+was the true class again my prediction was f^(x) times the probability that k is the true class
+
+44
+00:06:56,240 --> 00:07:01,520
+given the input x right so this is essentially i am writing out the expectation here right,
+
+45
+00:07:01,520 --> 00:07:06,140
+so the because it is a discrete distribution I am able to write it out in a compact form
+
+46
+00:07:06,140 --> 00:07:12,530
+right and again I can do this minimization of this point wise like we talked about earlier,
+
+47
+00:07:12,530 --> 00:07:18,440
+so point wise would mean that I make a specific assumption about what is the value of x right.
+
+48
+00:07:18,440 --> 00:07:58,170
+So I am going to look at right, so they are essentially following the same treatment that
+
+49
+00:07:58,170 --> 00:08:03,150
+we did with the regression case except that we are using a discrete output space since
+
+50
+00:08:03,150 --> 00:08:09,600
+of a continuous output space right. So this essentially says that I am going to pick the
+
+51
+00:08:09,600 --> 00:08:15,480
+data point right that gives me the I am going to prove sorry I am going to pick
+
+52
+00:08:15,480 --> 00:08:23,310
+the prediction g that gives me the smallest expected error right, so what suppose I have
+
+53
+00:08:23,310 --> 00:08:32,100
+the 0-1 loss function right assume the 0-1 loss so what does this mean I should essentially set
+
+54
+00:08:32,100 --> 00:08:41,610
+my g to be that k right which has the highest probability why is that right. So if we think
+
+55
+00:08:41,610 --> 00:08:49,170
+about it this probability term contributes to every element in the summation right so what I
+
+56
+00:08:49,170 --> 00:08:57,090
+can do is among all these probability terms I can pick one term right and set it to 0 by my
+
+57
+00:08:57,090 --> 00:09:06,630
+choice of g right so suppose I choose g to be 1 then my l(1,1) will become 0 right and but
+
+58
+00:09:06,630 --> 00:09:12,870
+my l(2,1),l(3,1) so on so forth will all be 1 so what will happen this there is a probability
+
+59
+00:09:12,870 --> 00:09:19,470
+of 2 given X probability of 3 given X all of this will actually appear in this summation right.
+
+60
+00:09:19,470 --> 00:09:27,870
+So if I set my g to that value of k which has the highest probability right then that will
+
+61
+00:09:27,870 --> 00:09:34,320
+yield the best possible solution here right, so if you are not able to see that let us assume
+
+62
+00:09:34,320 --> 00:09:43,320
+that there are 3 classes right I assume that there are 3 classes so and my true distribution
+
+63
+00:09:43,320 --> 00:09:51,180
+is says that the probability of class 1 given the data point x let us say is 0.6 probability
+
+64
+00:09:51,180 --> 00:10:02,220
+of class 2 given x let us say is 0.2 this is another 0.2 okay and of course my loss function
+
+65
+00:10:02,220 --> 00:10:09,570
+is going to be such that and mean 00011111 right so this is my loss function right.
+
+66
+00:10:09,570 --> 00:10:22,110
+So if I guess that my class label is going to be 2 let us say so I said g = 2 so what is going to
+
+67
+00:10:22,110 --> 00:10:30,240
+happen my if the class label is 1 right so I am going to look at the loss corresponding to 1,
+
+68
+00:10:30,240 --> 00:10:37,890
+2 which is this right, so I will get 1 times 0.6 then if the class label is 2 so I will be looking
+
+69
+00:10:37,890 --> 00:10:46,500
+at this so I will get 0 times 0.2 + if the class label is 3 I look at this I will get 1 times 0.2,
+
+70
+00:10:46,500 --> 00:10:53,310
+so I will get a score of 0.8 right. So as you can see depending on which value
+
+71
+00:10:53,310 --> 00:10:59,640
+I choose if I g = 2 then I will be zeroing out the second entry if I choose g = 1 I will be zeroing
+
+72
+00:10:59,640 --> 00:11:07,920
+out the 1st entry right and by choosing g equal to 1 I will basically get a score of 0.4 right,
+
+73
+00:11:07,920 --> 00:11:18,330
+so what I have to do in order to get the minimum here is to pick that g for which this probability
+
+74
+00:11:18,330 --> 00:11:31,010
+is the highest right. So I will set f^(x)
+
+75
+00:11:53,760 --> 00:12:05,820
+okay so can you how people realize why the min here became the max here based on the argument
+
+76
+00:12:05,820 --> 00:12:11,610
+that we just did right, so this is essentially saying that from your training data classify it
+
+77
+00:12:11,610 --> 00:12:25,740
+to the most probable class right and if I knew this if I knew this probability right so what
+
+78
+00:12:25,740 --> 00:12:31,470
+will I do I can set it to the most probable output so this is this kind of a classifier
+
+79
+00:12:31,470 --> 00:12:46,740
+so what is the Bayes optimal classifier say I can look at the conditional distribution right
+
+80
+00:12:46,740 --> 00:12:52,770
+given x look at the probability of g take the g that has the highest probability and assign
+
+81
+00:12:52,770 --> 00:12:57,270
+it as the output so this is essentially what the Bayes optimal classifier would say all right.
+
+82
+00:12:57,270 --> 00:13:03,420
+But then you do not know g right, so what they have to do is you have estimate this probability
+
+83
+00:13:03,420 --> 00:13:08,190
+so how would you estimate this probability do we know of any method for estimating this probability
+
+84
+00:13:08,190 --> 00:13:17,160
+of course we do we know how to do nearest neighbor right, so what you would do in this case is that
+
+85
+00:13:17,160 --> 00:13:23,850
+instead of taking the average over the neighbors like we did in the regression case so what you
+
+86
+00:13:23,850 --> 00:13:29,010
+would do is you our estimate the probabilities in the neighborhood, so what you would do you will
+
+87
+00:13:29,010 --> 00:13:34,320
+take a data point look at the k neighbors of the data point k nearest neighbors of the data point
+
+88
+00:13:34,320 --> 00:13:44,820
+find out what their class labels are right. So and then divide by up so for each label count
+
+89
+00:13:44,820 --> 00:13:50,070
+the number of occurrences of that label in the k neighbors and divided by k right so this will
+
+90
+00:13:50,070 --> 00:13:57,330
+give you the probability of the class label in the neighborhood but we really do not have to do this
+
+91
+00:13:57,330 --> 00:14:02,490
+much work why because we are not interested in the actual probability we all we need is
+
+92
+00:14:02,490 --> 00:14:07,920
+the one that has the maximum probability since the denominator is going to be k for all the
+
+93
+00:14:07,920 --> 00:14:10,890
+probabilities we can ignore the denominator we can just look at the numerator.
+
+94
+00:14:10,890 --> 00:14:15,960
+So what we can do is we can count the occurrences of the class label in the
+
+95
+00:14:15,960 --> 00:14:21,840
+neighborhood and whichever occurs more often we can assign that as the class label right,
+
+96
+00:14:41,910 --> 00:14:55,260
+so think about it for a minute right, so what we are essentially doing when we take the majority
+
+97
+00:14:55,260 --> 00:15:00,660
+is actually estimating this probability and taking the max probability right,
+
+98
+00:15:00,660 --> 00:15:05,550
+so take the majority label in the neighborhood and use that as your prediction so this essentially
+
+99
+00:15:05,550 --> 00:15:10,740
+gives you the k nearest neighbor classifier. So what we saw earlier was a k nearest neighbor
+
+100
+00:15:10,740 --> 00:15:16,110
+regressor so all the caveats that we talked about for the k nearest neighbor regressor
+
+101
+00:15:17,370 --> 00:15:22,500
+apply to the k nearest neighbor classifier as well so you have to be careful about using it
+
+102
+00:15:22,500 --> 00:15:27,150
+in very high dimensions right and you really need large values of k and large values of n
+
+103
+00:15:27,150 --> 00:15:32,460
+before you can get stable estimates but having said all that I should say that it turns out to
+
+104
+00:15:32,460 --> 00:15:39,480
+be a really powerful classifier in practice and we will come back to that a little later as to
+
+105
+00:15:39,480 --> 00:15:46,170
+why it is such a powerful classifier right. And can we use linear regression or the linearity
+
+106
+00:15:46,170 --> 00:15:52,590
+assumption here it turns out that you could use linear regression in almost directly for
+
+107
+00:15:52,590 --> 00:15:59,610
+solving this problem so the way you do it is the following you take this data set x1 g1 x2
+
+108
+00:15:59,610 --> 00:16:04,920
+g2 and so on so forth and convert it into a data set suitable for doing regression,
+
+109
+00:16:04,920 --> 00:16:09,180
+so how do I do that so I take that x1 g1 right.
+
+110
+00:16:09,180 --> 00:16:15,120
+Let us say that I have only two classes for simplicity sake let us say I have only two classes
+
+111
+00:16:15,120 --> 00:16:28,560
+right so I have g1 and g2 right so let us say 1 and 2 so I will say I will say that 0 or 1 right
+
+112
+00:16:28,560 --> 00:16:33,390
+so instead of having some arbitrary classes I am going to say it is 0 or 1 so what I am going to
+
+113
+00:16:33,390 --> 00:16:51,060
+now do is my thing will become something like this right so instead of having some arbitrary symbols
+
+114
+00:16:51,060 --> 00:16:57,180
+g’s g1 g2 I am going to have 0, 1, 1, 0 and so on so forth now what I can do is I can solve this as
+
+115
+00:16:57,180 --> 00:17:02,790
+a regression problem I can just solve this as a regression problem and whatever output I get I
+
+116
+00:17:02,790 --> 00:17:09,450
+can treat that as an estimate of the probability of g given x if you think about it right.
+
+117
+00:17:09,450 --> 00:17:18,900
+So probability of g = 1 given x so for the same value of x if there are multiple ones right
+
+118
+00:17:18,900 --> 00:17:26,700
+suppose I the same value x occurs say 5 times in my training data 3 of the times it was 1 and 2 of
+
+119
+00:17:26,700 --> 00:17:32,520
+the times it was 0 right so when I am trying to do a prediction I would expect to end up at the
+
+120
+00:17:32,520 --> 00:17:38,010
+average of this prediction right, so just be like 3 / 5 and it also turns out to be the probability
+
+121
+00:17:38,010 --> 00:17:47,130
+with which the output is 1 given an x right, so if I do regression with this as my training data,
+
+122
+00:17:47,130 --> 00:17:55,260
+so what I will be learning is the probability that g = 1 given x right roughly there are lot
+
+123
+00:17:55,260 --> 00:18:03,690
+of caveats in this which we will look at when we do regression later obviously you cannot treat
+
+124
+00:18:03,690 --> 00:18:08,340
+this directly as probabilities because the regression curve can become negative right.
+
+125
+00:18:08,340 --> 00:18:13,230
+So you cannot really treat it as probabilities but it just how it is useful intuition to have
+
+126
+00:18:13,230 --> 00:18:22,470
+and so the output that you learn here so f^ (x) right in this case if it is ≥ 0.5
+
+127
+00:18:22,470 --> 00:18:32,070
+then you say in the class is 1 if it is < than 0.5 you say the class is 0 let us say
+
+128
+00:18:32,070 --> 00:18:39,510
+can use a linear regression to solve this as well so what we have done in this couple of
+
+129
+00:18:39,510 --> 00:18:47,400
+modules is to look at a unifying formulation for classification and regression problem so
+
+130
+00:18:47,400 --> 00:18:53,520
+supervised learning problems and looked at a couple of different classifiers that arise out
+
+131
+00:18:53,520 --> 00:18:59,220
+of making certain assumptions about classifiers and regressors that arise out of making certain
+
+132
+00:18:59,220 --> 00:19:03,660
+assumptions about the function that we are trying to learn right.
+
+133
+00:19:03,660 --> 00:19:09,960
+In the subsequent classes we will start looking at each of these in more detail starting off with
+
+134
+00:19:09,960 --> 00:19:15,360
+linear regression we'll look at this different classifiers in greater detail thank you.

@@ -1,0 +1,427 @@
+1
+00:00:00,000 --> 00:00:17,020
+So what are the shrinkage
+
+2
+00:00:17,020 --> 00:00:38,370
+methods you think we can come up with? Each of β is closed right so we imposed a L2 norm on the
+
+3
+00:00:38,370 --> 00:00:46,140
+β L2 constraint on the β you can impose any other norm constraint on the β right I can I can impose
+
+4
+00:00:46,140 --> 00:01:01,590
+an L4 norm or more commonly I can impose a L1 now it is called lasso right.
+
+5
+00:01:01,590 --> 00:02:12,850
+So lasso is essentially let us just ignore the absolute value of the β you sum up those and
+
+6
+00:02:12,850 --> 00:02:17,680
+you want to keep them so you can write the same we can write the constraint formulation where I
+
+7
+00:02:17,680 --> 00:02:20,080
+can say sum of β has to be less than some ‘t’ write sum of |β| has to be less than some ‘t’
+
+8
+00:02:22,870 --> 00:02:29,350
+or I could just do this kind of a formulation right. And so to impose a constraint on each
+
+9
+00:02:29,350 --> 00:02:35,230
+individual β would require you to know something about the variables themselves beforehand right
+
+10
+00:02:35,230 --> 00:02:39,340
+otherwise if you constrain and very important variable to have a small coefficient then it
+
+11
+00:02:39,340 --> 00:02:42,460
+becomes a problem so you need to know something about the variables and you can say okay.
+
+12
+00:02:42,460 --> 00:02:46,900
+I know that these variables are very important make sure that the other variables don't I want
+
+13
+00:02:46,900 --> 00:02:53,950
+to more than 0.5 times the coefficient of these variables, so something like you can think of
+
+14
+00:02:53,950 --> 00:03:00,025
+all kinds of complex constraints once you have knowledge about the system but typically you do
+
+15
+00:03:00,025 --> 00:03:03,970
+not write in such cases you will have to have some kind of uniform constraints like this and
+
+16
+00:03:03,970 --> 00:03:14,050
+so this is a very popular constraint it actually makes life harder for us right so it does not have
+
+17
+00:03:14,050 --> 00:03:21,190
+such a nice closed form solution any more why I mean this is no longer differentiable right.
+
+18
+00:03:21,190 --> 00:03:25,330
+So I can't I cannot write your nice closed form solution like this in fact I have to
+
+19
+00:03:25,330 --> 00:03:29,830
+work very hard to solve this there are package mean you don't have to work very hard I mean
+
+20
+00:03:30,400 --> 00:03:36,550
+typically so you can just run it on R or WEKA something you can always run lasso on it will
+
+21
+00:03:36,550 --> 00:03:41,380
+give you the nice fit. So what is the nice thing about lasso I will try to give you an
+
+22
+00:03:41,380 --> 00:03:53,350
+intuition about it so think of it this way so up suppose I have a non-important coefficient okay,
+
+23
+00:03:53,350 --> 00:04:05,830
+so if I can reduce it from say at 100 to 0.3 okay let us not even look at it that way.
+
+24
+00:04:05,830 --> 00:04:17,230
+So I can reduce some coefficient from say 1000 to 999 okay right and there is another coefficient
+
+25
+00:04:17,230 --> 00:04:36,410
+which you can reduce from let us say so there are many variables in my fit there is one variable
+
+26
+00:04:36,410 --> 00:04:41,360
+whose coefficient I can reduce from 1000 to 999 there is another variable whose coefficient is
+
+27
+00:04:41,360 --> 00:04:47,720
+one I can reduce it from one to zero okay. And both of them cost the same change in my squared
+
+28
+00:04:47,720 --> 00:04:53,420
+error both of them contribute equally to the squared error and making this change will make
+
+29
+00:04:53,420 --> 00:04:56,990
+the same change to the squared error. So which one would lasso which one would
+
+30
+00:04:56,990 --> 00:05:03,440
+ridge regression prefer to reduce 1000 to 999 because that causes a much larger reduction in
+
+31
+00:05:03,440 --> 00:05:10,220
+the squared penalty right which one would lasso prefer to reduce doesn’t matter either one but
+
+32
+00:05:10,220 --> 00:05:17,210
+then I can make this thing slightly more contrived right now here you go which one would lasso prefer
+
+33
+00:05:17,210 --> 00:05:23,780
+right so even though this is an absolute values this is a larger reduction ridge would prefer
+
+34
+00:05:23,780 --> 00:05:31,400
+still preferred 1000 to 999 right. Because the fall is 1.12 to 02 which says
+
+35
+00:05:31,400 --> 00:05:37,790
+10002 quite to 9992 right still that is a larger reduction in error right. So what is a take-home
+
+36
+00:05:37,790 --> 00:05:47,240
+message here? LASSO is more likely to drive coefficients to zero than ridge so ridge would
+
+37
+00:05:47,240 --> 00:05:54,770
+happily leave the coefficient at 1.1 or even more dramatically it will happily leave coefficients
+
+38
+00:05:54,770 --> 00:06:00,920
+at 0.3 0.2 0.8 so it will leave it at small values it will not drive it all the way to
+
+39
+00:06:00,920 --> 00:06:09,830
+zero okay well lasso given an opportunity right we will drive the coefficients to zero we need
+
+40
+00:06:09,830 --> 00:06:15,800
+not drive it to zero at the cost of minimizing the error right it will still try to minimize
+
+41
+00:06:15,800 --> 00:06:21,590
+the error right but given the chance it will more likely to drive coefficients to zero okay.
+
+42
+00:06:21,590 --> 00:06:30,200
+So in sometimes lasso is also called sparse regression right because this L1 norm constraint
+
+43
+00:06:30,200 --> 00:06:39,140
+is also called a sparsity constraint because it makes your β vector lie more will have to
+
+44
+00:06:39,140 --> 00:06:44,810
+have more zeros right so if you know what a sparse matrix is right so you have a matrix with a lot of
+
+45
+00:06:44,810 --> 00:06:50,390
+zero entries in it and only few nonzero entries you call the matrix a sparse matrix right that
+
+46
+00:06:50,390 --> 00:06:56,690
+people work with sparse matrices right some of you have all worked with sparse matrices.
+
+47
+00:06:56,690 --> 00:07:01,580
+So you really don't want to have an array representing your sparse matrix because most
+
+48
+00:07:01,580 --> 00:07:06,320
+of the entries are 0 so typically what you do in a sparse matrix representation is you store the
+
+49
+00:07:06,320 --> 00:07:12,710
+index of the nonzero entry and the nonzero entry okay that actually takes a lot less memory than
+
+50
+00:07:12,710 --> 00:07:20,300
+actually having a large M by N array with lots of 0 so that’s why its called sparse. So here
+
+51
+00:07:20,300 --> 00:07:27,020
+the L1 regression has a tendency to make the β sparse okay to have a lot of 0 so sometimes
+
+52
+00:07:27,020 --> 00:07:40,190
+called the sparsity constraint coefficients less than 1 all the coefficients of less than 1.
+
+53
+00:07:45,950 --> 00:08:01,730
+Yeah no see if I take 0.01 and square it okay and the difference between that squared and 02
+
+54
+00:08:02,570 --> 00:08:12,320
+is lesser than 0.1 and 0 no, no, no, no, so but the drop in the value will be bigger in
+
+55
+00:08:12,320 --> 00:08:17,900
+the lasso than in Ridge ok now it depends on what other competing elements that you have
+
+56
+00:08:25,650 --> 00:08:30,780
+no lasso this typically drives the coefficients to zero well ridge does not this is that I was
+
+57
+00:08:30,780 --> 00:08:34,830
+giving you an intuition as to why that is the case right it is not mathematically a
+
+58
+00:08:34,830 --> 00:08:40,680
+sound argument but you can give a mathematically sound argument also that LASSO is more likely to
+
+59
+00:08:40,680 --> 00:08:50,040
+find sparse fix than ridge regression okay. So I am being very careful I will be careful so
+
+60
+00:08:50,040 --> 00:08:55,290
+I mean I can also think of a geometric intuition for it so if you think about
+
+61
+00:08:55,290 --> 00:09:05,340
+the right the lasso constraints it will be something like this all right let me think
+
+62
+00:09:05,340 --> 00:09:12,510
+about ridge constraints that suppose to be a circle okay so the ridge constraint will
+
+63
+00:09:12,510 --> 00:09:17,730
+be something like this right so here if you know where the sum has to be a constant right
+
+64
+00:09:17,730 --> 00:09:22,200
+so the sum has to be a constant in the sum of squares has to be a constant, so one will be a
+
+65
+00:09:22,200 --> 00:09:26,370
+circle other one will not be a circle. So when you're looking at the error surface
+
+66
+00:09:26,370 --> 00:09:31,830
+corresponding to this right, so essentially you will have to find solutions that lie on
+
+67
+00:09:31,830 --> 00:09:39,840
+this or lie within this for ridge I mean four lasso and lie within this for ridge okay and
+
+68
+00:09:39,840 --> 00:09:48,660
+it turns out that you are more likely to hit a corner off you can show that more formally
+
+69
+00:09:48,660 --> 00:09:53,550
+that you are more likely to hit a corner of the in the in the latter case and in the
+
+70
+00:09:53,550 --> 00:09:58,530
+ridge case you are likely to hit I mean so the probability of hitting something because this
+
+71
+00:09:58,530 --> 00:10:03,780
+is the whole thing is convex the probability of hitting that side it is higher right.
+
+72
+00:10:03,780 --> 00:10:09,000
+So you can this is just the geometric in a very rough intuition I do not want to get into showing
+
+73
+00:10:09,000 --> 00:10:13,440
+things formally but you can show that the probability that lasso will give you these
+
+74
+00:10:13,440 --> 00:10:17,910
+kinds of corners in the fit corner obviously you can see that has one of the coefficients
+
+75
+00:10:17,910 --> 00:10:24,240
+a 0 right so that you will get a corner as a fit is much higher then you will get one of
+
+76
+00:10:24,240 --> 00:10:44,120
+these axis points in the ridge. So in fact you can think of having higher-order penalties also
+
+77
+00:10:44,120 --> 00:10:51,140
+okay like I said you can think of an L4 norm penalty right and you can even think of so far
+
+78
+00:10:51,140 --> 00:10:56,570
+we looked at two methods for variance reduction so one was subset selection okay and the other
+
+79
+00:10:56,570 --> 00:11:02,690
+one was shrinkage based methods okay now there is another third class of methods which people
+
+80
+00:11:02,690 --> 00:11:13,070
+use for getting better fits with possibly fewer variables or fewer parameters this is based on
+
+81
+00:11:39,100 --> 00:11:44,080
+based on derived input directions right so we talked
+
+82
+00:11:44,080 --> 00:11:49,600
+about reducing the number of variables so far right but in both of the I mean at least
+
+83
+00:11:49,600 --> 00:11:54,910
+in the subset selection part we retain some of the variables and then we ignore some of
+
+84
+00:11:54,910 --> 00:12:00,520
+the other variables right likewise whether we are doing implicit subset selection by doing
+
+85
+00:12:00,520 --> 00:12:05,230
+lasso or ridge regression we are reducing the coefficients of some variables and retaining
+
+86
+00:12:05,230 --> 00:12:12,220
+some other variables right but at all points we were operating with the original set of
+
+87
+00:12:12,220 --> 00:12:19,030
+basis vectors that were given to you right so what were the basis vectors we are talking about here
+
+88
+00:12:19,030 --> 00:12:29,800
+what are the basis vectors you are talking about here the columns of the X matrix like the columns
+
+89
+00:12:29,800 --> 00:12:33,790
+of the X matrix are the basis vector. So we are working with the original basis vectors
+
+90
+00:12:33,790 --> 00:12:38,080
+we are working with the same columns that were given to us right we in one case we picked some
+
+91
+00:12:38,080 --> 00:12:42,820
+columns and threw out some of the other columns in the other case we tried to continuously adjust
+
+92
+00:12:42,820 --> 00:12:46,540
+the weights of the column so that some of them were given more weight and some were given less
+
+93
+00:12:46,540 --> 00:12:51,430
+weight. So when we talk about derived input directions now I am not going to stick with
+
+94
+00:12:51,430 --> 00:12:58,420
+the original columns okay I am going to find a new set of columns and I am going to find a new
+
+95
+00:12:58,420 --> 00:13:06,430
+set of features new set of directions right which I will then use for doing my regression okay.
+
+96
+00:13:06,430 --> 00:13:11,980
+So we actually talked a little bit about it in the when we do look at the orthogonalization
+
+97
+00:13:11,980 --> 00:13:16,000
+right I told you and you two orthogonalization essentially what you are doing is you are finding
+
+98
+00:13:16,000 --> 00:13:23,410
+an orthogonal basis for the input space and then you are trying to find the coefficients there so
+
+99
+00:13:23,410 --> 00:14:02,010
+likewise what we will do here is right, so we will reduce the dimensions okay as I put
+
+100
+00:14:02,010 --> 00:14:07,560
+it in quotes I will explain why and then we will also orthogonalize the dimensions okay
+
+101
+00:14:07,560 --> 00:14:16,170
+so what is the advantage of orthogonalizing the dimension well we could do univariate regression
+
+102
+00:14:16,170 --> 00:14:20,400
+on each dimension separately okay and then that will give us the coefficients okay.
+
+103
+00:14:20,400 --> 00:14:24,690
+So we do not have to actually do a multivariate regression okay we can do univariate regression
+
+104
+00:14:24,690 --> 00:14:29,370
+on each dimension because once I orthogonalize the directions they do not interfere with one
+
+105
+00:14:29,370 --> 00:14:34,020
+another right, so I can do univariate regression. So typically when I try to do these derived input
+
+106
+00:14:34,020 --> 00:14:40,170
+directions I try to orthogonalize the directions okay and I also tried to find a reduced set of
+
+107
+00:14:40,170 --> 00:14:47,640
+dimensions that will give me the original fit or as close to the original fit as possible.

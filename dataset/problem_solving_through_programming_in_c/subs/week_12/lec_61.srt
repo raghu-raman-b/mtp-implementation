@@ -1,0 +1,991 @@
+1
+00:00:00,300 --> 00:00:16,790
+We have looked at pointers
+
+2
+00:00:16,790 --> 00:00:25,760
+and structures in detail and we have also seen how structures can also utilise pointers or in other
+
+3
+00:00:25,760 --> 00:00:33,860
+words how pointers can be used in conjunction with structures. Now, we look at another very
+
+4
+00:00:33,860 --> 00:00:41,690
+interesting use of pointers, but in general let me say that it is a very fundamental concept,
+
+5
+00:00:41,690 --> 00:00:49,760
+from the memory allocation point of view. Dynamic memory allocation is what we will be
+
+6
+00:00:49,760 --> 00:00:58,070
+discussing now. Now, what if there is a dynamic memory allocation then; obviously, there must be
+
+7
+00:00:58,070 --> 00:01:02,450
+something called the static memory allocation now what is static memory allocation?
+
+8
+00:01:02,450 --> 00:01:23,780
+When we declare an array say int A 20, you know that the compiler will allocate 20 locations,
+
+9
+00:01:23,780 --> 00:01:41,270
+20 locations to house 20 integers to you and that will be named as A or you can also consider that
+
+10
+00:01:41,270 --> 00:01:49,820
+there is a pointer A, which is pointing to the first element of the array. But you have got space
+
+11
+00:01:49,820 --> 00:01:57,800
+for 20 locations, 20 integers allocated to you. So, now, you know size of. So, how many bytes
+
+12
+00:01:57,800 --> 00:02:12,770
+will be required? You can say 20 times size of int. So, size of int will return you how
+
+13
+00:02:12,770 --> 00:02:18,950
+many bytes your particular system allocates for an integer and 20 such allocation. So,
+
+14
+00:02:18,950 --> 00:02:26,990
+so many bytes will be allocated to you. Now when that is statically allocated that is allocated at
+
+15
+00:02:27,770 --> 00:02:49,370
+compile time; so, when we say static allocation that means, allocation at compile time right.
+
+16
+00:02:52,540 --> 00:03:03,940
+Now, if for some reason you need more than 20 integers to be stored in this array A , you
+
+17
+00:03:03,940 --> 00:03:11,680
+will need to redefine this whole thing or in some cases we do not know, we do not have an
+
+18
+00:03:11,680 --> 00:03:24,310
+idea of how many date data items will come for example, you was you are actually storing student
+
+19
+00:03:24,310 --> 00:03:32,770
+records in an array class, and you do not know how many students will join that class beforehand.
+
+20
+00:03:33,970 --> 00:03:38,470
+If you know that beforehand its fine or if you have an idea that what is the maximum
+
+21
+00:03:40,240 --> 00:03:46,600
+number of students that can come, then its fine you can allocate it in the form of
+
+22
+00:03:46,600 --> 00:03:55,150
+static allocation as we do in an array. However, when we do not know and the information
+
+23
+00:03:55,150 --> 00:04:03,160
+comes at a runtime; that means, when is being executed, that will lead to what
+
+24
+00:04:03,160 --> 00:04:20,230
+we call dynamic allocation of memory. So, let us look at how we can handle it.
+
+25
+00:04:20,230 --> 00:04:29,230
+So, the basic idea is I have already explained that we have an amount of data we cannot predict
+
+26
+00:04:29,230 --> 00:04:37,090
+beforehand. So, we will use effectively whose dynamic memory allocation technique to do that.
+
+27
+00:04:37,090 --> 00:04:40,780
+. Now, C language requires a number
+
+28
+00:04:40,780 --> 00:04:48,730
+of elements to be specified in compiled time, when we define in an array we need to specify that in
+
+29
+00:04:48,730 --> 00:04:56,950
+compile time. Now, often that leads to wastage of memory or program failure. Why a program failure?
+
+30
+00:04:56,950 --> 00:05:03,610
+Program failure will occur because if we exceed the amount of space that has been allocated,
+
+31
+00:05:03,610 --> 00:05:11,830
+there will be a failure the program will give an error or it will exit abnormally. However,
+
+32
+00:05:11,830 --> 00:05:21,190
+if we take recourse to dynamic memory allocation, we can solve this problem how? Memory space
+
+33
+00:05:21,190 --> 00:05:28,810
+required can be specified at the time of execution how can we do that, how can I specify the amount
+
+34
+00:05:28,810 --> 00:05:38,470
+of memory required at the time of execution? If while running the program, just like the
+
+35
+00:05:38,470 --> 00:05:45,340
+instructions and operators, if we had some special means, some special command, some
+
+36
+00:05:45,340 --> 00:05:50,860
+special operator by which we can grab memory then it’s possible. Now here you should understand that
+
+37
+00:05:50,860 --> 00:05:55,720
+who allocates memory to us? It is the operating system which allocates the memory to us.
+
+38
+00:05:55,720 --> 00:06:06,490
+So, this like the print f, scan f all those things are system calls. We are making calls
+
+39
+00:06:06,490 --> 00:06:12,820
+to the operating system, which is doing the required thing for us. Similarly there is a
+
+40
+00:06:12,820 --> 00:06:20,950
+function called Malloc - Memory Allocated, malloc using which we can grab memory from the operating
+
+41
+00:06:20,950 --> 00:06:31,180
+system how let us look at this. In memory in C, I have got different types
+
+42
+00:06:31,180 --> 00:06:45,160
+of variables that is not so, much relevant right now. What is needed is this part. These global
+
+43
+00:06:45,160 --> 00:06:50,620
+variables and instructions are there always specified.
+
+44
+00:06:51,580 --> 00:07:00,430
+The local variables are there and there is some free memory. We can take from this free
+
+45
+00:07:00,430 --> 00:07:09,280
+memory and use them as our local variables. The free region is has got a name heap.
+
+46
+00:07:09,280 --> 00:07:18,550
+Now, the most important thing is that we need some functions, which will give my
+
+47
+00:07:18,550 --> 00:07:26,730
+program some memory addresses or memory blocks from the operating system storage of memory,
+
+48
+00:07:26,730 --> 00:07:32,580
+which is known as heap from there it will be allocated to my program all right.
+
+49
+00:07:32,580 --> 00:07:40,170
+So, for that we have got four different functions - one is malloc, what does
+
+50
+00:07:40,170 --> 00:07:48,990
+malloc do? Malloc allocates the requested number of bytes and returns a pointer to
+
+51
+00:07:48,990 --> 00:07:54,780
+the first byte of the allocated space. So, what it does is something like this,
+
+52
+00:08:21,640 --> 00:08:34,000
+what is happening? . Malloc allocates a requested number of bytes and returns a
+
+53
+00:08:34,000 --> 00:08:39,970
+pointer to the first byte of the allocated space. So, let us try to explain this.
+
+54
+00:08:39,970 --> 00:08:48,790
+So, when I do malloc, it is just like a function and it will return some memory
+
+55
+00:08:48,790 --> 00:09:00,220
+bytes , some memory bytes. How many memory bytes? It will depend on, what I am requesting for. It
+
+56
+00:09:00,220 --> 00:09:04,810
+is a requested number of bytes. So, malloc will have some parameters which will show later.
+
+57
+00:09:04,810 --> 00:09:13,990
+So, it will give some give me some amount of memory. Now, the operating system has got some
+
+58
+00:09:13,990 --> 00:09:20,440
+free memory spread here and there. So, from there it is giving me some piece of memory, but how do
+
+59
+00:09:20,440 --> 00:09:29,260
+I know where is that piece of memory? For that, it is returning me a pointer say pointer p which
+
+60
+00:09:29,260 --> 00:09:38,500
+is telling me that if you follow this pointer, you will get this piece of memory location. So,
+
+61
+00:09:38,500 --> 00:09:53,920
+let us proceed a little bit. Now, similarly when this memory block is given
+
+62
+00:09:55,120 --> 00:10:04,660
+in response to malloc request, the actual memory is not initialised to some value. It can have any
+
+63
+00:10:04,660 --> 00:10:14,530
+garbage value. But if I apply calloc; then it allocates space for the array of elements and
+
+64
+00:10:14,530 --> 00:10:21,640
+initialises them to zero and returns a pointer. So, in this case if I want to have a chunk of
+
+65
+00:10:21,640 --> 00:10:28,210
+memory where everything has been initialised to zero then I should use calloc. On the other hand
+
+66
+00:10:33,010 --> 00:10:42,190
+the free function call will return this amount of memory, that was given to me in request to malloc,
+
+67
+00:10:42,190 --> 00:10:47,170
+will be returned back to the heap, returned back to the operating system so, that it can be
+
+68
+00:10:47,170 --> 00:10:58,690
+utilised by somebody else in future all right. So realloc modifies the size of the previously
+
+69
+00:10:58,690 --> 00:11:04,900
+allocated space. So, I have got some allocation and then I think that allocation is not enough.
+
+70
+00:11:04,900 --> 00:11:10,000
+I want to change it. I can use realloc. However, we will be mostly concerned
+
+71
+00:11:10,000 --> 00:11:21,640
+with malloc and free in our discussion. So, a block of memory can be allocated using the
+
+72
+00:11:21,640 --> 00:11:31,600
+function malloc and it reserves a block of memory and returns a pointer of type void. You know every
+
+73
+00:11:31,600 --> 00:11:40,450
+pointer has got some type, but in this case with malloc returns some memory block, the pointer
+
+74
+00:11:40,450 --> 00:11:49,300
+that it has returned is of type void, but then we have to do something. What we need to do? I know
+
+75
+00:11:49,300 --> 00:12:15,300
+why I needed this memory. So, accordingly I will have to do that typecasting. So, once it returns
+
+76
+00:12:15,300 --> 00:12:21,300
+me of type void, but that return pointer can be assigned to any pointer type. So, here you see.
+
+77
+00:12:21,300 --> 00:12:32,430
+So, here please note, malloc has got a parameter of byte size - how much memory I want,
+
+78
+00:12:32,430 --> 00:12:37,020
+the amount of bytes which is required. Now this malloc has returned me up to this,
+
+79
+00:12:37,020 --> 00:12:46,230
+it has returned me a pointer and pointer is of type void, but suppose if this amount of
+
+80
+00:12:46,230 --> 00:12:58,590
+memory I want for the purpose of storing integer array then this type will be int star; that means,
+
+81
+00:12:58,590 --> 00:13:05,040
+I am casting this. What is malloc returning? Malloc is returning a pointer, some pointer,
+
+82
+00:13:05,040 --> 00:13:20,730
+but that pointer was of type void. Now when I am typecasting it to int star, then this void is no
+
+83
+00:13:20,730 --> 00:13:27,210
+longer it’s type, it is becoming of type int and then I am assigning it to another variable p t r.
+
+84
+00:13:27,210 --> 00:13:35,100
+So, think of two things, first of all you have to decide on how many bytes you want. Accordingly you
+
+85
+00:13:35,100 --> 00:13:41,550
+do malloc and then what type of data you want to store there? So, accordingly you do this
+
+86
+00:13:41,550 --> 00:13:47,430
+typecasting like int star, float star, char star whatever you do and then you assign it
+
+87
+00:13:47,430 --> 00:13:55,575
+to a particular pointer. Let us see how it will work. So, let us look an example. .
+
+88
+00:13:55,575 --> 00:14:05,340
+Here, how do I know how many bytes I need? Suppose I need to store an element an array of 100
+
+89
+00:14:05,850 --> 00:14:15,930
+integers. So, what I do here is I ask for malloc 100 times size of int, size of int if it is 4,
+
+90
+00:14:15,930 --> 00:14:23,970
+if int is 4 then I am getting 400 bytes. Now, these 400 bytes that have been given to
+
+91
+00:14:23,970 --> 00:14:33,250
+me is being pointed by some pointer of type void. So, next I make it int star and put it to p. So,
+
+92
+00:14:33,250 --> 00:14:41,350
+p is now an integer pointer that is pointing to this entire block of 400 integers.
+
+93
+00:14:43,930 --> 00:14:56,620
+So, a memory space equivalent to 100 times the size, we have got. So, here 400 bytes of space
+
+94
+00:14:56,620 --> 00:15:06,160
+and p is a pointer pointing to the beginning of this. So, I have got this just using malloc,
+
+95
+00:15:06,160 --> 00:15:12,550
+it was not declared beforehand. Now so, this 100 can also be a variable n,
+
+96
+00:15:12,550 --> 00:15:19,450
+if I read a particular variable n now how many students are there? scan f m and n. So,
+
+97
+00:15:19,450 --> 00:15:24,970
+I read the number of students, then I can multiply that with n as well.
+
+98
+00:15:26,350 --> 00:15:44,560
+Next, you see here I am seeking memory for 20 characters, I do malloc 20 because I know
+
+99
+00:15:44,560 --> 00:15:50,950
+a character takes one byte and then the pointer is of type void I am typecasting
+
+100
+00:15:50,950 --> 00:16:05,710
+it to type character char star and assigning it to c p t r. Now it is actually wrong, it is
+
+101
+00:16:05,710 --> 00:16:23,200
+allocating 20 bytes of space for the pointer. So, integer character was simple, now I want to
+
+102
+00:16:23,200 --> 00:16:30,280
+have for space for the entire structure students, now that size is larger. So, I do not know. So,
+
+103
+00:16:30,280 --> 00:16:36,970
+I just have employ this function size of struct stud. So, I gets how many bytes? Say it requires
+
+104
+00:16:36,970 --> 00:16:44,210
+say 40 bytes and say 10 such for 10 such students or n such students. I multiply with that I get so,
+
+105
+00:16:44,210 --> 00:16:51,320
+much memory, now I have to typecast that to struct stud star and that goes
+
+106
+00:16:51,320 --> 00:17:03,740
+as a structure pointer. Now, malloc always allocates a block of
+
+107
+00:17:03,740 --> 00:17:12,440
+contiguous bytes. Now suppose you are asking for 100 bytes and 100 bytes are not available
+
+108
+00:17:12,440 --> 00:17:20,120
+then malloc will not be able to allocate you the space, in that case malloc will return in null.
+
+109
+00:17:20,120 --> 00:17:25,370
+That is a null pointer, that is a special character special value it will return,
+
+110
+00:17:25,370 --> 00:17:31,190
+that shows that I could not allocate a space. So, I could not allocate it to you a valid
+
+111
+00:17:31,190 --> 00:17:38,480
+pointer. So, it is a null pointer meaning thereby I failed in allocating your memory.
+
+112
+00:17:38,480 --> 00:17:54,410
+So, here is an example. Here let us look at it from one side - I n , float is a pointer,
+
+113
+00:17:54,410 --> 00:18:01,490
+height is a pointer of type float, sum is 0 and average. So, what am I trying to do?
+
+114
+00:18:01,490 --> 00:18:07,610
+Probably I am trying to find the average height of the class. So, input the number of students
+
+115
+00:18:07,610 --> 00:18:15,170
+and I am reading ampersand. So, this one is ampersand n. So, this is n number of students.
+
+116
+00:18:15,170 --> 00:18:22,910
+Now, see I did not know how many students are there. So, I am getting this number of students
+
+117
+00:18:22,910 --> 00:18:32,300
+here, I am getting n number of students here. Now I want to have an amount of spaces for the height.
+
+118
+00:18:32,300 --> 00:18:40,640
+So, what I am doing? I am allocating n number of spaces, n is a variable here and size of float,
+
+119
+00:18:40,640 --> 00:18:49,520
+whatever size of float is 4 bytes. So, n times 4 bytes, so much space is being allocated, and the
+
+120
+00:18:49,520 --> 00:18:57,630
+pointer is height is a pointer of type float. So, this pointer is being type casted to float.
+
+121
+00:19:00,150 --> 00:19:07,740
+Then I get the input scan f in a loop, I am getting the heights one after another in an array
+
+122
+00:19:07,740 --> 00:19:15,720
+and I am finding the sum of the heights, finding the average of the heights, where I am dividing
+
+123
+00:19:15,720 --> 00:19:22,740
+sum which is a floating point number with float n. Here is another example of typecasting. So,
+
+124
+00:19:22,740 --> 00:19:28,290
+you see I am dividing by n, but this is a floating point real number, n was an integer. So,
+
+125
+00:19:28,290 --> 00:19:41,880
+I convert it to float and convert it divided. So, this is how malloc works now. So,
+
+126
+00:19:41,880 --> 00:19:50,880
+we have explained that. Similarly the general format for
+
+127
+00:19:50,880 --> 00:19:57,540
+freeing space is using by using the free function. So, general now suppose I have
+
+128
+00:19:57,540 --> 00:20:08,730
+got a space allocated to me and that space, the only handle to that space is to the pointer p.
+
+129
+00:20:08,730 --> 00:20:16,200
+So, I free that pointer, I free p. So, the pointer is freed; that means, this pointer is
+
+130
+00:20:16,200 --> 00:20:22,740
+freed means this location, this amount of memory goes back to the storage of the operating system
+
+131
+00:20:22,740 --> 00:20:35,340
+and that is the heap. So, whatever we got in malloc that gives
+
+132
+00:20:35,340 --> 00:20:42,960
+us some idea about how we can get space and reallocate space.
+
+133
+00:20:42,960 --> 00:20:50,640
+Now, briefly we I will be talking for the next 5 or 10 minutes on file handling;
+
+134
+00:20:50,640 --> 00:20:58,050
+there is not much to understand about file handling thus you will learn as you do. Now,
+
+135
+00:20:58,050 --> 00:21:06,840
+what is a file ? That is something you have to understand. File is something where I want to
+
+136
+00:21:06,840 --> 00:21:11,550
+write something write or read from. So, I want to store something. I will
+
+137
+00:21:11,550 --> 00:21:19,080
+take a particular file all right; and I will open that file and then I will write in the
+
+138
+00:21:19,080 --> 00:21:25,470
+into that file then close that file and then in that way I may have 10 files.
+
+139
+00:21:25,470 --> 00:21:31,380
+Now, at a particular point of time I want to read a particular thing. So, I choose the particular
+
+140
+00:21:31,380 --> 00:21:40,050
+file what do I do next? Open the file and read the file. Now, some files may be allowed to be
+
+141
+00:21:40,050 --> 00:21:48,960
+read by others, some files can only be written in to and not read from, some files can have the
+
+142
+00:21:48,960 --> 00:21:55,530
+option of read or write both. So, file is some space where I will
+
+143
+00:21:55,530 --> 00:22:03,450
+be writing or reading from some storage. So, this is there in the secondary memory and
+
+144
+00:22:04,320 --> 00:22:09,270
+till now whatever variables we are talking about, those who are all in the primary memory. So,
+
+145
+00:22:09,270 --> 00:22:14,430
+if I store it in a file it goes into the secondary memory. So, let us have a
+
+146
+00:22:14,430 --> 00:22:24,240
+little idea of how files are handled. So, now again now we have learnt pointers. So,
+
+147
+00:22:24,240 --> 00:22:33,360
+any file can be accessed using a pointer. Just as if I have the file of income tax. So,
+
+148
+00:22:33,360 --> 00:22:39,030
+I will have a pointer that there is the file of income tax, here there is some file of
+
+149
+00:22:39,030 --> 00:22:44,850
+road tax it will be here some file of your salary, it will be somewhere here, some file
+
+150
+00:22:44,850 --> 00:22:50,310
+of your expenses it will be somewhere else. So, there will be pointers. So, we use in c,
+
+151
+00:22:50,310 --> 00:23:09,320
+the file star. We use file star to represent pointed to a file and if open is the command
+
+152
+00:23:09,320 --> 00:23:15,740
+for opening a file. If a file cannot be opened then it will return a null just
+
+153
+00:23:15,740 --> 00:23:20,240
+as in the case of malloc, we saw if nothing could be returned it was returning a null.
+
+154
+00:23:20,240 --> 00:23:27,620
+So, here for example, you see f p t r is a pointer of type file. That means,
+
+155
+00:23:27,620 --> 00:23:35,060
+f p t r will be pointing to file. Now, I have got a character file name whic is an array, file 2 dot
+
+156
+00:23:35,060 --> 00:23:46,220
+dat it is a data file. So, fptr is f open file name and here when I do f open, I give the file
+
+157
+00:23:46,220 --> 00:23:58,880
+name as well as the mode in which it can be opened and this w means it is in the right mode. So,
+
+158
+00:23:58,880 --> 00:24:06,350
+what have I done here, I have called f open. So, I am trying to open the file. So,
+
+159
+00:24:06,350 --> 00:24:12,920
+this f open will return up file pointer. Now if this file pointer is null; that means,
+
+160
+00:24:12,920 --> 00:24:18,560
+there was some error in file creation otherwise it will go on doing something.
+
+161
+00:24:19,880 --> 00:24:26,240
+So, quickly let us look at this, when I do f open it will open a file and will open it in
+
+162
+00:24:26,240 --> 00:24:32,720
+a particular mode, read or write whatever I specify and it will return me a pointer. If
+
+163
+00:24:32,720 --> 00:24:37,160
+a file is created successfully, it will return me a non null pointer.
+
+164
+00:24:38,300 --> 00:24:49,970
+The second argument of f open is the mode and there are three modes. R means the file is opened
+
+165
+00:24:49,970 --> 00:24:57,560
+for reading, w means it creates a file for writing and writes over all the previous contents. So,
+
+166
+00:24:57,560 --> 00:25:04,940
+if I open it in the write mode, whatever content was in that file is erased. And a opens a file
+
+167
+00:25:04,940 --> 00:25:08,540
+for appending; that means, whatever is there after that it will be added.
+
+168
+00:25:09,470 --> 00:25:14,870
+So, if you have got something already stored and you do not want to destroy that and you
+
+169
+00:25:14,870 --> 00:25:23,220
+want to add something more to that you will open it in mode a and rb reads a binary file,
+
+170
+00:25:23,220 --> 00:25:29,160
+raw bytes we need not bother about that. There is a function called exit which you have
+
+171
+00:25:29,160 --> 00:25:37,140
+seen, sometimes in the emergency we can put exit minus one; that means, it tells that I
+
+172
+00:25:37,140 --> 00:25:44,730
+have exited the function without success. Now, here you see use of exit. file f pointer,
+
+173
+00:25:44,730 --> 00:25:50,880
+character file name is an array, file 2 dot dat. I tried to do something. So,
+
+174
+00:25:50,880 --> 00:25:55,980
+the file pointer was null. So, if it is null then what
+
+175
+00:25:55,980 --> 00:26:00,390
+can I do? I will have to exit because of some reason the file could not be created.
+
+176
+00:26:02,250 --> 00:26:10,920
+So, f open we have seen, f print is a very important command. f print works just like print
+
+177
+00:26:10,920 --> 00:26:20,670
+f and s print f, except that the first argument is a file pointer. So, we will see how it works. So,
+
+178
+00:26:21,420 --> 00:26:31,290
+fptr is again the file pointer and I have opened the file dot dat in the right mode. Now, print f
+
+179
+00:26:31,290 --> 00:26:39,840
+means now I am printing. Where am I printing? A file called file dot dat has been opened.
+
+180
+00:26:39,840 --> 00:26:48,870
+The name of the file is file dot dat and how do I identify it? I identify it with the fptr,
+
+181
+00:26:48,870 --> 00:26:59,160
+the file pointer ok. So, it opened in the write mode. So, everything,
+
+182
+00:26:59,160 --> 00:27:05,160
+whatever was there has been erased. So, I am writing, just as you have done print f then
+
+183
+00:27:05,160 --> 00:27:11,910
+automatically by default it goes to the screen, here it is not default here I have said fptr.
+
+184
+00:27:11,910 --> 00:27:19,140
+So, whatever I write hello world, it will be written in this file not in the screen.
+
+185
+00:27:21,510 --> 00:27:30,550
+Screen is another file, but that is a default file. Reading a data similarly, we printed using
+
+186
+00:27:30,550 --> 00:27:38,620
+f print f, reading we can do using f scan f, forget about that part look at this. fptr - I
+
+187
+00:27:38,620 --> 00:27:50,020
+am reading from not from the keyboard now. I am reading x and y two integers from a file which
+
+188
+00:27:50,020 --> 00:27:57,400
+is pointed out by f p t r and what is that file f p t r? I have opened the file input dot dat.
+
+189
+00:27:57,400 --> 00:28:05,290
+So, you see in that file input dot dat 20 and 30 was written and so, f scan f I have read that,
+
+190
+00:28:05,290 --> 00:28:12,760
+that was input dot dat, I have opened that in the read mode and I am reading from there. So,
+
+191
+00:28:12,760 --> 00:28:18,340
+I am getting x to be 20 and y to be 30, not from the keyboard, but from the file.
+
+192
+00:28:22,570 --> 00:28:33,760
+So,now here are some powerful commands. We can read a string using fgets, from a file I can
+
+193
+00:28:33,760 --> 00:28:44,470
+read a string. So, here you see a file is f p t r and a line is of size 1000, while f gets line
+
+194
+00:28:44,470 --> 00:28:52,600
+is not null; that means, I am getting from f p t r, a value and if it is not null; that means,
+
+195
+00:28:52,600 --> 00:29:02,020
+it is not the end of the line, the file is open, I am reading the line using f gets. I am getting
+
+196
+00:29:02,020 --> 00:29:07,180
+the line. f gets takes three arguments, what are the three arguments its taking? A string,
+
+197
+00:29:07,180 --> 00:29:14,290
+a maximum number of characters, 1000 and a pointer from it returns. If there
+
+198
+00:29:14,290 --> 00:29:17,860
+is an error at the end of file it shows EOF which is the end of file.
+
+199
+00:29:20,050 --> 00:29:28,420
+Now, this I think you can understand much better when you use yourself, now when we open a file
+
+200
+00:29:28,420 --> 00:29:36,550
+after that we must close that file we can simply use a command f close and the file pointer. So,
+
+201
+00:29:36,550 --> 00:29:43,790
+here you see f p t r, I opened the file in the right mode, I have written hello world over here,
+
+202
+00:29:43,790 --> 00:29:52,130
+f print f means saying I am printing in the file, and then f close, I am closing the file by f close
+
+203
+00:29:52,130 --> 00:29:58,550
+f p t r all right. So, here it is opening and here is access and here it’s closing.
+
+204
+00:30:04,400 --> 00:30:10,220
+You have seen that s t d in, s t d out, were two special cases of files,
+
+205
+00:30:10,220 --> 00:30:16,490
+which are default files and s t d error which was the printing of the error.
+
+206
+00:30:16,490 --> 00:30:26,870
+So, here is an example program you can see that. Main, f print f s t d out give value of i;
+
+207
+00:30:26,870 --> 00:30:34,850
+that means, where am I printing this? Here I am printing it to the standard output. I am reading
+
+208
+00:30:34,850 --> 00:30:47,300
+I from the standard input. Now, f print f I am writing that the value of i is whatever value
+
+209
+00:30:47,300 --> 00:30:57,290
+of i read. So there is no error . So, give value of i, it will first give value of i, you give 15,
+
+210
+00:30:57,290 --> 00:31:05,510
+then f print f that i, then it will say value of i is equal to 15 and there are no error,
+
+211
+00:31:05,510 --> 00:31:18,680
+but an example to show error message. If there is an error for example I am
+
+212
+00:31:18,680 --> 00:31:26,300
+being returned a null pointer in that case I can use output s t d error and say the file failed
+
+213
+00:31:26,300 --> 00:31:36,680
+to open the file that sort of message. So, now another thing I will just talk about here,
+
+214
+00:31:36,680 --> 00:31:44,480
+that will come in very handy to you that is say for example, you must be running the programs and
+
+215
+00:31:44,480 --> 00:31:51,620
+you after you compile the program and link them you are creating an executable file, which is a
+
+216
+00:31:51,620 --> 00:32:00,000
+dot out ( dot slash a dot out). Now usually what do you do? You have got the dollar, those of you
+
+217
+00:32:00,000 --> 00:32:11,160
+using Linux shell, a dot out right and return. Now, this dot slash a dot out what is it
+
+218
+00:32:11,160 --> 00:32:18,840
+expecting? The input from the keyboard s t d in and the output is going to std out,
+
+219
+00:32:18,840 --> 00:32:29,730
+but I do not want that. I want that I have got a file where my input data is there.
+
+220
+00:32:29,730 --> 00:32:42,120
+I call that in dot dat and I have got another file which is known as out dot dat. I want
+
+221
+00:32:42,120 --> 00:32:48,480
+that the input to be taken from this. So, I want a dot out to read the data
+
+222
+00:32:48,480 --> 00:32:55,200
+from here and the result should be written here. I can do that in the unix environment very simply
+
+223
+00:32:55,200 --> 00:33:02,610
+by this redirection operation. You see, a dot out will run taking data from in dot dat and
+
+224
+00:33:02,610 --> 00:33:13,140
+sending the output data to out dot dat. So, say for example, in dot dat has got 15. So,
+
+225
+00:33:13,140 --> 00:33:21,840
+I do that and the program runs and says give the value of i (think of the earlier example,
+
+226
+00:33:21,840 --> 00:33:33,240
+earlier program) and it reads from here and it prints the value of i to be15. So,
+
+227
+00:33:34,740 --> 00:33:42,540
+this whole thing is coming in out dot i. So, let us once again look at this thing.
+
+228
+00:33:42,540 --> 00:33:51,360
+Here I am asking, them to give the value of i which is being given and that is being scanned
+
+229
+00:33:51,360 --> 00:33:59,190
+from the input file and this is being written on the output file. So, in the output file both
+
+230
+00:33:59,190 --> 00:34:24,920
+these things are being written; consequently, you see, what I am getting is this output - out
+
+231
+00:34:24,920 --> 00:34:33,710
+dot dat and in dot dat, there are two files. So, this in this way you can use files for storing
+
+232
+00:34:33,710 --> 00:34:38,930
+data you have to open the file, let me summarise a little bit, you will have to open the file,
+
+233
+00:34:40,370 --> 00:34:49,220
+in the read mode, read the data from that file, do the operation, open another file in the write mode
+
+234
+00:34:49,220 --> 00:34:56,090
+and write the data into that file. Thereby, whenever you require some file operations,
+
+235
+00:34:56,090 --> 00:35:03,950
+you can easily do that and this is one example that we have shown which is very common during
+
+236
+00:35:03,950 --> 00:35:09,650
+running your programs. If you store some data in a particular file and read from there and
+
+237
+00:35:09,650 --> 00:35:15,980
+write into another file you can utilise this sort of structures this sort of commands.
+
+238
+00:35:15,980 --> 00:35:22,820
+So, thank you very much; I think you have got an overall idea of how to write c
+
+239
+00:35:23,570 --> 00:35:32,270
+programs and solve problems using programs because our the essence of our course was
+
+240
+00:35:32,270 --> 00:35:37,850
+to solve problems through c programming. So, you should choose different problems and
+
+241
+00:35:37,850 --> 00:35:48,680
+you should try to write programs for solving those problems. So, first you have to find
+
+242
+00:35:48,680 --> 00:35:54,530
+out the proper algorithm, and then write the C code for that, you have learnt everything about
+
+243
+00:35:54,530 --> 00:36:03,230
+basic things about the C programming, I have not touched upon some special features, which you can
+
+244
+00:36:03,230 --> 00:36:08,420
+also learn from the book like static variables and all those I have left out intentionally.
+
+245
+00:36:08,420 --> 00:36:15,560
+So, that you are not overloaded, you can solve it, the more you run the programs using the basic
+
+246
+00:36:15,560 --> 00:36:22,790
+concepts that has been taught, you will be a good programmer and most importantly you will be able
+
+247
+00:36:22,790 --> 00:36:28,190
+to think logically like a programmer, you will be able to think of an algorithm, and you will be
+
+248
+00:36:28,190 --> 00:36:31,190
+able to translate that into a program. Thank you very much.

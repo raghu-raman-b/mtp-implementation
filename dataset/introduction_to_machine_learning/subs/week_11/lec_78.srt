@@ -1,0 +1,999 @@
+1
+00:00:11,030 --> 00:00:32,150
+Great, so all of this is fine so now we will move to, how do you find the frequent itemsets. So we
+
+2
+00:00:32,150 --> 00:00:36,980
+will make use of something called the apriori property. right so, what is apriori property,
+
+3
+00:00:36,980 --> 00:01:09,230
+very simple so you use this idea for pruning the candidates that you will generate while
+
+4
+00:01:09,230 --> 00:01:15,710
+you want to count right so most frequent pattern mining algorithms go like this right so you start
+
+5
+00:01:15,710 --> 00:01:21,920
+off with a database of transactions right and then you generate candidate item sets.
+
+6
+00:01:21,920 --> 00:01:26,060
+Okay these are all the possible item sets that could be frequent okay then
+
+7
+00:01:26,060 --> 00:01:31,490
+you go count them right and then based on the counting you can prune away some
+
+8
+00:01:31,490 --> 00:01:38,660
+of those right if you are doing this blindly suppose I give you a universe of five elements
+
+9
+00:01:38,660 --> 00:01:48,380
+how many item sets can you generate. right so I can generate two to the power of 5-1
+
+10
+00:01:49,520 --> 00:01:54,110
+candidates then I have to go count all the two to the power of 5-1 candidates
+
+11
+00:01:54,110 --> 00:02:05,870
+I have to count right. Five is fine what if its 2 to the power of 10 million – 1 right.
+
+12
+00:02:05,870 --> 00:02:10,460
+So that is not going to work right you need some very strong way of pruning these things
+
+13
+00:02:10,460 --> 00:02:16,190
+right in fact whatever I am going to talk to you about today will not work if you are Amazon you
+
+14
+00:02:16,190 --> 00:02:20,150
+need even stronger ways of pruning things there are other techniques for doing it so based on
+
+15
+00:02:20,150 --> 00:02:31,160
+this apriori property rights so people propose something called the right so apriori algorithm
+
+16
+00:02:31,160 --> 00:02:36,920
+is not the only one that uses apriori property a lot of frequent pattern mining algorithms used the
+
+17
+00:02:36,920 --> 00:02:41,450
+apriori property right but there is a specific algorithm called the apriori algorithm right.
+
+18
+00:02:41,450 --> 00:02:44,480
+So what I am going to do I am going to talk to you about two different algorithms for
+
+19
+00:02:44,480 --> 00:02:50,210
+doing this I will just do this by illustration just start take a database of transactions and
+
+20
+00:02:50,210 --> 00:02:54,950
+then I will walk you through the steps for doing this doing counting so I just write
+
+21
+00:02:54,950 --> 00:04:15,280
+down the database here and I am going to say that I require a min sup of two.
+
+22
+00:04:16,510 --> 00:04:23,290
+So what I will do with a priori the algorithm proceeds in passes okay in pass one what will
+
+23
+00:04:23,290 --> 00:04:32,020
+I do I find out the frequency of all one item sets right I find out the frequency
+
+24
+00:04:32,020 --> 00:04:50,170
+of all one item sets so what will I do here okay right so we do this is the counts right
+
+25
+00:04:50,170 --> 00:04:55,780
+now what we do is I do any kind of pruning I want so I throw away all the one item sets
+
+26
+00:04:55,780 --> 00:05:09,250
+which have below the minimum support threshold right so I throw away I6, I7 all that right.
+
+27
+00:05:09,250 --> 00:05:13,210
+So none of this will get thrown away right so this will all be there now what I do is
+
+28
+00:05:13,210 --> 00:05:20,110
+for people who know databases are people doing databases right I do a self join
+
+29
+00:05:24,690 --> 00:06:10,230
+right and generate candidates for people who do not know cells join I basically extend all
+
+30
+00:06:10,230 --> 00:06:17,940
+these patterns by one. all possible extensions right. so why is join an
+
+31
+00:06:17,940 --> 00:06:22,830
+interesting your thing because join has been highly optimized by the database community.
+
+32
+00:06:22,830 --> 00:06:28,920
+So if I just say go ahead and do a join okay I can compute it much faster than saying that okay go do
+
+33
+00:06:28,920 --> 00:06:35,670
+a sequential scan of this and for extend each pattern by one right sand I am assuming that
+
+34
+00:06:35,670 --> 00:06:40,950
+everything is commutative. so I do not have once I do I1 I2, I do not have to do I2, I1
+
+35
+00:06:40,950 --> 00:06:45,180
+1because they are all sets these are all the candidates for the phase two
+
+36
+00:06:45,180 --> 00:06:56,250
+right so what I do now is I can do a pruning what is the pruning I will do.
+
+37
+00:07:01,450 --> 00:07:09,220
+So remember I am going to use the apriori property. so this has to be frequent right
+
+38
+00:07:09,220 --> 00:07:13,630
+all that subsets have to be frequent. so what are the subsets of this well
+
+39
+00:07:13,630 --> 00:07:19,450
+I1 and I2. it turns out that since I generated this join from one itemset
+
+40
+00:07:19,450 --> 00:07:24,400
+table which are all frequent so all of the subsets will be frequent so in this
+
+41
+00:07:24,400 --> 00:07:31,930
+case I do not have to do any pruning right I will just count so the counts for these.
+
+42
+00:07:53,980 --> 00:08:01,670
+Ok these are the counts for this. now I can do pruning. so anything that is not frequent
+
+43
+00:08:01,670 --> 00:08:11,690
+I will throw out. other things that are not frequent that that that that. so all these
+
+44
+00:08:11,690 --> 00:08:22,430
+have gone right so what I have done here I have done a count and then I did a prune right. now
+
+45
+00:08:22,430 --> 00:08:31,370
+what do I do again whatever is left I do a self join. Our for non CS people I extend
+
+46
+00:08:31,370 --> 00:08:43,310
+it by one more right provided I1 and I2, I mean so the first elements are common right.
+
+47
+00:08:43,310 --> 00:08:58,340
+So for example I can do a I1 I2 I3 right. so I cannot do I1 I2 I4. I cant extend I1
+
+48
+00:08:58,340 --> 00:09:09,200
+I2 by adding I4 because I do not either have I do not have an I1 I4 right. where do I have I1,I4,
+
+49
+00:09:09,200 --> 00:09:15,620
+I have struck it off. no I need the first elements to be common when I do
+
+50
+00:09:15,620 --> 00:09:20,600
+self join I need the first elements to be common so if I want to do an I1,I2,I4 , I
+
+51
+00:09:20,600 --> 00:09:26,030
+need I1,I4 here. Since I dont have that I cannot do the I1,I2,I4 join.
+
+52
+00:09:26,030 --> 00:09:30,860
+Ok so this mean additional join gives me an additional pruning and taking advantage
+
+53
+00:09:30,860 --> 00:09:36,140
+of my set property that the order does not matter so I am doing an additional pruning.
+
+54
+00:09:36,140 --> 00:10:29,190
+so likewise I can do I 1I,I2,I5 , I1,I3,I5 then and I can do I can do these 6 things.
+
+55
+00:10:42,580 --> 00:10:51,070
+I1,I2,I3 , I1,I2,I5 , I1,I3,I5 , I2,I3,I4 , I2,I3,I5 , I2,I4,I5 , these are the six
+
+56
+00:10:51,070 --> 00:11:00,160
+elements I will get after I do the join right. now even before I count I can do some pruning how.
+
+57
+00:11:00,160 --> 00:11:06,925
+So I look at this right so can I prune this no I cannot prune this cannot prune this,
+
+58
+00:11:06,925 --> 00:11:16,030
+but I1,I3,I5 , I can prune. why because the subset I3,I5 , it is not frequent right even before I do
+
+59
+00:11:16,030 --> 00:11:20,170
+the counting I can do the pruning this is where I use the apriori property right what about
+
+60
+00:11:20,170 --> 00:11:28,930
+I2,I3,I4 can I prune I3,I4 is gone right so I can prune that. what about this again I3,I4 is gone I
+
+61
+00:11:28,930 --> 00:11:29,920
+can prune what about this I3,I5 is gone I can prune. what about this I4,I5 is gone I can prune.
+
+62
+00:11:32,350 --> 00:11:40,090
+So all of this I prune even before I count right so now I only have two item sets of size 3. two,
+
+63
+00:11:40,090 --> 00:11:43,870
+three, item sets that I have to actually go and do the counting for.
+
+64
+00:11:51,220 --> 00:11:54,490
+will there be a join after this. Yes I could do a joint after this
+
+65
+00:11:54,490 --> 00:12:02,290
+and the joint will be I1,I2 , I3,I5. first two will have to be common so
+
+66
+00:12:02,290 --> 00:12:05,200
+I can do a joint so after this will do a joint which will be I1,I2,I3,I5
+
+67
+00:12:09,370 --> 00:12:17,140
+And will this be frequent our friend I3,I5 comes to our rescue right so this will not
+
+68
+00:12:17,140 --> 00:12:33,720
+be frequent so I am done right so what are all the frequent itemsets 1 2 3. okay so what is
+
+69
+00:12:33,720 --> 00:12:42,090
+the big drawback with apriori algorithm. You do generate lot of candidates right and then you
+
+70
+00:12:42,090 --> 00:12:46,380
+keep pruning them but even here even though you pruned a lot of the candidates without counting
+
+71
+00:12:46,380 --> 00:12:52,740
+but you did end up generating a lot of unnecessary candidates right and then you have to go back and
+
+72
+00:12:52,740 --> 00:12:58,230
+verify the apriori property for them and then prune them that is one drawback and the second
+
+73
+00:12:58,230 --> 00:13:03,360
+drawback is in every phase you scan the data all over again and you do you do the counting.
+
+74
+00:13:03,360 --> 00:13:09,510
+Right so when you counted this okay you do not somehow save the information for
+
+75
+00:13:09,510 --> 00:13:16,260
+generating this count as well right so there are lot of newer frequent pattern mining algorithms
+
+76
+00:13:16,260 --> 00:13:22,920
+that work on very large data sets which they try to do it with a single pass through the
+
+77
+00:13:22,920 --> 00:13:29,100
+data they keep ancillary data structures around okay they do a single pass through
+
+78
+00:13:29,100 --> 00:13:34,440
+the data and they are able to count for all the frequency you would think that you need
+
+79
+00:13:34,440 --> 00:13:38,340
+at least two passes one pass to generate the candidates and one pass to do the counting.
+
+80
+00:13:38,340 --> 00:13:41,370
+There are ways of doing it without actually doing that a single pass
+
+81
+00:13:41,370 --> 00:13:44,520
+algorithms are available but I am going to talk to you about a two pass
+
+82
+00:13:44,520 --> 00:13:48,150
+algorithms now right which is efficient but everybody get the apriori algorithm
+
+83
+00:13:48,150 --> 00:14:00,750
+right it is fairly easy right great so let us do the two pass algorithm now
+
+84
+00:14:35,470 --> 00:14:46,120
+look at two pass algorithms we call FP growth. Any idea about what FP stands
+
+85
+00:14:46,120 --> 00:14:52,060
+for frequent pattern growth right FP growth.
+
+86
+00:14:52,060 --> 00:14:58,720
+So it tries to avoid candidate generation right tries to avoid unnecessary candidate
+
+87
+00:14:58,720 --> 00:15:04,750
+generation and minimize the number of passes you go over the data right how does this accomplish
+
+88
+00:15:04,750 --> 00:15:14,890
+this they accomplish this by creating a data structure called the FP tree right so once you
+
+89
+00:15:14,890 --> 00:15:22,180
+created the FP tree once you created the FP tree you make many passes over the FP tree but it is
+
+90
+00:15:22,180 --> 00:15:30,910
+a somewhat of a compact tree you know means like a, not a balanced tree, more like a kind
+
+91
+00:15:30,910 --> 00:15:34,600
+of a trie like data structure if people know that but you do not have to know that right.
+
+92
+00:15:34,600 --> 00:15:43,990
+So you just go over the tree it is much more compact representation than going over the
+
+93
+00:15:43,990 --> 00:15:47,980
+table all over again right so you know once you construct the tree the tree can stay in memory
+
+94
+00:15:47,980 --> 00:15:56,830
+and you essentially go over that tree again and again right so let us do this step by step will
+
+95
+00:15:56,830 --> 00:16:02,350
+construct the FP tree first again then from there FP tree will start generating this okay so what
+
+96
+00:16:02,350 --> 00:16:11,650
+we do first phase is you go over the database once and then database once and then you count.
+
+97
+00:16:11,650 --> 00:16:18,490
+What do you think you are going to count the frequency of all the one
+
+98
+00:16:18,490 --> 00:16:23,320
+item sets that you have to do there is no other go right it count right
+
+99
+00:16:35,210 --> 00:17:13,380
+and you sort this by descending order so let us call this order as some L ok so the L is this
+
+100
+00:17:13,380 --> 00:17:30,840
+ordering now what I have to do is go into each transaction okay and reorder the items by L right.
+
+101
+00:17:30,840 --> 00:17:51,900
+So what I do is okay you guys can help me out here so that will become right so what about this fine
+
+102
+00:17:51,900 --> 00:18:07,000
+this fine what about this has to change that is fine that is fine that is fine this has to
+
+103
+00:18:07,000 --> 00:18:16,240
+change anything else has to change so three and five are ok and this again has to change right
+
+104
+00:18:16,240 --> 00:18:29,650
+so I do not have to do a separate pass over this ok I can do this reordering as I do my
+
+105
+00:18:29,650 --> 00:18:35,770
+second pass in the first pass through the data I count the one itemsets. In second pass through
+
+106
+00:18:35,770 --> 00:18:59,450
+the data I create the FP tree in the L order so L order is essentially each transaction.
+
+107
+00:18:59,450 --> 00:19:08,070
+I will do this now forever transaction I create a path in the tree right so I
+
+108
+00:19:08,070 --> 00:19:16,070
+will start off with the root as some null okay nothing so no items that the first
+
+109
+00:19:16,070 --> 00:19:36,350
+transaction is what so I will label this as I2. I1. I5. right what is the count
+
+110
+00:19:36,350 --> 00:19:52,550
+how many times have seen this once what is the next transaction I2,I4 right so I
+
+111
+00:19:52,550 --> 00:19:57,980
+start off with null set then I add I2 then I add I4 right so this is essentially that.
+
+112
+00:20:08,950 --> 00:20:11,170
+Okay what is the next transaction I2
+
+113
+00:20:26,160 --> 00:20:44,910
+anything else of course a lot more I2 I1 so I2 becomes 4, I1 becomes 2, I4 becomes 1. next one
+
+114
+00:20:44,910 --> 00:21:01,530
+is I1 I3 again no not again the first time so what do I do right and then what we get I2 I3
+
+115
+00:21:01,530 --> 00:21:11,670
+so you can see that I can redo the ordering whenever I read the transaction I did not
+
+116
+00:21:11,670 --> 00:21:22,860
+have done it in the first pass right so I can do this then where are we t7 right and t8 is
+
+117
+00:21:31,480 --> 00:22:11,470
+I2, I1, I3, I5, then the last 29. I2 again then right.
+
+118
+00:22:11,470 --> 00:22:19,990
+So we have our FP tree right so we have a our FP tree. so there is only one thing that is needed
+
+119
+00:22:19,990 --> 00:22:33,940
+to complete this so for ease of navigation so I am going to have pointers from this table right
+
+120
+00:22:33,940 --> 00:22:42,040
+so the where does I2 start here okay likewise where does I1 start here okay if there is a
+
+121
+00:22:42,040 --> 00:23:00,250
+second entry of I1 this will connected there what about I3 so I3 is also connected like
+
+122
+00:23:00,250 --> 00:23:55,290
+that then I4 my god it starts looking very scary right this is why I wanted the ok.
+
+123
+00:23:55,290 --> 00:24:01,350
+That is your FP tree. so essentially our constructed this FP three by doing a second
+
+124
+00:24:01,350 --> 00:24:07,860
+scan over the data and if you think about it so if you will take any path down this three okay
+
+125
+00:24:07,860 --> 00:24:12,330
+the prefix of the path that is the things that come at the beginning of the path will tend to
+
+126
+00:24:12,330 --> 00:24:18,210
+before frequent than the things that come at the end of the path. This is a whole idea of
+
+127
+00:24:18,210 --> 00:24:21,660
+behind what we have done with this FP tree. things that come at the beginning of a path.
+
+128
+00:24:21,660 --> 00:24:25,710
+If you take a path from the node to the, from the root to the leaf things that come at the
+
+129
+00:24:25,710 --> 00:24:30,150
+beginning they tend to be more frequent than things that come at the end so now what we are
+
+130
+00:24:30,150 --> 00:24:38,970
+going to do is we're going to work from bottom up right and try to generate an auxiliary data
+
+131
+00:24:38,970 --> 00:24:42,960
+structure for FP tree right from which we will generate the frequent patterns.
+
+132
+00:24:42,960 --> 00:24:48,690
+We can just read off the frequent patterns from this auxiliary data structure so what is what
+
+133
+00:24:48,690 --> 00:25:03,900
+is it that we do we generate something called a conditional tree. We generate something called
+
+134
+00:25:03,900 --> 00:25:12,210
+a conditional pattern base so we typically do this in the reverse order of our table here so
+
+135
+00:25:12,210 --> 00:25:26,760
+I will take I5 right so I look at all the paths that contain I5 right and take the prefixes of
+
+136
+00:25:26,760 --> 00:25:34,260
+that prefix of I5. I will take all the paths where I5 occurs and I take the prefix of that.
+
+137
+00:25:34,260 --> 00:25:37,980
+Right how many path does I5 occur here
+
+138
+00:25:41,600 --> 00:25:54,770
+so I2,I1,I5 right. so that is one thing so I will just take the prefix so I2,I1 and
+
+139
+00:25:54,770 --> 00:26:13,520
+it occurs once and then anywhere else I2,I1 , I3,I5. that is I2,I3,I1 sorry I1 sorry I2,I1,I3
+
+140
+00:26:14,510 --> 00:26:31,190
+there is a conditional pattern base for I5. so I took the things that k right now what I will
+
+141
+00:26:31,190 --> 00:26:40,790
+do is I will assume that these are my only transactions and I will create an FP tree.
+
+142
+00:26:40,790 --> 00:26:50,960
+I will assume that these are the only transactions I have and I will create
+
+143
+00:26:50,960 --> 00:26:56,990
+an FP three but before I do that I will ignore all the entries in this conditional
+
+144
+00:26:56,990 --> 00:27:01,880
+base which appear only once all the items one item sets that appear only once I will
+
+145
+00:27:01,880 --> 00:27:09,680
+ignore them right so I3 appears only once in the whole thing right I1 appears twice
+
+146
+00:27:09,680 --> 00:27:17,210
+I2 appear twice but I3 appears only once right so I will ignore the occurrence of I3.
+
+147
+00:27:17,210 --> 00:27:21,890
+Now I will try to create a FP tree with the remaining two transactions
+
+148
+00:27:21,890 --> 00:27:35,240
+so what are the transactions I2,I1 and I2,I1 so my FP tree will look like right
+
+149
+00:27:49,970 --> 00:27:57,200
+so I look at the path of a specific frequency so the path here I2,I1 path
+
+150
+00:27:57,200 --> 00:28:01,220
+has a frequency of two and I know that it is followed by I5 because that is
+
+151
+00:28:01,220 --> 00:28:08,570
+how I selected these things right so the frequency of I2,I1,I5 will be 2.
+
+152
+00:28:08,570 --> 00:28:17,750
+We already counted that we countered that by doing multiple passes of the
+
+153
+00:28:17,750 --> 00:28:23,690
+data so now not only will this give me this if to I2,I1,I5 it will give me any
+
+154
+00:28:23,690 --> 00:28:33,740
+frequent pattern in which I5 is a part of regardless of how large the itemset is. so
+
+155
+00:28:33,740 --> 00:28:38,630
+it will give me not only the three item sets frequent itemsets in which I5 is a part of
+
+156
+00:28:38,630 --> 00:28:48,050
+it will also give me the frequent two itemsets in which I5 is part of right.
+
+157
+00:28:48,050 --> 00:28:59,060
+So then I can say that yeah so how do I read the two item sets that I5 is part of
+
+158
+00:28:59,060 --> 00:29:07,580
+just take any prefix in this path and or any combination in this path right which
+
+159
+00:29:07,580 --> 00:29:14,690
+has only one thing right so not only is I2, I1, I5 is frequent I1,I5 is frequent
+
+160
+00:29:14,690 --> 00:29:21,860
+I2,I5 is also frequent and the frequency is 2. right so that is basically done so
+
+161
+00:29:21,860 --> 00:29:34,450
+I have counted all the frequent item sets with effect likewise I can do this for I4.
+
+162
+00:29:34,450 --> 00:29:40,720
+So what are the frequent what are the what is the conditional pattern base for I4 so this
+
+163
+00:29:40,720 --> 00:29:45,070
+is called the conditional FP tree ok this is the conditional pattern base and the FP tree
+
+164
+00:29:45,070 --> 00:29:49,180
+I construct from the conditional pattern base is called the conditional FP tree and
+
+165
+00:29:49,180 --> 00:29:54,250
+from the conditional FP tree I basically can read off the frequent patterns ok so
+
+166
+00:29:54,250 --> 00:30:01,840
+what is the conditional pattern base for I4 yes we have to look at wherever I4 occurs.
+
+167
+00:30:01,840 --> 00:30:06,970
+that is why you need this data structure right go here follow that ok I4 occurred
+
+168
+00:30:06,970 --> 00:30:18,010
+here follow that back so I have I2,I1,I4 occurring once so I2,I1 occurring once.
+
+169
+00:30:18,010 --> 00:30:36,660
+Again follow that there okay now what can I do I can ignore I1 right and construct my
+
+170
+00:30:36,660 --> 00:30:45,990
+FP tree which is even simpler than this conditional FP tree is essentially the
+
+171
+00:30:45,990 --> 00:30:57,960
+frequent patterns are I2, I4 right frequent patterns are I2, I4, basically you are done.
+
+172
+00:30:57,960 --> 00:31:14,010
+all the candidates yeah so the nice thing is now I can ignore I4 and I5 right now I want to
+
+173
+00:31:14,010 --> 00:31:20,670
+go to I3 right so if you look at it so there is something beyond I3 but I do not have to worry
+
+174
+00:31:20,670 --> 00:31:26,370
+about it if this was part of a frequent pattern I would have already caught it.
+
+175
+00:31:26,370 --> 00:31:39,240
+When I went back from I5. so when I start now when I go to I3 and I can construct in the conditional
+
+176
+00:31:39,240 --> 00:31:46,560
+pattern base for I3 I have to only look at the prefix above I3 not what comes after I3. so if
+
+177
+00:31:46,560 --> 00:31:51,840
+there was anything it should have been part of that should have been captured already if it hasnt
+
+178
+00:31:51,840 --> 00:31:59,190
+been captured I do not worry about it and that is where we go from I5 to I2 in this case right.
+
+179
+00:31:59,190 --> 00:32:11,700
+So I3 what is the base so start off here so it will be I3,I1,I2 right so essentially I2,I1
+
+180
+00:32:17,650 --> 00:32:27,700
+and the count is two because I3 count was too right so the count should be
+
+181
+00:32:27,700 --> 00:32:33,310
+two so far we have only had count of one okay but here the count will be two. in
+
+182
+00:32:33,310 --> 00:32:43,270
+anywhere else I3 occurs here so that is basically I2 anyone else I3 occurs here.
+
+183
+00:32:54,220 --> 00:32:59,080
+how is the conditional FP tree look for this look like for this
+
+184
+00:33:25,850 --> 00:33:29,840
+right so again I can read the frequent patterns of this.
+
+185
+00:33:29,840 --> 00:33:34,100
+So what is it so I2,I1,I3 with the frequency of two right I3,I2 with a frequency of 4. I1,I3 with
+
+186
+00:33:34,100 --> 00:33:51,440
+the frequency of two here two here so I1,I3 has a frequency of 4, I2,I3 has a frequency of 4.
+
+187
+00:33:51,440 --> 00:34:03,056
+I2,I1,I3 has a frequency of two. I can just read it off the tree okay so we can check whether that
+
+188
+00:34:03,056 --> 00:34:05,480
+is correct so I1,I2,I3 has a frequency of 4. I1,I2 has a frequency sorry 2, I1,I2 has a frequency of
+
+189
+00:34:05,480 --> 00:34:16,040
+4. I1,I3 sorry this one is not done I1,I3 has a frequency of 4. I2,I3 has a frequency of 4.
+
+190
+00:34:16,040 --> 00:34:22,850
+Right so whatever we counted but all the frequent item sets that contain I3 or done
+
+191
+00:34:22,850 --> 00:34:32,510
+in one shot likewise you have to do one for I2 now. I am sorry I1 so what will be the I1
+
+192
+00:34:32,510 --> 00:34:58,520
+tree. what is the conditional pattern base for I1. we don't have to worry about that
+
+193
+00:34:58,520 --> 00:35:07,490
+way because I know the frequency of one item set I know the frequency of I1 is already six.
+
+194
+00:35:07,490 --> 00:35:12,110
+I know that so basically this is the only thing I will get and so the tree will look
+
+195
+00:35:12,110 --> 00:35:29,810
+like 4. what four times right so this path has been taken four times that's what this tells
+
+196
+00:35:29,810 --> 00:35:37,280
+me so that means I2,I1 should have appeared four times so the prefix I2 ending with the suffix I1e
+
+197
+00:35:37,280 --> 00:35:42,290
+would have appeared four times that is basically what the conditional pattern base tells me.
+
+198
+00:35:42,290 --> 00:35:48,140
+So the conditional pattern base for I1 is just I2:4 for and the conditional FP tree
+
+199
+00:35:48,140 --> 00:35:55,190
+is just one node there is null and then I2:4 and the frequent patterns they yeah so the
+
+200
+00:35:55,190 --> 00:36:02,000
+frequency of I1,I2 is 4 and that is what we get here I1,I2 is 4 we get that right and
+
+201
+00:36:02,000 --> 00:36:05,090
+of course the one item set frequency is already given to you by the table
+
+202
+00:36:05,090 --> 00:36:08,990
+Do I need to do the conditional pattern base for I2, no does not matter right
+
+203
+00:36:08,990 --> 00:36:14,300
+because I have taken all the other items so I2 I dont have to actually the process
+
+204
+00:36:14,300 --> 00:36:21,980
+separately right so what is the nice thing about this algorithm is that a) I did not
+
+205
+00:36:21,980 --> 00:36:28,790
+have to do a generation of a lot of candidates and then prune things down right so I had a way
+
+206
+00:36:28,790 --> 00:36:34,970
+of traversing this tree that just gave me the frequent item sets right plus one thing
+
+207
+00:36:34,970 --> 00:36:40,340
+second thing is I just did two passes over the data. all subsequent passes were done on
+
+208
+00:36:40,340 --> 00:36:47,660
+the tree right and the tree is somewhat compact assuming patterns actually repeat right mean .
+
+209
+00:36:47,660 --> 00:36:52,070
+If the patterns do not repeat at all and every transaction is a unique subset then you are
+
+210
+00:36:52,070 --> 00:36:57,680
+doomed right so you will get a very large tree I mean that'd be slightly compact but
+
+211
+00:36:57,680 --> 00:37:02,600
+still it will still be a large tree right but since patterns repeat typically right
+
+212
+00:37:02,600 --> 00:37:09,960
+so you are same it is any questions on how this happens right so first you do one pass
+
+213
+00:37:09,960 --> 00:37:16,350
+through the data right count the frequency of one item sets right sort them they do a
+
+214
+00:37:16,350 --> 00:37:21,420
+second pass through the data construct the FP tree right put in all this navigation links.
+
+215
+00:37:21,420 --> 00:37:30,420
+Right and then for each item one item set construct a conditional pattern base and
+
+216
+00:37:30,420 --> 00:37:34,410
+then construct a conditional FP tree and from that you can read off all the frequent item
+
+217
+00:37:34,410 --> 00:37:55,110
+sets that contain that item. make sense any questions on that good point so I have done
+
+218
+00:37:55,110 --> 00:38:00,150
+I have done this I5 right so I basically I computed the conditional pattern base right
+
+219
+00:38:00,150 --> 00:38:08,370
+so if you look at a I3 right it occurs only once in the entire conditional pattern base right.
+
+220
+00:38:08,370 --> 00:38:12,750
+So I can prune it off so now my conditional pattern base will actually become I2,
+
+221
+00:38:12,750 --> 00:38:27,930
+I1:1 and then I2,I1:1 so I will just create my tree based on that sorry that that is
+
+222
+00:38:27,930 --> 00:38:33,030
+decided by min sup of yeah that is decided by min sup so whichever occurs less than
+
+223
+00:38:33,030 --> 00:38:36,720
+min sup number of times in this I will remove it because it cannot figure in a
+
+224
+00:38:36,720 --> 00:38:42,900
+frequent pattern. so that the one okay you're confused about the one is it no
+
+225
+00:38:42,900 --> 00:38:46,470
+it is the min sup. anything occurs less than min sup because min sup is 2 here.
+
+226
+00:38:46,470 --> 00:38:50,130
+So it just becomes one so anything that occurs less than min sup number of times
+
+227
+00:38:50,130 --> 00:38:58,200
+so again we can rework the whole thing setting min sup to three right and then
+
+228
+00:38:58,200 --> 00:39:01,350
+you would see an interesting things right. So I mean all of this will go there will
+
+229
+00:39:01,350 --> 00:39:14,660
+be no frequent pattern of length three right so both of this I5, I4 for will go right I4,
+
+230
+00:39:14,660 --> 00:39:21,380
+I5 will all go. I4 yeah that is correct right, so I5, I4 will all go there will
+
+231
+00:39:21,380 --> 00:39:26,090
+be no patterns that feature I4, I5. in fact they will go from here this table itself.
+
+232
+00:39:26,090 --> 00:39:29,960
+Because they occur only twice so you only have three entries so we start off with a
+
+233
+00:39:29,960 --> 00:39:36,980
+frequency of three you only have three entries in this table and so you are everything becomes
+
+234
+00:39:36,980 --> 00:39:43,940
+simpler right okay that is a good point so if you if you start off with only three entries
+
+235
+00:39:43,940 --> 00:39:50,780
+in this table when you construct the FP tree itself so you leave out I5 and I4 from the
+
+236
+00:39:50,780 --> 00:39:57,590
+transactions there so these entries will not even be made this I5,I4 entries will
+
+237
+00:39:57,590 --> 00:40:02,030
+not even be made at what you will do is if some something get dropped out.
+
+238
+00:40:02,030 --> 00:40:07,490
+Because the one item set is not frequent right I will delete them from the transaction order
+
+239
+00:40:07,490 --> 00:40:12,500
+also so I have sorted them in the decreasing order of this table right and whatever is
+
+240
+00:40:12,500 --> 00:40:20,240
+below the threshold I’ll just deleted so t1 will become I2, I1 right and t2 will become just I2,
+
+241
+00:40:23,390 --> 00:40:32,200
+so that will not even figures in the FP tree construction ok any questions
+
+242
+00:40:32,200 --> 00:40:33,320
+I bet any applies to Nationals
+
+243
+00:40:34,120 --> 00:40:44,560
+yes there are algorithms that use hashing and in fact take it back.
+
+244
+00:40:44,560 --> 00:40:48,820
+So the even the algorithms abuse hashing actually give you the right count but
+
+245
+00:40:48,820 --> 00:40:52,720
+there are algorithms such that give you an approximation there are so
+
+246
+00:40:52,720 --> 00:40:57,310
+if so many efficient algorithms that give you exact counts nowadays that use hashing
+
+247
+00:40:57,310 --> 00:41:01,480
+lets the I do not know if you should be using approximation but there are other approximation
+
+248
+00:41:01,480 --> 00:41:07,480
+algorithms for this see the more interesting research question to ask now is what happens
+
+249
+00:41:07,480 --> 00:41:16,510
+if I am not just counting elements from not just counting subsets if I am counting data
+
+250
+00:41:16,510 --> 00:41:21,490
+with my additional structure in it wait so that is a more interesting question to ask.

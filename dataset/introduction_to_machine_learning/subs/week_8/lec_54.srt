@@ -1,0 +1,1055 @@
+1
+00:00:08,590 --> 00:00:26,910
+Okay, so with one of the most popular and most some sense mind blowing thing with the
+
+2
+00:00:26,910 --> 00:00:32,029
+non-thermal method space right, so boosting in fact the original boosting work original
+
+3
+00:00:32,029 --> 00:00:36,890
+analysis of the boosting work comes from theoretical computer science community not necessarily
+
+4
+00:00:36,890 --> 00:00:41,890
+from an empirical machine learning community right, so therefore they were that they looked
+
+5
+00:00:41,890 --> 00:00:47,080
+at having some oracle that had a probability slightly greater than 0.5 of being correct
+
+6
+00:00:47,080 --> 00:00:54,630
+right, and then they try to see how you can get better and better predictions from somebody
+
+7
+00:00:54,630 --> 00:00:57,990
+who is just above 0.5 okay.
+
+8
+00:00:57,990 --> 00:01:03,700
+By combining many, many search Oracle's right I can keep improving my accuracy of prediction
+
+9
+00:01:03,700 --> 00:01:14,030
+arbitrary close to 1 right, so that is the amazing part right I start off with each individual
+
+10
+00:01:14,030 --> 00:01:24,060
+predictor as accuracy of 0.5 plus some epsilon just better than random that I can combine
+
+11
+00:01:24,060 --> 00:01:30,360
+a lot of them together and produce something that as accuracy close to 1 right, so this
+
+12
+00:01:30,360 --> 00:01:39,200
+was a very big result that came out earlier and so we are going to look at some kind of
+
+13
+00:01:39,200 --> 00:01:44,630
+simplified version of it, so they remember the goal that distinguishes I mean the main
+
+14
+00:01:44,630 --> 00:01:49,399
+thing that distinguishes boosting from the other methods is that boosting is inherently
+
+15
+00:01:49,399 --> 00:01:51,600
+serial okay.
+
+16
+00:01:51,600 --> 00:01:58,209
+So boosting is going to build this ensemble classifier in an incremental fashion right,
+
+17
+00:01:58,209 --> 00:02:05,060
+where at each stage I am going to try and explicitly reduce the error produced by the
+
+18
+00:02:05,060 --> 00:02:11,150
+previous stage, so this is something that you have to keep in mind you just cannot write
+
+19
+00:02:11,150 --> 00:02:16,300
+it just cannot come up with some ensemble method and call it a boosting method and I
+
+20
+00:02:16,300 --> 00:02:20,730
+have seen that happen in many papers that I have reviewed people just write something
+
+21
+00:02:20,730 --> 00:02:25,349
+that has multiple classifiers in it so it is boosting, because they have read somewhere
+
+22
+00:02:25,349 --> 00:02:29,769
+that boosting is a very hot area and people papers in boosting get accepted so they come
+
+23
+00:02:29,769 --> 00:02:33,280
+up with any classifier and the any ensemble method and call it boosting, boosting has
+
+24
+00:02:33,280 --> 00:02:40,239
+this very specific property that at every stage right, you add one more classifier to
+
+25
+00:02:40,239 --> 00:02:49,450
+the existing ensemble right, and this is done in such a fashion as to reduce the error produced
+
+26
+00:02:49,450 --> 00:02:59,650
+by the classifier up till that point okay, makes sense.
+
+27
+00:02:59,650 --> 00:03:05,409
+Sorry, you get the choice as to what to add next right so that is that you choose it such
+
+28
+00:03:05,409 --> 00:03:14,140
+a way that you minimize the error that they have not at least you reduce the error okay,
+
+29
+00:03:14,140 --> 00:03:18,569
+so not necessarily minimize but you reduce the error of whatever has happened the prediction
+
+30
+00:03:18,569 --> 00:03:24,579
+till that point okay, does it make sense, so that is essentially what boosting is sometimes
+
+31
+00:03:24,579 --> 00:03:28,400
+you can think of it as error boosting, sometimes they call it as error boosting and so on so
+
+32
+00:03:28,400 --> 00:03:29,400
+forth.
+
+33
+00:03:29,400 --> 00:03:50,629
+The one very popular and one of the original boosting algorithms is called ADABOOST okay,
+
+34
+00:03:50,629 --> 00:04:09,189
+so let us and it is going to I am going to put up a tutorial for you guys to refer to
+
+35
+00:04:09,189 --> 00:04:13,620
+okay I will use the notation from the tutorial so I will not translate it to the notation
+
+36
+00:04:13,620 --> 00:04:20,910
+in the text book okay, so when you read the textbook you have to do the translation yourself,
+
+37
+00:04:20,910 --> 00:04:24,680
+so that is one of the main problems when you have too many different disciplines contributing
+
+38
+00:04:24,680 --> 00:04:28,940
+to the same field right, machine learning has people from computer vision, people from
+
+39
+00:04:28,940 --> 00:04:34,389
+statistics, people from AI and all other disciplines contributing to it and each one of them brings
+
+40
+00:04:34,389 --> 00:04:37,160
+their own notation to the mix, right.
+
+41
+00:04:37,160 --> 00:04:56,789
+So it becomes harder to keep track of everything, but currently the I output is necessarily
+
+42
+00:04:56,789 --> 00:05:20,280
+complicating my dress okay, so I am going to denote by C(m-1)(x)th stage classifier
+
+43
+00:05:20,280 --> 00:05:29,550
+okay, that is obtained by basically adding the outputs of all this individual classifies
+
+44
+00:05:29,550 --> 00:05:35,330
+so alpha1, alpha2 to alpha m minus 1 right, so I am going to add up these are the weights
+
+45
+00:05:35,330 --> 00:05:40,850
+and k1 is a classifier that I added in the first stage right, k2 is the classifier added
+
+46
+00:05:40,850 --> 00:05:44,789
+in the second stage and so on so forth and km minus 1 is a classifier added in the m
+
+47
+00:05:44,789 --> 00:05:46,710
+minus 1 stage okay.
+
+48
+00:05:46,710 --> 00:06:20,970
+And then basically I want to produce that okay, yeah, the rest of the class, so there
+
+49
+00:06:20,970 --> 00:06:25,260
+are a couple of things which I should point out here one of the most obvious ways of doing
+
+50
+00:06:25,260 --> 00:06:29,210
+this forget about Erebus one of the most obvious ways of doing this is to say that okay I am
+
+51
+00:06:29,210 --> 00:06:36,280
+going to take this guy right, look at the residual error you know I can think of this
+
+52
+00:06:36,280 --> 00:06:41,800
+as a prediction problem right, and look at the residual error of the predictor right,
+
+53
+00:06:41,800 --> 00:06:50,039
+and then train a classifier km to minimize the residual error, right.
+
+54
+00:06:50,039 --> 00:07:01,880
+So what will be alpham?
+
+55
+00:07:01,880 --> 00:07:05,949
+essentially how to make sure that this whole thing is along the direction of the residual
+
+56
+00:07:05,949 --> 00:07:13,750
+so we talked about this earlier right, when where did we talk about this, forwards stages
+
+57
+00:07:13,750 --> 00:07:20,819
+we ask stage wise or step wise, stage wise, so when we talk about stage wise feature selection
+
+58
+00:07:20,819 --> 00:07:24,320
+we talked about something similar right, so you could think of something along the same
+
+59
+00:07:24,320 --> 00:07:29,480
+lines here instead of thinking of selecting features right, I am just selecting classifiers
+
+60
+00:07:29,480 --> 00:07:30,480
+right.
+
+61
+00:07:30,480 --> 00:07:38,070
+So I can just take the residual error of cm minus 1 and then use that to train km(x) and
+
+62
+00:07:38,070 --> 00:07:45,280
+then add it here right, in fact this can be one, it can be one does not matter because
+
+63
+00:07:45,280 --> 00:07:50,479
+the km(x) will actually align itself in the direction of the residual so I can just add
+
+64
+00:07:50,479 --> 00:07:55,520
+it here so it is fine right, so that is a simplest way to do this thing and it is actually
+
+65
+00:07:55,520 --> 00:08:03,610
+a good way to do it if you are doing regression let that make sense and I can take this as
+
+66
+00:08:03,610 --> 00:08:07,569
+they can take the residual error and then train my km to actually go in the direction
+
+67
+00:08:07,569 --> 00:08:08,569
+of the residual.
+
+68
+00:08:08,569 --> 00:08:13,030
+So I can actually do this, so you can get a boosting like algorithm for regression just
+
+69
+00:08:13,030 --> 00:08:17,290
+by training it along the direction of a residual right, but when I am doing classification
+
+70
+00:08:17,290 --> 00:08:22,260
+that is not necessarily the right thing to do so people come up with different kinds
+
+71
+00:08:22,260 --> 00:08:30,360
+of loss functions and then they try to improve the classification, so the loss function we
+
+72
+00:08:30,360 --> 00:08:40,479
+look at is the exponential loss, so people remember the exponential loss, I talked about
+
+73
+00:08:40,479 --> 00:09:12,770
+it when we are doing SVM's is exponential loss okay, e minus yif of xi.
+
+74
+00:09:12,770 --> 00:09:17,170
+So we looked at the exponential loss earlier so we will essentially continue with that,
+
+75
+00:09:17,170 --> 00:09:51,510
+so I will sum over all the training points right, so that is the exponential loss for
+
+76
+00:09:51,510 --> 00:10:09,350
+the mth stage classifier right, people agree with me on that, so that is essentially what
+
+77
+00:10:09,350 --> 00:10:13,940
+I wanted to write right, now expanded the cm and I have written it as this expression
+
+78
+00:10:13,940 --> 00:10:15,400
+in the bracket here.
+
+79
+00:10:15,400 --> 00:10:27,140
+Yet, can people see me at the back I see not me but the I am kind of hard to miss right,
+
+80
+00:10:27,140 --> 00:10:37,850
+that makes sense okay great.
+
+81
+00:10:37,850 --> 00:10:41,310
+So this thing we already know right, so there is no control we have over that that thing
+
+82
+00:10:41,310 --> 00:10:47,810
+we already know that is given to us all we need to find is αm and km right, so I am
+
+83
+00:10:47,810 --> 00:11:01,210
+going to rewrite this as what is that, that is the last function we are going to be using
+
+84
+00:11:01,210 --> 00:11:05,980
+like that is exponential loss function so for classification we looked at, if you remember
+
+85
+00:11:05,980 --> 00:11:10,740
+we looked at the different loss functions and when we looked at hinge loss right, and
+
+86
+00:11:10,740 --> 00:11:14,010
+I said exponential loss is one of the loss functions and this is how we defined it so
+
+87
+00:11:14,010 --> 00:11:17,660
+essentially I am using that exponential loss function here.
+
+88
+00:11:17,660 --> 00:11:21,910
+And in fact I mean this was not the way ADABOOST was originally derived okay, ADABOOST was
+
+89
+00:11:21,910 --> 00:11:26,290
+derived in a completely different way and later on about five years after they publish
+
+90
+00:11:26,290 --> 00:11:33,060
+ADABOOST they kind of discovered the connection between this kind of stage ways modeling right,
+
+91
+00:11:33,060 --> 00:11:38,510
+forward are additive stage wise additive modeling and exponential loss they said okay, I can
+
+92
+00:11:38,510 --> 00:11:43,630
+do forward stage wise modeling with an exponential loss function I end up with ADABOOST that
+
+93
+00:11:43,630 --> 00:11:45,240
+connection was discovered five years later.
+
+94
+00:11:45,240 --> 00:11:49,160
+But now almost always people except in the theory community, in the machine learning
+
+95
+00:11:49,160 --> 00:12:14,230
+community is always introduced like this okay.
+
+96
+00:12:14,230 --> 00:13:00,810
+So where wim is sorry, m the same thing I wrote here, so the weight of the ith data
+
+97
+00:13:00,810 --> 00:13:08,600
+point at the mth stage right, the weight of the ith data point at the mth stage is essentially
+
+98
+00:13:08,600 --> 00:13:20,910
+e minus yicm1 of xi right, so what does this mean what is exactly this expression if you
+
+99
+00:13:20,910 --> 00:13:32,460
+think about it, it is a loss I have incurred on that point x(i)
+
+100
+00:13:32,460 --> 00:13:36,820
+up till the m-1 stage right, that is essentially the right just the loss that I have incurred
+
+101
+00:13:36,820 --> 00:13:50,630
+on the ith data point up till the stage m-1 right.
+
+102
+00:13:50,630 --> 00:14:35,180
+Okay, now I am going to break that sum up into two components, so do you think of these
+
+103
+00:14:35,180 --> 00:14:49,970
+two components, no, no, no this is varies say e alpha m so when will I get e power minus
+
+104
+00:14:49,970 --> 00:14:56,890
+alpha m when I am correctly classified it, when I will get e power alpha m when I am
+
+105
+00:14:56,890 --> 00:15:12,180
+misclassified it so these are all the data points such that right you are the correctly
+
+106
+00:15:12,180 --> 00:15:22,730
+classified data point is all the miss classified data points right, is intuitively you can
+
+107
+00:15:22,730 --> 00:15:28,080
+see where we are going with this, so what is the best classifier that I can find at
+
+108
+00:15:28,080 --> 00:15:33,420
+the mth stage.
+
+109
+00:15:33,420 --> 00:15:40,810
+Well, obviously the best classifier can find the one for which this sum is empty the right,
+
+110
+00:15:40,810 --> 00:15:46,230
+and get everything correct classified correctly so that is the best classifier.
+
+111
+00:15:46,230 --> 00:15:51,270
+But now increase the cracks right, remember our classifiers are all weak classifiers and
+
+112
+00:15:51,270 --> 00:15:54,440
+exactly that is a basic assumption we are starting off with right the classifiers are
+
+113
+00:15:54,440 --> 00:15:59,560
+all weak classifiers I can do only slightly better than random, so I have to get nearly
+
+114
+00:15:59,560 --> 00:16:02,520
+half the data points incorrect, right.
+
+115
+00:16:02,520 --> 00:16:09,651
+So which half should go here which half should come here, and then we can move one data point
+
+116
+00:16:09,651 --> 00:16:15,560
+from to here that here to make it better than half, so which half should go here which half
+
+117
+00:16:15,560 --> 00:16:30,690
+should come here intuitively you tell me, which will incur less penalty, what is small
+
+118
+00:16:30,690 --> 00:16:38,170
+half, it is half man what is small half that will be what clear me, can be more clear as
+
+119
+00:16:38,170 --> 00:16:51,410
+to what is small means, no that is a valid way of interpreting small half tell me, no,
+
+120
+00:16:51,410 --> 00:17:05,310
+no, no, wms right, so all the w's that have a large value should come here because they
+
+121
+00:17:05,310 --> 00:17:10,350
+get e power minus alpha.
+
+122
+00:17:10,350 --> 00:17:15,959
+The w’s ensemble small value should go there because they get multiplied by e power alpham,
+
+123
+00:17:15,959 --> 00:17:21,250
+so what are w’s is a small values the ones that I have correctly classified up till the
+
+124
+00:17:21,250 --> 00:17:26,130
+previous point w is the large value are the ones that I have incorrectly classified up
+
+125
+00:17:26,130 --> 00:17:30,960
+to the previous point, so at the mth stage what I should be looking at is try to get
+
+126
+00:17:30,960 --> 00:17:36,269
+the data points which I misclassified from the previous stage, try to get them correctly
+
+127
+00:17:36,269 --> 00:17:38,220
+as many as possible right.
+
+128
+00:17:38,220 --> 00:17:43,830
+So that is essentially the intuition behind ADABOOST, so at every stage what you do is
+
+129
+00:17:43,830 --> 00:17:48,830
+you try to look at the previous stage see which are the data points you misclassified
+
+130
+00:17:48,830 --> 00:17:55,160
+it try to get them correctly in this stage, right and it is okay if you make mistakes
+
+131
+00:17:55,160 --> 00:18:00,450
+on data points that you have correctly classified till the previous stage why is it, okay.
+
+132
+00:18:00,450 --> 00:18:05,179
+And because those classifiers can possibly adjust for it okay, then we will look at how
+
+133
+00:18:05,179 --> 00:18:19,009
+we will actually do this again right.
+
+134
+00:18:19,009 --> 00:18:35,649
+So I am going to call, so it is all the weights of all the data points I got correct at mth
+
+135
+00:18:35,649 --> 00:18:51,779
+stage right, likewise weight of all the data points I made a mistake on at the mth stage
+
+136
+00:18:51,779 --> 00:19:26,269
+right, so then I can write my e’s simply as okay, so if you think about it
+
+137
+00:19:26,269 --> 00:19:32,820
+the value of alpha really does not matter in my choice of km right, regardless of the
+
+138
+00:19:32,820 --> 00:19:39,039
+value of α right, regardless of value of αm whatever argument I gave you this no holes
+
+139
+00:19:39,039 --> 00:19:47,450
+right, the idea is to see how much of the weight, the weight you can push to Wc right,
+
+140
+00:19:47,450 --> 00:19:49,029
+and how less of the weight you keep in We.
+
+141
+00:19:49,029 --> 00:19:54,399
+I mean there is total of weight right, there is some total W right, W is a constant okay,
+
+142
+00:19:54,399 --> 00:20:24,070
+Wc + We is a constant, the goal is now to see how much weight you can push into Wc as
+
+143
+00:20:24,070 --> 00:20:25,629
+posted, km will be the classifier that rise as to my WC, so how we do this well you can
+
+144
+00:20:25,629 --> 00:20:26,629
+use you can classifier they images that can assign based data point, we discussed very
+
+145
+00:20:26,629 --> 00:20:44,279
+briefly in session the case right, we can assign ways to data points and you can essentially
+
+146
+00:20:44,279 --> 00:20:55,220
+multiply the error that you make on a data point by the corresponding weight, right.
+
+147
+00:20:55,220 --> 00:21:08,200
+So the error that you make you multiplied by the corresponding weight so that you can
+
+148
+00:21:08,200 --> 00:21:09,330
+use weighted minimize other ways of doing this, so one way people see what I am saying
+
+149
+00:21:09,330 --> 00:21:10,889
+over km right, you see what you are supposed to do to get your k, the km is such that maximum
+
+150
+00:21:10,889 --> 00:21:13,049
+weight goes into Wc they are splitting your W into two parts and depending on what data
+
+151
+00:21:13,049 --> 00:21:19,820
+points are making mistakes on right, the data points you do not make mistakes on contributed
+
+152
+00:21:19,820 --> 00:21:21,231
+Wc the data points you make mistakes on contribute of e.
+
+153
+00:21:21,231 --> 00:21:29,751
+If you want to see how much larger you can Wc and We basic that is the classifier you
+
+154
+00:21:29,751 --> 00:21:50,529
+have to find, before that you use some kind of a payment method, so one way of achieving
+
+155
+00:21:50,529 --> 00:22:00,781
+this is do the following you are saying weights to all the data points now what you do, if
+
+156
+00:22:00,781 --> 00:22:01,781
+you go and sample some of these data points according to their weights, create a new training
+
+157
+00:22:01,781 --> 00:22:05,679
+set by sampling from this data points are given things according to the weights, so
+
+158
+00:22:05,679 --> 00:22:13,760
+what does this mean points for which the weight is higher you get sample more often into this
+
+159
+00:22:13,760 --> 00:22:15,540
+data sets, points for which the weights are very low I do not even appear in the data
+
+160
+00:22:15,540 --> 00:22:16,540
+set, right.
+
+161
+00:22:16,540 --> 00:22:17,540
+So the points appears multiple times in the data set then when you are trying to minimize
+
+162
+00:22:17,540 --> 00:22:30,429
+the training error you are likely to get a point correct, so instead of using a directly
+
+163
+00:22:30,429 --> 00:22:37,539
+using a weighted training algorithm people simulate that by sampling from the data weights
+
+164
+00:22:37,539 --> 00:22:48,690
+okay, so what has happened unfortunately because of this I change of tends to compact by bagging
+
+165
+00:22:48,690 --> 00:23:19,470
+and boosting in the minds of people and if you look at some of the data mining text books
+
+166
+00:23:19,470 --> 00:23:30,220
+especially some of the earlier data mining text books exciting and boosting we needed
+
+167
+00:23:30,220 --> 00:23:36,460
+will described in a very similar fashion right, what do you do in bagging whenever you add
+
+168
+00:23:36,460 --> 00:23:37,559
+a new classified.
+
+169
+00:23:37,559 --> 00:23:42,380
+So in the older textbooks how they describe is that what you do in bagging is every time
+
+170
+00:23:42,380 --> 00:23:49,441
+you generate a new sample you sample uniformly right, with replacement right you with sample
+
+171
+00:23:49,441 --> 00:23:54,929
+replacement and boosting the differences every time we generate a new sample you use the
+
+172
+00:23:54,929 --> 00:23:58,190
+prediction error from the previous thing there is only difference between bagging and boosting
+
+173
+00:23:58,190 --> 00:23:59,190
+right.
+
+174
+00:23:59,190 --> 00:24:02,940
+But operationally if you think about it so there is only difference between bagging and
+
+175
+00:24:02,940 --> 00:24:06,669
+boosting, but then boosting is inherently serial and then there is this error minimization
+
+176
+00:24:06,669 --> 00:24:11,919
+property right, but that never comes across and people just tend to think of boosting
+
+177
+00:24:11,919 --> 00:24:20,830
+as bagging with the different sampling distribution right, whether it is incorrect at the fundamental
+
+178
+00:24:20,830 --> 00:24:49,139
+principles of the two things are very different okay.
+
+179
+00:24:49,139 --> 00:24:54,000
+So we have found km now right, so we all know how to find km you do some kind of weighted
+
+180
+00:24:54,000 --> 00:25:08,779
+error minimization you find km, so what is next, what is next we need to find αm right,
+
+181
+00:25:08,779 --> 00:25:16,750
+see regardless of what value of alpham you choose the minimizer is the for km is the
+
+182
+00:25:16,750 --> 00:25:20,200
+one that gives you maximum weight into Wc, correct.
+
+183
+00:25:20,200 --> 00:25:26,410
+But then having chosen a km I now have to choose an alpham that gives me the error detection,
+
+184
+00:25:26,410 --> 00:25:28,330
+so how do you go about doing that.
+
+185
+00:25:28,330 --> 00:27:10,909
+In fact we can do our, so set is equal to 0, so alpham is essentially 1/2 ln 1- the
+
+186
+00:27:10,909 --> 00:27:15,879
+error rate it is error rate is essentially the weight of the data points on which you
+
+187
+00:27:15,879 --> 00:27:24,999
+are making a mistake divided by the total weight right, so this is for the km classifier
+
+188
+00:27:24,999 --> 00:27:31,649
+alone right, We is the data points on which the mth classifier alone makes the error not
+
+189
+00:27:31,649 --> 00:27:41,000
+Cm but km correct, so that is what we divided these things into right, so this is the thing
+
+190
+00:27:41,000 --> 00:27:45,640
+where km makes error, so essentially that so the data points on.
+
+191
+00:27:45,640 --> 00:27:49,870
+So essentially it tells you how good the classifier, if the classifier is really good right not
+
+192
+00:27:49,870 --> 00:27:54,580
+just on the data points that you are interested in but on the entire data set and if the classifier
+
+193
+00:27:54,580 --> 00:28:01,570
+is very good then the weight will be high that is in fact the classifier has an error
+
+194
+00:28:01,570 --> 00:28:13,769
+of 0 what will happen rate will be infinity, because the only classifier you will need
+
+195
+00:28:13,769 --> 00:28:17,759
+right you have a header of 0 on all the data points why do you need other classify just
+
+196
+00:28:17,759 --> 00:28:19,870
+that one is enough right.
+
+197
+00:28:19,870 --> 00:28:29,190
+But then suppose it has a very high error, error close to 1 where it will be 0 okay,
+
+198
+00:28:29,190 --> 00:28:33,110
+so depending on how good the classifier is this way it will vary okay, and then anything
+
+199
+00:28:33,110 --> 00:28:43,749
+else that you have to do I have found km, I have found αm what do I have to do, I have
+
+200
+00:28:43,749 --> 00:28:50,139
+to change my W’s now for the next stage right, so what is my Wi is e power minus yiCm
+
+201
+00:28:50,139 --> 00:28:57,389
+minus one(xi) right, so now it has to become e power minus yi into cmxi so what is the
+
+202
+00:28:57,389 --> 00:29:09,960
+right best way to do that, this multiply the existing W by e power minus yi into kmxi right,
+
+203
+00:29:09,960 --> 00:29:39,730
+does it make sense after you have done that you come here okay, I do not erase that part
+
+204
+00:29:39,730 --> 00:30:02,110
+right.
+
+205
+00:30:02,110 --> 00:30:06,440
+So because you need the alpham here for your update, so once you find the alpha m you come
+
+206
+00:30:06,440 --> 00:30:16,409
+back here and change the weights of all the data points by this amount okay, as it makes
+
+207
+00:30:16,409 --> 00:30:22,960
+sense so that is a plain simple version of ADABOOST okay.
+
+208
+00:30:22,960 --> 00:30:27,570
+So in fact we can show that the exponential loss function is very closely related to the
+
+209
+00:30:27,570 --> 00:30:35,730
+deviance right, and in fact an equally popular version of boosting called logic boost exists,
+
+210
+00:30:35,730 --> 00:30:43,279
+where we actually use the deviance the logistic function right, the log odds function that
+
+211
+00:30:43,279 --> 00:30:48,940
+we used for logistic regression you can use the same error function and then derive all
+
+212
+00:30:48,940 --> 00:30:53,090
+the update rules that we just did for the exponential loss function you can do the same
+
+213
+00:30:53,090 --> 00:30:58,739
+thing for the logit function the log odds function also and you can come up with similar
+
+214
+00:30:58,739 --> 00:31:00,350
+update rules okay.
+
+215
+00:31:00,350 --> 00:31:05,710
+So the recent ADABOOST is so popular is because it deals such very simple updates right, if
+
+216
+00:31:05,710 --> 00:31:10,990
+you think about it all the computation you do is okay, you find a classifier that minimizes
+
+217
+00:31:10,990 --> 00:31:18,750
+this weighted the error right then you come back and compute this alpham and then you
+
+218
+00:31:18,750 --> 00:31:23,649
+go back and change the weights and then repeat until you are happy with the performance of
+
+219
+00:31:23,649 --> 00:31:34,249
+the total classifier right, and both with basting I mean bagging and boosting the commend
+
+220
+00:31:34,249 --> 00:31:41,169
+both here start basting things anyway if you do both decision trees are very popular classifiers
+
+221
+00:31:41,169 --> 00:31:43,190
+for this, okay.
+
+222
+00:31:43,190 --> 00:31:49,669
+In bagging it seems to make sense right, why you want to bag decision trees they are notoriously
+
+223
+00:31:49,669 --> 00:31:54,259
+unstable so if you want to, if you bag decision trees you get more stable estimates, why would
+
+224
+00:31:54,259 --> 00:32:15,470
+you want to bag, why do you want to boost decision trees, are they weak classifiers.
+
+225
+00:32:15,470 --> 00:32:25,239
+Exactly, so what do you do with decision trees in fact you can do the most extreme thing
+
+226
+00:32:25,239 --> 00:32:33,460
+you can just have one node, just have the root node right, one node what can you do
+
+227
+00:32:33,460 --> 00:32:35,399
+with one node decision tree.
+
+228
+00:32:35,399 --> 00:32:40,989
+Yeah, that is somewhat like linear right yeah, so somewhat likely linear I agree but people
+
+229
+00:32:40,989 --> 00:32:45,159
+call it decision trees right, so one node decision tree because of the way I choose
+
+230
+00:32:45,159 --> 00:32:49,730
+which feature I pick right, I will use information gain or Gini index or one of those things
+
+231
+00:32:49,730 --> 00:32:54,179
+okay, I will at least take 50% classification otherwise I would not even split right on
+
+232
+00:32:54,179 --> 00:32:56,750
+that 50% will I will be better than 50%.
+
+233
+00:32:56,750 --> 00:33:04,000
+I will be better than random even if I split on one node right, so I will split on one
+
+234
+00:33:04,000 --> 00:33:10,870
+node and or maybe if the performance is too weak I can perform I can do a two level tree
+
+235
+00:33:10,870 --> 00:33:15,120
+okay, these are called decision stumps, I do not build a full tree but it is like chopped
+
+236
+00:33:15,120 --> 00:33:19,330
+off at a very close to the root right, so one not two levels of the trees though they
+
+237
+00:33:19,330 --> 00:33:25,139
+are v-classifiers and they take very little time to estimate and I can do many, many,
+
+238
+00:33:25,139 --> 00:33:30,960
+many of these very quickly essentially what I do is, I boost these decision terms okay.
+
+239
+00:33:30,960 --> 00:33:39,210
+In fact there is one result in the book if you look at it right.
+
+240
+00:33:39,210 --> 00:33:46,009
+So I do not remember the exact scale on the y-axis but the x-axis is the number of levels
+
+241
+00:33:46,009 --> 00:33:52,850
+of boosting that they do right, and so on so forth, the number of levels of boosting
+
+242
+00:33:52,850 --> 00:33:59,859
+that they do so 100, 200, 300 and so on so forth, so a single stump it gives some performance
+
+243
+00:33:59,859 --> 00:34:04,989
+level at that height okay, just one strum the best single stump gives you a performance
+
+244
+00:34:04,989 --> 00:34:10,100
+there and they trained it on the full data and they get a performance here and this is
+
+245
+00:34:10,100 --> 00:34:19,770
+like a 244 node tree, 244 notes is a fairly complex thee they built and that is the performance
+
+246
+00:34:19,770 --> 00:34:21,090
+that they get right.
+
+247
+00:34:21,090 --> 00:34:25,169
+And then they did boosting the start here obviously with a single node right, and then
+
+248
+00:34:25,169 --> 00:34:32,419
+they do boosting and then they find that the tree the performance just keeps improving
+
+249
+00:34:32,419 --> 00:34:34,660
+as I do ADABOOST.
+
+250
+00:34:34,660 --> 00:34:39,680
+Remember and these are all single node trees okay, they are all single node trees and so
+
+251
+00:34:39,680 --> 00:34:44,510
+essentially by the when they reach 100that means they have only 100 nodes basically and
+
+252
+00:34:44,510 --> 00:34:49,760
+they are way better than the 244 nodes that you get with a singletree right, and they
+
+253
+00:34:49,760 --> 00:34:55,130
+reach 244 notes they are like more than twice as good as the single tree they built with
+
+254
+00:34:55,130 --> 00:34:56,780
+244 notes.
+
+255
+00:34:56,780 --> 00:35:00,700
+Because the objective function you are minimizing is something very, very different right at
+
+256
+00:35:00,700 --> 00:35:05,590
+every stage you are changing the function and you are focusing your efforts on actually
+
+257
+00:35:05,590 --> 00:35:12,740
+getting to the harder parts of the space right, so that essentially it is little magical.
+
+258
+00:35:12,740 --> 00:35:16,740
+In fact this is more dramatic is it something like this but look at look at the book crippled
+
+259
+00:35:16,740 --> 00:35:28,570
+for the exact figure right, so this is really amazing posting is very powerful and in fact
+
+260
+00:35:28,570 --> 00:35:33,661
+I talked briefly about random forest in the next class which is you do not even have to
+
+261
+00:35:33,661 --> 00:35:39,600
+do any decision making right, you do things randomly but then do a lot of them right that
+
+262
+00:35:39,600 --> 00:35:40,700
+is also very powerful.
+
+263
+00:35:40,700 --> 00:35:44,570
+So random forest is not a boosting technique by the way random forest is a bagging technique
+
+264
+00:35:44,570 --> 00:35:47,120
+right but then that is also very powerful.

@@ -1,0 +1,791 @@
+1
+00:00:00,000 --> 00:00:16,760
+So I said there are two
+
+2
+00:00:16,760 --> 00:00:23,330
+ways in which we can build linear classifiers. So one was the discriminant function approach right,
+
+3
+00:00:23,330 --> 00:00:27,020
+where by comparing discriminant functions we decide what is the separating hyperplane
+
+4
+00:00:27,020 --> 00:00:38,270
+right and what is other approach modeling the separating hyperplane directly.
+
+5
+00:00:38,270 --> 00:01:01,400
+So there are many ways in which this can be done and we look at two in particular one
+
+6
+00:01:01,400 --> 00:01:07,910
+because it leads us into neural networks later the other because it is the most
+
+7
+00:01:07,910 --> 00:01:11,420
+popular way of building classifiers nowadays okay.
+
+8
+00:01:11,420 --> 00:01:19,520
+Before we go on let us just have a little fundamentals again okay,
+
+9
+00:01:37,760 --> 00:02:04,940
+so that is a separating hyperplane right and right so this constitutes of all points x such
+
+10
+00:02:04,940 --> 00:02:13,460
+that this equation is satisfied okay so this is the definition of a separating hyperplane so I
+
+11
+00:02:13,460 --> 00:02:29,210
+am going to call that defines our hyperplane if we equate f(x) to 0 that defines our hyperplane
+
+12
+00:02:29,210 --> 00:02:44,840
+and if f (x) is whatever if it is greater than 0 it implies in this case g(x) is 0.
+
+13
+00:02:58,150 --> 00:03:15,640
+So some properties here. If x1 and x2 both belong to the line okay and this is going to
+
+14
+00:03:15,640 --> 00:03:26,170
+call this L here if x1 and x2 both belong to L then we know that βT(x1 - x2) will be 0 right,
+
+15
+00:03:26,170 --> 00:03:45,550
+so what does it mean the β is actually a normal to L right so β is normal to L right so I am
+
+16
+00:03:45,550 --> 00:03:52,600
+going to assume a specific actually okay β* is normal to L, β is perpendicular to L okay
+
+17
+00:03:52,600 --> 00:03:59,800
+so β star is a normal is unit direction I mean unit dimension.
+
+18
+00:04:06,140 --> 00:04:20,240
+Hey this also we know so βTx0 equal to – β0 right so I mean
+
+19
+00:04:20,240 --> 00:04:24,920
+that essentially gives you this is 1 – β0 as +β0 so it will be 0 okay,
+
+20
+00:04:24,920 --> 00:04:41,300
+this is β remember the β0 is left out here okay so βT x1 will be – β0 βTx2 will be – β0 again
+
+21
+00:04:41,300 --> 00:04:45,320
+so this expression will become 0 that is why x1 and x2 belong to L if people have not thought
+
+22
+00:05:03,020 --> 00:05:20,270
+about that. So what is that this β*T (x – x0) where x0 belongs to L, x does not belong to L. β0*
+
+23
+00:05:25,780 --> 00:05:34,060
+is a direction that is perpendicular to L, so this is essentially the distance of x from L. There
+
+24
+00:05:34,060 --> 00:05:38,980
+actually the signed distance of x from L depending on which side of L it is this is going to be
+
+25
+00:05:38,980 --> 00:05:44,110
+different. But because I am multiplying with β* it gives me the projection on the perpendicular,
+
+26
+00:05:44,110 --> 00:06:04,790
+so this gives me the distance to some x right and this will be the direction of β* right.
+
+27
+00:06:04,790 --> 00:06:17,000
+So this is essentially projecting that on to this direction so this will give me the okay
+
+28
+00:07:13,720 --> 00:07:23,530
+it is a β* we know is beta by norm β right so I replace that so I get βTx+β0 because x0
+
+29
+00:07:23,530 --> 00:07:37,510
+times β is – β0 so I get + β0 so and this expression is actually f(x) right so this
+
+30
+00:07:37,510 --> 00:07:48,940
+is f(x) divided by norm β and β is what f’(x) right if it take the derivative of
+
+31
+00:07:48,940 --> 00:07:57,520
+f(x) with respect to x that gives me β right. So it is norm of f’(x) right so this is f(x)
+
+32
+00:07:57,520 --> 00:08:04,480
+divided by the norm of f’(x) so what did we say this expression was the signed distance
+
+33
+00:08:04,480 --> 00:08:09,730
+to the hyperplane so f(x) gives me a quantity that is proportional to the signed distance to
+
+34
+00:08:09,730 --> 00:08:18,820
+the hyperplane right and if I find a hyperplane such that I normalize my to be one f(x) gives
+
+35
+00:08:18,820 --> 00:08:24,490
+me the sign distance to the hyperplane it is not proportional it actually gives me the sign
+
+36
+00:08:24,490 --> 00:08:30,400
+distance to the hyperplane okay, that makes sense yes I just want you to keep this in mind.
+
+37
+00:08:30,400 --> 00:08:33,955
+Because whenever I say I am going to minimize f(x) it essentially means I
+
+38
+00:08:33,955 --> 00:08:37,390
+am going to try and minimize the distance of the data point to the hyperplane all right I
+
+39
+00:08:37,390 --> 00:08:41,530
+am going to say were maximizing f(x) I am going to maximize the distance of the data
+
+40
+00:08:41,530 --> 00:08:46,540
+point to the hyperplane right, so just to keep that clear I am just introducing
+
+41
+00:08:46,540 --> 00:09:07,610
+these notations beginning. So the first thing we look at it is a perceptron
+
+42
+00:09:07,610 --> 00:09:21,980
+learning algorithm so it is got a hoary tradition right people are familiar with have heard the term
+
+43
+00:09:21,980 --> 00:09:33,170
+neural networks artificial neural networks yes no people have heard the term artificial neural
+
+44
+00:09:33,170 --> 00:09:40,970
+networks, so you know that we are going through the third boom of artificial neural networks okay,
+
+45
+00:09:40,970 --> 00:09:47,390
+so in the back in the 50s and 60s there was this initial boom of artificial neural networks right
+
+46
+00:09:47,390 --> 00:09:53,690
+everybody was so taken up with artificial neural network they said oh! here is something that can
+
+47
+00:09:53,690 --> 00:09:58,400
+solve the human learning problem. And he talked about this already right,
+
+48
+00:09:58,400 --> 00:10:06,830
+so that was started by the perceptron learning algorithm right and what about the second boom
+
+49
+00:10:06,830 --> 00:10:15,980
+people know what the second boom was okay now we will come to that later, so the second boom
+
+50
+00:10:15,980 --> 00:10:20,480
+was started by the back propagation algorithm which took care of some of the problems with
+
+51
+00:10:20,480 --> 00:10:25,220
+perceptrons and then that also died away and the third boom has been shattered by what people call
+
+52
+00:10:25,220 --> 00:10:36,200
+deep learning now right and the hype is scary but apparently not as scary as it was I mean I
+
+53
+00:10:36,740 --> 00:10:49,430
+recently read some newspaper clippings from the 60s it is really scary okay. So the idea behind
+
+54
+00:10:49,430 --> 00:10:57,830
+the perceptron learning algorithm is very simple okay so I have this decision boundary right I want
+
+55
+00:10:57,830 --> 00:11:05,060
+to make sure that any point that I actually misclassify at any point that I miss classify
+
+56
+00:11:05,060 --> 00:11:12,510
+is as close as possible to the decision boundary right, in fact if I put it on the other side I am
+
+57
+00:11:12,510 --> 00:11:20,010
+happy right I am doing the signed distances right, so if I put it on the right side I am happy put it
+
+58
+00:11:20,010 --> 00:11:25,980
+on the wrong side and I try to keep it as close to the hyperplane as possible so that early there
+
+59
+00:11:25,980 --> 00:11:31,380
+is some kind of a satisfaction that we are not getting something very egregiously wrong right,
+
+60
+00:11:31,380 --> 00:12:33,110
+so I am going to minimize right, so we will assume that for data points which is such
+
+61
+00:12:33,110 --> 00:12:39,740
+that xiβ+ β0 is greater than 0 and output as class plus 1 right, whenever it is less than 0,
+
+62
+00:12:39,740 --> 00:12:46,040
+I will output the class as – 1. So if the true class level is + 1 but if the
+
+63
+00:12:46,040 --> 00:12:53,480
+f(x) is < 0, I mean if f(x)<0 that means I will be outputting minus 1 right but the true class is + 1
+
+64
+00:12:53,480 --> 00:13:20,220
+so that means this has been misclassified right. Does that make sense? People have understand this
+
+65
+00:13:20,220 --> 00:13:29,880
+point now right so if the true class was +1 but f(x) is < 0 then x will get misclassified right
+
+66
+00:13:29,880 --> 00:13:35,250
+the true class was - 1 and f (x) > 0 then x will get misclassified, so these are the two
+
+67
+00:13:35,250 --> 00:13:42,510
+conditions under which you will have a point being misclassified. So if I take this quantity right so
+
+68
+00:13:42,510 --> 00:13:49,740
+what it will be for misclassified points it will be negative for misclassified points,
+
+69
+00:13:49,740 --> 00:14:06,270
+it will be positive for correctly classified points right take that and I minimize it for all
+
+70
+00:14:17,560 --> 00:14:31,780
+so take this for all the misclassified points right and I try to minimize this,
+
+71
+00:14:44,850 --> 00:14:52,650
+so D is sometimes called the perceptron criterion right of the perceptron objective function okay
+
+72
+00:14:52,650 --> 00:15:11,580
+right does it make sense what we are trying to do here okay I will try to write bigger but the
+
+73
+00:15:11,580 --> 00:15:17,130
+idea was that that gives you zoomed in thing if I am very small then I will write bigger yeah
+
+74
+00:15:17,130 --> 00:15:24,660
+okay so the point here is that I will not rewrite this from subsequently I write bigger okay point
+
+75
+00:15:24,660 --> 00:15:30,720
+here is that if you take the misclassified data points okay. So this is going to be a negative
+
+76
+00:15:30,720 --> 00:15:45,510
+quantity right and I want this to be as close to 0 as possible right in fact I want m to be empty
+
+77
+00:15:45,510 --> 00:15:53,100
+right I want m to be empty, so that is that is the goal this is the way to minimize this is to make
+
+78
+00:15:53,100 --> 00:16:02,490
+sure that m is empty as long as m is non-empty I still not achieved the optimum okay when can
+
+79
+00:16:02,490 --> 00:16:16,320
+m become empty so if my data is actually linearly separable right if you remember I drew some data
+
+80
+00:16:16,320 --> 00:16:22,230
+points sampling from Gaussians there right I drew a minus somewhere here and then pluses
+
+81
+00:16:22,230 --> 00:16:26,940
+there and so on so for that kind of a data will never be linearly separable. I can never draw a
+
+82
+00:16:26,940 --> 00:16:33,210
+straight line separating those data points right so here things are nicely linearly separable right
+
+83
+00:16:33,210 --> 00:16:39,420
+all the X’s are one side all the zeros are on the other side right here the data was nicely
+
+84
+00:16:39,420 --> 00:16:45,060
+separable so the perceptron objective function works well if the data is linearly separable
+
+85
+00:16:45,060 --> 00:16:51,480
+if it is not linearly separable. we will run into problems. So now what we do
+
+86
+00:16:51,480 --> 00:16:59,670
+is just use gradient descent so I will differentiate d wrt what will that be
+
+87
+00:17:22,530 --> 00:17:35,180
+okay font sizes are fine right so this is the derivatives and then so what I
+
+88
+00:17:35,180 --> 00:17:41,450
+do now is essentially the technique that is very popular nowadays but it was not really
+
+89
+00:17:41,450 --> 00:17:46,400
+called by that name in the olden days it is called stochastic gradient descent.
+
+90
+00:17:46,400 --> 00:18:06,980
+So people know what gradient descent is yes what is gradient descent yeah usually find
+
+91
+00:18:06,980 --> 00:18:14,840
+the direction of steepest ascent and go in the opposite direction how far do you
+
+92
+00:18:14,840 --> 00:18:25,490
+go in the opposite direction proportional to the what proportional to the gradient,
+
+93
+00:18:25,490 --> 00:18:39,770
+gradient is very large in what you do right so it depends right so if you know the gradient
+
+94
+00:18:39,770 --> 00:18:45,710
+properly I can compute the gradient set it equal to zero solve for it right and then just jump
+
+95
+00:18:45,710 --> 00:18:51,530
+there right I do not have to go in small steps if I actually know where the gradient becomes zero I
+
+96
+00:18:51,530 --> 00:18:59,090
+can just set my solution to that point right. So the problem comes when things are little iffy
+
+97
+00:18:59,090 --> 00:19:10,400
+why as soon as I move my beta in some direction what will happen in the perceptron case If I move
+
+98
+00:19:10,400 --> 00:19:19,680
+my β right say if I move in the direction of the gradient what will happen set M changes
+
+99
+00:19:19,680 --> 00:19:24,870
+right so immediately my definition of gradient changes right so they move in a change β slightly
+
+100
+00:19:24,870 --> 00:19:30,270
+I have to recompute the gradient right so the gradient I am computing is valid for wherever I
+
+101
+00:19:30,270 --> 00:19:35,280
+am sitting in the β space when I move from there then I have to re compute the gradient.
+
+102
+00:19:35,280 --> 00:19:40,860
+So I cannot just move in the direction all the way right I can't really move a long distance pointed
+
+103
+00:19:40,860 --> 00:19:47,190
+to by that particular point in space a particular gradient so I have to iteratively re compute the
+
+104
+00:19:47,190 --> 00:19:53,700
+gradient so in such cases what we do is usually take a step in the direction indicated with a
+
+105
+00:19:53,700 --> 00:20:01,590
+gradient and hope that you are moving in the generally expected direction right so if you
+
+106
+00:20:01,590 --> 00:20:05,430
+take the expectation of the gradient you are moving in the right direction. So the
+
+107
+00:20:05,430 --> 00:20:11,520
+stochastic gradient descent has a lot of nuances and other things to it so we will not get into
+
+108
+00:20:11,520 --> 00:20:14,700
+that whenever we used to stochastic gradient descent I will point out to you okay what are
+
+109
+00:20:14,700 --> 00:20:21,630
+the things to be concerned about but will not get into the details of that right possibly anyone
+
+110
+00:20:21,630 --> 00:20:27,540
+doing the optimization course and look yeah you might I am not sure whether they are going to
+
+111
+00:20:27,540 --> 00:20:30,780
+get to stochastic gradient descent but they might covered it in the that course.
+
+112
+00:20:30,780 --> 00:20:38,700
+But not, not here right so what we are going to do is essentially take β
+
+113
+00:20:47,330 --> 00:21:02,060
+so the gradient is xiyi right but since I am anyway doing stochastic gradient right as soon
+
+114
+00:21:02,060 --> 00:21:07,790
+as I find one misclassified data point I am going to find the estimate of the gradient and move in
+
+115
+00:21:07,790 --> 00:21:12,800
+the direction I am not going to wait till I find all the misclassified data points under that
+
+116
+00:21:12,800 --> 00:21:20,600
+particular β right for the current β, I find one misclassified data point and then I will change my
+
+117
+00:21:20,600 --> 00:21:28,670
+β in the direction of the gradient right. So what does it look like so I just take the misclassified
+
+118
+00:21:28,670 --> 00:21:34,490
+data point multiplied by the decided output and add it to the weight vector right I have written
+
+119
+00:21:34,490 --> 00:21:47,030
+this in a really funny spacing right that is because I can usually what should go here now
+
+120
+00:21:47,030 --> 00:21:56,160
+I can convert this into matrix notation right so every time I encounter a misclassified data point
+
+121
+00:21:56,160 --> 00:22:06,990
+I change my right so we are doing it in this particular form because this is the perceptron
+
+122
+00:22:06,990 --> 00:22:13,140
+learning algorithm right. So if you want to find all the misclassified data points and then compute
+
+123
+00:22:13,140 --> 00:22:18,750
+the cumulative gradient and then change your β within that direction you are welcome to okay
+
+124
+00:22:18,750 --> 00:22:23,340
+that is a perfectly valid way of doing it okay the reason we are doing it once to one data point at a
+
+125
+00:22:23,340 --> 00:22:33,570
+time is saying this is exactly how the perceptron learning algorithm was derived So the has to be
+
+126
+00:22:33,570 --> 00:22:45,840
+really small if you are operating in a very, very stochastic environment okay. Because so in effect
+
+127
+00:22:45,840 --> 00:22:49,980
+what you are doing when you are doing stochastic gradient descent is that you are making many,
+
+128
+00:22:49,980 --> 00:22:56,280
+many different estimates of the gradient in a local region right and you are trying to
+
+129
+00:22:56,280 --> 00:23:00,420
+move in the expected direction of the average direction of the gradient so if the is very
+
+130
+00:23:00,420 --> 00:23:07,470
+large okay it turns out that you just make one estimate of the gradient and then move out of
+
+131
+00:23:07,470 --> 00:23:11,700
+the region right. So you will take a large step so we will go somewhere else the gradient will
+
+132
+00:23:11,700 --> 00:23:15,990
+be completely different right or this could have been the wrong estimate for the gradient
+
+133
+00:23:15,990 --> 00:23:23,010
+direction so to make sure that you are following a reasonable expected gradient has to be really
+
+134
+00:23:23,010 --> 00:23:30,300
+small okay having said that in the perceptron learning algorithm setting to one actually works
+
+135
+00:23:30,300 --> 00:23:36,930
+okay and that is how the original perceptron algorithm was also stated right was one.
+
+136
+00:23:36,930 --> 00:23:49,590
+And for normally for stochastic gradient descent one is very, very, very large okay you typically
+
+137
+00:23:49,590 --> 00:23:55,050
+think of the order of 10-3 to 10-4 and things like that for step sizes okay but it turns out
+
+138
+00:23:55,050 --> 00:23:59,970
+in this case it is fine right equal to 1 is fine and it will work it will converge you
+
+139
+00:23:59,970 --> 00:24:03,960
+can show convergence with ρ equal to 1 but if in typically in stochastic gradient descent you
+
+140
+00:24:03,960 --> 00:24:10,650
+want ρ to be small because the idea is what I told you just like we talked about taking a replacing
+
+141
+00:24:10,650 --> 00:24:15,600
+expectation with an average over a region and into nearest neighbors. So something like that
+
+142
+00:24:15,600 --> 00:24:22,230
+okay at a very, very gross level so you want to be able to take an average of the gradient in
+
+143
+00:24:22,230 --> 00:24:29,850
+the local region but if you move very fast then you might be in a completely wrong direction okay
+
+144
+00:24:29,850 --> 00:24:43,290
+so therefore you go slowly okay so this is the perceptron learning algorithm yeah β where is βl
+
+145
+00:24:52,240 --> 00:25:02,680
+sorry about that and that is not βj either right.
+
+146
+00:25:02,680 --> 00:25:12,280
+So if the data is linearly separable so what you mean by linearly separable that
+
+147
+00:25:12,280 --> 00:25:17,170
+there exists a linear separating hyper plane that will make no mistakes okay so if the
+
+148
+00:25:17,170 --> 00:25:35,950
+data is linearly separable then the perceptron algorithm perceptron learning algorithm will
+
+149
+00:25:35,950 --> 00:25:43,630
+converge to some solution so what do I mean by some solution so here we saw okay let me do it
+
+150
+00:25:43,630 --> 00:25:56,340
+again right so let us say these are the data points that are given to you.
+
+151
+00:25:56,340 --> 00:26:05,580
+There are many, many solutions that work right all right I mean assuming all of those are straight
+
+152
+00:26:05,580 --> 00:26:09,450
+lines so you have many, many different straight lines that you can draw that separates these two
+
+153
+00:26:09,450 --> 00:26:22,590
+classes right infinite number of them actually correct so the perceptron learning algorithm will
+
+154
+00:26:22,590 --> 00:26:30,750
+converge to one of these three or one of these many infinitely many number of separating hyper
+
+155
+00:26:30,750 --> 00:26:38,700
+planes which one would it converge to depends on the starting point when it is hard to say apriori
+
+156
+00:26:38,700 --> 00:26:44,610
+right given a starting point can you tell me what it is going to converge to you can just
+
+157
+00:26:44,610 --> 00:26:52,830
+have to run the perceptron algorithm what is the problem yeah, yeah sorry yeah. You are going to
+
+158
+00:26:52,830 --> 00:27:00,870
+say something we will come to that okay that is a way of defining one of these infinite number
+
+159
+00:27:00,870 --> 00:27:06,210
+of hyper planes as the most desired hyper plane okay so if you think there is a way to pick one of
+
+160
+00:27:06,210 --> 00:27:19,440
+these yes we will come to that the second problem is it can take a long time and take a longtime
+
+161
+00:27:19,440 --> 00:27:28,440
+especially if the gap between the two classes is very small and if the gap between the two classes
+
+162
+00:27:28,440 --> 00:27:35,280
+is very small then it can take a long time okay so partly it is a function of to 1 but then it is,
+
+163
+00:27:35,280 --> 00:27:40,080
+it is, it is hard I mean so see setting to 1 essentially makes your thing oscillate a
+
+164
+00:27:40,080 --> 00:27:44,610
+little bit right so. So you will have something that makes a mistake here then you will go back
+
+165
+00:27:44,610 --> 00:27:48,360
+you will make a mistake here and then you have to keep going back and forth multiple times before
+
+166
+00:27:48,360 --> 00:27:54,300
+you converge to the right answer but then setting to something small okay will also make you move
+
+167
+00:27:54,300 --> 00:27:58,860
+only small steps at a time so that also may take a long time so there is always a trade-off between
+
+168
+00:27:58,860 --> 00:28:11,910
+how large you make and how small you make . And so one way of fixing this is what is one thing
+
+169
+00:28:11,910 --> 00:28:19,740
+but can increase the gap between the data points of transformations use basis expansions that we
+
+170
+00:28:19,740 --> 00:28:25,350
+talked about earlier so instead of doing it in the original next space say do it in the x2 space or
+
+171
+00:28:25,350 --> 00:28:30,330
+three x space or whatever I mean you can think of some way of scaling the data or transforming the
+
+172
+00:28:30,330 --> 00:28:36,030
+data so that the gap between the classes widen and therefore it converges quicker right.
+
+173
+00:28:36,030 --> 00:28:53,100
+But the third problem is the harder one the data is not linearly separable what will happen to
+
+174
+00:28:53,100 --> 00:29:02,430
+the perceptron algorithm right there will be no hyper plane where M is empty so as long as M is
+
+175
+00:29:02,430 --> 00:29:08,880
+not empty I am going to keep adding something to the β again and again right as long as M is
+
+176
+00:29:08,880 --> 00:29:15,300
+not empty I will keep adding it up was every iteration I will be changing the β right it is
+
+177
+00:29:15,300 --> 00:29:28,110
+not linearly separable. Then it enters then it loops basically then it loops but the problem
+
+178
+00:29:28,110 --> 00:29:34,740
+is sometimes the loops can be very, very large and if you have a very large data sets it might
+
+179
+00:29:34,740 --> 00:29:40,590
+actually be setting up a very large loop so it may not be easy to detect also right so
+
+180
+00:29:40,590 --> 00:29:45,870
+normally it takes a long time to converge that in that if it is looping so you have no way you
+
+181
+00:29:45,870 --> 00:29:48,990
+do not know if that the algorithm is taking a long time to converge or whether it is simply
+
+182
+00:29:48,990 --> 00:30:00,210
+looping so how could you indirect loops. So you think that every time it has to be
+
+183
+00:30:00,210 --> 00:30:07,140
+monotonically decrease if it is going to converge yes right you think so towards convergence yes but
+
+184
+00:30:07,140 --> 00:30:13,050
+when it is taking this whole very long time to actually work through the thing right so
+
+185
+00:30:13,050 --> 00:30:18,630
+if there is no guarantee that cardinality of M will monotonically decrease also right so
+
+186
+00:30:18,630 --> 00:30:23,610
+it is not very easy its cardinality of M is not the only thing that will give you so it
+
+187
+00:30:23,610 --> 00:30:34,860
+is yeah has no efficient way to get around that okay so the problem is and yeah.
+
+188
+00:30:34,860 --> 00:30:41,490
+There is so people discovered a lot of drawbacks to perceptrons and the biggest drawback was they
+
+189
+00:30:41,490 --> 00:30:45,660
+discovered that some very, very simple problems that you want to solve are not linearly separable
+
+190
+00:30:45,660 --> 00:31:07,320
+right so XOR so that is XOR right so XOR is not linearly separable I simply cannot
+
+191
+00:31:07,320 --> 00:31:11,100
+even solve simple problems like XOR on what a useless thing is I do not care how well you
+
+192
+00:31:11,100 --> 00:31:16,650
+make the baby speak you cannot solve XOR. So I am going to forget about people remember
+
+193
+00:31:16,650 --> 00:31:23,910
+I talked even the example how they trained a perceptron to reproduce speech and as the
+
+194
+00:31:23,910 --> 00:31:28,470
+training progress it just sounded like a baby learning to speak and people just went over it
+
+195
+00:31:28,470 --> 00:31:37,050
+any way so we'll stop here it looks like I am actually out of time so the next class we will
+
+196
+00:31:37,050 --> 00:31:43,350
+try to look up a I will try to explore a way of fixing this right so what is the problem there
+
+197
+00:31:43,350 --> 00:31:48,300
+not that it is linearly separable but the fact that it could converge to any solution
+
+198
+00:31:48,300 --> 00:31:55,170
+that is linearly separable we start by trying to define a single optimal solution.

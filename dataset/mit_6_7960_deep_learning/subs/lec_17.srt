@@ -1,0 +1,5423 @@
+1
+00:00:00,985 --> 00:00:02,440
+[SQUEAK]
+
+2
+00:00:02,440 --> 00:00:03,895
+[RUSTLING]
+
+3
+00:00:03,895 --> 00:00:07,290
+[CLICKING]
+
+4
+00:00:12,940 --> 00:00:16,440
+SARA BEERY: So today, we're moving on
+
+5
+00:00:16,440 --> 00:00:19,000
+from generative models, and we're
+
+6
+00:00:19,000 --> 00:00:22,360
+going to start talking about out-of-distribution
+
+7
+00:00:22,360 --> 00:00:24,720
+generalization.
+
+8
+00:00:24,720 --> 00:00:28,080
+And this is, I think, one of the biggest open challenges
+
+9
+00:00:28,080 --> 00:00:31,080
+for modern machine learning models, the ability
+
+10
+00:00:31,080 --> 00:00:34,840
+to generalize to data that is not explicitly covered
+
+11
+00:00:34,840 --> 00:00:37,920
+within the training distribution.
+
+12
+00:00:37,920 --> 00:00:43,160
+And so, just a bit of motivation here.
+
+13
+00:00:43,160 --> 00:00:45,960
+We've seen a lot of success in machine learning, right?
+
+14
+00:00:45,960 --> 00:00:50,760
+We have incredible models for image classification.
+
+15
+00:00:50,760 --> 00:00:54,020
+This is a aggregate of the ImageNet data set.
+
+16
+00:00:54,020 --> 00:00:56,880
+I would argue that, in many ways,
+
+17
+00:00:56,880 --> 00:00:59,400
+things like simple categorization, the types
+
+18
+00:00:59,400 --> 00:01:03,130
+of categorization we often try to do on data
+
+19
+00:01:03,130 --> 00:01:06,290
+sets like ImageNet is pretty much solved.
+
+20
+00:01:06,290 --> 00:01:08,570
+There are, of course, a few corner
+
+21
+00:01:08,570 --> 00:01:12,770
+cases that are pretty difficult, or sometimes, even erroneously
+
+22
+00:01:12,770 --> 00:01:15,650
+labeled or ambiguous that are still hard for modern models
+
+23
+00:01:15,650 --> 00:01:19,410
+within ImageNet, but mostly, it's a solved problem.
+
+24
+00:01:19,410 --> 00:01:22,830
+We've seen pretty great success on image generation.
+
+25
+00:01:22,830 --> 00:01:25,410
+We've been talking about that the last couple of days.
+
+26
+00:01:25,410 --> 00:01:29,050
+Strategy games, things like machine translation,
+
+27
+00:01:29,050 --> 00:01:30,570
+robotic manipulation, we're starting
+
+28
+00:01:30,570 --> 00:01:34,130
+to see success in all of these.
+
+29
+00:01:34,130 --> 00:01:38,770
+But then there are a lot of cases where machine learning
+
+30
+00:01:38,770 --> 00:01:40,930
+still isn't very successful.
+
+31
+00:01:40,930 --> 00:01:43,310
+And sometimes, it can be surprising.
+
+32
+00:01:43,310 --> 00:01:47,690
+So I think one interesting example here
+
+33
+00:01:47,690 --> 00:01:50,790
+is in the space of self-driving cars.
+
+34
+00:01:50,790 --> 00:01:54,230
+So we are starting to see self-driving cars be deployed.
+
+35
+00:01:54,230 --> 00:01:56,530
+I think Waymo in particular is starting
+
+36
+00:01:56,530 --> 00:02:00,340
+to actually have fleets deployed in many different areas.
+
+37
+00:02:00,340 --> 00:02:03,500
+And of course, there's complicated dynamics
+
+38
+00:02:03,500 --> 00:02:06,540
+around why we're not seeing self-driving cars at scale.
+
+39
+00:02:06,540 --> 00:02:09,620
+Regulation plays a huge role in that.
+
+40
+00:02:09,620 --> 00:02:11,940
+But I think one of the main reasons
+
+41
+00:02:11,940 --> 00:02:15,020
+is because we really don't have a good mechanism to guarantee
+
+42
+00:02:15,020 --> 00:02:18,180
+the robustness of these models.
+
+43
+00:02:18,180 --> 00:02:20,220
+We can't guarantee that they are not
+
+44
+00:02:20,220 --> 00:02:23,980
+going to make potentially harmful mistakes.
+
+45
+00:02:23,980 --> 00:02:26,500
+And this really begs the question of,
+
+46
+00:02:26,500 --> 00:02:28,780
+are these machine learning systems really ready
+
+47
+00:02:28,780 --> 00:02:30,700
+for the real world?
+
+48
+00:02:30,700 --> 00:02:36,340
+And what dimensions of deployment in the real world
+
+49
+00:02:36,340 --> 00:02:37,500
+are we still missing?
+
+50
+00:02:37,500 --> 00:02:39,220
+What do we need to be focusing on
+
+51
+00:02:39,220 --> 00:02:41,980
+to be able to actually do this effectively?
+
+52
+00:02:41,980 --> 00:02:47,460
+And I do think there's an interesting point here,
+
+53
+00:02:47,460 --> 00:02:50,020
+which is you could argue that a lot of machine learning
+
+54
+00:02:50,020 --> 00:02:52,920
+is actually actively being deployed in the real world.
+
+55
+00:02:52,920 --> 00:02:56,940
+I think the GPT models is a great example of that.
+
+56
+00:02:56,940 --> 00:03:00,960
+People are using AI more and more day to day,
+
+57
+00:03:00,960 --> 00:03:03,000
+but if I'm trying to characterize
+
+58
+00:03:03,000 --> 00:03:05,680
+the types of AI that are ready for deployment
+
+59
+00:03:05,680 --> 00:03:09,760
+versus the types of AI that, even if we try to deploy them,
+
+60
+00:03:09,760 --> 00:03:12,200
+we invest billions of dollars into figuring out
+
+61
+00:03:12,200 --> 00:03:15,600
+how to make them deployable, we're still not seeing
+
+62
+00:03:15,600 --> 00:03:19,000
+that progress or actually really seeing it happen,
+
+63
+00:03:19,000 --> 00:03:22,600
+I think it comes down to risk.
+
+64
+00:03:22,600 --> 00:03:26,160
+A lot of the cases where we see AI models deployed
+
+65
+00:03:26,160 --> 00:03:29,400
+are what I would characterize as high precision
+
+66
+00:03:29,400 --> 00:03:31,020
+human verification systems.
+
+67
+00:03:31,020 --> 00:03:35,280
+So you need the model to be good enough to be useful,
+
+68
+00:03:35,280 --> 00:03:37,480
+so it should work most of the time,
+
+69
+00:03:37,480 --> 00:03:39,400
+but you also have a human verifier
+
+70
+00:03:39,400 --> 00:03:42,520
+in the loop that is making corrections
+
+71
+00:03:42,520 --> 00:03:44,580
+when something's not right.
+
+72
+00:03:44,580 --> 00:03:46,400
+So you have this verification loop
+
+73
+00:03:46,400 --> 00:03:49,040
+that's always happening with human intelligence.
+
+74
+00:03:49,040 --> 00:03:50,680
+ChatGPT is a great example of this.
+
+75
+00:03:50,680 --> 00:03:52,020
+You prompt it with something.
+
+76
+00:03:52,020 --> 00:03:53,620
+You get a result. Maybe it's useful.
+
+77
+00:03:53,620 --> 00:03:54,980
+You probably edit it.
+
+78
+00:03:54,980 --> 00:03:57,810
+You probably interact with it in some way.
+
+79
+00:03:57,810 --> 00:04:00,383
+If it's just absolute trash, maybe you giggle about it,
+
+80
+00:04:00,383 --> 00:04:02,050
+you share it with your friends, and then
+
+81
+00:04:02,050 --> 00:04:04,490
+you prompt it with something completely different.
+
+82
+00:04:04,490 --> 00:04:07,730
+So there's this human brain that's in the loop,
+
+83
+00:04:07,730 --> 00:04:10,130
+verifying that these things work well.
+
+84
+00:04:10,130 --> 00:04:12,730
+And things like hallucination aren't so much of an issue
+
+85
+00:04:12,730 --> 00:04:14,950
+if a human is making the corrections themselves.
+
+86
+00:04:14,950 --> 00:04:17,209
+It's when we start trusting these models
+
+87
+00:04:17,209 --> 00:04:18,890
+without being human verified that we
+
+88
+00:04:18,890 --> 00:04:20,705
+start running into issues.
+
+89
+00:04:20,705 --> 00:04:22,330
+And I think another interesting example
+
+90
+00:04:22,330 --> 00:04:25,850
+of that is things like a lot of the modern machine learning
+
+91
+00:04:25,850 --> 00:04:28,210
+systems that are actively deployed in health care
+
+92
+00:04:28,210 --> 00:04:31,210
+are what we call decision support tools.
+
+93
+00:04:31,210 --> 00:04:34,770
+So they're a tool that maybe a radiologist uses
+
+94
+00:04:34,770 --> 00:04:37,370
+to try to highlight or potentially give
+
+95
+00:04:37,370 --> 00:04:43,590
+some advice on what, maybe, a diagnosis could be.
+
+96
+00:04:43,590 --> 00:04:47,610
+And then the human is actually liable to verify that and make
+
+97
+00:04:47,610 --> 00:04:48,610
+a decision.
+
+98
+00:04:48,610 --> 00:04:51,530
+And interestingly, there's been a bunch of fascinating work
+
+99
+00:04:51,530 --> 00:04:54,010
+that's come out recently that really argues both sides of
+
+100
+00:04:54,010 --> 00:04:56,060
+whether or not this is working.
+
+101
+00:04:56,060 --> 00:04:58,900
+There's research that showed that these decision support
+
+102
+00:04:58,900 --> 00:05:03,140
+tools are really great for trying to make sure that patient
+
+103
+00:05:03,140 --> 00:05:06,598
+outcomes are beneficial, that doctors aren't missing things,
+
+104
+00:05:06,598 --> 00:05:08,140
+and then there's conflicting research
+
+105
+00:05:08,140 --> 00:05:11,060
+that explicitly says that the deployment of these decision
+
+106
+00:05:11,060 --> 00:05:14,340
+support tools is actively harming patient outcomes.
+
+107
+00:05:14,340 --> 00:05:16,120
+Because doctors are becoming compliant,
+
+108
+00:05:16,120 --> 00:05:18,140
+they're not paying attention, and they're missing things
+
+109
+00:05:18,140 --> 00:05:20,432
+in that long tail of the distribution that are actually
+
+110
+00:05:20,432 --> 00:05:22,620
+quite important.
+
+111
+00:05:22,620 --> 00:05:24,300
+So the jury's still out.
+
+112
+00:05:24,300 --> 00:05:27,780
+And fascinatingly, if you look at the regulation around what it
+
+113
+00:05:27,780 --> 00:05:29,540
+actually takes to deploy decision support
+
+114
+00:05:29,540 --> 00:05:34,220
+tool in a hospital, the metrics are kind of shocking.
+
+115
+00:05:34,220 --> 00:05:36,520
+I'm not going to quote myself on the details,
+
+116
+00:05:36,520 --> 00:05:38,020
+but essentially, it's like, you have
+
+117
+00:05:38,020 --> 00:05:42,740
+to prove some percent accuracy on some small population
+
+118
+00:05:42,740 --> 00:05:44,900
+of data.
+
+119
+00:05:44,900 --> 00:05:47,245
+But it's not nearly what you would expect.
+
+120
+00:05:47,245 --> 00:05:48,620
+I remember being quite surprised.
+
+121
+00:05:48,620 --> 00:05:51,780
+Something like on the order of like 100 or 1,000 patients to be
+
+122
+00:05:51,780 --> 00:05:53,447
+able to deploy a decision support tool.
+
+123
+00:05:53,447 --> 00:05:56,030
+And you don't have to go through anything like clinical trials
+
+124
+00:05:56,030 --> 00:05:58,770
+because you're not actually making the decision.
+
+125
+00:05:58,770 --> 00:06:02,590
+You're just trying to support the decision of an expert.
+
+126
+00:06:02,590 --> 00:06:08,290
+So, really, when we have this case,
+
+127
+00:06:08,290 --> 00:06:11,630
+this is where we start to see things working well.
+
+128
+00:06:11,630 --> 00:06:14,590
+It's kind of the standard machine learning setting.
+
+129
+00:06:14,590 --> 00:06:17,230
+And it matches a lot of the underlying assumptions
+
+130
+00:06:17,230 --> 00:06:20,030
+we make in machine learning, even theoretically,
+
+131
+00:06:20,030 --> 00:06:22,790
+that the data that we are training the model on
+
+132
+00:06:22,790 --> 00:06:24,950
+is going to be IID, Independently
+
+133
+00:06:24,950 --> 00:06:27,350
+and Identically Distributed to the data we're
+
+134
+00:06:27,350 --> 00:06:28,810
+going to use the model on.
+
+135
+00:06:28,810 --> 00:06:31,910
+So you have some distribution over categories of interest,
+
+136
+00:06:31,910 --> 00:06:36,110
+data, different representative visual characteristics
+
+137
+00:06:36,110 --> 00:06:38,590
+within a category, and you're going to sample
+
+138
+00:06:38,590 --> 00:06:40,570
+from that at random for training,
+
+139
+00:06:40,570 --> 00:06:42,270
+and then you're going to do inference
+
+140
+00:06:42,270 --> 00:06:43,770
+on the rest of the data.
+
+141
+00:06:43,770 --> 00:06:47,230
+Training distribution equals test distribution.
+
+142
+00:06:47,230 --> 00:06:50,510
+This is never true in the real world.
+
+143
+00:06:50,510 --> 00:06:54,360
+So basically, there has never been
+
+144
+00:06:54,360 --> 00:06:56,760
+any such thing as a representative data
+
+145
+00:06:56,760 --> 00:06:59,400
+set of all reality.
+
+146
+00:06:59,400 --> 00:07:03,520
+And one of the reasons that this is true, even with our best
+
+147
+00:07:03,520 --> 00:07:06,680
+efforts, things like these huge data sets
+
+148
+00:07:06,680 --> 00:07:09,480
+lie on billions of image data sets
+
+149
+00:07:09,480 --> 00:07:13,460
+that try to just tackle this problem with pure scale.
+
+150
+00:07:13,460 --> 00:07:16,880
+We're going to train on all the data we have and hope that that
+
+151
+00:07:16,880 --> 00:07:20,040
+is close to being representative and IID to the data
+
+152
+00:07:20,040 --> 00:07:21,960
+we want to use the models on.
+
+153
+00:07:21,960 --> 00:07:25,160
+It still doesn't work because the world is changing.
+
+154
+00:07:25,160 --> 00:07:28,160
+So if you capture all the data today, it's
+
+155
+00:07:28,160 --> 00:07:30,040
+not going to necessarily be representative
+
+156
+00:07:30,040 --> 00:07:31,820
+of a month from now, a week from now.
+
+157
+00:07:31,820 --> 00:07:34,520
+Things happen, things change.
+
+158
+00:07:34,520 --> 00:07:37,960
+And so we often have something like this.
+
+159
+00:07:37,960 --> 00:07:40,760
+There's some fundamental difference between the training
+
+160
+00:07:40,760 --> 00:07:45,400
+and test distribution once we move to a deployment setting.
+
+161
+00:07:45,400 --> 00:07:47,422
+And so here, maybe some version of that
+
+162
+00:07:47,422 --> 00:07:48,880
+would be something like, all right,
+
+163
+00:07:48,880 --> 00:07:51,060
+we've trained a model on Cambridge.
+
+164
+00:07:51,060 --> 00:07:52,760
+So this is this data center.
+
+165
+00:07:52,760 --> 00:07:55,060
+And now, we're trying to use that model
+
+166
+00:07:55,060 --> 00:07:56,160
+in a different season.
+
+167
+00:07:56,160 --> 00:07:59,140
+Now there's snow on the ground and the model starts to fail.
+
+168
+00:07:59,140 --> 00:08:00,598
+And there's a lot of different ways
+
+169
+00:08:00,598 --> 00:08:03,420
+that we can think about how those distributions can change.
+
+170
+00:08:03,420 --> 00:08:06,980
+The data itself can become perturbed.
+
+171
+00:08:06,980 --> 00:08:09,400
+That could be adversarially.
+
+172
+00:08:09,400 --> 00:08:11,700
+We'll talk about that in a bit.
+
+173
+00:08:11,700 --> 00:08:14,540
+But it also can be simple things like,
+
+174
+00:08:14,540 --> 00:08:20,300
+h, the manufacturer of the cameras for Google Street View
+
+175
+00:08:20,300 --> 00:08:22,788
+cars made an update to their system,
+
+176
+00:08:22,788 --> 00:08:24,580
+and now there's some statistical difference
+
+177
+00:08:24,580 --> 00:08:27,180
+in terms of the sensor itself.
+
+178
+00:08:27,180 --> 00:08:29,440
+You can get a different label distribution.
+
+179
+00:08:29,440 --> 00:08:34,840
+So maybe the set of categories of interest has changed.
+
+180
+00:08:34,840 --> 00:08:36,460
+You end up with something that used
+
+181
+00:08:36,460 --> 00:08:39,220
+to be really rare becoming much more common,
+
+182
+00:08:39,220 --> 00:08:42,580
+or something just disappears entirely.
+
+183
+00:08:42,580 --> 00:08:46,140
+And then there can be lots of other types of shifts.
+
+184
+00:08:46,140 --> 00:08:50,570
+These can be shifts in the size of the sequences or the graphs
+
+185
+00:08:50,570 --> 00:08:53,830
+you're modeling, weather, geospatial shifts
+
+186
+00:08:53,830 --> 00:08:55,750
+from different countries or cities.
+
+187
+00:08:55,750 --> 00:08:56,730
+Source of measurement.
+
+188
+00:08:56,730 --> 00:08:59,230
+That's like the sensor example I said.
+
+189
+00:08:59,230 --> 00:09:02,390
+So what actually goes wrong when we have these distribution
+
+190
+00:09:02,390 --> 00:09:04,030
+differences?
+
+191
+00:09:04,030 --> 00:09:06,553
+So I thought this was a cute example.
+
+192
+00:09:06,553 --> 00:09:08,470
+It's a little hard to read, actually, probably
+
+193
+00:09:08,470 --> 00:09:11,550
+because I took a screenshot.
+
+194
+00:09:11,550 --> 00:09:17,390
+So this is a tweet by hardmaru that was basically talking about
+
+195
+00:09:17,390 --> 00:09:21,070
+essentially, there was a failure mode in Roombas
+
+196
+00:09:21,070 --> 00:09:24,630
+where they kept rolling over dog poop
+
+197
+00:09:24,630 --> 00:09:27,350
+and then smearing poop all over people's houses.
+
+198
+00:09:27,350 --> 00:09:32,190
+And so in order to try to avoid this happening, they went out
+
+199
+00:09:32,190 --> 00:09:35,750
+and they collected a very large, diverse data set of dog poop.
+
+200
+00:09:35,750 --> 00:09:38,650
+So I'm sure that was someone's like research internship.
+
+201
+00:09:42,590 --> 00:09:45,767
+So they're talking about, oh, OK, in order to do this right,
+
+202
+00:09:45,767 --> 00:09:47,350
+the way that we're going to generalize
+
+203
+00:09:47,350 --> 00:09:50,000
+to of new out of distribution thing, which is like dog poop
+
+204
+00:09:50,000 --> 00:09:52,500
+that we didn't expect to be on the floor in someone's house,
+
+205
+00:09:52,500 --> 00:09:54,458
+we're going to collect this representative data
+
+206
+00:09:54,458 --> 00:09:55,200
+set of dog poop.
+
+207
+00:09:55,200 --> 00:09:58,420
+And then the response was from Dmitry.
+
+208
+00:09:58,420 --> 00:10:01,280
+And he said, man, I wish they'd also created a diverse data
+
+209
+00:10:01,280 --> 00:10:04,940
+set of rugs so it didn't confuse black stripes with cliffs
+
+210
+00:10:04,940 --> 00:10:07,240
+and I could finally get my whole house cleaned.
+
+211
+00:10:07,240 --> 00:10:11,080
+So this is pointing out you can collect data
+
+212
+00:10:11,080 --> 00:10:13,880
+for the distribution shift you do anticipate,
+
+213
+00:10:13,880 --> 00:10:16,860
+but there's always going to be things you don't anticipate.
+
+214
+00:10:16,860 --> 00:10:19,440
+And then you end up with Dmitry, who bought a Roomba
+
+215
+00:10:19,440 --> 00:10:22,640
+and basically gets one tiny square of his rug cleaned
+
+216
+00:10:22,640 --> 00:10:25,760
+a million times.
+
+217
+00:10:25,760 --> 00:10:29,460
+So this is a silly, silly example,
+
+218
+00:10:29,460 --> 00:10:33,360
+but the point here is really that we cannot possibly
+
+219
+00:10:33,360 --> 00:10:36,280
+characterize and anticipate every way that the world is
+
+220
+00:10:36,280 --> 00:10:37,960
+going to change.
+
+221
+00:10:37,960 --> 00:10:41,300
+And so this idea that we can collect representative,
+
+222
+00:10:41,300 --> 00:10:43,800
+sufficient data to just ensure that where
+
+223
+00:10:43,800 --> 00:10:46,200
+we're going to deploy the model is IID from what we train
+
+224
+00:10:46,200 --> 00:10:48,930
+the data on is quite difficult.
+
+225
+00:10:48,930 --> 00:10:52,770
+This is reflected in quite concrete problems when you're
+
+226
+00:10:52,770 --> 00:10:55,010
+talking about AI safety, the safety of things that
+
+227
+00:10:55,010 --> 00:10:57,150
+are deployed, particularly in high risk scenarios,
+
+228
+00:10:57,150 --> 00:11:00,290
+things like medicine or self-driving cars.
+
+229
+00:11:00,290 --> 00:11:03,370
+This was a paper that was explicitly characterizing
+
+230
+00:11:03,370 --> 00:11:06,050
+what they thought were the largest problems in AI safety,
+
+231
+00:11:06,050 --> 00:11:10,730
+and robustness to distributional change was one of them.
+
+232
+00:11:10,730 --> 00:11:12,810
+There was this really interesting workshop
+
+233
+00:11:12,810 --> 00:11:15,370
+that happened back in 2022 at Princeton
+
+234
+00:11:15,370 --> 00:11:17,050
+that they called The Reproducibility
+
+235
+00:11:17,050 --> 00:11:20,050
+Crisis in Machine Learning-Based Science.
+
+236
+00:11:20,050 --> 00:11:23,530
+They looked at about 1,000 different papers across a huge
+
+237
+00:11:23,530 --> 00:11:25,570
+diversity of scientific disciplines,
+
+238
+00:11:25,570 --> 00:11:29,690
+and they essentially found that they diagnosed a bunch
+
+239
+00:11:29,690 --> 00:11:33,410
+of different potential reasons why they weren't actually seeing
+
+240
+00:11:33,410 --> 00:11:38,930
+reproducibility or generalizability in the papers
+
+241
+00:11:38,930 --> 00:11:40,810
+that they were analyzing.
+
+242
+00:11:40,810 --> 00:11:47,790
+And one of the biggest failure modes here was data poisoning.
+
+243
+00:11:47,790 --> 00:11:51,750
+So basically, the way that they constructed the evaluation
+
+244
+00:11:51,750 --> 00:11:54,590
+for these machine learning systems was, in some way,
+
+245
+00:11:54,590 --> 00:11:58,070
+artificially IID in a way that wasn't representative
+
+246
+00:11:58,070 --> 00:11:59,602
+of reality.
+
+247
+00:11:59,602 --> 00:12:01,810
+And this is something that I actually run into a lot.
+
+248
+00:12:01,810 --> 00:12:06,870
+I review a lot of papers for my other half
+
+249
+00:12:06,870 --> 00:12:10,670
+discipline, which is ecology or environmental science.
+
+250
+00:12:10,670 --> 00:12:13,390
+And in those papers, often, what I
+
+251
+00:12:13,390 --> 00:12:16,110
+see is a mismatch between the data
+
+252
+00:12:16,110 --> 00:12:19,230
+that people are developing and training and evaluating
+
+253
+00:12:19,230 --> 00:12:23,030
+machine learning methods on and the claims that they're making.
+
+254
+00:12:23,030 --> 00:12:26,830
+So it's fine to have a limited data set,
+
+255
+00:12:26,830 --> 00:12:28,350
+but then you have to understand what
+
+256
+00:12:28,350 --> 00:12:30,710
+that means about what you can claim the effectiveness
+
+257
+00:12:30,710 --> 00:12:32,590
+of the model is going to do.
+
+258
+00:12:32,590 --> 00:12:36,470
+If you have built a system that identifies
+
+259
+00:12:36,470 --> 00:12:39,985
+all of the individual macaques in a national park,
+
+260
+00:12:39,985 --> 00:12:42,110
+you can say something reasonable about your ability
+
+261
+00:12:42,110 --> 00:12:45,780
+to monitor macaques in that national park going forward,
+
+262
+00:12:45,780 --> 00:12:47,840
+as long as you've evaluated your ability
+
+263
+00:12:47,840 --> 00:12:50,080
+to understand the changes in time
+
+264
+00:12:50,080 --> 00:12:51,420
+for those individual macaques.
+
+265
+00:12:51,420 --> 00:12:53,920
+And so somehow, the way you evaluate these models
+
+266
+00:12:53,920 --> 00:12:56,862
+needs to be representative of the actual deployment use.
+
+267
+00:12:56,862 --> 00:12:59,320
+And I think this takes a lot of really careful construction
+
+268
+00:12:59,320 --> 00:12:59,780
+and thought.
+
+269
+00:12:59,780 --> 00:13:02,360
+Actually, the way we think about designing evaluation systems
+
+270
+00:13:02,360 --> 00:13:05,760
+for machine learning models is really non-trivial.
+
+271
+00:13:05,760 --> 00:13:08,840
+And if you use any of off-the-shelf tool, things
+
+272
+00:13:08,840 --> 00:13:11,080
+like Roboflow, it just automatically
+
+273
+00:13:11,080 --> 00:13:13,020
+assumes that random splitting is fine
+
+274
+00:13:13,020 --> 00:13:16,048
+and you get, often, very falsely high expectations
+
+275
+00:13:16,048 --> 00:13:17,840
+in terms of the performance of your machine
+
+276
+00:13:17,840 --> 00:13:21,240
+learning model because you've got data poisoning, essentially,
+
+277
+00:13:21,240 --> 00:13:24,760
+strong, spatial, temporal, or contextual correlations
+
+278
+00:13:24,760 --> 00:13:26,520
+in your training and test data that
+
+279
+00:13:26,520 --> 00:13:30,840
+make the model think it's doing well when it's actually not.
+
+280
+00:13:30,840 --> 00:13:35,680
+So for today, we're going to be talking first about specifically
+
+281
+00:13:35,680 --> 00:13:38,960
+adversarial examples and thinking
+
+282
+00:13:38,960 --> 00:13:43,960
+about how you might train to address adversarial examples.
+
+283
+00:13:43,960 --> 00:13:46,610
+So this is small perturbations, ways
+
+284
+00:13:46,610 --> 00:13:49,290
+that you think about robustness on the level of individual data
+
+285
+00:13:49,290 --> 00:13:50,275
+points.
+
+286
+00:13:50,275 --> 00:13:51,650
+And then, after that, we're going
+
+287
+00:13:51,650 --> 00:13:53,317
+to be talking about distribution shifts.
+
+288
+00:13:53,317 --> 00:13:55,130
+So actually, just these large-scale strips
+
+289
+00:13:55,130 --> 00:14:00,330
+from entire distributions of data and some simple
+
+290
+00:14:00,330 --> 00:14:02,730
+mechanisms that people use to try to address them.
+
+291
+00:14:02,730 --> 00:14:04,730
+Though I do want to point out that both of these
+
+292
+00:14:04,730 --> 00:14:07,530
+are pretty active, open areas of research.
+
+293
+00:14:07,530 --> 00:14:09,090
+So I can talk about progress, but we
+
+294
+00:14:09,090 --> 00:14:12,090
+don't have solutions for these.
+
+295
+00:14:12,090 --> 00:14:17,450
+So first, if we're talking about adversarial examples,
+
+296
+00:14:17,450 --> 00:14:21,210
+assume we have a simple machine learning classifier right.
+
+297
+00:14:21,210 --> 00:14:23,450
+We have this image of a pig.
+
+298
+00:14:23,450 --> 00:14:25,250
+The model says, yep, that's a pig.
+
+299
+00:14:25,250 --> 00:14:27,210
+91% confidence.
+
+300
+00:14:27,210 --> 00:14:29,770
+What an adversarial example does is
+
+301
+00:14:29,770 --> 00:14:36,430
+it adds some very small amount of random-- or not random,
+
+302
+00:14:36,430 --> 00:14:41,690
+but what looks like random noise to this image.
+
+303
+00:14:41,690 --> 00:14:49,140
+And you can see it's 0.005 times of this thing that looks random.
+
+304
+00:14:49,140 --> 00:14:52,060
+And so when you're adding this noise, which is explicitly not
+
+305
+00:14:52,060 --> 00:14:56,500
+random, it's actually optimized to be maximally adversarial.
+
+306
+00:14:56,500 --> 00:14:59,380
+You can actually change the prediction of a model
+
+307
+00:14:59,380 --> 00:15:01,580
+to be something completely different, maybe even
+
+308
+00:15:01,580 --> 00:15:06,780
+with higher confidence than the initial prediction,
+
+309
+00:15:06,780 --> 00:15:10,180
+even though, to me, this image looks identical.
+
+310
+00:15:10,180 --> 00:15:13,220
+I can see no actual visible difference
+
+311
+00:15:13,220 --> 00:15:15,700
+between the two images.
+
+312
+00:15:15,700 --> 00:15:19,940
+And so this points to the brittleness within, often,
+
+313
+00:15:19,940 --> 00:15:21,398
+machine learning models.
+
+314
+00:15:21,398 --> 00:15:22,940
+They can be mostly accurate, but they
+
+315
+00:15:22,940 --> 00:15:27,060
+can be really brittle to things that a human visual system is
+
+316
+00:15:27,060 --> 00:15:28,780
+not brittle to at all.
+
+317
+00:15:28,780 --> 00:15:30,160
+And this is a big challenge.
+
+318
+00:15:30,160 --> 00:15:34,020
+So you can imagine that if you could
+
+319
+00:15:34,020 --> 00:15:36,190
+do this of adversarial attack in something
+
+320
+00:15:36,190 --> 00:15:37,940
+like self-driving cars, you could actually
+
+321
+00:15:37,940 --> 00:15:41,870
+get models to explicitly change their decisions about street
+
+322
+00:15:41,870 --> 00:15:44,390
+signs.
+
+323
+00:15:44,390 --> 00:15:51,510
+And that would require that you're able to actually generate
+
+324
+00:15:51,510 --> 00:15:53,262
+something that, in physical reality,
+
+325
+00:15:53,262 --> 00:15:54,970
+is not just related to individual images.
+
+326
+00:15:54,970 --> 00:15:56,450
+It's actually in physical reality.
+
+327
+00:15:56,450 --> 00:15:57,570
+But that can also be done.
+
+328
+00:15:57,570 --> 00:15:59,640
+So let's see, there's a--
+
+329
+00:15:59,640 --> 00:16:02,210
+I have a movie here, but I wonder if it'll play.
+
+330
+00:16:07,870 --> 00:16:09,630
+Yeah, there we go.
+
+331
+00:16:09,630 --> 00:16:10,730
+So this is an example.
+
+332
+00:16:10,730 --> 00:16:12,170
+So here's a classifier, right?
+
+333
+00:16:12,170 --> 00:16:13,530
+It's classifying banana.
+
+334
+00:16:13,530 --> 00:16:16,230
+If you put a toaster in there, it
+
+335
+00:16:16,230 --> 00:16:18,150
+doesn't change the prediction.
+
+336
+00:16:18,150 --> 00:16:20,870
+But if you put this very specially constructed
+
+337
+00:16:20,870 --> 00:16:25,430
+adversarial sticker in there, it really convinces the model
+
+338
+00:16:25,430 --> 00:16:27,470
+that it is, in fact, a toaster.
+
+339
+00:16:27,470 --> 00:16:31,230
+So if we watch that again.
+
+340
+00:16:31,230 --> 00:16:33,950
+So the interesting thing here is that I
+
+341
+00:16:33,950 --> 00:16:35,870
+would argue from a classification standpoint,
+
+342
+00:16:35,870 --> 00:16:37,090
+this is really ambiguous.
+
+343
+00:16:37,090 --> 00:16:40,130
+You would expect a model would actually maybe even reasonably
+
+344
+00:16:40,130 --> 00:16:40,910
+predict toaster.
+
+345
+00:16:40,910 --> 00:16:42,890
+They're about the same size, whatever.
+
+346
+00:16:42,890 --> 00:16:47,850
+Whereas here, this looks nothing really like a toaster to us.
+
+347
+00:16:47,850 --> 00:16:51,530
+And so the interesting thing here
+
+348
+00:16:51,530 --> 00:16:54,330
+is that this demonstrates that it's not
+
+349
+00:16:54,330 --> 00:16:56,447
+something about high-level image characteristics,
+
+350
+00:16:56,447 --> 00:16:58,530
+that you can actually really convince these models
+
+351
+00:16:58,530 --> 00:17:02,330
+or trick these models even in physical reality.
+
+352
+00:17:02,330 --> 00:17:05,930
+And there are fun examples of this, even in 3D.
+
+353
+00:17:05,930 --> 00:17:11,170
+So this is an adversarial 3D printed example of a turtle that
+
+354
+00:17:11,170 --> 00:17:14,490
+most image classification models will categorize very confidently
+
+355
+00:17:14,490 --> 00:17:17,089
+as a rifle.
+
+356
+00:17:17,089 --> 00:17:20,569
+And you can actually show, there's a fun video
+
+357
+00:17:20,569 --> 00:17:22,130
+if you go look this up.
+
+358
+00:17:22,130 --> 00:17:23,069
+Oh, here we go.
+
+359
+00:17:23,069 --> 00:17:24,369
+Perfect.
+
+360
+00:17:24,369 --> 00:17:26,930
+Yeah, so it stays-- the prediction stays rifle,
+
+361
+00:17:26,930 --> 00:17:28,270
+even if you move it around.
+
+362
+00:17:28,270 --> 00:17:30,770
+It exists in 3D.
+
+363
+00:17:30,770 --> 00:17:35,130
+And all you're doing is changing the texture.
+
+364
+00:17:35,130 --> 00:17:40,620
+And they basically showed that their 3D turtle was really
+
+365
+00:17:40,620 --> 00:17:43,580
+consistently predicted as either rifle or sometimes as something
+
+366
+00:17:43,580 --> 00:17:46,525
+else, but it was never actually categorized as a turtle.
+
+367
+00:17:46,525 --> 00:17:48,900
+And you can do this type of adversarial attack for speech
+
+368
+00:17:48,900 --> 00:17:50,260
+as well.
+
+369
+00:17:50,260 --> 00:17:55,180
+You can add just a little bit of very explicitly targeted noise
+
+370
+00:17:55,180 --> 00:17:58,420
+in a way that perceptually, if we listened to these, or even
+
+371
+00:17:58,420 --> 00:18:00,020
+visually, within the waveform, looks
+
+372
+00:18:00,020 --> 00:18:02,000
+like it's made very, very little difference,
+
+373
+00:18:02,000 --> 00:18:03,340
+and it will actually--
+
+374
+00:18:03,340 --> 00:18:05,940
+the model will predict that the translation of that speech
+
+375
+00:18:05,940 --> 00:18:07,780
+is completely different.
+
+376
+00:18:07,780 --> 00:18:10,780
+So what does this mean about our models?
+
+377
+00:18:10,780 --> 00:18:11,680
+Are they useless?
+
+378
+00:18:11,680 --> 00:18:15,180
+What about them is so brittle?
+
+379
+00:18:15,180 --> 00:18:16,720
+Why does this happen.
+
+380
+00:18:16,720 --> 00:18:18,700
+And can you prevent it?
+
+381
+00:18:18,700 --> 00:18:22,247
+So a bit of a history of adversarial examples.
+
+382
+00:18:22,247 --> 00:18:24,580
+So this has been something that people have been looking
+
+383
+00:18:24,580 --> 00:18:26,180
+at for quite a long time.
+
+384
+00:18:26,180 --> 00:18:29,900
+Some of the first works in this space were from back in 2004.
+
+385
+00:18:29,900 --> 00:18:34,980
+And there they were looking at adversarial examples for things
+
+386
+00:18:34,980 --> 00:18:38,090
+like simple linear classifiers.
+
+387
+00:18:38,090 --> 00:18:40,950
+And one of the original motivating examples
+
+388
+00:18:40,950 --> 00:18:43,190
+was a spam filter.
+
+389
+00:18:43,190 --> 00:18:45,790
+So if you tried to build some classifier that
+
+390
+00:18:45,790 --> 00:18:47,990
+tried to categorize whether an email was spam
+
+391
+00:18:47,990 --> 00:18:51,830
+or not, could you, basically, from a red team, blue team
+
+392
+00:18:51,830 --> 00:18:54,150
+perspective, try to actually build
+
+393
+00:18:54,150 --> 00:18:58,750
+emails that would explicitly get through your spam filter?
+
+394
+00:18:58,750 --> 00:19:02,630
+And this has only gone on from there.
+
+395
+00:19:02,630 --> 00:19:04,450
+There's been a significant amount of work.
+
+396
+00:19:04,450 --> 00:19:07,230
+This was a review back from even 2018.
+
+397
+00:19:07,230 --> 00:19:09,990
+But now, particularly maybe in the context
+
+398
+00:19:09,990 --> 00:19:13,510
+of today being voting day in the United States,
+
+399
+00:19:13,510 --> 00:19:15,230
+there's a lot of work in this type
+
+400
+00:19:15,230 --> 00:19:20,950
+of adversarial dimension looking at misinformation filters now.
+
+401
+00:19:20,950 --> 00:19:24,630
+So how do you-- how do you try to detect and categorize
+
+402
+00:19:24,630 --> 00:19:29,530
+active misinformation or deepfakes on the internet,
+
+403
+00:19:29,530 --> 00:19:33,350
+on social media platforms, and then the active antagonism
+
+404
+00:19:33,350 --> 00:19:36,190
+of trying to actually develop deepfakes
+
+405
+00:19:36,190 --> 00:19:39,680
+that are undetectable by these algorithms.
+
+406
+00:19:39,680 --> 00:19:43,840
+So it's important and it's difficult.
+
+407
+00:19:43,840 --> 00:19:45,855
+So we'll talk about how do you actually do this,
+
+408
+00:19:45,855 --> 00:19:47,480
+in maybe the simplest sense, how do you
+
+409
+00:19:47,480 --> 00:19:49,920
+create an adversarial example.
+
+410
+00:19:49,920 --> 00:19:53,260
+So at first, we're going to assume, at least for now,
+
+411
+00:19:53,260 --> 00:19:55,500
+that we have some fixed machine learning model.
+
+412
+00:19:55,500 --> 00:19:59,200
+And so now, what we're doing is we're
+
+413
+00:19:59,200 --> 00:20:03,040
+actually optimizing over data related to that model.
+
+414
+00:20:03,040 --> 00:20:06,120
+So what we want to do is we want to find a small perturbation
+
+415
+00:20:06,120 --> 00:20:09,540
+to a given image that doesn't change the meaning to a human,
+
+416
+00:20:09,540 --> 00:20:12,760
+but does change the meaning to a machine learning model.
+
+417
+00:20:12,760 --> 00:20:17,080
+And so the model is going to output some probability of given
+
+418
+00:20:17,080 --> 00:20:19,480
+theta, of some given machine learning
+
+419
+00:20:19,480 --> 00:20:24,040
+model weights and architecture, some probability of y
+
+420
+00:20:24,040 --> 00:20:26,120
+the category given x.
+
+421
+00:20:26,120 --> 00:20:30,240
+We might take some softmax to get that prediction.
+
+422
+00:20:30,240 --> 00:20:34,040
+So what an adversarial example does is instead,
+
+423
+00:20:34,040 --> 00:20:38,650
+now, you try to solve this optimization problem that
+
+424
+00:20:38,650 --> 00:20:45,010
+finds the maximum over all possible small delta, so
+
+425
+00:20:45,010 --> 00:20:50,650
+small changes to x, that you now instead predict
+
+426
+00:20:50,650 --> 00:20:53,310
+a different category.
+
+427
+00:20:53,310 --> 00:20:56,530
+So some target category that is not the original category.
+
+428
+00:20:56,530 --> 00:20:58,150
+And you can do this for any category.
+
+429
+00:20:58,150 --> 00:21:00,210
+You can find the noise that would make this pig look most
+
+430
+00:21:00,210 --> 00:21:01,710
+like an airliner, but you could also
+
+431
+00:21:01,710 --> 00:21:03,870
+find the noise that made this pig look most like,
+
+432
+00:21:03,870 --> 00:21:06,490
+I don't know, your friend Bob.
+
+433
+00:21:06,490 --> 00:21:08,982
+And so you pick some wrong class and then
+
+434
+00:21:08,982 --> 00:21:10,690
+you have some given input image, and then
+
+435
+00:21:10,690 --> 00:21:15,010
+you find a small perturbation that actually maximizes this.
+
+436
+00:21:15,010 --> 00:21:17,290
+And this will be within the constraints of some set
+
+437
+00:21:17,290 --> 00:21:22,610
+of, quote unquote, "allowed perturbations."
+
+438
+00:21:22,610 --> 00:21:25,170
+A really common thing here is actually
+
+439
+00:21:25,170 --> 00:21:29,090
+that we look at this taking an infinity norm
+
+440
+00:21:29,090 --> 00:21:30,470
+over the perturbation.
+
+441
+00:21:30,470 --> 00:21:33,250
+So some intuition here is, instead of just looking
+
+442
+00:21:33,250 --> 00:21:37,950
+at the aggregate difference between the image
+
+443
+00:21:37,950 --> 00:21:41,830
+and the new one, instead, you're actually constraining it such
+
+444
+00:21:41,830 --> 00:21:44,590
+that the largest change for any given pixel
+
+445
+00:21:44,590 --> 00:21:47,470
+has to be less than a certain amount.
+
+446
+00:21:47,470 --> 00:21:49,030
+So the infinity norm essentially is
+
+447
+00:21:49,030 --> 00:21:54,590
+saying you're going to actually just keep the maximum change
+
+448
+00:21:54,590 --> 00:21:56,910
+for any pixel small.
+
+449
+00:21:56,910 --> 00:21:59,710
+And that does tend to actually result in things that
+
+450
+00:21:59,710 --> 00:22:03,830
+are unperceptible to humans.
+
+451
+00:22:03,830 --> 00:22:05,110
+Cool.
+
+452
+00:22:05,110 --> 00:22:09,110
+So how do you actually do this?
+
+453
+00:22:09,110 --> 00:22:11,630
+How do you, given some machine learning model
+
+454
+00:22:11,630 --> 00:22:13,590
+that you assume is not changing, how do you
+
+455
+00:22:13,590 --> 00:22:16,150
+find that maximum perturbation?
+
+456
+00:22:16,150 --> 00:22:19,210
+Instead of trying to solve this as an optimization problem,
+
+457
+00:22:19,210 --> 00:22:23,128
+you can actually also basically flip SGD on its head
+
+458
+00:22:23,128 --> 00:22:24,670
+and you can do this thing that people
+
+459
+00:22:24,670 --> 00:22:28,950
+call projected gradient ascent, where we're updating that data
+
+460
+00:22:28,950 --> 00:22:30,710
+perturbation over time.
+
+461
+00:22:30,710 --> 00:22:32,840
+And so first, you would take a step
+
+462
+00:22:32,840 --> 00:22:36,640
+in the direction of the gradient,
+
+463
+00:22:36,640 --> 00:22:41,100
+and then you project the result back into your feasible set.
+
+464
+00:22:41,100 --> 00:22:43,440
+So you're constraining the amount
+
+465
+00:22:43,440 --> 00:22:45,540
+that these images can change by design.
+
+466
+00:22:45,540 --> 00:22:49,000
+You're making sure that it's obeying that optimization
+
+467
+00:22:49,000 --> 00:22:51,360
+constraint that delta can't be too large.
+
+468
+00:22:51,360 --> 00:22:54,920
+And then you just repeat this over and over again.
+
+469
+00:22:54,920 --> 00:22:58,368
+It's quite simple and it actually works quite well.
+
+470
+00:22:58,368 --> 00:23:00,160
+So how do you actually defend against this?
+
+471
+00:23:00,160 --> 00:23:03,360
+Is there any way to defend against these active adversarial
+
+472
+00:23:03,360 --> 00:23:05,720
+examples?
+
+473
+00:23:05,720 --> 00:23:09,860
+Another way to think about this adversarial example,
+
+474
+00:23:09,860 --> 00:23:13,040
+instead of trying to-- yeah?
+
+475
+00:23:13,040 --> 00:23:17,120
+AUDIENCE: For the previous slides, how do you actually--
+
+476
+00:23:17,120 --> 00:23:21,320
+what kind of algorithms can you use to actually find the delta?
+
+477
+00:23:21,320 --> 00:23:24,080
+Do you need, like, for example, access to the gradients
+
+478
+00:23:24,080 --> 00:23:26,012
+of the original model?
+
+479
+00:23:26,012 --> 00:23:26,720
+SARA BEERY: Yeah.
+
+480
+00:23:26,720 --> 00:23:27,220
+Yeah.
+
+481
+00:23:27,220 --> 00:23:29,320
+So this projected gradient ascent
+
+482
+00:23:29,320 --> 00:23:32,070
+assumes that you have the model weights and the architecture
+
+483
+00:23:32,070 --> 00:23:34,050
+so you could actually calculate the gradients.
+
+484
+00:23:34,050 --> 00:23:34,550
+Yeah.
+
+485
+00:23:34,550 --> 00:23:37,902
+AUDIENCE: Is there a method that doesn't need the gradients?
+
+486
+00:23:37,902 --> 00:23:39,610
+SARA BEERY: So the question is if there's
+
+487
+00:23:39,610 --> 00:23:42,670
+methods that don't need the actual gradients of the model.
+
+488
+00:23:42,670 --> 00:23:43,170
+Yeah.
+
+489
+00:23:43,170 --> 00:23:45,730
+I mean, you could do it in a brute force way too, right?
+
+490
+00:23:45,730 --> 00:23:47,855
+You could just think about trying a bunch of things
+
+491
+00:23:47,855 --> 00:23:49,410
+and just picking the one greedily
+
+492
+00:23:49,410 --> 00:23:51,530
+that the result was worst.
+
+493
+00:23:51,530 --> 00:23:53,870
+Might be more expensive.
+
+494
+00:23:53,870 --> 00:23:57,930
+So this is just maybe a more efficient way to find something.
+
+495
+00:23:57,930 --> 00:23:58,970
+Yeah.
+
+496
+00:23:58,970 --> 00:24:01,370
+And then there are other methods that
+
+497
+00:24:01,370 --> 00:24:04,630
+try to do this, maybe in different ways.
+
+498
+00:24:04,630 --> 00:24:08,273
+So not necessarily assuming that the model can't change.
+
+499
+00:24:08,273 --> 00:24:10,190
+But that's, of course, a bit more complicated.
+
+500
+00:24:13,570 --> 00:24:16,490
+A different way to think about finding an adversarial example
+
+501
+00:24:16,490 --> 00:24:19,570
+is instead of trying to explicitly maximize
+
+502
+00:24:19,570 --> 00:24:23,730
+the probability that your image is predicted as a given
+
+503
+00:24:23,730 --> 00:24:25,610
+label, you can also think about it
+
+504
+00:24:25,610 --> 00:24:32,780
+as just maximizing the loss between your model's prediction
+
+505
+00:24:32,780 --> 00:24:35,300
+of the image plus that adversarial amount
+
+506
+00:24:35,300 --> 00:24:37,220
+and the correct label, y.
+
+507
+00:24:37,220 --> 00:24:39,520
+Here, you're not saying, I really want this to look--
+
+508
+00:24:39,520 --> 00:24:41,800
+I want the model to think it's this specific category.
+
+509
+00:24:41,800 --> 00:24:43,900
+You're just saying, OK, what's the noise that
+
+510
+00:24:43,900 --> 00:24:46,860
+will make this most wrong, it'll make the loss
+
+511
+00:24:46,860 --> 00:24:48,780
+highest for this example.
+
+512
+00:24:48,780 --> 00:24:50,500
+Whereas, in standard training, you're
+
+513
+00:24:50,500 --> 00:24:53,740
+trying to minimize that loss over all the possible thetas
+
+514
+00:24:53,740 --> 00:24:56,460
+in the model itself.
+
+515
+00:24:56,460 --> 00:24:59,180
+So then what you can think about doing
+
+516
+00:24:59,180 --> 00:25:01,780
+is like, if you have standard training where you're using SGD
+
+517
+00:25:01,780 --> 00:25:05,020
+and you're trying to minimize the loss over all
+
+518
+00:25:05,020 --> 00:25:06,820
+of the different data points in your model,
+
+519
+00:25:06,820 --> 00:25:09,860
+you can think about training adversarially,
+
+520
+00:25:09,860 --> 00:25:11,300
+trying to actually get your model
+
+521
+00:25:11,300 --> 00:25:14,820
+to be robust to the types of perturbations
+
+522
+00:25:14,820 --> 00:25:17,380
+that we're expecting this adversarial model
+
+523
+00:25:17,380 --> 00:25:19,480
+might have-- this adversarial approach might have.
+
+524
+00:25:19,480 --> 00:25:24,320
+So here, now, you have this two-loop,
+
+525
+00:25:24,320 --> 00:25:26,580
+this nested optimization.
+
+526
+00:25:26,580 --> 00:25:31,320
+So now, you're trying to find the model such
+
+527
+00:25:31,320 --> 00:25:36,360
+that for every image in your data set,
+
+528
+00:25:36,360 --> 00:25:45,680
+the worst case perturbation is still not too bad, essentially.
+
+529
+00:25:45,680 --> 00:25:48,560
+You're trying to, during training,
+
+530
+00:25:48,560 --> 00:25:52,720
+find the worst case perturbation and then find the model
+
+531
+00:25:52,720 --> 00:25:55,555
+that for all of the different--
+
+532
+00:25:55,555 --> 00:25:57,680
+all the different data points in your training data
+
+533
+00:25:57,680 --> 00:26:00,560
+set, is still as good as possible,
+
+534
+00:26:00,560 --> 00:26:02,720
+even in those worst cases.
+
+535
+00:26:02,720 --> 00:26:06,000
+Does that make sense?
+
+536
+00:26:06,000 --> 00:26:09,120
+This also can be called adaptive data augmentation.
+
+537
+00:26:09,120 --> 00:26:13,800
+And it's an interesting example of finding these hardest cases.
+
+538
+00:26:13,800 --> 00:26:18,300
+So we learned a while ago about hard example mining.
+
+539
+00:26:18,300 --> 00:26:20,760
+It's maybe most informative, sometimes,
+
+540
+00:26:20,760 --> 00:26:23,680
+if you show models explicit examples of things
+
+541
+00:26:23,680 --> 00:26:27,160
+are going to be hard and you want it still do well.
+
+542
+00:26:27,160 --> 00:26:28,150
+Yeah?
+
+543
+00:26:28,150 --> 00:26:31,210
+AUDIENCE: What happens if there are two similarly hard
+
+544
+00:26:31,210 --> 00:26:35,310
+examples, but very different from each other?
+
+545
+00:26:35,310 --> 00:26:36,810
+SARA BEERY: So the question is, what
+
+546
+00:26:36,810 --> 00:26:39,250
+happens if you have two hard examples that
+
+547
+00:26:39,250 --> 00:26:41,930
+are different from each other.
+
+548
+00:26:41,930 --> 00:26:46,530
+AUDIENCE: In this case, like, the maximally hard example
+
+549
+00:26:46,530 --> 00:26:51,130
+for the turtle was rifle, but besides rifle, there's
+
+550
+00:26:51,130 --> 00:26:59,070
+apple that is on a similar scale as being the rifle example,
+
+551
+00:26:59,070 --> 00:27:00,850
+but basically, you've only trained
+
+552
+00:27:00,850 --> 00:27:05,610
+for an adversarial example where it would be
+
+553
+00:27:05,610 --> 00:27:08,850
+something related to a rifle.
+
+554
+00:27:08,850 --> 00:27:09,710
+SARA BEERY: OK.
+
+555
+00:27:09,710 --> 00:27:11,910
+I think I get what you're asking.
+
+556
+00:27:11,910 --> 00:27:12,630
+No, no, no.
+
+557
+00:27:12,630 --> 00:27:15,090
+I actually think it's a pretty prescient question,
+
+558
+00:27:15,090 --> 00:27:16,910
+it's just worded a little complicatedly.
+
+559
+00:27:16,910 --> 00:27:19,850
+So essentially the question is like, what
+
+560
+00:27:19,850 --> 00:27:23,250
+if the data changes in a way you didn't anticipate.
+
+561
+00:27:23,250 --> 00:27:26,170
+And so this is really explicitly constrained
+
+562
+00:27:26,170 --> 00:27:28,900
+to be robust to the types of perturbations
+
+563
+00:27:28,900 --> 00:27:32,700
+that you've defined as within your reasonable set
+
+564
+00:27:32,700 --> 00:27:34,553
+of perturbations, right?
+
+565
+00:27:34,553 --> 00:27:36,220
+The cases we talked about were something
+
+566
+00:27:36,220 --> 00:27:39,980
+that looked very small amounts of noise added to images.
+
+567
+00:27:39,980 --> 00:27:45,500
+But we'll talk about in a bit, most perturbations of data
+
+568
+00:27:45,500 --> 00:27:48,120
+are not of that structure in the real world.
+
+569
+00:27:48,120 --> 00:27:51,420
+Often, if you have something that's
+
+570
+00:27:51,420 --> 00:27:55,600
+out of distribution in some way, adversarial in some way,
+
+571
+00:27:55,600 --> 00:27:58,860
+it's not specifically the static noise.
+
+572
+00:27:58,860 --> 00:28:00,460
+And for example, this type of approach
+
+573
+00:28:00,460 --> 00:28:03,140
+would probably not work very well for those stickers
+
+574
+00:28:03,140 --> 00:28:06,620
+because that's a different type of perturbation of an image.
+
+575
+00:28:06,620 --> 00:28:07,837
+Did you have a question?
+
+576
+00:28:07,837 --> 00:28:09,420
+AUDIENCE: I was basically going to ask
+
+577
+00:28:09,420 --> 00:28:12,740
+[INAUDIBLE] is that this won't help your self-driving car
+
+578
+00:28:12,740 --> 00:28:14,900
+detect a pedestrian crosswalk.
+
+579
+00:28:14,900 --> 00:28:17,380
+It's like, that's not a perturbation that would
+
+580
+00:28:17,380 --> 00:28:18,992
+be modeled mathematically.
+
+581
+00:28:18,992 --> 00:28:19,700
+SARA BEERY: Yeah.
+
+582
+00:28:19,700 --> 00:28:22,920
+Or, I mean, pedestrian in a crosswalk, probably,
+
+583
+00:28:22,920 --> 00:28:25,710
+you could reasonably say you could think about ways
+
+584
+00:28:25,710 --> 00:28:27,470
+to augment your data to capture that
+
+585
+00:28:27,470 --> 00:28:29,720
+in a bunch of different ways, but then what you end up
+
+586
+00:28:29,720 --> 00:28:30,990
+with is weird stuff.
+
+587
+00:28:30,990 --> 00:28:33,310
+Like, there's this classic example
+
+588
+00:28:33,310 --> 00:28:35,910
+of a bunch of stop signs being transported
+
+589
+00:28:35,910 --> 00:28:38,130
+by a truck in the back of a truck,
+
+590
+00:28:38,130 --> 00:28:40,750
+and there's a self-driving car behind a truck full of stop
+
+591
+00:28:40,750 --> 00:28:42,390
+signs, and it's just freaking out
+
+592
+00:28:42,390 --> 00:28:46,030
+because what is it supposed to do?
+
+593
+00:28:46,030 --> 00:28:49,950
+And so, yeah, this is, again, like I
+
+594
+00:28:49,950 --> 00:28:52,550
+said before, it's just really hard to anticipate every way
+
+595
+00:28:52,550 --> 00:28:54,050
+the world is going to change.
+
+596
+00:28:54,050 --> 00:28:56,230
+So if you could do that, then you could reasonably
+
+597
+00:28:56,230 --> 00:29:00,230
+try to be robust, either just through standard training,
+
+598
+00:29:00,230 --> 00:29:02,410
+or if you didn't have the right training data,
+
+599
+00:29:02,410 --> 00:29:04,370
+but you knew something about the way the world might change,
+
+600
+00:29:04,370 --> 00:29:05,990
+you could try to be robust explicitly
+
+601
+00:29:05,990 --> 00:29:07,032
+to those types of things.
+
+602
+00:29:07,032 --> 00:29:09,590
+You could use things empirical risk minimization.
+
+603
+00:29:09,590 --> 00:29:13,690
+But that is often not the case in reality.
+
+604
+00:29:13,690 --> 00:29:17,050
+And so a lot of the work in adversarial example,
+
+605
+00:29:17,050 --> 00:29:19,530
+adversarial robustness, they have to make assumptions,
+
+606
+00:29:19,530 --> 00:29:22,550
+and usually, those assumptions are violated in real world.
+
+607
+00:29:22,550 --> 00:29:24,040
+Unfortunately.
+
+608
+00:29:24,040 --> 00:29:24,573
+Yes?
+
+609
+00:29:24,573 --> 00:29:26,240
+AUDIENCE: Is there anything stopping you
+
+610
+00:29:26,240 --> 00:29:29,720
+from a continuous loop of minimizing the loss
+
+611
+00:29:29,720 --> 00:29:32,800
+and finding an adversarial example that maximizes the loss
+
+612
+00:29:32,800 --> 00:29:34,820
+and just continue doing the back and forth?
+
+613
+00:29:34,820 --> 00:29:41,280
+Or can a model eventually be trained so that you can't?
+
+614
+00:29:41,280 --> 00:29:46,400
+SARA BEERY: So for a reasonable set of perturbations,
+
+615
+00:29:46,400 --> 00:29:50,360
+and assuming that maybe you try a bunch
+
+616
+00:29:50,360 --> 00:29:52,960
+of different hyperparameters, it usually
+
+617
+00:29:52,960 --> 00:29:55,760
+is often possible to get these to converge.
+
+618
+00:29:55,760 --> 00:29:57,960
+But it can be difficult. Because you basically
+
+619
+00:29:57,960 --> 00:30:01,200
+have two different optimization objectives that are conflicting.
+
+620
+00:30:01,200 --> 00:30:04,960
+And so they can be pretty finicky to train.
+
+621
+00:30:04,960 --> 00:30:06,840
+Yeah.
+
+622
+00:30:06,840 --> 00:30:07,920
+Cool.
+
+623
+00:30:07,920 --> 00:30:09,670
+So now, if you're actually doing that type
+
+624
+00:30:09,670 --> 00:30:12,560
+of adversarial training, what you actually do in the training
+
+625
+00:30:12,560 --> 00:30:14,520
+loop is you would sample some data point
+
+626
+00:30:14,520 --> 00:30:16,200
+x with the ground truth y.
+
+627
+00:30:16,200 --> 00:30:20,280
+You would compute now the approximate optimal adversarial
+
+628
+00:30:20,280 --> 00:30:21,140
+perturbation.
+
+629
+00:30:21,140 --> 00:30:24,635
+And you could do that with that projected gradient ascent.
+
+630
+00:30:24,635 --> 00:30:26,260
+And then you would compute the gradient
+
+631
+00:30:26,260 --> 00:30:27,820
+given that perturbation.
+
+632
+00:30:27,820 --> 00:30:30,180
+And then you would update your loss
+
+633
+00:30:30,180 --> 00:30:31,920
+given that gradient for the parameters.
+
+634
+00:30:31,920 --> 00:30:36,660
+So essentially, for every model, you're
+
+635
+00:30:36,660 --> 00:30:39,780
+trained-- for every data point, you're training another model.
+
+636
+00:30:39,780 --> 00:30:41,640
+And we'll talk a bit about it next lecture,
+
+637
+00:30:41,640 --> 00:30:45,080
+but this also is similar to things like meta learning,
+
+638
+00:30:45,080 --> 00:30:48,277
+where, potentially, in your outer model training loop
+
+639
+00:30:48,277 --> 00:30:49,860
+now for every data point, you actually
+
+640
+00:30:49,860 --> 00:30:51,660
+have an inner training loop.
+
+641
+00:30:51,660 --> 00:30:53,580
+So it's also quite computationally expensive
+
+642
+00:30:53,580 --> 00:30:55,640
+to do this.
+
+643
+00:30:55,640 --> 00:30:56,140
+Cool.
+
+644
+00:30:56,140 --> 00:30:59,100
+So what do these examples tell us?
+
+645
+00:30:59,100 --> 00:31:02,120
+What does the fact that these adversarial examples exist
+
+646
+00:31:02,120 --> 00:31:06,700
+tell us about the models itself?
+
+647
+00:31:06,700 --> 00:31:09,260
+Arguably, I would say it tells us
+
+648
+00:31:09,260 --> 00:31:12,840
+something about the input features, the structure,
+
+649
+00:31:12,840 --> 00:31:15,260
+the statistical characteristics of the data
+
+650
+00:31:15,260 --> 00:31:18,140
+that we're training the model on that become critical
+
+651
+00:31:18,140 --> 00:31:20,500
+for the model's decision.
+
+652
+00:31:20,500 --> 00:31:22,430
+There's an interesting example here.
+
+653
+00:31:22,430 --> 00:31:25,870
+This is training data trying to teach a model to categorize
+
+654
+00:31:25,870 --> 00:31:27,990
+4's versus 9's.
+
+655
+00:31:27,990 --> 00:31:30,930
+And the interesting-- so this is MNIST, essentially.
+
+656
+00:31:30,930 --> 00:31:34,110
+But the interesting point here is that what they've done
+
+657
+00:31:34,110 --> 00:31:37,110
+is they've added spurious correlations that
+
+658
+00:31:37,110 --> 00:31:38,350
+are very small.
+
+659
+00:31:38,350 --> 00:31:42,670
+So for every 4, they've added a white pixel
+
+660
+00:31:42,670 --> 00:31:45,110
+in the top left corner, and for every 9,
+
+661
+00:31:45,110 --> 00:31:48,270
+they've added a white pixel just one next to that.
+
+662
+00:31:48,270 --> 00:31:50,713
+So now, what ends up happening is
+
+663
+00:31:50,713 --> 00:31:52,630
+if you do these adversarial perturbations that
+
+664
+00:31:52,630 --> 00:31:54,190
+are very targeted, you basically just
+
+665
+00:31:54,190 --> 00:31:56,350
+change the location of that pixel,
+
+666
+00:31:56,350 --> 00:31:59,390
+you get the exact opposite prediction.
+
+667
+00:31:59,390 --> 00:32:01,830
+And this really gets at this question of,
+
+668
+00:32:01,830 --> 00:32:04,830
+what are these models learning?
+
+669
+00:32:04,830 --> 00:32:07,590
+And they're going to learn whatever signals
+
+670
+00:32:07,590 --> 00:32:12,190
+are there, and ideally, whatever signals are easiest to pick up.
+
+671
+00:32:12,190 --> 00:32:15,110
+So this becomes just a binary classifier
+
+672
+00:32:15,110 --> 00:32:17,595
+if you consistently have these correlations.
+
+673
+00:32:17,595 --> 00:32:19,470
+The model just ignores the rest of the image.
+
+674
+00:32:19,470 --> 00:32:22,140
+It learns all it has to look at is just that top pixel
+
+675
+00:32:22,140 --> 00:32:25,000
+and it's a perfect categorizer.
+
+676
+00:32:25,000 --> 00:32:28,840
+So what this can tell us is that for any given
+
+677
+00:32:28,840 --> 00:32:33,600
+model, the features that are captured in that model,
+
+678
+00:32:33,600 --> 00:32:36,920
+some amount of them will be useless, some amount of them
+
+679
+00:32:36,920 --> 00:32:38,280
+will be robust.
+
+680
+00:32:38,280 --> 00:32:41,540
+So these are features that are correlated with the label,
+
+681
+00:32:41,540 --> 00:32:44,560
+even if they've been perturbed in some way.
+
+682
+00:32:44,560 --> 00:32:47,740
+So here, they're showing things that are quite semantic,
+
+683
+00:32:47,740 --> 00:32:52,140
+things like specific attributes of a cat ear, a dog nose,
+
+684
+00:32:52,140 --> 00:32:56,053
+or the structural shape of an animal.
+
+685
+00:32:56,053 --> 00:32:57,720
+And then there's another set of features
+
+686
+00:32:57,720 --> 00:32:59,420
+that you could argue are not robust.
+
+687
+00:32:59,420 --> 00:33:00,840
+And these are going to be features
+
+688
+00:33:00,840 --> 00:33:04,080
+that are correlated with the label in the training data set,
+
+689
+00:33:04,080 --> 00:33:06,780
+but can be flipped with perturbation.
+
+690
+00:33:06,780 --> 00:33:10,280
+So perturbing these non-robust features
+
+691
+00:33:10,280 --> 00:33:13,120
+can actually change your prediction.
+
+692
+00:33:13,120 --> 00:33:14,920
+And so many features can be correlated
+
+693
+00:33:14,920 --> 00:33:17,040
+with the label in your training data set,
+
+694
+00:33:17,040 --> 00:33:18,460
+and thus, be predictive.
+
+695
+00:33:18,460 --> 00:33:19,930
+And they might also be correlated
+
+696
+00:33:19,930 --> 00:33:23,170
+with the label in your test data set and be predictive.
+
+697
+00:33:23,170 --> 00:33:25,010
+And so they can help with accuracy.
+
+698
+00:33:25,010 --> 00:33:27,690
+Like, your accuracy is good, but they're
+
+699
+00:33:27,690 --> 00:33:31,050
+features that are beyond what a human would use, or sometimes,
+
+700
+00:33:31,050 --> 00:33:35,890
+maybe, in some subtle cases, things that we might use based
+
+701
+00:33:35,890 --> 00:33:39,830
+on stereotypes, but if we think rationally about it,
+
+702
+00:33:39,830 --> 00:33:43,050
+we might not want to use them.
+
+703
+00:33:43,050 --> 00:33:46,930
+There's a lot of examples of these types of stereotypes
+
+704
+00:33:46,930 --> 00:33:51,410
+or biases in training data sets that are against women or gender
+
+705
+00:33:51,410 --> 00:33:52,170
+minorities.
+
+706
+00:33:52,170 --> 00:33:54,450
+Like if you show--
+
+707
+00:33:54,450 --> 00:33:56,610
+early ChatGPT was very, very popular.
+
+708
+00:33:56,610 --> 00:34:00,650
+Oh, if you asked it to generate-- or not ChatGPT.
+
+709
+00:34:00,650 --> 00:34:01,390
+Diffusion models.
+
+710
+00:34:01,390 --> 00:34:03,390
+If you asked it to generate images of a doctor,
+
+711
+00:34:03,390 --> 00:34:04,765
+it gave you a bunch of white men.
+
+712
+00:34:04,765 --> 00:34:09,710
+You asked it to generate images of a homemaker,
+
+713
+00:34:09,710 --> 00:34:11,889
+it would give you a bunch of women.
+
+714
+00:34:11,889 --> 00:34:15,370
+Like, biases that are built into the data sets, that
+
+715
+00:34:15,370 --> 00:34:20,420
+might be correlated with society, but unfortunately,
+
+716
+00:34:20,420 --> 00:34:22,580
+are things that, if we think about it
+
+717
+00:34:22,580 --> 00:34:24,980
+from an ethical perspective, we don't want
+
+718
+00:34:24,980 --> 00:34:27,460
+models to make decisions on.
+
+719
+00:34:27,460 --> 00:34:29,159
+This gets really complicated.
+
+720
+00:34:29,159 --> 00:34:31,699
+So there's this entire deep literature
+
+721
+00:34:31,699 --> 00:34:34,100
+on fairness in machine learning models
+
+722
+00:34:34,100 --> 00:34:36,580
+and how you think about equity when
+
+723
+00:34:36,580 --> 00:34:38,580
+the data we're training models on
+
+724
+00:34:38,580 --> 00:34:42,020
+is just as biased as our modern society.
+
+725
+00:34:42,020 --> 00:34:45,940
+And these models tend to exacerbate societal biases.
+
+726
+00:34:45,940 --> 00:34:48,940
+So correlative predictive features
+
+727
+00:34:48,940 --> 00:34:52,594
+are not always something we want the model to use,
+
+728
+00:34:52,594 --> 00:34:54,219
+both because it can make it non-robust,
+
+729
+00:34:54,219 --> 00:34:56,653
+but also because it can exacerbate bias.
+
+730
+00:34:56,653 --> 00:34:58,320
+And where do the correlations come from?
+
+731
+00:34:58,320 --> 00:34:59,612
+They really come from the data.
+
+732
+00:35:02,140 --> 00:35:05,820
+This is a fun example, dogs and cats.
+
+733
+00:35:05,820 --> 00:35:07,618
+Turns out, if you put a dog in a bow tie,
+
+734
+00:35:07,618 --> 00:35:09,660
+the model will predict it's a cat because there's
+
+735
+00:35:09,660 --> 00:35:13,700
+this weird bias where people put bow ties on cats more than dogs.
+
+736
+00:35:13,700 --> 00:35:15,540
+Or this is a really fun one.
+
+737
+00:35:15,540 --> 00:35:18,120
+If you look at all the images of fish
+
+738
+00:35:18,120 --> 00:35:19,820
+in the ImageNet training data set,
+
+739
+00:35:19,820 --> 00:35:23,800
+you get grumpy dudes in sunglasses.
+
+740
+00:35:23,800 --> 00:35:25,420
+Maybe very happy dudes in sunglasses.
+
+741
+00:35:25,420 --> 00:35:26,160
+They're going fishing.
+
+742
+00:35:26,160 --> 00:35:26,702
+They love it.
+
+743
+00:35:26,702 --> 00:35:28,900
+But the model's not learned fish.
+
+744
+00:35:28,900 --> 00:35:33,000
+It's learned like fish in the hands of a person.
+
+745
+00:35:33,000 --> 00:35:37,680
+And then, basically, this really is just
+
+746
+00:35:37,680 --> 00:35:40,440
+rooted in how we create data sets.
+
+747
+00:35:40,440 --> 00:35:43,080
+So in an ideal world, we would have
+
+748
+00:35:43,080 --> 00:35:45,640
+representative real-world images that
+
+749
+00:35:45,640 --> 00:35:47,960
+captured the distribution of everything we would ever
+
+750
+00:35:47,960 --> 00:35:49,000
+care about.
+
+751
+00:35:49,000 --> 00:35:51,400
+We would have expert annotators who were then
+
+752
+00:35:51,400 --> 00:35:54,840
+able to build perfect annotations on top of that,
+
+753
+00:35:54,840 --> 00:35:57,180
+and then we could use that to carefully and meaningfully
+
+754
+00:35:57,180 --> 00:35:58,680
+construct a benchmark where we could
+
+755
+00:35:58,680 --> 00:36:02,120
+evaluate machine learning performance and happy sun
+
+756
+00:36:02,120 --> 00:36:03,280
+and rainbows.
+
+757
+00:36:03,280 --> 00:36:05,240
+But in the real world, we often have
+
+758
+00:36:05,240 --> 00:36:08,160
+images scraped from the internet,
+
+759
+00:36:08,160 --> 00:36:10,840
+and then we have some form of automated or crowd-collected
+
+760
+00:36:10,840 --> 00:36:14,180
+labels, and then that results in these noisy,
+
+761
+00:36:14,180 --> 00:36:16,570
+complicated, biased annotations, and that
+
+762
+00:36:16,570 --> 00:36:19,670
+might create an easy to optimize benchmark,
+
+763
+00:36:19,670 --> 00:36:21,810
+but it's not necessarily something
+
+764
+00:36:21,810 --> 00:36:24,250
+that is rooted in reality.
+
+765
+00:36:24,250 --> 00:36:27,690
+And one argument is that all these models
+
+766
+00:36:27,690 --> 00:36:29,190
+are learning are shortcuts.
+
+767
+00:36:29,190 --> 00:36:31,393
+It's all different types of pattern matching.
+
+768
+00:36:31,393 --> 00:36:32,810
+And so shortcuts here are features
+
+769
+00:36:32,810 --> 00:36:35,265
+that are correlated with the label in the training data,
+
+770
+00:36:35,265 --> 00:36:36,890
+but maybe not correlated with the label
+
+771
+00:36:36,890 --> 00:36:38,810
+under realistic distribution shifts.
+
+772
+00:36:38,810 --> 00:36:41,810
+And it turns out that these models will use them
+
+773
+00:36:41,810 --> 00:36:44,450
+and will not generalize if then those features are
+
+774
+00:36:44,450 --> 00:36:45,710
+no longer correlated.
+
+775
+00:36:48,290 --> 00:36:53,050
+Interestingly, there's a dimension of imbalance here.
+
+776
+00:36:53,050 --> 00:36:55,390
+In some of the things that I try to do,
+
+777
+00:36:55,390 --> 00:36:59,090
+I'm doing species identification in static cameras,
+
+778
+00:36:59,090 --> 00:37:05,850
+and what we get is day-night bias for nondiurnal species.
+
+779
+00:37:05,850 --> 00:37:11,370
+Raccoons show up a lot at night, and we still
+
+780
+00:37:11,370 --> 00:37:14,460
+have some images of raccoons during the day during training,
+
+781
+00:37:14,460 --> 00:37:16,620
+but the vast majority are at night.
+
+782
+00:37:16,620 --> 00:37:19,740
+So the model's learned that it's like, nighttime, kind
+
+783
+00:37:19,740 --> 00:37:22,300
+of like, fat, cat blob thing.
+
+784
+00:37:22,300 --> 00:37:23,940
+Probably a raccoon.
+
+785
+00:37:23,940 --> 00:37:26,688
+And if you show it, daytime raccoon images,
+
+786
+00:37:26,688 --> 00:37:28,480
+even though it's seen them during training,
+
+787
+00:37:28,480 --> 00:37:30,220
+the performance is just much worse.
+
+788
+00:37:30,220 --> 00:37:35,740
+Because this correlative predictive factor is not there.
+
+789
+00:37:35,740 --> 00:37:38,053
+So the models will use these shortcuts
+
+790
+00:37:38,053 --> 00:37:40,720
+when they're provided because we train them based on likelihood.
+
+791
+00:37:40,720 --> 00:37:44,300
+And this is almost-- this is often
+
+792
+00:37:44,300 --> 00:37:45,720
+related to the data itself.
+
+793
+00:37:45,720 --> 00:37:48,880
+And so, interestingly, adversarial examples,
+
+794
+00:37:48,880 --> 00:37:52,820
+those types of perturbations we talked about
+
+795
+00:37:52,820 --> 00:37:56,220
+can transfer across models trained on the same data set.
+
+796
+00:37:56,220 --> 00:37:59,820
+So the same types of shortcuts will often
+
+797
+00:37:59,820 --> 00:38:03,820
+be learned, even if you use different architectures,
+
+798
+00:38:03,820 --> 00:38:06,660
+because it's trained on the same data set.
+
+799
+00:38:06,660 --> 00:38:09,980
+And what can these shortcuts look like?
+
+800
+00:38:09,980 --> 00:38:14,670
+Yeah, things like this is a picture of a green hillside,
+
+801
+00:38:14,670 --> 00:38:18,750
+and this model is explicitly saying a herd of sheep grazing
+
+802
+00:38:18,750 --> 00:38:22,470
+on a hillside, but there's no sheep.
+
+803
+00:38:22,470 --> 00:38:25,670
+This one says a flock of birds flying in the air.
+
+804
+00:38:25,670 --> 00:38:29,062
+These are instead these really nice tree-based goats.
+
+805
+00:38:29,062 --> 00:38:30,770
+I don't know if you guys have seen these.
+
+806
+00:38:30,770 --> 00:38:31,450
+They're amazing.
+
+807
+00:38:31,450 --> 00:38:34,590
+They're goats that climb trees in the Mediterranean.
+
+808
+00:38:34,590 --> 00:38:36,950
+And then, things like this.
+
+809
+00:38:36,950 --> 00:38:40,110
+It's people holding goats, but the model
+
+810
+00:38:40,110 --> 00:38:41,590
+predicts they're dogs because it's
+
+811
+00:38:41,590 --> 00:38:44,830
+seen less of these examples of people holding dogs.
+
+812
+00:38:44,830 --> 00:38:46,310
+And these can be--
+
+813
+00:38:46,310 --> 00:38:48,950
+these are all silly, but they can be pretty problematic
+
+814
+00:38:48,950 --> 00:38:49,530
+as well.
+
+815
+00:38:52,510 --> 00:38:54,750
+There was some early work that was showing
+
+816
+00:38:54,750 --> 00:38:58,230
+that you could do a lot of really
+
+817
+00:38:58,230 --> 00:39:01,490
+nice predictive diagnostics on X-rays,
+
+818
+00:39:01,490 --> 00:39:04,470
+and then there was this pushback work that showed that, actually,
+
+819
+00:39:04,470 --> 00:39:07,830
+what the models were learning was to detect where
+
+820
+00:39:07,830 --> 00:39:11,520
+the X-ray was acquired, so which hospital, and then
+
+821
+00:39:11,520 --> 00:39:13,120
+calibrate the predictions according
+
+822
+00:39:13,120 --> 00:39:15,880
+to the distribution of diseases at that hospital, which
+
+823
+00:39:15,880 --> 00:39:19,640
+is, again, probably the type of useful,
+
+824
+00:39:19,640 --> 00:39:22,920
+but unwanted correlation.
+
+825
+00:39:22,920 --> 00:39:26,540
+Or similarly, it's learning that if an image has a ruler in it,
+
+826
+00:39:26,540 --> 00:39:30,080
+an algorithm is more likely to call a tumor malignant.
+
+827
+00:39:30,080 --> 00:39:32,280
+And so you can imagine now that, essentially,
+
+828
+00:39:32,280 --> 00:39:33,760
+what this is meaning is like you're
+
+829
+00:39:33,760 --> 00:39:37,130
+much less likely to detect the examples where a doctor hasn't
+
+830
+00:39:37,130 --> 00:39:38,880
+already thought that it might be malignant
+
+831
+00:39:38,880 --> 00:39:41,320
+and is measuring it with a ruler.
+
+832
+00:39:41,320 --> 00:39:43,580
+So not all predictive patterns are desirable.
+
+833
+00:39:43,580 --> 00:39:46,040
+And we talked about those fairness examples as well.
+
+834
+00:39:46,040 --> 00:39:48,525
+And there are tons of examples of this.
+
+835
+00:39:48,525 --> 00:39:50,400
+You can think about this in interesting ways.
+
+836
+00:39:50,400 --> 00:40:00,298
+So here, this is essentially going from IID to OOD--
+
+837
+00:40:00,298 --> 00:40:01,840
+independently identically distributed
+
+838
+00:40:01,840 --> 00:40:04,400
+to out-of-distribution.
+
+839
+00:40:04,400 --> 00:40:08,480
+You can see domain shift, adversarial examples,
+
+840
+00:40:08,480 --> 00:40:14,400
+types of distortions, pose warping, texture change,
+
+841
+00:40:14,400 --> 00:40:15,520
+background shifts.
+
+842
+00:40:15,520 --> 00:40:18,700
+All of these will often result in a human looking
+
+843
+00:40:18,700 --> 00:40:21,280
+at these images and saying it is the same category,
+
+844
+00:40:21,280 --> 00:40:25,610
+but the model ends up not predicting the same category.
+
+845
+00:40:25,610 --> 00:40:27,860
+So this is things that we want the model to generalize
+
+846
+00:40:27,860 --> 00:40:29,380
+on, but it doesn't.
+
+847
+00:40:29,380 --> 00:40:31,000
+And then there's the opposite too,
+
+848
+00:40:31,000 --> 00:40:33,740
+which is things where the machine learning model is
+
+849
+00:40:33,740 --> 00:40:35,920
+very convinced it's the same category,
+
+850
+00:40:35,920 --> 00:40:38,300
+but a human would not be.
+
+851
+00:40:38,300 --> 00:40:42,300
+And this happens for transformer models as well.
+
+852
+00:40:42,300 --> 00:40:47,300
+This was a case where people had trained transformer models
+
+853
+00:40:47,300 --> 00:40:52,860
+to look at reasoning, but it turned out
+
+854
+00:40:52,860 --> 00:40:55,580
+that they pretty explicitly couldn't generalize out
+
+855
+00:40:55,580 --> 00:40:58,140
+of the distribution of the number of the sequence lengths
+
+856
+00:40:58,140 --> 00:40:59,280
+that they were trained on.
+
+857
+00:41:02,220 --> 00:41:04,980
+So adversarial training, when you're
+
+858
+00:41:04,980 --> 00:41:07,220
+training it to be robust to these types
+
+859
+00:41:07,220 --> 00:41:10,110
+of non-robust features, and now, here, we're
+
+860
+00:41:10,110 --> 00:41:13,090
+assuming that we know the dimensions of robustness,
+
+861
+00:41:13,090 --> 00:41:16,590
+which, of course, we don't often know,
+
+862
+00:41:16,590 --> 00:41:19,550
+they do tend to teach models that
+
+863
+00:41:19,550 --> 00:41:22,230
+have outputs that are hopefully stable under these types
+
+864
+00:41:22,230 --> 00:41:24,450
+of adversarial perturbations.
+
+865
+00:41:24,450 --> 00:41:28,590
+So you get invariance to these non-robust features.
+
+866
+00:41:28,590 --> 00:41:33,790
+And of course, this type of just noise addition
+
+867
+00:41:33,790 --> 00:41:35,230
+is not necessarily representative
+
+868
+00:41:35,230 --> 00:41:39,030
+of every possible way that this data could be perturbed,
+
+869
+00:41:39,030 --> 00:41:41,510
+but there are some nice papers that
+
+870
+00:41:41,510 --> 00:41:44,110
+show that if you train in this adversarial way,
+
+871
+00:41:44,110 --> 00:41:46,910
+it can be much more expensive, but you
+
+872
+00:41:46,910 --> 00:41:54,310
+can get features that tend to be more human intuitive.
+
+873
+00:41:54,310 --> 00:41:57,910
+I'm always a little bit iffy on the use of things
+
+874
+00:41:57,910 --> 00:42:02,540
+like these activation heat maps as concrete explainers
+
+875
+00:42:02,540 --> 00:42:04,290
+of what a machine learning model is doing,
+
+876
+00:42:04,290 --> 00:42:05,870
+but these do look interesting.
+
+877
+00:42:05,870 --> 00:42:12,840
+So here, if you look at a primate, here's just some--
+
+878
+00:42:12,840 --> 00:42:15,540
+if you train with an L infinity or an L2 norm,
+
+879
+00:42:15,540 --> 00:42:18,080
+you can see that the features are a little bit more
+
+880
+00:42:18,080 --> 00:42:21,160
+semantically meaningful, they look a little bit more
+
+881
+00:42:21,160 --> 00:42:24,440
+like the object of interest.
+
+882
+00:42:24,440 --> 00:42:29,840
+And similarly, if you're trying to build these adversarial
+
+883
+00:42:29,840 --> 00:42:31,700
+examples for robust models-- now,
+
+884
+00:42:31,700 --> 00:42:34,520
+if you've trained it to be adversarial adversarially
+
+885
+00:42:34,520 --> 00:42:37,240
+robust, then the thing that you're--
+
+886
+00:42:37,240 --> 00:42:39,200
+the data that your model actually
+
+887
+00:42:39,200 --> 00:42:44,920
+generates to be adversarial has to look a little bit more
+
+888
+00:42:44,920 --> 00:42:46,560
+like the semantic category you're
+
+889
+00:42:46,560 --> 00:42:48,680
+trying to make adversarial to.
+
+890
+00:42:48,680 --> 00:42:50,640
+So here, if you start from these pigeons
+
+891
+00:42:50,640 --> 00:42:52,960
+and you try to find the adversarial example that
+
+892
+00:42:52,960 --> 00:42:55,560
+makes them look maximally like dogs, this kind of looks
+
+893
+00:42:55,560 --> 00:42:56,207
+like dogs.
+
+894
+00:42:56,207 --> 00:42:58,540
+It just really doesn't look like pigeons anymore at all.
+
+895
+00:42:58,540 --> 00:43:00,360
+And so these are things that a human
+
+896
+00:43:00,360 --> 00:43:03,800
+is more OK with these types of mistakes.
+
+897
+00:43:03,800 --> 00:43:07,490
+And there are some papers that show that adversarial trend
+
+898
+00:43:07,490 --> 00:43:10,970
+models maybe build representations
+
+899
+00:43:10,970 --> 00:43:12,930
+that transfer better to other data
+
+900
+00:43:12,930 --> 00:43:18,650
+sets, at least specifically with some of the data
+
+901
+00:43:18,650 --> 00:43:20,730
+sets shown here.
+
+902
+00:43:20,730 --> 00:43:21,250
+Cool.
+
+903
+00:43:21,250 --> 00:43:23,530
+So adversarial training you can think
+
+904
+00:43:23,530 --> 00:43:26,930
+of as like another very targeted form of maybe regularization
+
+905
+00:43:26,930 --> 00:43:29,030
+or a different type of domain adaptation,
+
+906
+00:43:29,030 --> 00:43:30,530
+but one that's quite targeted to try
+
+907
+00:43:30,530 --> 00:43:34,650
+to make the models robust to some explicitly constructed form
+
+908
+00:43:34,650 --> 00:43:36,363
+of perturbation.
+
+909
+00:43:36,363 --> 00:43:38,530
+So now, what if we're not talking about perturbation
+
+910
+00:43:38,530 --> 00:43:40,410
+on individual data points, but we're instead
+
+911
+00:43:40,410 --> 00:43:43,650
+talking about perturbations over entire distributions?
+
+912
+00:43:43,650 --> 00:43:46,690
+So here, instead of having the same distribution for training
+
+913
+00:43:46,690 --> 00:43:49,450
+and inference, now, we have a pretty different distribution
+
+914
+00:43:49,450 --> 00:43:52,330
+for training and inference.
+
+915
+00:43:52,330 --> 00:43:56,210
+So this is basically the world I live in.
+
+916
+00:43:56,210 --> 00:43:59,690
+Here, this on the left, that's a map
+
+917
+00:43:59,690 --> 00:44:02,210
+of an estimate of alpha diversity
+
+918
+00:44:02,210 --> 00:44:05,570
+globally, which is an estimate of, essentially,
+
+919
+00:44:05,570 --> 00:44:10,990
+the number of unique species that exist in any given place.
+
+920
+00:44:10,990 --> 00:44:15,910
+And then, on the right, this is a heat map of the three billion
+
+921
+00:44:15,910 --> 00:44:17,750
+existing species occurrence records
+
+922
+00:44:17,750 --> 00:44:20,590
+in the Global Biodiversity Information Facility.
+
+923
+00:44:20,590 --> 00:44:23,970
+And you can see that they are clearly not super well-aligned.
+
+924
+00:44:23,970 --> 00:44:26,270
+They're almost anti-correlated.
+
+925
+00:44:26,270 --> 00:44:30,430
+So you can imagine that if this is my training distribution,
+
+926
+00:44:30,430 --> 00:44:33,370
+and somehow, that's the distribution of the data
+
+927
+00:44:33,370 --> 00:44:36,070
+maybe I want to use the model on that, that's a pretty
+
+928
+00:44:36,070 --> 00:44:38,950
+significant distribution shift.
+
+929
+00:44:38,950 --> 00:44:41,670
+And then, add on top of that the fact that all of it's
+
+930
+00:44:41,670 --> 00:44:45,527
+changing all the time and it gets pretty messy.
+
+931
+00:44:45,527 --> 00:44:47,110
+And this was the motivation, actually,
+
+932
+00:44:47,110 --> 00:44:49,570
+behind the creation of this Wilds benchmark,
+
+933
+00:44:49,570 --> 00:44:53,443
+which I built with many other very talented people.
+
+934
+00:44:53,443 --> 00:44:55,110
+Specifically, it was reflecting the fact
+
+935
+00:44:55,110 --> 00:44:57,590
+that a lot of the literature around distribution
+
+936
+00:44:57,590 --> 00:44:59,270
+shift in the machine learning community
+
+937
+00:44:59,270 --> 00:45:03,950
+were these types of not realistic distribution shifts,
+
+938
+00:45:03,950 --> 00:45:09,280
+like, adding noise to things, or taking MNIST and rotating it
+
+939
+00:45:09,280 --> 00:45:13,880
+by 45 degrees, or making it a different color.
+
+940
+00:45:13,880 --> 00:45:16,302
+Not necessarily super representative.
+
+941
+00:45:16,302 --> 00:45:18,760
+Even some of the examples that were designed on real data--
+
+942
+00:45:18,760 --> 00:45:20,700
+I don't know if you've ever heard of the waterbirds data
+
+943
+00:45:20,700 --> 00:45:21,140
+set.
+
+944
+00:45:21,140 --> 00:45:22,765
+It's basically a data set of waterbirds
+
+945
+00:45:22,765 --> 00:45:27,600
+where the training data has waterbirds not in the water,
+
+946
+00:45:27,600 --> 00:45:30,160
+and the test data has them in the water.
+
+947
+00:45:30,160 --> 00:45:32,220
+It's a background shift problem.
+
+948
+00:45:32,220 --> 00:45:33,560
+But it's pretty artificial.
+
+949
+00:45:33,560 --> 00:45:36,820
+You've constrained it so that the categories are balanced,
+
+950
+00:45:36,820 --> 00:45:39,760
+that you're only looking at one dimension of shift,
+
+951
+00:45:39,760 --> 00:45:41,785
+and the real world is quite messy.
+
+952
+00:45:41,785 --> 00:45:43,160
+So this is a benchmark that looks
+
+953
+00:45:43,160 --> 00:45:46,240
+at distribution shifts over a pretty diverse set
+
+954
+00:45:46,240 --> 00:45:48,360
+of real-world domains, everything
+
+955
+00:45:48,360 --> 00:45:54,480
+from different scans from hospitals,
+
+956
+00:45:54,480 --> 00:45:59,280
+to different locations of species categorization,
+
+957
+00:45:59,280 --> 00:46:03,490
+generalizing mapping of poverty across countries,
+
+958
+00:46:03,490 --> 00:46:08,090
+looking at comments across demographics.
+
+959
+00:46:08,090 --> 00:46:11,930
+And essentially, what this benchmark highlighted
+
+960
+00:46:11,930 --> 00:46:15,450
+was that when you move out of distribution
+
+961
+00:46:15,450 --> 00:46:18,210
+in these realistic ways, basically,
+
+962
+00:46:18,210 --> 00:46:21,370
+model performance degrades significantly.
+
+963
+00:46:21,370 --> 00:46:24,530
+And the way you actually think about measuring this is you
+
+964
+00:46:24,530 --> 00:46:26,370
+can try to explicitly construct benchmarks
+
+965
+00:46:26,370 --> 00:46:30,070
+that look at performance over realistic distribution shifts.
+
+966
+00:46:30,070 --> 00:46:34,130
+So here, we looked at the gap between a control,
+
+967
+00:46:34,130 --> 00:46:36,610
+in distribution test data-- and note that this is not
+
+968
+00:46:36,610 --> 00:46:38,270
+actually identical.
+
+969
+00:46:38,270 --> 00:46:41,370
+It's just randomly sampled from within the training data
+
+970
+00:46:41,370 --> 00:46:42,410
+locations.
+
+971
+00:46:42,410 --> 00:46:44,290
+And then you have some new cameras
+
+972
+00:46:44,290 --> 00:46:46,790
+that are held out that are out of distribution.
+
+973
+00:46:46,790 --> 00:46:49,250
+And you can see that macro F1 performance degrades
+
+974
+00:46:49,250 --> 00:46:52,010
+by like, 16%, which is pretty significant.
+
+975
+00:46:52,010 --> 00:46:53,770
+And if you're thinking about what
+
+976
+00:46:53,770 --> 00:46:55,450
+are the factors that could lead to this,
+
+977
+00:46:55,450 --> 00:46:56,950
+there's a bunch of different things.
+
+978
+00:46:56,950 --> 00:46:58,950
+It could explicitly be things like background.
+
+979
+00:46:58,950 --> 00:47:00,830
+It can be things like pose of cameras.
+
+980
+00:47:00,830 --> 00:47:04,322
+So the top and the bottom are more horizontal.
+
+981
+00:47:04,322 --> 00:47:06,280
+The one in the middle is posed a little higher,
+
+982
+00:47:06,280 --> 00:47:09,220
+so you're getting different angles on species.
+
+983
+00:47:09,220 --> 00:47:11,880
+Here, you can see some of them have passive infrared at night.
+
+984
+00:47:11,880 --> 00:47:13,080
+Some of them have color.
+
+985
+00:47:13,080 --> 00:47:16,020
+So the dimensions of shift in the real world
+
+986
+00:47:16,020 --> 00:47:18,260
+can often be quite complex.
+
+987
+00:47:18,260 --> 00:47:19,880
+But not just that visual shift.
+
+988
+00:47:19,880 --> 00:47:22,300
+We also have pretty explicit what can be termed
+
+989
+00:47:22,300 --> 00:47:23,520
+subpopulation shift.
+
+990
+00:47:23,520 --> 00:47:26,780
+So essentially, for any given location or any given camera,
+
+991
+00:47:26,780 --> 00:47:29,260
+it has its own unique distribution over the categories
+
+992
+00:47:29,260 --> 00:47:30,420
+of interest.
+
+993
+00:47:30,420 --> 00:47:31,500
+It makes sense.
+
+994
+00:47:31,500 --> 00:47:33,380
+That camera is placed in a microhabitat.
+
+995
+00:47:33,380 --> 00:47:35,380
+That microhabitat has a local set
+
+996
+00:47:35,380 --> 00:47:39,020
+of species that's interacting with it.
+
+997
+00:47:39,020 --> 00:47:40,700
+And it turns out that this is basically
+
+998
+00:47:40,700 --> 00:47:43,520
+true for every ecological problem I've ever worked on.
+
+999
+00:47:43,520 --> 00:47:45,060
+So different ecosystems will have
+
+1000
+00:47:45,060 --> 00:47:47,220
+both subpopulation and visual distribution
+
+1001
+00:47:47,220 --> 00:47:48,820
+shifts no matter what.
+
+1002
+00:47:48,820 --> 00:47:51,780
+This is looking at detecting individual trees
+
+1003
+00:47:51,780 --> 00:47:54,540
+from aerial data across the National Ecological Observatory
+
+1004
+00:47:54,540 --> 00:47:55,280
+Network.
+
+1005
+00:47:55,280 --> 00:47:58,740
+Trees both look different and are at different densities.
+
+1006
+00:47:58,740 --> 00:48:04,190
+You can similarly try to think about categorizing detecting
+
+1007
+00:48:04,190 --> 00:48:06,430
+and counting fish in different rivers
+
+1008
+00:48:06,430 --> 00:48:10,190
+across the Pacific Northwest, or things
+
+1009
+00:48:10,190 --> 00:48:17,990
+like categorizing urban trees across different cities in North
+
+1010
+00:48:17,990 --> 00:48:18,990
+America.
+
+1011
+00:48:18,990 --> 00:48:20,910
+And you can see that both visually
+
+1012
+00:48:20,910 --> 00:48:22,830
+and from the sense of subpopulation here,
+
+1013
+00:48:22,830 --> 00:48:26,757
+the colors are mapping the 20 most common genera of trees.
+
+1014
+00:48:26,757 --> 00:48:28,590
+And the differences in colors between cities
+
+1015
+00:48:28,590 --> 00:48:31,487
+capture that subpopulation distribution.
+
+1016
+00:48:31,487 --> 00:48:33,070
+And it turns out the performance often
+
+1017
+00:48:33,070 --> 00:48:36,310
+has a very strong correlation with subpopulation distribution
+
+1018
+00:48:36,310 --> 00:48:37,150
+similarity.
+
+1019
+00:48:37,150 --> 00:48:40,510
+So this is if you're looking at training on one city for urban
+
+1020
+00:48:40,510 --> 00:48:43,870
+forests and testing on another, you actually get these kind
+
+1021
+00:48:43,870 --> 00:48:47,950
+of block-wise structures where cities that have similar
+
+1022
+00:48:47,950 --> 00:48:50,850
+training distributions will--
+
+1023
+00:48:50,850 --> 00:48:52,910
+you'll generalize better within the set
+
+1024
+00:48:52,910 --> 00:48:55,210
+of cities that have similar training distributions.
+
+1025
+00:48:55,210 --> 00:48:56,790
+It's kind of intuitive.
+
+1026
+00:48:56,790 --> 00:48:58,850
+These models are trained on likelihoods,
+
+1027
+00:48:58,850 --> 00:49:00,570
+so you're almost building a prior
+
+1028
+00:49:00,570 --> 00:49:03,370
+based on the subpopulation distribution within any given
+
+1029
+00:49:03,370 --> 00:49:04,410
+training set.
+
+1030
+00:49:04,410 --> 00:49:06,710
+And if you're matching that more closely,
+
+1031
+00:49:06,710 --> 00:49:10,450
+your model is more likely to predict well.
+
+1032
+00:49:10,450 --> 00:49:13,090
+And there's some nice examples of simple approaches
+
+1033
+00:49:13,090 --> 00:49:17,530
+you can try to do to actually match the expected
+
+1034
+00:49:17,530 --> 00:49:20,330
+distribution of your test data, even
+
+1035
+00:49:20,330 --> 00:49:21,630
+without additional training.
+
+1036
+00:49:21,630 --> 00:49:25,835
+So things like if you can build or if you can represent a prior,
+
+1037
+00:49:25,835 --> 00:49:27,210
+if you have some way to construct
+
+1038
+00:49:27,210 --> 00:49:30,810
+a prior over the set of categories you expect to see,
+
+1039
+00:49:30,810 --> 00:49:33,770
+then you can just do a really simple Bayesian remapping
+
+1040
+00:49:33,770 --> 00:49:38,710
+of the predicted probabilities to take into account that prior.
+
+1041
+00:49:38,710 --> 00:49:40,450
+I'll talk about that a little.
+
+1042
+00:49:40,450 --> 00:49:42,930
+So what do you do about distribution shift?
+
+1043
+00:49:42,930 --> 00:49:44,650
+So one thing that people have looked at
+
+1044
+00:49:44,650 --> 00:49:48,090
+is this that's quite similar to the adversarial example we
+
+1045
+00:49:48,090 --> 00:49:50,530
+talked about before is something called distributionally
+
+1046
+00:49:50,530 --> 00:49:52,810
+robust optimization.
+
+1047
+00:49:52,810 --> 00:49:56,250
+So far, we were saying we were allowed to perturb each data
+
+1048
+00:49:56,250 --> 00:49:59,662
+point by some limited amount, but an alternative
+
+1049
+00:49:59,662 --> 00:50:01,620
+is that you can actually think about perturbing
+
+1050
+00:50:01,620 --> 00:50:06,540
+the entire training distribution by some amount together.
+
+1051
+00:50:06,540 --> 00:50:10,740
+And so now, what this looks like is distribution--
+
+1052
+00:50:10,740 --> 00:50:13,620
+robust optimization essentially just assumes
+
+1053
+00:50:13,620 --> 00:50:17,620
+that the worst case data distribution shift might occur.
+
+1054
+00:50:17,620 --> 00:50:20,580
+So you might have some different samples
+
+1055
+00:50:20,580 --> 00:50:21,760
+in terms of the densities.
+
+1056
+00:50:21,760 --> 00:50:25,420
+You might take some of the data away, et cetera, et cetera.
+
+1057
+00:50:25,420 --> 00:50:28,500
+And so they think about ways you can perturb the distribution
+
+1058
+00:50:28,500 --> 00:50:29,980
+of your training data set.
+
+1059
+00:50:29,980 --> 00:50:32,260
+And then they take a similar approach
+
+1060
+00:50:32,260 --> 00:50:34,680
+to what we did with the adversarial examples,
+
+1061
+00:50:34,680 --> 00:50:37,460
+but now, you're trying to find the model such
+
+1062
+00:50:37,460 --> 00:50:42,260
+that-- in expectation over all of the possible distribution
+
+1063
+00:50:42,260 --> 00:50:45,620
+shifts on a data set, you're still
+
+1064
+00:50:45,620 --> 00:50:48,860
+going to minimize the loss.
+
+1065
+00:50:48,860 --> 00:50:51,580
+And so you're basically, again, finding that worst case scenario
+
+1066
+00:50:51,580 --> 00:50:53,538
+and trying to make sure that the model is still
+
+1067
+00:50:53,538 --> 00:50:59,010
+robust to that for any given-- for any given distribution.
+
+1068
+00:50:59,010 --> 00:51:03,630
+But again, this assumes that now you can only move the data
+
+1069
+00:51:03,630 --> 00:51:06,110
+distribution a certain amount.
+
+1070
+00:51:06,110 --> 00:51:09,157
+And measuring the difference in pixels is one thing,
+
+1071
+00:51:09,157 --> 00:51:10,990
+but actually trying to think about measuring
+
+1072
+00:51:10,990 --> 00:51:13,110
+the distance between probability distributions
+
+1073
+00:51:13,110 --> 00:51:14,210
+can be quite complicated.
+
+1074
+00:51:14,210 --> 00:51:16,350
+So there's Chi squared distance, people
+
+1075
+00:51:16,350 --> 00:51:17,990
+use things like Wasserstein distance,
+
+1076
+00:51:17,990 --> 00:51:20,270
+maximum mean discrepancy.
+
+1077
+00:51:20,270 --> 00:51:24,870
+But how you actually measure how far away two distributions are,
+
+1078
+00:51:24,870 --> 00:51:28,470
+if they're simple, like measurable distributions
+
+1079
+00:51:28,470 --> 00:51:30,373
+in one dimension is one thing.
+
+1080
+00:51:30,373 --> 00:51:32,790
+If you're trying to measure the difference in distribution
+
+1081
+00:51:32,790 --> 00:51:35,470
+between 1 million image data set and another million image
+
+1082
+00:51:35,470 --> 00:51:37,285
+data set, it gets a lot more complicated.
+
+1083
+00:51:37,285 --> 00:51:38,910
+And a lot of times, what people will do
+
+1084
+00:51:38,910 --> 00:51:40,410
+is they'll actually leverage learned
+
+1085
+00:51:40,410 --> 00:51:42,550
+representations of those data sets and then try
+
+1086
+00:51:42,550 --> 00:51:45,030
+to make some metric for the similarity
+
+1087
+00:51:45,030 --> 00:51:47,990
+across, maybe, the clustering, the representation space.
+
+1088
+00:51:47,990 --> 00:51:50,590
+This stuff is pretty tricky.
+
+1089
+00:51:50,590 --> 00:51:52,070
+It's not definitely something that
+
+1090
+00:51:52,070 --> 00:51:55,880
+works super well in practice.
+
+1091
+00:51:55,880 --> 00:51:59,240
+So when you're actually trying to think about what this means
+
+1092
+00:51:59,240 --> 00:52:01,720
+for generalization, essentially, DRO
+
+1093
+00:52:01,720 --> 00:52:05,400
+optimizes for this set of possible training data sets
+
+1094
+00:52:05,400 --> 00:52:07,000
+and distributions.
+
+1095
+00:52:07,000 --> 00:52:10,640
+And so if you have some underlying data distribution, p,
+
+1096
+00:52:10,640 --> 00:52:12,920
+and your empirical training data is
+
+1097
+00:52:12,920 --> 00:52:15,000
+p sub n, so some subset of that or
+
+1098
+00:52:15,000 --> 00:52:17,880
+some specific characterization of that,
+
+1099
+00:52:17,880 --> 00:52:20,820
+then if you've built some distance metric
+
+1100
+00:52:20,820 --> 00:52:24,880
+and you say that the new distribution of where you're
+
+1101
+00:52:24,880 --> 00:52:28,120
+going to use the model is within some distance
+
+1102
+00:52:28,120 --> 00:52:31,960
+of the true distribution, then you're
+
+1103
+00:52:31,960 --> 00:52:34,620
+guaranteed to perform well on the true distribution.
+
+1104
+00:52:34,620 --> 00:52:36,222
+So you're guaranteed to generalize.
+
+1105
+00:52:36,222 --> 00:52:37,680
+But of course, I'm sure you can see
+
+1106
+00:52:37,680 --> 00:52:39,180
+the challenge of the limitation here,
+
+1107
+00:52:39,180 --> 00:52:41,013
+which is that you have to be able to measure
+
+1108
+00:52:41,013 --> 00:52:43,180
+the distance between distributions,
+
+1109
+00:52:43,180 --> 00:52:44,760
+and you have to be able to sample
+
+1110
+00:52:44,760 --> 00:52:47,462
+these hypothetical distributions in a way that's realistic.
+
+1111
+00:52:47,462 --> 00:52:48,920
+And of course, the more complicated
+
+1112
+00:52:48,920 --> 00:52:52,680
+your data structures are, the harder that gets.
+
+1113
+00:52:52,680 --> 00:52:55,930
+So interestingly, this has been applied pretty effectively when
+
+1114
+00:52:55,930 --> 00:52:58,450
+you're talking about some of these class imbalance
+
+1115
+00:52:58,450 --> 00:53:00,050
+challenges.
+
+1116
+00:53:00,050 --> 00:53:03,210
+So here, you can use DRO.
+
+1117
+00:53:03,210 --> 00:53:06,250
+So you assume your population has some number of subgroups.
+
+1118
+00:53:06,250 --> 00:53:08,770
+Population here could be any given category.
+
+1119
+00:53:08,770 --> 00:53:10,330
+So let's say the raccoons.
+
+1120
+00:53:10,330 --> 00:53:12,530
+And now, maybe our raccoons have two subgroups,
+
+1121
+00:53:12,530 --> 00:53:16,738
+like nighttime and daytime images of raccoons.
+
+1122
+00:53:16,738 --> 00:53:18,530
+Traditionally, you would think about trying
+
+1123
+00:53:18,530 --> 00:53:21,810
+to minimize the empirical risk or the average error
+
+1124
+00:53:21,810 --> 00:53:23,670
+across these different subgroups,
+
+1125
+00:53:23,670 --> 00:53:26,730
+assuming you have access to the actual labels
+
+1126
+00:53:26,730 --> 00:53:29,610
+of those subgroups, which maybe for day versus night, we do.
+
+1127
+00:53:29,610 --> 00:53:33,730
+Because we have a clock for our time or for our camera.
+
+1128
+00:53:33,730 --> 00:53:39,250
+But it turns out that if you have a minority subgroup, if you
+
+1129
+00:53:39,250 --> 00:53:44,570
+get 50% error on that minority group in terms of accuracy,
+
+1130
+00:53:44,570 --> 00:53:46,670
+that's only 10% overall error.
+
+1131
+00:53:46,670 --> 00:53:48,930
+So your model might learn, if it's effective,
+
+1132
+00:53:48,930 --> 00:53:51,990
+to just ignore the minority group.
+
+1133
+00:53:51,990 --> 00:53:54,750
+So you can ignore the minority group and still get decent loss.
+
+1134
+00:53:54,750 --> 00:53:58,990
+And so the idea is that DRO can learn to effectively
+
+1135
+00:53:58,990 --> 00:54:02,790
+automatically reweight your data to pay more attention
+
+1136
+00:54:02,790 --> 00:54:06,430
+to those minority classes.
+
+1137
+00:54:06,430 --> 00:54:09,590
+And so what that might actually look like is it's
+
+1138
+00:54:09,590 --> 00:54:12,110
+forcing the model to place less emphasis
+
+1139
+00:54:12,110 --> 00:54:13,990
+on noisy features and more emphasis
+
+1140
+00:54:13,990 --> 00:54:17,190
+on useful and predictive features.
+
+1141
+00:54:17,190 --> 00:54:20,590
+And it also seems to be explicitly, empirically,
+
+1142
+00:54:20,590 --> 00:54:23,170
+at least, shifting the distribution
+
+1143
+00:54:23,170 --> 00:54:25,910
+so that they're more separable.
+
+1144
+00:54:25,910 --> 00:54:29,410
+But there's some really nice work, actually,
+
+1145
+00:54:29,410 --> 00:54:33,710
+that shows that you can do this, and there's adaptations of DRO
+
+1146
+00:54:33,710 --> 00:54:36,590
+to do this, even if you don't know what the subgroups are
+
+1147
+00:54:36,590 --> 00:54:38,950
+or how many subgroups there are.
+
+1148
+00:54:38,950 --> 00:54:42,150
+So people use DRO a lot for some of these fairness
+
+1149
+00:54:42,150 --> 00:54:43,090
+type of problems.
+
+1150
+00:54:43,090 --> 00:54:45,893
+You want a model to learn to recognize doctors,
+
+1151
+00:54:45,893 --> 00:54:47,310
+and you don't want it to be biased
+
+1152
+00:54:47,310 --> 00:54:49,710
+against female doctors or Black doctors,
+
+1153
+00:54:49,710 --> 00:54:53,160
+even though the training data is biased against those groups.
+
+1154
+00:54:53,160 --> 00:54:56,220
+And so in that worst case distribution shift,
+
+1155
+00:54:56,220 --> 00:54:58,895
+you could imagine, you might only sample those minority
+
+1156
+00:54:58,895 --> 00:55:00,520
+groups, and then your model performance
+
+1157
+00:55:00,520 --> 00:55:03,960
+would be significantly worse if you aren't making sure
+
+1158
+00:55:03,960 --> 00:55:06,040
+that you're robust to that.
+
+1159
+00:55:06,040 --> 00:55:08,400
+So what do we do about distribution shift?
+
+1160
+00:55:08,400 --> 00:55:11,160
+First, you can try distributionally robust
+
+1161
+00:55:11,160 --> 00:55:13,960
+optimization, or there's many other ways
+
+1162
+00:55:13,960 --> 00:55:16,980
+to think about building robustness, extensions of this,
+
+1163
+00:55:16,980 --> 00:55:21,280
+cetera, that take an algorithmic approach to trying to reduce--
+
+1164
+00:55:21,280 --> 00:55:24,560
+to trying to make models more robust to these types
+
+1165
+00:55:24,560 --> 00:55:27,720
+of distribution shifts or make them more fair.
+
+1166
+00:55:27,720 --> 00:55:31,400
+You can also do things explicitly learn
+
+1167
+00:55:31,400 --> 00:55:34,620
+priors over the distribution shifts that you see.
+
+1168
+00:55:34,620 --> 00:55:38,440
+So, for example, subpopulation shift.
+
+1169
+00:55:38,440 --> 00:55:42,880
+So this is a case-- this is an example by [INAUDIBLE] where
+
+1170
+00:55:42,880 --> 00:55:45,180
+they looked at species identification,
+
+1171
+00:55:45,180 --> 00:55:47,760
+and they explicitly learned separately
+
+1172
+00:55:47,760 --> 00:55:53,130
+a modular, like, spatiotemporal prior over places and times
+
+1173
+00:55:53,130 --> 00:55:56,490
+that then they use to remap the likelihoods of any given
+
+1174
+00:55:56,490 --> 00:55:59,130
+probability or any given species based
+
+1175
+00:55:59,130 --> 00:56:00,790
+on where the image was taken.
+
+1176
+00:56:00,790 --> 00:56:01,470
+Makes sense.
+
+1177
+00:56:01,470 --> 00:56:03,770
+This is what ecologists do.
+
+1178
+00:56:03,770 --> 00:56:06,890
+Often, there are categories that look really similar.
+
+1179
+00:56:06,890 --> 00:56:13,232
+And if you just saw the image without any context about where,
+
+1180
+00:56:13,232 --> 00:56:14,690
+when it was taken, it might be hard
+
+1181
+00:56:14,690 --> 00:56:16,930
+even for an expert to be able to distinguish them.
+
+1182
+00:56:16,930 --> 00:56:21,210
+But if you have that additional information, it's quite useful.
+
+1183
+00:56:21,210 --> 00:56:24,850
+And so this is just addressing this generalization problem
+
+1184
+00:56:24,850 --> 00:56:29,050
+as an image categorization with this kind of specialization
+
+1185
+00:56:29,050 --> 00:56:32,690
+that's coming from a prior based on space and time.
+
+1186
+00:56:32,690 --> 00:56:35,250
+So you can think about capturing some of the information you
+
+1187
+00:56:35,250 --> 00:56:37,410
+might have about the structure of your domain
+
+1188
+00:56:37,410 --> 00:56:41,422
+or the distributions spatially, temporally, et cetera,
+
+1189
+00:56:41,422 --> 00:56:43,130
+within your domain, and actually building
+
+1190
+00:56:43,130 --> 00:56:46,570
+that directly into your model as a way to do a better job.
+
+1191
+00:56:46,570 --> 00:56:48,410
+And those models improve species accuracy
+
+1192
+00:56:48,410 --> 00:56:51,580
+by like, 10% on a naturalist.
+
+1193
+00:56:51,580 --> 00:56:55,500
+You can think about mechanisms like domain adaptation.
+
+1194
+00:56:55,500 --> 00:56:58,940
+So this is actually an entire category
+
+1195
+00:56:58,940 --> 00:57:03,380
+of models that tries to learn given a source
+
+1196
+00:57:03,380 --> 00:57:06,940
+domain and a target domain where maybe you don't necessarily
+
+1197
+00:57:06,940 --> 00:57:08,840
+have labels for your target domain,
+
+1198
+00:57:08,840 --> 00:57:11,760
+how to align their representations during training
+
+1199
+00:57:11,760 --> 00:57:13,660
+so that you can enforce generalization
+
+1200
+00:57:13,660 --> 00:57:15,360
+or adaptation to a new target domain,
+
+1201
+00:57:15,360 --> 00:57:17,900
+even if you don't have a lot of data or labeled data.
+
+1202
+00:57:17,900 --> 00:57:22,020
+I'll talk a little bit more about that in next lecture.
+
+1203
+00:57:22,020 --> 00:57:23,200
+This is pretty interesting.
+
+1204
+00:57:23,200 --> 00:57:24,620
+You can come up with creative ways
+
+1205
+00:57:24,620 --> 00:57:28,083
+to try to diagnose the failure modes of your model, which often
+
+1206
+00:57:28,083 --> 00:57:30,500
+teaches you more about the biases in your initial training
+
+1207
+00:57:30,500 --> 00:57:33,180
+data than anything else, but they can be really interesting.
+
+1208
+00:57:33,180 --> 00:57:35,740
+And so there's ways to think about doing that by just
+
+1209
+00:57:35,740 --> 00:57:37,660
+striving your evaluation.
+
+1210
+00:57:37,660 --> 00:57:40,960
+So breaking down evaluation per category,
+
+1211
+00:57:40,960 --> 00:57:43,140
+along different dimensions, like night versus day,
+
+1212
+00:57:43,140 --> 00:57:46,120
+or different sexes of the participants,
+
+1213
+00:57:46,120 --> 00:57:48,400
+assuming you have the labels to be able to do that,
+
+1214
+00:57:48,400 --> 00:57:50,560
+break that down and look at the relative
+
+1215
+00:57:50,560 --> 00:57:54,600
+maybe call it fairness across the category set.
+
+1216
+00:57:54,600 --> 00:57:57,320
+This is an interesting example coming from Aleksander Madry's
+
+1217
+00:57:57,320 --> 00:58:01,160
+group, where they actually use modern generative AI
+
+1218
+00:58:01,160 --> 00:58:06,200
+models to generate hypothetical counterfactuals to try
+
+1219
+00:58:06,200 --> 00:58:11,840
+to understand or diagnose failure modes in training.
+
+1220
+00:58:11,840 --> 00:58:14,655
+And so here, for example, what they found--
+
+1221
+00:58:14,655 --> 00:58:16,280
+one interesting example that they found
+
+1222
+00:58:16,280 --> 00:58:18,197
+through this diagnosis, and then they actually
+
+1223
+00:58:18,197 --> 00:58:20,280
+were able to demonstrate it on real data,
+
+1224
+00:58:20,280 --> 00:58:22,960
+is that these models are really good at recognizing plates
+
+1225
+00:58:22,960 --> 00:58:25,700
+if they have food on them, but if it doesn't have food on it,
+
+1226
+00:58:25,700 --> 00:58:27,480
+it's consistently being categorized
+
+1227
+00:58:27,480 --> 00:58:30,640
+as like, trays or buckets.
+
+1228
+00:58:30,640 --> 00:58:32,780
+So you can try to diagnose the failures,
+
+1229
+00:58:32,780 --> 00:58:34,200
+and that might be so that you can
+
+1230
+00:58:34,200 --> 00:58:35,960
+try to then collect training data to be
+
+1231
+00:58:35,960 --> 00:58:37,260
+robust to those failures.
+
+1232
+00:58:37,260 --> 00:58:41,000
+It also can just be useful if you're trying to think about how
+
+1233
+00:58:41,000 --> 00:58:43,820
+and in what way you should trust a model in deployment.
+
+1234
+00:58:47,160 --> 00:58:50,170
+I would argue that probably the best
+
+1235
+00:58:50,170 --> 00:58:52,930
+thing you can do in any of these cases
+
+1236
+00:58:52,930 --> 00:58:55,890
+is just get training data that's representative of your test
+
+1237
+00:58:55,890 --> 00:58:56,770
+domain.
+
+1238
+00:58:56,770 --> 00:59:00,370
+So in practice, a lot of these algorithmic approaches,
+
+1239
+00:59:00,370 --> 00:59:05,530
+these creative ways to try to train these models to be robust,
+
+1240
+00:59:05,530 --> 00:59:07,410
+to be effective, usually, they're
+
+1241
+00:59:07,410 --> 00:59:09,970
+just significantly worse than just more training
+
+1242
+00:59:09,970 --> 00:59:12,410
+data that's representative of your test domain.
+
+1243
+00:59:12,410 --> 00:59:16,050
+So from a practical perspective, if you really need something
+
+1244
+00:59:16,050 --> 00:59:19,290
+to work well, you have to invest in the right kind of training
+
+1245
+00:59:19,290 --> 00:59:20,130
+data.
+
+1246
+00:59:20,130 --> 00:59:23,130
+And if that's something that you just cannot get for various
+
+1247
+00:59:23,130 --> 00:59:26,090
+reasons, various constraints, maybe the species is super
+
+1248
+00:59:26,090 --> 00:59:30,410
+endangered, or you're trying to get a model to work on a planet
+
+1249
+00:59:30,410 --> 00:59:33,970
+that we've never landed something on, or we're trying
+
+1250
+00:59:33,970 --> 00:59:37,850
+to get models to work under the Arctic or in the deep sea where
+
+1251
+00:59:37,850 --> 00:59:41,970
+we just are not actually able to collect large-scale training
+
+1252
+00:59:41,970 --> 00:59:45,410
+data, then you're probably going to have to have a human look
+
+1253
+00:59:45,410 --> 00:59:47,940
+at a lot of the data still.
+
+1254
+00:59:47,940 --> 00:59:49,980
+This kind of where do we actually
+
+1255
+00:59:49,980 --> 00:59:52,460
+see these things work in practice,
+
+1256
+00:59:52,460 --> 00:59:55,660
+often, it's really just where we have in-distribution training
+
+1257
+00:59:55,660 --> 00:59:56,700
+data.
+
+1258
+00:59:56,700 --> 00:59:59,980
+And so this is a really active area of research.
+
+1259
+00:59:59,980 --> 01:00:01,448
+And for any of you that are working
+
+1260
+01:00:01,448 --> 01:00:03,740
+on trying to bring deep learning to your own scientific
+
+1261
+01:00:03,740 --> 01:00:07,300
+challenges or problems, I would totally recommend that you look
+
+1262
+01:00:07,300 --> 01:00:09,080
+into this literature when you think about,
+
+1263
+01:00:09,080 --> 01:00:11,540
+how do I get the model to work where I want it to work?
+
+1264
+01:00:11,540 --> 01:00:14,880
+But I also think that if you have limited time and effort,
+
+1265
+01:00:14,880 --> 01:00:17,820
+sometimes, it's just worth it to label more data.
+
+1266
+01:00:17,820 --> 01:00:20,500
+At least, practically, that's what I've found.
+
+1267
+01:00:20,500 --> 01:00:22,220
+Cool.
+
+1268
+01:00:22,220 --> 01:00:26,500
+So, in summary, out-of-distribution
+
+1269
+01:00:26,500 --> 01:00:28,160
+generalization is a big challenge.
+
+1270
+01:00:28,160 --> 01:00:30,580
+It's still a big challenge.
+
+1271
+01:00:30,580 --> 01:00:32,740
+But digging into it helps us understand
+
+1272
+01:00:32,740 --> 01:00:34,940
+what neural networks learn, and it also really helps
+
+1273
+01:00:34,940 --> 01:00:38,780
+us try to understand this very tight and complex relationship
+
+1274
+01:00:38,780 --> 01:00:41,580
+between the training data and where we can effectively
+
+1275
+01:00:41,580 --> 01:00:42,820
+use models.
+
+1276
+01:00:42,820 --> 01:00:45,230
+And then we talked about adversarial examples
+
+1277
+01:00:45,230 --> 01:00:47,450
+and distribution shifts today.
+
+1278
+01:00:47,450 --> 01:00:51,230
+Are there any other questions?
+
+1279
+01:00:51,230 --> 01:00:51,910
+Yeah?
+
+1280
+01:00:51,910 --> 01:00:54,350
+AUDIENCE: Has anyone looked at activation functions?
+
+1281
+01:00:54,350 --> 01:00:57,870
+Like, do activation functions change how easy or difficult
+
+1282
+01:00:57,870 --> 01:01:02,030
+it is to fool one of these?
+
+1283
+01:01:02,030 --> 01:01:05,070
+SARA BEERY: So you mean like things like Grad-CAM?
+
+1284
+01:01:05,070 --> 01:01:06,470
+AUDIENCE: [INAUDIBLE]
+
+1285
+01:01:06,470 --> 01:01:07,670
+SARA BEERY: Oh.
+
+1286
+01:01:07,670 --> 01:01:09,470
+AUDIENCE: There's a stark non-linearity
+
+1287
+01:01:09,470 --> 01:01:11,590
+between [INAUDIBLE] it's not.
+
+1288
+01:01:11,590 --> 01:01:13,150
+SARA BEERY: Gotcha.
+
+1289
+01:01:13,150 --> 01:01:15,790
+The question was, have people explored
+
+1290
+01:01:15,790 --> 01:01:18,590
+how the choice of activation functions, so something
+
+1291
+01:01:18,590 --> 01:01:20,970
+like a ReLU or a GELU Or something,
+
+1292
+01:01:20,970 --> 01:01:25,750
+how that affects generalization or robustness.
+
+1293
+01:01:25,750 --> 01:01:30,270
+I bet, but I don't know any literature on it.
+
+1294
+01:01:30,270 --> 01:01:36,220
+I think my intuition says it wouldn't have a huge effect.
+
+1295
+01:01:36,220 --> 01:01:38,470
+But it would be interesting to dig in and try and see.
+
+1296
+01:01:38,470 --> 01:01:40,512
+And it might have a bigger effect on simpler data
+
+1297
+01:01:40,512 --> 01:01:41,773
+sets than more complex ones.
+
+1298
+01:01:41,773 --> 01:01:43,190
+So there might be papers that show
+
+1299
+01:01:43,190 --> 01:01:46,520
+that has an effect on MNIST style training or CIFAR style
+
+1300
+01:01:46,520 --> 01:01:49,895
+training, but that might not actually generalize versus all
+
+1301
+01:01:49,895 --> 01:01:51,520
+of the other different complicated ways
+
+1302
+01:01:51,520 --> 01:01:55,560
+that models and architectures affect performance.
+
+1303
+01:01:55,560 --> 01:01:59,040
+But that's totally just my best guess.
+
+1304
+01:01:59,040 --> 01:02:00,300
+I'm actually kind of curious.
+
+1305
+01:02:00,300 --> 01:02:03,000
+I'm going to go look into it.
+
+1306
+01:02:03,000 --> 01:02:04,820
+Does anyone else-- does anyone else know?
+
+1307
+01:02:04,820 --> 01:02:07,832
+Have people looked into robustness and--
+
+1308
+01:02:07,832 --> 01:02:09,540
+AUDIENCE: Sorry, that's another question.
+
+1309
+01:02:09,540 --> 01:02:10,460
+SARA BEERY: Yeah, OK.
+
+1310
+01:02:10,460 --> 01:02:13,200
+AUDIENCE: So this you talk about, this more like
+
+1311
+01:02:13,200 --> 01:02:14,620
+supervised fine-tuning.
+
+1312
+01:02:14,620 --> 01:02:18,020
+So having robust-- finding robustness examples.
+
+1313
+01:02:18,020 --> 01:02:20,960
+But would that be more cost saving
+
+1314
+01:02:20,960 --> 01:02:25,520
+to just reinforcement learning when you have that noise
+
+1315
+01:02:25,520 --> 01:02:29,440
+and then add whatever noise happens and then just label it
+
+1316
+01:02:29,440 --> 01:02:31,540
+by just like, human feedback.
+
+1317
+01:02:31,540 --> 01:02:35,640
+Seems like a much more cost saving instead of this example
+
+1318
+01:02:35,640 --> 01:02:37,280
+by example.
+
+1319
+01:02:37,280 --> 01:02:39,320
+SARA BEERY: So the question was, instead
+
+1320
+01:02:39,320 --> 01:02:42,240
+of trying to do this type of robust training
+
+1321
+01:02:42,240 --> 01:02:46,640
+to hypothetical different perturbations,
+
+1322
+01:02:46,640 --> 01:02:48,940
+both to the images or the distributions,
+
+1323
+01:02:48,940 --> 01:02:51,580
+does it make sense to use other types
+
+1324
+01:02:51,580 --> 01:02:54,935
+direct feedback, like active human intervention,
+
+1325
+01:02:54,935 --> 01:02:56,560
+things like human in the loop learning,
+
+1326
+01:02:56,560 --> 01:02:58,700
+or possibly something like reinforcement learning,
+
+1327
+01:02:58,700 --> 01:03:03,140
+or DPO might be an example, Direct Preference Optimization.
+
+1328
+01:03:03,140 --> 01:03:05,080
+So, yeah, people totally do that.
+
+1329
+01:03:05,080 --> 01:03:08,340
+It can be much more efficient if you have a specific target
+
+1330
+01:03:08,340 --> 01:03:09,700
+data set in mind.
+
+1331
+01:03:09,700 --> 01:03:13,780
+This idea of how do you get to a good result on that data
+
+1332
+01:03:13,780 --> 01:03:16,760
+quickly is, again, a pretty active area of research,
+
+1333
+01:03:16,760 --> 01:03:21,540
+and people do lots of different things to do that effectively.
+
+1334
+01:03:21,540 --> 01:03:23,420
+Domain adaptation that I mentioned is one.
+
+1335
+01:03:23,420 --> 01:03:25,920
+Fine-tuning, if you're talking about supervised fine-tuning,
+
+1336
+01:03:25,920 --> 01:03:27,540
+assuming you have labels already,
+
+1337
+01:03:27,540 --> 01:03:29,660
+or you can try to be more efficient in collecting
+
+1338
+01:03:29,660 --> 01:03:33,180
+the labels to get to that good result on that data.
+
+1339
+01:03:33,180 --> 01:03:36,100
+But I think a lot of the work I talked about today was really
+
+1340
+01:03:36,100 --> 01:03:40,910
+with this goal of being generalizably robust, like,
+
+1341
+01:03:40,910 --> 01:03:45,933
+robust to any imagined hypothetical change.
+
+1342
+01:03:45,933 --> 01:03:47,350
+And of course, then the limitation
+
+1343
+01:03:47,350 --> 01:03:49,945
+is you don't know the way the data is going to change.
+
+1344
+01:03:49,945 --> 01:03:52,570
+And so if you know exactly the way the data is going to change,
+
+1345
+01:03:52,570 --> 01:03:55,030
+you have a target in mind, then optimizing
+
+1346
+01:03:55,030 --> 01:03:57,410
+for that efficiently is totally possible.
+
+1347
+01:03:57,410 --> 01:03:59,310
+Does that distinction make sense?
+
+1348
+01:03:59,310 --> 01:04:02,070
+So it's maybe the difference between trying
+
+1349
+01:04:02,070 --> 01:04:05,910
+to be robust to distribution shifts versus trying
+
+1350
+01:04:05,910 --> 01:04:08,530
+to adapt to a specific distribution shift,
+
+1351
+01:04:08,530 --> 01:04:11,590
+or specialize to a specific distribution shift.
+
+1352
+01:04:11,590 --> 01:04:13,390
+Yeah.
+
+1353
+01:04:13,390 --> 01:04:14,530
+Any other questions?
+
+1354
+01:04:19,470 --> 01:04:20,150
+Cool.
+
+1355
+01:04:20,150 --> 01:04:21,430
+All right.
+
+1356
+01:04:21,430 --> 01:04:23,940
+Take the extra time and go vote.

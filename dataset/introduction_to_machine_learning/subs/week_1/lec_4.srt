@@ -1,0 +1,355 @@
+1
+00:00:10,950 --> 00:00:20,400
+Hi and welcome to this module that introduces reinforcement learning. So far we have
+
+2
+00:00:20,400 --> 00:00:24,600
+been looking at popular models of machine learning such as supervised and unsupervised
+
+3
+00:00:24,600 --> 00:00:28,530
+learning. In the supervised learning we looked at the classification in the regression problem and
+
+4
+00:00:28,530 --> 00:00:33,570
+in unsupervised learning we looked at clustering and frequent pattern so on and so forth.
+
+5
+00:00:33,570 --> 00:00:39,000
+And I have a question for you so. So how did you learn to cycle was
+
+6
+00:00:39,000 --> 00:00:42,870
+it supervised learning or was it unsupervised learning right.
+
+7
+00:00:42,870 --> 00:00:47,790
+There is really no one telling you how you should cycle right. I mean how much how
+
+8
+00:00:47,790 --> 00:00:51,720
+many pounds of pressure you should put with your left foot and what angle you should be
+
+9
+00:00:51,720 --> 00:00:56,730
+leaning and so on so forth and if you think of it as a supervised learning problem that
+
+10
+00:00:56,730 --> 00:01:02,430
+is how it should be and it was not completely unsupervised because it is not like you just
+
+11
+00:01:02,430 --> 00:01:06,750
+watch people cycling and then figure out what the pattern that you should move in
+
+12
+00:01:06,750 --> 00:01:10,710
+order to cycle and then you just magically got on a cycle and started cycling right.
+
+13
+00:01:10,710 --> 00:01:17,640
+So what was the crucial thing here? There is a trial and error component. So you have to
+
+14
+00:01:17,640 --> 00:01:24,450
+get on the cycle. You had to try things out yourself before you could learn how
+
+15
+00:01:24,450 --> 00:01:29,220
+to cycle in a acceptable manner right. So you have some kind of feedback it is
+
+16
+00:01:29,220 --> 00:01:33,690
+not completely unsupervised right there will be somebody standing there and if you learn
+
+17
+00:01:33,690 --> 00:01:37,860
+to cycle as a kid there was somebody standing there and clapping and saying hey great great
+
+18
+00:01:37,860 --> 00:01:42,390
+good job. Come on go on go on or something like that and of course falling down hurts.
+
+19
+00:01:42,390 --> 00:01:47,520
+So you know that right so there is some amount of trial and error component and that is feedback
+
+20
+00:01:47,520 --> 00:01:53,400
+that you are getting from the environment. So this kind of learning where you are learning to control
+
+21
+00:01:53,400 --> 00:02:00,000
+a system through the trial and error and the minimal feedback is essentially what reinforcement
+
+22
+00:02:00,000 --> 00:02:07,050
+learning is. A mathematical formalization that captures this kind of learning is what we refer
+
+23
+00:02:07,050 --> 00:02:13,200
+to as reinforcement learning right. So in the RL framework you typically think of a learning agent.
+
+24
+00:02:13,710 --> 00:02:18,840
+We already looked at learning agents, it could be the supervisor learner or it could
+
+25
+00:02:18,840 --> 00:02:23,130
+be an unsupervised agent in this case you have a reinforcement learning agent that learns from
+
+26
+00:02:23,130 --> 00:02:30,190
+close interaction with an environment that is outside the control of the agent right.
+
+27
+00:02:30,190 --> 00:02:38,590
+The RL agent learns from close interaction with an environment. So what do I mean by
+
+28
+00:02:38,590 --> 00:02:47,560
+close interaction here is that the agent senses the state in which the environment is right and
+
+29
+00:02:47,560 --> 00:02:52,810
+it takes an action which it then applies to the environment which causes the state of the
+
+30
+00:02:52,810 --> 00:02:57,880
+environment to change so thereby completing the interaction cycle. So the agent senses
+
+31
+00:02:57,880 --> 00:03:02,770
+what is the state of the environment so if it is a cycle it is going to sense what angle is
+
+32
+00:03:02,770 --> 00:03:08,620
+the cycle tilting in at what speed I am moving forward right and on what speed I am falling and
+
+33
+00:03:08,620 --> 00:03:13,480
+so on so forth all this constitute the state of this system state of the environment. The agent
+
+34
+00:03:13,480 --> 00:03:18,460
+is going to take an appropriate action which would be okay, lean to the right or push down with your
+
+35
+00:03:18,460 --> 00:03:23,560
+right leg and then this action is then applied to the environment and that in turn changes
+
+36
+00:03:23,560 --> 00:03:29,050
+the state of the environment. The agent learns from such close interaction with the environment
+
+37
+00:03:29,050 --> 00:03:34,900
+and we typically assume that the environment is stochastic so every time you take an action you
+
+38
+00:03:34,900 --> 00:03:38,440
+are not going to get the same response from the environment so things could be slightly different
+
+39
+00:03:38,440 --> 00:03:44,470
+right so there might be a small stone in the road that you did not have the last time you went over
+
+40
+00:03:44,470 --> 00:03:51,670
+this place and therefore what was a smooth ride could suddenly turn bumpy and so on so forth. So
+
+41
+00:03:51,670 --> 00:03:56,020
+you know that cycling always has some amount of noise and then you have to react to the noise.
+
+42
+00:03:56,020 --> 00:04:04,660
+So apart from this interaction the mathematical abstraction also assumes that there is some kind
+
+43
+00:04:04,660 --> 00:04:10,840
+of an evaluation signal that is available from the environment that gives you some
+
+44
+00:04:10,840 --> 00:04:17,380
+measure of how well you are performing in this particular task. If you remember we needed to
+
+45
+00:04:17,380 --> 00:04:22,090
+have an evaluation measure for every task and we are assuming that this comes in the
+
+46
+00:04:22,090 --> 00:04:26,560
+form of some kind of a scalar evaluation from the environment. It could be somebody clapping
+
+47
+00:04:26,560 --> 00:04:29,740
+and saying that here you are doing well or it could be falling down and getting hurt;
+
+48
+00:04:29,740 --> 00:04:34,270
+so all of this would be translated to some kind of a numeric scale.
+
+49
+00:04:34,270 --> 00:04:40,150
+And that's the mathematical abstraction that we make. So the goal of the agent is to learn
+
+50
+00:04:40,150 --> 00:04:47,560
+a policy which is a kind of mapping from the states that you sense to the actions that you
+
+51
+00:04:47,560 --> 00:04:54,820
+apply so as to maximize a measure of long-term performance so I'm not just interested in staying
+
+52
+00:04:54,820 --> 00:04:59,470
+upright for the next two seconds but I am really interested in getting from point A to point B.
+
+53
+00:04:59,470 --> 00:05:05,410
+So I have to make sure that I stay balanced throughout the entire duration of the ride.
+
+54
+00:05:05,410 --> 00:05:11,830
+So this is the basic idea behind the reinforcement learning problem so each reinforcement algorithm
+
+55
+00:05:11,830 --> 00:05:17,650
+the goal is to learn a policy that maximizes some measure of long-term performance right.
+
+56
+00:05:17,650 --> 00:05:22,360
+So there have been many successful applications of reinforcement learning so one of some of the
+
+57
+00:05:22,360 --> 00:05:27,670
+marquee applications come from the domain of game playing like with many classical AI approaches.
+
+58
+00:05:27,670 --> 00:05:34,780
+So backgammon is a board game based on die rolls. If people have not familiar with Backgammon,
+
+59
+00:05:34,780 --> 00:05:40,600
+it is similar to the game Ludo but it's also got a rich history people have been playing
+
+60
+00:05:40,600 --> 00:05:45,280
+it for several centuries and there are even world championships in backgammon. And the
+
+61
+00:05:45,280 --> 00:05:50,020
+world's best player of backgammon is actually reinforcement learning engine. Ao notice that
+
+62
+00:05:50,020 --> 00:05:55,660
+I did not qualify it saying the world's best computer player or anything so it was the
+
+63
+00:05:55,660 --> 00:06:01,480
+world's best player and that managed to beat the world champion in backgammon over tournament.
+
+64
+00:06:03,580 --> 00:06:10,480
+More recent vintage so people have also gotten reinforcement learning agent to play at the video
+
+65
+00:06:10,480 --> 00:06:15,520
+games, Atari video games from scratch. So the input to the system were like pixels from the
+
+66
+00:06:15,520 --> 00:06:20,230
+screens right and the output from the system where the joystick controls and they managed
+
+67
+00:06:20,230 --> 00:06:28,390
+to play this games from scratch right. And so in autonomous agents like in robots and other
+
+68
+00:06:28,390 --> 00:06:33,610
+autonomous agents reinforcement learning is almost always the learning algorithm of choice
+
+69
+00:06:33,610 --> 00:06:42,670
+and so in adaptive control and one of the again very prominent success stories of reinforcement
+
+70
+00:06:42,670 --> 00:06:50,660
+learning is this helicopter pilot that was initially trained by Andrew Ng at Berkeley
+
+71
+00:06:50,660 --> 00:06:56,630
+and later at Stanford where he could train the reinforcement learning algorithm to fly helicopter
+
+72
+00:06:56,630 --> 00:07:03,860
+and at near human level competence. And there are other applications where people have looked
+
+73
+00:07:03,860 --> 00:07:08,600
+at applying within combinatorial optimization problems solving really hard optimization problems
+
+74
+00:07:08,600 --> 00:07:16,310
+and also in personalization and in adaptive systems like intelligent tutoring systems right.
+
+75
+00:07:16,310 --> 00:07:23,750
+And so to wrap up the set of introductory modules just wanted to recap the different
+
+76
+00:07:23,750 --> 00:07:27,440
+machine learning paradigms that will be be covering in the course. So the first one we
+
+77
+00:07:27,440 --> 00:07:32,330
+will be looking at is supervised learning where we will be looking at learning in input-output map.
+
+78
+00:07:32,330 --> 00:07:40,520
+And so the classes the tasks that we look here or classification where the outputs that we are
+
+79
+00:07:40,520 --> 00:07:47,480
+looking to predict or categorical outputs like yes or no or blue or red or buy a computer or
+
+80
+00:07:47,480 --> 00:07:52,040
+not buy a computer. And the second supervised learning problem we look at is a regression
+
+81
+00:07:52,040 --> 00:07:56,060
+where the output is continuous output. And the second class of problems we look at
+
+82
+00:07:56,060 --> 00:08:00,530
+are unsupervised learning problems where we are interested in discovering patterns in the data.
+
+83
+00:08:00,530 --> 00:08:06,380
+Not necessarily in predicting a specific output and the canonical task we look at
+
+84
+00:08:06,380 --> 00:08:10,940
+here are clustering where we are interested in finding cohesive groups in the data and also
+
+85
+00:08:10,940 --> 00:08:16,940
+Association rules where we are interested in finding frequently occurring patterns
+
+86
+00:08:16,940 --> 00:08:23,840
+right and the third paradigm which we will spend very little time on is reinforcement
+
+87
+00:08:23,840 --> 00:08:29,990
+learning where you are interested in learning control or learning to control a system based
+
+88
+00:08:29,990 --> 00:08:35,120
+on minimal feedback so from the next module onwards we will start looking at
+
+89
+00:08:35,120 --> 00:08:40,850
+taking a little bit more mathematically rigorous look at machine learning.

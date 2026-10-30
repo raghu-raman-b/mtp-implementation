@@ -1,0 +1,1011 @@
+1
+00:00:26,220 --> 00:00:37,440
+The first thing concerns the starting value of the weights right, so you have all this
+
+2
+00:00:37,440 --> 00:00:41,280
+alpha and beta you have this whole set of parameters in a neural network right,
+
+3
+00:00:41,280 --> 00:00:47,700
+so we talked about gradient descent but gradient descent starts at some point in the weight space
+
+4
+00:00:47,700 --> 00:00:52,470
+right, so you need to have an initial guess for what your alpha and your beta should be
+
+5
+00:00:52,470 --> 00:01:10,530
+right. So what should you do what are the good guess? set them all to1 is it yeah,
+
+6
+00:01:10,530 --> 00:01:16,110
+so setting all of them to the same value whether it is one or sometimes people say
+
+7
+00:01:16,110 --> 00:01:22,260
+this 0 right setting all of them to the same value is usually not a good choice right.
+
+8
+00:01:22,260 --> 00:01:29,460
+More often than not you will end up in some weird part of your gradient space and you will
+
+9
+00:01:29,460 --> 00:01:33,360
+find it hard to get out right it is very rare that you are going to come up with a
+
+10
+00:01:33,360 --> 00:01:37,470
+actual solution where all the weights are the same right. So if you were going to start off
+
+11
+00:01:37,470 --> 00:01:42,060
+with a solution where all the weights are same right it is going to be hard to specialize right,
+
+12
+00:01:42,060 --> 00:02:02,640
+so typically what you do is you do use random initialization, but there is one more constraint
+
+13
+00:02:02,640 --> 00:02:10,410
+let us be feeling really lonely one more constraint to the random initialization.
+
+14
+00:02:10,410 --> 00:02:27,260
+So what do you think that would be the constraint yeah of course you do not really want to have
+
+15
+00:02:27,260 --> 00:02:34,910
+infinite weights yeah, so but then what should the min and max is, so you really want your weights
+
+16
+00:02:34,910 --> 00:02:43,250
+to be rather small okay? So just think about what is the implication of having really small weights
+
+17
+00:02:43,250 --> 00:03:01,760
+what is the implication of having really small weights, so you remember your sigmoid right, so if
+
+18
+00:03:01,760 --> 00:03:09,350
+your weights are really small where do you expect the outputs to lie? You know your alpha transpose
+
+19
+00:03:09,350 --> 00:03:17,450
+x or your beta transpose z will lie somewhere in this region because this is where 0 is right.
+
+20
+00:03:17,450 --> 00:03:24,080
+So this is 0.5 or 0 depending on whether you are using tan H or the sigmoid,
+
+21
+00:03:24,080 --> 00:03:32,180
+so if you are using the sigmoid, so right around 0 you will have this 0.5, so if you look at this
+
+22
+00:03:32,180 --> 00:03:41,300
+region this is almost a linear region correct. It is almost a linear region so I would really
+
+23
+00:03:41,300 --> 00:03:47,330
+like to start off my network so that most of the outputs of the neurons are in the linear region.
+
+24
+00:03:47,330 --> 00:03:55,430
+Why is that? Can you think of it and you have enough information to answer this question. The
+
+25
+00:03:55,430 --> 00:04:00,470
+gradient will be larger right so the gradient will be larger if you are somewhere around here.
+
+26
+00:04:00,470 --> 00:04:06,620
+So even small changes in the input space or small changes in the weights will actually cause a large
+
+27
+00:04:06,620 --> 00:04:13,070
+change in the output right, so if you end up going somewhere here or somewhere here right you can see
+
+28
+00:04:13,070 --> 00:04:17,510
+that you are already saturated right, so you really have to drag yourself all the way here
+
+29
+00:04:17,510 --> 00:04:26,000
+to see any change. So if you are somewhere in the middle you are more sensitive right to what the
+
+30
+00:04:26,000 --> 00:04:32,600
+input right you are more sensitive to the weight changes right. So all of this helps you learn more
+
+31
+00:04:32,600 --> 00:04:37,430
+rapidly, so this is one of the reasons you start off with random initializations around 0.
+
+32
+00:04:37,430 --> 00:04:43,910
+Of course you can make everything zero but then that will put you in a very weird part of the
+
+33
+00:04:43,910 --> 00:04:50,360
+part of the search space right. So it is good to have some kind of randomness so that each
+
+34
+00:04:50,360 --> 00:05:10,400
+wait can specialize to different things okay. It used to be the big bane of neural networks
+
+35
+00:05:10,400 --> 00:05:19,670
+over fitting so why is that the case? You know all of you remember what over fitting is right,
+
+36
+00:05:19,670 --> 00:05:31,730
+sorry yeah so I mean people remember what over fitting is yes, the training examples right there
+
+37
+00:05:31,730 --> 00:05:34,940
+essentially you are fitting the parameters very closely to the training examples.
+
+38
+00:05:34,940 --> 00:05:38,540
+So you are not able to do any kind of generalization to unseen examples right
+
+39
+00:05:38,540 --> 00:05:44,450
+and the reason why neural networks do this over fitting is exactly because they have too many
+
+40
+00:05:44,450 --> 00:05:48,380
+parameters you have so many weights here. So if you remember we actually counted the number
+
+41
+00:05:48,380 --> 00:05:58,430
+of parameters in a neural network right you know that M times 3 +1 + whatever K time’s n
+
+42
+00:05:58,430 --> 00:06:02,990
+devide M + 1 well that is a huge number of parameters. So it is very easy for you to
+
+43
+00:06:02,990 --> 00:06:07,160
+over fit so you have to be careful about it, so there are two ways of avoiding over fitting.
+
+44
+00:06:07,160 --> 00:06:14,900
+So can you think of what are the two ways of avoiding over fitting? one we already
+
+45
+00:06:14,900 --> 00:06:20,210
+know regularization right, so one way of avoiding over fitting is regularization,
+
+46
+00:06:25,810 --> 00:06:32,410
+so what you do here is you essentially add a quadratic penalty for the weights right so you
+
+47
+00:06:32,410 --> 00:06:39,910
+do a norm alpha squared + norm beta squared and then you try to find the gradient with respect
+
+48
+00:06:39,910 --> 00:06:43,810
+to that and then you try to minimize things, right it becomes a little bit more complex
+
+49
+00:06:43,810 --> 00:06:58,210
+and if you add a squared error penalty right if you add a squared error penalty it is sometimes
+
+50
+00:06:58,210 --> 00:07:06,130
+called weight decay right because it makes your weights go towards zero. So sometimes called
+
+51
+00:07:06,130 --> 00:07:21,510
+weight decay, so can you add a l1 penalty. You could you could add anything I mean so it
+
+52
+00:07:21,510 --> 00:07:25,930
+is it just makes it a little bit more complex but the question is does it induce sparsity
+
+53
+00:07:32,240 --> 00:07:41,840
+right, they said another way of avoiding over fitting yeah you can tied parameters together
+
+54
+00:07:41,840 --> 00:07:49,010
+to avoid over fitting that is good but in which wherever is new tied together? In fact one of the
+
+55
+00:07:49,010 --> 00:07:53,750
+ways that deep learning actually has been made efficient despite doing this tied of parameters
+
+56
+00:07:53,750 --> 00:07:59,090
+right but then the architectures that look at are very complex right so you could tie parameters
+
+57
+00:07:59,090 --> 00:08:03,320
+together and try to reduce this okay. So let me put that as a different kind of
+
+58
+00:08:03,320 --> 00:08:17,450
+thing but it is actually a form of regularizing but it is yet another approach which is a purely
+
+59
+00:08:17,450 --> 00:08:22,400
+empirical way of doing things which is to do what is called validation right I actually mentioned
+
+60
+00:08:22,400 --> 00:08:27,560
+this in one of the earlier lectures right, so you train on a training set and then you have a
+
+61
+00:08:27,560 --> 00:08:33,530
+validation set and then people remember I drew even a picture right, so as you are training
+
+62
+00:08:39,180 --> 00:08:45,840
+so the error on your training set keeps going down right but the error on the test set or the
+
+63
+00:08:45,840 --> 00:08:52,650
+validation set will initially go down, at some point it will start going up right maybe not
+
+64
+00:08:53,220 --> 00:09:07,320
+that dramatically but go up nevertheless. Like that right so the point here is where
+
+65
+00:09:07,320 --> 00:09:14,910
+your right solution is okay, so I am putting it in quotes right solution okay,
+
+66
+00:09:14,910 --> 00:09:29,430
+so what is the x-axis and what is they-axis on this figure? Whatever is your mission of
+
+67
+00:09:29,430 --> 00:09:34,260
+error it could be miss classification error or whatever right, so fiction you ideally want miss
+
+68
+00:09:34,260 --> 00:09:38,790
+classification error if it is the regression it is a prediction error whatever and the x-axis is
+
+69
+00:09:38,790 --> 00:09:53,490
+usually iterations right but you could also think of having a figure like this for complexity right.
+
+70
+00:09:53,490 --> 00:10:00,330
+So you could say that I am going to keep adding more and more neurons right or more say I can
+
+71
+00:10:00,330 --> 00:10:05,400
+keep expanding my M right I can keep adding more neurons in the hidden layer right.
+
+72
+00:10:05,400 --> 00:10:09,270
+I cannot change the new neurons in the input layer I cannot change in the output layer
+
+73
+00:10:09,270 --> 00:10:13,770
+usually right because that is their depend on the problem that I am solving right when
+
+74
+00:10:13,770 --> 00:10:22,620
+I can keep increasing the neurons in the hidden layer right but then these are more or less you
+
+75
+00:10:22,620 --> 00:10:30,060
+know standard techniques for doing, I mean for avoiding over fitting not necessarily tailor to
+
+76
+00:10:30,060 --> 00:10:34,560
+neural networks right. So you should remember that there was about a decade and a half when
+
+77
+00:10:34,560 --> 00:10:39,810
+people worked a lot with neural networks in between right, they came up with many techniques
+
+78
+00:10:39,810 --> 00:10:44,130
+for avoiding this kind of over fitting. And they have explored many variations on
+
+79
+00:10:44,130 --> 00:10:50,250
+parameter tying right and also many different kinds of regularizing so there are some really
+
+80
+00:10:50,250 --> 00:10:56,340
+interestingly named algorithms for avoiding word fitting. so one that I particularly like is to
+
+81
+00:10:56,340 --> 00:11:10,800
+be called optimal brain damage, essentially the idea was to remove weights from the network right
+
+82
+00:11:10,800 --> 00:11:16,920
+so you train the neural network and then try to find out the sensitivity of the output with
+
+83
+00:11:16,920 --> 00:11:21,210
+respect to certain weights okay. If I am changing this weight how much do the outputs change you
+
+84
+00:11:21,210 --> 00:11:26,460
+know how much does the error change right So weights that have low sensitivity or right
+
+85
+00:11:26,460 --> 00:11:32,820
+or yeah weights that exhibit low sensitivity on the error right well then remove and then you
+
+86
+00:11:32,820 --> 00:11:37,620
+just retrained we keep doing this. So that way you are removing the number of parameters reducing the
+
+87
+00:11:37,620 --> 00:11:44,100
+number of parameter heavily but we are not affecting the output too much. So like that
+
+88
+00:11:44,100 --> 00:11:54,390
+there are many variations on it but these are the three things right that we have to think about.
+
+89
+00:12:19,960 --> 00:12:27,220
+Related to the over fitting question you see how do you figure out the number of hidden units and
+
+90
+00:12:27,220 --> 00:12:33,040
+layers. Like the very expensive way of doing it is to do a similar validation kind of a setup
+
+91
+00:12:33,040 --> 00:12:38,700
+right keep increasing the number of layers and then our number of neurons and check that out it
+
+92
+00:12:38,700 --> 00:12:46,360
+is incredibly hard right and so people came up with automatic pruning techniques right,
+
+93
+00:12:46,360 --> 00:12:54,610
+people came up with ways of growing your neural network. So they start off by having one neuron
+
+94
+00:12:54,610 --> 00:13:04,540
+so something very similar to your forward feature selection or what is the thing a stage
+
+95
+00:13:04,540 --> 00:13:11,080
+by stage wise selection right, so people remember stage wise feature selection what did he do?
+
+96
+00:13:11,080 --> 00:13:27,700
+At stepwise stage wise or something different see you later right so you could do the same
+
+97
+00:13:27,700 --> 00:13:31,750
+thing with neural networks right, you start by training a single neuron all right and
+
+98
+00:13:31,750 --> 00:13:36,550
+then what you do is once that neuron actually starts making some predictions right then you
+
+99
+00:13:36,550 --> 00:13:42,730
+train another neuron that actually nullifies the prediction error right. Now you know a
+
+100
+00:13:42,730 --> 00:13:48,430
+third neuron that adds up both of these and gives you the output right, so you could do
+
+101
+00:13:48,430 --> 00:13:52,150
+something like that right so you do not have to make a decision as to how many neurons you are
+
+102
+00:13:52,150 --> 00:13:57,100
+going to put in from the beginning right as you go along you just keep training more and more.
+
+103
+00:13:57,100 --> 00:14:01,900
+But the problem is such a network was that it will not look like your layered architecture
+
+104
+00:14:01,900 --> 00:14:06,970
+right I will start off with 1 neuron okay that will give an output then I will add the other
+
+105
+00:14:06,970 --> 00:14:13,120
+neuron then they will go so all of this gets the input directly, then I add another neuron
+
+106
+00:14:13,120 --> 00:14:20,530
+right so the layer architecture is gone no wall right. So now how many layers this is our two
+
+107
+00:14:20,530 --> 00:14:27,370
+or three you know so this neuron seems to be at the third layer right but it is connected
+
+108
+00:14:27,370 --> 00:14:31,360
+directly to a neuron which is certainly first layer because it is taking inputs from here.
+
+109
+00:14:31,360 --> 00:14:35,850
+But then well you do not have to be very dogmatic about having the standard three layered
+
+110
+00:14:35,850 --> 00:14:39,270
+architecture if you remember when introduced the standard three layer architecture I said
+
+111
+00:14:39,270 --> 00:14:47,310
+there are a lot of different deviations from this that people have proposed right and will
+
+112
+00:14:47,310 --> 00:14:51,120
+not be looking at most of those in detail. So these kinds of networks where you are actually
+
+113
+00:14:51,120 --> 00:14:56,670
+trying to minimize the residual at every point they are called cascade correlation networks,
+
+114
+00:14:56,670 --> 00:15:03,690
+so there are. So the most statistically sound ways to just do validation,
+
+115
+00:15:03,690 --> 00:15:26,610
+what is the other way? To do it is kind of a cheat it is slightly better what can you do you can take
+
+116
+00:15:26,610 --> 00:15:44,880
+an educated guess using domain knowledge. I said you have some information about how
+
+117
+00:15:44,880 --> 00:15:50,040
+complex the system is and then you can use ideas from that you can then try to see okay one layer
+
+118
+00:15:50,040 --> 00:15:56,250
+two layers three layers right, so a lot of deep learning network that nowadays happen
+
+119
+00:15:56,250 --> 00:16:01,170
+essentially it is more empirically driven you try one layer okay see what is the best you can
+
+120
+00:16:01,170 --> 00:16:05,670
+do right see thoughts the best in performance, as you can get and then you try to add another
+
+121
+00:16:05,670 --> 00:16:09,120
+layer and see if we can improve that another layer another layer until you are happy that
+
+122
+00:16:09,120 --> 00:16:15,360
+you are performing well right. Of course you just cannot train the network into the ground
+
+123
+00:16:15,360 --> 00:16:22,680
+you have to always make sure that you are not over fitting it but you can still this right okay.
+
+124
+00:16:25,960 --> 00:16:37,630
+So I did not explicitly mention this while talking about the numerical training but you
+
+125
+00:16:37,630 --> 00:16:45,730
+can kind of imagine, wherever that I am going to be using the data as it as a real valued
+
+126
+00:16:45,730 --> 00:16:53,530
+vector right I would have to worry about scale, so if I have one variable that has a very large
+
+127
+00:16:53,530 --> 00:16:57,800
+range another variable which has a very small range, at the variable with a large rate it
+
+128
+00:16:57,800 --> 00:17:01,450
+is obviously going to dominate my gradient computation. If you remember the gradient
+
+129
+00:17:01,450 --> 00:17:08,500
+has a X the x ml component to it right that is the input variable is part of the gradient. So
+
+130
+00:17:08,500 --> 00:17:12,940
+if the variable some of the variables can have a very large range and some of the variables might
+
+131
+00:17:12,940 --> 00:17:17,110
+have a very small range and the large range variables will dominate the computation.
+
+132
+00:17:17,110 --> 00:17:20,860
+This numerically by being large they are going to dominate the computation right,
+
+133
+00:17:20,860 --> 00:17:24,910
+so we do not want that to happen whether they are actually needed or not just by
+
+134
+00:17:24,910 --> 00:17:29,620
+being numerically large right they will dominate the computation, so we essentially make sure that
+
+135
+00:17:29,620 --> 00:17:33,820
+all the variables will have the same range right. So we talked about this in couple of
+
+136
+00:17:33,820 --> 00:17:39,250
+other scenarios also but in this case again it is important so this is something which people
+
+137
+00:17:39,250 --> 00:17:45,730
+typically forget. When they are using either neural networks or SVM's you try you take
+
+138
+00:17:45,730 --> 00:17:50,200
+the raw data right and you just try to run it through a neural network or run it through an
+
+139
+00:17:50,200 --> 00:17:57,940
+SVM and then produce a classifier right and quite often things do not look work that well right.
+
+140
+00:17:57,940 --> 00:18:02,710
+You might find some reported results that are much better than what you are getting by using is SVM,
+
+141
+00:18:02,710 --> 00:18:10,780
+nine times out of ten okay the reason to fold with SVM is a two-fold with neural networks one thing
+
+142
+00:18:10,780 --> 00:18:19,360
+you forgot to scale the input okay, the SVM's what happened? So you have those kernel functions
+
+143
+00:18:19,360 --> 00:18:24,580
+we talked about right you forgot to tune the parameters of the kernel function you just took
+
+144
+00:18:24,580 --> 00:18:27,820
+the kernel function as it is and you are trying to use it so that the performance will be bad,
+
+145
+00:18:27,820 --> 00:18:31,810
+so you have to tune the parameters of the kernel function and you have to scale the inputs,
+
+146
+00:18:31,810 --> 00:18:35,980
+if you do not scale the inputs sometimes the performance can be arbitrarily bad.
+
+147
+00:18:37,840 --> 00:18:52,600
+And this is a problem which SVM do not have and that is one of the reasons they became so much
+
+148
+00:18:52,600 --> 00:18:59,680
+more popular than your networks in late 90s and early 2000s right, so the neural network
+
+149
+00:18:59,680 --> 00:19:10,330
+error surface is fairly complex. So what do I mean by error surface? So what is it so error
+
+150
+00:19:10,330 --> 00:19:16,990
+surface what will be the x axis the y axis the z axis whatever can you describe mathematically,
+
+151
+00:19:16,990 --> 00:19:36,160
+what the error surface is? with respect to what aha on the what parameter is not the inputs okay,
+
+152
+00:19:36,160 --> 00:19:39,940
+so the error surface is something which people have difficulty okay there is areas
+
+153
+00:19:39,940 --> 00:19:44,410
+on I am making a fuss out of it. The error surface is the function of the
+
+154
+00:19:44,410 --> 00:19:51,940
+error with respect to the parameters okay, so as I change my alpha and beta how does the error change
+
+155
+00:19:51,940 --> 00:19:58,840
+okay, so that is that is the error surface that we are talking about right and so how does the
+
+156
+00:19:58,840 --> 00:20:12,180
+error surface how will it look like for the case of SVM and minimizing something quadratic they are
+
+157
+00:20:12,180 --> 00:20:19,950
+right in terms of beta right, so it is actually very nice quadratic thing, so it always has a
+
+158
+00:20:19,950 --> 00:20:27,960
+single Optima right when the optimal hyper plane formulation the very nice thing about it is it has
+
+159
+00:20:27,960 --> 00:20:35,220
+got one Optima and then if you run the optimizer on it you will always get that solution right.
+
+160
+00:20:35,220 --> 00:20:39,630
+The error surface for neural networks if you think about it it's got those stupid
+
+161
+00:20:39,630 --> 00:20:44,040
+exponents in there right your sigmoid there is the derivative of, your sigmoid is in
+
+162
+00:20:44,040 --> 00:20:49,620
+there so the error surface is going to look incredibly complicated right. So it is going
+
+163
+00:20:49,620 --> 00:20:56,970
+to have lots of little valleys right the error surface is going to look something like this,
+
+164
+00:21:08,700 --> 00:21:15,120
+ever even look something like this okay, so if I am doing gradient descent I might come here
+
+165
+00:21:15,120 --> 00:21:22,860
+and get stuck, that looks like I mean whatever direction I tried to go there is increasing.
+
+166
+00:21:22,860 --> 00:21:27,870
+So I might say okay this is the good place to be so I might just stop there right.
+
+167
+00:21:27,870 --> 00:21:40,920
+I could get stuck here what about here huh very slow or not at all because the gradient is 0
+
+168
+00:21:40,920 --> 00:21:46,230
+I mean if you are in the middle of a point the gradient is zero because it is flat it is flat,
+
+169
+00:21:46,230 --> 00:21:50,820
+I declared that to be flat okay and so the gradient is zero at that point right and
+
+170
+00:21:50,820 --> 00:22:04,950
+there you go okay and so you might not just move right you are essentially drifting around there
+
+171
+00:22:04,950 --> 00:22:09,840
+you and whatever happens you are not able to make any progress. So the error surface can
+
+172
+00:22:09,840 --> 00:22:14,280
+become really complicated like this right and this is just on one dimension right,
+
+173
+00:22:14,280 --> 00:22:19,500
+they say this is a no one it is a single neuron with one input that is what we have drawn.
+
+174
+00:22:19,500 --> 00:22:30,810
+So imagine this generalized to a very large dimensional space right mp plus mk dimensions
+
+175
+00:22:30,810 --> 00:22:38,700
+right, so the surface can be really complex and again the plethora of solutions were
+
+176
+00:22:38,700 --> 00:22:43,050
+getting out of local optima right, so we are not going to get into most of those
+
+177
+00:22:48,720 --> 00:22:58,980
+and let us tell you one very practical way of doing it essentially do restarts right. So you
+
+178
+00:22:58,980 --> 00:23:05,700
+start off with some random initialization close to 0 right you do gradient descent until you do not
+
+179
+00:23:05,700 --> 00:23:11,610
+change weights very much. Remember those weights right remember those weights and remember the
+
+180
+00:23:11,610 --> 00:23:18,540
+performance. No reinitialize the network again close to zero random weights close to zero.
+
+181
+00:23:18,540 --> 00:23:25,530
+You say different random see please all right and then rerun the experiments right and again you
+
+182
+00:23:25,530 --> 00:23:30,090
+will go off to some other optima remember those and keep doing it. There are other techniques
+
+183
+00:23:30,090 --> 00:23:37,020
+which people use right, so they can make the, you know there is something cleverer gradient
+
+184
+00:23:37,020 --> 00:23:42,090
+descent techniques right which all of you to get over these local optima not all of
+
+185
+00:23:42,090 --> 00:23:51,420
+them but at least some of the shallow or local optima it allows you to get over easily. So for
+
+186
+00:23:51,420 --> 00:23:56,670
+example this is a shallow local optima right with a little bit of effort I can actually
+
+187
+00:23:56,670 --> 00:24:04,530
+get over and how do you provide their effort. So think of it from a very dynamics perspective,
+
+188
+00:24:04,530 --> 00:24:11,190
+so people have added something called momentum right, so if you have been moving in a particular
+
+189
+00:24:11,190 --> 00:24:17,670
+direction I have been descending little bit a little bit a little bit okay do not stop just
+
+190
+00:24:17,670 --> 00:24:22,200
+keep going in the direction for some more time right that is momentum right. So in this case
+
+191
+00:24:22,200 --> 00:24:28,500
+these kinds of shallow things you can get over you know the gradient has become a slowed down
+
+192
+00:24:28,500 --> 00:24:33,390
+significantly right this becomes 0 here but I will still be going in the same direction I
+
+193
+00:24:33,390 --> 00:24:37,080
+went for a little while longer because I have momentum it is going to take me forward.
+
+194
+00:24:37,080 --> 00:24:41,400
+So that is going to get me out of this little valleys but if you are in a deep valley then
+
+195
+00:24:41,400 --> 00:24:46,830
+still cannot get out right but so these kinds of tricks help right and then more recently
+
+196
+00:24:46,830 --> 00:24:53,250
+with all the with deep learning, that one of the reasons that deep learning is become so
+
+197
+00:24:53,250 --> 00:24:58,290
+popular most people do have very powerful gradient based techniques which allow you
+
+198
+00:24:58,290 --> 00:25:04,640
+to navigate the error surface more efficiently a lot to avoid local optima, but allows you to
+
+199
+00:25:04,640 --> 00:25:25,700
+navigate the surface more efficiently right good. So any questions so far, no why well I am going
+
+200
+00:25:25,700 --> 00:25:32,030
+back to my zero yeah when I start restart a little again be small weights right.
+
+201
+00:25:32,030 --> 00:25:36,860
+I will be very far away from this is optima I have converged to after a lot of training,
+
+202
+00:25:36,860 --> 00:25:49,940
+you maybe not see that, this is one thing which you should get your hands dirty then you will see
+
+203
+00:25:49,940 --> 00:25:55,130
+what I mean. Even small changes in the starting weight configuration can lead you into very
+
+204
+00:25:55,130 --> 00:25:59,810
+different Optima that so there is surface or so complex right and remember I am not just moving
+
+205
+00:25:59,810 --> 00:26:05,210
+in one direction or the other I have a very large dimensional space in which I am moving right. So
+
+206
+00:26:05,210 --> 00:26:10,700
+even though I am taking and I am constraining it to be around zero right, the volume that I
+
+207
+00:26:10,700 --> 00:26:16,100
+can actually start in is very large because of the high dimensionality of the weight space right.
+
+208
+00:26:16,100 --> 00:26:22,070
+So and each random starting point can be very different because it is also possible that you
+
+209
+00:26:22,070 --> 00:26:26,900
+start in the same location or start very close to the same location. I will end up
+
+210
+00:26:26,900 --> 00:26:32,390
+with the same Optima but that is probability of that happening is very small especially
+
+211
+00:26:32,390 --> 00:26:35,570
+with large networks. So if we do the D start will actually end up with somewhere else.
+
+212
+00:26:41,390 --> 00:27:15,290
+Any other questions so we have till this point we have the exam rate just checking yeah,
+
+213
+00:27:15,290 --> 00:27:19,310
+so that is the question nobody asks how many times do you restart right.
+
+214
+00:27:19,310 --> 00:27:23,060
+There when you have a budget you just say that okay I am going to restart this many times right
+
+215
+00:27:23,060 --> 00:27:28,520
+and yeah you might have actually re absolute minima but you may still be doing research that
+
+216
+00:27:28,520 --> 00:27:33,290
+is one of the reasons I told you to remember the weights right, it could very well be that the best
+
+217
+00:27:33,290 --> 00:27:37,760
+weight best solution, you got could have been oh the first one and then all the fuel further
+
+218
+00:27:37,760 --> 00:27:43,070
+restarts that you do could actually be leading to worse collisions right. So I am not guaranteeing
+
+219
+00:27:43,070 --> 00:27:47,300
+that we do a restart we will get a better solution the restart just allows you to explore different
+
+220
+00:27:47,300 --> 00:28:01,840
+local optima and pick the one that is best. It all depends on your budget right I mean if it
+
+221
+00:28:01,840 --> 00:28:08,600
+is as expensive as to train the network the first time around right and it is really expensive to
+
+222
+00:28:08,600 --> 00:28:15,860
+train the network if you are doing deep neural networks because the number of parameters are
+
+223
+00:28:15,860 --> 00:28:23,090
+really large runs into several hundred thousand right and therefore doing are start is expensive,
+
+224
+00:28:23,090 --> 00:28:29,480
+we do fewer of them and I also tried to come up with other gradient descent techniques,
+
+225
+00:28:29,480 --> 00:28:34,130
+that allow you to avoid local optima. The whole idea behind simulated annealing is that
+
+226
+00:28:34,130 --> 00:28:43,490
+you would want with some probability of ignoring the gradient right.
+
+227
+00:28:43,490 --> 00:28:50,000
+So what the whole algorithm here says at every point follow the opposite direction of the
+
+228
+00:28:50,000 --> 00:28:53,780
+gradient right, you would descend the gradient direction you find which is the maximum ascent
+
+229
+00:28:53,780 --> 00:28:58,460
+direction you descend it right. The whole idea behind simulated annealing is to say that no I
+
+230
+00:28:58,460 --> 00:29:04,370
+allow you to ignore the gradient, you can move in another direction in fact you can move in
+
+231
+00:29:04,370 --> 00:29:11,300
+the direction off the gradient also if you want right. So the gradient opposite direction of the
+
+232
+00:29:11,300 --> 00:29:18,080
+gradient is a choice that is given to you can choose that or you need not choose them. As the
+
+233
+00:29:18,080 --> 00:29:25,640
+number of iterations become larger and larger the probability of you choosing the direction
+
+234
+00:29:25,640 --> 00:29:29,750
+of the grade up the gradient direction is going to become higher and higher.
+
+235
+00:29:29,750 --> 00:29:34,970
+This is essentially what we call the temperature parameter the temperature parameter is very high
+
+236
+00:29:34,970 --> 00:29:38,900
+right if you can think of this particle that is going to be jumping all over the place right,
+
+237
+00:29:38,900 --> 00:29:42,530
+so if the temperature is very high you can move in whatever direction you want you are
+
+238
+00:29:42,530 --> 00:29:47,300
+not necessarily constrained to following the gradient direction and that is the temperature
+
+239
+00:29:47,300 --> 00:29:52,310
+becomes lower and lower you, then you are constrained to follow the direction of the
+
+240
+00:29:52,310 --> 00:29:57,320
+gradient .So the reason is called temperature is because it is actually used in modeling
+
+241
+00:29:57,320 --> 00:30:01,190
+physical systems right, so the so if you look at the Boltzmann distribution which
+
+242
+00:30:01,190 --> 00:30:05,930
+people typically use in this context that is actually a parameter called temperature.
+
+243
+00:30:05,930 --> 00:30:12,410
+Which behaves very much like this right, so one another way to think of what the simulator
+
+244
+00:30:12,410 --> 00:30:16,220
+annealing will do to your error surface it is like it will pull your error surface is flate
+
+245
+00:30:16,220 --> 00:30:23,413
+if the temperature is very high it is like your inner surface is flat it essentially means I do
+
+246
+00:30:23,413 --> 00:30:28,611
+not have any gradient information. I can move any which way I want right whatever direction
+
+247
+00:30:28,610 --> 00:30:34,130
+I move it looks the same then I can this move randomly and then what happens I slowly start
+
+248
+00:30:34,130 --> 00:30:41,090
+regaining the shape of the inner surface. So what will happen is first the deepest dink
+
+249
+00:30:41,090 --> 00:30:48,080
+will form okay the shallower ones will still be farther away and the deepest thing will the
+
+250
+00:30:48,080 --> 00:30:53,630
+first tip that will appear in my error surface and likewise as I keep cooling it cooling it cooling
+
+251
+00:30:53,630 --> 00:30:57,980
+it will completely go back to the original inner surface. That is one visual way of thinking about
+
+252
+00:30:57,980 --> 00:31:03,440
+it I mean there are more formal ways of explaining why that visualization works but I do not want
+
+253
+00:31:03,440 --> 00:31:08,080
+to get into simulated annealing today but that's another way of avoiding local optima okay done.

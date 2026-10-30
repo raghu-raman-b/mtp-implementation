@@ -1,0 +1,1283 @@
+1
+00:00:15,190 --> 00:00:21,310
+So I will be talking about Gaussian mixture models and the Expectation-Maximization algorithm.
+
+2
+00:00:21,310 --> 00:00:28,989
+So the plan is to start with introducing Gaussian mixture models and then talk about mainly
+
+3
+00:00:28,989 --> 00:00:35,050
+how we estimate parameters for a Gaussian mixture model and then through that introduce
+
+4
+00:00:35,050 --> 00:00:40,320
+what Expectation-Maximization is because that’s the iterative algorithmic framework that we
+
+5
+00:00:40,320 --> 00:00:46,989
+will be using for parameter estimation. That’s in general and then we will come back to Gaussian
+
+6
+00:00:46,989 --> 00:00:52,059
+mixture models and see how EM can be used for Gaussian mixture models and then talk
+
+7
+00:00:52,059 --> 00:01:00,039
+a little bit about why EM is a nice way to, what, talk a little bit about theoretical
+
+8
+00:01:00,039 --> 00:01:03,370
+properties of EM and why it’s interesting.
+
+9
+00:01:03,370 --> 00:01:10,800
+So mixture models, as the name suggests, they are a mixture of different, they are a mixture
+
+10
+00:01:10,800 --> 00:01:16,720
+of models, like, formally they are linear combinations of simpler, not necessarily,
+
+11
+00:01:16,720 --> 00:01:22,890
+not always simpler but linear combinations of distributions. So they typically have a
+
+12
+00:01:22,890 --> 00:01:33,330
+form like this. These. So the density of a mixture model is a linear combination of other
+
+13
+00:01:33,330 --> 00:01:39,600
+densities p and different mixture models will have different forms for the probability distribution
+
+14
+00:01:39,600 --> 00:02:03,280
+here. Right. pi k. So let me write this down because we will see this quite often.
+
+15
+00:02:03,280 --> 00:02:10,330
+So the density is given by a linear combination of different probability densities and here
+
+16
+00:02:10,330 --> 00:02:18,050
+we have k components and each of these components have a mixture weight. So this pi k is called
+
+17
+00:02:18,050 --> 00:02:28,030
+a mixture weight or a mixing coefficient. So this probability here, we can, it can assume
+
+18
+00:02:28,030 --> 00:02:39,201
+different parametric forms. The most common is the Gaussian. So when this takes, when
+
+19
+00:02:39,201 --> 00:02:45,090
+this follows a Gaussian, this is called a Gaussian mixture model, right.
+
+20
+00:02:45,090 --> 00:02:50,630
+And this is one of the most commonly used mixture model in a lot of different domains.
+
+21
+00:02:50,630 --> 00:02:55,680
+In bioinformatics, in speech processing, you will see this everywhere. One of the reasons
+
+22
+00:02:55,680 --> 00:03:00,820
+why it is used is because it is mathematically tractable but there are other nice properties
+
+23
+00:03:00,820 --> 00:03:08,000
+too. So you know, I guess you all know what a Gaussian is but let me write it down anyway,
+
+24
+00:03:08,000 --> 00:03:35,110
+so that, because we will use this very often in the coming few slides. Right. So this is
+
+25
+00:03:35,110 --> 00:03:41,230
+the form of a Gaussian. I am assuming you all know this but let’s keep it.
+
+26
+00:03:41,230 --> 00:03:47,310
+So each Gaussian, each component here is a Gaussian and each of these Gaussians have
+
+27
+00:03:47,310 --> 00:03:53,650
+its own parameters - the mean parameter and the covariance parameter. Right. And for this
+
+28
+00:03:53,650 --> 00:04:05,860
+to be a valid density, we need the pi k s to be between 0 and 1 and also the sum of
+
+29
+00:04:05,860 --> 00:04:23,530
+all the pi k s to be exactly equal to 1. We can show this mathematically. Okay.
+
+30
+00:04:23,530 --> 00:04:28,090
+So why do we need these mixtures? Why do we need these superpositions of densities? So
+
+31
+00:04:28,090 --> 00:04:35,000
+here is an example from Bishop’s book. It’s a very, very well known data set – “Old
+
+32
+00:04:35,000 --> 00:04:41,480
+Faithful” dataset. On the left, so we have plotted the dataset in green points. It is
+
+33
+00:04:41,480 --> 00:04:47,810
+a two dimensional dataset. And when you try to fit a Gaussian this is what you get. Right.
+
+34
+00:04:47,810 --> 00:04:55,060
+When you try to fit a Gaussian here. Now, visually it clearly looks not okay because
+
+35
+00:04:55,060 --> 00:05:00,190
+the Gaussian is most dense around the mean but when you see the data it doesn’t look
+
+36
+00:05:00,190 --> 00:05:04,880
+like the data is most dense around the mean, right?
+
+37
+00:05:04,880 --> 00:05:11,090
+But if we use instead of a single Gaussian, two different Gaussians and try to fit to,
+
+38
+00:05:11,090 --> 00:05:19,440
+a mixture of two Gaussians to this data it looks somewhat okay. The data is dense here
+
+39
+00:05:19,440 --> 00:05:26,020
+and data is dense here and it looks like two, it looks like this, a mixture of two different,
+
+40
+00:05:26,020 --> 00:05:32,520
+two Gaussians would be a good fit for this data. So let me, let me show you some more
+
+41
+00:05:32,520 --> 00:05:40,720
+examples.
+
+42
+00:05:40,720 --> 00:05:49,770
+Before I go into this, let me show you some more examples. Right.
+
+43
+00:05:49,770 --> 00:06:00,419
+So this is just some R code to generate, to sample data from a Gaussian mixture. And what
+
+44
+00:06:00,419 --> 00:06:09,020
+I am going to do is just sample and then plot the data, right. As you can see, every time
+
+45
+00:06:09,020 --> 00:06:13,630
+I sample from a Gaussian mixture, it is basically here I am setting the number of components
+
+46
+00:06:13,630 --> 00:06:20,000
+to 3, so every time it is sampling from three different Gaussians and whenever you see this
+
+47
+00:06:20,000 --> 00:06:25,960
+what you typically see is this clustered kind of data, so you see class three clusters.
+
+48
+00:06:25,960 --> 00:06:33,190
+If I change this to 5 or 6, you will start seeing more clusters here, not necessarily
+
+49
+00:06:33,190 --> 00:06:42,160
+well separated like this, they may be overlapping as well, you see. So whenever you see such
+
+50
+00:06:42,160 --> 00:06:48,200
+clustered kind of structure in the data, the first thing that comes to mind is that, first
+
+51
+00:06:48,200 --> 00:06:52,100
+thing that comes to mind when you try to model such data is to try to use Gaussian mixtures
+
+52
+00:06:52,100 --> 00:07:13,340
+because Gaussian mixtures can nicely fit such clustered data.
+
+53
+00:07:13,340 --> 00:07:20,169
+So this is another figure from the same book - illustration of three different Gaussians.
+
+54
+00:07:20,169 --> 00:07:24,530
+You see as I was saying, these Gaussians need not always be well separated. In this case
+
+55
+00:07:24,530 --> 00:07:31,190
+these Gaussians, because the mean and variance that are chosen, they are overlapping, right.
+
+56
+00:07:31,190 --> 00:07:36,460
+And here you know that, well somebody is telling you that there are three different Gaussians,
+
+57
+00:07:36,460 --> 00:07:42,690
+but when you look at the data and try to plot the density, like the fitted density, it looks
+
+58
+00:07:42,690 --> 00:07:48,960
+something like this, right, and this is the surface plot of the distribution.
+
+59
+00:07:48,960 --> 00:07:55,090
+Another thing that you should observe here is that this was generated from a three-component
+
+60
+00:07:55,090 --> 00:08:02,680
+Gaussian mixture with weights 0.5, 0.3 and 0.2, right, which means that this, the red
+
+61
+00:08:02,680 --> 00:08:07,940
+Gaussian here is contributing most of the mass and that is again observed here when
+
+62
+00:08:07,940 --> 00:08:14,630
+you plot the density. So this mean here is, the high the probability here is the highest
+
+63
+00:08:14,630 --> 00:08:26,830
+and then lower for, a bit lower for the green Gaussian and the lowest for the blue Gaussian,
+
+64
+00:08:26,830 --> 00:08:48,160
+right. Let me show you some more examples of these densities.
+
+65
+00:08:48,160 --> 00:08:56,320
+So again I generated from six different components. Let me reduce the number of components here
+
+66
+00:08:56,320 --> 00:08:59,140
+to 3.
+
+67
+00:08:59,140 --> 00:09:07,070
+There you see. This is an example that I wanted. So here there are three components but the
+
+68
+00:09:07,070 --> 00:09:09,860
+two components are highly overlapping.
+
+69
+00:09:09,860 --> 00:09:17,780
+So if you see how it was generated, it was generated by one Gaussian here, a second Gaussian
+
+70
+00:09:17,780 --> 00:09:20,050
+here and a third Gaussian here.
+
+71
+00:09:20,050 --> 00:09:24,399
+But when you look at the data, you don’t know how it was generated. It looks like this.
+
+72
+00:09:24,399 --> 00:09:29,890
+So sometimes it may not be apparent that there are just three, there are exactly three different
+
+73
+00:09:29,890 --> 00:09:30,890
+components.
+
+74
+00:09:30,890 --> 00:09:39,440
+And when you plot the fitted density, you typically see a density curve like this, which
+
+75
+00:09:39,440 --> 00:09:46,220
+has multiple modes, right. Now this is for, this is a fitted density for a three component
+
+76
+00:09:46,220 --> 00:09:52,000
+Gaussian. You see it doesn’t, it does not necessarily have exactly three modes. So it
+
+77
+00:09:52,000 --> 00:09:59,230
+depends on the samples that you have. So let us see a few more density plots.
+
+78
+00:09:59,230 --> 00:10:03,070
+You see.
+
+79
+00:10:03,070 --> 00:10:10,440
+This is the data that I generated and this is the fitted density, which has four modes.
+
+80
+00:10:10,440 --> 00:10:13,140
+Let’s run it again.
+
+81
+00:10:13,140 --> 00:10:24,529
+This is exactly three modes for this data. This is very well separated, three clusters.
+
+82
+00:10:24,529 --> 00:10:29,450
+Okay.
+
+83
+00:10:29,450 --> 00:10:38,410
+So you might have already understood this by now, at least intuitively, we can formulate
+
+84
+00:10:38,410 --> 00:10:47,300
+this as a generative model as well, right, and the generative model would be to select
+
+85
+00:10:47,300 --> 00:10:52,160
+a component, right. Once you select a component, you know you have selected the Gaussian corresponding
+
+86
+00:10:52,160 --> 00:10:58,660
+to that component and you know the parameters of that Gaussian and then you sample data
+
+87
+00:10:58,660 --> 00:11:05,441
+from that Gaussian. So that would be a generative model for a Gaussian mixture, right. To make
+
+88
+00:11:05,441 --> 00:11:12,380
+it more formal, so let us take z n to be a categorical random variable, right, with the
+
+89
+00:11:12,380 --> 00:11:18,310
+probability of z n equal to k being exactly equal to this pi k, right.
+
+90
+00:11:18,310 --> 00:11:26,540
+So it is a categorical random variable which takes values from 1 to k. And now suppose
+
+91
+00:11:26,540 --> 00:11:34,200
+that the probability of the data x n given z n equal to k, so what is the probability
+
+92
+00:11:34,200 --> 00:11:40,660
+of, which is just this, the probability of x n given that you know the parameters for
+
+93
+00:11:40,660 --> 00:11:46,800
+that particular component. I express it as probability of x n given theta k, theta k
+
+94
+00:11:46,800 --> 00:11:54,800
+represents the parameters. So the marginal distribution, you can express it as, ah, probability
+
+95
+00:11:54,800 --> 00:12:01,070
+of z n equal to k - you select the component, and then the probability of x n given z n
+
+96
+00:12:01,070 --> 00:12:07,520
+equal to k - the probability of x n coming from exactly that component. By what we have
+
+97
+00:12:07,520 --> 00:12:12,570
+assumed, the first probability is just pi k and the second probability is probability
+
+98
+00:12:12,570 --> 00:12:21,420
+of x n given theta k. So this is an equivalent generative formula with an explicit latent
+
+99
+00:12:21,420 --> 00:12:25,670
+variable z n.
+
+100
+00:12:25,670 --> 00:12:37,100
+And we can represent this graphically. The shaded circle here is the observed data. This
+
+101
+00:12:37,100 --> 00:12:45,019
+is the latent variable. The latent variable is governed by the parameter pi. And x n is
+
+102
+00:12:45,019 --> 00:12:49,240
+generated, once you know the latent variable, it is generated by known parameters corresponding
+
+103
+00:12:49,240 --> 00:12:56,220
+to that latent variable. So if you have to generate data from such a model, you first
+
+104
+00:12:56,220 --> 00:13:03,010
+sample z n from the categorical distribution, which is just, so the categorical distribution
+
+105
+00:13:03,010 --> 00:13:08,450
+is a special form of multinomial distribution with parameter 1.
+
+106
+00:13:08,450 --> 00:13:15,170
+And so that once you samples z n, you get the k th component with parameters theta t
+
+107
+00:13:15,170 --> 00:13:20,230
+and then you sample x n from that probability distribution. So in our case this is Gaussian
+
+108
+00:13:20,230 --> 00:13:30,050
+but it need not be Gaussian. It could be exponential. It could be any complicated probability distribution.
+
+109
+00:13:30,050 --> 00:13:45,410
+Right. So is it any questions? Please ask me if there any questions. Excuse me. Could
+
+110
+00:13:45,410 --> 00:13:49,890
+you go to the previous slide again? Could you explain the third?
+
+111
+00:13:49,890 --> 00:13:54,709
+So the probability of x n. So we are just getting the, so we are assuming that there
+
+112
+00:13:54,709 --> 00:14:00,579
+is a joint distribution and the marginal distribution can be written down like this. You. For each
+
+113
+00:14:00,579 --> 00:14:07,120
+of the k components, you take the probability that, probability of z n being equal to k
+
+114
+00:14:07,120 --> 00:14:12,700
+and then the probability of x n being generated from that component. So this is exactly what
+
+115
+00:14:12,700 --> 00:14:17,279
+the graphical model represents, right. If you write down the probability distribution
+
+116
+00:14:17,279 --> 00:14:24,279
+represented by this graphical model, it will be exactly this, except that there is a sigma
+
+117
+00:14:24,279 --> 00:14:28,540
+n term that takes care of all the different data points.
+
+118
+00:14:28,540 --> 00:14:34,279
+But for a single data point, it is exactly this. You are choosing a component and then
+
+119
+00:14:34,279 --> 00:14:42,150
+choose, choosing the, you are sampling the data point given the distribution parameters
+
+120
+00:14:42,150 --> 00:14:55,750
+for that component. Right, so before I go into that, this is just, so remember this
+
+121
+00:14:55,750 --> 00:15:03,910
+is another distribution. One use of it as I just showed is to model clustered data but
+
+122
+00:15:03,910 --> 00:15:13,010
+you can also model other kinds of data with it. For example, so let’s look at another
+
+123
+00:15:13,010 --> 00:15:25,490
+data set. I got this from the web.
+
+124
+00:15:25,490 --> 00:15:33,110
+So here is the density curve from, so the fitted density curve for some data set, which
+
+125
+00:15:33,110 --> 00:15:42,519
+is, which records precipitation in some falls. I cannot pronounce it also. Snoqualmie falls,
+
+126
+00:15:42,519 --> 00:15:52,330
+okay. And so suppose we want to model this density, right. We can, we can model this
+
+127
+00:15:52,330 --> 00:15:59,100
+with a Gaussian mixture and let’s see how it looks when we do it with a Gaussian mixture
+
+128
+00:15:59,100 --> 00:16:11,010
+with two components. Right. So we are trying to model this with a Gaussian mixture. This
+
+129
+00:16:11,010 --> 00:16:18,269
+is one Gaussian and this is another Gaussian, okay. Doesn’t look like it is modeling this
+
+130
+00:16:18,269 --> 00:16:27,290
+well, but we can increase the number of components and when we use nine components, it take some
+
+131
+00:16:27,290 --> 00:16:35,311
+time, and there you see it is getting closer and closer to this distribution, right. So
+
+132
+00:16:35,311 --> 00:16:39,079
+Gaussian mixture with nine components, of course each of these Gaussians have different
+
+133
+00:16:39,079 --> 00:16:45,900
+means and covariance parameters, is modeling this reasonably well.
+
+134
+00:16:45,900 --> 00:16:51,060
+So Gaussian mixture by that way is very versatile. It can model a lot of different distributions
+
+135
+00:16:51,060 --> 00:16:59,160
+by just choosing the right number of components and choosing the parameters appropriately.
+
+136
+00:16:59,160 --> 00:17:05,615
+So it models not just clustered structure. Sir. Yeah. How do you know what is the right
+
+137
+00:17:05,615 --> 00:17:10,179
+number of components? Yeah. You do not know. That’s, so that’s the parameter estimation
+
+138
+00:17:10,179 --> 00:17:15,779
+task, right. When you want to estimate, when you are fitting the model, you want to estimate
+
+139
+00:17:15,779 --> 00:17:21,009
+what the right number of components is and you want to estimate what these parameters
+
+140
+00:17:21,009 --> 00:17:22,639
+are, right.
+
+141
+00:17:22,639 --> 00:17:28,329
+So if you are just given the data, you don’t know what those parameters are. And that’s
+
+142
+00:17:28,329 --> 00:17:43,369
+in fact going to be the bulk of the lecture - How are we going to estimate the parameters?
+
+143
+00:17:43,369 --> 00:17:58,830
+Alright, so whenever you see this, actually I think I am going to keep this model handy
+
+144
+00:17:58,830 --> 00:18:21,529
+here.
+
+145
+00:18:21,529 --> 00:18:29,519
+So it would be very good if you few sort of keep this model in your mind as we go through
+
+146
+00:18:29,519 --> 00:18:37,730
+the lecture because all the different, all the maths that we will see will sort of start
+
+147
+00:18:37,730 --> 00:18:44,159
+making sense when you have this model in your mind, right. So when I talk about some formula
+
+148
+00:18:44,159 --> 00:18:50,570
+like this - the probability of x n being equal to sigma k this probability times this probability,
+
+149
+00:18:50,570 --> 00:18:55,850
+you can see that it is just the probability of x n being generated, and the generative
+
+150
+00:18:55,850 --> 00:19:03,869
+model is usually more easy to think with. So the generative model would be that I choose
+
+151
+00:19:03,869 --> 00:19:10,279
+the component and then once I choose the component, I choose the corresponding parameters and
+
+152
+00:19:10,279 --> 00:19:12,499
+generate this x n.
+
+153
+00:19:12,499 --> 00:19:19,529
+So these components if you are doing a clustering task, they are just the cluster labels, right.
+
+154
+00:19:19,529 --> 00:19:26,490
+So suppose you have three clusters and you want the cluster labels and if you fit a Gaussian
+
+155
+00:19:26,490 --> 00:19:31,299
+mixture model there, these components the component values 1,2,3 would just become the
+
+156
+00:19:31,299 --> 00:19:39,979
+cluster labels in that case, okay. So this would be a probabilistic way of doing clustering.
+
+157
+00:19:39,979 --> 00:19:48,320
+Alright so the probability of z n equal to k, probability of z n, the latent variable
+
+158
+00:19:48,320 --> 00:19:56,830
+or the cluster label taking a particular value is the prior probability of the data point
+
+159
+00:19:56,830 --> 00:20:01,669
+x n coming from the component k, okay.
+
+160
+00:20:01,669 --> 00:20:10,509
+Now suppose you are given some data set, like the data set we saw from snoqualmie falls
+
+161
+00:20:10,509 --> 00:20:19,419
+or something, suppose you are given that data set and then you are asked to find what is
+
+162
+00:20:19,419 --> 00:20:31,299
+the label z n for the corresponding data point, right. So what I mean is suppose you have
+
+163
+00:20:31,299 --> 00:20:35,399
+data points here.
+
+164
+00:20:35,399 --> 00:20:47,340
+You have two clusters and if you knew how it was generated, then the
+
+165
+00:20:47,340 --> 00:20:55,259
+cluster label for all these points would be say 1 and the cluster labels for all these
+
+166
+00:20:55,259 --> 00:21:03,119
+points would be 2, right. But you do not know this, you do not know how the data was generated.
+
+167
+00:21:03,119 --> 00:21:11,480
+Okay. So you, once you, once you are given this data, then you have to infer what these
+
+168
+00:21:11,480 --> 00:21:19,389
+parameters are and you have to infer given that this, given that you are using this model
+
+169
+00:21:19,389 --> 00:21:25,919
+to fit, you have to infer what is z n value is for each of the data points.
+
+170
+00:21:25,919 --> 00:21:30,979
+So the z n values for all the data points in one component will have the same value
+
+171
+00:21:30,979 --> 00:21:37,729
+1 and the z n values for all the other data points in the other component will have the
+
+172
+00:21:37,729 --> 00:21:42,289
+same, the other value, z n equal to 2. Of course in the, for clustering it can be interchanged.
+
+173
+00:21:42,289 --> 00:21:47,020
+The exact value does not matter, right.
+
+174
+00:21:47,020 --> 00:21:54,419
+So this probability, the posterior probability of the data point x n coming from component
+
+175
+00:21:54,419 --> 00:22:00,750
+k is so important that it is given a name of its own. It’s called the responsibility.
+
+176
+00:22:00,750 --> 00:22:07,049
+I am going to write that down as well because we will you reuse it again and again and again.
+
+177
+00:22:07,049 --> 00:22:24,519
+Oh, he asked me not to use this.
+
+178
+00:22:24,519 --> 00:22:35,679
+This is the posterior probability of z n equal to k given the data, right, and it is also
+
+179
+00:22:35,679 --> 00:22:54,619
+called the responsibility. It is the responsibility of component k for x n, right. So till now,
+
+180
+00:22:54,619 --> 00:23:01,580
+the way I have described it is that there are these different components, and only one
+
+181
+00:23:01,580 --> 00:23:07,739
+of these components is responsible for giving rise to that data but that is the generative
+
+182
+00:23:07,739 --> 00:23:12,669
+point of view, right. But if you look at it probabilistically, each of the components
+
+183
+00:23:12,669 --> 00:23:18,369
+is contributing something to that, towards the probability of that data point and that
+
+184
+00:23:18,369 --> 00:23:22,039
+contribution, the weight of that contribution is given by pi k.
+
+185
+00:23:22,039 --> 00:23:27,490
+So your clustering need not always be a hard clustering of this component versus that component,
+
+186
+00:23:27,490 --> 00:23:33,559
+it can be a soft clustering where each, the cluster label can be probabilistic. So it
+
+187
+00:23:33,559 --> 00:23:39,230
+can be, it can be cluster label 1 with probability 0.5, cluster label 2 with probability 0.3
+
+188
+00:23:39,230 --> 00:23:46,019
+and so on, right. So when you express it as a probability, then you get the option of
+
+189
+00:23:46,019 --> 00:23:52,429
+doing both hard clustering as well as soft clustering. So now you can use Bayes rule
+
+190
+00:23:52,429 --> 00:23:56,950
+to get this formula for the responsibility.
+
+191
+00:23:56,950 --> 00:24:04,389
+So this is straightforward, and with, so and when you substitute for probability of z n
+
+192
+00:24:04,389 --> 00:24:10,889
+equal to k, which is the prior, you get pi k here, and the probability of x n given that
+
+193
+00:24:10,889 --> 00:24:15,999
+you know the component, again keep this in mind, given that you know the component is
+
+194
+00:24:15,999 --> 00:24:32,249
+the probability of x n given theta k, the parameters for that component. Right, so let
+
+195
+00:24:32,249 --> 00:25:01,940
+us write this down. Okay. So observe that you don’t know the responsibility values
+
+196
+00:25:01,940 --> 00:25:08,389
+until you know all the parameters. You need to know all the pi ks and all the theta ks,
+
+197
+00:25:08,389 --> 00:25:13,539
+which in the case of Gaussian is all the mu ks and all the sigma ks, for all the k components.
+
+198
+00:25:13,539 --> 00:25:19,399
+And of course you need to know k to know the responsibilities.
+
+199
+00:25:19,399 --> 00:25:28,769
+So let’s see another very interesting picture. When you are generating the data, here he
+
+200
+00:25:28,769 --> 00:25:34,219
+is, it is again from the same book, he is generating three different Gaussians - the
+
+201
+00:25:34,219 --> 00:25:40,710
+red, green and blue Gaussians. And of course you don’t know how the data was generated.
+
+202
+00:25:40,710 --> 00:25:49,349
+So when you see the data, you see something like this, okay. And then you try to fit three
+
+203
+00:25:49,349 --> 00:25:56,700
+Gaussians into, 3, a mixture model with 3 Gaussians - 3 component mixture and what he
+
+204
+00:25:56,700 --> 00:26:04,330
+has done is he has colored the responsibilities, right. So all these guys have been given the
+
+205
+00:26:04,330 --> 00:26:12,590
+responsibility corresponding to component one or competent red here. These, so the blue
+
+206
+00:26:12,590 --> 00:26:18,940
+component is responsible for all these data points. Green component for this, and here
+
+207
+00:26:18,940 --> 00:26:26,289
+you see in the border it is a mixture of green and blue depending on what probability values
+
+208
+00:26:26,289 --> 00:26:36,080
+are assigned, right. So this is one example of soft clustering. So these values, these
+
+209
+00:26:36,080 --> 00:26:39,830
+data points are not assigned completely to either green class, to the green cluster or
+
+210
+00:26:39,830 --> 00:26:47,859
+to the blue cluster and you can see there are mistakes in inference because of course
+
+211
+00:26:47,859 --> 00:26:52,909
+if you do something like a maximum likelihood estimates, these will be most likely from
+
+212
+00:26:52,909 --> 00:26:58,139
+this, from a single Gaussian, right, and these blue points and these red points will not
+
+213
+00:26:58,139 --> 00:27:07,539
+be identified correctly, okay.
+
+214
+00:27:07,539 --> 00:27:18,250
+Alright. So now suppose you are given data, you want to fit a Gaussian mixture model to
+
+215
+00:27:18,250 --> 00:27:24,179
+it, to either infer the clusters or to just fit the density, for either case you need
+
+216
+00:27:24,179 --> 00:27:30,029
+to estimate the parameters, and what are the parameters? If you have p-dimensional data,
+
+217
+00:27:30,029 --> 00:27:40,019
+k components, for each of the Gaussians, we need to find out the k mixing coefficients,
+
+218
+00:27:40,019 --> 00:27:46,039
+we need to find out the mean parameters, the mean vectors which are p-dimensional, and
+
+219
+00:27:46,039 --> 00:27:57,799
+we need to find out, infer the covariance matrices, right. So for now we will assume
+
+220
+00:27:57,799 --> 00:28:05,460
+that we know k, okay, and I will come back to how k is estimated later. Yeah, for now
+
+221
+00:28:05,460 --> 00:28:10,730
+we will just assume, for example we see data like this, and we decide that k is going to
+
+222
+00:28:10,730 --> 00:28:21,249
+be 3. It need not be the case but yeah. And from this one, from here itself you can see
+
+223
+00:28:21,249 --> 00:28:28,070
+that this is going to get difficult on high dimensional data because the covariance matrices
+
+224
+00:28:28,070 --> 00:28:31,269
+are going to scale quadratically with dimensions.
+
+225
+00:28:31,269 --> 00:28:35,440
+So as the dimensionality of the data increases, your inference task becomes more and more
+
+226
+00:28:35,440 --> 00:28:42,470
+difficult, right. We will keep, we will not worry about that right now. So how do we estimate
+
+227
+00:28:42,470 --> 00:28:50,070
+these parameters? We will take the standard route of maximum likelihood. The likelihood
+
+228
+00:28:50,070 --> 00:28:55,830
+is just given by this for the case of Gaussian mixture model with k components, okay. This
+
+229
+00:28:55,830 --> 00:29:02,450
+is for all the n data points and we take the logarithm which will convert this product
+
+230
+00:29:02,450 --> 00:29:12,309
+to a sum here. The problem is it will only convert this to a sum, the inside summation
+
+231
+00:29:12,309 --> 00:29:14,340
+remains.
+
+232
+00:29:14,340 --> 00:29:23,200
+So what you get when you look at, the log-likelihood would be, would be the summation of n different
+
+233
+00:29:23,200 --> 00:29:32,200
+log, logarithm terms, where inside each logarithm there is a summation, and this turns out to
+
+234
+00:29:32,200 --> 00:29:40,230
+be, this gives us a lot of problems. So if you go by just differentiating this and getting
+
+235
+00:29:40,230 --> 00:29:46,229
+your, equating it to 0, the standard route what you probably did for normal distribution,
+
+236
+00:29:46,229 --> 00:29:50,630
+this summation is going to cause problems, and you are not going to get a closed-form
+
+237
+00:29:50,630 --> 00:29:59,479
+solution because you cannot easily differentiate this. And that is one of the main problems
+
+238
+00:29:59,479 --> 00:30:07,690
+for estimating the parameters of a Gaussian mixture.
+
+239
+00:30:07,690 --> 00:30:21,469
+All right. But just to play with the math, let’s still do it, okay. Let’s take the
+
+240
+00:30:21,469 --> 00:30:28,029
+derivatives, but we will make one crucial assumption, one assumption which is that we
+
+241
+00:30:28,029 --> 00:30:35,589
+know the responsibility terms, okay. Let’s see how it works out. So we have the, we have
+
+242
+00:30:35,589 --> 00:30:43,399
+the log-likelihood, and then let us say we want to find out each of these parameters.
+
+243
+00:30:43,399 --> 00:30:48,380
+So the standard maximum-likelihood way is you take one of the, each one of the parameters,
+
+244
+00:30:48,380 --> 00:30:58,240
+start with mu k, and take the derivative, equate it to 0 and then see what you get by
+
+245
+00:30:58,240 --> 00:31:16,919
+doing some algebra. So let me just do this.
+
+246
+00:31:16,919 --> 00:31:38,619
+Right. This is the log-likelihood and what we want to do is find the partial derivatives
+
+247
+00:31:38,619 --> 00:31:50,499
+with respect to mu k first, okay. So this summation just remains outside, and log of
+
+248
+00:31:50,499 --> 00:32:05,759
+this would just give us the whole thing below, whatever is inside there. Then we differentiate
+
+249
+00:32:05,759 --> 00:32:55,399
+this part. So, yeah so this, let’s write it down. It’s. These are constants. Sigma
+
+250
+00:32:55,399 --> 00:33:03,070
+k is a constant here with respect to mu k, and then we need the derivative of this. Derivative
+
+251
+00:33:03,070 --> 00:33:40,359
+of an exponential would just be an exponential, right, and this times …
+
+252
+00:33:40,359 --> 00:33:52,259
+So what you get, you get back the entire formula for Gaussian here, multiplied by the derivative
+
+253
+00:33:52,259 --> 00:34:48,789
+of this complicated term here. Let’s change the, I am just changing the… This is xn.
+
+254
+00:34:48,789 --> 00:34:56,590
+So what I really want to say here is when you do this derivation, what you will find
+
+255
+00:34:56,590 --> 00:35:08,650
+here is that this term comes up, and this is the same as the responsibility term, okay,
+
+256
+00:35:08,650 --> 00:35:17,660
+which is what I have written here. And then the rest of it is just algebra. There is a
+
+257
+00:35:17,660 --> 00:35:22,480
+very nice book called the Matrix cookbook, where you will find all these derivatives,
+
+258
+00:35:22,480 --> 00:35:27,740
+complex matrix derivatives and you can see that the derivative of this term – x minux
+
+259
+00:35:27,740 --> 00:35:36,740
+mu k inverse times Sigma inverse times x minux mu k is nothing but -2 times the, -2 times
+
+260
+00:35:36,740 --> 00:35:47,640
+Sigma inverse times x minux mu k, when, and the covariance matrix is symmetric. So you
+
+261
+00:35:47,640 --> 00:36:03,099
+can just substitute that here, I can continue, and what you get is sigma n k, how did it,
+
+262
+00:36:03,099 --> 00:36:26,519
+times, what was it, -2 times sigma inverse. Right, so this doh l by doh mu k just gives
+
+263
+00:36:26,519 --> 00:36:34,089
+us this, and when you equate this to 0, we can multiply by sigma k on both sides, and
+
+264
+00:36:34,089 --> 00:36:42,910
+finally turns out that you will get a very nice form – mu k equal to sigma lambda z
+
+265
+00:36:42,910 --> 00:36:49,010
+nk times X n. But what does this mean, the mean that you have that you have inferred
+
+266
+00:36:49,010 --> 00:36:59,000
+is the weighted mean of all the data points, where the weight is the responsibility, okay.
+
+267
+00:36:59,000 --> 00:37:11,680
+Right, so remember we do not know the responsibilities. We have assumed that we know this, but the
+
+268
+00:37:11,680 --> 00:37:18,640
+responsibility has all the unknowns inside it – it has pi k, mu k and sigma k, all
+
+269
+00:37:18,640 --> 00:37:23,310
+of which is unknown. We just assumed that we know this and we substituted it and did
+
+270
+00:37:23,310 --> 00:37:39,059
+the math, right. And we got a nice form for µk.
+
+271
+00:37:39,059 --> 00:37:47,339
+We can do the same math for sigma k. Again if we differentiate this with respect to sigma
+
+272
+00:37:47,339 --> 00:37:55,260
+k, we will, we have to just use two different matrix derivative formulas, these, and it
+
+273
+00:37:55,260 --> 00:38:02,760
+is very simple, the derivation is very simple. Dude, do you want me to do it? It’s fine
+
+274
+00:38:02,760 --> 00:38:10,140
+right. Okay. And again you get a reasonably nice form for sigma k, provided that you assume
+
+275
+00:38:10,140 --> 00:38:12,529
+that you know the responsibilities.
+
+276
+00:38:12,529 --> 00:38:21,670
+or the kth cluster is given by the weighted mean of all the data points where the weight
+
+277
+00:38:21,670 --> 00:38:28,359
+is nothing but the responsibility, responsibility of that cluster towards this data point. Responsibility
+
+278
+00:38:28,359 --> 00:38:34,430
+is the posterior probability of the latent variable given that you have this data. So
+
+279
+00:38:34,430 --> 00:38:40,430
+essentially it’s trying to capture what generated that data point, which of the components
+
+280
+00:38:40,430 --> 00:38:47,799
+generated that data point. Right. So all this is just, so right now we do not really have
+
+281
+00:38:47,799 --> 00:38:52,940
+anything, we do not have the mean parameters right now. We just know that if we knew the
+
+282
+00:38:52,940 --> 00:38:57,330
+responsibilities, which we don’t know, we could get a nice form for this, and without
+
+283
+00:38:57,330 --> 00:39:06,670
+this assumption this derivation does not hold, okay. And the same thing with respect to,
+
+284
+00:39:06,670 --> 00:39:13,280
+with respect to the sigma k values.
+
+285
+00:39:13,280 --> 00:39:18,120
+When we take the derivatives with respect to pi k, we have to be careful. We have to
+
+286
+00:39:18,120 --> 00:39:24,539
+make sure that we use the constraint, remember sigma k, the sum of all the sigma k s must
+
+287
+00:39:24,539 --> 00:39:32,710
+be equal to 1. So we can’t directly differentiate this, right. You have to use Lagrange multipliers.
+
+288
+00:39:32,710 --> 00:39:41,090
+Is everybody familiar with the Lagrange multipliers? Yes no, okay okay. So then you just take a
+
+289
+00:39:41,090 --> 00:39:46,420
+Lagrange multiplier here, take this constraint, and do the differentiation. You again get,
+
+290
+00:39:46,420 --> 00:39:50,930
+you again get back the responsibilities. So every time you do this derivative you see
+
+291
+00:39:50,930 --> 00:39:58,529
+the responsibility cropping up, and if you set this to 0, we can get the lambda parameter
+
+292
+00:39:58,529 --> 00:40:06,109
+as minus n, and we get the value of pi k equal to, again this proportion. This proportion
+
+293
+00:40:06,109 --> 00:40:16,700
+again is intuitively very clear. What it is saying is pi k the mixture weight is the proportion,
+
+294
+00:40:16,700 --> 00:40:22,279
+so if you take the sum of all the responsibilities over all data points over all components,
+
+295
+00:40:22,279 --> 00:40:30,019
+it’s equal to n, right. And, so the kth mixture weight is nothing but the proportion
+
+296
+00:40:30,019 --> 00:40:36,529
+of the responsibilities that are coming from the kth component towards all the data points,
+
+297
+00:40:36,529 --> 00:40:42,059
+and you are taking the proportion that is given by that, by those responsibilities with
+
+298
+00:40:42,059 --> 00:40:50,190
+respect to all of it, the sum of it.
+
+299
+00:40:50,190 --> 00:41:00,369
+So let’s summarize. What we found is that we have very nice forms for mu k, sigma k
+
+300
+00:41:00,369 --> 00:41:11,089
+and pi k, given that we know the responsibilities, okay, which is the posterior probability of
+
+301
+00:41:11,089 --> 00:41:17,869
+the latent variable coming from that component, coming from the k component for the nth data
+
+302
+00:41:17,869 --> 00:41:30,971
+point. So can, so can you think of, can you think of how you can use this to create an
+
+303
+00:41:30,971 --> 00:41:44,160
+algorithm for estimating the Gaussian mixture parameters? Any. Exactly. Exactly.
+
+304
+00:41:44,160 --> 00:41:54,279
+Yeah. So this is our first guess. We start with some, we initialize all. So I will denote
+
+305
+00:41:54,279 --> 00:42:03,559
+by curly theta all the parameters, and we start with some guess, some guess of the parameters,
+
+306
+00:42:03,559 --> 00:42:08,030
+and then we’ll compute the log-likelihood. We can compute it because we know, we have
+
+307
+00:42:08,030 --> 00:42:13,650
+guessed the parameters, and then we will set the responsibilities because we know again
+
+308
+00:42:13,650 --> 00:42:20,700
+all these, all these parameters are guessed, and since given the responsibility we can
+
+309
+00:42:20,700 --> 00:42:30,630
+compute all the parameters again, we will use this to get a new guess, and that way
+
+310
+00:42:30,630 --> 00:42:33,579
+we will iteratively keep refining our guess.
+
+311
+00:42:33,579 --> 00:42:43,940
+Now this looks very ad hoc but is actually, is actually theoretically quite sound, and
+
+312
+00:42:43,940 --> 00:42:49,059
+this is, we will see that, why, the reason why this is a good thing to do is we will
+
+313
+00:42:49,059 --> 00:42:56,430
+show that this is guaranteed to increase the likelihood at every iteration. And we will
+
+314
+00:42:56,430 --> 00:43:03,089
+see that when we understand why, when we understand how EM works. So this turns out to be actually
+
+315
+00:43:03,089 --> 00:43:13,880
+an instance of the EM algorithm. It is quite, is very intuitive.
+
+316
+00:43:13,880 --> 00:43:18,270
+So if you, so this is an example of exactly that algorithm. We start with some data, the
+
+317
+00:43:18,270 --> 00:43:25,539
+same data set. We start with some guesses for the Gaussians, and iteratively we see
+
+318
+00:43:25,539 --> 00:43:32,680
+that the Gaussians converge to nicely fitting the data. The parameters that you get here
+
+319
+00:43:32,680 --> 00:43:40,940
+will fit the data very well. The only problem is that it will take, it usually takes a long
+
+320
+00:43:40,940 --> 00:43:49,819
+time to come to the right parameters. Yeah, we know the k. Till now we know the K. We
+
+321
+00:43:49,819 --> 00:43:55,820
+are, so in this whole iterative algorithm, we are assuming that we know the k.

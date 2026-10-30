@@ -1,0 +1,983 @@
+1
+00:00:13,210 --> 00:00:19,540
+So in this module we will look at supervised learning right.
+
+2
+00:00:19,540 --> 00:00:26,440
+If you remember in supervised learning we talked about experience right where you have some kind of
+
+3
+00:00:26,440 --> 00:00:31,330
+a description of the data. So in this case let us assume that I have a customer database and
+
+4
+00:00:31,330 --> 00:00:38,260
+I am describing that by two attributes here, age and income. So I have each customer that
+
+5
+00:00:38,260 --> 00:00:42,880
+comes to my shop I know the age of the customer and the income level of the customers right.
+
+6
+00:00:42,880 --> 00:00:51,070
+And my goal is to predict whether the customer will buy a computer or not buy a computer right.
+
+7
+00:00:51,070 --> 00:00:58,660
+So I have this kind of labeled data that is given to me for building a classifier right,
+
+8
+00:00:58,660 --> 00:01:04,390
+remember we talked about classification where the output is a discrete value in this case
+
+9
+00:01:04,390 --> 00:01:08,800
+it is yes or no, yes this is the person will buy a computer, no the person will
+
+10
+00:01:08,800 --> 00:01:14,980
+not buy a computer. And the way I describe the input is through a set of attributes in this
+
+11
+00:01:14,980 --> 00:01:22,630
+case we are looking at age and income as the attributes that describe the customer right.
+
+12
+00:01:22,630 --> 00:01:28,840
+And so now the goal is to come up with a function right,
+
+13
+00:01:28,840 --> 00:01:33,070
+come up with a mapping that will take the age and income as the input and it
+
+14
+00:01:33,070 --> 00:01:37,930
+will give you an output that says the person will buy the computer or not buy
+
+15
+00:01:37,930 --> 00:01:43,120
+the computer. So there are many different ways in which you can create this function.
+
+16
+00:01:43,120 --> 00:01:47,950
+And given that we are actually looking at a geometric interpretation of the data,
+
+17
+00:01:47,950 --> 00:01:53,020
+I am looking at data as points in space, the one of the most natural ways of thinking about
+
+18
+00:01:53,020 --> 00:01:59,290
+defining this function is by drawing lines or curves on the input space right. So here
+
+19
+00:01:59,290 --> 00:02:06,820
+is one possible example, so here I have drawn a line and everything to the left of the line
+
+20
+00:02:06,820 --> 00:02:14,410
+right. So these are points that are red right, so everything to the left of the line would
+
+21
+00:02:14,410 --> 00:02:22,390
+be classified as will not buy a computer, everything to the right of the line where
+
+22
+00:02:22,390 --> 00:02:26,380
+the predominantly the data points are blue will be classified as will buy a computer.
+
+23
+00:02:26,920 --> 00:02:33,070
+So how would the function look like, it will look like something like if the income of a
+
+24
+00:02:33,070 --> 00:02:39,790
+person remember that the x-axis is income and the y-axis is age. So in this case it
+
+25
+00:02:39,790 --> 00:02:44,440
+basically says that if the income of the person is less than some value right,
+
+26
+00:02:44,440 --> 00:02:52,600
+less than some X then the person will not buy a computer. If the income is greater than X the
+
+27
+00:02:52,600 --> 00:02:58,270
+person will buy your computer. So that is the kind of a simple function that we will define.
+
+28
+00:02:58,270 --> 00:03:02,830
+Just notice that way we completely ignore one of the variables here which is the age. So we
+
+29
+00:03:02,830 --> 00:03:06,220
+are just going by income, if the income is less than some X then the person will not
+
+30
+00:03:06,220 --> 00:03:10,150
+buy a computer, if the income is greater than X the person will buy a computer. So
+
+31
+00:03:10,150 --> 00:03:16,690
+is this a good rule more or less I mean we get most of the points correct right
+
+32
+00:03:16,690 --> 00:03:22,060
+except a few right. So it looks like yeah, we can we can survive with this
+
+33
+00:03:22,060 --> 00:03:27,310
+rule right. So this is not too bad right, but then you can do slightly better.
+
+34
+00:03:28,570 --> 00:03:32,650
+All right, so now we got those two red points that those just keep that points
+
+35
+00:03:32,650 --> 00:03:36,790
+are on the wrong side of the line earlier now seem to be on the right side right. So
+
+36
+00:03:36,790 --> 00:03:41,440
+everything to the left of this line will not buy a computer, everything to the right will
+
+37
+00:03:41,440 --> 00:03:46,660
+buy a computer right, everyone moves to the right will buy a computer. So if you think
+
+38
+00:03:46,660 --> 00:03:50,230
+about what has happened here, so we have improved our performance measure right.
+
+39
+00:03:50,230 --> 00:03:56,290
+So the cost of something, so what is the cost here. So earlier we are only paying
+
+40
+00:03:56,290 --> 00:04:01,060
+attention to the income right, but now we have to pay attention to the age as
+
+41
+00:04:01,060 --> 00:04:08,920
+well right. So the older you are right, so the income threshold at which we will buy
+
+42
+00:04:08,920 --> 00:04:14,350
+a computer is higher right. So the younger you are, younger means lower on the y axis,
+
+43
+00:04:14,350 --> 00:04:19,450
+so the younger you are the income threshold at which you will buy a computer is lower right.
+
+44
+00:04:19,450 --> 00:04:30,430
+So is that clear, so the older you are, the income threshold is shifted to the
+
+45
+00:04:30,430 --> 00:04:35,830
+right here. So the older you are, you need to have a higher income before you buy a computer
+
+46
+00:04:35,830 --> 00:04:40,270
+and the younger you are your income threshold is lower, so you do not mind buying a computer
+
+47
+00:04:40,270 --> 00:04:46,390
+even if your income is slightly lesser. So now we have to start paying attention to
+
+48
+00:04:46,390 --> 00:04:51,100
+the age right, but then the advantage is you get much better performance right.
+
+49
+00:04:51,100 --> 00:04:59,530
+Can you do better than this yes? Now almost everything is correct except that one pesky
+
+50
+00:04:59,530 --> 00:05:04,240
+red point, but everything else is correct. And so what has happened here we get much
+
+51
+00:05:04,240 --> 00:05:11,560
+better performance, but at the cost of having a more complex classifier right.
+
+52
+00:05:11,560 --> 00:05:18,940
+So earlier if you thought about it in geometric terms, so first you had a line that was parallel
+
+53
+00:05:18,940 --> 00:05:24,700
+to the y-axis therefore, I just needed to define a intercept on the x-axis right. So
+
+54
+00:05:24,700 --> 00:05:31,270
+if X is less than some value then it was one class was greater than some value was
+
+55
+00:05:31,270 --> 00:05:36,010
+another class. Then the second function it was actually a slanting line like that,
+
+56
+00:05:36,010 --> 00:05:40,180
+so I needed to define both the intercept and the slope right.
+
+57
+00:05:40,180 --> 00:05:44,740
+And now here it is now a quadratic so I have to define three parameters right.
+
+58
+00:05:44,740 --> 00:05:48,780
+So I have to define something like ax2+ bx+c, so I have defined the a,
+
+59
+00:05:48,780 --> 00:05:52,900
+b, c – the three parameters in order to find the quadratic, and I am getting better performance.
+
+60
+00:05:52,900 --> 00:06:01,570
+So can you do better than this? Okay that somehow does not seem right correct seems
+
+61
+00:06:01,570 --> 00:06:08,365
+to be too complex a function just to be getting this one point there right. And I am not sure I
+
+62
+00:06:08,365 --> 00:06:12,370
+am not even sure how many parameters you need for drawing that because Microsoft use some
+
+63
+00:06:12,370 --> 00:06:16,780
+kind of spline PowerPoint use some kind of spline interpolation to draw this curve I am
+
+64
+00:06:16,780 --> 00:06:22,510
+pretty sure that it is got lot more parameters than it is worth. Another thing to note here
+
+65
+00:06:22,510 --> 00:06:30,790
+is that that particular red point that you see is actually surrounded by a sea of blue right.
+
+66
+00:06:30,790 --> 00:06:35,410
+So it is quite likely that there was some glitch there either the person actually
+
+67
+00:06:35,410 --> 00:06:38,910
+bought a computer and we never we have not recorded it has been having bought a
+
+68
+00:06:38,910 --> 00:06:47,280
+computer or there are some extremist reason the person comes into the shop sure that is going to
+
+69
+00:06:47,280 --> 00:06:51,060
+buy a computer but then gets a phone call saying that some emergency please come out immediately
+
+70
+00:06:51,060 --> 00:06:55,410
+and therefore he left without buying a computer right there could be variety of reasons for why
+
+71
+00:06:55,410 --> 00:07:01,260
+that noise occurred and this will probably be the more appropriate classifier right.
+
+72
+00:07:01,260 --> 00:07:04,740
+So these are the kinds of issues I would like to think about what is the complexity of the
+
+73
+00:07:04,740 --> 00:07:10,590
+classifier that I would like to have right and versus the accuracy of the classifier, so how
+
+74
+00:07:10,590 --> 00:07:17,460
+good is the classifier in actually recovering the right input output map and or their noise
+
+75
+00:07:17,460 --> 00:07:24,600
+data in the in the input in the experience that I am getting is it clean or is there noise on
+
+76
+00:07:24,600 --> 00:07:30,750
+it and if so how do I handle that noise these are the kinds of issues that we have to look at okay.
+
+77
+00:07:30,750 --> 00:07:44,430
+So these kinds of lines that we drew right kind of hiding one assumption that we are
+
+78
+00:07:44,430 --> 00:07:51,810
+making so the thing is the data that comes to me comes as discrete points in the space
+
+79
+00:07:51,810 --> 00:07:56,460
+right and from these discrete points in the space I need to generalize and
+
+80
+00:07:56,460 --> 00:08:01,560
+be able to say something about the entire state space right so I do not care where
+
+81
+00:08:01,560 --> 00:08:07,140
+the data point is on the x and y-axis right I should be able to give a label to that right.
+
+82
+00:08:07,140 --> 00:08:12,810
+If I do not have some kind of assumption about these lines right and if you do not
+
+83
+00:08:12,810 --> 00:08:17,820
+have some kind of assumptions about these lines the only thing I can do is if the same customer
+
+84
+00:08:17,820 --> 00:08:22,500
+comes again or somebody who has exact same age and income as that cause customer comes again
+
+85
+00:08:22,500 --> 00:08:27,120
+I can tell you whether the person is going to buy a computer or not buy a computer but I will
+
+86
+00:08:27,120 --> 00:08:31,200
+not be able to tell you about anything else outside of the experience right.
+
+87
+00:08:31,200 --> 00:08:38,280
+So the assumption we made is everything to the left of a line is going to do one thing
+
+88
+00:08:38,280 --> 00:08:42,360
+or the other; so everything to the left of the line will not buy the computer everything to
+
+89
+00:08:42,360 --> 00:08:46,080
+the right or everyone to the right will buy a computer this is an assumption I made the
+
+90
+00:08:46,080 --> 00:08:54,250
+assumption was the lines are able to segregate people who buy from who do not buy the lines or
+
+91
+00:08:54,250 --> 00:08:59,620
+the curves were able to segregate people who will buy from who will not buy so that is a kind of an
+
+92
+00:08:59,620 --> 00:09:07,390
+assumption I made about the distribution of the input data and the class labels.
+
+93
+00:09:07,390 --> 00:09:13,300
+So this kind of assumptions that we make about these lines are known as inductive biases in
+
+94
+00:09:13,300 --> 00:09:18,580
+general inductive bias has like two different categories one is called language bias which is
+
+95
+00:09:18,580 --> 00:09:22,450
+essentially the type of lines that I am going to draw. Am I gonna draw straight
+
+96
+00:09:22,450 --> 00:09:28,780
+lines or am I going to draw curves and what order polynomials am I going to look at and
+
+97
+00:09:28,780 --> 00:09:34,780
+so on so forth these for my language bias. And search bias is the other form of inductive bias
+
+98
+00:09:34,780 --> 00:09:40,210
+that tells me how in what order am I going to examine all these possible lines right.
+
+99
+00:09:40,210 --> 00:09:47,140
+So that gives me the gives me a search bias right, so putting these things together we
+
+100
+00:09:47,140 --> 00:09:53,320
+are able to generalize from a few training points to the entire space of inputs right
+
+101
+00:09:53,320 --> 00:10:00,190
+I will make this more formal as we go on and then in the next set of modules right.
+
+102
+00:10:00,190 --> 00:10:08,290
+And so here is one way of looking at the whole process so I am going to be giving you a set
+
+103
+00:10:08,290 --> 00:10:14,140
+of data which we will call the training set. So the training set will consist of say as an
+
+104
+00:10:14,140 --> 00:10:19,990
+input which we'll call as X and an output which we call as Y right, so I am going to have a set
+
+105
+00:10:19,990 --> 00:10:34,960
+of inputs I have X1, X2, X3, X4 likewise I will have Y1, Y2, Y3, Y4 and this data is fed into a
+
+106
+00:10:34,960 --> 00:10:40,750
+training algorithm right and so the data is going to look like this in our case right.
+
+107
+00:10:40,750 --> 00:10:46,570
+So remember our X’s are the input variable X’s are the inputs so in this case that should have
+
+108
+00:10:46,570 --> 00:10:52,750
+the income and the age, so x1 is like 30,000 and 25 and x2 is like 80,000 and 45 and so
+
+109
+00:10:52,750 --> 00:10:58,030
+on so forth and the y's or the labels they correspond to the colors in the previous
+
+110
+00:10:58,030 --> 00:11:03,280
+picture right so y1 does not buy a computer y2 buys a computer and so on so forth so this
+
+111
+00:11:03,280 --> 00:11:09,340
+essentially gives me the color coding so y1 is essentially red and y2 is blue right and
+
+112
+00:11:09,340 --> 00:11:14,740
+I really if I am going to use something numeric this is what we will be doing later on I really
+
+113
+00:11:14,740 --> 00:11:22,210
+cannot be using these values. First of all wise or not numeric and the X’s vary too much right.
+
+114
+00:11:22,210 --> 00:11:26,770
+So the first coordinate in the X is like 30,000 and 80,000 and so on so forth and
+
+115
+00:11:26,770 --> 00:11:34,120
+the second coordinate is like 25 and 45 so that is a lot a lot smaller in magnitude so
+
+116
+00:11:34,120 --> 00:11:38,560
+this will lead to some kind of numerical instabilities. So what will typically end
+
+117
+00:11:38,560 --> 00:11:45,850
+up doing is normalizing these so that they form approximately in the same range so you
+
+118
+00:11:45,850 --> 00:11:50,410
+can see that I have try to normalize these X values between 0 and 1 right.
+
+119
+00:11:50,410 --> 00:11:58,180
+So have chosen an income level of say 2 lakhs it is the maximum and age of 100 and you can see the
+
+120
+00:11:58,180 --> 00:12:05,080
+normalized values and likewise for buys and not buy I have taken not by as - 1 and by as computer
+
+121
+00:12:05,080 --> 00:12:11,710
+is + 1. These are arbitrary choices, now but later on you will see that there are specific reasons
+
+122
+00:12:11,710 --> 00:12:19,150
+for wanting to choose this encoding in this way. And then the training algorithm chugs over this
+
+123
+00:12:19,150 --> 00:12:24,580
+data right and it will produce a classifier so now this classifier I do not know whether it is
+
+124
+00:12:24,580 --> 00:12:29,440
+good or bad right so we had a straight line in the first case right an axis parallel line if we did
+
+125
+00:12:29,440 --> 00:12:34,120
+not know the good or bad and we needed to have some mechanism by which we evaluate this right.
+
+126
+00:12:34,120 --> 00:12:39,490
+So how do we do the evaluation typically is that you have what is called a test set or a
+
+127
+00:12:39,490 --> 00:12:44,890
+validation set right so this is another set of x and y pairs like we had in the training set,
+
+128
+00:12:44,890 --> 00:12:52,540
+so again in the test set we know what the labels are it is just that we are not showing it to the
+
+129
+00:12:52,540 --> 00:12:57,910
+training algorithm we know what the labels are because we need to use the correct labels to
+
+130
+00:12:57,910 --> 00:13:03,400
+evaluate whether your training algorithm is doing good or bad right so, so this process
+
+131
+00:13:03,400 --> 00:13:07,390
+by which this evaluation happens is called validation. Then at the end of the validation,
+
+132
+00:13:07,390 --> 00:13:11,020
+if you are happy with the quality of the classifier we can keep it. If you are not
+
+133
+00:13:11,020 --> 00:13:15,730
+happy then go back to the training algorithm and say hey I am not happy with what you produced
+
+134
+00:13:15,730 --> 00:13:21,125
+give me something different right, so we have to either iterate over the algorithm again we
+
+135
+00:13:21,125 --> 00:13:25,310
+will go over the data again and try to refine the parameter estimation or we could even think
+
+136
+00:13:25,310 --> 00:13:31,910
+of changing some parameter values and then trying to redo the training algorithm all over again. But
+
+137
+00:13:31,910 --> 00:13:36,080
+this is the general process and we will see that many of the different algorithms that we look,
+
+138
+00:13:36,080 --> 00:13:44,510
+look at in the course; during the course of these lectures actually follow this kind of a process .
+
+139
+00:13:44,510 --> 00:13:50,630
+So what happens inside that green box? So inside the training algorithm is that there
+
+140
+00:13:50,630 --> 00:13:55,850
+will be this learning agent right which will take an input and it will produce an output Ŷ
+
+141
+00:13:55,850 --> 00:13:59,780
+which it thinks is the correct output right but it will compare it against the actual
+
+142
+00:13:59,780 --> 00:14:05,210
+target Y it was given for the in the training right, so in the training you actually have a
+
+143
+00:14:05,210 --> 00:14:10,280
+target Y so it will compare it against a target why right and then figure out what the error is
+
+144
+00:14:10,280 --> 00:14:17,270
+and use the error to change the agent right so then it can produce the right output next
+
+145
+00:14:17,270 --> 00:14:22,070
+time around. This is essentially an iterative process so you see that input okay produce an
+
+146
+00:14:22,070 --> 00:14:28,160
+output Ŷ and then you take the target Y, you can compare it to the Ŷ, figure out what is
+
+147
+00:14:28,160 --> 00:14:34,250
+the error and use the error to change the agent again right. And this is by and large the way
+
+148
+00:14:34,250 --> 00:14:39,500
+most of the learning algorithms will operate; most of the classification algorithms or even
+
+149
+00:14:39,500 --> 00:14:46,070
+regression algorithms will operate and we will see how each of this works as, we go on right.
+
+150
+00:14:46,070 --> 00:14:51,080
+There are many, many applications. I mean this is too numerous to list. Here are a few examples you
+
+151
+00:14:51,080 --> 00:14:56,000
+could look at say a fraud detection right, so we have some data where the input is a set of
+
+152
+00:14:56,000 --> 00:15:04,670
+transactions made by a user and then you can flag each transaction as a valid transaction
+
+153
+00:15:04,670 --> 00:15:10,550
+or not. You could look at sentiment analysis you know variedly called as opinion mining or
+
+154
+00:15:10,550 --> 00:15:16,340
+buzz analysis etc., where I give you a piece of text or a review written about a product or a
+
+155
+00:15:16,340 --> 00:15:21,320
+movie and then you tell me whether the movies whether the review is positive or whether is
+
+156
+00:15:21,320 --> 00:15:24,800
+negative and what are the negative points that people are mentioning about and so on
+
+157
+00:15:24,800 --> 00:15:30,080
+so forth and this again a classification task. Or you could use it for doing churn prediction
+
+158
+00:15:30,080 --> 00:15:34,940
+where you are going to say whether a customer who is in the system is likely to leave your
+
+159
+00:15:34,940 --> 00:15:39,800
+system or is going to continue using your product or using your service for a longer period of time,
+
+160
+00:15:39,800 --> 00:15:43,940
+so this is essentially churn so when a person leaves your services you call the
+
+161
+00:15:43,940 --> 00:15:47,810
+person churner and you can label what the person is churner or not. And I have been
+
+162
+00:15:47,810 --> 00:15:53,600
+giving you examples form medical diagnosis all through apart from actually diagnosing
+
+163
+00:15:53,600 --> 00:15:57,800
+whether a person has a disease or not you could also use it for risk analysis in the slightly
+
+164
+00:15:57,800 --> 00:16:05,780
+indirect way I will talk about that when we when we do the algorithms for classification.
+
+165
+00:16:05,780 --> 00:16:17,270
+So we talked about how we are interested in learning different lines or curves that can
+
+166
+00:16:17,270 --> 00:16:23,120
+separate different classes in supervised learning and, so this curves can be represented using
+
+167
+00:16:23,120 --> 00:16:28,850
+different structures and throughout the course we will be looking at different kinds of learning
+
+168
+00:16:28,850 --> 00:16:34,880
+mechanisms like artificial neural networks support vector machines decision trees nearest neighbors
+
+169
+00:16:34,880 --> 00:16:40,040
+and Bayesian networks and these are some of the popular ones and we look at these in more detail
+
+170
+00:16:40,040 --> 00:16:47,270
+as the course progresses. So another supervised learning problem is the one of prediction.
+
+171
+00:16:47,270 --> 00:16:54,890
+Or regression where the output that you are going to predict is no longer a discrete value it is
+
+172
+00:16:54,890 --> 00:16:59,630
+not like – will buy a computer or does not buy a computer – it is more of a continuous
+
+173
+00:16:59,630 --> 00:17:06,470
+value so here is an example, where at different times of day you have recorded the temperature
+
+174
+00:17:06,470 --> 00:17:12,770
+so the input to the system is going to be the time of day and the output from the system is
+
+175
+00:17:12,770 --> 00:17:18,110
+going to be the temperature that was measured at a particular point at the time right. So you
+
+176
+00:17:18,110 --> 00:17:23,660
+are going to get your experience or your training data is going to take this form so the blue points
+
+177
+00:17:23,660 --> 00:17:27,980
+would be your input and the red points would be the outputs that you are expected to predict.
+
+178
+00:17:27,980 --> 00:17:35,870
+So note here that the outputs are continuous or real value right and so you could think of this in
+
+179
+00:17:35,870 --> 00:17:42,110
+this toy example as points to the left being day and the points to the right being night right. And
+
+180
+00:17:42,110 --> 00:17:47,660
+just as in the previous case of classification, so we could try to do these simple as possible
+
+181
+00:17:47,660 --> 00:17:53,660
+fit in this case which would be to draw a straight line that is as close as possible to these points
+
+182
+00:17:53,660 --> 00:18:00,320
+now you do see that like in the classification case when it choose a simple solution there are
+
+183
+00:18:00,320 --> 00:18:05,930
+certain points at which we are making large errors right so we could try to fix that.
+
+184
+00:18:05,930 --> 00:18:13,520
+And try to do something more fancy. But you could see that while the day time temperatures are more
+
+185
+00:18:13,520 --> 00:18:19,940
+or less fine but with the night times we seem to be doing something really off right because we
+
+186
+00:18:19,940 --> 00:18:26,030
+are going off too much to the right-hand side. How if you could do something more complex just
+
+187
+00:18:26,030 --> 00:18:31,790
+like in the classification case where we wanted to get that one point right so we could try and
+
+188
+00:18:31,790 --> 00:18:37,940
+fit all these temperatures that were given to us by looking at a sufficiently complex curve.
+
+189
+00:18:37,940 --> 00:18:44,540
+And again this as we discussed earlier is probably not the right answer and you are
+
+190
+00:18:44,540 --> 00:18:51,920
+probably in this case surprisingly or better off fitting the straight line right. So these
+
+191
+00:18:51,920 --> 00:18:58,820
+kinds of solutions where we try to fit the noise in the data we are trying to make the
+
+192
+00:18:58,820 --> 00:19:04,190
+solution predict the noise in the training data correctly are known as over fitting,
+
+193
+00:19:04,190 --> 00:19:11,690
+over fit solutions and one of the things that we look to avoid in, in machine learning is
+
+194
+00:19:11,690 --> 00:19:16,250
+to over fit to the training data. So we will talk about this again in due course.
+
+195
+00:19:18,020 --> 00:19:22,760
+So what we do is typically we would like to do what is called linear regression some of you
+
+196
+00:19:22,760 --> 00:19:28,490
+might have come across this under different circumstances and the typical aim in linear
+
+197
+00:19:28,490 --> 00:19:37,790
+regression is to say take the error that your line is making so if you take an example point,
+
+198
+00:19:37,790 --> 00:19:48,060
+let us say I take any I take an example point somewhere here right.
+
+199
+00:19:48,060 --> 00:19:52,890
+So this is the actual training data that is given to you and this is the
+
+200
+00:19:52,890 --> 00:19:58,260
+prediction that your line is making at this point so this quantity is essentially the,
+
+201
+00:19:58,260 --> 00:20:05,160
+the prediction error that this line is making and so what you do is you try to find that line
+
+202
+00:20:05,160 --> 00:20:12,750
+that has the least prediction error right so you take the square of the errors that
+
+203
+00:20:12,750 --> 00:20:18,570
+your prediction is making and then you try to minimize the, the sum of the squares of
+
+204
+00:20:18,570 --> 00:20:22,350
+the errors. Why do we take the squares? Because errors could be both positive or negative and
+
+205
+00:20:22,350 --> 00:20:27,450
+we want to make sure that you are minimizing that regardless of the sign of the error okay.
+
+206
+00:20:27,450 --> 00:20:33,600
+So with sufficient data right so a linear regression is simple enough you could just
+
+207
+00:20:33,600 --> 00:20:39,570
+solve it using matrix inversions as we will see later but with many dimensions the challenge is to
+
+208
+00:20:39,570 --> 00:20:43,620
+avoid over fitting like we talked about earlier and then there are many ways of avoiding this.
+
+209
+00:20:43,620 --> 00:20:49,470
+And so I will again talk about this in detail when we look at linear regression
+
+210
+00:20:49,470 --> 00:20:54,960
+right. So one point that I want to make is that linear regression is not as simple as
+
+211
+00:20:54,960 --> 00:21:01,320
+it sounds right. So here is an example so I have two input variables x1 and x2 right
+
+212
+00:21:01,320 --> 00:21:05,880
+and if I try to fit a straight line with x1 and x2 I will probably end up with something
+
+213
+00:21:05,880 --> 00:21:13,830
+like a1 x1 plus a2 x2 right and that looks like, like a plane in two dimensions right.
+
+214
+00:21:13,830 --> 00:21:20,070
+But then if I just take these two dimensions and then transform them transform the input
+
+215
+00:21:20,070 --> 00:21:25,410
+so instead of saying just the x1 and x2 if I say my input is going to look like x1 square,
+
+216
+00:21:25,410 --> 00:21:31,650
+x2 squared, x1x2 and then the x1 and x2 as it was in the beginning so instead
+
+217
+00:21:31,650 --> 00:21:36,750
+of looking at a two-dimensional input if I am going to look at a 5 dimensional input right,
+
+218
+00:21:37,350 --> 00:21:44,490
+and now I am going to fit a line or a linear plane in this 5 dimensional input so that will
+
+219
+00:21:44,490 --> 00:21:55,470
+be like a1 x1 squared plus a2 x2 square plus a3 x1 x2 plus a4 x1 plus a5 x2. Now that is no
+
+220
+00:21:55,470 --> 00:22:00,620
+longer the equation of a line in two dimensions right so that is the equation of a second-order
+
+221
+00:22:00,620 --> 00:22:07,280
+polynomial in two dimensions but I can still think of this as doing linear regression because
+
+222
+00:22:07,280 --> 00:22:16,190
+I am only fitting a function that is going to be linear in the input variables right.
+
+223
+00:22:16,190 --> 00:22:22,550
+So by choosing an appropriate transformation of the inputs, I can fit any higher-order function
+
+224
+00:22:22,550 --> 00:22:26,750
+so I could solve very complex problems using linear regression and so it is not really a
+
+225
+00:22:26,750 --> 00:22:32,390
+weak method as you would think at first, first glance. Again, we will look at this in slightly
+
+226
+00:22:32,390 --> 00:22:38,120
+more detail in the later lectures right and regression our prediction can be applied in
+
+227
+00:22:38,120 --> 00:22:42,650
+a variety of places – one popular place is in time series prediction you could think about predicting
+
+228
+00:22:42,650 --> 00:22:48,620
+rainfall in a certain region or how much you are going to spend on your telephone calls you could
+
+229
+00:22:48,620 --> 00:22:54,230
+think of doing even classification using this, if you think of; you remember our encoding of +1 and
+
+230
+00:22:54,230 --> 00:23:00,320
+-1 for the class labels. So you could think of +1 and -1 as the outputs right and then you can fit a
+
+231
+00:23:00,320 --> 00:23:07,730
+regression line regression curve to that and if the output is greater than 0 you would say this
+
+232
+00:23:07,730 --> 00:23:13,040
+class is +1 its output is less than 0 you see the class is -1 so it could use the regression
+
+233
+00:23:13,040 --> 00:23:21,020
+ideas to solve the classification problem and you could also do data reduction. So I really do not
+
+234
+00:23:21,020 --> 00:23:29,360
+want to give you all the millions of data points that I have in my data set but what I would do is
+
+235
+00:23:29,360 --> 00:23:34,340
+essentially fit the curve to that and then give you just the coefficients of the curve right.
+
+236
+00:23:34,340 --> 00:23:41,030
+And more often than not that is sufficient for us to get a sense of the data and that brings us to
+
+237
+00:23:41,030 --> 00:23:46,790
+the next application I have listed there which is trend analysis so I am not really interested in;
+
+238
+00:23:46,790 --> 00:23:51,740
+quite many times, I am not interested in the actual values of the data but more in the,
+
+239
+00:23:51,740 --> 00:23:58,430
+the trends so for example I have a solution that I am trying to
+
+240
+00:23:58,430 --> 00:24:01,580
+measure the running times off and I am not really interested in the
+
+241
+00:24:01,580 --> 00:24:05,690
+actual running time because with 37seconds to 38 seconds is not going to tell me much.
+
+242
+00:24:05,690 --> 00:24:10,730
+But I would really like to know if the running time scales linearly or exponentially with the
+
+243
+00:24:10,730 --> 00:24:14,330
+size of the important all right so those kinds of analysis again can be done using
+
+244
+00:24:14,330 --> 00:24:19,670
+regression. And in the last one here is again risk factor analysis like we had
+
+245
+00:24:19,670 --> 00:24:23,570
+in classification and you can look at which are the factors that contribute
+
+246
+00:24:23,570 --> 00:24:28,910
+most to the output so that brings us to the end of this module on supervised learning.

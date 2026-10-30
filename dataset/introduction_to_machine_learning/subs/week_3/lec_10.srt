@@ -1,0 +1,515 @@
+1
+00:00:00,000 --> 00:00:20,050
+Right so we were looking at linear regression
+
+2
+00:00:20,050 --> 00:00:31,120
+right, so we are assuming that the X is coming from RP but I told you that it is not necessarily
+
+3
+00:00:31,120 --> 00:00:35,530
+that it has to come from the real numbers and we talked about various ways in which you can encode
+
+4
+00:00:35,530 --> 00:00:43,360
+the data and so on so forth and then if we assume that the Y comes from R and I told you depending
+
+5
+00:00:43,360 --> 00:00:58,960
+on the circumstances so we will talk about the input matrix X okay which might be of N x P + 1
+
+6
+00:00:58,960 --> 00:01:07,720
+or N x P right so it will be N x P + 1 when we actually have an explicit intercept right.
+
+7
+00:01:07,720 --> 00:01:14,770
+So a β0 so term for the β0 term will have a column of ones added to the data right the input instead
+
+8
+00:01:14,770 --> 00:01:17,740
+of thinking of it as a P-dimensional vector will think of it as P + 1 dimensional vector
+
+9
+00:01:17,740 --> 00:01:23,890
+and when I do not have the intercept okay it just becomes a P-dimensional input right so
+
+10
+00:01:23,890 --> 00:01:28,120
+that is that is the basic setup that we have and we are essentially looking at minimizing
+
+11
+00:01:28,120 --> 00:01:34,870
+some squared error right so we looked at the simple linear regression we looked at
+
+12
+00:01:34,870 --> 00:01:41,470
+the case where there were multiple inputs. And we looked at how you can interpret that in
+
+13
+00:01:41,470 --> 00:01:48,040
+terms of single variable regression univariate regression is essentially what we looked at in
+
+14
+00:01:48,040 --> 00:01:59,260
+the last class. And so this class we will go on to look at a little more you know complex things
+
+15
+00:01:59,260 --> 00:02:19,460
+that you can do with linear regression, so linear regression is great because it is so easy to solve
+
+16
+00:02:19,460 --> 00:02:25,520
+right and it is very efficient runs very quickly and all that but there are a couple of drawbacks
+
+17
+00:02:25,520 --> 00:02:34,340
+to linear regression so the first one is that if you remember I was mentioning in last class
+
+18
+00:02:34,340 --> 00:02:45,950
+also that by doing this least squares fit you are actually getting a fit that has very low very low
+
+19
+00:02:45,950 --> 00:02:53,330
+variance but it also has how much bias okay did I say that in fact I think people are hallucinating
+
+20
+00:02:53,330 --> 00:03:01,130
+so what I did say is that if you do least squares fit and if the if linear happens to be the right
+
+21
+00:03:01,130 --> 00:03:11,120
+choice then least squares which gives you the 0 bias solution okay right so the least squares
+
+22
+00:03:11,120 --> 00:03:17,210
+fit gives you 0 bias solution but the problem is the variance can be relatively high and it turns
+
+23
+00:03:17,210 --> 00:03:24,830
+out that by not just doing the straightforward least squares fit by doing more tricks with
+
+24
+00:03:24,830 --> 00:03:30,230
+their data with the with the models that we have we can trade off a little bit bias okay.
+
+25
+00:03:30,230 --> 00:03:35,660
+I am going to get a biased estimator for the fit for the line okay I am still fitting straight
+
+26
+00:03:35,660 --> 00:03:39,770
+lines okay I have not done anything different I am still fitting straight lines but the fit
+
+27
+00:03:39,770 --> 00:03:45,110
+I am getting will no longer be a bias-free fit but then I can reduce the variance a lot
+
+28
+00:03:45,110 --> 00:03:52,250
+more by adding certain constraints additional constraints to the problem okay so essentially
+
+29
+00:03:52,250 --> 00:04:01,070
+what I what I would really like to do is reduce the number of variables which I am
+
+30
+00:04:01,070 --> 00:04:07,430
+trying to fit instead of trying to fit P + 1 variables if you can somehow reduce the
+
+31
+00:04:07,430 --> 00:04:13,250
+number of variables what does is equal to it is equivalent to setting some of the β to 0.
+
+32
+00:04:13,250 --> 00:04:19,760
+So if I can somehow set the β to some of the β to 0 then essentially what it means I have lot
+
+33
+00:04:19,760 --> 00:04:24,830
+fewer parameters that I am estimating right so the fewer the parameter set I am estimating the
+
+34
+00:04:24,830 --> 00:04:32,210
+lower the variance still right but because I am now restricting the class of models that I
+
+35
+00:04:32,210 --> 00:04:36,590
+am going to be looking at because I have to set some numbers to 0 so my bias will go up slightly
+
+36
+00:04:36,590 --> 00:04:41,600
+right this is assuming that I am fitting straight lines you know the straight lines are the right
+
+37
+00:04:41,600 --> 00:04:46,340
+things to do but still my bias will increase a little bit right in this case of course that is
+
+38
+00:04:46,340 --> 00:04:50,330
+always this residual bias because the language of straight lines is not powerful enough.
+
+39
+00:04:50,330 --> 00:04:54,200
+So that bias is still there we are not talking about that I am saying even assuming straight
+
+40
+00:04:54,200 --> 00:04:58,880
+lines are the right thing to do if I am going to force certain coefficients to be 0 I am increasing
+
+41
+00:04:58,880 --> 00:05:04,160
+the bias in the estimator right but the variance will go down because I have a lot fewer parameters
+
+42
+00:05:04,160 --> 00:05:08,450
+that I am going to estimate okay, so that is essentially what we are going to look at and
+
+43
+00:05:08,450 --> 00:05:13,640
+so what I mean by subset selection here is that I am going to select a subset of the input variables
+
+44
+00:05:13,640 --> 00:05:24,200
+to use for fitting the line okay right. So one thing is we can reduce the variance
+
+45
+00:05:24,200 --> 00:05:28,598
+significantly and that is where we can improve the prediction accuracy of the model okay that
+
+46
+00:05:28,598 --> 00:05:32,390
+is one of the reasons we would like to do subset selection there any other reason you can think of
+
+47
+00:05:32,390 --> 00:05:43,640
+for wanting to work with the few smaller subset less computation yeah but it is a question of
+
+48
+00:05:43,640 --> 00:05:47,990
+there you have to do more computation to figure out what the subset is and so on so forth yeah
+
+49
+00:05:47,990 --> 00:05:51,620
+but less computation is one answer but there is another one I think I heard somebody say
+
+50
+00:05:51,620 --> 00:06:07,640
+this somebody someone or rather speaks with you synchronously always see a trend you know no there
+
+51
+00:06:07,640 --> 00:06:16,280
+is yet another major advantage I mean. Yeah so related to this right, so there are
+
+52
+00:06:16,280 --> 00:06:21,890
+variables which could potentially have high noise and so it will end up with a small coefficient
+
+53
+00:06:21,890 --> 00:06:28,280
+right but then if I if I tell you okay here is this model m and it has like 135 coefficients
+
+54
+00:06:28,280 --> 00:06:33,920
+and it becomes hard for you to even figure out what this means that instead of that if
+
+55
+00:06:33,920 --> 00:06:38,810
+it is okay here is this model you gave me a 135 variables but these are the 4 important variables
+
+56
+00:06:38,810 --> 00:06:43,820
+that I need for doing a linear fit right. Now it is easy much easier for you to interpret
+
+57
+00:06:43,820 --> 00:06:49,430
+what is going on right so interpretation is a very big component of any kind of data
+
+58
+00:06:49,430 --> 00:06:52,640
+analytics that you want to do like ultimately what you are doing with machine learning is
+
+59
+00:06:52,640 --> 00:06:56,780
+trying to understand the data right, so one of the things you would like to have this
+
+60
+00:06:56,780 --> 00:07:18,930
+interpretability right. So, the first one is to okay this is
+
+61
+00:07:18,930 --> 00:07:25,380
+interpretability and that is prediction accuracy right so there are many ways in doing this the
+
+62
+00:07:25,380 --> 00:07:32,910
+simplest kind of approach is essentially to take this literally right and try to select
+
+63
+00:07:32,910 --> 00:07:52,230
+from subsets of features right, so why is that a simplistic approach so why is that
+
+64
+00:07:52,230 --> 00:08:18,860
+a simplistic approach oh come on easy it is combinatorial now exactly.
+
+65
+00:08:18,860 --> 00:08:24,350
+So this will just do subsets in a best subset selection essentially I would say that okay here
+
+66
+00:08:24,350 --> 00:08:29,420
+first pic subsets of size one subsets of size two subsets of size 3 and so on so forth right,
+
+67
+00:08:29,420 --> 00:08:37,130
+and it turns out that you can see yourself if you start playing around with some linear
+
+68
+00:08:37,130 --> 00:08:43,580
+regression tools that what is the variables that go into the best subset of size one
+
+69
+00:08:43,580 --> 00:08:50,540
+right basically the one best variable need not figure in the best subset of size two so
+
+70
+00:08:50,540 --> 00:08:54,950
+it does not have a nice inclusion property. So for it to have a nice inclusion property you
+
+71
+00:08:54,950 --> 00:08:59,690
+need to have certain very nice conditions on the data set so in general it does not
+
+72
+00:08:59,690 --> 00:09:04,730
+have this inclusion property right, so you have to just redo the whole thing again so
+
+73
+00:09:04,730 --> 00:09:10,550
+it is not enough if you just do one say okay you cannot be greedy basically I cannot say I will do
+
+74
+00:09:10,550 --> 00:09:16,190
+the first subset and then I just add the one best variable to it and then I will find the next one,
+
+75
+00:09:16,190 --> 00:09:20,360
+so essentially you have to do a combinatorial selection so people have come up with a very
+
+76
+00:09:20,360 --> 00:09:27,470
+clever ways of organizing this right. And in fact of using QR decomposition to do
+
+77
+00:09:27,470 --> 00:09:34,490
+things more rapidly I am not going to go into details of that but then up to like 30 or 40
+
+78
+00:09:34,490 --> 00:09:40,130
+variables you can scale well right, you mean can hope to get answers in your lifetime kind
+
+79
+00:09:40,130 --> 00:09:47,510
+of scaling right but if you go for much larger variables right much larger number of variables
+
+80
+00:09:47,510 --> 00:09:53,805
+like many problems of interests like in text or image domains and things like that then there
+
+81
+00:09:53,805 --> 00:09:58,010
+is no hope to do an exhaustive search but that is a base length which you can do people.
+
+82
+00:09:58,010 --> 00:10:02,360
+Actually come up with algorithms which do this kind of a subset selection okay, so there is one
+
+83
+00:10:02,360 --> 00:10:09,290
+very interestingly named algorithm called leaps and bounds which does pretty efficient subset
+
+84
+00:10:09,290 --> 00:10:14,690
+selection but just a more of a informational thing for you right.
+
+85
+00:10:14,690 --> 00:10:41,860
+This thing is forward step-wise selection so any guesses what that is? exactly it being
+
+86
+00:10:41,860 --> 00:10:46,030
+greedy right it is just trying to do best subset selection by being greedy, so you start off with
+
+87
+00:10:46,030 --> 00:10:54,850
+so what is the feature you for sure want to have all ones okay you need the intercept
+
+88
+00:10:54,850 --> 00:10:59,590
+right otherwise your line has to pass through the origin okay, so you need the intercepts you start
+
+89
+00:10:59,590 --> 00:11:03,550
+with the intercept okay so what should be the coefficient for the intercept we already looked
+
+90
+00:11:03,550 --> 00:11:08,380
+at it before now the mean of the y's right. So that will be the coefficient so we already
+
+91
+00:11:08,380 --> 00:11:15,220
+have fitted that so now what you do this you start off with that variable okay, now then you
+
+92
+00:11:15,220 --> 00:11:27,010
+add the next one okay let some xi add that as the next variable such that it gives you the best fit
+
+93
+00:11:27,010 --> 00:11:31,960
+modulo the set they have already taken so you are not going to disturb all the stages the variables
+
+94
+00:11:31,960 --> 00:11:38,530
+you have taken to in step k now we will add a new variable such that among all the variables I could
+
+95
+00:11:38,530 --> 00:11:42,640
+add at this k plus 1 stage this one gives me the maximum of improvement in the performance.
+
+96
+00:11:42,640 --> 00:11:48,430
+So how will I measure performance some kind of residual error on the test data right so
+
+97
+00:11:48,430 --> 00:11:54,490
+that is how I measure performance I keep doing this, until a point where
+
+98
+00:12:01,560 --> 00:12:11,940
+the error does not change much is there any other thing I can say so the residual is orthogonal to
+
+99
+00:12:11,940 --> 00:12:15,780
+any of the other directions I could add right there is one thing which we know of right,
+
+100
+00:12:15,780 --> 00:12:20,850
+so we know that at the end of the right fit you get the residual will be orthogonal to the space
+
+101
+00:12:20,850 --> 00:12:26,910
+spanned by the x’s right that means individually if I take any of the x’s right the residual will
+
+102
+00:12:26,910 --> 00:12:31,710
+be orthogonal to that individual direction as well, so when you find that none of the directions
+
+103
+00:12:31,710 --> 00:12:37,110
+that are left have any kind of component along the direction of the residual then I can stop.
+
+104
+00:12:37,680 --> 00:12:43,260
+Or I mean that may take a long time to do because that might happen only when I have the full least
+
+105
+00:12:43,260 --> 00:12:49,110
+squares fit so I can stop and the residual drops below a certain threshold that you can say okay I
+
+106
+00:12:49,110 --> 00:12:53,790
+am happy with the prediction accuracy or getting I will stop here. So there in many ways of doing
+
+107
+00:12:53,790 --> 00:13:16,280
+that right so the other way is to do what will you do in this case? I will start with the fit
+
+108
+00:13:16,280 --> 00:13:22,160
+that has all the variables okay and then I will keep dropping one by one right so one thing to
+
+109
+00:13:22,160 --> 00:13:34,730
+note is that you can do this if the number of data points is greater than the number of dimensions so
+
+110
+00:13:34,730 --> 00:13:41,750
+then you can actually find the fit. If p is > n now as people pointed out last time the
+
+111
+00:13:41,750 --> 00:13:46,700
+formula itself that, we are using is no longer valid right so because if the matrix will not
+
+112
+00:13:46,700 --> 00:13:50,870
+be invertible so we will have to think of other tricks for doing the fit and so on so forth but
+
+113
+00:13:50,870 --> 00:13:58,190
+forward stepwise selection you can do even if p is greater than n because I am anyway fitting
+
+114
+00:13:58,190 --> 00:14:04,190
+one direction at a time right so it is fine I am adding one direction at a time I can keep going
+
+115
+00:14:04,190 --> 00:14:17,600
+until I reach n directions at which point I should have a full least squares fit okay. Yeah so when
+
+116
+00:14:17,600 --> 00:14:22,070
+people actually even come up with all kinds of variants on this so one thing which you could do
+
+117
+00:14:22,070 --> 00:14:27,740
+is think of some kind of hybrid approach where I keep adding and deleting directions right,
+
+118
+00:14:27,740 --> 00:14:39,920
+so if I if you remember we talked about how greedy is not always the best way to grow things right,
+
+119
+00:14:39,920 --> 00:14:44,510
+so you can grow up to a certain level again maybe then dropping one of the earlier dimensions will
+
+120
+00:14:44,510 --> 00:14:48,650
+actually give you a slightly better performance could be right so that is one possibility
+
+121
+00:14:48,650 --> 00:14:58,760
+and right they could do some kind of a hybrid version of this so one thing I should point out
+
+122
+00:14:58,760 --> 00:15:03,140
+here, so you may think that forward stepwise selection because it is greedy is going to be
+
+123
+00:15:03,140 --> 00:15:11,900
+much worse than best subset selection right. So it turns out that in many real cases many real data
+
+124
+00:15:11,900 --> 00:15:18,410
+sets that you work with right the greedy selection is actually not a bad thing to do right in fact,
+
+125
+00:15:18,410 --> 00:15:23,030
+so much so many statistics packages like R but a little bit to do this right so you would not
+
+126
+00:15:23,030 --> 00:15:28,370
+find this in many of the machine learning tools like Weka so they would not have this kind of a
+
+127
+00:15:28,370 --> 00:15:33,170
+forward feature selection and things like that they have other ways of doing feature selection
+
+128
+00:15:33,170 --> 00:15:38,360
+which we will talk about later right but then statistical packages actually have this stage
+
+129
+00:15:38,360 --> 00:15:43,370
+wise edition of features because they seem to work well on a variety of data sets okay.

@@ -1,0 +1,1027 @@
+1
+00:00:11,030 --> 00:00:17,780
+Okay, anyway so remember we actually
+
+2
+00:00:17,780 --> 00:00:21,410
+spoke about frequent pattern mining very briefly at the very first lecture right,
+
+3
+00:00:21,410 --> 00:00:24,710
+where I was introducing different machine learning tasks to you right.
+
+4
+00:00:24,710 --> 00:00:26,930
+So this is a form of unsupervised learning and
+
+5
+00:00:26,930 --> 00:00:32,810
+the statisticians call this as I told you that also,
+
+6
+00:00:34,850 --> 00:00:40,790
+statisticians call this as bump hunting right.
+
+7
+00:00:40,790 --> 00:00:45,830
+So you have a remarkably flat probability distribution okay,
+
+8
+00:00:45,830 --> 00:00:49,370
+then there are small bumps somewhere, so what does it mean
+
+9
+00:00:51,110 --> 00:00:55,250
+slightly more frequent in the data than the rest right.
+
+10
+00:00:55,250 --> 00:00:59,510
+So that is essentially what bump hunting means. So I have a very large pace right
+
+11
+00:00:59,510 --> 00:01:02,900
+I have an exponentially large set of possible outcomes right,
+
+12
+00:01:02,900 --> 00:01:08,420
+and I am going to have an extremely low probability of seeing any one outcome right.
+
+13
+00:01:08,420 --> 00:01:12,950
+But there will be small bumps here and there which are places which are slightly more frequent than
+
+14
+00:01:12,950 --> 00:01:17,270
+what I would see normally right. So what
+
+15
+00:01:17,270 --> 00:01:24,200
+in the modern context right, so something like Amazon's logs
+
+16
+00:01:24,200 --> 00:01:29,360
+if you look at who bought what and Amazon right. So if you think about it Amazon has millions
+
+17
+00:01:29,360 --> 00:01:34,925
+and millions of transactions right. So say suppose they have in a month let
+
+18
+00:01:34,925 --> 00:01:43,310
+us say they have like 10 million transactions on Amazon If somebody bought say 10,000 copies
+
+19
+00:01:43,310 --> 00:01:44,540
+of the same item not somebody
+
+20
+00:01:44,540 --> 00:01:47,990
+like some item was sold 10,000 times on Amazon right.
+
+21
+00:01:47,990 --> 00:01:54,020
+That is a very frequent occurrence, but think about what fraction of 10
+
+22
+00:01:54,020 --> 00:02:01,400
+million is 10,000 1%,
+
+23
+00:02:01,400 --> 00:02:03,950
+0.1%, 0.01%,
+
+24
+00:02:04,490 --> 00:02:10,400
+0.1% right. That is why I call this bump hunting
+
+25
+00:02:10,400 --> 00:02:15,410
+it is remarkably flat right, so I have a huge inventory in my Amazon base,
+
+26
+00:02:15,410 --> 00:02:23,930
+my Amazon catalog has a huge inventory right, and I am looking for frequent items there
+
+27
+00:02:23,930 --> 00:02:27,050
+which is we like something sold 10,000 times is frequent for me.
+
+28
+00:02:27,050 --> 00:02:30,740
+Even though the overall transaction is 10 million right,
+
+29
+00:02:30,740 --> 00:02:34,670
+so this is essentially what I am talking about when I talk about frequent pattern mining okay.
+
+30
+00:02:34,670 --> 00:02:40,070
+So its takes the frequent path here with a pinch of salt right,
+
+31
+00:02:40,070 --> 00:02:42,080
+but all the examples and illustrations I will give you
+
+32
+00:02:42,080 --> 00:02:45,110
+a frequent will be like 50% of the data or something
+
+33
+00:02:45,110 --> 00:02:49,670
+that is because I cannot draw 10 million things on the board right.
+
+34
+00:02:49,670 --> 00:02:53,660
+But in reality when you actually use these kinds of things the numbers would be the
+
+35
+00:02:53,660 --> 00:02:56,600
+fractions will be very different just keep that in mind.
+
+36
+00:02:59,270 --> 00:03:02,990
+So I am, so frequent
+
+37
+00:03:02,990 --> 00:03:17,750
+patterns are those that are above a certain, suppose above a certain minimum support
+
+38
+00:03:17,750 --> 00:03:21,290
+that I am looking for in a, so what is the support of
+
+39
+00:03:21,290 --> 00:03:30,200
+a pattern in a database, that is the support count okay.
+
+40
+00:03:30,200 --> 00:03:34,820
+So support of an item is essentially the fraction of times it occurs right
+
+41
+00:03:34,820 --> 00:03:39,890
+so take the support count the number of times it occurs divided by the total number of items it
+
+42
+00:03:39,890 --> 00:03:45,470
+gives you the support of the item right. So I will call an item as being or all
+
+43
+00:03:45,470 --> 00:03:51,260
+call a pattern as being frequent if it is above the minimum support.
+
+44
+00:03:51,260 --> 00:03:56,750
+So minimum support is a parameter that I define sorry
+
+45
+00:03:56,750 --> 00:04:01,670
+it is less than one, it will be less than 1, but it is a parameter that I define right.
+
+46
+00:04:01,670 --> 00:04:05,210
+So occasionally what people do is, they actually translate the min
+
+47
+00:04:05,210 --> 00:04:08,450
+support also into a count and essentially you take the
+
+48
+00:04:08,450 --> 00:04:11,240
+fraction you multiplied by the total number of items it gives you a count.
+
+49
+00:04:11,240 --> 00:04:16,250
+So see sometimes easier to think of it as okay, I have a transaction of say,
+
+50
+00:04:16,250 --> 00:04:19,340
+I have a total database of 10 possible transactions,
+
+51
+00:04:19,340 --> 00:04:25,910
+I look for a min support of 2 right. So that is like 20%, but then you could
+
+52
+00:04:25,910 --> 00:04:28,670
+think of it that way as well. So min support is essentially the
+
+53
+00:04:28,670 --> 00:04:33,410
+minimum support level at which I will consider something as frequent right.
+
+54
+00:04:33,410 --> 00:04:37,130
+So classically right
+
+55
+00:04:38,150 --> 00:04:53,640
+frequent pattern mining was applied to transactional databases.
+
+56
+00:04:53,640 --> 00:04:59,940
+So where I have a collection of transactions right
+
+57
+00:04:59,940 --> 00:05:02,460
+transaction essentially could be things like okay,
+
+58
+00:05:02,460 --> 00:05:08,370
+these are the items you bought together right, or these are the items you checked out
+
+59
+00:05:08,370 --> 00:05:13,110
+together from a bookstore or library okay, these are the items you borrowed from a library
+
+60
+00:05:13,110 --> 00:05:17,880
+together, some kind of a transaction. So something went from A to B okay.
+
+61
+00:05:17,880 --> 00:05:21,840
+So that is the usual classically where they applied this yet,
+
+62
+00:05:21,840 --> 00:05:26,850
+and as you are mentioning market basket analysis is a place where they did this first right.
+
+63
+00:05:26,850 --> 00:05:31,260
+So what why it is called market basket analysis, so you go to a shop ,
+
+64
+00:05:31,260 --> 00:05:34,500
+you go to a supermarket you buy something in a basket right,
+
+65
+00:05:34,500 --> 00:05:38,880
+generally you bought a basket along with you start putting things from the shop into the basket,
+
+66
+00:05:38,880 --> 00:05:43,230
+then you come and get it checked out right. So everything that goes together
+
+67
+00:05:43,230 --> 00:05:48,150
+into the basket okay, so we call at single transaction right
+
+68
+00:05:48,150 --> 00:05:50,400
+you might go, you might buy some cereal, you might buy some milk,
+
+69
+00:05:50,400 --> 00:05:53,190
+or whatever you want to buy right some vegetables
+
+70
+00:05:53,190 --> 00:05:55,500
+everything you put together and you bring it to the bill right.
+
+71
+00:05:55,500 --> 00:05:57,810
+So all those things that go together we call a transaction,
+
+72
+00:05:57,810 --> 00:06:04,080
+so market basket analysis is essentially analyzing what goes into your basket right.
+
+73
+00:06:04,080 --> 00:06:07,380
+So this is the kind of things we will have right.
+
+74
+00:06:07,380 --> 00:06:17,070
+And so these transactions will essentially be defined over a universe of items right,
+
+75
+00:06:17,070 --> 00:06:21,390
+and each transaction will be thought of as a subset of these items right
+
+76
+00:06:21,390 --> 00:06:34,910
+or as the data mining people call it will be refer to as an itemset okay.
+
+77
+00:06:34,910 --> 00:06:40,610
+So what is an itemset, it is set of items that is it, okay.
+
+78
+00:06:40,610 --> 00:06:44,630
+So instead of calling it a grammatically correct fashion a set of items okay
+
+79
+00:06:44,630 --> 00:06:47,240
+for whatever reason they introduced a new noun called itemset,
+
+80
+00:06:47,240 --> 00:06:49,970
+it is a single word okay. They introduced a word called itemset
+
+81
+00:06:49,970 --> 00:06:55,400
+and then they started calling it frequent itemset mining and so on so forth.
+
+82
+00:06:55,400 --> 00:07:10,380
+But so, we will use typically be using the word itemset and
+
+83
+00:07:10,380 --> 00:07:16,710
+we will also use a term K itemset what do you think is K itemset?
+
+84
+00:07:16,710 --> 00:07:27,360
+Set of size K, set of items of size K that is K itemet right.
+
+85
+00:07:27,360 --> 00:07:40,230
+And so we also, so you also have
+
+86
+00:07:40,230 --> 00:07:45,090
+something called association rules that we talked about in the context
+
+87
+00:07:45,090 --> 00:07:48,360
+of frequent pattern mining. So what is an association rule
+
+88
+00:07:48,360 --> 00:08:01,260
+these are rules of the form A implies B what does it mean
+
+89
+00:08:01,260 --> 00:08:09,300
+it means that, if you buy items in the itemset A right,
+
+90
+00:08:09,300 --> 00:08:12,960
+then you are likely to buy the items in the itemset B
+
+91
+00:08:12,960 --> 00:08:17,100
+so A and B are sets they are individual items A and B are sets right.
+
+92
+00:08:17,100 --> 00:08:21,630
+So if you buy things in the itemset A so for example if you buy the usual thing
+
+93
+00:08:21,630 --> 00:08:28,470
+offer is if you buy milk and bread you are likely to buy eggs or something.
+
+94
+00:08:28,470 --> 00:08:32,520
+So you are basically going out shopping for breakfast items right.
+
+95
+00:08:32,520 --> 00:08:35,820
+So you buy milk and bread and then you also buy eggs right.
+
+96
+00:08:36,630 --> 00:08:43,440
+Now very famous or infamous example that people had
+
+97
+00:08:43,440 --> 00:08:48,660
+what is it, yeah if you go out to buy
+
+98
+00:08:48,660 --> 00:08:55,260
+beer you also buy diapers. So why you think that is
+
+99
+00:08:55,260 --> 00:09:05,100
+causal effects, you are not kids you are supposed to know this,
+
+100
+00:09:05,100 --> 00:09:09,030
+do not laugh at this. Yeah, some of, yeah the masters
+
+101
+00:09:09,030 --> 00:09:16,260
+and PhD students can laugh. I am just kidding right,
+
+102
+00:09:16,260 --> 00:09:21,300
+so yeah, so why do you think that was the case
+
+103
+00:09:21,300 --> 00:09:34,440
+any theories come on you should be knowing,
+
+104
+00:09:34,440 --> 00:09:48,870
+give me some theories people have been giving you horror
+
+105
+00:09:48,870 --> 00:09:51,840
+stories about having kids, it is not that bad.
+
+106
+00:09:51,840 --> 00:09:56,040
+And so there is another, then people did some analysis
+
+107
+00:09:56,040 --> 00:10:01,380
+and they actually found all this is like this, the spike was happening on Sundays right.
+
+108
+00:10:01,380 --> 00:10:07,170
+So in the US Sunday is football day, every Sunday they have football playing okay.
+
+109
+00:10:07,170 --> 00:10:10,800
+These guys are actually buying beer okay to drink during the football
+
+110
+00:10:10,800 --> 00:10:13,740
+watching the football game. So that same time they also pick up diapers,
+
+111
+00:10:13,740 --> 00:10:17,160
+because they do not want to be disturbed by the baby during the game or something right.
+
+112
+00:10:17,160 --> 00:10:20,970
+So they probably slap a couple of diapers on the baby let us say okay,
+
+113
+00:10:20,970 --> 00:10:25,800
+do not call me when the game is going on okay. So that is basically what was happening.
+
+114
+00:10:25,800 --> 00:10:34,920
+Of course it had anyway,
+
+115
+00:10:34,920 --> 00:10:40,680
+so there is a larger point to this right. So it is not enough for you to
+
+116
+00:10:40,680 --> 00:10:43,050
+association rule mining. Now some of the associations you
+
+117
+00:10:43,050 --> 00:10:46,110
+discover just from the data might not immediately have any meaning to you.
+
+118
+00:10:46,110 --> 00:10:49,090
+For example, you cannot say buy two
+
+119
+00:10:49,860 --> 00:10:53,340
+whatever two crates of beer and get a diaper free.
+
+120
+00:10:53,340 --> 00:11:02,430
+So you cannot use it for promoting sales or also it will look really weird if you start
+
+121
+00:11:02,430 --> 00:11:06,810
+stacking diapers next to the beer, beer cans in the shop right,
+
+122
+00:11:06,810 --> 00:11:10,170
+So some rules are you I always use an example
+
+123
+00:11:10,170 --> 00:11:13,800
+to illustrate the fact that hey statistics is all fine right,
+
+124
+00:11:13,800 --> 00:11:16,590
+but you need something more than statistics in order to
+
+125
+00:11:16,590 --> 00:11:20,670
+get any useful intelligence out of data. So you need to think of other ways of doing it,
+
+126
+00:11:20,670 --> 00:11:27,870
+but we are not going to do that right great. So how do I know this A implies B is useful other
+
+127
+00:11:27,870 --> 00:11:32,130
+than I mean ignore the discussion we had right. Normally how will I say whether
+
+128
+00:11:32,130 --> 00:11:35,340
+it is useful or not. So I have different measures by which
+
+129
+00:11:35,340 --> 00:11:40,200
+I can measure the usefulness of a rule right. So two most popular ones or called
+
+130
+00:11:43,050 --> 00:11:54,510
+support right, so what do you think is support
+
+131
+00:11:54,510 --> 00:12:01,920
+how many times A and B have occurred together right.
+
+132
+00:12:01,920 --> 00:12:10,440
+So this is essentially the probability of A union B,
+
+133
+00:12:10,440 --> 00:12:13,830
+so A union B is a set union right. So how many times A and B
+
+134
+00:12:13,830 --> 00:12:27,750
+have occurred together right. And the second thing that we look at is okay.
+
+135
+00:12:28,410 --> 00:12:35,850
+Yeah, yeah a set union,
+
+136
+00:12:35,850 --> 00:12:40,710
+A is a set, B is a set right, so when I do the union of that
+
+137
+00:12:40,710 --> 00:12:43,200
+all the elements in A and B what is the probability that
+
+138
+00:12:43,200 --> 00:12:47,520
+all the elements in A and B have occurred. This is how it is usually denoted right,
+
+139
+00:12:47,520 --> 00:12:52,980
+so it is a set union. So this had been literals right,
+
+140
+00:12:52,980 --> 00:12:56,115
+then I would have put A and B what is the probability of A and B,
+
+141
+00:12:56,115 --> 00:13:03,780
+but since this is a set, its A union B okay. And confidence is essentially the
+
+142
+00:13:03,780 --> 00:13:08,160
+probability of B given A. I am saying A implies B
+
+143
+00:13:08,160 --> 00:13:10,950
+that means then I have to figure out okay how many
+
+144
+00:13:10,950 --> 00:13:16,770
+times did B occur when A occurred right. So the probability of B implies
+
+145
+00:13:16,770 --> 00:13:19,650
+if A implies B is confidence of A implies B
+
+146
+00:13:19,650 --> 00:13:23,190
+is probability of B given A. So this is essentially the
+
+147
+00:13:23,190 --> 00:14:01,930
+number of transactions having right. So the number of transactions having A union
+
+148
+00:14:01,930 --> 00:14:05,620
+B divided by the total number of transactions this is number of transactions having A
+
+149
+00:14:05,620 --> 00:14:12,880
+union B divided by the number of transactions having A okay.
+
+150
+00:14:18,740 --> 00:14:23,600
+So how do you find these association rules you first do frequent pattern mining
+
+151
+00:14:23,600 --> 00:14:31,640
+find all patterns that are frequent right find all patterns that are frequent okay
+
+152
+00:14:31,640 --> 00:14:34,730
+then you will find that okay A is frequent and some
+
+153
+00:14:34,730 --> 00:14:39,050
+A union B is also frequent and then from that I can start
+
+154
+00:14:39,050 --> 00:14:45,260
+inferring these kinds of association rules. Finding out but another frequently
+
+155
+00:14:45,260 --> 00:14:49,460
+yeah you are right but it is still a hard problem
+
+156
+00:14:49,460 --> 00:14:51,830
+so that is what the rest of the class is going to be about how
+
+157
+00:14:51,830 --> 00:14:56,420
+will you do this efficiently right. So usually how you do this is the first step is
+
+158
+00:15:18,530 --> 00:15:21,740
+find all frequent patterns second step is infer
+
+159
+00:15:21,740 --> 00:15:30,980
+strong association rules right, so all frequent patterns or itemsets right
+
+160
+00:15:30,980 --> 00:15:39,680
+let us get into the habit of calling patterns as itemsets right
+
+161
+00:15:39,680 --> 00:15:50,600
+so all frequent itemsets or itemsets which have min support right
+
+162
+00:15:50,600 --> 00:15:54,530
+all strong association rules will be those association rules which
+
+163
+00:15:54,530 --> 00:15:58,550
+have min support right and as well as a min confidence
+
+164
+00:15:58,550 --> 00:16:04,520
+like minimum support and minimum confidence I want both, right for a strong association rule.
+
+165
+00:16:04,520 --> 00:16:12,830
+But there is a caveat right Just having strong support and strong
+
+166
+00:16:12,830 --> 00:16:19,400
+confidence alone is not enough, right so you will also have to see what is the
+
+167
+00:16:19,400 --> 00:16:26,300
+probability of B in isolation I look at probability of B
+
+168
+00:16:26,300 --> 00:16:31,790
+given A and I say it is 0.6 okay that looks like a good association rule
+
+169
+00:16:31,790 --> 00:16:35,450
+but if I remove A I just look at what is the probability of B
+
+170
+00:16:35,450 --> 00:16:45,380
+and if I say the probability of B is 0.75 right so what happens
+
+171
+00:16:45,380 --> 00:16:52,760
+A implies a depression in B actually right I should not say that if A occurs
+
+172
+00:16:52,760 --> 00:16:55,610
+then B will also occur. If A occurs then the chances of
+
+173
+00:16:55,610 --> 00:16:59,510
+B occurring will go down right, so this is something that
+
+174
+00:16:59,510 --> 00:17:03,740
+again a classical example is when people are analyzing data from
+
+175
+00:17:03,740 --> 00:17:09,740
+a store called blockbuster right, so blockbuster rents videos they
+
+176
+00:17:09,740 --> 00:17:16,370
+also sell video games okay and they found out that if people rent
+
+177
+00:17:16,370 --> 00:17:18,650
+videos from the shop I am sorry
+
+178
+00:17:18,650 --> 00:17:22,640
+if people buy video games from the shop they also rent videos
+
+179
+00:17:22,640 --> 00:17:29,780
+that rule had a confidence of 0.6 right but then if you do not buy a video or if
+
+180
+00:17:29,780 --> 00:17:32,330
+just anybody who comes to the shop whether they buy a video or not.
+
+181
+00:17:32,330 --> 00:17:35,180
+I am sorry buy the game or not right
+
+182
+00:17:35,930 --> 00:17:37,760
+there is a probability 0.75 of them renting a video
+
+183
+00:17:37,760 --> 00:17:46,340
+so essentially if you go to the shop to buy a game you are less likely to rent a video right,
+
+184
+00:17:46,340 --> 00:17:49,340
+so you have to be careful about that right.
+
+185
+00:17:49,340 --> 00:17:53,810
+So there is another thing which people use which is essentially
+
+186
+00:17:53,810 --> 00:18:10,470
+the ratio of the probability of B given A and, probability of B
+
+187
+00:18:10,470 --> 00:18:14,340
+so if I am if this is greater than one
+
+188
+00:18:14,340 --> 00:18:20,370
+then knowing A is useful If it is less than one
+
+189
+00:18:20,370 --> 00:18:28,200
+then knowing A is not useful this quantity is sometimes called lift okay,
+
+190
+00:18:28,200 --> 00:18:32,400
+so lift also has another interpretation sometimes people take the difference between
+
+191
+00:18:32,400 --> 00:18:36,840
+the two and that is also known as lift sometimes people take the ratio
+
+192
+00:18:36,840 --> 00:18:42,480
+I think nowadays ratio has kind of become the standard way of defining lift.
+
+193
+00:18:42,480 --> 00:18:54,360
+So and I should tell you that association rule mining is a very,
+
+194
+00:18:54,360 --> 00:18:59,850
+very popular subfield of data mining and I given you three different ways of
+
+195
+00:18:59,850 --> 00:19:04,890
+measuring usefulness of rules and there are about 100 right
+
+196
+00:19:04,890 --> 00:19:12,930
+and I do believe Nandan covers a good fraction of those hundred in his courses right,
+
+197
+00:19:12,930 --> 00:19:16,350
+so if you want to know more about it go to dooms right
+
+198
+00:19:16,350 --> 00:19:20,730
+so that there are lots of different ways of measuring this
+
+199
+00:19:20,730 --> 00:19:25,770
+but these three are pretty common support and confidence are the base right.
+
+200
+00:19:25,770 --> 00:19:29,460
+And then people build a lot of things on top of support and confidence okay,
+
+201
+00:19:29,460 --> 00:19:33,270
+so that is basically it I am not going to talk
+
+202
+00:19:33,270 --> 00:19:37,530
+about association rules any more right the interesting problem as you could have rightly
+
+203
+00:19:37,530 --> 00:19:45,390
+surmised by now is finding all frequent itemsets right,
+
+204
+00:19:45,390 --> 00:19:51,540
+so just a couple of other you know definitions here.
+
+205
+00:20:31,630 --> 00:20:39,670
+An itemset X is closed in a particular data set D
+
+206
+00:20:39,670 --> 00:20:47,620
+if there is no superset of X that has the same support as X.
+
+207
+00:20:47,620 --> 00:21:08,890
+so it has to have a lesser support than X in D. then you call that a closed itemset right
+
+208
+00:21:08,890 --> 00:21:18,190
+what is a frequent closed itemset, so closed itemset whose frequency
+
+209
+00:21:18,190 --> 00:21:39,240
+is higher than min support right, so if I give you the counts of all the
+
+210
+00:21:39,240 --> 00:21:42,930
+closed itemsets in my data set I am sorry
+
+211
+00:21:42,930 --> 00:21:45,660
+all the frequent closed itemsets in my data set right
+
+212
+00:21:45,660 --> 00:22:02,000
+you can recover the counts for all the frequent itemsets in the data set right.
+
+213
+00:22:02,000 --> 00:22:07,760
+If I give you the counts for all the frequent closed itemsets right
+
+214
+00:22:07,760 --> 00:22:10,940
+you can recover the counts for all the itemset in the datasets
+
+215
+00:22:10,940 --> 00:22:15,470
+fairly straightforward right because what is what when would
+
+216
+00:22:15,470 --> 00:22:22,520
+the itemset be part of the closed itemset if a superset has a lesser count than it right
+
+217
+00:22:22,520 --> 00:22:26,180
+but the superset could still be frequent let us say I have a frequency
+
+218
+00:22:26,180 --> 00:22:32,240
+threshold of two right and some itemset has a count of five
+
+219
+00:22:32,240 --> 00:22:37,520
+and add one more item to it has a count of only four right
+
+220
+00:22:37,520 --> 00:22:42,560
+but still that is also frequent it will be part of the closed frequent
+
+221
+00:22:42,560 --> 00:22:47,090
+itemset as long as that is a superset of that that has a smaller count.
+
+222
+00:22:47,090 --> 00:22:55,970
+Right if it does not what does it mean if I say that A, B, C is a closed itemset right
+
+223
+00:22:55,970 --> 00:23:01,160
+and there are no two itemsets that are closed what does it mean
+
+224
+00:23:01,160 --> 00:23:09,500
+the count of AB the count of AC and the count of BC is the same as the count of ABC
+
+225
+00:23:09,500 --> 00:23:15,230
+to get that, so if I say that
+
+226
+00:23:20,330 --> 00:23:24,710
+if we say that ABC is a frequent closed itemset right
+
+227
+00:23:24,710 --> 00:23:26,480
+is a frequent closed itemset that means that
+
+228
+00:23:26,480 --> 00:23:29,750
+that is under has a count of five
+
+229
+00:23:31,250 --> 00:23:34,610
+that means that AB is also a frequent itemset right AC is also a frequent
+
+230
+00:23:34,610 --> 00:23:43,070
+itemset and BC is also a frequent itemset. And what are the counts of AB, AC and BC
+
+231
+00:23:43,070 --> 00:23:47,390
+five right, so if I give you the frequency
+
+232
+00:23:47,390 --> 00:23:54,020
+of all the frequent closed itemsets then I can recover the frequency of
+
+233
+00:23:54,020 --> 00:24:02,630
+all the frequent itemsets the reason is called closed
+
+234
+00:24:02,630 --> 00:24:07,850
+essentially this is sufficient for me to recover the entire data right,
+
+235
+00:24:07,850 --> 00:24:15,230
+so typically if you are trying to come up with a new frequent new
+
+236
+00:24:15,230 --> 00:24:19,880
+counting algorithm for itemsets right You have to make sure that you return
+
+237
+00:24:19,880 --> 00:24:26,060
+the closed the complete set of closed frequent itemsets
+
+238
+00:25:24,140 --> 00:25:27,380
+right. A itemset is a maximal frequent itemset
+
+239
+00:25:27,380 --> 00:25:33,290
+if X is frequent and nothing larger than X is right
+
+240
+00:25:33,290 --> 00:25:40,940
+no superset of X is frequent right, so it is a severe case of closed right
+
+241
+00:25:40,940 --> 00:25:45,650
+so the closed condition is the superset should not have the same count right
+
+242
+00:25:45,650 --> 00:25:51,020
+should have a lesser count than the subset right but it could also be frequent
+
+243
+00:25:51,020 --> 00:25:54,500
+here I am saying not only should the superset have a lesser count
+
+244
+00:25:54,500 --> 00:25:58,430
+but the count should be, so less that it is no longer frequent,
+
+245
+00:25:58,430 --> 00:26:07,940
+so the set of maximal frequent itemsets will be smaller than the right
+
+246
+00:26:07,940 --> 00:26:13,820
+the set of all maximal frequent itemsets will be smaller than the set of all closed frequent
+
+247
+00:26:13,820 --> 00:26:17,330
+itemsets right or frequent closed itemsets. So that will be smaller
+
+248
+00:26:17,330 --> 00:26:27,380
+and is the maximal set sufficient for you to recover all the all the frequent itemsets
+
+249
+00:26:27,380 --> 00:26:36,170
+no not necessarily sure
+
+250
+00:26:38,750 --> 00:26:47,090
+sorry we did not say that,
+
+251
+00:26:47,090 --> 00:26:51,950
+subset could have a lesser frequencies so I mean there is been equal frequency,
+
+252
+00:26:51,950 --> 00:26:57,650
+yeah but I cannot give you the frequency of those
+
+253
+00:26:57,650 --> 00:27:02,540
+but I can say which are which are all frequent but I cannot give you the frequency
+
+254
+00:27:02,540 --> 00:27:05,510
+of those subsets while in this case I can
+
+255
+00:27:05,510 --> 00:27:09,380
+give you the frequency of the substance because they will be the same right
+
+256
+00:27:09,380 --> 00:27:13,790
+so I can still recover something about the something about frequent itemsets
+
+257
+00:27:13,790 --> 00:27:17,030
+but I will not be able to tell you what is the frequency.

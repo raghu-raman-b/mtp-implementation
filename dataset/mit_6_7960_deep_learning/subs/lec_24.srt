@@ -1,0 +1,7751 @@
+1
+00:00:01,932 --> 00:00:02,432
+[SQUEAKING]
+
+2
+00:00:02,432 --> 00:00:03,881
+[RUSTLING]
+
+3
+00:00:03,881 --> 00:00:05,330
+[CLICKING]
+
+4
+00:00:13,530 --> 00:00:14,280
+PHILLIP ISOLA: OK.
+
+5
+00:00:14,280 --> 00:00:15,600
+Hi, everyone.
+
+6
+00:00:15,600 --> 00:00:16,900
+Welcome.
+
+7
+00:00:16,900 --> 00:00:20,560
+Thanks for sticking through and coming for the last few
+
+8
+00:00:20,560 --> 00:00:22,560
+lectures.
+
+9
+00:00:22,560 --> 00:00:25,800
+I know things are probably busy.
+
+10
+00:00:25,800 --> 00:00:29,640
+So today, I'm going to give a brand new lecture.
+
+11
+00:00:29,640 --> 00:00:34,978
+So this is a topic that wasn't really a big thing last year
+
+12
+00:00:34,978 --> 00:00:36,520
+and in previous years, but this year,
+
+13
+00:00:36,520 --> 00:00:39,960
+has suddenly become quite the hot topic
+
+14
+00:00:39,960 --> 00:00:42,600
+in deep learning in AI.
+
+15
+00:00:42,600 --> 00:00:44,120
+Of course, the ideas in this lecture
+
+16
+00:00:44,120 --> 00:00:46,980
+are going to be very old, and they've existed for a long time,
+
+17
+00:00:46,980 --> 00:00:49,600
+but it just has become one of the new things that's
+
+18
+00:00:49,600 --> 00:00:50,900
+happening in 2024.
+
+19
+00:00:50,900 --> 00:00:53,980
+So we thought we really needed to have this as a lecture topic.
+
+20
+00:00:53,980 --> 00:00:55,720
+So this is all about what I'm going
+
+21
+00:00:55,720 --> 00:01:00,100
+to call inference methods for deep learning.
+
+22
+00:01:00,100 --> 00:01:01,120
+Give a shout out.
+
+23
+00:01:01,120 --> 00:01:04,620
+Some of this was inspired by this tutorial from Sasha Rush,
+
+24
+00:01:04,620 --> 00:01:07,580
+and you should definitely check out that tutorial if you're
+
+25
+00:01:07,580 --> 00:01:10,520
+interested in learning more.
+
+26
+00:01:10,520 --> 00:01:12,020
+And the payoff for this lecture will
+
+27
+00:01:12,020 --> 00:01:16,480
+be that you'll learn how the very latest models,
+
+28
+00:01:16,480 --> 00:01:19,020
+like OpenAI's O1, presumably work.
+
+29
+00:01:19,020 --> 00:01:20,520
+We don't know exactly how they work,
+
+30
+00:01:20,520 --> 00:01:23,140
+but this lecture is my best guess as to how
+
+31
+00:01:23,140 --> 00:01:24,480
+those types of models work.
+
+32
+00:01:28,480 --> 00:01:30,900
+Oh, before I start, let me say that on Thursday we're
+
+33
+00:01:30,900 --> 00:01:33,020
+going to have--
+
+34
+00:01:33,020 --> 00:01:37,060
+the class lecture will be office hours.
+
+35
+00:01:37,060 --> 00:01:41,760
+So we will have the various TAs and instructors here.
+
+36
+00:01:41,760 --> 00:01:44,760
+And you're welcome to come to this room and ask us questions,
+
+37
+00:01:44,760 --> 00:01:46,360
+use that entire lecture session.
+
+38
+00:01:46,360 --> 00:01:48,280
+There won't be any talk or any presentation.
+
+39
+00:01:48,280 --> 00:01:50,500
+It will just be for you to come and get advice
+
+40
+00:01:50,500 --> 00:01:53,360
+on your final projects and work together with everyone.
+
+41
+00:01:56,536 --> 00:02:00,050
+So we'll make an announcement about that on Piazza as well.
+
+42
+00:02:00,050 --> 00:02:01,670
+So inference-- what is inference?
+
+43
+00:02:01,670 --> 00:02:04,490
+OK, this is a little confusing if you have taken a statistics
+
+44
+00:02:04,490 --> 00:02:07,090
+class because the definition of inference in statistics
+
+45
+00:02:07,090 --> 00:02:09,449
+is different than in machine learning.
+
+46
+00:02:09,449 --> 00:02:12,290
+So the statistics definition is that inference
+
+47
+00:02:12,290 --> 00:02:15,930
+is about figuring out properties of a data distribution
+
+48
+00:02:15,930 --> 00:02:18,090
+from samples from that distribution,
+
+49
+00:02:18,090 --> 00:02:21,612
+or figuring out properties about a data generating process.
+
+50
+00:02:21,612 --> 00:02:24,070
+Maybe it's not characterized as a probability distribution,
+
+51
+00:02:24,070 --> 00:02:25,903
+but some generative process, trying
+
+52
+00:02:25,903 --> 00:02:27,570
+to figure out properties of that process
+
+53
+00:02:27,570 --> 00:02:31,370
+from samples from that process.
+
+54
+00:02:31,370 --> 00:02:34,410
+So what do we call that in machine learning?
+
+55
+00:02:34,410 --> 00:02:37,250
+It can go under different names, but maybe density estimation,
+
+56
+00:02:37,250 --> 00:02:40,132
+or typically, it's some kind of learning or training.
+
+57
+00:02:40,132 --> 00:02:42,090
+So the thing that they talk about in statistics
+
+58
+00:02:42,090 --> 00:02:43,930
+as inferring the parameters that explain
+
+59
+00:02:43,930 --> 00:02:49,510
+the data-generating process-- we call that training a model.
+
+60
+00:02:49,510 --> 00:02:52,210
+So the ML definition of inference
+
+61
+00:02:52,210 --> 00:02:55,350
+is what statisticians call prediction.
+
+62
+00:02:55,350 --> 00:02:58,990
+It's using a model to make predictions about a new query
+
+63
+00:02:58,990 --> 00:03:03,270
+point, so to make inferences, in the more colloquial sense,
+
+64
+00:03:03,270 --> 00:03:07,670
+about the answer to a new question
+
+65
+00:03:07,670 --> 00:03:10,030
+or the interpretation of a new image,
+
+66
+00:03:10,030 --> 00:03:12,850
+or whatever data you're processing,
+
+67
+00:03:12,850 --> 00:03:16,430
+using the model to answer questions about that data.
+
+68
+00:03:16,430 --> 00:03:19,610
+So we're going to go with the ML definition.
+
+69
+00:03:19,610 --> 00:03:21,890
+And that's the one that's becoming-- taking over.
+
+70
+00:03:21,890 --> 00:03:24,410
+But statisticians will still complain about this,
+
+71
+00:03:24,410 --> 00:03:28,770
+so be careful when you talk to statisticians
+
+72
+00:03:28,770 --> 00:03:33,610
+So here's a outline for some of the topics that we'll see.
+
+73
+00:03:33,610 --> 00:03:36,210
+Well, I'm only going to cover some of these today.
+
+74
+00:03:36,210 --> 00:03:40,990
+But this is how I tried to parse the landscape of training
+
+75
+00:03:40,990 --> 00:03:44,010
+machine learning models versus using them to make predictions,
+
+76
+00:03:44,010 --> 00:03:46,390
+so training versus inference.
+
+77
+00:03:46,390 --> 00:03:48,990
+And most of this course has been about the training side.
+
+78
+00:03:48,990 --> 00:03:51,790
+And indeed, most of deep learning as a field
+
+79
+00:03:51,790 --> 00:03:54,940
+has been about training models on data
+
+80
+00:03:54,940 --> 00:03:59,100
+to learn to learn properties of that data.
+
+81
+00:03:59,100 --> 00:04:02,260
+And the use of those models at test time
+
+82
+00:04:02,260 --> 00:04:05,645
+for what I'm calling inference has been a more minor subject.
+
+83
+00:04:05,645 --> 00:04:06,520
+So far in this class.
+
+84
+00:04:06,520 --> 00:04:08,820
+It's almost entirely been just a forward pass
+
+85
+00:04:08,820 --> 00:04:10,180
+through the trained model.
+
+86
+00:04:10,180 --> 00:04:12,660
+That was all you do at test time.
+
+87
+00:04:12,660 --> 00:04:15,240
+But it turns out you can do much more than that at test time,
+
+88
+00:04:15,240 --> 00:04:18,420
+and if you do, you'll get a lot of advantage.
+
+89
+00:04:18,420 --> 00:04:19,985
+So we've seen some of these topics,
+
+90
+00:04:19,985 --> 00:04:21,860
+but let me just quickly go over this diagram,
+
+91
+00:04:21,860 --> 00:04:25,240
+we'll come back to it a few times in this lecture
+
+92
+00:04:25,240 --> 00:04:26,960
+So we have two regimes.
+
+93
+00:04:26,960 --> 00:04:28,800
+We have training and inference.
+
+94
+00:04:28,800 --> 00:04:35,380
+So training is what you do in the factory, at the company.
+
+95
+00:04:35,380 --> 00:04:38,460
+It's what you do before you actually
+
+96
+00:04:38,460 --> 00:04:40,820
+come across new problems in the wild.
+
+97
+00:04:40,820 --> 00:04:43,500
+An inference is what you do at test time, in the wild,
+
+98
+00:04:43,500 --> 00:04:45,208
+on deployment, on device.
+
+99
+00:04:45,208 --> 00:04:47,500
+It's what a robot would do as it walks around this room
+
+100
+00:04:47,500 --> 00:04:49,600
+and understands what's going on.
+
+101
+00:04:49,600 --> 00:04:51,720
+So we have those two different phases.
+
+102
+00:04:51,720 --> 00:04:54,400
+And by the way, these terms and these distinctions
+
+103
+00:04:54,400 --> 00:04:56,575
+are my own attempt at categorizing things.
+
+104
+00:04:56,575 --> 00:04:58,700
+There's a lot of different ways of looking at this.
+
+105
+00:04:58,700 --> 00:05:00,400
+These are not hard boundaries.
+
+106
+00:05:00,400 --> 00:05:03,160
+A few of the terms could go under different categories.
+
+107
+00:05:03,160 --> 00:05:06,560
+So training is also called learning.
+
+108
+00:05:06,560 --> 00:05:08,520
+It's called statistical inference.
+
+109
+00:05:08,520 --> 00:05:09,920
+And in machine learning, we might
+
+110
+00:05:09,920 --> 00:05:11,960
+call it amortized inference, meaning
+
+111
+00:05:11,960 --> 00:05:14,860
+I'm going to be amortized-- inference
+
+112
+00:05:14,860 --> 00:05:17,880
+is about solving a problem, and training
+
+113
+00:05:17,880 --> 00:05:20,680
+learns a set of weights that directly solves the problem
+
+114
+00:05:20,680 --> 00:05:23,720
+without having to go through the step-by-step reasoning process.
+
+115
+00:05:23,720 --> 00:05:29,800
+So it's amortization of the more extended-thinking inference
+
+116
+00:05:29,800 --> 00:05:32,080
+process,
+
+117
+00:05:32,080 --> 00:05:34,740
+Inference might go into the prediction, or thinking,
+
+118
+00:05:34,740 --> 00:05:37,000
+reasoning, cognition is, I have a new query,
+
+119
+00:05:37,000 --> 00:05:39,000
+and I want to understand what the answer will
+
+120
+00:05:39,000 --> 00:05:41,210
+be by thinking through things, as opposed
+
+121
+00:05:41,210 --> 00:05:42,960
+to learning, which is more about coming up
+
+122
+00:05:42,960 --> 00:05:46,200
+with a direct, feedforward heuristic mapping from data
+
+123
+00:05:46,200 --> 00:05:48,700
+to answers.
+
+124
+00:05:48,700 --> 00:05:50,630
+But there's a lot in between.
+
+125
+00:05:50,630 --> 00:05:55,393
+So the most extreme version of training is pre-training,
+
+126
+00:05:55,393 --> 00:05:57,810
+and that's what most of this course has really been about.
+
+127
+00:05:57,810 --> 00:06:00,352
+It's been about representation learning, generative modeling,
+
+128
+00:06:00,352 --> 00:06:01,770
+coming up with foundation models,
+
+129
+00:06:01,770 --> 00:06:03,450
+doing next-token prediction on the internet,
+
+130
+00:06:03,450 --> 00:06:05,992
+coming up with a really good set of weights that is generally
+
+131
+00:06:05,992 --> 00:06:08,173
+useful for a lot of tasks.
+
+132
+00:06:08,173 --> 00:06:09,590
+But then we said that you can also
+
+133
+00:06:09,590 --> 00:06:12,270
+take that pre-trained representation
+
+134
+00:06:12,270 --> 00:06:15,430
+and apply it to your problem of interest by fine-tuning
+
+135
+00:06:15,430 --> 00:06:19,110
+or transfer learning or adaptation of various kinds.
+
+136
+00:06:19,110 --> 00:06:21,770
+So pre-training-- given a model-- sorry, given data,
+
+137
+00:06:21,770 --> 00:06:25,430
+learn a model or a representation.
+
+138
+00:06:25,430 --> 00:06:30,510
+The training part of post-training or adaptation
+
+139
+00:06:30,510 --> 00:06:33,430
+would be, given a model and new data, or a new task
+
+140
+00:06:33,430 --> 00:06:37,210
+specification, update that model to solve that new task.
+
+141
+00:06:37,210 --> 00:06:39,342
+And the main method for that is fine-tuning,
+
+142
+00:06:39,342 --> 00:06:41,550
+but there's other methods like reinforcement learning
+
+143
+00:06:41,550 --> 00:06:42,925
+from human feedback that we heard
+
+144
+00:06:42,925 --> 00:06:45,870
+a bit about in Jacob's lecture.
+
+145
+00:06:45,870 --> 00:06:49,080
+Then we're going to move over to the, upon deployment side.
+
+146
+00:06:49,080 --> 00:06:52,380
+So this dotted line is meant to be, now I've taken my AI system,
+
+147
+00:06:52,380 --> 00:06:54,260
+and it's not in the factory anymore.
+
+148
+00:06:54,260 --> 00:06:56,003
+It's not in the server farm.
+
+149
+00:06:56,003 --> 00:06:56,920
+It's out in the world.
+
+150
+00:06:56,920 --> 00:06:58,620
+It's being used by a user.
+
+151
+00:06:58,620 --> 00:07:01,745
+So at deployment time, we can also adapt a model's behavior.
+
+152
+00:07:01,745 --> 00:07:03,120
+There's a few ways of doing that.
+
+153
+00:07:03,120 --> 00:07:05,800
+We could prompt it with different commands.
+
+154
+00:07:05,800 --> 00:07:08,680
+We could do in-context learning, which I'll mention again,
+
+155
+00:07:08,680 --> 00:07:11,722
+but Jacob also talked about in his lecture.
+
+156
+00:07:11,722 --> 00:07:13,180
+And then there's a few new concepts
+
+157
+00:07:13,180 --> 00:07:15,240
+that I'll introduce-- test-time training.
+
+158
+00:07:15,240 --> 00:07:17,740
+And there's a few concepts which I won't have time to get to
+
+159
+00:07:17,740 --> 00:07:19,940
+but are also important, like any time
+
+160
+00:07:19,940 --> 00:07:23,780
+you have a model that is using feedback in order
+
+161
+00:07:23,780 --> 00:07:26,820
+to update its behavior, like a robot walking around and feeling
+
+162
+00:07:26,820 --> 00:07:30,040
+its contact and the gravity, direction,
+
+163
+00:07:30,040 --> 00:07:31,840
+direction, and its torques and its joints,
+
+164
+00:07:31,840 --> 00:07:33,715
+and so forth, it's going to use that feedback
+
+165
+00:07:33,715 --> 00:07:34,960
+to change its behavior.
+
+166
+00:07:34,960 --> 00:07:37,180
+So any time you have this feedback control,
+
+167
+00:07:37,180 --> 00:07:39,500
+this is changing a model's behavior
+
+168
+00:07:39,500 --> 00:07:42,100
+based on the test data itself.
+
+169
+00:07:42,100 --> 00:07:47,245
+And then we have the most extreme side of inference,
+
+170
+00:07:47,245 --> 00:07:49,120
+where we're not actually updating or changing
+
+171
+00:07:49,120 --> 00:07:50,380
+the model's behavior at all.
+
+172
+00:07:50,380 --> 00:07:52,280
+We're just using the model to search
+
+173
+00:07:52,280 --> 00:07:55,080
+through a space of possibilities and find the best one.
+
+174
+00:07:55,080 --> 00:07:57,480
+So given a model and a query, find the best answer
+
+175
+00:07:57,480 --> 00:07:58,237
+to that query.
+
+176
+00:07:58,237 --> 00:08:00,320
+And this is where we get to things that are really
+
+177
+00:08:00,320 --> 00:08:03,780
+outside the realm of traditional deep learning,
+
+178
+00:08:03,780 --> 00:08:05,020
+but now increasingly popular.
+
+179
+00:08:05,020 --> 00:08:07,320
+This is more classical AI search methods,
+
+180
+00:08:07,320 --> 00:08:09,200
+like tree search and breadth-first search
+
+181
+00:08:09,200 --> 00:08:14,840
+and depth-first search and trial and error search and so forth.
+
+182
+00:08:14,840 --> 00:08:15,340
+Cool.
+
+183
+00:08:15,340 --> 00:08:17,423
+And then I'm going to, at the end of this lecture,
+
+184
+00:08:17,423 --> 00:08:19,640
+talk a little bit about this interesting interplay
+
+185
+00:08:19,640 --> 00:08:24,520
+between search and learning, where you can use search
+
+186
+00:08:24,520 --> 00:08:27,040
+to learn new things, and you can use
+
+187
+00:08:27,040 --> 00:08:30,960
+learning to speed up your search over the space of possibilities.
+
+188
+00:08:30,960 --> 00:08:37,323
+And one thing I realized is that a very general-purpose name
+
+189
+00:08:37,323 --> 00:08:39,240
+for all the methods that do that are basically
+
+190
+00:08:39,240 --> 00:08:40,700
+reinforcement learning.
+
+191
+00:08:40,700 --> 00:08:42,112
+So reinforcement learning-- we'll
+
+192
+00:08:42,112 --> 00:08:44,070
+come back to this-- as the idea of using search
+
+193
+00:08:44,070 --> 00:08:45,590
+to improve learning.
+
+194
+00:08:45,590 --> 00:08:47,510
+But there's also some more modern things
+
+195
+00:08:47,510 --> 00:08:50,830
+that are really exactly this, like the STAR method and then,
+
+196
+00:08:50,830 --> 00:08:52,890
+presumably, the O1 method from OpenAI,
+
+197
+00:08:52,890 --> 00:08:55,510
+but we don't really know.
+
+198
+00:08:55,510 --> 00:08:57,670
+OK, so let me come back to "The Bitter Lesson"
+
+199
+00:08:57,670 --> 00:09:00,070
+that I mentioned a few lectures ago.
+
+200
+00:09:00,070 --> 00:09:03,110
+So "The Bitter Lesson," as you might recall,
+
+201
+00:09:03,110 --> 00:09:05,010
+is this essay from Rich Sutton.
+
+202
+00:09:05,010 --> 00:09:08,310
+And he said, the big lesson in AI
+
+203
+00:09:08,310 --> 00:09:13,550
+has been that hand-designed systems with clever inductive
+
+204
+00:09:13,550 --> 00:09:16,490
+biases and hand-wrought algorithms--
+
+205
+00:09:16,490 --> 00:09:18,270
+they just don't work that well.
+
+206
+00:09:18,270 --> 00:09:20,090
+There's only, really, two things that work.
+
+207
+00:09:20,090 --> 00:09:21,410
+It's simple methods at scale.
+
+208
+00:09:21,410 --> 00:09:24,990
+And the two that we know of are search and learning.
+
+209
+00:09:24,990 --> 00:09:27,890
+So a lot of people have focused on the learning part.
+
+210
+00:09:27,890 --> 00:09:29,170
+That's the deep learning idea.
+
+211
+00:09:29,170 --> 00:09:31,128
+Just collect a lot of data, and train a network
+
+212
+00:09:31,128 --> 00:09:33,150
+to imitate that data.
+
+213
+00:09:33,150 --> 00:09:36,910
+But Sutton specified search as the other option,
+
+214
+00:09:36,910 --> 00:09:40,390
+and so let's talk about what is search.
+
+215
+00:09:40,390 --> 00:09:44,170
+And this is what's happening, really, in industry right
+
+216
+00:09:44,170 --> 00:09:47,750
+now, is this move away from only focusing on train-time compute,
+
+217
+00:09:47,750 --> 00:09:52,890
+but now using a lot of test-time compute or search at test time.
+
+218
+00:09:52,890 --> 00:09:58,170
+So this is a plot from the blog post on the OpenAI O1
+
+219
+00:09:58,170 --> 00:10:00,290
+model, their latest model.
+
+220
+00:10:00,290 --> 00:10:06,050
+And what this plot is showing on the left
+
+221
+00:10:06,050 --> 00:10:10,490
+is that as I train with more flops, I get better results.
+
+222
+00:10:10,490 --> 00:10:12,570
+That's the scaling law.
+
+223
+00:10:12,570 --> 00:10:15,350
+Train-time compute is I'm training on more data,
+
+224
+00:10:15,350 --> 00:10:17,570
+or I'm doing more iterations of gradient descent,
+
+225
+00:10:17,570 --> 00:10:20,250
+or this might, in fact, be some kind of RL training
+
+226
+00:10:20,250 --> 00:10:21,610
+part of the pipeline.
+
+227
+00:10:21,610 --> 00:10:24,477
+But whatever it is, if I train on more and more data,
+
+228
+00:10:24,477 --> 00:10:26,310
+I'm going to get better and better accuracy,
+
+229
+00:10:26,310 --> 00:10:28,018
+and there might be some kind of power law
+
+230
+00:10:28,018 --> 00:10:32,210
+that relates my training time to my test performance.
+
+231
+00:10:32,210 --> 00:10:36,170
+So notice the slope here is maybe 0.5.
+
+232
+00:10:36,170 --> 00:10:39,110
+The really interesting thing is they said, well, wait a second.
+
+233
+00:10:39,110 --> 00:10:42,870
+What if I scale up the amount of compute I apply at test time
+
+234
+00:10:42,870 --> 00:10:46,630
+to do intelligent inference or search through my model?
+
+235
+00:10:46,630 --> 00:10:48,430
+We'll talk about how that can be done.
+
+236
+00:10:48,430 --> 00:10:50,870
+And they saw that you also can get a power law.
+
+237
+00:10:50,870 --> 00:10:52,950
+And in fact, the slope in this particular case
+
+238
+00:10:52,950 --> 00:10:56,430
+is even steeper than the train-time power law.
+
+239
+00:10:56,430 --> 00:10:59,070
+So the big move that a lot of companies are making right now
+
+240
+00:10:59,070 --> 00:11:02,630
+is from only focusing on deploying compute at train time
+
+241
+00:11:02,630 --> 00:11:05,552
+to now deploying a lot more compute at test time, not just
+
+242
+00:11:05,552 --> 00:11:07,010
+the forward pass through the model,
+
+243
+00:11:07,010 --> 00:11:10,590
+but many, many passes through the model at test time.
+
+244
+00:11:10,590 --> 00:11:14,990
+So that's the big change from a few years ago.
+
+245
+00:11:14,990 --> 00:11:16,450
+OK, so what is search?
+
+246
+00:11:16,450 --> 00:11:20,210
+I think a lot of you have taken Intro AI and Algorithms.
+
+247
+00:11:20,210 --> 00:11:21,670
+So you know, basically, that search
+
+248
+00:11:21,670 --> 00:11:25,870
+is methods from those classes, but let's go over it.
+
+249
+00:11:25,870 --> 00:11:29,550
+So search is the way that I used to be done.
+
+250
+00:11:29,550 --> 00:11:35,150
+So in 1994, maybe, Garry Kasparov
+
+251
+00:11:35,150 --> 00:11:39,860
+was beaten by this chess machine called Deep Blue.
+
+252
+00:11:39,860 --> 00:11:45,600
+And the way that AI worked was it was just based on search.
+
+253
+00:11:45,600 --> 00:11:48,020
+It had very little or maybe no learning or anything
+
+254
+00:11:48,020 --> 00:11:49,478
+you'd really want to call learning.
+
+255
+00:11:49,478 --> 00:11:51,840
+It just did look-ahead search.
+
+256
+00:11:51,840 --> 00:11:53,840
+It said, well, if Kasparov makes this move,
+
+257
+00:11:53,840 --> 00:11:54,940
+then I could respond with this move,
+
+258
+00:11:54,940 --> 00:11:56,080
+and then he might make that move,
+
+259
+00:11:56,080 --> 00:11:57,205
+and I could make this move.
+
+260
+00:11:57,205 --> 00:12:00,260
+And it looked through this chain of all the possibilities, 12,
+
+261
+00:12:00,260 --> 00:12:03,020
+10, 20, 30 moves in advance.
+
+262
+00:12:03,020 --> 00:12:04,980
+And it just made this huge, huge chain.
+
+263
+00:12:04,980 --> 00:12:07,325
+The branching factor of that huge, huge tree--
+
+264
+00:12:07,325 --> 00:12:08,700
+the branching factor of that tree
+
+265
+00:12:08,700 --> 00:12:10,820
+was, in chess, however many moves
+
+266
+00:12:10,820 --> 00:12:13,980
+you can make at each position in the chess game.
+
+267
+00:12:13,980 --> 00:12:15,700
+So it turned out that chess does not
+
+268
+00:12:15,700 --> 00:12:17,080
+have that big a branching factor,
+
+269
+00:12:17,080 --> 00:12:19,400
+so you could enumerate all possible futures
+
+270
+00:12:19,400 --> 00:12:21,900
+and just take the set of actions that will lead to the best
+
+271
+00:12:21,900 --> 00:12:23,900
+possible future.
+
+272
+00:12:23,900 --> 00:12:26,820
+So just searching over all the things that you could do.
+
+273
+00:12:26,820 --> 00:12:28,600
+Any of you play chess-- you probably do this in your head.
+
+274
+00:12:28,600 --> 00:12:30,183
+You think about all the possibilities,
+
+275
+00:12:30,183 --> 00:12:31,820
+and then you pick the move that will
+
+276
+00:12:31,820 --> 00:12:35,160
+maximize your expected reward against all those possibilities.
+
+277
+00:12:37,880 --> 00:12:41,360
+OK, then some years later, AI systems
+
+278
+00:12:41,360 --> 00:12:44,320
+won that Go with the AlphaGo system, which you've probably
+
+279
+00:12:44,320 --> 00:12:45,320
+heard about.
+
+280
+00:12:45,320 --> 00:12:47,740
+And AlphaGo also heavily uses search.
+
+281
+00:12:47,740 --> 00:12:51,460
+But AlphaGo uses both search and learning.
+
+282
+00:12:51,460 --> 00:12:52,920
+So it's one of these methods that
+
+283
+00:12:52,920 --> 00:12:54,560
+uses a combination of the two.
+
+284
+00:12:54,560 --> 00:12:56,840
+But I'm going to focus on the search part right now.
+
+285
+00:12:56,840 --> 00:12:58,960
+So what they did is they, again, said
+
+286
+00:12:58,960 --> 00:13:00,260
+here's a particular game state.
+
+287
+00:13:00,260 --> 00:13:03,640
+Let's just expand out the tree of all possible futures.
+
+288
+00:13:03,640 --> 00:13:05,920
+So after this game state, my opponent
+
+289
+00:13:05,920 --> 00:13:07,620
+could move in these two locations.
+
+290
+00:13:07,620 --> 00:13:09,840
+Maybe there's other locations they can move to.
+
+291
+00:13:09,840 --> 00:13:11,240
+And then I'll descend the tree and say, well,
+
+292
+00:13:11,240 --> 00:13:13,360
+if they move here, then here's what I should do.
+
+293
+00:13:13,360 --> 00:13:15,560
+And I'll search through this space
+
+294
+00:13:15,560 --> 00:13:16,960
+of all these possibilities.
+
+295
+00:13:16,960 --> 00:13:18,760
+Now, the branching factor, the number
+
+296
+00:13:18,760 --> 00:13:21,080
+of branches in that tree for the game of Go
+
+297
+00:13:21,080 --> 00:13:22,920
+is much higher than the game of chess.
+
+298
+00:13:22,920 --> 00:13:25,382
+And that's why they weren't able to do brute-force search
+
+299
+00:13:25,382 --> 00:13:26,340
+like they did in chess.
+
+300
+00:13:26,340 --> 00:13:28,480
+Instead, they had to do search with heuristics--
+
+301
+00:13:28,480 --> 00:13:31,060
+with learned heuristics on top.
+
+302
+00:13:31,060 --> 00:13:34,510
+We'll come back to that, too.
+
+303
+00:13:34,510 --> 00:13:36,870
+OK, so there's this general observation
+
+304
+00:13:36,870 --> 00:13:39,550
+that there's these two things that just get better
+
+305
+00:13:39,550 --> 00:13:40,410
+with more compute.
+
+306
+00:13:40,410 --> 00:13:42,430
+One is learning, and the other is search.
+
+307
+00:13:42,430 --> 00:13:46,190
+And sometimes they trade off, and you can get a good AI system
+
+308
+00:13:46,190 --> 00:13:47,950
+with one or the other.
+
+309
+00:13:47,950 --> 00:13:52,430
+And this is an interesting paper from Jones
+
+310
+00:13:52,430 --> 00:13:56,090
+on scaling laws of board games, where they actually said, well,
+
+311
+00:13:56,090 --> 00:13:58,678
+we can solve chess either by taking a million chess
+
+312
+00:13:58,678 --> 00:14:00,470
+games or a billion chess games and learning
+
+313
+00:14:00,470 --> 00:14:03,710
+the mapping from the board state to the best action
+
+314
+00:14:03,710 --> 00:14:05,510
+that Garry Kasparov would make.
+
+315
+00:14:05,510 --> 00:14:08,830
+Or we could solve chess by just not having
+
+316
+00:14:08,830 --> 00:14:13,150
+any pre-trained learning of optimal moves, but instead just,
+
+317
+00:14:13,150 --> 00:14:15,590
+for every game position, search ahead in time
+
+318
+00:14:15,590 --> 00:14:17,470
+and see that tree of possibilities,
+
+319
+00:14:17,470 --> 00:14:20,950
+and take the move that maximizes the expected value.
+
+320
+00:14:20,950 --> 00:14:26,070
+And there's a trade off, like, a Pareto front, like, I can--
+
+321
+00:14:26,070 --> 00:14:27,970
+well, yeah, it's just a trade-off curve.
+
+322
+00:14:27,970 --> 00:14:30,510
+It's saying that I can do more search,
+
+323
+00:14:30,510 --> 00:14:32,965
+and then I can get the same elo for less training,
+
+324
+00:14:32,965 --> 00:14:34,340
+or I can do less search, and then
+
+325
+00:14:34,340 --> 00:14:36,500
+I can get the same elo for more training.
+
+326
+00:14:36,500 --> 00:14:40,860
+So there's two different ways of being smart, search or learning.
+
+327
+00:14:40,860 --> 00:14:43,500
+And sometimes it's better to use search
+
+328
+00:14:43,500 --> 00:14:46,840
+because I don't have to spend as much time learning,
+
+329
+00:14:46,840 --> 00:14:48,680
+and maybe it scales better in some sense.
+
+330
+00:14:48,680 --> 00:14:50,347
+And sometimes it's better to do learning
+
+331
+00:14:50,347 --> 00:14:52,960
+because in other situations, that might scale better.
+
+332
+00:14:52,960 --> 00:14:56,220
+And also, learning means that I don't, at test time,
+
+333
+00:14:56,220 --> 00:14:57,560
+have to do a lot of compute.
+
+334
+00:14:57,560 --> 00:14:59,060
+So search is test time.
+
+335
+00:14:59,060 --> 00:15:01,440
+Learning is train time.
+
+336
+00:15:01,440 --> 00:15:01,940
+OK.
+
+337
+00:15:04,800 --> 00:15:06,260
+So now let's talk about some search
+
+338
+00:15:06,260 --> 00:15:08,915
+methods that are used in deep learning.
+
+339
+00:15:08,915 --> 00:15:10,540
+And I'm going to talk about these three
+
+340
+00:15:10,540 --> 00:15:13,040
+in particular, Best-of-N, beam search, and Chain-of-Thought.
+
+341
+00:15:13,040 --> 00:15:17,020
+We already saw Chain-of-Thought a little bit.
+
+342
+00:15:17,020 --> 00:15:21,660
+So the first thing that I want to convince you of
+
+343
+00:15:21,660 --> 00:15:24,920
+is that the language models that we have,
+
+344
+00:15:24,920 --> 00:15:27,860
+which are autoregressive models, can
+
+345
+00:15:27,860 --> 00:15:32,080
+be improved by sampling multiple possible completions
+
+346
+00:15:32,080 --> 00:15:33,560
+and picking the best one.
+
+347
+00:15:33,560 --> 00:15:35,060
+So why can they be improved?
+
+348
+00:15:35,060 --> 00:15:38,440
+Let's look at how these systems are trained.
+
+349
+00:15:38,440 --> 00:15:41,100
+So this slide is a little bit old,
+
+350
+00:15:41,100 --> 00:15:42,980
+so I was showing the example with an LSTM.
+
+351
+00:15:42,980 --> 00:15:44,563
+You can replace it with a transformer,
+
+352
+00:15:44,563 --> 00:15:45,960
+but it doesn't really matter.
+
+353
+00:15:45,960 --> 00:15:47,460
+So let's just keep it as an LSTM.
+
+354
+00:15:47,460 --> 00:15:49,220
+So here, we have a molecule.
+
+355
+00:15:49,220 --> 00:15:52,640
+Anyone recognize what that molecule is?
+
+356
+00:15:52,640 --> 00:15:53,700
+Somebody knows it.
+
+357
+00:15:53,700 --> 00:15:54,560
+AUDIENCE: Caffeine.
+
+358
+00:15:54,560 --> 00:15:55,840
+PHILLIP ISOLA: Caffeine, yes.
+
+359
+00:15:55,840 --> 00:15:58,900
+So we're going to have a graph net that will process this.
+
+360
+00:15:58,900 --> 00:16:00,948
+Maybe your final project, you're putting together
+
+361
+00:16:00,948 --> 00:16:02,740
+different architectures that suit the data.
+
+362
+00:16:02,740 --> 00:16:04,668
+So graph net makes sense on a molecule.
+
+363
+00:16:04,668 --> 00:16:06,960
+And then we're going to have an LSTM that will spit out
+
+364
+00:16:06,960 --> 00:16:12,260
+a sentence that describes, this is molecule to sentence,
+
+365
+00:16:12,260 --> 00:16:13,588
+captioning a molecule.
+
+366
+00:16:13,588 --> 00:16:15,880
+So it's going to say, oh, this is a mild stimulant that
+
+367
+00:16:15,880 --> 00:16:18,480
+enhances cognitive abilities.
+
+368
+00:16:18,480 --> 00:16:20,560
+That's caffeine.
+
+369
+00:16:20,560 --> 00:16:23,080
+So here's how you train that system.
+
+370
+00:16:23,080 --> 00:16:26,700
+We're going to have a data that we're imitating.
+
+371
+00:16:26,700 --> 00:16:28,725
+This will be just generative modeling.
+
+372
+00:16:28,725 --> 00:16:30,100
+So we're going to try to maximize
+
+373
+00:16:30,100 --> 00:16:32,540
+the likelihood of the target data, which is just
+
+374
+00:16:32,540 --> 00:16:34,540
+sentences from some corpus.
+
+375
+00:16:34,540 --> 00:16:37,740
+And we will output a categorical distribution
+
+376
+00:16:37,740 --> 00:16:41,020
+over the next token and a sample from that in order
+
+377
+00:16:41,020 --> 00:16:44,060
+to produce sentences.
+
+378
+00:16:44,060 --> 00:16:45,980
+So we're going to try to maximize
+
+379
+00:16:45,980 --> 00:16:48,660
+the likelihood of the sentence, or the characters
+
+380
+00:16:48,660 --> 00:16:50,920
+y at every point in this sequence.
+
+381
+00:16:54,460 --> 00:16:57,260
+That other picture of that y is going
+
+382
+00:16:57,260 --> 00:16:59,838
+to be a one-hot probability vector.
+
+383
+00:16:59,838 --> 00:17:01,380
+And we're going to make a prediction.
+
+384
+00:17:01,380 --> 00:17:02,880
+I'm going to take the cross entropy.
+
+385
+00:17:02,880 --> 00:17:05,339
+That's just doing the pointwise product
+
+386
+00:17:05,339 --> 00:17:08,579
+between the one-hot vector and the predicted probability
+
+387
+00:17:08,579 --> 00:17:10,300
+vector.
+
+388
+00:17:10,300 --> 00:17:12,480
+So that's cross-entropy minimization,
+
+389
+00:17:12,480 --> 00:17:16,263
+so this is stuff you've seen before.
+
+390
+00:17:16,263 --> 00:17:17,180
+Oh, the color changed.
+
+391
+00:17:17,180 --> 00:17:18,180
+OK, anyway.
+
+392
+00:17:18,180 --> 00:17:22,579
+So there's this interesting thing that you do.
+
+393
+00:17:22,579 --> 00:17:25,220
+In transformers, this stopped being a term.
+
+394
+00:17:25,220 --> 00:17:26,970
+But in the LSTM era, we used to talk
+
+395
+00:17:26,970 --> 00:17:29,773
+about the way of training this thing as teacher forcing.
+
+396
+00:17:29,773 --> 00:17:31,190
+So what does teacher forcing mean?
+
+397
+00:17:31,190 --> 00:17:34,680
+Teacher forcing means I'm going to take the target sentence.
+
+398
+00:17:34,680 --> 00:17:36,930
+I'm going to shift it by 1, just like I would normally
+
+399
+00:17:36,930 --> 00:17:39,930
+do in a transformer training, an autoregressive model.
+
+400
+00:17:39,930 --> 00:17:43,450
+And I'm actually going to tell the LSTM-- rather than just
+
+401
+00:17:43,450 --> 00:17:45,170
+reading off the entire sentence, I
+
+402
+00:17:45,170 --> 00:17:48,770
+will tell it the ground-truth previous word at each time step
+
+403
+00:17:48,770 --> 00:17:53,285
+is whatever it was in the training data.
+
+404
+00:17:53,285 --> 00:17:55,410
+So I'm going to condition each next-word prediction
+
+405
+00:17:55,410 --> 00:17:58,530
+on all of the ground-truth previous words.
+
+406
+00:17:58,530 --> 00:18:01,810
+And this is where you can see there's a deviation between how
+
+407
+00:18:01,810 --> 00:18:04,930
+we'll use this system at test time and how it was trained.
+
+408
+00:18:04,930 --> 00:18:07,170
+It's trained to predict the next word
+
+409
+00:18:07,170 --> 00:18:09,450
+given the ground-truth previous words.
+
+410
+00:18:09,450 --> 00:18:11,430
+But at test time, at deployment time,
+
+411
+00:18:11,430 --> 00:18:14,930
+we're going to condition each next prediction
+
+412
+00:18:14,930 --> 00:18:17,210
+on the model's own self-generated previous
+
+413
+00:18:17,210 --> 00:18:18,650
+prediction.
+
+414
+00:18:18,650 --> 00:18:19,950
+So that's a difference.
+
+415
+00:18:19,950 --> 00:18:23,350
+That means that maximizing the likelihood on the training data
+
+416
+00:18:23,350 --> 00:18:28,890
+will have a gap from what we really would want,
+
+417
+00:18:28,890 --> 00:18:32,950
+which is to maximize the likelihood of entire sequences
+
+418
+00:18:32,950 --> 00:18:34,365
+sampled from the model.
+
+419
+00:18:34,365 --> 00:18:35,990
+So it's actually going to be maximizing
+
+420
+00:18:35,990 --> 00:18:37,870
+the likelihood of the model's predictions
+
+421
+00:18:37,870 --> 00:18:40,365
+of every next character or word, given
+
+422
+00:18:40,365 --> 00:18:42,990
+the ground-truth previous words, which is not what you actually
+
+423
+00:18:42,990 --> 00:18:45,510
+have at test time.
+
+424
+00:18:45,510 --> 00:18:47,590
+So this teacher forcing way of training
+
+425
+00:18:47,590 --> 00:18:49,150
+means that you're not actually going
+
+426
+00:18:49,150 --> 00:18:51,510
+to be maximizing the likelihood of the caption given
+
+427
+00:18:51,510 --> 00:18:54,590
+the data at test time, because here's what we do
+
+428
+00:18:54,590 --> 00:18:56,350
+at inference or at test time.
+
+429
+00:18:56,350 --> 00:18:58,470
+We sample from the predicted distribution
+
+430
+00:18:58,470 --> 00:18:59,330
+over the next words.
+
+431
+00:18:59,330 --> 00:19:01,310
+Or maybe we do greedy sampling, where we just
+
+432
+00:19:01,310 --> 00:19:04,310
+take the most likely next token given the previous tokens.
+
+433
+00:19:04,310 --> 00:19:05,830
+So first, we'll sample the word A,
+
+434
+00:19:05,830 --> 00:19:09,890
+and then we'll condition the model on that we sampled A.
+
+435
+00:19:09,890 --> 00:19:11,670
+So now what comes next?
+
+436
+00:19:11,670 --> 00:19:12,690
+A strong and so forth.
+
+437
+00:19:12,690 --> 00:19:18,110
+And this is how you sample from a autoregressive language model.
+
+438
+00:19:18,110 --> 00:19:20,018
+And again, I'm showing it with an LSTM,
+
+439
+00:19:20,018 --> 00:19:22,060
+but you do exactly the same thing in transformer.
+
+440
+00:19:22,060 --> 00:19:23,820
+You condition every next-token prediction
+
+441
+00:19:23,820 --> 00:19:26,720
+on all the previous sampled tokens.
+
+442
+00:19:26,720 --> 00:19:32,620
+You're just writing one word at a time, or one token at a time.
+
+443
+00:19:32,620 --> 00:19:36,280
+So now, because these are samples from the model,
+
+444
+00:19:36,280 --> 00:19:39,660
+they might differ from the ground-truth distribution
+
+445
+00:19:39,660 --> 00:19:41,240
+that the model was trained on.
+
+446
+00:19:41,240 --> 00:19:43,715
+And there'll be this kind of drift that occurs.
+
+447
+00:19:43,715 --> 00:19:45,340
+The model will produce something that's
+
+448
+00:19:45,340 --> 00:19:49,460
+a little bit different than the true data distribution,
+
+449
+00:19:49,460 --> 00:19:52,940
+and then its next predictions will be of distribution
+
+450
+00:19:52,940 --> 00:19:56,140
+compared to how it was trained.
+
+451
+00:19:56,140 --> 00:19:58,580
+OK.
+
+452
+00:19:58,580 --> 00:19:59,080
+Yeah.
+
+453
+00:19:59,080 --> 00:20:01,560
+So then it gets to the end.
+
+454
+00:20:01,560 --> 00:20:08,900
+So the important point here is that autoregressive greedy
+
+455
+00:20:08,900 --> 00:20:10,220
+sampling--
+
+456
+00:20:10,220 --> 00:20:13,760
+the way that-- either greedy sampling or non-greedy sampling,
+
+457
+00:20:13,760 --> 00:20:16,060
+but let's say autoregressive greedy sampling does not
+
+458
+00:20:16,060 --> 00:20:19,820
+maximize the joint probability of the entire sequence.
+
+459
+00:20:19,820 --> 00:20:21,600
+So remember, the autoregressive model
+
+460
+00:20:21,600 --> 00:20:24,440
+is a model of the probability of a sequence of tokens.
+
+461
+00:20:24,440 --> 00:20:26,840
+And it decomposes by this chain rule
+
+462
+00:20:26,840 --> 00:20:28,400
+as probability of the first token,
+
+463
+00:20:28,400 --> 00:20:30,220
+then the second one given the first one.
+
+464
+00:20:30,220 --> 00:20:31,960
+This is the underlying probability model
+
+465
+00:20:31,960 --> 00:20:34,600
+of autoregressive models.
+
+466
+00:20:34,600 --> 00:20:37,500
+Now, I really want to find the sequence,
+
+467
+00:20:37,500 --> 00:20:39,920
+in this case, the caption or the sentence,
+
+468
+00:20:39,920 --> 00:20:43,720
+that maximizes the joint probability that my model
+
+469
+00:20:43,720 --> 00:20:46,040
+assigns to the data.
+
+470
+00:20:46,040 --> 00:20:47,420
+That will be some sequence.
+
+471
+00:20:47,420 --> 00:20:50,360
+But with greedy sampling, I will first
+
+472
+00:20:50,360 --> 00:20:52,442
+take the most likely first word.
+
+473
+00:20:52,442 --> 00:20:53,900
+And then I'll say, given that word,
+
+474
+00:20:53,900 --> 00:20:56,440
+take the most likely second word, and so on.
+
+475
+00:20:56,440 --> 00:21:00,240
+This sequence, x1 star, x2 star, xn star,
+
+476
+00:21:00,240 --> 00:21:05,300
+is not going to equal the optimal joint configuration.
+
+477
+00:21:05,300 --> 00:21:08,665
+I've used the same notation, but those are not the same values.
+
+478
+00:21:08,665 --> 00:21:10,040
+You can construct counterexamples
+
+479
+00:21:10,040 --> 00:21:12,800
+where that's not the case.
+
+480
+00:21:12,800 --> 00:21:15,440
+So an observation here is, could we
+
+481
+00:21:15,440 --> 00:21:17,970
+do better than greedy sampling?
+
+482
+00:21:17,970 --> 00:21:19,590
+Could we come up with a different way
+
+483
+00:21:19,590 --> 00:21:21,830
+of sampling that gets higher likelihood
+
+484
+00:21:21,830 --> 00:21:23,670
+configurations of the data?
+
+485
+00:21:23,670 --> 00:21:24,630
+Yeah, question.
+
+486
+00:21:24,630 --> 00:21:26,050
+AUDIENCE: So just to confirm what you said.
+
+487
+00:21:26,050 --> 00:21:27,550
+It's not an equal sign, then, right?
+
+488
+00:21:27,550 --> 00:21:30,630
+[INAUDIBLE] are not the same.
+
+489
+00:21:30,630 --> 00:21:33,510
+PHILLIP ISOLA: Sorry, the equal sign is true,
+
+490
+00:21:33,510 --> 00:21:37,270
+but the argmax solution is not the same
+
+491
+00:21:37,270 --> 00:21:40,230
+for the argmax over the joint configuration, argmax
+
+492
+00:21:40,230 --> 00:21:42,150
+over the individual conditionals.
+
+493
+00:21:42,150 --> 00:21:43,042
+Yeah.
+
+494
+00:21:43,042 --> 00:21:45,750
+Yeah, I probably should have had a prime or something to indicate
+
+495
+00:21:45,750 --> 00:21:47,125
+that those were different values.
+
+496
+00:21:50,715 --> 00:21:54,640
+So question for you to think about.
+
+497
+00:21:54,640 --> 00:21:56,390
+So this is true for autoregressive models,
+
+498
+00:21:56,390 --> 00:22:00,030
+that if you take the samples that
+
+499
+00:22:00,030 --> 00:22:03,837
+maximize the sequence of conditional probabilities,
+
+500
+00:22:03,837 --> 00:22:05,670
+you don't necessarily get the max likelihood
+
+501
+00:22:05,670 --> 00:22:07,950
+joint configuration.
+
+502
+00:22:07,950 --> 00:22:09,170
+What about for VAEs?
+
+503
+00:22:09,170 --> 00:22:13,510
+What if you sample from a VAE and you take the argmax,
+
+504
+00:22:13,510 --> 00:22:15,230
+the most likely sample-- like, you just--
+
+505
+00:22:15,230 --> 00:22:18,080
+you encode, and now it's a Gaussian VAE,
+
+506
+00:22:18,080 --> 00:22:22,700
+so the most likely sample is the mean of that VAE.
+
+507
+00:22:22,700 --> 00:22:24,500
+Do you get the same issue?
+
+508
+00:22:24,500 --> 00:22:26,420
+What do you think?
+
+509
+00:22:26,420 --> 00:22:27,920
+This takes a little bit of thought.
+
+510
+00:22:31,340 --> 00:22:33,380
+How about for a diffusion model?
+
+511
+00:22:33,380 --> 00:22:38,300
+If I do denoising step by step, is my final output--
+
+512
+00:22:38,300 --> 00:22:39,750
+and I do greedy denoising, right?
+
+513
+00:22:39,750 --> 00:22:41,500
+So I'm denoising, and I'm going to predict
+
+514
+00:22:41,500 --> 00:22:44,060
+the most likely noiseless--
+
+515
+00:22:44,060 --> 00:22:46,820
+less noisy image, and then I'll do that iteratively.
+
+516
+00:22:46,820 --> 00:22:51,420
+Will I get the most likely estimate of the noiseless image
+
+517
+00:22:51,420 --> 00:22:54,020
+given whatever I condition on?
+
+518
+00:22:54,020 --> 00:22:57,020
+What do you think?
+
+519
+00:22:57,020 --> 00:22:59,440
+Anyone want to give a guess?
+
+520
+00:23:03,160 --> 00:23:04,508
+It's a little tricky.
+
+521
+00:23:04,508 --> 00:23:06,800
+OK, so it's the same exact thing with diffusion models.
+
+522
+00:23:06,800 --> 00:23:09,500
+So diffusion models are also iterative step by step.
+
+523
+00:23:09,500 --> 00:23:11,060
+In every sampling step, you're going
+
+524
+00:23:11,060 --> 00:23:14,560
+to try to remove a little bit of noise but not all the noise.
+
+525
+00:23:14,560 --> 00:23:19,585
+And if you do that and you make your prediction
+
+526
+00:23:19,585 --> 00:23:20,960
+and it's going to try to maximize
+
+527
+00:23:20,960 --> 00:23:24,160
+the conditional probability of slightly less noisy given
+
+528
+00:23:24,160 --> 00:23:29,080
+slightly more noisy, than that won't necessarily
+
+529
+00:23:29,080 --> 00:23:33,080
+result in a sequence of samples that- a sequence of denoising
+
+530
+00:23:33,080 --> 00:23:36,280
+steps that maximizes the probability
+
+531
+00:23:36,280 --> 00:23:39,800
+at the end of the sequence for the same kind of reason.
+
+532
+00:23:39,800 --> 00:23:42,743
+But with VAEs, it's not really sequential.
+
+533
+00:23:42,743 --> 00:23:43,660
+There's just one step.
+
+534
+00:23:43,660 --> 00:23:47,280
+There's just encode, decode.
+
+535
+00:23:47,280 --> 00:23:49,192
+So I think with VAEs, if I'm actually
+
+536
+00:23:49,192 --> 00:23:50,900
+having a VAE that models a full sentence,
+
+537
+00:23:50,900 --> 00:23:53,760
+there's no sequential process where my sampling could
+
+538
+00:23:53,760 --> 00:23:57,240
+be deviating from the most likely sample
+
+539
+00:23:57,240 --> 00:23:58,860
+for the entire joint configuration.
+
+540
+00:23:58,860 --> 00:24:04,440
+OK, something more for you to think about after the lecture.
+
+541
+00:24:04,440 --> 00:24:05,770
+But I will say one thing.
+
+542
+00:24:05,770 --> 00:24:07,520
+I mentioned the diffusion models because I
+
+543
+00:24:07,520 --> 00:24:10,000
+think there's not as much work in trying
+
+544
+00:24:10,000 --> 00:24:12,482
+to do intelligent inference through diffusion models.
+
+545
+00:24:12,482 --> 00:24:14,940
+There's a lot of work on doing intelligent inference that's
+
+546
+00:24:14,940 --> 00:24:17,180
+better than greedy sampling for language models that
+
+547
+00:24:17,180 --> 00:24:19,640
+are autoregressive, but less for diffusion models.
+
+548
+00:24:19,640 --> 00:24:22,080
+So maybe an interesting open topic for you to work on.
+
+549
+00:24:22,080 --> 00:24:24,765
+How do you take higher likelihood samples
+
+550
+00:24:24,765 --> 00:24:26,140
+from a diffusion model than you'd
+
+551
+00:24:26,140 --> 00:24:30,740
+get with the regular denoising process?
+
+552
+00:24:30,740 --> 00:24:35,060
+I'm sure there's some work on that, but just not as much.
+
+553
+00:24:35,060 --> 00:24:38,180
+So now let's look at some fancier inference
+
+554
+00:24:38,180 --> 00:24:44,580
+strategies than just doing autoregressive greedy sampling.
+
+555
+00:24:44,580 --> 00:24:46,540
+Also, remember that in most language models,
+
+556
+00:24:46,540 --> 00:24:49,320
+you just take random samples.
+
+557
+00:24:49,320 --> 00:24:52,520
+You predict a distribution over the next token,
+
+558
+00:24:52,520 --> 00:24:55,020
+and then you randomly sample from that distribution.
+
+559
+00:24:55,020 --> 00:24:57,300
+And certainly, a random sample is not necessarily
+
+560
+00:24:57,300 --> 00:24:59,220
+going to be the most likely sample.
+
+561
+00:24:59,220 --> 00:25:00,980
+So if I want to answer a question like,
+
+562
+00:25:00,980 --> 00:25:04,260
+what is the caption of this molecule,
+
+563
+00:25:04,260 --> 00:25:07,260
+I might get a random description that is low probability just
+
+564
+00:25:07,260 --> 00:25:08,140
+by chance.
+
+565
+00:25:08,140 --> 00:25:10,610
+That's why we want to do better inference to get higher
+
+566
+00:25:10,610 --> 00:25:13,050
+probability samples so we can answer questions
+
+567
+00:25:13,050 --> 00:25:14,030
+more accurately.
+
+568
+00:25:16,750 --> 00:25:21,390
+So the Best-of-N approach is really simple.
+
+569
+00:25:21,390 --> 00:25:25,330
+It just says, go with your random sampling,
+
+570
+00:25:25,330 --> 00:25:28,010
+and do it N times.
+
+571
+00:25:28,010 --> 00:25:31,890
+Take N samples from your autoregressive models,
+
+572
+00:25:31,890 --> 00:25:35,650
+independently and identically, and then
+
+573
+00:25:35,650 --> 00:25:38,890
+evaluate the total likelihood of each sequence
+
+574
+00:25:38,890 --> 00:25:39,790
+that you generated.
+
+575
+00:25:39,790 --> 00:25:41,630
+So remember, when you're sampling these sequences,
+
+576
+00:25:41,630 --> 00:25:43,710
+you're not sampling the max likelihood sequence.
+
+577
+00:25:43,710 --> 00:25:46,450
+You're sampling a random sequence from the distribution.
+
+578
+00:25:46,450 --> 00:25:49,210
+But you can evaluate the likelihood of any sequence using
+
+579
+00:25:49,210 --> 00:25:49,910
+the chain rule.
+
+580
+00:25:49,910 --> 00:25:53,690
+So I can evaluate the probability of whatever sequence
+
+581
+00:25:53,690 --> 00:25:55,570
+I generated by just multiplying all
+
+582
+00:25:55,570 --> 00:25:59,410
+the conditional probabilities under my model together.
+
+583
+00:25:59,410 --> 00:26:02,010
+So here, I sample one sequence, a stimulant that
+
+584
+00:26:02,010 --> 00:26:03,850
+enhances cognitive function.
+
+585
+00:26:03,850 --> 00:26:06,422
+And then I run that through my autoregressive model
+
+586
+00:26:06,422 --> 00:26:08,630
+by just multiplying all the conditional probabilities
+
+587
+00:26:08,630 --> 00:26:10,390
+together, and I get 0.7.
+
+588
+00:26:10,390 --> 00:26:11,810
+And then I sample another time.
+
+589
+00:26:11,810 --> 00:26:13,230
+This time, I got a different random sample
+
+590
+00:26:13,230 --> 00:26:14,870
+a stimulate that improves thinking.
+
+591
+00:26:14,870 --> 00:26:17,750
+When you play with a language model, type in the same
+
+592
+00:26:17,750 --> 00:26:18,317
+prompt twice.
+
+593
+00:26:18,317 --> 00:26:20,150
+You'll get two different answers, typically,
+
+594
+00:26:20,150 --> 00:26:23,550
+because it's sampling from a distribution.
+
+595
+00:26:23,550 --> 00:26:24,610
+OK, here's another one.
+
+596
+00:26:24,610 --> 00:26:25,950
+And then maybe I'll say--
+
+597
+00:26:25,950 --> 00:26:28,892
+I'll do this N times, and I will say,
+
+598
+00:26:28,892 --> 00:26:30,850
+this is the one that maximizes the probability.
+
+599
+00:26:30,850 --> 00:26:33,550
+So this is the most likely caption in my--
+
+600
+00:26:33,550 --> 00:26:36,590
+according to my model or my data distribution.
+
+601
+00:26:36,590 --> 00:26:37,390
+Yeah.
+
+602
+00:26:37,390 --> 00:26:41,670
+AUDIENCE: At each time step, when you sample the next token
+
+603
+00:26:41,670 --> 00:26:44,310
+in the output sequence, is it with proportion
+
+604
+00:26:44,310 --> 00:26:46,250
+to the probability distribution?
+
+605
+00:26:46,250 --> 00:26:48,010
+PHILLIP ISOLA: Yeah.
+
+606
+00:26:48,010 --> 00:26:50,550
+So the way that autoregressive sampling usually
+
+607
+00:26:50,550 --> 00:26:53,855
+works is you output a categorical distribution
+
+608
+00:26:53,855 --> 00:26:55,730
+over the next token, given the previous ones.
+
+609
+00:26:55,730 --> 00:26:57,063
+That's each of the conditionals.
+
+610
+00:26:57,063 --> 00:26:59,390
+And then you just take a sample from that distribution.
+
+611
+00:26:59,390 --> 00:27:01,182
+There's a parameter called the temperature,
+
+612
+00:27:01,182 --> 00:27:05,820
+where you can scale how flat or spiky the distribution is.
+
+613
+00:27:05,820 --> 00:27:09,320
+And so if you set the temperature to 1,
+
+614
+00:27:09,320 --> 00:27:11,100
+then you're taking unbiased samples
+
+615
+00:27:11,100 --> 00:27:12,983
+from the data distribution.
+
+616
+00:27:12,983 --> 00:27:14,900
+But sometimes you want to scale it differently
+
+617
+00:27:14,900 --> 00:27:17,760
+in order to get mode-seeking behavior,
+
+618
+00:27:17,760 --> 00:27:20,080
+like you just want to take the likelihood samples.
+
+619
+00:27:20,080 --> 00:27:20,620
+Yeah.
+
+620
+00:27:20,620 --> 00:27:22,120
+AUDIENCE: Does this mean that you're
+
+621
+00:27:22,120 --> 00:27:24,580
+going to try with, say, all possible combinations of
+
+622
+00:27:24,580 --> 00:27:25,220
+[INAUDIBLE]?
+
+623
+00:27:25,220 --> 00:27:28,220
+Because I guess it's going to be very computationally expensive.
+
+624
+00:27:28,220 --> 00:27:29,720
+PHILLIP ISOLA: Right, good question.
+
+625
+00:27:29,720 --> 00:27:32,700
+So are you to try with all possible combinations?
+
+626
+00:27:32,700 --> 00:27:34,720
+You can make that argument and say, well,
+
+627
+00:27:34,720 --> 00:27:37,180
+if I did try with all possible combinations,
+
+628
+00:27:37,180 --> 00:27:39,040
+then this would work.
+
+629
+00:27:39,040 --> 00:27:41,100
+Like, I could find, truly, the max likelihood
+
+630
+00:27:41,100 --> 00:27:43,260
+sample under my model.
+
+631
+00:27:43,260 --> 00:27:45,320
+But that would be incredibly expensive.
+
+632
+00:27:45,320 --> 00:27:48,340
+So instead, you only-- you sample from the model,
+
+633
+00:27:48,340 --> 00:27:51,760
+and maybe you turn the temperature down a little bit.
+
+634
+00:27:51,760 --> 00:27:55,820
+So you take-- it's trying to take high-probability samples.
+
+635
+00:27:55,820 --> 00:27:59,220
+But if you turn it down to 0, then it's
+
+636
+00:27:59,220 --> 00:28:01,540
+going to take the greedy sample, and that might not
+
+637
+00:28:01,540 --> 00:28:02,560
+maximize probability.
+
+638
+00:28:02,560 --> 00:28:04,855
+So you want it to be a temperature that's non-zero,
+
+639
+00:28:04,855 --> 00:28:06,480
+but not like infinity, where you'd just
+
+640
+00:28:06,480 --> 00:28:09,840
+be searching over the space of all possible random sequences.
+
+641
+00:28:09,840 --> 00:28:10,520
+Yeah.
+
+642
+00:28:10,520 --> 00:28:12,440
+AUDIENCE: Would it make sense to think of a heuristic
+
+643
+00:28:12,440 --> 00:28:14,898
+where this is your starting point, but then you improve it?
+
+644
+00:28:14,898 --> 00:28:17,143
+For example, you have to take the 0.8,
+
+645
+00:28:17,143 --> 00:28:18,560
+and you create a small improvement
+
+646
+00:28:18,560 --> 00:28:20,800
+where you take chemical out, you put stimulant in,
+
+647
+00:28:20,800 --> 00:28:22,232
+and then maybe now you get 0.9.
+
+648
+00:28:22,232 --> 00:28:23,940
+PHILLIP ISOLA: Yeah, that's a great idea.
+
+649
+00:28:23,940 --> 00:28:27,080
+So could you take this solution and then say, what
+
+650
+00:28:27,080 --> 00:28:28,680
+if I change one of the words?
+
+651
+00:28:28,680 --> 00:28:30,380
+Will I get a better solution?
+
+652
+00:28:30,380 --> 00:28:34,920
+So in general, this is the whole space of optimization
+
+653
+00:28:34,920 --> 00:28:36,020
+and statistical inference.
+
+654
+00:28:36,020 --> 00:28:38,213
+Like, you could do MCMC, where you start to--
+
+655
+00:28:38,213 --> 00:28:39,380
+you could do Gibbs sampling.
+
+656
+00:28:39,380 --> 00:28:41,213
+You could do all kinds of interesting things
+
+657
+00:28:41,213 --> 00:28:43,480
+where you take your current solution
+
+658
+00:28:43,480 --> 00:28:47,660
+and you try to just modify one dimension of it at a time,
+
+659
+00:28:47,660 --> 00:28:49,920
+or you try to do hill climbing, where you just
+
+660
+00:28:49,920 --> 00:28:52,100
+look for a local perturbation that improves it.
+
+661
+00:28:52,100 --> 00:28:54,240
+So there's just a very rich space
+
+662
+00:28:54,240 --> 00:28:57,060
+of methods that can try to optimize over that sequence
+
+663
+00:28:57,060 --> 00:28:57,780
+to improve it.
+
+664
+00:28:57,780 --> 00:28:59,840
+You could take a language model and say, hey, rewrite this
+
+665
+00:28:59,840 --> 00:29:01,298
+in 10 different ways that you think
+
+666
+00:29:01,298 --> 00:29:02,590
+might improve the performance.
+
+667
+00:29:02,590 --> 00:29:04,550
+That's another thing that people are doing.
+
+668
+00:29:04,550 --> 00:29:07,170
+OK.
+
+669
+00:29:07,170 --> 00:29:11,770
+But Best-of-N-- interestingly enough, to my knowledge,
+
+670
+00:29:11,770 --> 00:29:14,610
+this Best-of-N sampling is about as good as anything right now.
+
+671
+00:29:14,610 --> 00:29:16,770
+And it's like most naive--
+
+672
+00:29:16,770 --> 00:29:18,450
+It's rejection sampling, essentially.
+
+673
+00:29:18,450 --> 00:29:23,630
+Or it's just, sample 10 independent things or N
+
+674
+00:29:23,630 --> 00:29:25,790
+independent things, and take the best one,
+
+675
+00:29:25,790 --> 00:29:27,590
+and reject all the other ones.
+
+676
+00:29:27,590 --> 00:29:29,573
+But there's smarter sampling methods.
+
+677
+00:29:29,573 --> 00:29:31,990
+And one of the other sampling methods that's quite popular
+
+678
+00:29:31,990 --> 00:29:32,985
+is called beam search.
+
+679
+00:29:32,985 --> 00:29:34,610
+So this is, like, a tree search method.
+
+680
+00:29:34,610 --> 00:29:36,870
+It's a little bit like what you were suggesting.
+
+681
+00:29:36,870 --> 00:29:40,390
+So here, what you do is at every step
+
+682
+00:29:40,390 --> 00:29:42,510
+of your autoregressive generation,
+
+683
+00:29:42,510 --> 00:29:49,010
+you maintain a memory of the top-k best next words,
+
+684
+00:29:49,010 --> 00:29:54,670
+and you start expanding out not just the best
+
+685
+00:29:54,670 --> 00:29:58,030
+sample or a single sample, but more than one sample at a time.
+
+686
+00:29:58,030 --> 00:30:00,690
+So maybe I'll say, well, strong or mild
+
+687
+00:30:00,690 --> 00:30:02,190
+are both equally probable.
+
+688
+00:30:02,190 --> 00:30:03,667
+And then given strong, then there's
+
+689
+00:30:03,667 --> 00:30:06,250
+these two other possibilities that are the highest probability
+
+690
+00:30:06,250 --> 00:30:07,310
+possibilities.
+
+691
+00:30:07,310 --> 00:30:10,192
+And I'll expand this tree out with some branching factor k.
+
+692
+00:30:10,192 --> 00:30:11,650
+And then at the end of the day I'll
+
+693
+00:30:11,650 --> 00:30:15,810
+just look at the path along that tree that has max probability.
+
+694
+00:30:15,810 --> 00:30:19,250
+So a little bit of-- it's like a tree search method,
+
+695
+00:30:19,250 --> 00:30:21,690
+as opposed to just like an independent random search
+
+696
+00:30:21,690 --> 00:30:27,290
+method, but otherwise it's the same idea.
+
+697
+00:30:27,290 --> 00:30:31,770
+So again, there's a lot of other fancy search methods
+
+698
+00:30:31,770 --> 00:30:33,930
+that you could use.
+
+699
+00:30:33,930 --> 00:30:35,490
+Best-of-N seems to be the simplest
+
+700
+00:30:35,490 --> 00:30:37,870
+and also works about as well as anything,
+
+701
+00:30:37,870 --> 00:30:39,730
+as far as I can tell right now.
+
+702
+00:30:39,730 --> 00:30:41,910
+And beam search is maybe the most popular,
+
+703
+00:30:41,910 --> 00:30:43,583
+slightly more advanced method.
+
+704
+00:30:43,583 --> 00:30:46,250
+So in language models, you might have an option like beam search
+
+705
+00:30:46,250 --> 00:30:48,935
+on or off, so you can try playing with that.
+
+706
+00:30:48,935 --> 00:30:50,310
+Now, what about Chain-of-Thought?
+
+707
+00:30:50,310 --> 00:30:51,685
+We talked about chain of thought,
+
+708
+00:30:51,685 --> 00:30:56,250
+or Jacob Andreas, in his talk, talked about chain of thought.
+
+709
+00:30:56,250 --> 00:31:01,200
+Chain-of-Thought is-- I'll refer to it as an emergent
+
+710
+00:31:01,200 --> 00:31:03,600
+or learned search.
+
+711
+00:31:03,600 --> 00:31:05,460
+So here's an example.
+
+712
+00:31:05,460 --> 00:31:09,020
+This is just from ChatGPT last night.
+
+713
+00:31:09,020 --> 00:31:12,120
+So I want you to use beam search to solve the following problem.
+
+714
+00:31:12,120 --> 00:31:13,740
+I could just use beam search.
+
+715
+00:31:13,740 --> 00:31:16,740
+I could say, what is 4 times 5 plus 10?
+
+716
+00:31:16,740 --> 00:31:17,840
+That's the problem.
+
+717
+00:31:17,840 --> 00:31:20,440
+I could put that through my LLM, expand out
+
+718
+00:31:20,440 --> 00:31:23,900
+all the possible sequences of completions,
+
+719
+00:31:23,900 --> 00:31:26,680
+and then take the one that has highest probability, and that
+
+720
+00:31:26,680 --> 00:31:29,320
+might be a better solution.
+
+721
+00:31:29,320 --> 00:31:30,760
+As long as probability is related
+
+722
+00:31:30,760 --> 00:31:34,260
+to actual accuracy on math, which it might or might not be,
+
+723
+00:31:34,260 --> 00:31:36,480
+that would be a better solution.
+
+724
+00:31:36,480 --> 00:31:41,000
+But instead, I'll just say, maybe if I prompt you,
+
+725
+00:31:41,000 --> 00:31:44,200
+you can do that beam search yourself
+
+726
+00:31:44,200 --> 00:31:47,000
+because you've observed, in your training corpus,
+
+727
+00:31:47,000 --> 00:31:51,870
+examples of this kind of behavior.
+
+728
+00:31:51,870 --> 00:31:54,120
+Or maybe you've been tuned with reinforcement learning
+
+729
+00:31:54,120 --> 00:31:55,180
+and other methods.
+
+730
+00:31:55,180 --> 00:31:56,572
+But basically, it does work.
+
+731
+00:31:56,572 --> 00:31:57,530
+So here's what it does.
+
+732
+00:31:57,530 --> 00:32:00,810
+It output a whole bunch of preamble that I'm going to skip.
+
+733
+00:32:00,810 --> 00:32:02,390
+And then it says, OK, here's my beam
+
+734
+00:32:02,390 --> 00:32:04,650
+search of two different sampling trajectories.
+
+735
+00:32:04,650 --> 00:32:07,390
+And it turns out I think the better one is the 4
+
+736
+00:32:07,390 --> 00:32:09,350
+times 5 plus 10 equals 30.
+
+737
+00:32:09,350 --> 00:32:11,090
+So it could go 4 times 5 plus 10.
+
+738
+00:32:11,090 --> 00:32:13,630
+And then I say, my next sequence of tokens
+
+739
+00:32:13,630 --> 00:32:16,530
+will be- I'll parse that as 20 plus 10,
+
+740
+00:32:16,530 --> 00:32:19,110
+and then finally, I'll get to 30.
+
+741
+00:32:19,110 --> 00:32:20,450
+So what is Chain-of-Thought?
+
+742
+00:32:20,450 --> 00:32:24,150
+Chain-of-Thought is like doing a reasoning or search process that
+
+743
+00:32:24,150 --> 00:32:26,590
+could be written with a classical algorithm,
+
+744
+00:32:26,590 --> 00:32:29,390
+but it's the LLM doing it itself and writing
+
+745
+00:32:29,390 --> 00:32:35,690
+the intermediate steps into the text space, into its context,
+
+746
+00:32:35,690 --> 00:32:38,590
+and then autoregressively continuing on.
+
+747
+00:32:38,590 --> 00:32:41,270
+So one way of thinking about Chain-of-Thought.
+
+748
+00:32:45,750 --> 00:32:51,830
+So that was all about how to get higher likelihood sequences
+
+749
+00:32:51,830 --> 00:32:54,890
+from an autoregressive model by doing some kind of search
+
+750
+00:32:54,890 --> 00:32:57,970
+or optimization over the space of possible sequences
+
+751
+00:32:57,970 --> 00:33:00,010
+that are somewhat likely under the model.
+
+752
+00:33:00,010 --> 00:33:02,510
+So you're being guided by the model, the model's likelihood,
+
+753
+00:33:02,510 --> 00:33:05,490
+but then you're trying to find even more likely configurations.
+
+754
+00:33:05,490 --> 00:33:07,550
+But it turns out you can do the same exact thing,
+
+755
+00:33:07,550 --> 00:33:11,490
+but not for likelihood, but for any kind of scoring function.
+
+756
+00:33:11,490 --> 00:33:14,490
+So I could say, what if my scoring function is
+
+757
+00:33:14,490 --> 00:33:18,218
+a measure of how fun or whatever fun-ness?
+
+758
+00:33:18,218 --> 00:33:19,510
+So this caption's not very fun.
+
+759
+00:33:19,510 --> 00:33:20,850
+It sounds kind of scientific.
+
+760
+00:33:20,850 --> 00:33:22,610
+OK, here's one.
+
+761
+00:33:22,610 --> 00:33:25,610
+So what is-- this molecule is nature's tiny cheerleader,
+
+762
+00:33:25,610 --> 00:33:27,970
+jumping into your bloodstream with pompoms.
+
+763
+00:33:27,970 --> 00:33:29,570
+The language model gave me that.
+
+764
+00:33:29,570 --> 00:33:31,070
+I didn't come up with that.
+
+765
+00:33:31,070 --> 00:33:32,850
+Anyway, that's more fun.
+
+766
+00:33:32,850 --> 00:33:35,350
+And then maybe it will output emojis, and that's the best.
+
+767
+00:33:35,350 --> 00:33:37,550
+And so now what I can do is I can sample Best-of-N,
+
+768
+00:33:37,550 --> 00:33:40,290
+but not according to likelihood or a learned model but something
+
+769
+00:33:40,290 --> 00:33:41,150
+else.
+
+770
+00:33:41,150 --> 00:33:42,790
+Maybe this is people online.
+
+771
+00:33:42,790 --> 00:33:44,490
+This is people voting online.
+
+772
+00:33:44,490 --> 00:33:45,890
+Maybe it's humans.
+
+773
+00:33:45,890 --> 00:33:47,270
+And then I'll say--
+
+774
+00:33:47,270 --> 00:33:48,430
+OK, I'll take that one.
+
+775
+00:33:51,815 --> 00:33:53,940
+And this is a really popular thing to do right now.
+
+776
+00:33:53,940 --> 00:33:56,080
+This is the basis of what's called reinforcement learning
+
+777
+00:33:56,080 --> 00:33:58,440
+from human feedback, where we give humans-- rate all
+
+778
+00:33:58,440 --> 00:34:00,315
+the sequences, and then you pick the best one
+
+779
+00:34:00,315 --> 00:34:02,040
+that the humans rated.
+
+780
+00:34:02,040 --> 00:34:04,380
+And you could change it to any function.
+
+781
+00:34:04,380 --> 00:34:05,540
+Here's scientific accuracy.
+
+782
+00:34:05,540 --> 00:34:06,623
+It's a different function.
+
+783
+00:34:06,623 --> 00:34:09,000
+Maybe I downloaded a model of scientific accuracy,
+
+784
+00:34:09,000 --> 00:34:14,000
+and now it picks this as the best description.
+
+785
+00:34:14,000 --> 00:34:14,560
+Yeah.
+
+786
+00:34:14,560 --> 00:34:16,480
+AUDIENCE: So in this as your score,
+
+787
+00:34:16,480 --> 00:34:18,719
+is that another model that you're training?
+
+788
+00:34:18,719 --> 00:34:20,739
+PHILLIP ISOLA: It can be absolutely anything.
+
+789
+00:34:20,739 --> 00:34:23,560
+So something that takes in a sentence and gives you a
+
+790
+00:34:23,560 --> 00:34:24,880
+scalar out.
+
+791
+00:34:24,880 --> 00:34:26,940
+It could be another model that you've trained.
+
+792
+00:34:26,940 --> 00:34:28,540
+It could be a human brain.
+
+793
+00:34:28,540 --> 00:34:29,940
+It could be an animal brain.
+
+794
+00:34:29,940 --> 00:34:32,340
+It could be a formal proof checker.
+
+795
+00:34:32,340 --> 00:34:34,480
+I'll show you another example.
+
+796
+00:34:34,480 --> 00:34:36,560
+This is a really popular type of scoring function
+
+797
+00:34:36,560 --> 00:34:38,199
+called verification.
+
+798
+00:34:38,199 --> 00:34:41,400
+Verification usually has the connotation
+
+799
+00:34:41,400 --> 00:34:45,960
+that you're going to actually check that the output is correct
+
+800
+00:34:45,960 --> 00:34:47,737
+using some formal process.
+
+801
+00:34:47,737 --> 00:34:49,320
+In this case, the formal process might
+
+802
+00:34:49,320 --> 00:34:53,179
+be a compiler or a mathematical proof checker,
+
+803
+00:34:53,179 --> 00:34:55,000
+or maybe the verifier here.
+
+804
+00:34:55,000 --> 00:34:57,220
+So here, we have- the input is, write
+
+805
+00:34:57,220 --> 00:35:00,260
+a Python program to compute the Fibonacci sequence.
+
+806
+00:35:00,260 --> 00:35:02,360
+The language model outputs two possibilities.
+
+807
+00:35:02,360 --> 00:35:04,100
+It could output infinite possibilities,
+
+808
+00:35:04,100 --> 00:35:05,553
+but I'm just showing two.
+
+809
+00:35:05,553 --> 00:35:07,220
+And then the verifier could be something
+
+810
+00:35:07,220 --> 00:35:10,333
+that has- it knows what the Fibonacci sequence is.
+
+811
+00:35:10,333 --> 00:35:11,000
+So it can check.
+
+812
+00:35:11,000 --> 00:35:13,540
+It can run the program and see if the program matches
+
+813
+00:35:13,540 --> 00:35:15,940
+the Fibonacci sequence.
+
+814
+00:35:15,940 --> 00:35:18,540
+So the verifier, in this case-- if I have the Fibonacci
+
+815
+00:35:18,540 --> 00:35:21,480
+sequence, I can check that the output of the LLM matches.
+
+816
+00:35:21,480 --> 00:35:24,900
+And if it does, then I say that that's my solution,
+
+817
+00:35:24,900 --> 00:35:27,940
+and I can just do Best-of-N in this fashion.
+
+818
+00:35:27,940 --> 00:35:29,293
+And why is this a good idea?
+
+819
+00:35:29,293 --> 00:35:31,460
+Fundamentally, it's a good idea because verification
+
+820
+00:35:31,460 --> 00:35:33,500
+is easier than generation.
+
+821
+00:35:33,500 --> 00:35:35,860
+So checking that I correctly solved a math problem
+
+822
+00:35:35,860 --> 00:35:39,100
+or I correctly made code that has some desirable property
+
+823
+00:35:39,100 --> 00:35:41,100
+is just fundamentally easier than coming up
+
+824
+00:35:41,100 --> 00:35:42,720
+with the code that has that property,
+
+825
+00:35:42,720 --> 00:35:45,700
+or coming up with the solution to the math problem.
+
+826
+00:35:45,700 --> 00:35:48,800
+So proving a theorem is fundamentally harder
+
+827
+00:35:48,800 --> 00:35:51,580
+than checking that a proof is correct.
+
+828
+00:35:51,580 --> 00:35:57,840
+This goes back to things like t the class
+
+829
+00:35:57,840 --> 00:36:01,180
+of problems that these are checkable in polynomial time,
+
+830
+00:36:01,180 --> 00:36:03,200
+but we don't know if-- and we expect
+
+831
+00:36:03,200 --> 00:36:04,920
+that they don't have a way of solving
+
+832
+00:36:04,920 --> 00:36:08,642
+the problem in polynomial time, as long as P does not equal NP.
+
+833
+00:36:08,642 --> 00:36:10,100
+So verification can be really easy.
+
+834
+00:36:10,100 --> 00:36:14,780
+You just check that you actually output the Fibonacci sequence.
+
+835
+00:36:14,780 --> 00:36:16,820
+But how did I write an algorithm that does that?
+
+836
+00:36:16,820 --> 00:36:17,860
+It might not be trivial.
+
+837
+00:36:20,800 --> 00:36:25,240
+Another example of this would be verifying that--
+
+838
+00:36:25,240 --> 00:36:27,240
+doing prime factorization, coming up
+
+839
+00:36:27,240 --> 00:36:29,520
+with-- finding the prime factors for some big number
+
+840
+00:36:29,520 --> 00:36:34,280
+is a hard problem, but checking that some set of factors
+
+841
+00:36:34,280 --> 00:36:36,740
+multiply to equal the number is an easy problem.
+
+842
+00:36:39,600 --> 00:36:45,000
+So verification can be the scoring method.
+
+843
+00:36:45,000 --> 00:36:46,910
+So you can do all these same methods,
+
+844
+00:36:46,910 --> 00:36:50,090
+not just for language models and autoregressive models,
+
+845
+00:36:50,090 --> 00:36:52,230
+but also for other types of generative models.
+
+846
+00:36:52,230 --> 00:36:55,270
+So I'm going to take a little aside into some work
+
+847
+00:36:55,270 --> 00:36:58,670
+that I did, now quite a few years ago,
+
+848
+00:36:58,670 --> 00:37:01,710
+but I have I have slides on it, so I thought it would be fun.
+
+849
+00:37:01,710 --> 00:37:03,710
+So this is going to be trying to steer models
+
+850
+00:37:03,710 --> 00:37:09,350
+toward human preferences, so a little like this thing, RLHF.
+
+851
+00:37:09,350 --> 00:37:14,190
+So what are the great objectives for AI?
+
+852
+00:37:14,190 --> 00:37:15,790
+This class is almost entirely focused
+
+853
+00:37:15,790 --> 00:37:19,330
+on just one, which is, given lots of wonderful data,
+
+854
+00:37:19,330 --> 00:37:20,590
+just imitate it.
+
+855
+00:37:20,590 --> 00:37:22,090
+So this is supervised learning.
+
+856
+00:37:22,090 --> 00:37:25,790
+This is generative modeling, maximizing the likelihood
+
+857
+00:37:25,790 --> 00:37:29,450
+of the data under the model, self-supervised learning,
+
+858
+00:37:29,450 --> 00:37:32,190
+same thing.
+
+859
+00:37:32,190 --> 00:37:33,630
+What other objectives could there
+
+860
+00:37:33,630 --> 00:37:35,730
+be for training an AI system besides this?
+
+861
+00:37:35,730 --> 00:37:37,460
+This was, like, 90% of the class.
+
+862
+00:37:37,460 --> 00:37:38,210
+What do you think?
+
+863
+00:37:38,210 --> 00:37:40,950
+What other objective might you want
+
+864
+00:37:40,950 --> 00:37:43,330
+to maximize for an AI system?
+
+865
+00:37:46,730 --> 00:37:49,850
+I guess somebody-- yeah?
+
+866
+00:37:49,850 --> 00:37:53,290
+AUDIENCE: I guess-- say if it's some sort of game or something
+
+867
+00:37:53,290 --> 00:37:56,363
+with scoring, you could try to surpass--
+
+868
+00:37:56,363 --> 00:37:58,030
+PHILLIP ISOLA: Try to beat the opponent,
+
+869
+00:37:58,030 --> 00:37:59,760
+win the game if it's a game.
+
+870
+00:37:59,760 --> 00:38:00,510
+That's a good one.
+
+871
+00:38:00,510 --> 00:38:01,010
+Yeah.
+
+872
+00:38:01,010 --> 00:38:02,730
+Any others?
+
+873
+00:38:02,730 --> 00:38:03,250
+Yeah.
+
+874
+00:38:03,250 --> 00:38:04,650
+AUDIENCE: Interpretability?
+
+875
+00:38:04,650 --> 00:38:06,490
+PHILLIP ISOLA: Yeah, I want to make
+
+876
+00:38:06,490 --> 00:38:08,670
+the most interpretable system.
+
+877
+00:38:08,670 --> 00:38:10,870
+So all of those are usually handcrafted,
+
+878
+00:38:10,870 --> 00:38:12,850
+but there's this whole other-- so I just said,
+
+879
+00:38:12,850 --> 00:38:17,470
+there could be a lot of things, but I'm going to suggest one.
+
+880
+00:38:17,470 --> 00:38:19,170
+But basically, all of the other ones
+
+881
+00:38:19,170 --> 00:38:21,170
+go under this area of reinforcement learning
+
+882
+00:38:21,170 --> 00:38:22,430
+in some way or another.
+
+883
+00:38:22,430 --> 00:38:24,370
+Or they can often be phrased that way,
+
+884
+00:38:24,370 --> 00:38:27,310
+as you have some other criteria that you care about,
+
+885
+00:38:27,310 --> 00:38:30,840
+like winning the game or being interpretable,
+
+886
+00:38:30,840 --> 00:38:33,090
+and then you have some score that you design for that,
+
+887
+00:38:33,090 --> 00:38:35,410
+and you optimize that score.
+
+888
+00:38:35,410 --> 00:38:39,650
+So other than imitate wonderful data,
+
+889
+00:38:39,650 --> 00:38:43,940
+I'm going to suggest this one in this section, which is,
+
+890
+00:38:43,940 --> 00:38:46,620
+could we make imagery that people find meaningful,
+
+891
+00:38:46,620 --> 00:38:48,200
+that they find aesthetic or beautiful
+
+892
+00:38:48,200 --> 00:38:51,400
+or informative or memorable or interesting?
+
+893
+00:38:51,400 --> 00:38:53,640
+So we're going to take a generative model
+
+894
+00:38:53,640 --> 00:38:56,800
+and tune it to make outputs-- an image-generative model
+
+895
+00:38:56,800 --> 00:39:00,040
+and tune it to make outputs that humans rate
+
+896
+00:39:00,040 --> 00:39:02,360
+as being more desirable images?
+
+897
+00:39:06,360 --> 00:39:11,400
+So let's look at how you can do this search over
+
+898
+00:39:11,400 --> 00:39:13,985
+through the space of generative outputs
+
+899
+00:39:13,985 --> 00:39:15,360
+using a scoring function, but not
+
+900
+00:39:15,360 --> 00:39:18,560
+with an autoregressive model, but now with an image generator.
+
+901
+00:39:18,560 --> 00:39:20,560
+And it's going to be the type of image generator
+
+902
+00:39:20,560 --> 00:39:24,360
+that has latent variables, z, and maps z through g of z
+
+903
+00:39:24,360 --> 00:39:25,500
+to an output image.
+
+904
+00:39:25,500 --> 00:39:28,680
+So that could be a GAN or the decoder of a VAE,
+
+905
+00:39:28,680 --> 00:39:32,160
+or it could be a diffusion model where z is the noise.
+
+906
+00:39:32,160 --> 00:39:34,520
+And I'll come to the question in a second.
+
+907
+00:39:34,520 --> 00:39:38,080
+So we're also going to have a scoring function, which
+
+908
+00:39:38,080 --> 00:39:42,730
+will, in this case, be derived from CLIP as just an example.
+
+909
+00:39:42,730 --> 00:39:45,350
+So it's going to be an encoder for an image
+
+910
+00:39:45,350 --> 00:39:46,730
+and an encoder for text.
+
+911
+00:39:46,730 --> 00:39:50,310
+And the score will be, how well does the image match the text/
+
+912
+00:39:50,310 --> 00:39:53,470
+So the text input is, what is the answer to the ultimate
+
+913
+00:39:53,470 --> 00:39:55,837
+question of life, the universe, and everything?
+
+914
+00:39:55,837 --> 00:39:57,670
+I'm going to try to maximize the dot product
+
+915
+00:39:57,670 --> 00:40:01,110
+between the text and the image.
+
+916
+00:40:01,110 --> 00:40:02,590
+The image encoder and text encoder
+
+917
+00:40:02,590 --> 00:40:04,798
+are pre-trained with the CLIP objective, so remember,
+
+918
+00:40:04,798 --> 00:40:07,830
+that will try to make it so that the caption that
+
+919
+00:40:07,830 --> 00:40:11,577
+matches an image will have the maximal dot product.
+
+920
+00:40:11,577 --> 00:40:13,410
+So this is basically going to try to search.
+
+921
+00:40:13,410 --> 00:40:16,227
+If I search over the space, z, optimize over z,
+
+922
+00:40:16,227 --> 00:40:18,310
+I'm going to search over the latent variables that
+
+923
+00:40:18,310 --> 00:40:21,750
+will create an image that matches this text according
+
+924
+00:40:21,750 --> 00:40:23,470
+to the CLIP model.
+
+925
+00:40:23,470 --> 00:40:26,130
+So this is kind of constrained optimization.
+
+926
+00:40:26,130 --> 00:40:28,730
+I'm not searching over the space of all possible pixels.
+
+927
+00:40:28,730 --> 00:40:30,217
+I'm using my image generator.
+
+928
+00:40:30,217 --> 00:40:32,050
+I'm only searching through the latent space.
+
+929
+00:40:32,050 --> 00:40:34,110
+So I'm only going to be making outputs
+
+930
+00:40:34,110 --> 00:40:37,390
+that are high-probability under the generative models
+
+931
+00:40:37,390 --> 00:40:40,170
+distribution, as long as I'm constraining z
+
+932
+00:40:40,170 --> 00:40:42,230
+to be high prior probability.
+
+933
+00:40:42,230 --> 00:40:44,870
+Remember that things like VAEs have a prior over z,
+
+934
+00:40:44,870 --> 00:40:45,670
+which is Gaussian.
+
+935
+00:40:45,670 --> 00:40:49,010
+So if I just search over the high-probability part
+
+936
+00:40:49,010 --> 00:40:50,930
+of the unit Gaussian, maybe I just search over
+
+937
+00:40:50,930 --> 00:40:52,915
+the unit hypersphere, then I'm going
+
+938
+00:40:52,915 --> 00:40:54,290
+to be staying within the manifold
+
+939
+00:40:54,290 --> 00:40:56,850
+of high-probability images according to the image
+
+940
+00:40:56,850 --> 00:41:01,210
+generator, and I'll find the one that matches this text
+
+941
+00:41:01,210 --> 00:41:07,570
+So here's what that looks like So this
+
+942
+00:41:07,570 --> 00:41:10,890
+was-- the first batch of text-to-image generative models
+
+943
+00:41:10,890 --> 00:41:13,930
+that were really impressive were of this kind.
+
+944
+00:41:13,930 --> 00:41:16,190
+This method is called CLIP + VQGAN.
+
+945
+00:41:16,190 --> 00:41:19,970
+It was very popular for a year or two in, like, 2020,
+
+946
+00:41:19,970 --> 00:41:22,268
+and then it got replaced by diffusion models.
+
+947
+00:41:22,268 --> 00:41:23,810
+But it was a pretty cool thing to do,
+
+948
+00:41:23,810 --> 00:41:26,050
+and it already worked back then.
+
+949
+00:41:26,050 --> 00:41:27,092
+OK, there was a question.
+
+950
+00:41:27,092 --> 00:41:27,717
+AUDIENCE: Yeah.
+
+951
+00:41:27,717 --> 00:41:29,970
+I just had a question out of the top of my head.
+
+952
+00:41:29,970 --> 00:41:34,850
+You said that you may have a different objective
+
+953
+00:41:34,850 --> 00:41:35,910
+for a problem.
+
+954
+00:41:38,490 --> 00:41:41,630
+Let's say you have two things that you want-- for example--
+
+955
+00:41:41,630 --> 00:41:45,270
+I don't know-- likelihood plus--
+
+956
+00:41:45,270 --> 00:41:48,350
+I would say creativity.
+
+957
+00:41:48,350 --> 00:41:51,750
+How can you manage to have a model that
+
+958
+00:41:51,750 --> 00:41:53,410
+builds both [INAUDIBLE]?
+
+959
+00:41:53,410 --> 00:41:55,470
+Because I feel like usually they would just
+
+960
+00:41:55,470 --> 00:41:58,390
+create a loss function that would account for these.
+
+961
+00:41:58,390 --> 00:42:00,870
+But either [INAUDIBLE] way, for example,
+
+962
+00:42:00,870 --> 00:42:02,510
+in the middle of the training, you'll
+
+963
+00:42:02,510 --> 00:42:06,190
+change the objective function, or during the reinforcement
+
+964
+00:42:06,190 --> 00:42:09,290
+learning period, you'll change the function, whatever
+
+965
+00:42:09,290 --> 00:42:09,990
+[INAUDIBLE].
+
+966
+00:42:09,990 --> 00:42:10,310
+PHILLIP ISOLA: Right.
+
+967
+00:42:10,310 --> 00:42:12,270
+So yeah, how do you trade off between--
+
+968
+00:42:12,270 --> 00:42:15,212
+if you have two different loss functions or criteria--
+
+969
+00:42:15,212 --> 00:42:16,670
+I care about creativity, and I also
+
+970
+00:42:16,670 --> 00:42:20,070
+care about high probability, and I care about fairness
+
+971
+00:42:20,070 --> 00:42:21,090
+and not being toxic.
+
+972
+00:42:21,090 --> 00:42:22,550
+I care about all these things.
+
+973
+00:42:22,550 --> 00:42:25,270
+The general name for the field that studies this
+
+974
+00:42:25,270 --> 00:42:27,430
+is multi-objective optimization.
+
+975
+00:42:27,430 --> 00:42:30,470
+And one way of doing it is you just add all your objectives
+
+976
+00:42:30,470 --> 00:42:32,470
+together, weighted by your--
+
+977
+00:42:32,470 --> 00:42:34,820
+how much you care about each one.
+
+978
+00:42:34,820 --> 00:42:38,700
+But sometimes this-- it could be one objective just scaled very
+
+979
+00:42:38,700 --> 00:42:40,080
+differently than another one.
+
+980
+00:42:40,080 --> 00:42:43,460
+And it's not easy to come up with weights that will give you
+
+981
+00:42:43,460 --> 00:42:44,948
+a good trade-off between them.
+
+982
+00:42:44,948 --> 00:42:47,240
+So in general, there's a whole set of other techniques.
+
+983
+00:42:47,240 --> 00:42:49,340
+And one of the concepts that comes up in that
+
+984
+00:42:49,340 --> 00:42:50,720
+is the Pareto frontier.
+
+985
+00:42:50,720 --> 00:42:52,820
+I want to find the frontier where
+
+986
+00:42:52,820 --> 00:42:56,100
+I'm maximizing every objective as much as
+
+987
+00:42:56,100 --> 00:42:59,860
+possible without trading-- without causing other loss
+
+988
+00:42:59,860 --> 00:43:03,560
+functions to decrease in their measure.
+
+989
+00:43:03,560 --> 00:43:04,420
+Yeah.
+
+990
+00:43:04,420 --> 00:43:06,660
+So multi-objective optimization and Pareto frontier
+
+991
+00:43:06,660 --> 00:43:07,960
+are some terms to look up.
+
+992
+00:43:13,540 --> 00:43:14,580
+Right.
+
+993
+00:43:14,580 --> 00:43:18,720
+That's actually a costly optimization process.
+
+994
+00:43:18,720 --> 00:43:21,500
+This is test-time compute to solve a problem
+
+995
+00:43:21,500 --> 00:43:24,365
+that in 2020 you could not solve at train time.
+
+996
+00:43:24,365 --> 00:43:25,740
+So there are no generative models
+
+997
+00:43:25,740 --> 00:43:30,100
+that made the text to image with nearly this quality in 2020.
+
+998
+00:43:30,100 --> 00:43:32,540
+But CLIP + VQGAN, or maybe it was 2021.
+
+999
+00:43:32,540 --> 00:43:34,640
+It was whenever it was-- it could
+
+1000
+00:43:34,640 --> 00:43:37,960
+do better because it was using a lot of test-time compute
+
+1001
+00:43:37,960 --> 00:43:43,960
+to solve a search process at test time that hadn't yet
+
+1002
+00:43:43,960 --> 00:43:48,560
+been amortized into a feed-forward generative model.
+
+1003
+00:43:48,560 --> 00:43:53,120
+So this was a fairly weak model, and it was doing optimization
+
+1004
+00:43:53,120 --> 00:43:55,460
+plus the CLIP encoder model.
+
+1005
+00:43:55,460 --> 00:43:57,400
+And that made this weak model much stronger.
+
+1006
+00:44:00,920 --> 00:44:03,960
+So another thing that you can do that's become quite popular
+
+1007
+00:44:03,960 --> 00:44:07,120
+is to say, why don't we replace the evaluation function
+
+1008
+00:44:07,120 --> 00:44:09,640
+with a model of humans?
+
+1009
+00:44:09,640 --> 00:44:11,720
+Sometimes it's called a reward model.
+
+1010
+00:44:11,720 --> 00:44:16,160
+And I'm going to go back to work, now, from 2018
+
+1011
+00:44:16,160 --> 00:44:20,860
+or so that was fun.
+
+1012
+00:44:20,860 --> 00:44:22,640
+So basically, what we did in that work
+
+1013
+00:44:22,640 --> 00:44:26,600
+is we have a model of how much people will remember an image
+
+1014
+00:44:26,600 --> 00:44:29,320
+or not.
+
+1015
+00:44:29,320 --> 00:44:32,250
+And I'm sorry to show you this photo
+
+1016
+00:44:32,250 --> 00:44:34,130
+because you won't ever be able to forget it.
+
+1017
+00:44:34,130 --> 00:44:39,150
+This is the most memorable photo in our entire data set.
+
+1018
+00:44:39,150 --> 00:44:41,470
+Actually, have any of you seen this photo before?
+
+1019
+00:44:41,470 --> 00:44:44,190
+I've given talks like this a bunch of times.
+
+1020
+00:44:44,190 --> 00:44:44,710
+No?
+
+1021
+00:44:44,710 --> 00:44:45,210
+OK.
+
+1022
+00:44:45,210 --> 00:44:47,490
+If you've seen me talk about memorability,
+
+1023
+00:44:47,490 --> 00:44:49,710
+maybe you would have remembered that photo.
+
+1024
+00:44:49,710 --> 00:44:50,870
+Anyway.
+
+1025
+00:44:50,870 --> 00:44:53,110
+So the human looks at this, and we measure
+
+1026
+00:44:53,110 --> 00:44:56,590
+how well they remember it using a psychology test,
+
+1027
+00:44:56,590 --> 00:44:57,952
+psychophysics test.
+
+1028
+00:44:57,952 --> 00:44:59,910
+And then we model that behavior, and then we'll
+
+1029
+00:44:59,910 --> 00:45:03,030
+try to make images that are as memorable as possible.
+
+1030
+00:45:03,030 --> 00:45:07,410
+So here was the way we measured memory.
+
+1031
+00:45:07,410 --> 00:45:11,290
+We had people watch movies with images flashing on and off,
+
+1032
+00:45:11,290 --> 00:45:13,750
+and they would say whenever they saw a repeat.
+
+1033
+00:45:13,750 --> 00:45:16,190
+And this guy is the most memorable,
+
+1034
+00:45:16,190 --> 00:45:17,697
+and these are the least memorable.
+
+1035
+00:45:17,697 --> 00:45:19,530
+And it turns out people are super memorable,
+
+1036
+00:45:19,530 --> 00:45:21,510
+so that was the main finding.
+
+1037
+00:45:21,510 --> 00:45:25,270
+OK, so now can we optimize images to be better remembered?
+
+1038
+00:45:25,270 --> 00:45:28,890
+OK, this is work that Laura and Alex led,
+
+1039
+00:45:28,890 --> 00:45:31,910
+and here's how it worked.
+
+1040
+00:45:31,910 --> 00:45:35,610
+So basically, you had a generative model,
+
+1041
+00:45:35,610 --> 00:45:39,890
+and you had a predictor of how memorable an image is.
+
+1042
+00:45:39,890 --> 00:45:42,620
+And you had a manipulation, a search process
+
+1043
+00:45:42,620 --> 00:45:44,370
+that you would do over the latent variable
+
+1044
+00:45:44,370 --> 00:45:46,730
+space of that generative model.
+
+1045
+00:45:46,730 --> 00:45:49,665
+And now, what you can do is you can just-- actually,
+
+1046
+00:45:49,665 --> 00:45:50,790
+this is all differentiable.
+
+1047
+00:45:50,790 --> 00:45:53,490
+So this type of search process is, in some ways,
+
+1048
+00:45:53,490 --> 00:45:55,578
+easier than with autoregressive language models.
+
+1049
+00:45:55,578 --> 00:45:57,870
+In language models, you have to have these tree search,
+
+1050
+00:45:57,870 --> 00:45:59,970
+these symbolic search methods.
+
+1051
+00:45:59,970 --> 00:46:03,910
+In this pixel search problem, everything is differentiable.
+
+1052
+00:46:03,910 --> 00:46:06,390
+So you just can do gradient descent to do the search.
+
+1053
+00:46:06,390 --> 00:46:07,890
+So you can just backprop all the way
+
+1054
+00:46:07,890 --> 00:46:10,010
+to the manipulation of the latent variables that
+
+1055
+00:46:10,010 --> 00:46:13,273
+will maximize the objective of being more memorable.
+
+1056
+00:46:13,273 --> 00:46:14,690
+OK, so here's this dog, and here's
+
+1057
+00:46:14,690 --> 00:46:18,650
+what it looks like when you make it more or less memorable.
+
+1058
+00:46:18,650 --> 00:46:21,630
+So you zoom in, and the eyes get really big.
+
+1059
+00:46:21,630 --> 00:46:23,330
+That's making it more memorable.
+
+1060
+00:46:23,330 --> 00:46:25,050
+You can actually measure that, and people
+
+1061
+00:46:25,050 --> 00:46:27,760
+do remember that photo better.
+
+1062
+00:46:27,760 --> 00:46:29,700
+And then if you make it less memorable,
+
+1063
+00:46:29,700 --> 00:46:33,140
+it will become grainy and hard to interpret and small.
+
+1064
+00:46:36,960 --> 00:46:39,900
+So we presented that as a probe into human perception.
+
+1065
+00:46:39,900 --> 00:46:43,260
+But this type of method has become more popular as--
+
+1066
+00:46:45,920 --> 00:46:47,625
+under names like reinforcement learning
+
+1067
+00:46:47,625 --> 00:46:49,000
+from human feedback, where you're
+
+1068
+00:46:49,000 --> 00:46:54,400
+trying to make language models output data that humans--
+
+1069
+00:46:54,400 --> 00:46:57,520
+a model of a human ends up saying is good data
+
+1070
+00:46:57,520 --> 00:47:00,420
+and is preferable or aesthetic or meaningful
+
+1071
+00:47:00,420 --> 00:47:03,200
+or non-toxic or fair or whatever.
+
+1072
+00:47:03,200 --> 00:47:04,540
+So here's a few more examples.
+
+1073
+00:47:04,540 --> 00:47:08,880
+So you can also optimize in the latent space to maximize a model
+
+1074
+00:47:08,880 --> 00:47:11,520
+of aesthetic preference-- that's in the middle--
+
+1075
+00:47:11,520 --> 00:47:15,080
+or to optimize the model of emotional--
+
+1076
+00:47:15,080 --> 00:47:16,360
+sorry.
+
+1077
+00:47:16,360 --> 00:47:19,080
+In the middle row is aesthetics, and on the bottom
+
+1078
+00:47:19,080 --> 00:47:20,343
+is emotional valence.
+
+1079
+00:47:20,343 --> 00:47:22,510
+So each of these concepts is a little bit different,
+
+1080
+00:47:22,510 --> 00:47:24,140
+and you can visualize them in this way.
+
+1081
+00:47:24,140 --> 00:47:28,780
+So simple symmetric structures, big,
+
+1082
+00:47:28,780 --> 00:47:31,080
+centered objects are easy to remember.
+
+1083
+00:47:31,080 --> 00:47:34,020
+So this is the most memorable version of that snake.
+
+1084
+00:47:34,020 --> 00:47:36,060
+But the most aesthetic version of the snake
+
+1085
+00:47:36,060 --> 00:47:38,520
+is actually more like-- it has this depth-of-field effect.
+
+1086
+00:47:38,520 --> 00:47:40,140
+It's a little bit hard to see.
+
+1087
+00:47:40,140 --> 00:47:42,058
+It's at a 3/4 angle.
+
+1088
+00:47:42,058 --> 00:47:44,600
+The most aesthetic landscape is going to be really saturated,
+
+1089
+00:47:44,600 --> 00:47:47,220
+but the most memorable landscape will make everything big.
+
+1090
+00:47:47,220 --> 00:47:49,980
+People remember things when they're big.
+
+1091
+00:47:49,980 --> 00:47:52,340
+The most aesthetic dog is really cute,
+
+1092
+00:47:52,340 --> 00:47:55,042
+but doesn't have this big head, but the big head and big eyes
+
+1093
+00:47:55,042 --> 00:47:56,000
+make it more memorable.
+
+1094
+00:47:56,000 --> 00:47:58,060
+So you can see interesting differences.
+
+1095
+00:47:58,060 --> 00:47:59,500
+You're just optimizing-- searching
+
+1096
+00:47:59,500 --> 00:48:01,580
+through the space of generative possibilities
+
+1097
+00:48:01,580 --> 00:48:05,460
+to find the one that maximizes the score function.
+
+1098
+00:48:05,460 --> 00:48:06,140
+Yeah.
+
+1099
+00:48:06,140 --> 00:48:08,060
+AUDIENCE: Is the significance from this result
+
+1100
+00:48:08,060 --> 00:48:11,763
+really-- it's of decoding how our brain works already.
+
+1101
+00:48:11,763 --> 00:48:13,180
+PHILLIP ISOLA: That was the intent
+
+1102
+00:48:13,180 --> 00:48:15,940
+of the paper was it was more like a psychology paper.
+
+1103
+00:48:15,940 --> 00:48:17,620
+But I'm trying to connect it here
+
+1104
+00:48:17,620 --> 00:48:21,200
+to the trend of just optimized human preferences.
+
+1105
+00:48:21,200 --> 00:48:22,910
+But yeah, that's exactly the intent.
+
+1106
+00:48:22,910 --> 00:48:25,050
+Yep.
+
+1107
+00:48:25,050 --> 00:48:28,250
+AUDIENCE: I wonder how much, in the research,
+
+1108
+00:48:28,250 --> 00:48:34,210
+if the representation of the objects in an image versus how
+
+1109
+00:48:34,210 --> 00:48:36,490
+the image looks was evaluated in terms
+
+1110
+00:48:36,490 --> 00:48:39,450
+of how the model understands whether the aesthetic
+
+1111
+00:48:39,450 --> 00:48:41,170
+or the emotional balance is connected
+
+1112
+00:48:41,170 --> 00:48:44,410
+with the dog or the layout of the picture.
+
+1113
+00:48:44,410 --> 00:48:45,090
+Yeah.
+
+1114
+00:48:45,090 --> 00:48:49,490
+I wonder if there were any takeaways in that aspect.
+
+1115
+00:48:49,490 --> 00:48:51,870
+PHILLIP ISOLA: Yeah, I would say, look up the paper.
+
+1116
+00:48:51,870 --> 00:48:55,430
+It's called GANalyze-- it has--
+
+1117
+00:48:55,430 --> 00:48:57,930
+GANalyze is the keyword.
+
+1118
+00:48:57,930 --> 00:49:02,130
+So what factors determine aesthetics or memorability?
+
+1119
+00:49:02,130 --> 00:49:04,490
+Is it layout, or is it the central object,
+
+1120
+00:49:04,490 --> 00:49:07,910
+or is it some of the other properties, the color?
+
+1121
+00:49:07,910 --> 00:49:08,930
+Is it shape?
+
+1122
+00:49:08,930 --> 00:49:10,670
+We have some analysis of that.
+
+1123
+00:49:10,670 --> 00:49:14,010
+But generally, I would say it's--
+
+1124
+00:49:14,010 --> 00:49:16,433
+the main object matters the most, and being centered.
+
+1125
+00:49:16,433 --> 00:49:17,350
+So layout does matter.
+
+1126
+00:49:17,350 --> 00:49:20,010
+Being centered helps a lot, and being close up helps a lot.
+
+1127
+00:49:20,010 --> 00:49:21,940
+AUDIENCE: And in the loss function,
+
+1128
+00:49:21,940 --> 00:49:24,200
+there wasn't some sort of--
+
+1129
+00:49:24,200 --> 00:49:25,880
+there wasn't some of characterization
+
+1130
+00:49:25,880 --> 00:49:29,840
+of where the object that we're interested in is in the image.
+
+1131
+00:49:29,840 --> 00:49:32,020
+It was just [INAUDIBLE] that was there.
+
+1132
+00:49:32,020 --> 00:49:34,000
+PHILLIP ISOLA: Yeah, so the loss function
+
+1133
+00:49:34,000 --> 00:49:37,880
+is simply a neural net that is trained to predict--
+
+1134
+00:49:37,880 --> 00:49:41,980
+to regress how likely a human is to remember this image,
+
+1135
+00:49:41,980 --> 00:49:45,660
+and it's fit to human data.
+
+1136
+00:49:45,660 --> 00:49:46,160
+OK.
+
+1137
+00:49:46,160 --> 00:49:47,243
+Yeah, question over there.
+
+1138
+00:49:47,243 --> 00:49:49,980
+AUDIENCE: [INAUDIBLE] wondering about the perception.
+
+1139
+00:49:49,980 --> 00:49:53,000
+So when we're running things where it's subjective to human
+
+1140
+00:49:53,000 --> 00:49:55,540
+perception-- so this one-- memorability, aesthetics,
+
+1141
+00:49:55,540 --> 00:49:57,120
+we're measuring something--
+
+1142
+00:49:57,120 --> 00:49:58,840
+to what extent do we need to account
+
+1143
+00:49:58,840 --> 00:50:02,440
+for cultural differences or demographic, age differences?
+
+1144
+00:50:02,440 --> 00:50:04,020
+PHILLIP ISOLA: Yeah.
+
+1145
+00:50:04,020 --> 00:50:08,800
+So to what extent is this dependent on culture, age,
+
+1146
+00:50:08,800 --> 00:50:10,440
+individual characteristics?
+
+1147
+00:50:10,440 --> 00:50:14,420
+So in psychology, there's this term, individual differences,
+
+1148
+00:50:14,420 --> 00:50:16,180
+which is about all of those factors.
+
+1149
+00:50:16,180 --> 00:50:17,760
+It's like there's one set of factors
+
+1150
+00:50:17,760 --> 00:50:19,640
+that are common and shared across all humans,
+
+1151
+00:50:19,640 --> 00:50:21,740
+and there's other factors-- you model humans
+
+1152
+00:50:21,740 --> 00:50:25,220
+as being a common peace and a peace that's individual to them.
+
+1153
+00:50:25,220 --> 00:50:27,940
+And this is only looking at the common piece,
+
+1154
+00:50:27,940 --> 00:50:31,800
+and we didn't do any controls on culture or age or background.
+
+1155
+00:50:31,800 --> 00:50:35,380
+I think there are statistics on the participant
+
+1156
+00:50:35,380 --> 00:50:38,025
+demographics in the paper, but we never made any comparison.
+
+1157
+00:50:38,025 --> 00:50:39,400
+That would be really interesting.
+
+1158
+00:50:39,400 --> 00:50:41,500
+But oftentimes, what you might want to do
+
+1159
+00:50:41,500 --> 00:50:43,620
+is find the common thing that characterizes
+
+1160
+00:50:43,620 --> 00:50:46,180
+a general population first, and then-- and then
+
+1161
+00:50:46,180 --> 00:50:49,980
+the second-order effect is maybe younger people
+
+1162
+00:50:49,980 --> 00:50:51,860
+like this more than that, and older people
+
+1163
+00:50:51,860 --> 00:50:53,920
+like that more than this, and it's a secondary effect.
+
+1164
+00:50:53,920 --> 00:50:56,337
+So I think that would be a really interesting future work.
+
+1165
+00:50:58,800 --> 00:51:03,540
+So that was a little bit of a tangent
+
+1166
+00:51:03,540 --> 00:51:08,300
+into memorability and aesthetics.
+
+1167
+00:51:08,300 --> 00:51:11,748
+But the point is that if you have a really good generative
+
+1168
+00:51:11,748 --> 00:51:14,040
+model, then you don't have to just use its raw outputs.
+
+1169
+00:51:14,040 --> 00:51:16,400
+You can actually optimize and search
+
+1170
+00:51:16,400 --> 00:51:20,840
+and take different samples and do multiple rollouts
+
+1171
+00:51:20,840 --> 00:51:25,600
+and change the latent variables to maximize
+
+1172
+00:51:25,600 --> 00:51:27,600
+some function of interest, either the likelihood
+
+1173
+00:51:27,600 --> 00:51:29,840
+or a different scoring function.
+
+1174
+00:51:29,840 --> 00:51:34,200
+Well, there's also a new paradigm to do all of this
+
+1175
+00:51:34,200 --> 00:51:39,200
+stuff, which is what I think Eric Jang nicely described
+
+1176
+00:51:39,200 --> 00:51:41,460
+in this blog post as the "just ask" paradigm.
+
+1177
+00:51:41,460 --> 00:51:42,762
+It's the prompting paradigm.
+
+1178
+00:51:42,762 --> 00:51:44,220
+It's the Chain-of-Thought paradigm.
+
+1179
+00:51:44,220 --> 00:51:46,240
+Rather than doing beam search, you can say--
+
+1180
+00:51:46,240 --> 00:51:48,305
+just ask the model to do beam search.
+
+1181
+00:51:48,305 --> 00:51:49,180
+Don't actually do it.
+
+1182
+00:51:49,180 --> 00:51:51,820
+Just say, do beam search, or, let's think step by step.
+
+1183
+00:51:51,820 --> 00:51:54,680
+Now it's going to do some kind of sequential reasoning process,
+
+1184
+00:51:54,680 --> 00:51:57,200
+instead of having to hard code some sequential reasoning
+
+1185
+00:51:57,200 --> 00:51:58,160
+process.
+
+1186
+00:51:58,160 --> 00:52:01,480
+So Chain-of-Thought is, just ask for symbolic search
+
+1187
+00:52:01,480 --> 00:52:04,760
+over reasoning that's written in language.
+
+1188
+00:52:04,760 --> 00:52:06,100
+And can we do the same?
+
+1189
+00:52:06,100 --> 00:52:08,340
+Just ask for this continuous reward optimization.
+
+1190
+00:52:08,340 --> 00:52:10,780
+I have some aesthetics reward function.
+
+1191
+00:52:10,780 --> 00:52:14,150
+Can I just say, give me an image that's aesthetic level 10,
+
+1192
+00:52:14,150 --> 00:52:16,370
+aesthetic level 11?
+
+1193
+00:52:16,370 --> 00:52:18,490
+So interestingly enough, this works.
+
+1194
+00:52:18,490 --> 00:52:22,670
+So here was just another fun example from a few years ago.
+
+1195
+00:52:22,670 --> 00:52:25,800
+So here is a prompt to DALL-E 1, I believe,
+
+1196
+00:52:25,800 --> 00:52:28,050
+which is a painting of a mountain next to a waterfall.
+
+1197
+00:52:28,050 --> 00:52:30,630
+You get some OK paintings.
+
+1198
+00:52:30,630 --> 00:52:33,707
+But what if I say, a painting of a beautiful mountain--
+
+1199
+00:52:33,707 --> 00:52:36,040
+or a beautiful painting of a mountain next to waterfall?
+
+1200
+00:52:36,040 --> 00:52:37,415
+It's a little bit more saturated.
+
+1201
+00:52:37,415 --> 00:52:38,623
+It's a little more beautiful.
+
+1202
+00:52:38,623 --> 00:52:40,270
+It's like I steered it in the direction
+
+1203
+00:52:40,270 --> 00:52:42,228
+that the model has interpreted as being related
+
+1204
+00:52:42,228 --> 00:52:43,710
+to beauty and aesthetics.
+
+1205
+00:52:43,710 --> 00:52:46,670
+What if I say, a very beautiful painting of a mountain
+
+1206
+00:52:46,670 --> 00:52:48,150
+next to a waterfall?
+
+1207
+00:52:48,150 --> 00:52:49,950
+It's getting a little better.
+
+1208
+00:52:49,950 --> 00:52:51,870
+What if I say a, very, very--
+
+1209
+00:52:51,870 --> 00:52:54,750
+now, two units of reward?
+
+1210
+00:52:54,750 --> 00:52:56,310
+A little better still.
+
+1211
+00:52:56,310 --> 00:52:57,982
+OK.
+
+1212
+00:52:57,982 --> 00:52:59,690
+How many times can I do it, do you think?
+
+1213
+00:52:59,690 --> 00:53:03,710
+What about, very, very, very, very, very, very, very?
+
+1214
+00:53:03,710 --> 00:53:06,270
+It's definitely more beautiful, right?
+
+1215
+00:53:06,270 --> 00:53:09,350
+So then you can go extreme.
+
+1216
+00:53:09,350 --> 00:53:11,750
+I think it maxed out around there.
+
+1217
+00:53:11,750 --> 00:53:16,180
+So these models did learn this conditional distribution
+
+1218
+00:53:16,180 --> 00:53:20,380
+of conditioned on the reward I want to achieve, what
+
+1219
+00:53:20,380 --> 00:53:22,280
+should the output look like?
+
+1220
+00:53:22,280 --> 00:53:24,620
+I don't actually have to necessarily search explicitly
+
+1221
+00:53:24,620 --> 00:53:27,720
+for reward-maximizing images.
+
+1222
+00:53:27,720 --> 00:53:30,620
+I can just tell it, conditioned on this reward,
+
+1223
+00:53:30,620 --> 00:53:33,625
+you should make a painting that matches that reward.
+
+1224
+00:53:33,625 --> 00:53:36,000
+So people have shown this in a lot of different contexts.
+
+1225
+00:53:36,000 --> 00:53:38,980
+Now, here's another fun one from Jon Barron.
+
+1226
+00:53:38,980 --> 00:53:40,880
+He says, this is a Level 2 Reuben.
+
+1227
+00:53:40,880 --> 00:53:46,500
+And now he says, make me a level 1 to the--
+
+1228
+00:53:46,500 --> 00:53:49,100
+1e15 Reuben.
+
+1229
+00:53:49,100 --> 00:53:51,280
+So you can check out his these things.
+
+1230
+00:53:51,280 --> 00:53:53,960
+There was another trend a few years ago called, make it more.
+
+1231
+00:53:53,960 --> 00:53:55,740
+You just take an image, and you say, make it more X;
+
+1232
+00:53:55,740 --> 00:53:58,080
+make it more X; make it more X. You keep on doing it.
+
+1233
+00:53:58,080 --> 00:54:00,473
+And eventually, it always devolves into this like picture
+
+1234
+00:54:00,473 --> 00:54:01,140
+of the universe.
+
+1235
+00:54:01,140 --> 00:54:05,420
+That's the most-- this is a 1e40 Reuben.
+
+1236
+00:54:05,420 --> 00:54:09,000
+And in this sequence of tweets, there's more.
+
+1237
+00:54:09,000 --> 00:54:12,380
+There's level 2, 5, 10, and so forth.
+
+1238
+00:54:12,380 --> 00:54:14,200
+And it does scale.
+
+1239
+00:54:14,200 --> 00:54:16,080
+But it's not perfect.
+
+1240
+00:54:16,080 --> 00:54:18,540
+These emergent abilities, these learned abilities--
+
+1241
+00:54:18,540 --> 00:54:21,040
+they're not like the abilities that you
+
+1242
+00:54:21,040 --> 00:54:23,940
+get by doing well-understood search algorithms
+
+1243
+00:54:23,940 --> 00:54:26,600
+because they're just going to depend on what the model-- how
+
+1244
+00:54:26,600 --> 00:54:29,260
+the model learned from the data to do that type of search.
+
+1245
+00:54:29,260 --> 00:54:31,160
+So it's going to depend on the data distribution on which it
+
+1246
+00:54:31,160 --> 00:54:31,620
+was trained.
+
+1247
+00:54:31,620 --> 00:54:32,480
+It's not going to be something we
+
+1248
+00:54:32,480 --> 00:54:34,120
+have guarantees or proofs for.
+
+1249
+00:54:34,120 --> 00:54:36,750
+So here, we say 1e negative 40 Reuben,
+
+1250
+00:54:36,750 --> 00:54:38,663
+and it doesn't make a tiny, tiny Reuben.
+
+1251
+00:54:38,663 --> 00:54:40,080
+It, instead, makes this microscope
+
+1252
+00:54:40,080 --> 00:54:41,780
+because it has that connotation.
+
+1253
+00:54:41,780 --> 00:54:44,720
+That's what the data told it to do.
+
+1254
+00:54:44,720 --> 00:54:47,240
+OK.
+
+1255
+00:54:47,240 --> 00:54:48,680
+Yeah, question.
+
+1256
+00:54:48,680 --> 00:54:50,760
+AUDIENCE: So understand this for images--
+
+1257
+00:54:50,760 --> 00:54:53,640
+on the first slide, you had just prompt for--
+
+1258
+00:54:53,640 --> 00:54:55,620
+in the text form, for a Chain-of-Thought
+
+1259
+00:54:55,620 --> 00:54:58,480
+and like beam search, I think.
+
+1260
+00:54:58,480 --> 00:55:02,680
+Do you explicitly have to code that into text models
+
+1261
+00:55:02,680 --> 00:55:05,400
+if you want to implement that kind of search
+
+1262
+00:55:05,400 --> 00:55:08,460
+at the end because of the autoregressive nature of it?
+
+1263
+00:55:10,165 --> 00:55:11,540
+PHILLIP ISOLA: Do you mean do you
+
+1264
+00:55:11,540 --> 00:55:13,878
+have to have the language model trained
+
+1265
+00:55:13,878 --> 00:55:15,420
+in a way that anticipates that you'll
+
+1266
+00:55:15,420 --> 00:55:16,880
+be using it with beam search?
+
+1267
+00:55:16,880 --> 00:55:18,140
+AUDIENCE: Yeah.
+
+1268
+00:55:18,140 --> 00:55:20,182
+PHILLIP ISOLA: Yeah, that could potentially help.
+
+1269
+00:55:20,182 --> 00:55:22,660
+I think a lot of search algorithms are meant to be very
+
+1270
+00:55:22,660 --> 00:55:26,140
+broad-use, that whatever--
+
+1271
+00:55:26,140 --> 00:55:28,060
+any autoregressive model will be improved
+
+1272
+00:55:28,060 --> 00:55:31,580
+by this generic, Best-of-N search approach.
+
+1273
+00:55:31,580 --> 00:55:32,700
+It's very safe.
+
+1274
+00:55:32,700 --> 00:55:35,260
+But if you have some search approach which is more like,
+
+1275
+00:55:35,260 --> 00:55:36,193
+my search will be--
+
+1276
+00:55:36,193 --> 00:55:38,360
+I'll prompt the system to, let's think step by step,
+
+1277
+00:55:38,360 --> 00:55:40,040
+then that will depend a lot on how it was trained,
+
+1278
+00:55:40,040 --> 00:55:41,832
+and you want to couple those two processes.
+
+1279
+00:55:41,832 --> 00:55:45,100
+You want to make sure that the language model was trained
+
+1280
+00:55:45,100 --> 00:55:47,860
+on data where whenever it said, let's think step by step,
+
+1281
+00:55:47,860 --> 00:55:50,620
+it had a really good reasoning process.
+
+1282
+00:55:50,620 --> 00:55:53,780
+And that was an empirical discovery that that works well,
+
+1283
+00:55:53,780 --> 00:55:55,620
+but you could also design your data
+
+1284
+00:55:55,620 --> 00:55:58,380
+set in conjunction with the search algorithm
+
+1285
+00:55:58,380 --> 00:55:59,540
+if you wanted to.
+
+1286
+00:55:59,540 --> 00:56:02,780
+We'll talk a little bit about that at the end.
+
+1287
+00:56:02,780 --> 00:56:04,680
+So that was all about search.
+
+1288
+00:56:04,680 --> 00:56:07,330
+Now let's go into inference methods
+
+1289
+00:56:07,330 --> 00:56:10,610
+that actually change the model's behavior,
+
+1290
+00:56:10,610 --> 00:56:14,370
+maybe update its weights, maybe do something else.
+
+1291
+00:56:14,370 --> 00:56:19,330
+And then they update the model's behavior in such a way
+
+1292
+00:56:19,330 --> 00:56:22,755
+that over time, during the test sequence-- maybe
+
+1293
+00:56:22,755 --> 00:56:24,880
+I have a self-driving car, and it's driving around,
+
+1294
+00:56:24,880 --> 00:56:26,050
+and it's getting smarter and smarter
+
+1295
+00:56:26,050 --> 00:56:27,390
+as it drives around the city.
+
+1296
+00:56:27,390 --> 00:56:30,702
+So it's actually a different model at the end of the trip
+
+1297
+00:56:30,702 --> 00:56:31,910
+than it was at the beginning.
+
+1298
+00:56:31,910 --> 00:56:33,743
+It's a smarter model at the end of the trip.
+
+1299
+00:56:33,743 --> 00:56:35,070
+It's learned something new.
+
+1300
+00:56:35,070 --> 00:56:36,833
+So there's a lot of methods that do this.
+
+1301
+00:56:36,833 --> 00:56:38,750
+The first I'll mention is in-context learning,
+
+1302
+00:56:38,750 --> 00:56:40,530
+but this is just a reminder.
+
+1303
+00:56:40,530 --> 00:56:42,930
+So in-context learning is--
+
+1304
+00:56:42,930 --> 00:56:45,830
+I have a data sequence that I'm processing,
+
+1305
+00:56:45,830 --> 00:56:48,550
+and the sequence includes examples of desirable behavior.
+
+1306
+00:56:48,550 --> 00:56:52,690
+So the sequence is a supervised learning sequence.
+
+1307
+00:56:52,690 --> 00:56:56,210
+Input x, output y, another input x, another output y.
+
+1308
+00:56:56,210 --> 00:56:58,870
+So x1, y1, x2, y2, and so forth.
+
+1309
+00:56:58,870 --> 00:57:01,930
+And then at the very end of the sequence I have x query,
+
+1310
+00:57:01,930 --> 00:57:05,430
+and I have-- and the language model, the autoregressive model
+
+1311
+00:57:05,430 --> 00:57:07,985
+should learn to complete that sequence.
+
+1312
+00:57:07,985 --> 00:57:09,610
+And what would be a natural completion?
+
+1313
+00:57:09,610 --> 00:57:11,050
+It would be to follow the pattern.
+
+1314
+00:57:11,050 --> 00:57:14,150
+And what is the name of following a pattern of x,
+
+1315
+00:57:14,150 --> 00:57:15,530
+y example pairs?
+
+1316
+00:57:15,530 --> 00:57:17,470
+The name of that is supervised learning.
+
+1317
+00:57:17,470 --> 00:57:19,990
+So in-context learning is just the definition
+
+1318
+00:57:19,990 --> 00:57:22,090
+of supervised learning.
+
+1319
+00:57:22,090 --> 00:57:24,310
+It's learning to do supervised learning.
+
+1320
+00:57:24,310 --> 00:57:27,190
+It's a transformer that is-- or an autoregressive language
+
+1321
+00:57:27,190 --> 00:57:30,525
+model, in this case, that's learning to do supervised
+
+1322
+00:57:30,525 --> 00:57:32,150
+learning because supervised learning is
+
+1323
+00:57:32,150 --> 00:57:35,230
+the problem of taking a sequence of x, y examples followed
+
+1324
+00:57:35,230 --> 00:57:38,130
+by a query and outputting the answer to the query.
+
+1325
+00:57:40,750 --> 00:57:44,110
+So we saw that before.
+
+1326
+00:57:44,110 --> 00:57:48,910
+So I want to now talk about a slightly different way
+
+1327
+00:57:48,910 --> 00:57:52,790
+of doing that, which is called test-time training.
+
+1328
+00:57:52,790 --> 00:57:54,465
+So there's this really interesting paper
+
+1329
+00:57:54,465 --> 00:57:56,590
+from a few years ago that tried to understand, what
+
+1330
+00:57:56,590 --> 00:57:59,590
+is in-context learning doing?
+
+1331
+00:57:59,590 --> 00:58:02,070
+Is in-context learning a learning algorithm like the ones
+
+1332
+00:58:02,070 --> 00:58:06,620
+we know, like gradient descent on a supervised regression loss?
+
+1333
+00:58:06,620 --> 00:58:10,460
+Or is in-context learning something fundamentally new?
+
+1334
+00:58:10,460 --> 00:58:13,240
+And they set things up like this.
+
+1335
+00:58:13,240 --> 00:58:15,900
+They said, let's let f parameterized by theta
+
+1336
+00:58:15,900 --> 00:58:19,620
+be a transformer; x is a query; and c is the context.
+
+1337
+00:58:19,620 --> 00:58:23,380
+So the context is going to be the in-context examples, x, y,
+
+1338
+00:58:23,380 --> 00:58:25,360
+demonstrations, and then we have a new query.
+
+1339
+00:58:25,360 --> 00:58:29,860
+We want to complete it based on the patterns in the context.
+
+1340
+00:58:29,860 --> 00:58:33,825
+So we're going to rewrite f of x comma context.
+
+1341
+00:58:33,825 --> 00:58:35,700
+That's like-- can you concatenate the context
+
+1342
+00:58:35,700 --> 00:58:36,360
+with the query?
+
+1343
+00:58:36,360 --> 00:58:38,040
+That's the input to the language model.
+
+1344
+00:58:38,040 --> 00:58:40,900
+We're going to rewrite that as another function, f
+
+1345
+00:58:40,900 --> 00:58:43,935
+of x, with parameters theta prime
+
+1346
+00:58:43,935 --> 00:58:46,560
+And we're going to try to see if these two things can be equal.
+
+1347
+00:58:49,300 --> 00:58:52,760
+So what's the relationship between theta and theta prime?
+
+1348
+00:58:52,760 --> 00:58:55,900
+There's some way of taking all the information
+
+1349
+00:58:55,900 --> 00:58:59,300
+in the context and the attention mechanism
+
+1350
+00:58:59,300 --> 00:59:02,530
+and getting rid of all of that, but somehow baking it, instead,
+
+1351
+00:59:02,530 --> 00:59:05,308
+into a set of weights that has the same effect.
+
+1352
+00:59:05,308 --> 00:59:07,350
+Let's say that the transformer is infinitely big.
+
+1353
+00:59:07,350 --> 00:59:08,630
+These are universal approximators.
+
+1354
+00:59:08,630 --> 00:59:10,047
+So this approximator can certainly
+
+1355
+00:59:10,047 --> 00:59:11,450
+approximate that approximator.
+
+1356
+00:59:11,450 --> 00:59:14,250
+This is a universal approximator, right?
+
+1357
+00:59:14,250 --> 00:59:17,220
+But what's the relationship between theta and theta prime?
+
+1358
+00:59:17,220 --> 00:59:18,970
+And the really interesting thing that they
+
+1359
+00:59:18,970 --> 00:59:20,890
+showed is that there are cases where
+
+1360
+00:59:20,890 --> 00:59:23,650
+the relationship between theta and theta prime is theta prime
+
+1361
+00:59:23,650 --> 00:59:26,050
+is gradient descent on theta with respect
+
+1362
+00:59:26,050 --> 00:59:29,210
+to a particular loss function.
+
+1363
+00:59:29,210 --> 00:59:34,250
+So I take my theta from my original transformer.
+
+1364
+00:59:34,250 --> 00:59:37,890
+I then do gradient descent to update the parameters
+
+1365
+00:59:37,890 --> 00:59:41,830
+according to some loss, which is dependent on the context.
+
+1366
+00:59:41,830 --> 00:59:44,570
+The context is part of that loss.
+
+1367
+00:59:44,570 --> 00:59:48,090
+And I will get a new transformer that, when not showing
+
+1368
+00:59:48,090 --> 00:59:51,810
+any context at all, just via the weights,
+
+1369
+00:59:51,810 --> 00:59:55,090
+it will output the same result as the original transformer
+
+1370
+00:59:55,090 --> 00:59:56,337
+with that context.
+
+1371
+00:59:56,337 --> 00:59:58,670
+So what they're saying is that this original transformer
+
+1372
+00:59:58,670 --> 01:00:00,878
+with this context is doing something
+
+1373
+01:00:00,878 --> 01:00:02,670
+like what you would have gotten if you just
+
+1374
+01:00:02,670 --> 01:00:04,950
+did gradient descent on that context with respect
+
+1375
+01:00:04,950 --> 01:00:07,330
+to the weights.
+
+1376
+01:00:07,330 --> 01:00:08,330
+It's a little confusing.
+
+1377
+01:00:08,330 --> 01:00:09,450
+Does it make sense?
+
+1378
+01:00:13,670 --> 01:00:15,910
+So in certain cases--
+
+1379
+01:00:15,910 --> 01:00:20,000
+they showed this for one layer, linear self-attention.
+
+1380
+01:00:20,000 --> 01:00:21,750
+It's not the full picture, but they showed
+
+1381
+01:00:21,750 --> 01:00:23,870
+this for a simple toy case.
+
+1382
+01:00:23,870 --> 01:00:26,950
+And in certain cases, like that one that they showed,
+
+1383
+01:00:26,950 --> 01:00:29,830
+you can express in-context learning
+
+1384
+01:00:29,830 --> 01:00:32,190
+as gradient descent over the context examples
+
+1385
+01:00:32,190 --> 01:00:34,025
+to update the final mapping from the query
+
+1386
+01:00:34,025 --> 01:00:36,150
+to the answer, where that mapping is only specified
+
+1387
+01:00:36,150 --> 01:00:40,670
+by the weights and biases of the transformer, not by the context.
+
+1388
+01:00:40,670 --> 01:00:41,670
+Yeah.
+
+1389
+01:00:41,670 --> 01:00:43,390
+AUDIENCE: Is the argument something
+
+1390
+01:00:43,390 --> 01:00:48,030
+to the effect of showing that the activations
+
+1391
+01:00:48,030 --> 01:00:51,870
+within the transformer, after having processed the context,
+
+1392
+01:00:51,870 --> 01:00:55,590
+could be computed as the original with gradient descent
+
+1393
+01:00:55,590 --> 01:00:56,090
+step?
+
+1394
+01:00:56,090 --> 01:00:57,770
+PHILLIP ISOLA: Exactly, yeah.
+
+1395
+01:00:57,770 --> 01:00:59,710
+So I didn't dig too much into this paper.
+
+1396
+01:00:59,710 --> 01:01:03,030
+I don't remember if it's purely an empirical argument that they
+
+1397
+01:01:03,030 --> 01:01:04,530
+showed this, or they actually proved
+
+1398
+01:01:04,530 --> 01:01:07,410
+the cases under which it works, but you can do either one.
+
+1399
+01:01:07,410 --> 01:01:09,030
+I think that if they proved something,
+
+1400
+01:01:09,030 --> 01:01:11,150
+it's for a linear case and something very simple.
+
+1401
+01:01:11,150 --> 01:01:14,835
+But there's a lot of follow-up papers to this, too.
+
+1402
+01:01:14,835 --> 01:01:16,210
+AUDIENCE: I just remember this is
+
+1403
+01:01:16,210 --> 01:01:19,150
+very similar to a paper I read.
+
+1404
+01:01:19,150 --> 01:01:22,170
+And I think it's in some inverse reinforcement learning, when
+
+1405
+01:01:22,170 --> 01:01:24,757
+you give a human correct interventions,
+
+1406
+01:01:24,757 --> 01:01:27,090
+and you assume that those interventions are intentional,
+
+1407
+01:01:27,090 --> 01:01:29,370
+and you want to update your weights based
+
+1408
+01:01:29,370 --> 01:01:30,270
+on that intervention.
+
+1409
+01:01:30,270 --> 01:01:31,635
+They use a similar method.
+
+1410
+01:01:31,635 --> 01:01:33,010
+And they don't take the gradient.
+
+1411
+01:01:33,010 --> 01:01:34,970
+They just do a difference between trajectories
+
+1412
+01:01:34,970 --> 01:01:36,970
+and the feature counts.
+
+1413
+01:01:36,970 --> 01:01:40,090
+But I was wondering if--
+
+1414
+01:01:40,090 --> 01:01:44,090
+is this the same idea or--
+
+1415
+01:01:44,090 --> 01:01:44,970
+PHILLIP ISOLA: Yeah.
+
+1416
+01:01:44,970 --> 01:01:47,387
+OK, so the question is, in inverse reinforcement learning,
+
+1417
+01:01:47,387 --> 01:01:51,290
+there might be similar methods where you have implicitly
+
+1418
+01:01:51,290 --> 01:01:55,407
+defined functions defined by the reward.
+
+1419
+01:01:55,407 --> 01:01:57,740
+I need to think more and parse that question a bit more,
+
+1420
+01:01:57,740 --> 01:01:59,400
+but I would say, yes, I think there
+
+1421
+01:01:59,400 --> 01:02:01,020
+should be connections to that.
+
+1422
+01:02:04,080 --> 01:02:04,580
+OK.
+
+1423
+01:02:04,580 --> 01:02:09,300
+So basically, this raises this very tantalizing question.
+
+1424
+01:02:09,300 --> 01:02:12,880
+Well, if in-context learning is somehow related to or even,
+
+1425
+01:02:12,880 --> 01:02:14,800
+in some cases, equivalent to gradient descent
+
+1426
+01:02:14,800 --> 01:02:17,600
+over the context, why not just do gradient descent
+
+1427
+01:02:17,600 --> 01:02:18,740
+over the context?
+
+1428
+01:02:18,740 --> 01:02:20,320
+That might have some advantages.
+
+1429
+01:02:20,320 --> 01:02:22,028
+So what are the advantages it might have?
+
+1430
+01:02:22,028 --> 01:02:23,960
+Well, one is that in-context learning
+
+1431
+01:02:23,960 --> 01:02:26,662
+is learned learning there's no guarantees on its behavior.
+
+1432
+01:02:26,662 --> 01:02:29,120
+It's just going to behave in a way that depends on the data
+
+1433
+01:02:29,120 --> 01:02:31,080
+distribution it was trained on.
+
+1434
+01:02:31,080 --> 01:02:34,342
+So in-context learning might not converge.
+
+1435
+01:02:34,342 --> 01:02:36,800
+It doesn't have these properties like gradient descent has.
+
+1436
+01:02:36,800 --> 01:02:38,967
+Gradient descent, if I take small enough step sizes,
+
+1437
+01:02:38,967 --> 01:02:41,010
+will always find a local minimum.
+
+1438
+01:02:41,010 --> 01:02:42,760
+In-context learning-- there's no guarantee
+
+1439
+01:02:42,760 --> 01:02:44,572
+that if I show it more and more context,
+
+1440
+01:02:44,572 --> 01:02:46,280
+it will get better and better, or it will
+
+1441
+01:02:46,280 --> 01:02:48,012
+find a local minimum at least.
+
+1442
+01:02:48,012 --> 01:02:49,220
+So it's less well-understood.
+
+1443
+01:02:49,220 --> 01:02:51,040
+It's something that is learned and we don't
+
+1444
+01:02:51,040 --> 01:02:52,820
+have as much control over.
+
+1445
+01:02:52,820 --> 01:02:57,200
+We only control it via the data and the learning process.
+
+1446
+01:02:57,200 --> 01:03:00,400
+So if I can replace in-context learning with gradient descent,
+
+1447
+01:03:00,400 --> 01:03:03,060
+then I might have an object that has better guarantees,
+
+1448
+01:03:03,060 --> 01:03:05,123
+that I can understand better.
+
+1449
+01:03:05,123 --> 01:03:06,540
+Additionally, gradient descent can
+
+1450
+01:03:06,540 --> 01:03:09,260
+leverage more test-time compute than in-context learning
+
+1451
+01:03:09,260 --> 01:03:11,660
+because in-context learning is just feed-forward
+
+1452
+01:03:11,660 --> 01:03:13,035
+pass through the transformer.
+
+1453
+01:03:13,035 --> 01:03:15,660
+But gradient dissent can be an iterative optimization algorithm
+
+1454
+01:03:15,660 --> 01:03:17,440
+that does forward and backwards.
+
+1455
+01:03:17,440 --> 01:03:20,060
+That's more compute, and it can do it many, many, many times.
+
+1456
+01:03:20,060 --> 01:03:21,820
+So one thing you want to look out
+
+1457
+01:03:21,820 --> 01:03:23,902
+for is how can you leverage compute?
+
+1458
+01:03:23,902 --> 01:03:25,860
+The more compute you can leverage-- oftentimes,
+
+1459
+01:03:25,860 --> 01:03:27,600
+there will be some scaling law with that.
+
+1460
+01:03:27,600 --> 01:03:29,380
+So gradient descent has this possibility
+
+1461
+01:03:29,380 --> 01:03:33,142
+of leveraging more compute at test time.
+
+1462
+01:03:33,142 --> 01:03:34,600
+But there's possible disadvantages.
+
+1463
+01:03:34,600 --> 01:03:37,272
+Gradient descent is not the smartest learning algorithm.
+
+1464
+01:03:37,272 --> 01:03:38,980
+In-context learning could learn something
+
+1465
+01:03:38,980 --> 01:03:40,500
+that takes better updates, better
+
+1466
+01:03:40,500 --> 01:03:42,200
+steps than gradient descent.
+
+1467
+01:03:42,200 --> 01:03:44,760
+So it could be better than gradient descent.
+
+1468
+01:03:44,760 --> 01:03:46,300
+But the papers, the theory papers
+
+1469
+01:03:46,300 --> 01:03:47,842
+suggest that maybe it's not that much
+
+1470
+01:03:47,842 --> 01:03:50,220
+different than gradient descent, but that's still only
+
+1471
+01:03:50,220 --> 01:03:51,470
+for simple toy models.
+
+1472
+01:03:51,470 --> 01:03:54,880
+Maybe in huge language models, in-context learning
+
+1473
+01:03:54,880 --> 01:03:56,630
+is actually smarter than gradient descent.
+
+1474
+01:03:56,630 --> 01:03:59,410
+That could be a possibility.
+
+1475
+01:03:59,410 --> 01:04:00,370
+Yeah.
+
+1476
+01:04:00,370 --> 01:04:03,110
+AUDIENCE: You say doing gradient descent over the context.
+
+1477
+01:04:03,110 --> 01:04:09,250
+Are you suggesting retraining the model
+
+1478
+01:04:09,250 --> 01:04:13,490
+on input sequences, where you have this context included,
+
+1479
+01:04:13,490 --> 01:04:17,690
+or are you talking about-- there's prompt optimization
+
+1480
+01:04:17,690 --> 01:04:20,850
+papers where you have some prefix tokens,
+
+1481
+01:04:20,850 --> 01:04:24,530
+and then you do gradient descent to optimize the prefix tokens
+
+1482
+01:04:24,530 --> 01:04:27,020
+for your downstream?
+
+1483
+01:04:27,020 --> 01:04:28,770
+PHILLIP ISOLA: So the question is, are you
+
+1484
+01:04:28,770 --> 01:04:33,950
+doing gradient descent on f, x, comma c or f, x, I think,
+
+1485
+01:04:33,950 --> 01:04:34,450
+essentially?
+
+1486
+01:04:34,450 --> 01:04:37,510
+I mean, there's a few ways you could do it, but in this case,
+
+1487
+01:04:37,510 --> 01:04:42,930
+I'm suggesting gradient descent on queries without context
+
+1488
+01:04:42,930 --> 01:04:45,870
+and trying to use the context examples just
+
+1489
+01:04:45,870 --> 01:04:48,370
+to improve the mapping from the query directly to the answer
+
+1490
+01:04:48,370 --> 01:04:51,590
+without the context.
+
+1491
+01:04:51,590 --> 01:04:53,250
+But the other ideas are good, too.
+
+1492
+01:04:53,250 --> 01:04:54,070
+Yeah.
+
+1493
+01:04:54,070 --> 01:04:54,690
+Question.
+
+1494
+01:04:54,690 --> 01:04:57,790
+AUDIENCE: Oh, yeah, I was thinking intuitively
+
+1495
+01:04:57,790 --> 01:05:01,150
+about this other assertion of gradient descent
+
+1496
+01:05:01,150 --> 01:05:02,413
+over in context learning.
+
+1497
+01:05:02,413 --> 01:05:04,830
+And is it not fair to say that there's a limit to how much
+
+1498
+01:05:04,830 --> 01:05:07,150
+you could train the model, just like an expert can
+
+1499
+01:05:07,150 --> 01:05:08,890
+do a PhD in multiple fields?
+
+1500
+01:05:08,890 --> 01:05:12,550
+If you do it in one and you gain the tools to develop
+
+1501
+01:05:12,550 --> 01:05:15,570
+logical reasoning and capabilities,
+
+1502
+01:05:15,570 --> 01:05:19,030
+then inference time might be the more adequate place
+
+1503
+01:05:19,030 --> 01:05:20,310
+to do learning at.
+
+1504
+01:05:20,310 --> 01:05:23,870
+PHILLIP ISOLA: Yeah, so I think the question is,
+
+1505
+01:05:23,870 --> 01:05:26,390
+if you do learning at training time,
+
+1506
+01:05:26,390 --> 01:05:28,390
+then you have to be a generalist.
+
+1507
+01:05:28,390 --> 01:05:29,990
+And maybe there's an infinite number
+
+1508
+01:05:29,990 --> 01:05:31,690
+of scenarios you might come across,
+
+1509
+01:05:31,690 --> 01:05:34,450
+and how can you learn to do well in all of them?
+
+1510
+01:05:34,450 --> 01:05:37,590
+But if you do training at test time, when
+
+1511
+01:05:37,590 --> 01:05:41,610
+you have a context of very related examples you're given,
+
+1512
+01:05:41,610 --> 01:05:43,857
+then you, on the fly, learn a specialized skill,
+
+1513
+01:05:43,857 --> 01:05:46,190
+and you don't have to have memorized the infinite number
+
+1514
+01:05:46,190 --> 01:05:47,460
+of things you need to do.
+
+1515
+01:05:47,460 --> 01:05:50,380
+And I think that's exactly why people like in-context learning
+
+1516
+01:05:50,380 --> 01:05:52,220
+and test-time compute.
+
+1517
+01:05:52,220 --> 01:05:54,300
+That's a good point.
+
+1518
+01:05:54,300 --> 01:05:57,760
+OK, so anyway, the name for this is test-time training,
+
+1519
+01:05:57,760 --> 01:06:00,980
+or that's one of the names that's emerged for this thing.
+
+1520
+01:06:00,980 --> 01:06:02,580
+And the idea, just roughly, is you're
+
+1521
+01:06:02,580 --> 01:06:04,288
+going to update the weights of your model
+
+1522
+01:06:04,288 --> 01:06:07,260
+as a function of the test query, or maybe the entire test set.
+
+1523
+01:06:07,260 --> 01:06:10,900
+You might have a sequence of test queries.
+
+1524
+01:06:10,900 --> 01:06:13,800
+The test query could include these in-context examples.
+
+1525
+01:06:13,800 --> 01:06:15,840
+And you update on the basis of those.
+
+1526
+01:06:15,840 --> 01:06:17,692
+You train on those.
+
+1527
+01:06:17,692 --> 01:06:19,900
+But there's also another, more extreme scenario where
+
+1528
+01:06:19,900 --> 01:06:23,500
+the test query is just an x.
+
+1529
+01:06:23,500 --> 01:06:26,157
+You don't get supervised in-context examples.
+
+1530
+01:06:26,157 --> 01:06:27,740
+So can you still do test-time training
+
+1531
+01:06:27,740 --> 01:06:30,360
+when I just get a single photo at test time,
+
+1532
+01:06:30,360 --> 01:06:34,060
+or maybe a movie at test time, or maybe a book at test time?
+
+1533
+01:06:34,060 --> 01:06:35,320
+It turns out you can.
+
+1534
+01:06:35,320 --> 01:06:36,520
+I just have an image.
+
+1535
+01:06:36,520 --> 01:06:38,045
+I don't have an image and labels.
+
+1536
+01:06:38,045 --> 01:06:38,920
+I just have an image.
+
+1537
+01:06:38,920 --> 01:06:41,380
+Can I improve my performance at predicting
+
+1538
+01:06:41,380 --> 01:06:42,700
+the label of an image?
+
+1539
+01:06:42,700 --> 01:06:46,800
+So it's not really in-context supervised learning anymore,
+
+1540
+01:06:46,800 --> 01:06:49,380
+but you can do self-supervised test-time training.
+
+1541
+01:06:49,380 --> 01:06:53,360
+And this paper from Sun and folks did that,
+
+1542
+01:06:53,360 --> 01:06:55,000
+and it's really cool.
+
+1543
+01:06:55,000 --> 01:06:57,760
+So what they did is they said, I have a system that's
+
+1544
+01:06:57,760 --> 01:06:59,940
+going to try to label a photo.
+
+1545
+01:06:59,940 --> 01:07:03,440
+Here's x, and it's going to try to predict the label, bird.
+
+1546
+01:07:03,440 --> 01:07:06,400
+And I can decompose that system into a first trunk
+
+1547
+01:07:06,400 --> 01:07:10,120
+of the network and then a task-specific head.
+
+1548
+01:07:10,120 --> 01:07:12,580
+And it turns out that trunk of the network
+
+1549
+01:07:12,580 --> 01:07:17,920
+I can train with a self-supervised head as well.
+
+1550
+01:07:17,920 --> 01:07:23,000
+So I'm going to update the weights of f in order
+
+1551
+01:07:23,000 --> 01:07:26,720
+to make them do better at solving a self-supervised task
+
+1552
+01:07:26,720 --> 01:07:29,140
+like masked autoencoding.
+
+1553
+01:07:29,140 --> 01:07:31,360
+So this is an MA, a masked autoencoder.
+
+1554
+01:07:31,360 --> 01:07:35,000
+I remove some patches, and I try to predict the missing patches.
+
+1555
+01:07:35,000 --> 01:07:38,252
+I will do that to learn-- to fine-tune f.
+
+1556
+01:07:38,252 --> 01:07:39,960
+I might have a pre-trained f, and now I'm
+
+1557
+01:07:39,960 --> 01:07:42,360
+going to try to fine tune it on the test example
+
+1558
+01:07:42,360 --> 01:07:44,630
+with a self-supervised loss.
+
+1559
+01:07:44,630 --> 01:07:49,110
+And then I will simply have a better representation.
+
+1560
+01:07:49,110 --> 01:07:51,750
+And this can actually improve your performance
+
+1561
+01:07:51,750 --> 01:07:55,090
+on correctly identifying that this is a bird.
+
+1562
+01:07:57,730 --> 01:07:59,310
+So test-time training can be done
+
+1563
+01:07:59,310 --> 01:08:01,850
+with an unsupervised objective at test time.
+
+1564
+01:08:01,850 --> 01:08:03,550
+And this is a very general-purpose thing
+
+1565
+01:08:03,550 --> 01:08:04,050
+you can do.
+
+1566
+01:08:04,050 --> 01:08:06,410
+You're just adapting to your test scenario.
+
+1567
+01:08:06,410 --> 01:08:08,910
+It's exactly like the point that the student over here
+
+1568
+01:08:08,910 --> 01:08:11,803
+was making, that you can't pre-train for everything.
+
+1569
+01:08:11,803 --> 01:08:12,970
+So let's say you go to Mars.
+
+1570
+01:08:12,970 --> 01:08:15,310
+You want to, on the fly, adapt your representation
+
+1571
+01:08:15,310 --> 01:08:18,600
+to be more sensitive to red or, somehow,
+
+1572
+01:08:18,600 --> 01:08:20,350
+the distribution of images looks different
+
+1573
+01:08:20,350 --> 01:08:21,450
+and you don't have to have labels.
+
+1574
+01:08:21,450 --> 01:08:23,033
+You can just adapt your representation
+
+1575
+01:08:23,033 --> 01:08:25,029
+and get better performance.
+
+1576
+01:08:25,029 --> 01:08:25,830
+Yeah.
+
+1577
+01:08:25,830 --> 01:08:27,747
+AUDIENCE: So here, you're updating the weights
+
+1578
+01:08:27,747 --> 01:08:29,870
+to f or g task?
+
+1579
+01:08:29,870 --> 01:08:32,390
+PHILLIP ISOLA: You're updating the weights to f only.
+
+1580
+01:08:32,390 --> 01:08:34,229
+And then g task--
+
+1581
+01:08:34,229 --> 01:08:37,029
+I believe g task stays frozen, but maybe you
+
+1582
+01:08:37,029 --> 01:08:40,069
+have to do some stitching operation.
+
+1583
+01:08:40,069 --> 01:08:43,569
+AUDIENCE: How do you ensure you don't forget?
+
+1584
+01:08:43,569 --> 01:08:44,776
+PHILLIP ISOLA: Yeah.
+
+1585
+01:08:44,776 --> 01:08:46,109
+I'd have to look into the paper.
+
+1586
+01:08:46,109 --> 01:08:47,317
+I don't remember the details.
+
+1587
+01:08:47,317 --> 01:08:50,630
+But I think it's just if you don't change f that much,
+
+1588
+01:08:50,630 --> 01:08:52,290
+you just perturb it slightly, there's
+
+1589
+01:08:52,290 --> 01:08:53,590
+a regime in which it works.
+
+1590
+01:08:53,590 --> 01:08:57,250
+If you had trained f with a really big learning rate
+
+1591
+01:08:57,250 --> 01:08:59,770
+and changed the weights entirely, then no guarantees.
+
+1592
+01:08:59,770 --> 01:09:01,550
+But they show cases in which it works.
+
+1593
+01:09:04,930 --> 01:09:07,010
+So test-time training is really cool.
+
+1594
+01:09:07,010 --> 01:09:10,130
+And here's a paper from about a week or two ago, which
+
+1595
+01:09:10,130 --> 01:09:14,470
+is a really exciting new result. This is from folks at MIT,
+
+1596
+01:09:14,470 --> 01:09:16,569
+so maybe some of them.
+
+1597
+01:09:16,569 --> 01:09:22,010
+Jacob Andreas and Yoon Kim are the professors, and then
+
+1598
+01:09:22,010 --> 01:09:23,490
+the students.
+
+1599
+01:09:23,490 --> 01:09:26,050
+And what they showed is that there's
+
+1600
+01:09:26,050 --> 01:09:27,970
+this challenge called the arc challenge, which
+
+1601
+01:09:27,970 --> 01:09:30,729
+is supposed to be a really hard challenge for deep learning
+
+1602
+01:09:30,729 --> 01:09:32,290
+to solve.
+
+1603
+01:09:32,290 --> 01:09:36,250
+And the arc challenge is cases like this,
+
+1604
+01:09:36,250 --> 01:09:38,290
+that you get in-context examples-- you
+
+1605
+01:09:38,290 --> 01:09:41,040
+get a few examples of input and output,
+
+1606
+01:09:41,040 --> 01:09:42,840
+and humans can look at this last one,
+
+1607
+01:09:42,840 --> 01:09:45,800
+and you can answer what the pattern is.
+
+1608
+01:09:45,800 --> 01:09:47,680
+It's not trivial, but if you think of it,
+
+1609
+01:09:47,680 --> 01:09:52,960
+you can get 50% or maybe higher on this benchmark.
+
+1610
+01:09:52,960 --> 01:09:56,580
+So expert humans can get 80%, 90%.
+
+1611
+01:09:59,400 --> 01:10:03,160
+And this challenge is kind of meant
+
+1612
+01:10:03,160 --> 01:10:05,822
+to fool the deep nets of a few years ago.
+
+1613
+01:10:05,822 --> 01:10:07,280
+So the deep nets of a few years ago
+
+1614
+01:10:07,280 --> 01:10:10,520
+didn't really do any search or test-time optimization.
+
+1615
+01:10:10,520 --> 01:10:12,640
+They just learned a general-purpose rule
+
+1616
+01:10:12,640 --> 01:10:17,000
+that would map from data in the training set to correct answers
+
+1617
+01:10:17,000 --> 01:10:19,413
+in the training set.
+
+1618
+01:10:19,413 --> 01:10:21,080
+And so people thought, well, we better--
+
+1619
+01:10:21,080 --> 01:10:23,260
+to solve problems like this, we need to do symbolic reasoning.
+
+1620
+01:10:23,260 --> 01:10:24,380
+We need to do search.
+
+1621
+01:10:24,380 --> 01:10:26,183
+We need to add all these fancy methods.
+
+1622
+01:10:26,183 --> 01:10:27,600
+And what they showed in this paper
+
+1623
+01:10:27,600 --> 01:10:30,320
+is you can get pretty far by only doing
+
+1624
+01:10:30,320 --> 01:10:32,760
+this test-time training method.
+
+1625
+01:10:32,760 --> 01:10:37,300
+So you simply do the regular test-time training
+
+1626
+01:10:37,300 --> 01:10:40,620
+with supervised examples, not self-supervised.
+
+1627
+01:10:40,620 --> 01:10:43,700
+You pre-train a model to be generally good at this type
+
+1628
+01:10:43,700 --> 01:10:45,940
+of pattern recognition problem.
+
+1629
+01:10:45,940 --> 01:10:49,725
+And then you-- given the few in-context examples,
+
+1630
+01:10:49,725 --> 01:10:51,100
+you update the model to do better
+
+1631
+01:10:51,100 --> 01:10:53,020
+at those in-context examples, gradient descent
+
+1632
+01:10:53,020 --> 01:10:55,260
+on these supervised examples.
+
+1633
+01:10:55,260 --> 01:10:58,060
+And then you apply it to your test query,
+
+1634
+01:10:58,060 --> 01:11:00,500
+and you get the right answer.
+
+1635
+01:11:00,500 --> 01:11:02,540
+And if, instead, you do--
+
+1636
+01:11:02,540 --> 01:11:04,440
+fine-tuning is a training time optimization,
+
+1637
+01:11:04,440 --> 01:11:06,960
+so fine tuning is not on the in-context examples,
+
+1638
+01:11:06,960 --> 01:11:10,560
+but it's on the training set of similar problems.
+
+1639
+01:11:10,560 --> 01:11:13,060
+Then it doesn't work as well because the in-context examples
+
+1640
+01:11:13,060 --> 01:11:14,200
+are the most relevant.
+
+1641
+01:11:14,200 --> 01:11:16,242
+This is exactly about your special--
+
+1642
+01:11:16,242 --> 01:11:18,200
+you can't learn to do everything at train time,
+
+1643
+01:11:18,200 --> 01:11:19,480
+so instead, you wait until test time.
+
+1644
+01:11:19,480 --> 01:11:20,938
+You see the most relevant examples,
+
+1645
+01:11:20,938 --> 01:11:22,700
+and then you fit to those examples,
+
+1646
+01:11:22,700 --> 01:11:25,760
+but you just fit to them with gradient descent.
+
+1647
+01:11:25,760 --> 01:11:27,540
+So I thought this is really interesting
+
+1648
+01:11:27,540 --> 01:11:30,820
+because this arc challenge says, AGI has stalled.
+
+1649
+01:11:30,820 --> 01:11:31,760
+New ideas are needed.
+
+1650
+01:11:31,760 --> 01:11:33,560
+But this paper is kind of saying, wait a second.
+
+1651
+01:11:33,560 --> 01:11:35,352
+Maybe a little bit of a new idea is needed,
+
+1652
+01:11:35,352 --> 01:11:37,650
+but actually, they got the highest performance
+
+1653
+01:11:37,650 --> 01:11:43,150
+that's been reported so far, and they did it with old methods.
+
+1654
+01:11:43,150 --> 01:11:46,110
+They did it with gradient descent supervised learning.
+
+1655
+01:11:46,110 --> 01:11:48,390
+Now, it happens to be on the in-context examples.
+
+1656
+01:11:48,390 --> 01:11:50,515
+That's a new idea.
+
+1657
+01:11:50,515 --> 01:11:52,390
+And they have some other tricks in the paper.
+
+1658
+01:11:52,390 --> 01:11:55,510
+But otherwise, it's fairly old methods.
+
+1659
+01:11:55,510 --> 01:11:56,430
+And it's interesting.
+
+1660
+01:11:56,430 --> 01:11:57,930
+It raises the question, to me, that,
+
+1661
+01:11:57,930 --> 01:12:01,510
+do we really need fancy new symbolic reasoning methods?
+
+1662
+01:12:01,510 --> 01:12:04,570
+Or maybe gradient descent is still the workhorse,
+
+1663
+01:12:04,570 --> 01:12:07,100
+and is still-- even for inference time, gradient descent
+
+1664
+01:12:07,100 --> 01:12:08,850
+is one of the best things that you can do?
+
+1665
+01:12:08,850 --> 01:12:09,530
+Yeah.
+
+1666
+01:12:09,530 --> 01:12:09,830
+AUDIENCE: Sorry.
+
+1667
+01:12:09,830 --> 01:12:11,913
+I'm maybe just a little confused on what they did.
+
+1668
+01:12:11,913 --> 01:12:14,130
+So did they just feed in the two examples,
+
+1669
+01:12:14,130 --> 01:12:18,710
+like and then the next one and say, what should this be?
+
+1670
+01:12:18,710 --> 01:12:19,710
+PHILLIP ISOLA: Yeah, no.
+
+1671
+01:12:19,710 --> 01:12:22,490
+So it's not like it's a transformer that
+
+1672
+01:12:22,490 --> 01:12:23,670
+takes these in context.
+
+1673
+01:12:23,670 --> 01:12:24,870
+That doesn't work as well.
+
+1674
+01:12:27,490 --> 01:12:30,450
+This is the training set for a new phase of learning
+
+1675
+01:12:30,450 --> 01:12:32,090
+with gradient descent.
+
+1676
+01:12:32,090 --> 01:12:35,640
+So they're simply feeding in this single image,
+
+1677
+01:12:35,640 --> 01:12:37,640
+looking at the output, penalizing the difference
+
+1678
+01:12:37,640 --> 01:12:40,312
+from this single image, backpropping the loss
+
+1679
+01:12:40,312 --> 01:12:42,020
+to update the parameters of that mapping,
+
+1680
+01:12:42,020 --> 01:12:43,603
+and then doing it on this single image
+
+1681
+01:12:43,603 --> 01:12:47,760
+and doing that some number of times.
+
+1682
+01:12:47,760 --> 01:12:48,640
+Make sense?
+
+1683
+01:12:48,640 --> 01:12:51,560
+They're just doing supervised learning.
+
+1684
+01:12:51,560 --> 01:12:53,640
+There's no transformer that's processing
+
+1685
+01:12:53,640 --> 01:12:55,020
+a context in this case.
+
+1686
+01:12:55,020 --> 01:12:55,720
+AUDIENCE: Yeah.
+
+1687
+01:12:55,720 --> 01:12:57,860
+Isn't that, I guess, in a sense, cheating,
+
+1688
+01:12:57,860 --> 01:13:00,353
+like, looking at your test loss?
+
+1689
+01:13:00,353 --> 01:13:02,020
+PHILLIP ISOLA: Well, that's not cheating
+
+1690
+01:13:02,020 --> 01:13:03,220
+according to this challenge.
+
+1691
+01:13:03,220 --> 01:13:05,800
+The name of the challenge is given a few examples
+
+1692
+01:13:05,800 --> 01:13:09,200
+of a new pattern, apply that pattern
+
+1693
+01:13:09,200 --> 01:13:11,400
+to a query, a test query.
+
+1694
+01:13:11,400 --> 01:13:14,480
+So they don't have the answer to the test query.
+
+1695
+01:13:14,480 --> 01:13:17,600
+For a human, this is exactly how the challenge is stated.
+
+1696
+01:13:17,600 --> 01:13:19,220
+Here is example behavior.
+
+1697
+01:13:19,220 --> 01:13:21,440
+What is the correct behavior on this new query?
+
+1698
+01:13:21,440 --> 01:13:23,780
+And they don't get to see the answer on this new query.
+
+1699
+01:13:23,780 --> 01:13:26,460
+They only got to see the answer on the examples.
+
+1700
+01:13:26,460 --> 01:13:28,860
+So this is the definition of the problem.
+
+1701
+01:13:28,860 --> 01:13:29,620
+It's not cheating.
+
+1702
+01:13:32,340 --> 01:13:34,900
+OK.
+
+1703
+01:13:34,900 --> 01:13:36,340
+Cool.
+
+1704
+01:13:36,340 --> 01:13:38,800
+But humans can do 80%, 90%.
+
+1705
+01:13:38,800 --> 01:13:40,680
+Maybe François Chollet, who made it,
+
+1706
+01:13:40,680 --> 01:13:42,900
+can probably do 100% on this.
+
+1707
+01:13:42,900 --> 01:13:45,400
+So 62%-- maybe we're not quite there yet,
+
+1708
+01:13:45,400 --> 01:13:49,180
+but that's interesting that you can go pretty far.
+
+1709
+01:13:49,180 --> 01:13:50,960
+OK, so for the final few minutes,
+
+1710
+01:13:50,960 --> 01:13:56,500
+I want to talk about this really exciting, current way of doing
+
+1711
+01:13:56,500 --> 01:13:59,500
+things, which is to use search and inference
+
+1712
+01:13:59,500 --> 01:14:03,360
+and optimization at test time to come up with better solutions,
+
+1713
+01:14:03,360 --> 01:14:08,740
+and then distill those solutions back into the pre-training
+
+1714
+01:14:08,740 --> 01:14:10,020
+the base model itself.
+
+1715
+01:14:10,020 --> 01:14:15,900
+So fit to those optimized solutions and then repeat.
+
+1716
+01:14:15,900 --> 01:14:18,700
+So this is how you can use search to give better examples
+
+1717
+01:14:18,700 --> 01:14:20,220
+to train on.
+
+1718
+01:14:20,220 --> 01:14:21,800
+So it's really a simple idea.
+
+1719
+01:14:21,800 --> 01:14:22,520
+It's an old idea.
+
+1720
+01:14:22,520 --> 01:14:24,720
+It's been around since the beginning of AI,
+
+1721
+01:14:24,720 --> 01:14:26,660
+I guess, in some way or another.
+
+1722
+01:14:26,660 --> 01:14:29,770
+It is, OK, come up with multiple answers.
+
+1723
+01:14:29,770 --> 01:14:33,190
+Now we have some way of doing Best-of-N or tree search
+
+1724
+01:14:33,190 --> 01:14:38,130
+or some kind of optimization to find better answers than the LLM
+
+1725
+01:14:38,130 --> 01:14:42,530
+output by default. And now I can simply take that better answer
+
+1726
+01:14:42,530 --> 01:14:44,610
+and call it a training pair for supervised
+
+1727
+01:14:44,610 --> 01:14:47,210
+learning to fit the LLM to directly output that better
+
+1728
+01:14:47,210 --> 01:14:48,210
+answer.
+
+1729
+01:14:48,210 --> 01:14:50,850
+So I'm just improving my performance
+
+1730
+01:14:50,850 --> 01:14:56,395
+by my own model search, plus the search algorithm.
+
+1731
+01:14:56,395 --> 01:14:58,770
+Sometimes people call these self-improvement or recursive
+
+1732
+01:14:58,770 --> 01:14:59,478
+self-improvement.
+
+1733
+01:14:59,478 --> 01:15:04,090
+It's just a model that is initially crummy.
+
+1734
+01:15:04,090 --> 01:15:08,210
+It does some optimization or verification process to come up
+
+1735
+01:15:08,210 --> 01:15:09,150
+with better solutions.
+
+1736
+01:15:09,150 --> 01:15:11,450
+And then it trains on those better solutions
+
+1737
+01:15:11,450 --> 01:15:12,630
+to be a better model.
+
+1738
+01:15:15,132 --> 01:15:17,090
+So you might be wondering, well, wait a second.
+
+1739
+01:15:17,090 --> 01:15:18,950
+The information came in through the verifier here.
+
+1740
+01:15:18,950 --> 01:15:20,930
+And that is-- that's one of the powerful ways
+
+1741
+01:15:20,930 --> 01:15:22,387
+that a model can improve.
+
+1742
+01:15:22,387 --> 01:15:24,470
+And you might not want to call that, self-improve.
+
+1743
+01:15:24,470 --> 01:15:27,390
+That's improving with an external verifier.
+
+1744
+01:15:27,390 --> 01:15:29,550
+Sometimes people mix the terms and might still
+
+1745
+01:15:29,550 --> 01:15:31,150
+call that self-improve.
+
+1746
+01:15:31,150 --> 01:15:35,810
+But you could also have this verifier be a model itself.
+
+1747
+01:15:35,810 --> 01:15:38,370
+Remember, it's easier to learn to verify than to generate.
+
+1748
+01:15:38,370 --> 01:15:40,910
+So I can learn to verify easily and quickly
+
+1749
+01:15:40,910 --> 01:15:43,530
+and then use the verifier to improve the generator,
+
+1750
+01:15:43,530 --> 01:15:48,190
+and then it's purely self-improvement.
+
+1751
+01:15:48,190 --> 01:15:51,013
+So you can also do it the other way around.
+
+1752
+01:15:51,013 --> 01:15:53,430
+So you can use search to improve learning and use learning
+
+1753
+01:15:53,430 --> 01:15:54,530
+to improve search.
+
+1754
+01:15:54,530 --> 01:15:56,548
+And this is basically the fundamental concept
+
+1755
+01:15:56,548 --> 01:15:58,590
+in reinforcement learning, which we didn't really
+
+1756
+01:15:58,590 --> 01:15:59,670
+have time to cover.
+
+1757
+01:15:59,670 --> 01:16:05,310
+But I'll just tell you the basic loop in reinforcement learning.
+
+1758
+01:16:05,310 --> 01:16:07,905
+Let's say you're playing the video game, Mario.
+
+1759
+01:16:07,905 --> 01:16:09,530
+So you have a few actions you can make.
+
+1760
+01:16:09,530 --> 01:16:11,830
+You want to jump over that--
+
+1761
+01:16:11,830 --> 01:16:15,470
+whatever that thing is, that-- yeah, that tunnel thing--
+
+1762
+01:16:15,470 --> 01:16:16,430
+that pipe.
+
+1763
+01:16:16,430 --> 01:16:17,970
+He wants to jump over, that pipe.
+
+1764
+01:16:17,970 --> 01:16:20,830
+So you're going to search for random action sequences
+
+1765
+01:16:20,830 --> 01:16:24,470
+until you find one that will get a high score in the game.
+
+1766
+01:16:24,470 --> 01:16:27,850
+So jumping will turn out to get a high score.
+
+1767
+01:16:27,850 --> 01:16:29,770
+Then you're going to take that--
+
+1768
+01:16:29,770 --> 01:16:30,550
+you searched.
+
+1769
+01:16:30,550 --> 01:16:33,390
+You found the good sequence, the good sentence.
+
+1770
+01:16:33,390 --> 01:16:35,250
+Here's the good sequence of actions.
+
+1771
+01:16:35,250 --> 01:16:37,810
+And now you're going to fit a neural network to directly
+
+1772
+01:16:37,810 --> 01:16:39,370
+predict that sequence.
+
+1773
+01:16:39,370 --> 01:16:41,770
+So now you're going to say, in that situation,
+
+1774
+01:16:41,770 --> 01:16:44,110
+my search algorithm found that it was good to jump,
+
+1775
+01:16:44,110 --> 01:16:46,757
+so I'll train a neural network to directly go from that--
+
+1776
+01:16:46,757 --> 01:16:48,590
+I don't have to do a search process anymore.
+
+1777
+01:16:48,590 --> 01:16:49,950
+Now I can just directly map.
+
+1778
+01:16:49,950 --> 01:16:52,200
+It's called a policy that directly maps from the state
+
+1779
+01:16:52,200 --> 01:16:54,890
+to the optimal action.
+
+1780
+01:16:54,890 --> 01:16:57,227
+And then I'll repeat the process.
+
+1781
+01:16:57,227 --> 01:16:58,810
+Now I'm going to repeat, and I'm going
+
+1782
+01:16:58,810 --> 01:17:01,090
+to guide the search to be preferentially doing things
+
+1783
+01:17:01,090 --> 01:17:03,462
+that the neural network thought were good.
+
+1784
+01:17:03,462 --> 01:17:05,670
+And so I'm not going to search over random sequences,
+
+1785
+01:17:05,670 --> 01:17:08,850
+but sequences that the model-- the policy already thinks
+
+1786
+01:17:08,850 --> 01:17:11,650
+are good sequences.
+
+1787
+01:17:11,650 --> 01:17:15,450
+And then that iteration just keeps on improving.
+
+1788
+01:17:15,450 --> 01:17:18,070
+And if you have some score in the game,
+
+1789
+01:17:18,070 --> 01:17:20,410
+like a reward function in reinforcement learning,
+
+1790
+01:17:20,410 --> 01:17:25,080
+then this will provably get to maximal reward
+
+1791
+01:17:25,080 --> 01:17:26,180
+under some conditions.
+
+1792
+01:17:29,775 --> 01:17:32,150
+So that's the name of the game in reinforcement learning.
+
+1793
+01:17:32,150 --> 01:17:32,380
+Yep
+
+1794
+01:17:32,380 --> 01:17:33,755
+AUDIENCE: I had a quick question.
+
+1795
+01:17:33,755 --> 01:17:36,600
+These examples that are reinforcement learning
+
+1796
+01:17:36,600 --> 01:17:39,500
+assume something that might seem simple,
+
+1797
+01:17:39,500 --> 01:17:41,560
+but that might not be general, or at least I
+
+1798
+01:17:41,560 --> 01:17:44,040
+don't see it as general, which is this ability
+
+1799
+01:17:44,040 --> 01:17:46,720
+to engage in self-play, which you have by virtue
+
+1800
+01:17:46,720 --> 01:17:48,140
+of being in the game environment,
+
+1801
+01:17:48,140 --> 01:17:49,840
+but it might be hard to do.
+
+1802
+01:17:49,840 --> 01:17:52,400
+So how are some ways that we can translate that
+
+1803
+01:17:52,400 --> 01:17:54,727
+to more general examples of--
+
+1804
+01:17:54,727 --> 01:17:55,560
+PHILLIP ISOLA: Yeah.
+
+1805
+01:17:55,560 --> 01:17:58,160
+So this has interaction in a world.
+
+1806
+01:17:58,160 --> 01:18:00,337
+There's a reward function the world is giving you.
+
+1807
+01:18:00,337 --> 01:18:02,920
+How can we do this for something like just improving reasoning
+
+1808
+01:18:02,920 --> 01:18:03,753
+in a language model?
+
+1809
+01:18:03,753 --> 01:18:05,320
+I'll show you in a second.
+
+1810
+01:18:05,320 --> 01:18:07,360
+But I'll just say that, yeah, there's a lot--
+
+1811
+01:18:07,360 --> 01:18:09,380
+this is-- just all over reinforcement learning,
+
+1812
+01:18:09,380 --> 01:18:10,422
+this is the thing you do.
+
+1813
+01:18:10,422 --> 01:18:12,120
+This is how AlphaGo works.
+
+1814
+01:18:12,120 --> 01:18:15,280
+You do some tree search over the possible moves you can make.
+
+1815
+01:18:15,280 --> 01:18:17,560
+You find the best move according to the search.
+
+1816
+01:18:17,560 --> 01:18:20,680
+And then you back up that solution
+
+1817
+01:18:20,680 --> 01:18:24,660
+into a heuristic, which is able to predict-- without expanding
+
+1818
+01:18:24,660 --> 01:18:27,920
+the tree, it's able to predict, if I were to expand the tree,
+
+1819
+01:18:27,920 --> 01:18:30,760
+I would have found this solution, a good solution.
+
+1820
+01:18:30,760 --> 01:18:33,380
+So therefore, that's a good node to be at.
+
+1821
+01:18:33,380 --> 01:18:35,200
+I won't go into the details of this,
+
+1822
+01:18:35,200 --> 01:18:37,860
+but it's a search process that then gets distilled back
+
+1823
+01:18:37,860 --> 01:18:39,200
+into a learned heuristic.
+
+1824
+01:18:42,920 --> 01:18:44,420
+Another one that does this-- and now
+
+1825
+01:18:44,420 --> 01:18:45,837
+we're getting to how this can just
+
+1826
+01:18:45,837 --> 01:18:48,380
+improve general-purpose language models and reasoning--
+
+1827
+01:18:48,380 --> 01:18:49,580
+is called STaR.
+
+1828
+01:18:49,580 --> 01:18:53,300
+So what STaR does is you start with a language model.
+
+1829
+01:18:53,300 --> 01:18:55,963
+You ask a question.
+
+1830
+01:18:55,963 --> 01:18:57,880
+It's prompted with a kind of chain of thought.
+
+1831
+01:18:57,880 --> 01:18:59,960
+So it says, tell me your steps of thinking--
+
+1832
+01:18:59,960 --> 01:19:02,700
+they call that a rationale-- and then produce an answer.
+
+1833
+01:19:02,700 --> 01:19:05,870
+And it says, if I got the answer wrong, which I can check.
+
+1834
+01:19:05,870 --> 01:19:07,620
+They assume they have some way of checking
+
+1835
+01:19:07,620 --> 01:19:10,620
+if the answer is right or wrong, so they have a verifier here.
+
+1836
+01:19:10,620 --> 01:19:14,370
+If I get the answer wrong, then I will--
+
+1837
+01:19:14,370 --> 01:19:15,120
+I'll do something.
+
+1838
+01:19:15,120 --> 01:19:16,662
+I won't talk about the bottom branch.
+
+1839
+01:19:16,662 --> 01:19:18,540
+But if I get the answer right, then I
+
+1840
+01:19:18,540 --> 01:19:20,490
+will reinforce that behavior.
+
+1841
+01:19:20,490 --> 01:19:22,793
+I will take that answer and that rationale
+
+1842
+01:19:22,793 --> 01:19:24,710
+and say, that was a good answer and rationale,
+
+1843
+01:19:24,710 --> 01:19:27,477
+and now let me train my language model to preferentially produce
+
+1844
+01:19:27,477 --> 01:19:29,810
+these good rationales, these good chains of thought that
+
+1845
+01:19:29,810 --> 01:19:31,797
+lead to the good answer.
+
+1846
+01:19:31,797 --> 01:19:34,130
+If they get it wrong, they also have this hint operation
+
+1847
+01:19:34,130 --> 01:19:35,850
+that tries to give them some signal
+
+1848
+01:19:35,850 --> 01:19:39,670
+that maybe that's not critical.
+
+1849
+01:19:39,670 --> 01:19:41,490
+So this is what a lot of people seem
+
+1850
+01:19:41,490 --> 01:19:43,188
+to think that this O1 model does.
+
+1851
+01:19:43,188 --> 01:19:45,730
+So I'll leave-- I'll end the talk on this kind of speculation
+
+1852
+01:19:45,730 --> 01:19:47,850
+of because this is the latest--
+
+1853
+01:19:47,850 --> 01:19:49,263
+OpenAI thing.
+
+1854
+01:19:49,263 --> 01:19:50,930
+But I think that we have a pretty good--
+
+1855
+01:19:50,930 --> 01:19:55,250
+Sasha Rush gives this as one of his candidate explanations
+
+1856
+01:19:55,250 --> 01:19:57,730
+for O1, but I feel like it's got to be something
+
+1857
+01:19:57,730 --> 01:19:58,830
+basically like this.
+
+1858
+01:19:58,830 --> 01:20:01,793
+So one is you search for chains of thoughts
+
+1859
+01:20:01,793 --> 01:20:03,210
+that solve the problem, but you're
+
+1860
+01:20:03,210 --> 01:20:05,460
+going to randomly sample different chains of thoughts.
+
+1861
+01:20:05,460 --> 01:20:07,010
+So some chain of thought sample--
+
+1862
+01:20:07,010 --> 01:20:08,370
+some-- it's like beam search.
+
+1863
+01:20:08,370 --> 01:20:10,770
+I'm looking over all the possible different ways
+
+1864
+01:20:10,770 --> 01:20:12,890
+the language model could start reasoning
+
+1865
+01:20:12,890 --> 01:20:15,370
+and thinking aloud until it comes up with the answer.
+
+1866
+01:20:15,370 --> 01:20:18,323
+And now I'm going to find the ones,
+
+1867
+01:20:18,323 --> 01:20:19,990
+according to some scoring function, that
+
+1868
+01:20:19,990 --> 01:20:21,370
+actually got the right answer.
+
+1869
+01:20:21,370 --> 01:20:23,790
+And then I'll fine-tune my language model on--
+
+1870
+01:20:23,790 --> 01:20:28,190
+to directly output those good chains of thought.
+
+1871
+01:20:28,190 --> 01:20:30,610
+OK, how will I verify if I got the right answer?
+
+1872
+01:20:30,610 --> 01:20:32,120
+It could be a learned verifier.
+
+1873
+01:20:32,120 --> 01:20:33,370
+That's another language model.
+
+1874
+01:20:33,370 --> 01:20:37,430
+Or it could be some kind of humans on the internet that
+
+1875
+01:20:37,430 --> 01:20:40,110
+are saying, this is correct or that is incorrect,
+
+1876
+01:20:40,110 --> 01:20:43,510
+or it could be a compiler or a proof checker that
+
+1877
+01:20:43,510 --> 01:20:46,810
+actually symbolically checks if you're correct or incorrect.
+
+1878
+01:20:46,810 --> 01:20:48,230
+We don't know.
+
+1879
+01:20:48,230 --> 01:20:49,243
+And then I just repeat.
+
+1880
+01:20:49,243 --> 01:20:50,910
+So now the LLM gets better at outputting
+
+1881
+01:20:50,910 --> 01:20:52,270
+better chains of thought.
+
+1882
+01:20:52,270 --> 01:20:54,960
+And that makes my search converge
+
+1883
+01:20:54,960 --> 01:20:57,210
+on a narrower space of really good chains of thoughts.
+
+1884
+01:20:57,210 --> 01:20:59,390
+But I still-- I can still sample different possibilities
+
+1885
+01:20:59,390 --> 01:21:01,510
+in that space, see which ones are the best and repeat
+
+1886
+01:21:01,510 --> 01:21:02,010
+the process.
+
+1887
+01:21:02,010 --> 01:21:05,390
+It's just reinforcement learning applied to reasoning
+
+1888
+01:21:05,390 --> 01:21:07,030
+with a language model.
+
+1889
+01:21:07,030 --> 01:21:08,990
+And at test time, at deployment time,
+
+1890
+01:21:08,990 --> 01:21:11,170
+you can just use your fine-tuned LLM,
+
+1891
+01:21:11,170 --> 01:21:14,650
+or you can use your LLM plus additional search on top of it.
+
+1892
+01:21:14,650 --> 01:21:17,380
+And that's why if you run O1 or any of the other models that
+
+1893
+01:21:17,380 --> 01:21:19,020
+do this type of search, they will
+
+1894
+01:21:19,020 --> 01:21:21,460
+take longer because they're doing extra search on top
+
+1895
+01:21:21,460 --> 01:21:22,520
+of your solution.
+
+1896
+01:21:22,520 --> 01:21:25,500
+That also improves things.
+
+1897
+01:21:25,500 --> 01:21:27,940
+AUDIENCE: That feels like more rounds of searching, so
+
+1898
+01:21:27,940 --> 01:21:30,908
+how could this be more efficient as they claim?
+
+1899
+01:21:30,908 --> 01:21:32,700
+PHILLIP ISOLA: This feels like more round--
+
+1900
+01:21:32,700 --> 01:21:33,600
+has it more efficient?
+
+1901
+01:21:33,600 --> 01:21:34,700
+So they're not-- I think they're not
+
+1902
+01:21:34,700 --> 01:21:35,908
+claiming it's more efficient.
+
+1903
+01:21:35,908 --> 01:21:37,820
+They're claiming it achieves higher accuracy.
+
+1904
+01:21:37,820 --> 01:21:41,420
+So by thinking more, by doing a lot more
+
+1905
+01:21:41,420 --> 01:21:43,140
+compute on every single query to come up
+
+1906
+01:21:43,140 --> 01:21:44,620
+with better and better answers, you
+
+1907
+01:21:44,620 --> 01:21:46,450
+can distill that back into your base model.
+
+1908
+01:21:46,450 --> 01:21:48,200
+That base model will be just as efficient.
+
+1909
+01:21:48,200 --> 01:21:50,075
+But if you use that base model in conjunction
+
+1910
+01:21:50,075 --> 01:21:52,780
+with additional search on top, you can always do as much search
+
+1911
+01:21:52,780 --> 01:21:53,280
+as you want.
+
+1912
+01:21:53,280 --> 01:21:55,180
+You could do infinite search on top.
+
+1913
+01:21:55,180 --> 01:21:57,780
+Under some conditions, if you do Best-of-N
+
+1914
+01:21:57,780 --> 01:22:01,360
+with a very uniform prior and you do infinite search,
+
+1915
+01:22:01,360 --> 01:22:03,240
+then you'll be the best of all worlds.
+
+1916
+01:22:03,240 --> 01:22:05,100
+And so this is just a way of using more
+
+1917
+01:22:05,100 --> 01:22:07,020
+compute to get better answers.
+
+1918
+01:22:07,020 --> 01:22:08,082
+Yep.
+
+1919
+01:22:08,082 --> 01:22:09,540
+AUDIENCE: On the previous slide, it
+
+1920
+01:22:09,540 --> 01:22:13,920
+just assumed a new training instead of question rationale
+
+1921
+01:22:13,920 --> 01:22:14,660
+and answer.
+
+1922
+01:22:14,660 --> 01:22:19,120
+Is there any idea on the scale of that training set that's
+
+1923
+01:22:19,120 --> 01:22:20,617
+needed at this point?
+
+1924
+01:22:20,617 --> 01:22:22,200
+PHILLIP ISOLA: I think that this might
+
+1925
+01:22:22,200 --> 01:22:25,020
+have some supervised rationales or some seed,
+
+1926
+01:22:25,020 --> 01:22:27,840
+but then it can generate its own-- the language model will
+
+1927
+01:22:27,840 --> 01:22:29,918
+output a rationale, and the good rationales
+
+1928
+01:22:29,918 --> 01:22:32,460
+that led to the correct answer get added to the training set.
+
+1929
+01:22:32,460 --> 01:22:34,480
+So it generates its own rationales.
+
+1930
+01:22:34,480 --> 01:22:37,280
+AUDIENCE: Do you know what they started at, though, to--
+
+1931
+01:22:37,280 --> 01:22:40,120
+PHILLIP ISOLA: I don't remember, but I
+
+1932
+01:22:40,120 --> 01:22:44,080
+think they only had a handful or some human-written rationales.
+
+1933
+01:22:44,080 --> 01:22:46,720
+Yeah.
+
+1934
+01:22:46,720 --> 01:22:48,380
+OK, cool.
+
+1935
+01:22:48,380 --> 01:22:52,282
+So that's the latest, greatest thing in AI.
+
+1936
+01:22:52,282 --> 01:22:53,740
+We don't know exactly how it works,
+
+1937
+01:22:53,740 --> 01:22:55,220
+but it's very much a cool frontier.
+
+1938
+01:22:55,220 --> 01:22:57,590
+So I will end there.

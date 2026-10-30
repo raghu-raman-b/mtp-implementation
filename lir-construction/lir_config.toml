@@ -1,0 +1,37 @@
+# Which model does what. Edit and rerun generate_lir.py; cached answers are kept per model.
+#
+# A model is either
+#   - a Hugging Face GGUF reference "org/repo:file.gguf"  -> runs locally on llama.cpp (llm-engine toolbox), or
+#   - an OpenAI model name, e.g. "gpt-6-luna"              -> runs on the OpenAI API (key from .env, see [api])
+
+[generator]                     # stages 1-5, calibration answers, repairs
+model = "unsloth/gemma-4-E4B-it-GGUF:gemma-4-E4B-it-UD-Q8_K_XL.gguf"
+slots = 32                      # local: parallel requests (throughput peaks at 32 on the RTX 5070)
+kv_tokens = 131072              # local: KV pool shared by all slots (f16, not quantized)
+think_budget = 8192             # local: cap on thinking tokens per call
+reasoning_effort = "medium"     # API only
+
+[judge]                         # stage 6, layer-3 judge
+model = "gpt-6-luna"
+# local alternative (fits the 12 GB card only with 8 slots and a 32k pool):
+# model = "unsloth/gemma-4-12B-it-qat-GGUF:gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+slots = 16                      # API: concurrent requests; local: parallel slots
+kv_tokens = 32768
+think_budget = 4096
+reasoning_effort = "medium"
+
+[api]
+env_file = ".env"
+key_var = "OPEN_AI_API"
+base_url = "https://api.openai.com/v1"
+budget_usd = 2.40               # total across all runs; spending is recorded in api_spend.json
+                                # no API call is sent once it could push the total over this
+
+# US$ per million tokens. Check https://openai.com/api/pricing before relying on these.
+[api.prices."gpt-6-luna"]
+input = 0.10
+cached_input = 0.01
+output = 0.50
+
+[videos]
+height = 720

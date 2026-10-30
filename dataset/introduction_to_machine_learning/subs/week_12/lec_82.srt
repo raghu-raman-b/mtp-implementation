@@ -1,0 +1,415 @@
+1
+00:00:13,210 --> 00:00:21,970
+The one thing which I wanted to tell you was this right, there are you know two classes
+
+2
+00:00:21,970 --> 00:00:26,470
+of algorithms that we will be talking about. So one of them is based on what
+
+3
+00:00:26,470 --> 00:00:34,090
+is called dynamic programming right. So dynamic programming, so how many of you know
+
+4
+00:00:34,090 --> 00:00:44,980
+what dynamic programming is? I expect at least 23 hands up and I having mechanical engineers putting
+
+5
+00:00:44,980 --> 00:00:53,740
+their heads have not the CS guys really, you know what dynamic programming is something wrong
+
+6
+00:00:53,740 --> 00:01:00,370
+with your hand then. Now the essential idea behind dynamic programming is you will be using some kind
+
+7
+00:01:00,370 --> 00:01:07,660
+of repeated structure in the problem right. So I have to solve the problem more efficiently right,
+
+8
+00:01:07,660 --> 00:01:13,690
+suppose I have a solution that I can give for a problem of say size n right.
+
+9
+00:01:13,690 --> 00:01:19,030
+Then I will try to see if I can use that for defining the solution for the problem of size n+
+
+10
+00:01:19,030 --> 00:01:24,910
+1, so some kind of a repeated sub structure in the problems right. The very rough way of describing
+
+11
+00:01:24,910 --> 00:01:30,100
+what dynamic programming is right. So for example one way of thinking about dynamic programming is I
+
+12
+00:01:30,100 --> 00:01:37,840
+have this game tree right, so I look at the values of winning or the expectations of winning from all
+
+13
+00:01:37,840 --> 00:01:45,970
+of these steps right. I will use these in order to compute the value of winning or the probability
+
+14
+00:01:45,970 --> 00:01:50,980
+of winning from the state right. So if you think about it if from here if I
+
+15
+00:01:50,980 --> 00:01:57,700
+am going to take say n steps, from here how many steps will be expect me to take? N minus 1 steps
+
+16
+00:01:57,700 --> 00:02:03,160
+right, so I look at the probability of winning when I when I have only n - 1 steps left right,
+
+17
+00:02:03,160 --> 00:02:04,570
+I will estimate that first I will use that solution for estimating the probability of
+
+18
+00:02:04,570 --> 00:02:05,110
+winning when I have n steps only n -1 steps left right I will estimate that first, I will use
+
+19
+00:02:05,110 --> 00:02:10,906
+that solution for estimating the probability of winning when I have n steps left right. So that
+
+20
+00:02:10,906 --> 00:02:14,800
+is essentially the idea behind dynamic programming and so all you do now is
+
+21
+00:02:14,800 --> 00:02:21,670
+instead of having the entire outcome. And using that for estimating the probability
+
+22
+00:02:21,670 --> 00:02:28,620
+of winning here right I am going to just use one step that I take through the tree,
+
+23
+00:02:28,620 --> 00:02:34,200
+right I use this what happens in this one step I will use that in order to update the probability
+
+24
+00:02:34,200 --> 00:02:38,280
+of winning here. all rights instead of using the entire outcome right as a dynamic programming
+
+25
+00:02:38,280 --> 00:02:43,710
+in reinforcement learning methods we will be using samples that you are getting through the
+
+26
+00:02:43,710 --> 00:02:50,580
+state space okay this is the TD method. In the other method I explained to in for
+
+27
+00:02:50,580 --> 00:02:56,610
+tic-tac-toe what would you do your sample will run all the way to the end right and you use
+
+28
+00:02:56,610 --> 00:03:06,540
+that to update. So this is the two different ways of using samples here, so f T will be determined
+
+29
+00:03:06,540 --> 00:03:15,240
+by the value of as p +1 right so the value of s t + 1 should be computed for all and so depends on
+
+30
+00:03:15,240 --> 00:03:19,080
+the steepest to again that should be computed first so would not this be the same thing as
+
+31
+00:03:19,080 --> 00:03:24,660
+exploring the whole all the way down and then computing this if you are doing it for the first
+
+32
+00:03:24,660 --> 00:03:32,010
+time right the first time down the tree there will be no updates actually because st +1 is also be 0
+
+33
+00:03:32,010 --> 00:03:37,050
+st will also be 0 the first time we go down. There will be no updates but once you reach an
+
+34
+00:03:37,050 --> 00:03:42,510
+end then from there you start updating the previous day, so the next time you go down
+
+35
+00:03:42,510 --> 00:03:58,950
+the tree then it will keep going further up whether in what the game have lost the
+
+36
+00:03:58,950 --> 00:04:05,070
+game I actually I am taking the exact outcome that happened in that particular trial right,
+
+37
+00:04:05,070 --> 00:04:11,070
+at that particular game and I used that to change my probabilities right but here I am not just
+
+38
+00:04:11,070 --> 00:04:15,690
+taking the outcome of that particular game right I am looking at the expected value of winning from
+
+39
+00:04:15,690 --> 00:04:25,590
+the next board position right. So if I wait there all the way here and I say I won and it take this
+
+40
+00:04:25,590 --> 00:04:30,780
+in update st then I will be only updating it with the fact whether I won or not okay
+
+41
+00:04:30,780 --> 00:04:36,060
+but if I am updating it from st + 1 see I could have reached st multiple ways before right.
+
+42
+00:04:36,060 --> 00:04:40,480
+When I am doing the updating from my st + 1 is essentially the average accumulated over
+
+43
+00:04:40,480 --> 00:04:45,280
+all the previous trends that I will be using right, so if I play all the way to the end
+
+44
+00:04:45,280 --> 00:04:50,500
+and update it will be with a 1 or a 0 but st + 1 could be anywhere between 1 and 0 depending
+
+45
+00:04:50,500 --> 00:04:53,482
+on what is the probability of finding so I will be using that value for updation that
+
+46
+00:04:53,482 --> 00:05:00,160
+is a crucial difference I so there are many different solution methods so there are all
+
+47
+00:05:00,160 --> 00:05:03,760
+this which are called temporal difference methods so these are all different algorithms.
+
+48
+00:05:03,760 --> 00:05:08,290
+TD-lambda, Q-learning, SARSA, actor critic so on so forth and then there is a whole
+
+49
+00:05:08,290 --> 00:05:15,790
+search of algorithms which called policy search algorithms and then there is dynamic programming
+
+50
+00:05:15,790 --> 00:05:23,140
+and their whole bunch of other applications for RL it so we could they are all over the
+
+51
+00:05:23,140 --> 00:05:25,570
+place as you could see. Optimal control optimization company
+
+52
+00:05:25,570 --> 00:05:33,370
+too common a total optimization for psychology neuroscience so that is not a theory since I
+
+53
+00:05:33,370 --> 00:05:39,700
+was asking is there anyone from biotech because biotech people do use reinforcement learning a
+
+54
+00:05:39,700 --> 00:05:45,040
+lot and usually there are one or two people in the RL class so this is a surprise or maybe that
+
+55
+00:05:45,040 --> 00:05:50,380
+is there was a bear trick with this according to the economic website maybe this is gave up
+
+56
+00:05:50,380 --> 00:05:58,510
+in CS 36 and went back I do not know right so here is the most recent.
+
+57
+00:05:58,510 --> 00:06:06,370
+The hot thing that comes from came from RL right more game playing and for a change is not from
+
+58
+00:06:06,370 --> 00:06:14,440
+IBM and it is from Google but the company that actually built the first this arcade game playing
+
+59
+00:06:14,440 --> 00:06:18,970
+engine was called deep mind and as soon as deep mind built a successful engine Google bought them
+
+60
+00:06:18,970 --> 00:06:26,620
+right and so now it is Google deep mind but it is a separate entity right it is not part of Google
+
+61
+00:06:26,620 --> 00:06:31,900
+deep mind operate out of London and they bring all kinds of interesting stuff many of the hot
+
+62
+00:06:31,900 --> 00:06:37,270
+advances very recent advances in the last year or so. In reinforcement learning seem to be coming
+
+63
+00:06:37,270 --> 00:06:43,960
+out of deep mind so what they did was how many if you know about this Atari games right, everyone
+
+64
+00:06:43,960 --> 00:06:54,730
+knows about Atari games people are getting tired really no one has played pac-man yeah, how about
+
+65
+00:06:54,730 --> 00:07:04,660
+how about the pong, break outs, space invaders come on yeah anyway so what happened was this is
+
+66
+00:07:04,660 --> 00:07:09,850
+team in University of Alberta okay, which put out this their what they call the Atari, the arcade
+
+67
+00:07:09,850 --> 00:07:15,370
+learning about the Atari learning environment on arcade learning environment which essentially they
+
+68
+00:07:15,370 --> 00:07:21,070
+allowed computers to play these games right. These artery games and what the deep mine fellows
+
+69
+00:07:21,070 --> 00:07:26,500
+came up with is a reinforcement learning agent that learn to play this game from scratch I
+
+70
+00:07:26,500 --> 00:07:31,600
+just by looking at the screen okay that is all the input it was getting just the pixels from
+
+71
+00:07:31,600 --> 00:07:36,280
+the screen they are all pixels on the screen but given as inputs to it used to very complex neural
+
+72
+00:07:36,280 --> 00:07:43,660
+network so it is a deep learning deep network right and it is considered of the hardest learning
+
+73
+00:07:43,660 --> 00:07:48,580
+problem solved by a computer and I think I believe it is a one the only computational
+
+74
+00:07:48,580 --> 00:07:54,460
+reinforcement learning paper ever appear in nature right, so usually is very hard for non
+
+75
+00:07:54,460 --> 00:08:02,170
+natural science people to publish in nature and kind of obviously it is usually Hard for computer
+
+76
+00:08:02,170 --> 00:08:10,480
+science to publish in nature but this was totaled out as a next step in trying to understand.
+
+77
+00:08:10,480 --> 00:08:15,670
+How humans process in post blah essence of all kinds of marketing jargon right but more
+
+78
+00:08:15,670 --> 00:08:21,190
+importantly than anything else about this it is reproducing them so I told you about
+
+79
+00:08:21,190 --> 00:08:29,290
+I think that is a warning sign for me to stop so I told you about the helicopter right so
+
+80
+00:08:29,290 --> 00:08:33,010
+there is basically Stanford and Berkeley or the two people who get the helicopter to fly
+
+81
+00:08:33,010 --> 00:08:38,590
+I told me about the backgammon player that is like Jerry Tessaro is to are is the one person
+
+82
+00:08:38,590 --> 00:08:43,930
+who gets the backgammon player to work right. Partly because all the input features he uses in
+
+83
+00:08:43,930 --> 00:08:48,370
+there or proprietary but partly because has a very hard problem to solve right what is the amazing
+
+84
+00:08:48,370 --> 00:08:54,760
+thing about this Atari game engine is that this case our release of code right you can if you
+
+85
+00:08:54,760 --> 00:09:00,130
+have enough powerful GPUs right you can set it up here and get it to play and get a reasonably
+
+86
+00:09:00,760 --> 00:09:05,350
+working engine right that plays those places Atari games that is the amazing thing about it
+
+87
+00:09:05,350 --> 00:09:11,080
+that is reproducible as opposed to many of the other things other success stories other success
+
+88
+00:09:11,080 --> 00:09:17,200
+stories you had in the past so I do believe I had just one more slide after this so let us see
+
+89
+00:09:17,200 --> 00:09:17,707
+if this will work. Okay.
+
+90
+00:09:17,707 --> 00:09:40,990
+Oh so if you are really doubts the green one is the learning
+
+91
+00:10:15,060 --> 00:10:22,200
+agent. No this just sped up for you to see you mean it is not like the game is progressing at
+
+92
+00:10:22,200 --> 00:10:34,380
+the same rate but you can see the score slow Mind you it was not given a reward okay it is
+
+93
+00:10:34,380 --> 00:10:39,030
+just given the screen never got to reward for winning ideas and understand that the
+
+94
+00:10:39,030 --> 00:10:59,940
+pixels on the top or rewarding and if we give it rewards it becomes cheating right yeah which
+
+95
+00:10:59,940 --> 00:11:06,090
+is what they did they did they did add a game over which is misty the a heurists considered
+
+96
+00:11:06,090 --> 00:11:13,530
+as cheating but they did not a game over sign so the longer you keep it going the better.
+
+97
+00:11:13,530 --> 00:11:32,110
+It is basically nothing this is getting boring right so this is learnt here
+
+98
+00:11:40,790 --> 00:11:49,280
+so this is a seaquest you have to swim and then sink down get some things and
+
+99
+00:11:49,280 --> 00:11:53,030
+come up so seaquest is a game that it never learned to do greatly on.
+
+100
+00:12:23,370 --> 00:12:28,500
+Seaquest is not something which did learn to solve well so there are a few games like this,
+
+101
+00:12:28,500 --> 00:12:34,680
+so they initially published the nature paper I think they had liked like 45 or 46 out of the
+
+102
+00:12:34,680 --> 00:12:41,400
+50 atari games they were able to play well and I think in 43 of them it had better than human
+
+103
+00:12:41,400 --> 00:12:46,440
+performance and I think the current state is they have like one game that does not play well
+
+104
+00:12:46,440 --> 00:12:50,610
+right and have better than human performance in like 48 of those.

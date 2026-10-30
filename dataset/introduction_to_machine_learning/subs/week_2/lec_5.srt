@@ -1,0 +1,1183 @@
+1
+00:00:00,000 --> 00:00:19,530
+Hello and welcome to this module on statistical
+
+2
+00:00:19,530 --> 00:00:29,400
+decision theory. So the goal here is try to give you a framework that we will keep using for the
+
+3
+00:00:29,400 --> 00:00:34,500
+rest of the course right for at least for the majority of the rest of the course and introduce
+
+4
+00:00:34,500 --> 00:00:41,250
+you to some of the basic notations and also to talk about some kind of a unifying idea behind
+
+5
+00:00:41,250 --> 00:00:49,140
+what we will look at in different classification algorithms and regression algorithms right.
+
+6
+00:00:49,140 --> 00:00:58,890
+To set the tone let's consider the inputs which will denote by X as being gone drawn from some
+
+7
+00:00:58,890 --> 00:01:06,690
+P dimensional space right so which we will call Rp right. So if you think about what we did in
+
+8
+00:01:06,690 --> 00:01:11,640
+the previous modules we talked about input that had age and income as the attributes,
+
+9
+00:01:11,640 --> 00:01:16,710
+so that would mean that P was two dimensions right so one of the dimensions represented
+
+10
+00:01:16,710 --> 00:01:20,820
+age other dimension represented income. So what we are doing here now is trying to move
+
+11
+00:01:20,820 --> 00:01:26,190
+to a more general setting where I am talking about any kind of a p dimensional space right and what
+
+12
+00:01:26,190 --> 00:01:32,520
+p could be much larger than two and the output that we are going to be looking at least in the
+
+13
+00:01:32,520 --> 00:01:36,120
+initial regression case that we will see I will assume that.
+
+14
+00:01:36,120 --> 00:01:45,030
+The output is drawn from the real numbers again so this will be like the temperature that we
+
+15
+00:01:45,030 --> 00:01:51,450
+saw in this second example in the previous modules right. So the input X is drawn from
+
+16
+00:01:51,450 --> 00:02:00,510
+a p dimensional real space and the output Y is drawn from again a real from the real numbers
+
+17
+00:02:00,510 --> 00:02:05,970
+and in the case of regression right, so the case of classification will see the little bit later
+
+18
+00:02:05,970 --> 00:02:12,480
+the output will come from a discrete space alright and we will also make an assumption
+
+19
+00:02:12,480 --> 00:02:22,180
+that the data comes to you from some kind of a problem joint probability distribution right.
+
+20
+00:02:22,180 --> 00:02:29,800
+So you do not know this joint distribution apriori right so nobody tells you what is
+
+21
+00:02:29,800 --> 00:02:34,450
+the distribution from which the data is coming but the assumption that we are going to make is
+
+22
+00:02:34,450 --> 00:02:39,970
+that there is an underlying data distribution right like a joint distribution over the inputs
+
+23
+00:02:39,970 --> 00:02:46,960
+and the outputs right and that it is fixed right and you are going to be given samples drawn from
+
+24
+00:03:00,790 --> 00:03:04,840
+and you are going to give in a set of samples that is drawn from this probability distribution
+
+25
+00:03:04,840 --> 00:03:11,740
+over xy. So this will be your training data right which you will use for both training and possibly
+
+26
+00:03:11,740 --> 00:03:17,560
+for validation if required right. So you are going to get an x 1 with a
+
+27
+00:03:17,560 --> 00:03:24,550
+corresponding y 1, x 2 with the corresponding y 2 and so on so forth, so the goal is given such
+
+28
+00:03:24,550 --> 00:03:34,300
+a set of training data so learn a function f of x that goes from a p-dimensional space to
+
+29
+00:03:34,300 --> 00:03:41,140
+the real line right where so the p dimensional space essentially corresponds to a point in the
+
+30
+00:03:41,140 --> 00:03:47,590
+input space and the real line corresponds to the output space so the function f is going to
+
+31
+00:03:47,590 --> 00:03:53,950
+take any input that is given to it and produce a number right so the f could take different forms
+
+32
+00:03:53,950 --> 00:04:00,910
+right so we looked at f being a straight line right in the example that we saw earlier.
+
+33
+00:04:00,910 --> 00:04:08,950
+So in such cases right so my one example of f would be here saying that I am going
+
+34
+00:04:08,950 --> 00:04:18,790
+to predict Y hat equal to f (X) at given an x, I am going to predict a label Y hat right and
+
+35
+00:04:18,790 --> 00:04:53,240
+that is going to be given by some is going to be given by β0 + β 1 x1 β2 x 2 all the
+
+36
+00:04:53,240 --> 00:04:59,990
+way up to β P x P so one thing which I want you to note here is that this x 1 x 2 so on
+
+37
+00:04:59,990 --> 00:05:08,210
+so forth are essentially the coordinates of X. So when I say X here X essentially
+
+38
+00:05:08,210 --> 00:05:20,660
+comprises of so this could be age this could be income and so on so forth each one of these
+
+39
+00:05:20,660 --> 00:05:27,050
+corresponds to a different attribute that describes the describes the data right.
+
+40
+00:05:27,050 --> 00:05:46,500
+So I can look at this and then I can write f of X is essentially compactly I can write it as right.
+
+41
+00:05:50,730 --> 00:06:12,870
+An alternate way of writing this is to declare that set right so I will set x0 = 1,
+
+42
+00:06:13,530 --> 00:06:20,130
+and then I can just remove this special treatment of β0 and I can just write the
+
+43
+00:06:20,130 --> 00:06:38,810
+summation J = 0 to P xj βj right so is that clear right. So this is essentially
+
+44
+00:06:38,810 --> 00:06:45,770
+what do you do in when you are doing linear regression right so another example of doing
+
+45
+00:06:45,770 --> 00:06:49,760
+this is a very popular and other classifier which we will call the nearest neighbor
+
+46
+00:06:49,760 --> 00:06:56,030
+classifier. So where my Y hat of x
+
+47
+00:06:56,030 --> 00:07:11,870
+is given by one by some number K summing over all Xi that belong to some neighborhood of X
+
+48
+00:07:11,870 --> 00:07:23,240
+right and sum up all the Yi’s corresponding to that Xi, so let us assume that my training data
+
+49
+00:07:23,240 --> 00:07:29,240
+looks something like this right so there is a X here as an X here there is an X here there
+
+50
+00:07:29,240 --> 00:07:38,780
+is an X here and there is an X here and an X here right and let us say my K is 3 right,
+
+51
+00:07:38,780 --> 00:07:51,080
+so if I get a query point say somewhere here I get a query so this is my X so this is my X1 X2
+
+52
+00:07:51,080 --> 00:08:02,150
+X3 X4 so these are my training data the X 1 to X 6 are my training data and X is the point for
+
+53
+00:08:02,150 --> 00:08:07,100
+which I want to predict the output right. So these are the places which I have already
+
+54
+00:08:07,100 --> 00:08:10,760
+measured it this is a new point and I want to produce the output here so
+
+55
+00:08:10,760 --> 00:08:16,310
+in this case what do I do is I pick the three nearest neighbors because K is 3,
+
+56
+00:08:16,310 --> 00:08:26,840
+I pick the 3 points that are closest to this data point right find the corresponding Y's so in this
+
+57
+00:08:26,840 --> 00:08:34,280
+case I will pick y2 y3 and y4 and I will take the average of these three points and I will report
+
+58
+00:08:34,280 --> 00:08:39,470
+the value of the function at X is the average of this three point right so this is called
+
+59
+00:08:39,470 --> 00:08:49,640
+the K nearest neighbor regressor right. So I will just take the average of the outputs
+
+60
+00:08:49,640 --> 00:08:57,050
+of Y2 Y3 and Y4 and report that as the value of the X right so depending on where X is I will be
+
+61
+00:08:57,050 --> 00:09:02,000
+picking different three neighbors and reporting their values okay this is the K nearest neighbor
+
+62
+00:09:02,000 --> 00:09:08,300
+so there are different ways in which you can define this function f right but remember that
+
+63
+00:09:08,300 --> 00:09:14,690
+we had this discussion in the last set of modules that unless you make an assumption
+
+64
+00:09:14,690 --> 00:09:20,720
+about the form of f you really cannot do any generalization we needed to talk about lines
+
+65
+00:09:20,720 --> 00:09:28,490
+in the previous class but now we are talking about different assumptions for the function f need not
+
+66
+00:09:28,490 --> 00:09:33,590
+necessarily be lines okay in this case it is a straight line right but in this case it is an
+
+67
+00:09:33,590 --> 00:09:39,740
+averager it is a local averager and that gives me the function that I want to learn okay.
+
+68
+00:09:39,740 --> 00:09:45,530
+So how do you choose this function right so that could be many different ways in which you can
+
+69
+00:09:45,530 --> 00:09:53,630
+define the β’s right, so given that I have chosen that this is the way to model the function how do
+
+70
+00:09:53,630 --> 00:10:05,030
+I pick the β right so how or how do I even choose this form for my for my predictor so how do I know
+
+71
+00:10:05,030 --> 00:10:12,170
+that this is a valid form to choose so we have to look at some performance measure. So which we
+
+72
+00:10:12,170 --> 00:10:21,650
+will consider in this case is the loss function right which will compare the true output Y right
+
+73
+00:10:21,650 --> 00:10:29,960
+with the predicted output f (X) right. So I have the true output Y and I have a
+
+74
+00:10:29,960 --> 00:10:35,330
+particular put f (X), so I will have some loss function that compares f of X with y and my
+
+75
+00:10:35,330 --> 00:10:56,450
+goal is to find an f of X such that this loss function is minimized one of the most popular
+
+76
+00:10:56,450 --> 00:11:01,160
+loss functions that people use in the literature is known as the square error so basically look
+
+77
+00:11:01,160 --> 00:11:15,770
+at right and the performance measure that I am interested in is the expected prediction error
+
+78
+00:11:15,770 --> 00:11:30,140
+of the function f right so that is equal to the expected value of y - f (x)2 right in the case
+
+79
+00:11:30,140 --> 00:11:36,470
+of squared error so the expected prediction error is the expected value of y - f (x)2 right.
+
+80
+00:11:36,470 --> 00:11:42,830
+So what is the distribution with respect to which you are taking this expectation
+
+81
+00:11:42,830 --> 00:11:50,210
+so whenever we talk about the expectation of a random variable so we want to talk about
+
+82
+00:11:50,210 --> 00:11:53,810
+the underlying distribution right so what is the distribution with respect to which you
+
+83
+00:11:53,810 --> 00:12:01,730
+are taking this expectation right exactly the Joint Distribution of X and Y whether it is the
+
+84
+00:12:01,730 --> 00:12:07,220
+Joint Distribution between x and y so that is a distribution with respect to which you are taking
+
+85
+00:12:07,220 --> 00:12:36,220
+this expectation therefore I can write this. So I can do a little bit more sleight of hand here
+
+86
+00:12:36,220 --> 00:12:46,090
+right and talk about the conditional distribution right so if you remember the probability of X,
+
+87
+00:12:46,090 --> 00:12:58,510
+Y can be written as probability of Y given X into probability of X so it can written as probability
+
+88
+00:12:58,510 --> 00:13:03,490
+of Y given X into probability of X this is just the product rule in probability so I get this,
+
+89
+00:13:03,490 --> 00:13:08,440
+so what does this tell me that okay there is some chance with which I can choose a
+
+90
+00:13:08,440 --> 00:13:14,590
+data point X right having chosen a data point X so what is the probability of
+
+91
+00:13:14,590 --> 00:13:26,650
+seeing a particular output value right. So why are we looking at probabilities here
+
+92
+00:13:26,650 --> 00:13:34,570
+again? So this helps us to kind of you know model a variety of different scenarios so the first one
+
+93
+00:13:34,570 --> 00:13:39,970
+is if there is noise in the measurement no so I am talking about what is the probability of
+
+94
+00:13:39,970 --> 00:13:43,960
+Y given X suppose I am telling you that I am measuring the temperature at 3 o'clock
+
+95
+00:13:43,960 --> 00:13:49,090
+every day right so there will be some kind of a natural variation in the temperature
+
+96
+00:13:49,090 --> 00:13:54,040
+is measured at 3 in the morning right. So that is modeled by this probability right
+
+97
+00:13:54,040 --> 00:14:00,430
+that will be some set of temperatures that are very probable and some set of temperatures that
+
+98
+00:14:00,430 --> 00:14:07,510
+are not right so for example if I am measuring temperature at 3 a.m. right so 400 is not a
+
+99
+00:14:07,510 --> 00:14:13,630
+probable value right, so those will have lower probabilities and then say something in the 20s
+
+100
+00:14:13,630 --> 00:14:18,010
+will have a higher probability so I am talking about Chennai if people are wondering how you
+
+101
+00:14:18,010 --> 00:14:29,020
+are getting 200 early in the morning right. The second factor that this allows us to look at
+
+102
+00:14:29,020 --> 00:14:35,410
+is our ignorance about the whole system you know so I might have just chosen the time of day maybe
+
+103
+00:14:35,410 --> 00:14:41,680
+there are other factors I should have taken into consideration while I am forming my data, so these
+
+104
+00:14:41,680 --> 00:14:48,910
+factors about which I do not know anything will appear as noise you know so it is not important
+
+105
+00:14:48,910 --> 00:14:52,900
+whether I take the temperature at 3:00a.m. Maybe it is important where in the building I do
+
+106
+00:14:52,900 --> 00:14:58,270
+the measurements maybe I am measuring it next to the kitchen where things will be warmer or maybe
+
+107
+00:14:58,270 --> 00:15:02,350
+I am measuring it next to an air-conditioner where things would be actually warmer if I am
+
+108
+00:15:02,350 --> 00:15:08,830
+measuring it on the external of the building right and or it could be measuring it on the inside of
+
+109
+00:15:08,830 --> 00:15:13,390
+an air-conditioned room the temperatures could be lower so even though I say I measure it at 3 a.m.
+
+110
+00:15:13,390 --> 00:15:19,180
+there could be many such factors for natural variations which I have not modeled okay.
+
+111
+00:15:19,180 --> 00:15:26,140
+So this is beyond the natural variations in the system right, so one way of arguing about it
+
+112
+00:15:26,140 --> 00:15:31,360
+could be to say that hey the natural variations are due to factors that you do not know anything
+
+113
+00:15:31,360 --> 00:15:36,760
+about right so that is a valid argument so it could very well be that. So it is really there is
+
+114
+00:15:36,760 --> 00:15:41,980
+nothing like a natural variation there is no real noise so everything arises all the uncertainty in
+
+115
+00:15:41,980 --> 00:15:46,180
+the data arises from my lack of knowledge but that is a philosophical question.
+
+116
+00:15:46,180 --> 00:15:51,340
+So there is things that are measurable which we do not measure right and that I would call
+
+117
+00:15:51,340 --> 00:15:54,610
+as lack of knowledge and things which are immeasurable which I would call as noise
+
+118
+00:15:54,610 --> 00:16:00,490
+right there could be both of these sources which introduced the probability into system right,
+
+119
+00:16:00,490 --> 00:16:07,510
+so it is not just a mathematical whimsy that we model this as a joint distribution but there is
+
+120
+00:16:07,510 --> 00:16:14,380
+an actual practical reason for talking about probability distributions right. So now I can
+
+121
+00:16:14,380 --> 00:16:53,680
+go back and write my expected prediction error as an expectation over X of so an expectation over X
+
+122
+00:16:53,680 --> 00:16:59,800
+of the expectation over Y given X because I have written this probabilities out like this.
+
+123
+00:16:59,800 --> 00:17:04,360
+So I can write the expectations out also like this of this quantity then it is the
+
+124
+00:17:04,360 --> 00:17:10,780
+same quantity earlier the only difference is now I am conditioning it on the value of x right so
+
+125
+00:17:10,780 --> 00:17:17,260
+what this expression says is a I will tell you what X is okay I will tell you what X is
+
+126
+00:17:17,260 --> 00:17:25,870
+then you tell me what the error will be right, so the uncertainty here is over the value of y
+
+127
+00:17:25,870 --> 00:17:31,570
+right. So I will give you X will fix X you tell me what Y is so I am going to look at the error
+
+128
+00:17:31,570 --> 00:17:37,270
+just on conditioning after conditioning on X this will only look at the variation on Y.
+
+129
+00:17:37,270 --> 00:17:43,450
+And the outer expectation gives me the variation of X the outer expectation takes care of the
+
+130
+00:17:43,450 --> 00:17:59,660
+variation on X, so now I can try to find the minimum of this prediction error where I can
+
+131
+00:17:59,660 --> 00:18:06,470
+try to find the minimum of this prediction error by conditioning on a specific value for X right
+
+132
+00:18:06,470 --> 00:18:13,790
+so I will not look at this expectation right I am not making any assumptions about F and I
+
+133
+00:18:13,790 --> 00:18:18,110
+am just assuming that F can be anything like any function in the world F can be any function of the
+
+134
+00:18:18,110 --> 00:18:25,070
+work so what I want to do now is I want to look at each and every value of X and I want to say
+
+135
+00:18:25,070 --> 00:18:33,620
+that I will pick an F such that for every value of x right it makes the best possible prediction
+
+136
+00:18:33,620 --> 00:18:43,280
+right I will pick an F such that for every value of x it will make the best possible prediction
+
+137
+00:18:43,280 --> 00:18:50,810
+alright so what does that mean so it will produce the prediction so f (x) for a specific value of x,
+
+138
+00:18:50,810 --> 00:18:59,030
+f (x) will give the output such that this inner expectation is minimized right.
+
+139
+00:18:59,030 --> 00:19:08,000
+So I am going to write it down like this so for a specific value of x right this is f (x) for a
+
+140
+00:19:08,000 --> 00:19:13,670
+specific X so for I was writing capital X which is a random variable right but here I am using
+
+141
+00:19:13,670 --> 00:19:44,750
+a specific X right, so given an X right f of X has to be a specific number right so let us
+
+142
+00:19:44,750 --> 00:19:53,660
+say somebody with an age of 25 an income of 15,000 rupees walks into my shop I can only
+
+143
+00:19:53,660 --> 00:19:58,070
+give one output it is going to buy a computer or does not buy a computer or I am going to say
+
+144
+00:19:58,070 --> 00:20:02,060
+I am measuring the temperature at 3 a.m. What will be the value and I can give you only
+
+145
+00:20:02,060 --> 00:20:06,110
+one number since I have already fixed the input description so I can we are going to give you one
+
+146
+00:20:06,110 --> 00:20:12,800
+output corresponding to that input description so that output let me call as C right so that is C,
+
+147
+00:20:12,800 --> 00:20:19,910
+C is the output that I am going to give for f(x) let see is the output I am going
+
+148
+00:20:19,910 --> 00:20:24,980
+to give for f of x so what is the value that I should choose for C okay.
+
+149
+00:20:24,980 --> 00:20:32,990
+So it should be such that the error which is Y-C2 is as small as possible right so I am minimizing
+
+150
+00:20:32,990 --> 00:20:40,850
+over the different possible values of C that I could assign for f of x I am trying to pick
+
+151
+00:20:40,850 --> 00:20:48,320
+that C which gives me the smallest error right so argmin means first minimize with respect to
+
+152
+00:20:48,320 --> 00:20:54,950
+C and take that argument but basically take that value of C which achieve this minimum if there are
+
+153
+00:20:54,950 --> 00:21:00,080
+multiple values that gives you the minimum. I can pick any one right so this is essentially
+
+154
+00:21:00,080 --> 00:21:27,610
+called conditioning on a point so instead of conditioning on the random variable X right
+
+155
+00:21:27,610 --> 00:21:34,360
+so conditioned on a specific point where X equal to small x right and then I can find this so now
+
+156
+00:21:34,360 --> 00:21:38,830
+what happens for every possible input X that I could have small x that I could have I will find
+
+157
+00:21:38,830 --> 00:21:45,010
+the corresponding C and I will say f of x equal to that C right so the thing to note here is I
+
+158
+00:21:45,010 --> 00:21:53,830
+have not made any functional assumptions about what this what should F look like right.
+
+159
+00:21:53,830 --> 00:21:58,480
+So F could be something really, really jagged I do not care right so this is a recipe for
+
+160
+00:21:58,480 --> 00:22:04,780
+disaster as we saw earlier that you might end up over fitting the data but just work with me
+
+161
+00:22:04,780 --> 00:22:11,170
+here because they are just trying to build some general principles right so we can do little they
+
+162
+00:22:11,170 --> 00:22:16,210
+can go little further right now that we have decided to say that the, the minimizer is the
+
+163
+00:22:16,210 --> 00:22:21,850
+one that the value that you are signed to f of X so what is the value of C that will minimize
+
+164
+00:22:21,850 --> 00:22:33,640
+this expression right so I have to look at Y-C2 so I have to assign a single value for C.
+
+165
+00:22:33,640 --> 00:22:43,330
+So imagine what does it mean right suppose I give the input as x, I make a measurement let
+
+166
+00:22:43,330 --> 00:22:49,600
+us call it say y1 and I give it same input X again I make another measurement say y2
+
+167
+00:22:49,600 --> 00:22:54,640
+I give the same input X again I make another measurement y3 so I have three measurements y1
+
+168
+00:22:54,640 --> 00:23:02,590
+y2 y3 for the same input X right now I am asking you to give me a prediction for what will be the
+
+169
+00:23:02,590 --> 00:23:07,750
+output given X right. So what will what should your prediction be
+
+170
+00:23:07,750 --> 00:23:15,760
+it will be the average of these three wise right so y1+y2+y3 divided by three so that
+
+171
+00:23:15,760 --> 00:23:20,710
+it should be the prediction so why is that the case because we are talking about squared error
+
+172
+00:23:20,710 --> 00:23:26,320
+right the quantity that will minimize the squared error is essentially the average
+
+173
+00:23:26,320 --> 00:23:37,360
+right so I can I will end up writing that f of x equal to the expected value of y given X
+
+174
+00:23:37,360 --> 00:23:45,520
+equal to x right so this is essentially what my prediction would be so this is the known as the
+
+175
+00:23:45,520 --> 00:24:04,870
+conditional expectation right or also sometimes called the regression function the conditional
+
+176
+00:24:04,870 --> 00:24:11,980
+expectation or the regression function. So there are a few problems with this right
+
+177
+00:24:11,980 --> 00:24:19,840
+so what are the problems a. I do not know this distribution right I do not know the
+
+178
+00:24:19,840 --> 00:24:23,770
+distribution with respect to which I am taking the expectation so what is the distribution with
+
+179
+00:24:23,770 --> 00:24:28,000
+respect to which I am taking the expectation that is essentially probability of Y given
+
+180
+00:24:28,000 --> 00:24:33,850
+X right so that is the distribution with respect to which this expectation is being
+
+181
+00:24:33,850 --> 00:24:37,960
+taken and I do not know that if I know that my problem my life is a lot simpler right.
+
+182
+00:24:37,960 --> 00:24:44,230
+So I actually have to estimate it from the data so what is the data that is given to me I have this
+
+183
+00:24:44,230 --> 00:24:50,590
+pairs of x1 y1 to xn and yn so that is the data that has been given to me and I have to do this
+
+184
+00:24:50,590 --> 00:24:57,910
+estimate of this expectation from that data right so how will you do that so it is very
+
+185
+00:24:57,910 --> 00:25:03,040
+simple you know that you can always estimate the expectation by taking averages so what you would
+
+186
+00:25:03,040 --> 00:25:11,920
+do is from your data you pick all the training data points that have this value of x right find
+
+187
+00:25:11,920 --> 00:25:18,190
+the corresponding Y take an average. And you are done right so one simple way
+
+188
+00:25:18,190 --> 00:25:22,600
+of thinking about it is to say that okay I cannot find the true f so I am going to find an estimate
+
+189
+00:25:22,600 --> 00:25:35,980
+of that which is called as f hat so is equal to average of all the Yi’s such that xi equal to X
+
+190
+00:25:37,720 --> 00:25:49,330
+right there is a problem here why so how many samples do you think you are going to get of
+
+191
+00:25:49,330 --> 00:25:57,310
+the same input X right first the second thing is you are not going to be able to make a prediction
+
+192
+00:25:57,310 --> 00:26:04,000
+for any data point which is not there in the input right so we are trying to make an estimate of the
+
+193
+00:26:04,000 --> 00:26:10,120
+expectation by using the averages but if you have known time enough measurements than your average
+
+194
+00:26:10,120 --> 00:26:15,100
+is going to be bad right and second thing is you are making an average at that point and if the
+
+195
+00:26:15,100 --> 00:26:19,030
+point does not exist in your training data you are not going to be able to return an estimate
+
+196
+00:26:19,030 --> 00:26:25,510
+for it right so we need to address this somehow right so what we will do here is we will relax
+
+197
+00:26:25,510 --> 00:26:36,160
+the conditioning right instead of conditioning on a point we will conditioning will condition
+
+198
+00:26:42,520 --> 00:26:50,500
+we will condition on the region right so what does it mean so I am taking the average here of
+
+199
+00:26:50,500 --> 00:26:58,060
+all those data points for which xi equal to x now that is not going to work right because there are
+
+200
+00:26:58,060 --> 00:27:11,380
+too few data points what I am going to do is I am going to take this as the average of all the data
+
+201
+00:27:11,380 --> 00:27:20,170
+points which belong to some region around X which is essentially the, the neighborhood right that
+
+202
+00:27:20,170 --> 00:27:29,500
+we are talking about right so that circle there would correspond to the neighborhood around X
+
+203
+00:27:29,500 --> 00:27:38,800
+so I am going to be conditioning on this region which is given by this neighborhood around X so
+
+204
+00:27:38,800 --> 00:27:44,530
+there is it makes sense right so we are not going to condition on the point we are conditioning
+
+205
+00:27:44,530 --> 00:27:49,000
+around the region so the one assumption that we are making an implicit assumption that we are
+
+206
+00:27:49,000 --> 00:27:54,340
+making here so why are we conditioning around a region so that instead of taking an average
+
+207
+00:27:54,340 --> 00:28:01,390
+of one data point I have at least K data points of which I will be taking the average right so
+
+208
+00:28:01,390 --> 00:28:07,120
+that gives me a better estimate of the expectation right that is that is the reason we are doing this
+
+209
+00:28:07,120 --> 00:28:13,960
+conditioning over a region but more importantly we are also making an implicit assumption you know
+
+210
+00:28:13,960 --> 00:28:18,970
+we needed to make assumptions if you remember our inductive bias said that we needed to make
+
+211
+00:28:18,970 --> 00:28:24,850
+assumptions the assumption that we are making is that the output of the function over this
+
+212
+00:28:24,850 --> 00:28:32,230
+region is going to be a constant right. We are going to be making the assumption that
+
+213
+00:28:32,230 --> 00:28:37,810
+the output of the function over this region will be a constant right so let us let us
+
+214
+00:28:37,810 --> 00:28:43,420
+try and do a little example so that becomes a thing clear to people right let me go back to
+
+215
+00:28:43,420 --> 00:29:00,640
+my one-dimensional example so it makes it easier for me to draw things so I have let us say I have
+
+216
+00:29:00,640 --> 00:29:07,390
+multiple data points like this alright so I have a query point and then the corresponding outputs.
+
+217
+00:29:18,900 --> 00:29:30,240
+So these are the Y’s right this is X and that is Y so these are my xi’s and yi’s is okay this is the
+
+218
+00:29:30,240 --> 00:29:40,680
+training data I have and now given a query point let us say I am given a query point here right I
+
+219
+00:29:40,680 --> 00:29:47,730
+want to know what is the output value for this X so let us say I pick my three nearest neighbors
+
+220
+00:29:47,730 --> 00:29:57,090
+which would be these three data points right and then I will try to take the average of this,
+
+221
+00:29:57,090 --> 00:30:13,680
+this and this which will be somewhere here. I will say that is my output right so like this I
+
+222
+00:30:13,680 --> 00:30:22,830
+am going to make cases for variety of data points but one thing which I want to point out here is
+
+223
+00:30:22,830 --> 00:30:32,370
+so I assume that my data point lies here so what if I had assumed that my data point was here if
+
+224
+00:30:32,370 --> 00:30:40,680
+my query point was here so what would have been the output so my neighbors remain the same let me
+
+225
+00:30:40,680 --> 00:30:46,020
+three neighbors do not change these are my three nearest neighbors whether the query was here right
+
+226
+00:30:46,020 --> 00:30:52,020
+whether the query was here or the query was here my nearest neighbors do not change right.
+
+227
+00:30:52,020 --> 00:30:58,470
+So what will be the output for this input point as well so I will be taking the average of these
+
+228
+00:30:58,470 --> 00:31:05,400
+three points so the output will also again be that right so in fact for certain some region
+
+229
+00:31:05,400 --> 00:31:11,130
+around here where these three are the nearest points the output will be a constant right I
+
+230
+00:31:11,130 --> 00:31:18,750
+said output will always be a constant so this is what I mean by saying that we make the assumption
+
+231
+00:31:18,750 --> 00:31:28,740
+that the output is constant in a region right so this region so for all those data points for which
+
+232
+00:31:28,740 --> 00:31:33,000
+these three are the nearest neighbors. So the output is going to be here so this is
+
+233
+00:31:33,000 --> 00:31:37,980
+essentially the assumption we are making that the output is going to be consistent over a region so
+
+234
+00:31:37,980 --> 00:31:44,370
+that I can write an expectation over the region as my substitute okay so if you think about it so
+
+235
+00:31:44,370 --> 00:31:53,430
+what have we come up with here this is essentially your nearest neighbor classifier right so you take
+
+236
+00:31:53,430 --> 00:32:01,530
+the generic idea of minimizing the expected prediction error right and then add certain
+
+237
+00:32:01,530 --> 00:32:06,990
+conditions to it so what are the conditions you add into it so you are well you cannot
+
+238
+00:32:06,990 --> 00:32:13,500
+do the expectation. So you are going to take averages and you cannot do an average on the
+
+239
+00:32:13,500 --> 00:32:19,290
+training data and therefore you are going to do an average over a region assuming that the output is
+
+240
+00:32:19,290 --> 00:32:26,190
+constant over a region so conditioning on the data point wise and then conditioning on the
+
+241
+00:32:26,190 --> 00:32:30,870
+region relaxing that the conditioning on the region gives us nearest neighbor classifiers
+
+242
+00:32:30,870 --> 00:32:35,820
+so in some sense you can argue that one way of minimizing the expected prediction error
+
+243
+00:32:35,820 --> 00:32:41,490
+yields a nearest neighbor classifier okay. So in fact it is a very powerful classifier and
+
+244
+00:32:41,490 --> 00:32:52,590
+you can show that as K increases right so the estimate becomes more and more stable you know
+
+245
+00:32:52,590 --> 00:32:58,980
+so for small changes in the input data then the, the classifier does not change tremendously right
+
+246
+00:32:58,980 --> 00:33:28,940
+and so as and as N and K tends to infinity or they become large right so your ratio at K by
+
+247
+00:33:28,940 --> 00:33:55,620
+N would go to zero right in such a case your F hat of X will go to right as K increases
+
+248
+00:33:55,620 --> 00:34:01,380
+the estimate becomes more stable in particular as K and N becomes large that is and my number
+
+249
+00:34:01,380 --> 00:34:06,360
+of data points is very, very large. And so the number of points I can look in
+
+250
+00:34:06,360 --> 00:34:12,330
+the neighborhood also becomes larger and larger so such that of course the data points have to grow
+
+251
+00:34:12,330 --> 00:34:19,260
+at a faster rate than the size of the neighborhood that is what K by N means so in which case I can
+
+252
+00:34:19,260 --> 00:34:26,010
+show that my actual prediction I make using this average actually approaches the true prediction
+
+253
+00:34:26,010 --> 00:34:36,300
+that I am interested in right so there are a few caveats here that I need to point out so I
+
+254
+00:34:36,300 --> 00:34:41,670
+assuming I am saying that N goes to infinity I mean that is a pretty blank statement to
+
+255
+00:34:41,670 --> 00:34:47,310
+make because N rarely goes to infinity right in fact never so coming up with large data
+
+256
+00:34:47,310 --> 00:34:57,480
+sets is hard except for very rare cases right therefore you cannot really have a classifier
+
+257
+00:34:57,480 --> 00:35:04,200
+that gives you the right output right. And the other problem is as P becomes larger as
+
+258
+00:35:04,200 --> 00:35:12,090
+the dimensionality becomes larger right generally the data tends to becomes sparse you know so if
+
+259
+00:35:12,090 --> 00:35:20,730
+I am looking at K neighbors in like a thousand dimensional space the area or the volume covered
+
+260
+00:35:20,730 --> 00:35:27,180
+by these K neighbors would be very large because they are very sparse space and it is usually not a
+
+261
+00:35:27,180 --> 00:35:33,810
+good assumption to make that the input is actually a constant over this I am sorry the output is
+
+262
+00:35:33,810 --> 00:35:41,340
+a constant over this large area right. So one thing is if P is large right then if
+
+263
+00:35:41,340 --> 00:35:47,670
+the dimension of the input is large if you have like 10,000 dimension vector as your input then
+
+264
+00:35:47,670 --> 00:35:53,640
+using K nearest neighbors is not really a good idea right and alternatively you should also
+
+265
+00:35:53,640 --> 00:36:02,220
+remember that in some cases having a little bit of a bias is actually not a bad thing right and
+
+266
+00:36:02,220 --> 00:36:12,840
+therefore we have to look at an appropriate way of representing the function f remember we did
+
+267
+00:36:12,840 --> 00:36:17,730
+not make any assumptions about the function f right so the function f could change as
+
+268
+00:36:17,730 --> 00:36:23,730
+drastically as we as we want and so that means that we are trying to keep the bias as minimal as
+
+269
+00:36:23,730 --> 00:36:29,910
+possible. And so we would like to remove that
+
+270
+00:36:29,910 --> 00:36:40,440
+assumption right so moving on let us look at the linear regression case where we actually made
+
+271
+00:36:40,440 --> 00:36:48,570
+a significant assumption about the form of the function f right specifically we assume that F
+
+272
+00:36:48,570 --> 00:36:55,470
+is going to be linear in the input parameter so there can be written as β1 X1+β2 X2and so on so
+
+273
+00:36:55,470 --> 00:37:05,430
+forth right so essentially your f of X is you need to be in vector notation we assume it to
+
+274
+00:37:05,430 --> 00:37:18,120
+be some x transpose beta right assume it be X transpose β and so if you look at it from the
+
+275
+00:37:18,120 --> 00:37:25,260
+training data point of view so I can think of having a vector notation for this right.
+
+276
+00:37:25,260 --> 00:37:38,610
+So I can think of a matrix X right so a matrix X in which each row corresponds to an input x1
+
+277
+00:37:38,610 --> 00:38:00,990
+right so X will be something like right X will be matrix that looks like that and so my β would be a
+
+278
+00:38:00,990 --> 00:38:18,030
+vector of the coefficient so β0 to βp right and of course my X is going to have a right so the
+
+279
+00:38:18,030 --> 00:38:24,060
+zeroth dimension is going to be 1 right and they are going to have β so I can look at the output as
+
+280
+00:38:24,060 --> 00:38:47,350
+essentially being Xβ so my overall error is going to be Y minus right so that is going to be the
+
+281
+00:38:49,330 --> 00:38:56,500
+that is going to be a the estimate of the expected prediction error based on the training data.
+
+282
+00:38:56,500 --> 00:39:02,620
+That is being given to me and I can minimize this I can take the derivative right and then I can
+
+283
+00:39:02,620 --> 00:39:08,560
+equate it to zero and I can do some minimization to get the value of β and that is essentially
+
+284
+00:39:08,560 --> 00:39:25,270
+going to be I take the differential of this equate it to zero simplify for β right I am
+
+285
+00:39:25,270 --> 00:39:47,500
+going to get β hat equal to this is primarily because of the square here so you are going
+
+286
+00:39:47,500 --> 00:39:59,440
+to get this is your simplified expression so this is essentially my β, β hat vector and so remember
+
+287
+00:39:59,440 --> 00:40:07,000
+that the X that we put in here is essentially a matrix where the columns the rows are the data
+
+288
+00:40:07,000 --> 00:40:11,470
+points right the columns or the features. So this will be the like the age of every customer
+
+289
+00:40:11,470 --> 00:40:15,580
+that comes in this will be the income of every customer and so on so forth and each row is a
+
+290
+00:40:15,580 --> 00:40:23,470
+complete data point right so what we have done here is make the assumption that my function is
+
+291
+00:40:23,470 --> 00:40:30,760
+globally linear and then I have tried to solve for it to give you the parameters β hat right and in
+
+292
+00:40:30,760 --> 00:40:36,010
+the nearest neighbor case we made the assumption that my function is locally constant right.
+
+293
+00:40:36,010 --> 00:40:42,100
+So we start off with the same formulation we wanted to minimize the expected prediction
+
+294
+00:40:42,100 --> 00:40:47,470
+error and we make different assumptions one assumption leads us to linear regression the
+
+295
+00:40:47,470 --> 00:40:53,710
+assumption that we made was the data is going to be globally linear and another assumption that we
+
+296
+00:40:53,710 --> 00:40:59,650
+made where the data is going to be global locally constant gives us K nearest neighbor okay.

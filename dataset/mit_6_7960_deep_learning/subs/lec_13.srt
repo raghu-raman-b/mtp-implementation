@@ -1,0 +1,5367 @@
+1
+00:00:00,992 --> 00:00:02,468
+[SQUEAKING]
+
+2
+00:00:02,468 --> 00:00:03,944
+[RUSTLING]
+
+3
+00:00:03,944 --> 00:00:05,420
+[CLICKING]
+
+4
+00:00:13,590 --> 00:00:15,340
+JEREMY BERNSTEIN: OK, thank you, everyone,
+
+5
+00:00:15,340 --> 00:00:19,160
+for coming to the lecture.
+
+6
+00:00:19,160 --> 00:00:24,480
+So this was the example.
+
+7
+00:00:24,480 --> 00:00:28,000
+Do people remember this from the homework?
+
+8
+00:00:28,000 --> 00:00:28,700
+You remember?
+
+9
+00:00:28,700 --> 00:00:29,600
+That's good.
+
+10
+00:00:29,600 --> 00:00:30,120
+OK.
+
+11
+00:00:30,120 --> 00:00:31,340
+AUDIENCE: [INAUDIBLE]
+
+12
+00:00:31,340 --> 00:00:32,439
+[LAUGHTER]
+
+13
+00:00:32,439 --> 00:00:33,940
+JEREMY BERNSTEIN: It's a tricky one.
+
+14
+00:00:36,960 --> 00:00:46,680
+Wait, OK, so if I just tell you, if I write,
+
+15
+00:00:46,680 --> 00:00:51,080
+if I say that this is the gradient matrix.
+
+16
+00:00:51,080 --> 00:00:56,020
+And it has what we call a reduced SVD.
+
+17
+00:01:03,880 --> 00:01:05,459
+Do you remember what the answer was?
+
+18
+00:01:10,378 --> 00:01:13,760
+AUDIENCE: I think it's G G-transpose
+
+19
+00:01:13,760 --> 00:01:16,760
+to get the sigma squared.
+
+20
+00:01:16,760 --> 00:01:19,120
+JEREMY BERNSTEIN: Oh.
+
+21
+00:01:19,120 --> 00:01:21,880
+Yeah, something like that.
+
+22
+00:01:21,880 --> 00:01:26,023
+OK, I'll just write it, or one version of the answer.
+
+23
+00:01:26,023 --> 00:01:29,264
+[INTERPOSING VOICES]
+
+24
+00:01:39,155 --> 00:01:40,780
+There's other ways to write the answer,
+
+25
+00:01:40,780 --> 00:01:45,980
+but this is a simple way to write the answer.
+
+26
+00:01:45,980 --> 00:01:53,280
+So you can think of this conceptually as,
+
+27
+00:01:53,280 --> 00:02:01,737
+let's see, taking the SVD of the gradient.
+
+28
+00:02:01,737 --> 00:02:04,070
+And you can think about this as setting all the singular
+
+29
+00:02:04,070 --> 00:02:05,910
+values to 1.
+
+30
+00:02:05,910 --> 00:02:10,630
+And we call this a semiorthogonal matrix,
+
+31
+00:02:10,630 --> 00:02:11,690
+because it's rectangular.
+
+32
+00:02:11,690 --> 00:02:15,430
+It's not quite an orthogonal matrix.
+
+33
+00:02:15,430 --> 00:02:17,950
+But I wanted to show you that there's
+
+34
+00:02:17,950 --> 00:02:23,110
+someone on Twitter called kellerjordan0 who
+
+35
+00:02:23,110 --> 00:02:25,230
+calls himself a speedrunner.
+
+36
+00:02:25,230 --> 00:02:28,310
+So he wants to train the neural network
+
+37
+00:02:28,310 --> 00:02:31,390
+as fast as he possibly can.
+
+38
+00:02:31,390 --> 00:02:36,430
+And he took like a variant of this method
+
+39
+00:02:36,430 --> 00:02:39,210
+and then adds some tricks to it, like momentum.
+
+40
+00:02:44,070 --> 00:02:45,730
+It makes it low precision.
+
+41
+00:02:51,030 --> 00:02:54,510
+And then in order to compute, it's
+
+42
+00:02:54,510 --> 00:02:57,110
+not really obvious how to compute this thing
+
+43
+00:02:57,110 --> 00:02:58,127
+without doing an SVD.
+
+44
+00:02:58,127 --> 00:02:59,710
+And you don't really want to do an SVD
+
+45
+00:02:59,710 --> 00:03:01,793
+when you're training a neural network because it's
+
+46
+00:03:01,793 --> 00:03:04,070
+kind of slow.
+
+47
+00:03:04,070 --> 00:03:05,930
+So he uses this iteration.
+
+48
+00:03:08,550 --> 00:03:17,590
+So it's a way to compute this term without actually doing SVD.
+
+49
+00:03:17,590 --> 00:03:22,990
+So it's just an iterative method to compute that thing.
+
+50
+00:03:22,990 --> 00:03:28,150
+And it throws away this learning rate, basically.
+
+51
+00:03:28,150 --> 00:03:30,270
+It's a slight variant.
+
+52
+00:03:30,270 --> 00:03:35,070
+But basically this is the result he's getting.
+
+53
+00:03:35,070 --> 00:03:37,510
+So this blue curve is something called
+
+54
+00:03:37,510 --> 00:03:44,030
+LLM.C, which Andrej Karpathy has a very fast C
+
+55
+00:03:44,030 --> 00:03:50,790
+implementation of training transformer, which
+
+56
+00:03:50,790 --> 00:03:53,330
+is supposed to be the fastest way to train a transformer.
+
+57
+00:03:53,330 --> 00:03:55,870
+But this guy Keller can train it in a fraction
+
+58
+00:03:55,870 --> 00:03:59,630
+of the time using this special spectral gradient descent
+
+59
+00:03:59,630 --> 00:04:00,170
+method.
+
+60
+00:04:00,170 --> 00:04:04,010
+So the full disclosure is, I'm collaborating with Keller.
+
+61
+00:04:04,010 --> 00:04:06,370
+So you take everything with a grain of salt.
+
+62
+00:04:06,370 --> 00:04:10,530
+But it seems to be actually much faster to use this method.
+
+63
+00:04:10,530 --> 00:04:12,850
+And this all happened in the last couple of weeks,
+
+64
+00:04:12,850 --> 00:04:15,230
+so actually after we wrote the homework.
+
+65
+00:04:15,230 --> 00:04:21,870
+So just to say, we're trying to teach you some things that
+
+66
+00:04:21,870 --> 00:04:25,350
+potentially matter in practice.
+
+67
+00:04:25,350 --> 00:04:27,510
+But anyway, the thing that we wanted to say
+
+68
+00:04:27,510 --> 00:04:31,530
+is if anyone wants to look at this for a final project,
+
+69
+00:04:31,530 --> 00:04:34,830
+it's an interesting problem of thinking
+
+70
+00:04:34,830 --> 00:04:37,110
+about the math of optimization to actually make
+
+71
+00:04:37,110 --> 00:04:39,150
+the optimization go faster.
+
+72
+00:04:39,150 --> 00:04:43,050
+But anyway, that was just to tell you about that.
+
+73
+00:04:43,050 --> 00:04:44,970
+That's not the main point of this lecture.
+
+74
+00:04:49,590 --> 00:04:58,710
+So last time, I think that you were learning about some aspects
+
+75
+00:04:58,710 --> 00:05:01,550
+of representation learning.
+
+76
+00:05:01,550 --> 00:05:06,370
+And there was this idea of developing techniques,
+
+77
+00:05:06,370 --> 00:05:09,870
+contrastive learning techniques where
+
+78
+00:05:09,870 --> 00:05:12,270
+you try to learn embeddings of your data.
+
+79
+00:05:12,270 --> 00:05:18,830
+And you specifically want to take basically similar data
+
+80
+00:05:18,830 --> 00:05:23,527
+points and map them to nearby embeddings.
+
+81
+00:05:23,527 --> 00:05:25,110
+And then you want to take a data point
+
+82
+00:05:25,110 --> 00:05:27,990
+from a very different class and map it
+
+83
+00:05:27,990 --> 00:05:30,010
+to an embedding that's far away.
+
+84
+00:05:32,790 --> 00:05:36,110
+And we call these contrastive learning algorithms.
+
+85
+00:05:36,110 --> 00:05:39,190
+And they're good ways to learn representations.
+
+86
+00:05:46,738 --> 00:05:49,030
+Sometimes we think of them as somehow unsupervised ways
+
+87
+00:05:49,030 --> 00:05:50,210
+to learn representations.
+
+88
+00:05:50,210 --> 00:05:51,810
+But anyway, that was last lecture.
+
+89
+00:05:55,020 --> 00:05:59,260
+And then I also wanted to remind you
+
+90
+00:05:59,260 --> 00:06:01,840
+that in even the earlier lectures,
+
+91
+00:06:01,840 --> 00:06:03,883
+we were thinking about different perspectives
+
+92
+00:06:03,883 --> 00:06:05,300
+on thinking about what's happening
+
+93
+00:06:05,300 --> 00:06:08,220
+inside a neural network.
+
+94
+00:06:08,220 --> 00:06:12,060
+And there was the idea of neural perspective,
+
+95
+00:06:12,060 --> 00:06:13,900
+thinking about tensors, and then thinking
+
+96
+00:06:13,900 --> 00:06:17,880
+about spectral properties of tensors.
+
+97
+00:06:21,260 --> 00:06:25,900
+So this is just recapping some different things.
+
+98
+00:06:25,900 --> 00:06:32,220
+But in this lecture, not really using that,
+
+99
+00:06:32,220 --> 00:06:36,240
+and just thinking more abstractly of a neural network
+
+100
+00:06:36,240 --> 00:06:42,000
+as being a map from a sequence of vector spaces.
+
+101
+00:06:42,000 --> 00:06:43,580
+So every layer of the neural network,
+
+102
+00:06:43,580 --> 00:06:45,600
+you can think of it as a vector space.
+
+103
+00:06:48,500 --> 00:06:53,540
+And one possible goal of doing deep learning
+
+104
+00:06:53,540 --> 00:06:57,260
+is to learn a really good representation of your data
+
+105
+00:06:57,260 --> 00:06:58,260
+points.
+
+106
+00:06:58,260 --> 00:07:05,700
+And I'm just visualizing that here as the idea of the input
+
+107
+00:07:05,700 --> 00:07:09,420
+space, maybe all the different data points of unrelated things
+
+108
+00:07:09,420 --> 00:07:12,620
+are all mixed up together and not really
+
+109
+00:07:12,620 --> 00:07:14,860
+separated or disentangled.
+
+110
+00:07:14,860 --> 00:07:16,880
+And then when we do deep learning,
+
+111
+00:07:16,880 --> 00:07:20,340
+we're hoping that as we move through the network,
+
+112
+00:07:20,340 --> 00:07:23,380
+we get to the representation at the end
+
+113
+00:07:23,380 --> 00:07:25,740
+where the data points from different classes
+
+114
+00:07:25,740 --> 00:07:28,020
+or semantically different data points are
+
+115
+00:07:28,020 --> 00:07:29,660
+separated from each other.
+
+116
+00:07:29,660 --> 00:07:32,920
+And then we did a good job.
+
+117
+00:07:35,717 --> 00:07:37,300
+So that's what this is saying, that we
+
+118
+00:07:37,300 --> 00:07:39,743
+want a representation of our data
+
+119
+00:07:39,743 --> 00:07:41,660
+which is perhaps linearly separable at the end
+
+120
+00:07:41,660 --> 00:07:42,400
+of the network.
+
+121
+00:07:42,400 --> 00:07:43,360
+That would be nice.
+
+122
+00:07:47,980 --> 00:07:49,980
+So what I want to talk about in this lecture
+
+123
+00:07:49,980 --> 00:07:55,220
+is the idea that when you pick what your neural network
+
+124
+00:07:55,220 --> 00:08:01,180
+architecture is, it already has an opinion about which data
+
+125
+00:08:01,180 --> 00:08:04,680
+points are similar to each other and which ones are dissimilar,
+
+126
+00:08:04,680 --> 00:08:08,780
+even without doing contrastive learning.
+
+127
+00:08:08,780 --> 00:08:12,960
+So I want to just introduce some tools for thinking about this.
+
+128
+00:08:17,460 --> 00:08:23,060
+And that's all this is saying, is that the neural architecture
+
+129
+00:08:23,060 --> 00:08:24,980
+already expresses some kind of opinion
+
+130
+00:08:24,980 --> 00:08:27,660
+about how similar two data points are,
+
+131
+00:08:27,660 --> 00:08:30,340
+even before you train it.
+
+132
+00:08:30,340 --> 00:08:34,080
+And we'll think about some tools to capture that idea.
+
+133
+00:08:38,659 --> 00:08:41,820
+By the way, as ever, please just interrupt me
+
+134
+00:08:41,820 --> 00:08:43,120
+if you have questions.
+
+135
+00:08:51,540 --> 00:09:01,540
+So the idea here is, I just give you some data.
+
+136
+00:09:01,540 --> 00:09:04,100
+And I just want you to think about,
+
+137
+00:09:04,100 --> 00:09:07,460
+just from first principles, ignoring everything you've ever
+
+138
+00:09:07,460 --> 00:09:10,740
+learned in machine learning, about how you would actually
+
+139
+00:09:10,740 --> 00:09:14,780
+fit it if you wanted to fit a model to this data.
+
+140
+00:09:14,780 --> 00:09:16,440
+Does anyone have ideas?
+
+141
+00:09:20,300 --> 00:09:24,220
+AUDIENCE: Do a line, and then line curves down.
+
+142
+00:09:24,220 --> 00:09:27,520
+JEREMY BERNSTEIN: So I could somehow just interpolate maybe.
+
+143
+00:09:27,520 --> 00:09:30,220
+AUDIENCE: [INAUDIBLE]
+
+144
+00:09:30,220 --> 00:09:33,020
+JEREMY BERNSTEIN: That would kind of do that.
+
+145
+00:09:33,020 --> 00:09:37,000
+Yeah, that's one idea, just linear interpolation.
+
+146
+00:09:47,890 --> 00:09:49,510
+Yeah, I feel like--
+
+147
+00:09:49,510 --> 00:09:50,270
+Yeah, go ahead.
+
+148
+00:09:50,270 --> 00:09:52,810
+AUDIENCE: [INAUDIBLE] interpolation.
+
+149
+00:09:52,810 --> 00:09:54,770
+JEREMY BERNSTEIN: Polynomial interpolation,
+
+150
+00:09:54,770 --> 00:09:57,170
+which is maybe harder to draw, but maybe I could fit
+
+151
+00:09:57,170 --> 00:09:59,270
+some kind of quadratic to this.
+
+152
+00:10:02,210 --> 00:10:03,050
+Potentially.
+
+153
+00:10:07,435 --> 00:10:08,810
+If you just think about this, you
+
+154
+00:10:08,810 --> 00:10:11,210
+can invent a lot of different function classes
+
+155
+00:10:11,210 --> 00:10:13,010
+and just think about what it would
+
+156
+00:10:13,010 --> 00:10:17,270
+mean to do machine learning with different function classes.
+
+157
+00:10:17,270 --> 00:10:21,997
+And it's kind of a big jump to get to doing neural networks,
+
+158
+00:10:21,997 --> 00:10:23,830
+if you just think about things from scratch.
+
+159
+00:10:23,830 --> 00:10:29,290
+But that's kind of where we are.
+
+160
+00:10:29,290 --> 00:10:34,570
+So basically, there are a lot of classic approaches to doing
+
+161
+00:10:34,570 --> 00:10:36,730
+machine learning, where people did just
+
+162
+00:10:36,730 --> 00:10:38,950
+invent their favorite function class and say, hey,
+
+163
+00:10:38,950 --> 00:10:41,367
+we're just going to do machine learning with this function
+
+164
+00:10:41,367 --> 00:10:42,970
+class.
+
+165
+00:10:42,970 --> 00:10:48,870
+So a really classic example is called kernel methods.
+
+166
+00:10:48,870 --> 00:10:50,850
+And actually it's quite related to what
+
+167
+00:10:50,850 --> 00:10:53,790
+we talked about in the approximation theory lecture,
+
+168
+00:10:53,790 --> 00:10:57,090
+which was maybe lecture two.
+
+169
+00:10:57,090 --> 00:10:58,930
+But kernel method says we're going
+
+170
+00:10:58,930 --> 00:11:02,370
+to take a kernel, which is basically,
+
+171
+00:11:02,370 --> 00:11:04,510
+you could also think of it as a bump function.
+
+172
+00:11:08,130 --> 00:11:11,970
+And it could just look like a little Gaussian
+
+173
+00:11:11,970 --> 00:11:14,210
+or a little curvy.
+
+174
+00:11:14,210 --> 00:11:19,730
+And I'm going to place one kernel
+
+175
+00:11:19,730 --> 00:11:28,010
+on the location of each input, if this makes sense.
+
+176
+00:11:28,010 --> 00:11:32,830
+So if I've got four inputs, I'll put four little bump functions.
+
+177
+00:11:32,830 --> 00:11:35,787
+And intuitively, if I've got four data points
+
+178
+00:11:35,787 --> 00:11:37,370
+and I have four bump functions, then I
+
+179
+00:11:37,370 --> 00:11:40,390
+have enough degrees of freedom to fit the data.
+
+180
+00:11:40,390 --> 00:11:43,670
+So that seems to make sense.
+
+181
+00:11:43,670 --> 00:11:47,930
+And then I'm just going to rescale them
+
+182
+00:11:47,930 --> 00:11:56,190
+with scalar coefficients just so that they interpolate the data.
+
+183
+00:11:56,190 --> 00:11:59,330
+So it's four bump functions, four scalar coefficients,
+
+184
+00:11:59,330 --> 00:12:00,430
+four data points.
+
+185
+00:12:00,430 --> 00:12:01,630
+Everything checks out.
+
+186
+00:12:06,010 --> 00:12:10,890
+And I wrote that down here.
+
+187
+00:12:10,890 --> 00:12:16,330
+So I construct my function, f of x, if I've got n data
+
+188
+00:12:16,330 --> 00:12:19,730
+points, I need to sum over n bump functions.
+
+189
+00:12:19,730 --> 00:12:24,950
+And I denote each bump function using this notation k.
+
+190
+00:12:28,150 --> 00:12:30,710
+And then there's also a scalar alpha,
+
+191
+00:12:30,710 --> 00:12:33,670
+which allows me to reweight the heights of the different bumps.
+
+192
+00:12:33,670 --> 00:12:37,370
+And then if I have n bumps and n data points,
+
+193
+00:12:37,370 --> 00:12:39,210
+I can definitely fit my data.
+
+194
+00:12:39,210 --> 00:12:41,530
+So it's kind of a natural way just
+
+195
+00:12:41,530 --> 00:12:49,330
+to explain a little bit about what k of x and xi means.
+
+196
+00:12:49,330 --> 00:13:01,370
+Roughly, looking at this, this would be k of x, 0.
+
+197
+00:13:01,370 --> 00:13:04,530
+And then you should think about this xi
+
+198
+00:13:04,530 --> 00:13:08,250
+as allowing me to translate this bump along the x-axis
+
+199
+00:13:08,250 --> 00:13:11,790
+to be centered on that i-th data point.
+
+200
+00:13:20,650 --> 00:13:22,690
+That's just what this bit says.
+
+201
+00:13:22,690 --> 00:13:27,330
+And then I can define a function space, let's call it big F,
+
+202
+00:13:27,330 --> 00:13:30,410
+to be the set of functions f that
+
+203
+00:13:30,410 --> 00:13:33,390
+can be decomposed in that form.
+
+204
+00:13:40,850 --> 00:13:45,560
+And if I let the number of bump functions
+
+205
+00:13:45,560 --> 00:13:51,400
+actually go to infinity, so I consider all possible locations
+
+206
+00:13:51,400 --> 00:13:53,160
+of where I put the bumps, and then
+
+207
+00:13:53,160 --> 00:13:57,120
+I actually allow myself to have infinite bumps.
+
+208
+00:13:57,120 --> 00:14:01,720
+Then, this is what is known as, they
+
+209
+00:14:01,720 --> 00:14:04,360
+call this function space a reproducing kernel Hilbert
+
+210
+00:14:04,360 --> 00:14:05,020
+space.
+
+211
+00:14:09,480 --> 00:14:12,640
+And this was all the rage before deep learning
+
+212
+00:14:12,640 --> 00:14:17,720
+or before the recent, let's say the last 13 years
+
+213
+00:14:17,720 --> 00:14:19,440
+of deep learning.
+
+214
+00:14:19,440 --> 00:14:21,860
+Before that, everyone was doing kernel methods,
+
+215
+00:14:21,860 --> 00:14:24,800
+and they were considering spaces of functions like this.
+
+216
+00:14:24,800 --> 00:14:26,900
+Instead of choosing your neural architecture,
+
+217
+00:14:26,900 --> 00:14:30,320
+the whole thing was like, you pick a kernel function.
+
+218
+00:14:30,320 --> 00:14:32,240
+You choose a good kernel or a good bump
+
+219
+00:14:32,240 --> 00:14:37,240
+function that somehow captures the structure in your data.
+
+220
+00:14:37,240 --> 00:14:40,460
+And all the machine learning-- sorry, slight exaggeration,
+
+221
+00:14:40,460 --> 00:14:44,760
+but there were a lot of machine learning papers focused
+
+222
+00:14:44,760 --> 00:14:46,020
+on kernel methods.
+
+223
+00:14:49,280 --> 00:14:55,480
+So that's just a little introduction to kernel methods.
+
+224
+00:14:55,480 --> 00:14:59,000
+And if you just think about it, it's not so obvious
+
+225
+00:14:59,000 --> 00:15:01,000
+why do we use neural networks.
+
+226
+00:15:01,000 --> 00:15:04,560
+Why didn't we go back to kernel methods?
+
+227
+00:15:04,560 --> 00:15:07,460
+You need to think about it or it may not be obvious.
+
+228
+00:15:11,160 --> 00:15:14,000
+There's a second way, second classic way
+
+229
+00:15:14,000 --> 00:15:23,040
+of constructing function spaces or doing machine learning, where
+
+230
+00:15:23,040 --> 00:15:29,300
+actually this time, you think about sampling random functions.
+
+231
+00:15:29,300 --> 00:15:35,940
+So you come up with some way of just sampling random functions.
+
+232
+00:15:35,940 --> 00:15:38,680
+We would call this some kind of stochastic process.
+
+233
+00:15:38,680 --> 00:15:43,560
+And imagine you just keep sampling random functions
+
+234
+00:15:43,560 --> 00:15:45,840
+from your stochastic process.
+
+235
+00:15:45,840 --> 00:15:50,520
+And if it doesn't fit the data, you just throw it away.
+
+236
+00:15:50,520 --> 00:15:53,080
+But if it fits the data, you actually keep it.
+
+237
+00:15:53,080 --> 00:15:55,160
+And you're going to somehow end up
+
+238
+00:15:55,160 --> 00:16:04,480
+with this distribution of functions that actually goes
+
+239
+00:16:04,480 --> 00:16:05,940
+through your training data.
+
+240
+00:16:05,940 --> 00:16:09,020
+So if you actually use this method,
+
+241
+00:16:09,020 --> 00:16:10,760
+you wouldn't actually do that procedure
+
+242
+00:16:10,760 --> 00:16:12,460
+of sampling lots of functions.
+
+243
+00:16:12,460 --> 00:16:14,360
+You would actually do something called
+
+244
+00:16:14,360 --> 00:16:17,800
+conditioning the distribution of functions on the training data
+
+245
+00:16:17,800 --> 00:16:21,080
+and getting what we would call the posterior
+
+246
+00:16:21,080 --> 00:16:24,480
+distribution of functions.
+
+247
+00:16:24,480 --> 00:16:27,380
+But intuitively, this is what's going on with this technique.
+
+248
+00:16:30,480 --> 00:16:32,520
+And there's a special way to make
+
+249
+00:16:32,520 --> 00:16:34,480
+this computationally tractable.
+
+250
+00:16:34,480 --> 00:16:36,960
+And it basically amounts to making the way
+
+251
+00:16:36,960 --> 00:16:40,720
+that you generate the functions like a Gaussian thing.
+
+252
+00:16:40,720 --> 00:16:44,000
+And then all the computations that you
+
+253
+00:16:44,000 --> 00:16:48,020
+need to do this procedure become straightforward.
+
+254
+00:16:50,690 --> 00:16:51,560
+AUDIENCE: Question.
+
+255
+00:16:51,560 --> 00:16:52,518
+JEREMY BERNSTEIN: Yeah?
+
+256
+00:16:52,518 --> 00:16:53,935
+AUDIENCE: If I remember correctly,
+
+257
+00:16:53,935 --> 00:16:55,720
+I think the optimal thing is roughly
+
+258
+00:16:55,720 --> 00:16:57,920
+like a kernel method itself.
+
+259
+00:16:57,920 --> 00:16:59,480
+How similar are they?
+
+260
+00:16:59,480 --> 00:17:03,160
+JEREMY BERNSTEIN: Yeah, that's a really good question.
+
+261
+00:17:03,160 --> 00:17:04,300
+I have a slide.
+
+262
+00:17:07,000 --> 00:17:08,839
+Actually, it turns out, as it happens,
+
+263
+00:17:08,839 --> 00:17:12,352
+there's a close connection between this procedure
+
+264
+00:17:12,352 --> 00:17:14,560
+and the thing on the previous slide with all the bump
+
+265
+00:17:14,560 --> 00:17:15,720
+functions.
+
+266
+00:17:15,720 --> 00:17:17,680
+And that's kind of interesting.
+
+267
+00:17:29,880 --> 00:17:33,340
+We've not discussed yet how to sample these random functions,
+
+268
+00:17:33,340 --> 00:17:35,220
+but we're going to discuss them.
+
+269
+00:17:35,220 --> 00:17:39,150
+But let's just say that we've discussed it already.
+
+270
+00:17:39,150 --> 00:17:41,550
+And the point is that if you sample
+
+271
+00:17:41,550 --> 00:17:43,350
+all of these random functions that
+
+272
+00:17:43,350 --> 00:17:45,990
+are consistent with the data and then compute
+
+273
+00:17:45,990 --> 00:17:48,270
+the mean of that distribution, you
+
+274
+00:17:48,270 --> 00:17:51,670
+get a single, quite smooth function, which
+
+275
+00:17:51,670 --> 00:17:55,390
+is the mean of that distribution over consistent functions.
+
+276
+00:17:55,390 --> 00:18:04,870
+And that turns out to be equivalent to the kernel
+
+277
+00:18:04,870 --> 00:18:08,590
+interpolator of minimum kernel norm,
+
+278
+00:18:08,590 --> 00:18:13,790
+for some definition of the RKHS norm.
+
+279
+00:18:13,790 --> 00:18:16,490
+So yeah, there's a really close connection.
+
+280
+00:18:16,490 --> 00:18:20,330
+But that should not make sense to everyone,
+
+281
+00:18:20,330 --> 00:18:23,130
+because we haven't defined any of those things.
+
+282
+00:18:28,590 --> 00:18:29,230
+Oh, yeah.
+
+283
+00:18:29,230 --> 00:18:31,270
+OK, here was the slide.
+
+284
+00:18:31,270 --> 00:18:37,790
+So there's three ways now that we're going
+
+285
+00:18:37,790 --> 00:18:42,710
+to think about function spaces.
+
+286
+00:18:42,710 --> 00:18:45,390
+So first of all, this one is the one we just
+
+287
+00:18:45,390 --> 00:18:48,628
+talked about where you sample lots of random functions,
+
+288
+00:18:48,628 --> 00:18:51,170
+and then you throw away all the ones that don't fit the data,
+
+289
+00:18:51,170 --> 00:18:53,590
+and you just keep the ones that fit the data.
+
+290
+00:18:53,590 --> 00:18:57,910
+And this will be something called a Gaussian process.
+
+291
+00:18:57,910 --> 00:19:00,510
+Kernel methods are the ones with the bump functions, where
+
+292
+00:19:00,510 --> 00:19:04,030
+we pick our favorite little bump and arrange
+
+293
+00:19:04,030 --> 00:19:06,870
+them to fit the data.
+
+294
+00:19:06,870 --> 00:19:12,110
+And then neural networks are what the class is mainly about.
+
+295
+00:19:12,110 --> 00:19:15,030
+And the cool thing, the really interesting thing
+
+296
+00:19:15,030 --> 00:19:18,470
+is that there's all these correspondences.
+
+297
+00:19:18,470 --> 00:19:21,470
+There's sort of a way to get a kernel method from a Gaussian
+
+298
+00:19:21,470 --> 00:19:22,430
+process.
+
+299
+00:19:22,430 --> 00:19:27,870
+There's kind of a way to get a Gaussian process--
+
+300
+00:19:27,870 --> 00:19:29,143
+they're related to each other.
+
+301
+00:19:29,143 --> 00:19:30,810
+And the relation somehow goes both ways.
+
+302
+00:19:30,810 --> 00:19:32,830
+That's all I want to say.
+
+303
+00:19:32,830 --> 00:19:35,790
+But interestingly, there's a way to get a Gaussian process
+
+304
+00:19:35,790 --> 00:19:38,210
+from a neural network.
+
+305
+00:19:41,330 --> 00:19:44,810
+Well, there's actually maybe a couple ways to do it.
+
+306
+00:19:44,810 --> 00:19:47,590
+But the one that we're going to think about,
+
+307
+00:19:47,590 --> 00:19:52,230
+there's a correspondence where a neural network
+
+308
+00:19:52,230 --> 00:19:54,390
+in a particular limit is equivalent to a Gaussian
+
+309
+00:19:54,390 --> 00:19:55,550
+process.
+
+310
+00:19:55,550 --> 00:19:59,750
+And it's basically when the network is infinitely wide.
+
+311
+00:19:59,750 --> 00:20:01,910
+So you take the width of all the hidden layers
+
+312
+00:20:01,910 --> 00:20:03,870
+and you make them infinitely wide.
+
+313
+00:20:03,870 --> 00:20:07,730
+And then you randomly sample the weights.
+
+314
+00:20:10,670 --> 00:20:13,690
+So you could think about that as you repeatedly,
+
+315
+00:20:13,690 --> 00:20:15,690
+you just keep re-initializing your network.
+
+316
+00:20:15,690 --> 00:20:17,430
+And it keeps giving you random functions.
+
+317
+00:20:17,430 --> 00:20:19,590
+If the network is infinitely wide,
+
+318
+00:20:19,590 --> 00:20:21,230
+it turns out that this distribution
+
+319
+00:20:21,230 --> 00:20:25,750
+is equivalent to something called a Gaussian process.
+
+320
+00:20:25,750 --> 00:20:27,630
+So these connections, if you want
+
+321
+00:20:27,630 --> 00:20:30,990
+to understand more theoretically about deep learning,
+
+322
+00:20:30,990 --> 00:20:34,030
+it's interesting to explore these connections because you
+
+323
+00:20:34,030 --> 00:20:38,310
+can relate neural networks to these classical machine learning
+
+324
+00:20:38,310 --> 00:20:40,610
+methods that people really cared a lot about.
+
+325
+00:20:44,270 --> 00:20:46,030
+Then, you can ask things like, how useful
+
+326
+00:20:46,030 --> 00:20:47,510
+are these correspondences?
+
+327
+00:20:47,510 --> 00:20:50,070
+Do the correspondences actually amount to things
+
+328
+00:20:50,070 --> 00:20:51,490
+which happen in practice?
+
+329
+00:20:51,490 --> 00:20:54,250
+And that's something else you've got to think about.
+
+330
+00:20:54,250 --> 00:20:56,550
+But I'm just going to tell you a little bit about one
+
+331
+00:20:56,550 --> 00:20:59,730
+of the correspondences.
+
+332
+00:20:59,730 --> 00:21:00,230
+Yeah?
+
+333
+00:21:00,230 --> 00:21:02,610
+AUDIENCE: These are all equally expressive, right?
+
+334
+00:21:02,610 --> 00:21:04,350
+Or is there some sense in which one is
+
+335
+00:21:04,350 --> 00:21:07,662
+more expressive than the other?
+
+336
+00:21:07,662 --> 00:21:09,370
+JEREMY BERNSTEIN: That's a good question.
+
+337
+00:21:09,370 --> 00:21:11,372
+So the question was, is there a sense
+
+338
+00:21:11,372 --> 00:21:13,330
+in which one is more expressive than the other?
+
+339
+00:21:13,330 --> 00:21:16,550
+Or all the different function spaces equally expressive?
+
+340
+00:21:16,550 --> 00:21:19,950
+I think they may just be different in some sense.
+
+341
+00:21:19,950 --> 00:21:22,630
+You can look up and you'll find some literature
+
+342
+00:21:22,630 --> 00:21:24,710
+that discusses this.
+
+343
+00:21:24,710 --> 00:21:27,880
+And it's things like the smoothness properties
+
+344
+00:21:27,880 --> 00:21:29,630
+of the functions in the different function
+
+345
+00:21:29,630 --> 00:21:31,470
+spaces may just be different.
+
+346
+00:21:31,470 --> 00:21:33,100
+Like the kernel thing, because it's
+
+347
+00:21:33,100 --> 00:21:35,140
+built out of bump functions, even though there's
+
+348
+00:21:35,140 --> 00:21:36,890
+an infinite number of them, they may still
+
+349
+00:21:36,890 --> 00:21:39,200
+be reasonably smooth functions.
+
+350
+00:21:39,200 --> 00:21:40,980
+But I think for a Gaussian process,
+
+351
+00:21:40,980 --> 00:21:42,680
+depending on the covariate structure,
+
+352
+00:21:42,680 --> 00:21:44,980
+you can have really horrendous functions.
+
+353
+00:21:44,980 --> 00:21:47,200
+But interestingly, with that said,
+
+354
+00:21:47,200 --> 00:21:49,980
+if you take the mean of the posterior of the Gaussian
+
+355
+00:21:49,980 --> 00:21:52,920
+process, it's actually a nice, smooth function.
+
+356
+00:21:52,920 --> 00:21:54,640
+So it's just different.
+
+357
+00:21:54,640 --> 00:21:57,460
+I don't know which one is more expressive.
+
+358
+00:21:57,460 --> 00:21:59,400
+But it's an interesting thing to think about.
+
+359
+00:22:06,700 --> 00:22:08,820
+OK, let's see.
+
+360
+00:22:08,820 --> 00:22:12,740
+OK, so now I'm going to introduce slightly more formally
+
+361
+00:22:12,740 --> 00:22:14,680
+what a Gaussian process actually is.
+
+362
+00:22:21,180 --> 00:22:24,200
+So this is just a recap of what we just talked about.
+
+363
+00:22:24,200 --> 00:22:34,020
+But basically, if we have some data,
+
+364
+00:22:34,020 --> 00:22:38,780
+we can think about sampling lots of, lots of random functions
+
+365
+00:22:38,780 --> 00:22:42,060
+that are the ones that are consistent with the data.
+
+366
+00:22:42,060 --> 00:22:45,140
+And we can get this distribution.
+
+367
+00:22:45,140 --> 00:22:46,740
+And just notice that all the functions
+
+368
+00:22:46,740 --> 00:22:50,860
+are going through the data, but they're random
+
+369
+00:22:50,860 --> 00:22:52,040
+away from the data.
+
+370
+00:22:55,380 --> 00:22:57,540
+And then given that random function,
+
+371
+00:22:57,540 --> 00:23:00,140
+you can ask a couple of questions.
+
+372
+00:23:00,140 --> 00:23:03,020
+One is, what does the mean look like?
+
+373
+00:23:03,020 --> 00:23:05,580
+And it's reasonable that the mean
+
+374
+00:23:05,580 --> 00:23:11,140
+might be a lot smoother than all the random squiggly functions.
+
+375
+00:23:11,140 --> 00:23:13,660
+And then you could ask, what is the standard deviation
+
+376
+00:23:13,660 --> 00:23:16,500
+around the mean?
+
+377
+00:23:16,500 --> 00:23:18,100
+And it's reasonable that it should
+
+378
+00:23:18,100 --> 00:23:23,760
+grow as you move away from the data,
+
+379
+00:23:23,760 --> 00:23:27,120
+and then shrink to 0 on the data.
+
+380
+00:23:27,120 --> 00:23:29,120
+So that's one way it could look.
+
+381
+00:23:34,340 --> 00:23:35,900
+So the point of a Gaussian process
+
+382
+00:23:35,900 --> 00:23:40,500
+is it gives you a formula, just a simple thing that you
+
+383
+00:23:40,500 --> 00:23:41,840
+can easily code up.
+
+384
+00:23:41,840 --> 00:23:44,820
+It just involves some matrices and some linear algebra.
+
+385
+00:23:44,820 --> 00:23:51,040
+But it gives you a formula, both for the mean function
+
+386
+00:23:51,040 --> 00:23:54,220
+and the standard deviation.
+
+387
+00:23:54,220 --> 00:24:00,700
+In other words, given a set of data, you've got these inputs,
+
+388
+00:24:00,700 --> 00:24:04,060
+you can pick a new point on the x-axis.
+
+389
+00:24:04,060 --> 00:24:07,580
+You say, I really care about this point on the x-axis.
+
+390
+00:24:07,580 --> 00:24:10,980
+There's a formula that tells you the value of the mean
+
+391
+00:24:10,980 --> 00:24:15,560
+and what the standard deviation is at that point.
+
+392
+00:24:15,560 --> 00:24:18,600
+And then you can of sweep that point along the x-axis.
+
+393
+00:24:18,600 --> 00:24:21,340
+And you can get this mean and you can
+
+394
+00:24:21,340 --> 00:24:23,500
+get this standard deviation.
+
+395
+00:24:23,500 --> 00:24:25,860
+So it basically gives you a formula
+
+396
+00:24:25,860 --> 00:24:27,460
+for drawing this picture.
+
+397
+00:24:27,460 --> 00:24:29,740
+That's one way to think simply about what
+
+398
+00:24:29,740 --> 00:24:31,740
+a Gaussian process is.
+
+399
+00:24:31,740 --> 00:24:38,200
+And basically, the shape of these standard deviations
+
+400
+00:24:38,200 --> 00:24:42,580
+and what this picture looks like depends upon something
+
+401
+00:24:42,580 --> 00:24:45,020
+that we call the covariance structure of the Gaussian
+
+402
+00:24:45,020 --> 00:24:45,520
+process.
+
+403
+00:24:45,520 --> 00:24:50,300
+And that's what we get to pick as machine learning people
+
+404
+00:24:50,300 --> 00:24:51,900
+using Gaussian processes, is we get
+
+405
+00:24:51,900 --> 00:24:55,860
+to pick the covariance structure.
+
+406
+00:24:55,860 --> 00:24:59,220
+So that's the picture.
+
+407
+00:24:59,220 --> 00:25:05,420
+Informally, I think this is probably the most useful--
+
+408
+00:25:05,420 --> 00:25:06,895
+if you just want a quick takeaway,
+
+409
+00:25:06,895 --> 00:25:08,520
+you don't want to go into all the math,
+
+410
+00:25:08,520 --> 00:25:11,820
+this is quite useful understanding
+
+411
+00:25:11,820 --> 00:25:13,500
+of what a Gaussian Process is.
+
+412
+00:25:13,500 --> 00:25:15,820
+Just pretend that you don't know what
+
+413
+00:25:15,820 --> 00:25:17,280
+a stochastic process is like.
+
+414
+00:25:17,280 --> 00:25:18,780
+Most people honestly don't.
+
+415
+00:25:18,780 --> 00:25:21,140
+But you do know what a random vector is.
+
+416
+00:25:21,140 --> 00:25:24,820
+So let's just think about random vectors.
+
+417
+00:25:24,820 --> 00:25:29,490
+So this is supposed to represent a vector, which I just
+
+418
+00:25:29,490 --> 00:25:33,290
+turned horizontally so it would fit on the page.
+
+419
+00:25:33,290 --> 00:25:37,090
+And imagine that I have a multivariate normal random
+
+420
+00:25:37,090 --> 00:25:41,930
+vector with some covariance matrix and some mean,
+
+421
+00:25:41,930 --> 00:25:45,490
+which is actually 0.
+
+422
+00:25:45,490 --> 00:25:50,330
+Then I could plot each coordinate.
+
+423
+00:25:50,330 --> 00:25:52,930
+I get one sample of this random vector,
+
+424
+00:25:52,930 --> 00:25:54,990
+and I just plot it on an axis.
+
+425
+00:25:54,990 --> 00:26:00,090
+So I just plot each entry.
+
+426
+00:26:00,090 --> 00:26:03,210
+So this one corresponds to this one, this one corresponds
+
+427
+00:26:03,210 --> 00:26:04,510
+to this one.
+
+428
+00:26:04,510 --> 00:26:09,130
+And I could do that, and then I could just connect the dots.
+
+429
+00:26:09,130 --> 00:26:14,010
+And I could call this somehow building
+
+430
+00:26:14,010 --> 00:26:19,210
+a function from a random vector just by connecting the dots.
+
+431
+00:26:19,210 --> 00:26:21,210
+So I could do that if I wanted to.
+
+432
+00:26:21,210 --> 00:26:26,190
+Then I could say, in this picture,
+
+433
+00:26:26,190 --> 00:26:32,490
+it's not that great because neighboring points on the x-axis
+
+434
+00:26:32,490 --> 00:26:35,730
+are not correlated with each other.
+
+435
+00:26:35,730 --> 00:26:37,910
+And usually if I have a nice function,
+
+436
+00:26:37,910 --> 00:26:41,050
+I want nearby points to be similar to each other.
+
+437
+00:26:41,050 --> 00:26:43,090
+So then you say, OK, hey, I'm just
+
+438
+00:26:43,090 --> 00:26:48,030
+going to choose a covariance matrix with a special structure
+
+439
+00:26:48,030 --> 00:26:51,970
+so that the covariance of neighboring
+
+440
+00:26:51,970 --> 00:26:57,870
+entries in the vector are very correlated with each other.
+
+441
+00:26:57,870 --> 00:26:59,610
+So I just pick the covariance such
+
+442
+00:26:59,610 --> 00:27:03,378
+that neighboring entries in my vector are very correlated.
+
+443
+00:27:03,378 --> 00:27:05,670
+Obviously, if I permuted all the entries in the vector,
+
+444
+00:27:05,670 --> 00:27:06,510
+it would break that.
+
+445
+00:27:06,510 --> 00:27:07,990
+But I'm not going to do that.
+
+446
+00:27:07,990 --> 00:27:11,090
+So I'm basically going to pick a covariance structure such
+
+447
+00:27:11,090 --> 00:27:14,190
+that neighboring entries are related.
+
+448
+00:27:14,190 --> 00:27:16,150
+And then I would get a picture more like this,
+
+449
+00:27:16,150 --> 00:27:24,490
+where when I connect the dots, the function,
+
+450
+00:27:24,490 --> 00:27:28,370
+it looks more like a nice function that I like.
+
+451
+00:27:28,370 --> 00:27:29,930
+And then basically a Gaussian process
+
+452
+00:27:29,930 --> 00:27:31,850
+is exactly this construction, but then you
+
+453
+00:27:31,850 --> 00:27:36,070
+let the number of grid cells in your vector,
+
+454
+00:27:36,070 --> 00:27:38,490
+you let the dimension of your vector go to infinity.
+
+455
+00:27:38,490 --> 00:27:43,450
+And basically, you pack these sample points
+
+456
+00:27:43,450 --> 00:27:45,710
+more and more closely together, if that makes sense.
+
+457
+00:27:49,210 --> 00:27:51,810
+Does the construction make sense?
+
+458
+00:27:51,810 --> 00:27:54,950
+You're saying if you have a random vector,
+
+459
+00:27:54,950 --> 00:27:56,430
+you can plot its coordinates.
+
+460
+00:27:56,430 --> 00:28:00,230
+And then you can let the number of coordinates go to infinity,
+
+461
+00:28:00,230 --> 00:28:05,890
+and it will just limit to something
+
+462
+00:28:05,890 --> 00:28:10,810
+that's more like a continuous function available.
+
+463
+00:28:10,810 --> 00:28:11,890
+Does that make sense?
+
+464
+00:28:11,890 --> 00:28:13,590
+I've not really proved anything here.
+
+465
+00:28:13,590 --> 00:28:15,950
+I've just given you an intuitive description.
+
+466
+00:28:18,810 --> 00:28:22,350
+So if you forget everything else from the lecture,
+
+467
+00:28:22,350 --> 00:28:26,240
+that's basically what a Gaussian process is.
+
+468
+00:28:26,240 --> 00:28:31,160
+So now I want to give you a formal definition.
+
+469
+00:28:31,160 --> 00:28:33,760
+So now we say that we have some input space
+
+470
+00:28:33,760 --> 00:28:42,080
+X, which that was our x-axis in the previous slide.
+
+471
+00:28:42,080 --> 00:28:48,520
+And then for every point in this input space,
+
+472
+00:28:48,520 --> 00:28:53,340
+for infinitely many points, we let f of x be a random variable.
+
+473
+00:28:56,680 --> 00:29:01,920
+So you think about the function f indexed by its argument x
+
+474
+00:29:01,920 --> 00:29:05,500
+as being the continuous generalization
+
+475
+00:29:05,500 --> 00:29:13,840
+of a random vector, where x is the index about which coordinate
+
+476
+00:29:13,840 --> 00:29:15,560
+you are on on the vector.
+
+477
+00:29:15,560 --> 00:29:18,700
+But that's just an informal thought.
+
+478
+00:29:21,240 --> 00:29:24,960
+And then what we say is that because it's difficult to think
+
+479
+00:29:24,960 --> 00:29:28,120
+about infinite dimensional objects,
+
+480
+00:29:28,120 --> 00:29:33,400
+we say that if we choose a finite number of input points
+
+481
+00:29:33,400 --> 00:29:39,480
+and inspect what the random object f looks like on any
+
+482
+00:29:39,480 --> 00:29:44,920
+finite set of inputs-- so on any collection of inputs x1 to xn,
+
+483
+00:29:44,920 --> 00:29:47,950
+where n is finite--
+
+484
+00:29:47,950 --> 00:29:50,900
+we can consider that to be a random vector.
+
+485
+00:29:50,900 --> 00:29:52,360
+Legitimately, it is a random vector
+
+486
+00:29:52,360 --> 00:29:54,600
+because we're inspecting the function
+
+487
+00:29:54,600 --> 00:29:56,800
+on a finite set of inputs.
+
+488
+00:29:56,800 --> 00:30:01,120
+And if this random vector is Gaussian
+
+489
+00:30:01,120 --> 00:30:03,760
+for any finite collection of inputs,
+
+490
+00:30:03,760 --> 00:30:06,440
+then we would say that f is a Gaussian process.
+
+491
+00:30:06,440 --> 00:30:09,868
+So this is the formal definition of the Gaussian process.
+
+492
+00:30:09,868 --> 00:30:12,160
+It's kind of like an infinite dimensional object, where
+
+493
+00:30:12,160 --> 00:30:15,340
+if you take any finite inspection of that object,
+
+494
+00:30:15,340 --> 00:30:17,960
+it's a Gaussian vector, which is somehow
+
+495
+00:30:17,960 --> 00:30:20,580
+related to what we were talking about on the previous slide.
+
+496
+00:30:25,060 --> 00:30:25,560
+Yeah.
+
+497
+00:30:25,560 --> 00:30:26,060
+Oh, yeah.
+
+498
+00:30:26,060 --> 00:30:26,760
+Go ahead.
+
+499
+00:30:26,760 --> 00:30:31,560
+AUDIENCE: Given a random vector, how would you verify
+
+500
+00:30:31,560 --> 00:30:34,960
+whether or not it is Gaussian?
+
+501
+00:30:34,960 --> 00:30:37,960
+JEREMY BERNSTEIN: It's more analytical.
+
+502
+00:30:37,960 --> 00:30:39,840
+When we use this tool, it's more like you
+
+503
+00:30:39,840 --> 00:30:42,092
+produce something which analytically, you know
+
+504
+00:30:42,092 --> 00:30:44,300
+it satisfies this definition.
+
+505
+00:30:44,300 --> 00:30:46,080
+You're very rarely in a situation
+
+506
+00:30:46,080 --> 00:30:52,700
+where you would want to test empirically if it's a Gaussian.
+
+507
+00:30:52,700 --> 00:31:00,060
+So you would have to verify it analytically in most cases.
+
+508
+00:31:00,060 --> 00:31:02,980
+And I'm blanking on how exactly you would do that.
+
+509
+00:31:02,980 --> 00:31:06,440
+But there are ways to do that.
+
+510
+00:31:06,440 --> 00:31:09,640
+AUDIENCE: So you can define in the construction what
+
+511
+00:31:09,640 --> 00:31:11,860
+the random variables are?
+
+512
+00:31:11,860 --> 00:31:15,443
+What each function [INAUDIBLE], right?
+
+513
+00:31:15,443 --> 00:31:16,360
+JEREMY BERNSTEIN: Yes.
+
+514
+00:31:16,360 --> 00:31:18,760
+So if you're going to use Gaussian processes,
+
+515
+00:31:18,760 --> 00:31:21,860
+you will build something which satisfies this definition.
+
+516
+00:31:21,860 --> 00:31:23,000
+AUDIENCE: OK.
+
+517
+00:31:23,000 --> 00:31:25,280
+JEREMY BERNSTEIN: And the thing is, what's difficult
+
+518
+00:31:25,280 --> 00:31:27,640
+about this definition is it's not obvious that anything
+
+519
+00:31:27,640 --> 00:31:29,840
+should satisfy this definition.
+
+520
+00:31:29,840 --> 00:31:33,160
+And there's a theorem that most people who use
+
+521
+00:31:33,160 --> 00:31:36,700
+Gaussian processes don't know.
+
+522
+00:31:36,700 --> 00:31:39,448
+But I think it's called Kolmogorov extension
+
+523
+00:31:39,448 --> 00:31:40,740
+theorem or something like this.
+
+524
+00:31:40,740 --> 00:31:42,800
+And there's this area of math which
+
+525
+00:31:42,800 --> 00:31:46,440
+is about proving that these things exist.
+
+526
+00:31:46,440 --> 00:31:48,000
+But it turns out you actually don't
+
+527
+00:31:48,000 --> 00:31:52,253
+need to know that area of math to actually use this stuff.
+
+528
+00:31:52,253 --> 00:31:53,920
+AUDIENCE: And then I was just wondering,
+
+529
+00:31:53,920 --> 00:31:56,840
+precisely what is the definition of a Gaussian vector?
+
+530
+00:31:56,840 --> 00:31:57,523
+I can see from--
+
+531
+00:31:57,523 --> 00:31:58,440
+JEREMY BERNSTEIN: Ooh!
+
+532
+00:31:58,440 --> 00:32:01,760
+AUDIENCE: --the slide how you're just sampling from a Gaussian
+
+533
+00:32:01,760 --> 00:32:02,580
+to construct it.
+
+534
+00:32:02,580 --> 00:32:03,420
+But [INAUDIBLE].
+
+535
+00:32:03,420 --> 00:32:04,337
+JEREMY BERNSTEIN: Yes.
+
+536
+00:32:04,337 --> 00:32:06,443
+AUDIENCE: --want to know what it means.
+
+537
+00:32:06,443 --> 00:32:08,360
+JEREMY BERNSTEIN: The simplest Gaussian vector
+
+538
+00:32:08,360 --> 00:32:11,980
+is a Gaussian vector where the coordinates are iid.
+
+539
+00:32:11,980 --> 00:32:13,467
+And then just for each coordinate,
+
+540
+00:32:13,467 --> 00:32:14,800
+you sample a different Gaussian.
+
+541
+00:32:14,800 --> 00:32:16,860
+And they're not related to each other.
+
+542
+00:32:16,860 --> 00:32:19,550
+That's a simple one.
+
+543
+00:32:19,550 --> 00:32:23,550
+And then a general one is defined with respect
+
+544
+00:32:23,550 --> 00:32:26,790
+to a covariance matrix.
+
+545
+00:32:26,790 --> 00:32:30,750
+And I'm probably going to butcher
+
+546
+00:32:30,750 --> 00:32:32,130
+any explanation I give now.
+
+547
+00:32:32,130 --> 00:32:35,970
+But I would just go on Wikipedia after the class.
+
+548
+00:32:39,790 --> 00:32:42,630
+Another way to think about a general multivariate Gaussian
+
+549
+00:32:42,630 --> 00:32:46,870
+is to do the iid coordinates and then rotate the space.
+
+550
+00:32:46,870 --> 00:32:48,890
+And it turns out that's equivalent.
+
+551
+00:32:48,890 --> 00:32:52,110
+I'm pretty sure that's basically equivalent to a general one,
+
+552
+00:32:52,110 --> 00:32:55,190
+with rescaling the coordinates as well.
+
+553
+00:32:55,190 --> 00:32:56,550
+Yeah?
+
+554
+00:32:56,550 --> 00:32:58,830
+AUDIENCE: Is this just a fault of the dimensionality?
+
+555
+00:32:58,830 --> 00:33:01,030
+Or if it's spaced within [INAUDIBLE] Gaussian lives
+
+556
+00:33:01,030 --> 00:33:03,870
+would be the number of data points, right?
+
+557
+00:33:03,870 --> 00:33:05,630
+[INAUDIBLE]?
+
+558
+00:33:05,630 --> 00:33:07,650
+JEREMY BERNSTEIN: Yeah, but for this definition,
+
+559
+00:33:07,650 --> 00:33:12,090
+in this case, that would be if I had a finite thing.
+
+560
+00:33:12,090 --> 00:33:17,670
+But this definition is for any collection of n for any n.
+
+561
+00:33:17,670 --> 00:33:21,730
+So it has to hold for all possible collections of inputs.
+
+562
+00:33:21,730 --> 00:33:23,970
+It's quite a technical definition.
+
+563
+00:33:27,750 --> 00:33:30,830
+Sorry, is that clear?
+
+564
+00:33:30,830 --> 00:33:32,670
+AUDIENCE: Yeah, I guess just initially when
+
+565
+00:33:32,670 --> 00:33:35,995
+I first thought Gaussian, I just imagined the Gaussian curves.
+
+566
+00:33:35,995 --> 00:33:37,370
+So I imagine that being Gaussian.
+
+567
+00:33:37,370 --> 00:33:39,750
+But obviously that's not what this is.
+
+568
+00:33:39,750 --> 00:33:41,730
+And then I thought maybe [INAUDIBLE].
+
+569
+00:33:41,730 --> 00:33:43,030
+But it looks like--
+
+570
+00:33:43,030 --> 00:33:43,870
+yeah.
+
+571
+00:33:43,870 --> 00:33:45,443
+I understand better now.
+
+572
+00:33:45,443 --> 00:33:47,110
+JEREMY BERNSTEIN: Yeah, it's conditioned
+
+573
+00:33:47,110 --> 00:33:48,678
+on having a set of inputs.
+
+574
+00:33:48,678 --> 00:33:50,470
+AUDIENCE: I'm thinking of a neural network,
+
+575
+00:33:50,470 --> 00:33:53,830
+and it's defined on some data points.
+
+576
+00:33:53,830 --> 00:33:59,270
+That's Gaussian in the sense that the function that it's
+
+577
+00:33:59,270 --> 00:34:02,910
+applying on the data points in the dimension of the space,
+
+578
+00:34:02,910 --> 00:34:06,310
+the dimensionality of the data points for, I guess,
+
+579
+00:34:06,310 --> 00:34:08,870
+larger is Gaussian.
+
+580
+00:34:08,870 --> 00:34:11,030
+I guess I'm just trying to reconcile this
+
+581
+00:34:11,030 --> 00:34:12,832
+with the neural network not being--
+
+582
+00:34:12,832 --> 00:34:13,790
+JEREMY BERNSTEIN: Yeah.
+
+583
+00:34:13,790 --> 00:34:15,030
+AUDIENCE: [INAUDIBLE]
+
+584
+00:34:15,030 --> 00:34:15,909
+JEREMY BERNSTEIN: OK.
+
+585
+00:34:15,909 --> 00:34:19,350
+AUDIENCE: I'm thinking I'm close, but [INAUDIBLE].
+
+586
+00:34:19,350 --> 00:34:22,070
+JEREMY BERNSTEIN: I have a concrete example.
+
+587
+00:34:22,070 --> 00:34:25,790
+I'm just not sure how much further into the lecture
+
+588
+00:34:25,790 --> 00:34:28,230
+it is going to be.
+
+589
+00:34:28,230 --> 00:34:30,969
+But I think it's going to resolve this question.
+
+590
+00:34:30,969 --> 00:34:36,259
+So let me just plow on, but keep the question.
+
+591
+00:34:36,259 --> 00:34:39,730
+But I just have a few more high-level things to say.
+
+592
+00:34:39,730 --> 00:34:42,610
+And then, oh, yeah, I have a picture as well.
+
+593
+00:34:42,610 --> 00:34:45,097
+So let me just go on.
+
+594
+00:34:45,097 --> 00:34:46,889
+I think I'm going to resolve your question.
+
+595
+00:34:50,429 --> 00:34:54,190
+So I should have defined what a standard multivariate
+
+596
+00:34:54,190 --> 00:34:55,010
+Gaussian is.
+
+597
+00:34:55,010 --> 00:34:59,550
+And I'll add that for next time.
+
+598
+00:34:59,550 --> 00:35:02,750
+So this is just to say that a Gaussian process is
+
+599
+00:35:02,750 --> 00:35:05,470
+the thing that generalizes a finite-dimensional Gaussian
+
+600
+00:35:05,470 --> 00:35:12,310
+vector to somehow an infinite-dimensional random
+
+601
+00:35:12,310 --> 00:35:13,210
+function.
+
+602
+00:35:17,590 --> 00:35:21,270
+And if a Gaussian random vector is described
+
+603
+00:35:21,270 --> 00:35:24,990
+by a covariance matrix, well, actually this thing
+
+604
+00:35:24,990 --> 00:35:28,390
+that we call a Gaussian process is
+
+605
+00:35:28,390 --> 00:35:29,870
+going to be described by something
+
+606
+00:35:29,870 --> 00:35:35,020
+that we call the covariance function, which tells us--
+
+607
+00:35:35,020 --> 00:35:38,710
+at two different inputs, what is the covariance
+
+608
+00:35:38,710 --> 00:35:41,190
+between the function at those inputs.
+
+609
+00:35:41,190 --> 00:35:47,270
+So that's how the covariance matrix gets generalized.
+
+610
+00:35:47,270 --> 00:35:54,330
+And an example, if in the finite case,
+
+611
+00:35:54,330 --> 00:36:02,310
+the covariance was e to the i minus j squared, then
+
+612
+00:36:02,310 --> 00:36:06,390
+here in the continuous case, it would be something like e
+
+613
+00:36:06,390 --> 00:36:11,090
+to the x minus x prime squared.
+
+614
+00:36:11,090 --> 00:36:13,360
+So that's how that would generalize.
+
+615
+00:36:17,940 --> 00:36:24,500
+So hopefully this slide will help build some more intuition
+
+616
+00:36:24,500 --> 00:36:26,200
+for what we're talking about.
+
+617
+00:36:26,200 --> 00:36:27,000
+OK, go ahead.
+
+618
+00:36:27,000 --> 00:36:29,380
+AUDIENCE: [INAUDIBLE] dimensional function,
+
+619
+00:36:29,380 --> 00:36:31,300
+you just need a function that accepts
+
+620
+00:36:31,300 --> 00:36:32,697
+an infinite number of inputs?
+
+621
+00:36:32,697 --> 00:36:33,780
+JEREMY BERNSTEIN: Exactly.
+
+622
+00:36:33,780 --> 00:36:34,917
+AUDIENCE: OK.
+
+623
+00:36:34,917 --> 00:36:36,000
+JEREMY BERNSTEIN: Exactly.
+
+624
+00:36:45,460 --> 00:36:47,020
+Let me just say again that, yeah,
+
+625
+00:36:47,020 --> 00:36:52,340
+exactly, we've got the x-axis or the real line
+
+626
+00:36:52,340 --> 00:36:53,400
+as our input space.
+
+627
+00:36:53,400 --> 00:36:55,660
+So there's an infinite number of things on it.
+
+628
+00:36:55,660 --> 00:37:00,700
+And here we're going to consider two examples, x very close to x
+
+629
+00:37:00,700 --> 00:37:05,780
+prime, which is this picture.
+
+630
+00:37:05,780 --> 00:37:13,220
+And basically, we're going to choose the covariance function
+
+631
+00:37:13,220 --> 00:37:15,680
+almost always in our Gaussian process,
+
+632
+00:37:15,680 --> 00:37:20,540
+such that if I sample the random functions
+
+633
+00:37:20,540 --> 00:37:22,960
+and I plot a scatter plot--
+
+634
+00:37:22,960 --> 00:37:26,940
+so I sample one random function and I get this point
+
+635
+00:37:26,940 --> 00:37:28,923
+for f of x and f of x prime.
+
+636
+00:37:28,923 --> 00:37:30,840
+And then I sample a different random function,
+
+637
+00:37:30,840 --> 00:37:32,100
+and I get this point.
+
+638
+00:37:32,100 --> 00:37:34,020
+And I sample a different one.
+
+639
+00:37:34,020 --> 00:37:37,380
+But because we're imagining that x and x prime are close
+
+640
+00:37:37,380 --> 00:37:43,620
+together, the scatter plot that I get is highly correlated.
+
+641
+00:37:43,620 --> 00:37:46,560
+And as x and x prime get closer and closer together,
+
+642
+00:37:46,560 --> 00:37:51,660
+it should concentrate on the samples being the same.
+
+643
+00:37:51,660 --> 00:37:57,500
+But then as I move the point x prime further away,
+
+644
+00:37:57,500 --> 00:38:02,220
+now I move x prime over here so x and x prime are kind of far
+
+645
+00:38:02,220 --> 00:38:05,940
+apart, the function values that I
+
+646
+00:38:05,940 --> 00:38:09,420
+get from sampling the functions are now uncorrelated
+
+647
+00:38:09,420 --> 00:38:15,620
+with each other, if it's a Gaussian process with this kind
+
+648
+00:38:15,620 --> 00:38:18,200
+of covariate structure, which is usually what you have.
+
+649
+00:38:22,980 --> 00:38:24,940
+And basically, it's the choice of what
+
+650
+00:38:24,940 --> 00:38:26,980
+we call the covariance function that actually
+
+651
+00:38:26,980 --> 00:38:30,860
+encodes what we mean by nearby.
+
+652
+00:38:30,860 --> 00:38:33,160
+And for different choices of covariance function,
+
+653
+00:38:33,160 --> 00:38:36,340
+that could mean something else.
+
+654
+00:38:36,340 --> 00:38:38,300
+And just to give you some common examples
+
+655
+00:38:38,300 --> 00:38:40,940
+of covariance functions, one would
+
+656
+00:38:40,940 --> 00:38:47,220
+be to take e to the negative squared distance between the two
+
+657
+00:38:47,220 --> 00:38:49,180
+inputs.
+
+658
+00:38:49,180 --> 00:38:51,560
+And another, if we have a multivariate case,
+
+659
+00:38:51,560 --> 00:38:55,700
+it could be to take some kind of dot product between the inputs.
+
+660
+00:38:55,700 --> 00:38:58,700
+Basically, the covariance structure
+
+661
+00:38:58,700 --> 00:39:01,640
+is some kind of measure of similarity between the inputs.
+
+662
+00:39:01,640 --> 00:39:06,420
+And we use that to induce what the correlation structure looks
+
+663
+00:39:06,420 --> 00:39:08,040
+like between different inputs.
+
+664
+00:39:15,500 --> 00:39:16,500
+Yeah, go ahead.
+
+665
+00:39:16,500 --> 00:39:18,540
+AUDIENCE: Does this work with language modeling
+
+666
+00:39:18,540 --> 00:39:20,740
+when you're learning an embedding?
+
+667
+00:39:20,740 --> 00:39:23,788
+Because I guess the words are not continuous, right?
+
+668
+00:39:23,788 --> 00:39:25,080
+You can't take the dot product.
+
+669
+00:39:25,080 --> 00:39:27,143
+But we have an embedding that's learned.
+
+670
+00:39:27,143 --> 00:39:28,060
+JEREMY BERNSTEIN: Yes.
+
+671
+00:39:28,060 --> 00:39:31,580
+Interestingly, the covariance function--
+
+672
+00:39:31,580 --> 00:39:34,020
+yeah, if you have discrete inputs--
+
+673
+00:39:36,860 --> 00:39:39,460
+there are ways to define covariance functions,
+
+674
+00:39:39,460 --> 00:39:42,380
+even on weird spaces.
+
+675
+00:39:42,380 --> 00:39:45,180
+The inputs don't have to be the real line.
+
+676
+00:39:45,180 --> 00:39:46,980
+The inputs to the covariance function
+
+677
+00:39:46,980 --> 00:39:51,300
+can be any inputs that--
+
+678
+00:39:51,300 --> 00:39:53,700
+so you can extend this construction
+
+679
+00:39:53,700 --> 00:39:56,272
+to weird input spaces.
+
+680
+00:39:56,272 --> 00:39:57,980
+That was one of the reasons people really
+
+681
+00:39:57,980 --> 00:40:00,860
+like kernel methods as well, because they
+
+682
+00:40:00,860 --> 00:40:02,380
+have that same property.
+
+683
+00:40:02,380 --> 00:40:05,980
+In some sense, a downside of neural nets
+
+684
+00:40:05,980 --> 00:40:12,732
+is it's not obvious how to apply it to language, let's say.
+
+685
+00:40:12,732 --> 00:40:14,190
+OK, we came up with a way to do it.
+
+686
+00:40:14,190 --> 00:40:17,310
+We just embed all the inputs and then learn the embeddings.
+
+687
+00:40:17,310 --> 00:40:19,050
+But it wasn't obvious that that was
+
+688
+00:40:19,050 --> 00:40:21,270
+going to work before people showed that it worked.
+
+689
+00:40:21,270 --> 00:40:23,330
+So people came up with alternatives.
+
+690
+00:40:23,330 --> 00:40:28,210
+And this is compatible with different input spaces,
+
+691
+00:40:28,210 --> 00:40:29,475
+basically.
+
+692
+00:40:29,475 --> 00:40:30,850
+AUDIENCE: But I guess, if we were
+
+693
+00:40:30,850 --> 00:40:36,290
+to say that an LLM was a Gaussian process or something,
+
+694
+00:40:36,290 --> 00:40:40,010
+it would mean that whatever the solutions it finds
+
+695
+00:40:40,010 --> 00:40:43,550
+are both a Gaussian process in terms of embeddings,
+
+696
+00:40:43,550 --> 00:40:46,250
+and that it's also figuring out the right embeddings
+
+697
+00:40:46,250 --> 00:40:48,650
+for the solutions of the Gaussian process.
+
+698
+00:40:48,650 --> 00:40:51,450
+Because the embeddings are [INAUDIBLE].
+
+699
+00:40:51,450 --> 00:40:54,843
+JEREMY BERNSTEIN: So I haven't got to what I precisely
+
+700
+00:40:54,843 --> 00:40:57,010
+mean when I say that we can think of neural networks
+
+701
+00:40:57,010 --> 00:40:58,030
+as Gaussian processes.
+
+702
+00:40:58,030 --> 00:41:01,870
+So let's wait to get there and then discuss this a bit more.
+
+703
+00:41:12,990 --> 00:41:15,152
+This is the last abstract slide.
+
+704
+00:41:15,152 --> 00:41:16,610
+And then I'm going to start talking
+
+705
+00:41:16,610 --> 00:41:19,590
+about a more concrete example for a neural network.
+
+706
+00:41:19,590 --> 00:41:25,817
+So I hope that will make things a little clearer.
+
+707
+00:41:25,817 --> 00:41:27,650
+But the last thing that I want to talk about
+
+708
+00:41:27,650 --> 00:41:31,330
+is how, if you're doing machine learning with a Gaussian
+
+709
+00:41:31,330 --> 00:41:34,850
+process, how you actually make predictions-- or some people
+
+710
+00:41:34,850 --> 00:41:40,230
+would say, how you do inference, in machine learning speak.
+
+711
+00:41:40,230 --> 00:41:44,210
+But basically, if you've got training data or you've
+
+712
+00:41:44,210 --> 00:41:47,770
+got inputs and you want to make a prediction at a point
+
+713
+00:41:47,770 --> 00:41:50,510
+that you haven't seen, how do you actually do that?
+
+714
+00:41:54,170 --> 00:42:01,210
+And roughly, the idea is that if you're given inputs x1 to xn
+
+715
+00:42:01,210 --> 00:42:06,670
+and you know the function values f of x1 up to f of xn--
+
+716
+00:42:06,670 --> 00:42:09,930
+so that's your input data, is the inputs and the function
+
+717
+00:42:09,930 --> 00:42:11,610
+values.
+
+718
+00:42:11,610 --> 00:42:15,730
+We want to predict f of x-star, where x-star is a new test
+
+719
+00:42:15,730 --> 00:42:17,270
+point, a new test input.
+
+720
+00:42:17,270 --> 00:42:20,450
+That's what we want to predict.
+
+721
+00:42:20,450 --> 00:42:30,890
+You just think about stacking all of the things you know
+
+722
+00:42:30,890 --> 00:42:36,410
+and the thing that you don't know into one big vector.
+
+723
+00:42:36,410 --> 00:42:38,090
+Because it's a Gaussian process, we
+
+724
+00:42:38,090 --> 00:42:42,050
+know that the joint distribution of this quantity
+
+725
+00:42:42,050 --> 00:42:46,510
+is Gaussian, because that's the definition of a Gaussian
+
+726
+00:42:46,510 --> 00:42:47,010
+process.
+
+727
+00:42:47,010 --> 00:42:52,650
+For any collection of inputs, that includes the n
+
+728
+00:42:52,650 --> 00:42:55,565
+inputs that I was given and the one that I want to predict on,
+
+729
+00:42:55,565 --> 00:42:57,690
+we know that the joint distribution of those things
+
+730
+00:42:57,690 --> 00:43:00,050
+is a multivariate Gaussian just by the definition
+
+731
+00:43:00,050 --> 00:43:01,550
+of the Gaussian process.
+
+732
+00:43:01,550 --> 00:43:03,050
+And then you can say that, hey, if I
+
+733
+00:43:03,050 --> 00:43:05,490
+have a multivariate Gaussian vector
+
+734
+00:43:05,490 --> 00:43:08,730
+and I know its distribution, one of the standard things that that
+
+735
+00:43:08,730 --> 00:43:12,290
+tells you how to do is, given the first n coordinates,
+
+736
+00:43:12,290 --> 00:43:13,890
+what is the conditional distribution
+
+737
+00:43:13,890 --> 00:43:15,190
+of the last coordinate?
+
+738
+00:43:15,190 --> 00:43:17,530
+So that's a standard manipulation
+
+739
+00:43:17,530 --> 00:43:20,570
+that you can do with Gaussian vectors is just,
+
+740
+00:43:20,570 --> 00:43:22,130
+what is the conditional distribution
+
+741
+00:43:22,130 --> 00:43:26,250
+of the last coordinate on all the previous ones?
+
+742
+00:43:26,250 --> 00:43:27,950
+So there's just a formula for that.
+
+743
+00:43:27,950 --> 00:43:31,370
+It's just called conditioning with Gaussian vectors
+
+744
+00:43:31,370 --> 00:43:32,650
+or something like that.
+
+745
+00:43:32,650 --> 00:43:36,890
+And that is precisely the formula that
+
+746
+00:43:36,890 --> 00:43:38,930
+gives you this kind of picture.
+
+747
+00:43:38,930 --> 00:43:41,010
+Because basically, you take this point x-star
+
+748
+00:43:41,010 --> 00:43:43,850
+and you sweep it along this x-axis.
+
+749
+00:43:43,850 --> 00:43:51,290
+And the formula tells you both what the mean of this coordinate
+
+750
+00:43:51,290 --> 00:43:53,270
+is conditioned on these ones.
+
+751
+00:43:53,270 --> 00:43:55,810
+And it also tells you what the standard deviation is.
+
+752
+00:43:55,810 --> 00:43:59,390
+And interestingly, because Gaussians are so well-behaved,
+
+753
+00:43:59,390 --> 00:44:02,440
+the conditional distribution of the last coordinate conditioned
+
+754
+00:44:02,440 --> 00:44:06,180
+on all the early ones is itself a Gaussian distribution.
+
+755
+00:44:06,180 --> 00:44:11,720
+So if you take a Gaussian vector and you condition on the first n
+
+756
+00:44:11,720 --> 00:44:16,640
+coordinates, the distribution of the last one is Gaussian.
+
+757
+00:44:16,640 --> 00:44:19,340
+So in particular, there's just a formula for this mean.
+
+758
+00:44:19,340 --> 00:44:21,820
+And there's a formula for this standard deviation.
+
+759
+00:44:21,820 --> 00:44:25,000
+And that's a closed-form expression just involving
+
+760
+00:44:25,000 --> 00:44:28,840
+evaluating the covariance matrix, basically, on the input
+
+761
+00:44:28,840 --> 00:44:30,840
+points.
+
+762
+00:44:30,840 --> 00:44:33,720
+So I realized I'm not really telling you explicitly what
+
+763
+00:44:33,720 --> 00:44:35,600
+these formulae are, but there are things
+
+764
+00:44:35,600 --> 00:44:37,000
+that you can just look at.
+
+765
+00:44:37,000 --> 00:44:38,993
+And I honestly think if you haven't seen this
+
+766
+00:44:38,993 --> 00:44:41,160
+before, it's maybe easier just to have the intuitive
+
+767
+00:44:41,160 --> 00:44:41,720
+explanation.
+
+768
+00:44:41,720 --> 00:44:44,320
+And then you can just look up what the formulae
+
+769
+00:44:44,320 --> 00:44:45,660
+are if you're interested.
+
+770
+00:44:56,280 --> 00:44:59,040
+Now I want to tell you what this has
+
+771
+00:44:59,040 --> 00:45:02,160
+to do with neural networks, which
+
+772
+00:45:02,160 --> 00:45:04,740
+was kind of the point of introducing this stuff.
+
+773
+00:45:07,920 --> 00:45:11,240
+And that's a result called the Neural Network Gaussian Process
+
+774
+00:45:11,240 --> 00:45:14,160
+Correspondence, which is something that a lot of people
+
+775
+00:45:14,160 --> 00:45:16,380
+have been really excited about over the years.
+
+776
+00:45:20,360 --> 00:45:24,640
+So now forget everything we just talked about and just think
+
+777
+00:45:24,640 --> 00:45:26,080
+about a neural network.
+
+778
+00:45:26,080 --> 00:45:30,840
+And we just think the simplest case is arguably just
+
+779
+00:45:30,840 --> 00:45:32,560
+multilayer perceptron.
+
+780
+00:45:32,560 --> 00:45:41,760
+So we've got weight matrices, W1, W2, W3, up to WL.
+
+781
+00:45:41,760 --> 00:45:47,880
+And what we can do is we can just sample the weight matrices
+
+782
+00:45:47,880 --> 00:45:48,780
+randomly.
+
+783
+00:45:48,780 --> 00:45:50,100
+And it gives me the function.
+
+784
+00:45:50,100 --> 00:45:52,320
+The neural network gives me a function.
+
+785
+00:45:52,320 --> 00:45:54,120
+I write that function down.
+
+786
+00:45:54,120 --> 00:45:56,580
+And then I resample the weight matrices.
+
+787
+00:45:56,580 --> 00:45:58,380
+And I get a new random function.
+
+788
+00:45:58,380 --> 00:46:00,020
+And I write that function down.
+
+789
+00:46:00,020 --> 00:46:02,720
+And I just keep sampling the weight matrices over and over
+
+790
+00:46:02,720 --> 00:46:03,220
+again.
+
+791
+00:46:03,220 --> 00:46:05,740
+And it's going to give me a distribution over functions.
+
+792
+00:46:05,740 --> 00:46:08,260
+And I can ask, what is that distribution?
+
+793
+00:46:08,260 --> 00:46:09,740
+What properties does it have?
+
+794
+00:46:15,920 --> 00:46:24,240
+So let's pretend that we did that, and we generated,
+
+795
+00:46:24,240 --> 00:46:30,000
+in this case, 1,000 random functions by sampling 1,000 set
+
+796
+00:46:30,000 --> 00:46:33,120
+of weights for my neural net.
+
+797
+00:46:33,120 --> 00:46:36,400
+So I re-initialize my neural network 1,000 times.
+
+798
+00:46:36,400 --> 00:46:38,760
+And I want to inspect the functions.
+
+799
+00:46:38,760 --> 00:46:41,040
+So the way I decide to do that is I'm
+
+800
+00:46:41,040 --> 00:46:44,880
+going to pick two inputs, x and x-prime.
+
+801
+00:46:44,880 --> 00:46:49,280
+And in general, x could be a picture of a cat
+
+802
+00:46:49,280 --> 00:46:51,520
+and x-prime could be a picture of a dog.
+
+803
+00:46:51,520 --> 00:46:53,940
+But it's just two inputs.
+
+804
+00:46:53,940 --> 00:46:55,680
+And I fixed them.
+
+805
+00:46:55,680 --> 00:47:08,400
+And then I get my 1,000 functions, f1 up to f1000.
+
+806
+00:47:08,400 --> 00:47:15,280
+And for those two inputs, I just stack
+
+807
+00:47:15,280 --> 00:47:16,465
+the outputs of the network.
+
+808
+00:47:16,465 --> 00:47:18,840
+So let's just imagine that the output is one dimensional,
+
+809
+00:47:18,840 --> 00:47:20,160
+for simplicity.
+
+810
+00:47:20,160 --> 00:47:28,680
+And I just build a 2 by 1,000 matrix of all the outputs
+
+811
+00:47:28,680 --> 00:47:30,880
+of my random networks.
+
+812
+00:47:30,880 --> 00:47:32,980
+And I'm just going to plot them on a scatter plot
+
+813
+00:47:32,980 --> 00:47:35,640
+and just see what it looks like.
+
+814
+00:47:35,640 --> 00:47:41,600
+And I actually did this, but I did it two years ago.
+
+815
+00:47:41,600 --> 00:47:43,320
+But I did it.
+
+816
+00:47:43,320 --> 00:47:49,280
+This is a truck that's in the CIFAR-10 dataset.
+
+817
+00:47:49,280 --> 00:47:51,340
+And this was a three-layer MLP.
+
+818
+00:47:51,340 --> 00:47:54,200
+And the width of the network, the width of the hidden layer
+
+819
+00:47:54,200 --> 00:47:57,470
+was 1,000.
+
+820
+00:47:57,470 --> 00:48:05,710
+And I did it for two pairs of inputs, so input 1 and input 2.
+
+821
+00:48:05,710 --> 00:48:08,510
+So input first of all, and then second, I
+
+822
+00:48:08,510 --> 00:48:10,370
+did it for input 1 and input 3.
+
+823
+00:48:14,210 --> 00:48:16,930
+So input 2 is actually just input 1.
+
+824
+00:48:16,930 --> 00:48:18,830
+It's the same truck, but with a little bit
+
+825
+00:48:18,830 --> 00:48:20,310
+of jitter in the pixels.
+
+826
+00:48:20,310 --> 00:48:22,990
+I just added a little bit of noise to the pixels.
+
+827
+00:48:22,990 --> 00:48:25,130
+And then input 3, it's the same truck,
+
+828
+00:48:25,130 --> 00:48:29,590
+but I just added a lot more noise to the pixels,
+
+829
+00:48:29,590 --> 00:48:33,110
+just to show the difference.
+
+830
+00:48:33,110 --> 00:48:37,950
+And then for my 1,000 random networks,
+
+831
+00:48:37,950 --> 00:48:43,910
+this is what the network outputs look like for the first pair.
+
+832
+00:48:43,910 --> 00:48:46,830
+And then this is what they look like for the second pair.
+
+833
+00:48:46,830 --> 00:48:54,470
+So the interesting thing is, it kind of looks like the thing
+
+834
+00:48:54,470 --> 00:48:57,750
+that we were talking about, the Gaussian process thing,
+
+835
+00:48:57,750 --> 00:49:01,330
+where the two inputs, which are kind of similar to each other,
+
+836
+00:49:01,330 --> 00:49:04,990
+seem to have more correlated random outputs,
+
+837
+00:49:04,990 --> 00:49:08,550
+whereas the two inputs that are a bit less
+
+838
+00:49:08,550 --> 00:49:10,270
+similar to each other, the outputs
+
+839
+00:49:10,270 --> 00:49:12,090
+are slightly less correlated.
+
+840
+00:49:17,950 --> 00:49:23,590
+And then this is displaying it for pairs of inputs.
+
+841
+00:49:23,590 --> 00:49:25,950
+But instead of having two inputs,
+
+842
+00:49:25,950 --> 00:49:31,390
+I could make this same table, but I could put five inputs
+
+843
+00:49:31,390 --> 00:49:34,310
+and then sample 1,000 networks and then plot that
+
+844
+00:49:34,310 --> 00:49:36,270
+five-dimensional scatter plot.
+
+845
+00:49:36,270 --> 00:49:39,830
+And then I could ask, does that thing look Gaussian?
+
+846
+00:49:39,830 --> 00:49:43,990
+And my claim is it will because of this Neural Network Gaussian
+
+847
+00:49:43,990 --> 00:49:46,150
+Process Correspondence.
+
+848
+00:49:46,150 --> 00:49:48,090
+For a sufficiently wide neural network,
+
+849
+00:49:48,090 --> 00:49:50,850
+these scatter plots actually are Gaussian.
+
+850
+00:49:50,850 --> 00:49:55,650
+And we would actually have to do what Zach was saying.
+
+851
+00:49:55,650 --> 00:49:58,790
+It's like, how do we actually know these are Gaussian?
+
+852
+00:49:58,790 --> 00:50:00,390
+That's a good question.
+
+853
+00:50:00,390 --> 00:50:01,130
+I don't know.
+
+854
+00:50:01,130 --> 00:50:03,390
+There's tests for Gaussianity that if you
+
+855
+00:50:03,390 --> 00:50:06,330
+wanted to run on this scatter plot and you could do that test.
+
+856
+00:50:06,330 --> 00:50:08,250
+But I don't know how to do that.
+
+857
+00:50:08,250 --> 00:50:10,530
+But my claim is that really they are Gaussian.
+
+858
+00:50:10,530 --> 00:50:14,830
+And it's because the neural network is a wide network
+
+859
+00:50:14,830 --> 00:50:17,330
+that it has to be the case.
+
+860
+00:50:25,870 --> 00:50:32,630
+So what is the formal claim of the correspondence?
+
+861
+00:50:32,630 --> 00:50:38,710
+It's something like this, that if we take a neural network
+
+862
+00:50:38,710 --> 00:50:42,030
+and we randomly sample the weights, then
+
+863
+00:50:42,030 --> 00:50:45,330
+so long as the network was very, very, very wide--
+
+864
+00:50:49,630 --> 00:50:55,420
+if I pick any finite collection of inputs--
+
+865
+00:50:55,420 --> 00:50:58,540
+basically for any finite collection of inputs,
+
+866
+00:50:58,540 --> 00:51:00,900
+the distribution of outputs is actually
+
+867
+00:51:00,900 --> 00:51:08,620
+a multivariate Gaussian, which is the definition of a Gaussian
+
+868
+00:51:08,620 --> 00:51:09,160
+process.
+
+869
+00:51:09,160 --> 00:51:10,240
+That was the definition.
+
+870
+00:51:10,240 --> 00:51:13,080
+If you have that for any finite collection of inputs,
+
+871
+00:51:13,080 --> 00:51:14,960
+the distribution of outputs is Gaussian,
+
+872
+00:51:14,960 --> 00:51:18,220
+then that's satisfying the definition of being a Gaussian
+
+873
+00:51:18,220 --> 00:51:19,340
+process.
+
+874
+00:51:19,340 --> 00:51:21,720
+And it also would explain these pictures.
+
+875
+00:51:24,900 --> 00:51:29,180
+And importantly, what the covariance function is
+
+876
+00:51:29,180 --> 00:51:33,180
+depends on things like what the architecture of the network is
+
+877
+00:51:33,180 --> 00:51:36,140
+and what the nonlinearity is.
+
+878
+00:51:36,140 --> 00:51:39,780
+So it's an interesting result where,
+
+879
+00:51:39,780 --> 00:51:43,440
+given a particular network architecture,
+
+880
+00:51:43,440 --> 00:51:47,180
+you can expand its width and there
+
+881
+00:51:47,180 --> 00:51:50,900
+will be a corresponding covariance kernel or covariance
+
+882
+00:51:50,900 --> 00:51:58,220
+function that is basically a function of what the network
+
+883
+00:51:58,220 --> 00:51:59,360
+architecture is.
+
+884
+00:52:02,820 --> 00:52:04,820
+And that's what I meant at the beginning
+
+885
+00:52:04,820 --> 00:52:08,980
+when I said that actually the architecture somehow
+
+886
+00:52:08,980 --> 00:52:12,260
+has an opinion built into the choice of architecture
+
+887
+00:52:12,260 --> 00:52:14,520
+about what data points are similar to each other,
+
+888
+00:52:14,520 --> 00:52:16,880
+and which data points are dissimilar to each other.
+
+889
+00:52:16,880 --> 00:52:19,380
+And one way to extract that information
+
+890
+00:52:19,380 --> 00:52:22,320
+is to take the architecture to be really, really wide.
+
+891
+00:52:22,320 --> 00:52:24,140
+And you extract this kernel function
+
+892
+00:52:24,140 --> 00:52:31,540
+or this covariance function, so this function of the form sigma;
+
+893
+00:52:31,540 --> 00:52:33,300
+x, x-prime.
+
+894
+00:52:33,300 --> 00:52:34,723
+And maybe sigma depends on things
+
+895
+00:52:34,723 --> 00:52:36,140
+like what the depth of the network
+
+896
+00:52:36,140 --> 00:52:38,480
+is, what the nonlinearity is, and so on.
+
+897
+00:52:48,500 --> 00:52:51,007
+AUDIENCE: So I guess in terms of practicality,
+
+898
+00:52:51,007 --> 00:52:52,840
+because we're making it really, really wide,
+
+899
+00:52:52,840 --> 00:52:55,843
+we're really giving it a good opportunity to overfit.
+
+900
+00:52:55,843 --> 00:52:58,260
+But I guess the idea is because we're taking a random look
+
+901
+00:52:58,260 --> 00:53:01,540
+at overfitting, that's fine?
+
+902
+00:53:01,540 --> 00:53:03,260
+That's OK?
+
+903
+00:53:03,260 --> 00:53:06,860
+JEREMY BERNSTEIN: Yeah, that's a really interesting question.
+
+904
+00:53:06,860 --> 00:53:08,900
+Let me make some space.
+
+905
+00:53:08,900 --> 00:53:11,525
+Also, I think this lecture is on the shorter side.
+
+906
+00:53:11,525 --> 00:53:12,900
+So the more interesting questions
+
+907
+00:53:12,900 --> 00:53:18,060
+you ask, then the more learning there can be or something.
+
+908
+00:53:23,620 --> 00:53:27,020
+So the question is, if the neural network is really, really
+
+909
+00:53:27,020 --> 00:53:29,060
+wide, then intuitively I would think
+
+910
+00:53:29,060 --> 00:53:31,180
+that it's going to somehow overfit because it has
+
+911
+00:53:31,180 --> 00:53:34,760
+too much capacity for my data.
+
+912
+00:53:38,020 --> 00:53:42,940
+But the interesting thing about the Gaussian process picture
+
+913
+00:53:42,940 --> 00:53:47,540
+is that, let's say that we have some data
+
+914
+00:53:47,540 --> 00:53:50,540
+and we get this distribution of functions.
+
+915
+00:53:50,540 --> 00:53:55,160
+One interesting function could be the mean function.
+
+916
+00:53:55,160 --> 00:53:57,640
+So remember that not only is there the mean,
+
+917
+00:53:57,640 --> 00:54:01,320
+but these functions are going through the data.
+
+918
+00:54:05,900 --> 00:54:09,980
+And because it's random and because it's Gaussian,
+
+919
+00:54:09,980 --> 00:54:12,580
+there's some probability of getting a really horrible
+
+920
+00:54:12,580 --> 00:54:15,300
+function, really bizarre.
+
+921
+00:54:15,300 --> 00:54:20,120
+One function could actually do something like,
+
+922
+00:54:20,120 --> 00:54:22,620
+it goes through this data point and then it goes all the way
+
+923
+00:54:22,620 --> 00:54:24,640
+up here, and then it comes all the way back down,
+
+924
+00:54:24,640 --> 00:54:25,960
+and then it goes all the way back up.
+
+925
+00:54:25,960 --> 00:54:28,320
+And there's some probability of getting that function.
+
+926
+00:54:28,320 --> 00:54:31,940
+But interestingly, it's a very, very small
+
+927
+00:54:31,940 --> 00:54:36,500
+because things can't deviate too much
+
+928
+00:54:36,500 --> 00:54:40,340
+from the mean with very significant probability
+
+929
+00:54:40,340 --> 00:54:41,780
+basically.
+
+930
+00:54:41,780 --> 00:54:44,720
+And even if they do deviate a lot from the mean--
+
+931
+00:54:44,720 --> 00:54:46,440
+let's say the variance is really high--
+
+932
+00:54:50,210 --> 00:54:51,730
+well, I can always try to extract
+
+933
+00:54:51,730 --> 00:54:53,772
+what the mean is, because I know that the mean is
+
+934
+00:54:53,772 --> 00:54:54,950
+a nice, smooth function.
+
+935
+00:54:54,950 --> 00:54:57,230
+So in the context of this correspondence,
+
+936
+00:54:57,230 --> 00:54:58,790
+it's an interesting question to ask--
+
+937
+00:55:03,010 --> 00:55:04,930
+how can I get the distribution of functions
+
+938
+00:55:04,930 --> 00:55:07,250
+to actually concentrate on the mean?
+
+939
+00:55:07,250 --> 00:55:10,010
+In other words, what do I need to do to the neural network
+
+940
+00:55:10,010 --> 00:55:13,880
+to get this standard deviation to go to 0,
+
+941
+00:55:13,880 --> 00:55:15,630
+relative to the mean, if that makes sense?
+
+942
+00:55:15,630 --> 00:55:16,870
+Is there something I can do?
+
+943
+00:55:16,870 --> 00:55:18,453
+And I thought about that at one point.
+
+944
+00:55:18,453 --> 00:55:23,770
+And the argument is that if you make the standard deviation
+
+945
+00:55:23,770 --> 00:55:26,770
+that you sample the weights from very, very small, then
+
+946
+00:55:26,770 --> 00:55:29,090
+it actually causes the distribution
+
+947
+00:55:29,090 --> 00:55:30,830
+to collapse onto the mean.
+
+948
+00:55:30,830 --> 00:55:33,470
+And then with very high probability,
+
+949
+00:55:33,470 --> 00:55:36,810
+all the samples are very close to the mean.
+
+950
+00:55:36,810 --> 00:55:39,610
+But I didn't want to dwell.
+
+951
+00:55:39,610 --> 00:55:42,068
+Yeah, it's something to think about.
+
+952
+00:55:42,068 --> 00:55:42,610
+AUDIENCE: OK.
+
+953
+00:55:46,952 --> 00:55:48,410
+JEREMY BERNSTEIN: Oh, yeah, there's
+
+954
+00:55:48,410 --> 00:55:53,250
+another answer to that question, which is it's basically like--
+
+955
+00:55:53,250 --> 00:55:55,250
+I'm not sure if Phillip talked about that
+
+956
+00:55:55,250 --> 00:55:58,330
+in one of his lectures-- but the idea of neural networks
+
+957
+00:55:58,330 --> 00:56:00,190
+being very, very overparameterized,
+
+958
+00:56:00,190 --> 00:56:04,390
+but they can still represent lots of nice, simple functions.
+
+959
+00:56:04,390 --> 00:56:06,970
+So the fact that the network is very, very wide
+
+960
+00:56:06,970 --> 00:56:09,830
+does not imply that you're going to overfit.
+
+961
+00:56:09,830 --> 00:56:12,270
+It just implies that it's possible to overfit.
+
+962
+00:56:18,520 --> 00:56:19,810
+Yeah, go ahead.
+
+963
+00:56:19,810 --> 00:56:21,930
+AUDIENCE: Why does that require you
+
+964
+00:56:21,930 --> 00:56:24,930
+to have standard weights for the neural network?
+
+965
+00:56:24,930 --> 00:56:31,850
+Also, for example, if you sample 1,000 random network
+
+966
+00:56:31,850 --> 00:56:38,610
+and initially the network is a random Gaussian distribution
+
+967
+00:56:38,610 --> 00:56:39,810
+by sampling it.
+
+968
+00:56:39,810 --> 00:56:43,030
+And [INAUDIBLE] you draw the plot.
+
+969
+00:56:43,030 --> 00:56:47,170
+But the output, you still can't say it follows the Gaussian
+
+970
+00:56:47,170 --> 00:56:48,030
+distribution.
+
+971
+00:56:48,030 --> 00:56:50,690
+So I'm just wondering, it seems like you
+
+972
+00:56:50,690 --> 00:56:56,690
+can do the same thing in your network for the kernel methods.
+
+973
+00:56:56,690 --> 00:57:00,690
+You can learn the sufficient statistic, like the mean value
+
+974
+00:57:00,690 --> 00:57:05,970
+and sigma value, without a large hyperparameter tuning
+
+975
+00:57:05,970 --> 00:57:08,650
+or without large tuning, how can you
+
+976
+00:57:08,650 --> 00:57:12,170
+learn a sufficient statistic?
+
+977
+00:57:12,170 --> 00:57:13,930
+JEREMY BERNSTEIN: OK, so let me try
+
+978
+00:57:13,930 --> 00:57:15,910
+to repeat what I think the questions were.
+
+979
+00:57:15,910 --> 00:57:18,090
+So the first one was, in this construction
+
+980
+00:57:18,090 --> 00:57:20,290
+of this correspondence, why does the network
+
+981
+00:57:20,290 --> 00:57:22,050
+need to be infinitely wide?
+
+982
+00:57:22,050 --> 00:57:25,730
+And then I think the second question,
+
+983
+00:57:25,730 --> 00:57:29,098
+if there is this correspondence, why do we actually do deep
+
+984
+00:57:29,098 --> 00:57:30,390
+learning the way that we do it?
+
+985
+00:57:30,390 --> 00:57:32,598
+Why don't we just extract what the kernel is and then
+
+986
+00:57:32,598 --> 00:57:35,370
+just do Gaussian process regression
+
+987
+00:57:35,370 --> 00:57:37,650
+or do some kernel method?
+
+988
+00:57:37,650 --> 00:57:39,550
+So they're both really good questions.
+
+989
+00:57:39,550 --> 00:57:42,330
+So on the first question, I'm going
+
+990
+00:57:42,330 --> 00:57:45,370
+to talk a little bit about that on the next couple of slides.
+
+991
+00:57:45,370 --> 00:57:47,370
+It's because the construction relies
+
+992
+00:57:47,370 --> 00:57:50,710
+on a central limit theorem over the width of the network.
+
+993
+00:57:50,710 --> 00:57:51,790
+That's the short answer.
+
+994
+00:57:51,790 --> 00:57:55,950
+So for things to converge to this Gaussian distribution,
+
+995
+00:57:55,950 --> 00:57:57,630
+it's because of a central limit theorem.
+
+996
+00:57:57,630 --> 00:57:59,350
+And that requires something being large.
+
+997
+00:57:59,350 --> 00:58:02,730
+And it turns out it's the width.
+
+998
+00:58:02,730 --> 00:58:06,100
+The second question, yeah, that's a great question.
+
+999
+00:58:06,100 --> 00:58:07,850
+Because some people really thought that we
+
+1000
+00:58:07,850 --> 00:58:09,770
+should do kernel methods.
+
+1001
+00:58:09,770 --> 00:58:14,250
+But it just seems to be not the case from the way
+
+1002
+00:58:14,250 --> 00:58:16,730
+that we see things right.
+
+1003
+00:58:16,730 --> 00:58:18,770
+It seems that even if you have an equivalent
+
+1004
+00:58:18,770 --> 00:58:22,430
+kernel to your neural net, maybe for several different reasons,
+
+1005
+00:58:22,430 --> 00:58:24,930
+you would actually rather just train the neural net and just
+
+1006
+00:58:24,930 --> 00:58:32,010
+tune the hyperparameters rather than do the kernel method
+
+1007
+00:58:32,010 --> 00:58:33,750
+or do the Gaussian process regression.
+
+1008
+00:58:33,750 --> 00:58:37,170
+I think there's probably a few different potential reasons why
+
+1009
+00:58:37,170 --> 00:58:39,810
+that's the case.
+
+1010
+00:58:39,810 --> 00:58:44,875
+One is, well, first of all, the kernel method,
+
+1011
+00:58:44,875 --> 00:58:47,000
+the Gaussian process ends up having hyperparameters
+
+1012
+00:58:47,000 --> 00:58:49,280
+as well, because somehow the architecture of the network
+
+1013
+00:58:49,280 --> 00:58:50,863
+is going to affect what the kernel is.
+
+1014
+00:58:50,863 --> 00:58:53,820
+So it's not like it's really a tuning-free thing.
+
+1015
+00:58:56,360 --> 00:58:59,400
+And then another thing is the kernel method scales
+
+1016
+00:58:59,400 --> 00:59:02,260
+much worse with the size of your dataset than neural nets do.
+
+1017
+00:59:02,260 --> 00:59:04,160
+I think it's the cost of all the methods
+
+1018
+00:59:04,160 --> 00:59:07,100
+is cubic in the size of the training set,
+
+1019
+00:59:07,100 --> 00:59:12,640
+whereas somehow neural nets scale linearly
+
+1020
+00:59:12,640 --> 00:59:15,000
+with the size of your training data.
+
+1021
+00:59:15,000 --> 00:59:17,920
+I'm not sure if, if you train an LLM,
+
+1022
+00:59:17,920 --> 00:59:20,440
+you just train it once on the data.
+
+1023
+00:59:20,440 --> 00:59:22,400
+And the computational cost is the cost
+
+1024
+00:59:22,400 --> 00:59:24,520
+of a forward pass and a backward pass multiplied
+
+1025
+00:59:24,520 --> 00:59:26,020
+by the size of your training set.
+
+1026
+00:59:26,020 --> 00:59:27,840
+So it's definitely not a cubic dependence
+
+1027
+00:59:27,840 --> 00:59:29,340
+on the number of training points.
+
+1028
+00:59:29,340 --> 00:59:31,180
+So that's another thing.
+
+1029
+00:59:31,180 --> 00:59:32,060
+But I don't know.
+
+1030
+00:59:32,060 --> 00:59:33,435
+It's a super interesting question
+
+1031
+00:59:33,435 --> 00:59:35,740
+why people use neural nets rather than kernel methods.
+
+1032
+00:59:35,740 --> 00:59:42,752
+I think it may still be a somewhat open problem.
+
+1033
+00:59:42,752 --> 00:59:43,600
+Yes, Zach?
+
+1034
+00:59:43,600 --> 00:59:45,180
+AUDIENCE: I had two questions.
+
+1035
+00:59:45,180 --> 00:59:49,360
+So the first is, here we're saying as the width approaches
+
+1036
+00:59:49,360 --> 00:59:51,880
+infinity, the neural network is approaching the Gaussian
+
+1037
+00:59:51,880 --> 00:59:52,460
+process.
+
+1038
+00:59:52,460 --> 00:59:53,377
+JEREMY BERNSTEIN: Yes.
+
+1039
+00:59:53,377 --> 00:59:56,400
+AUDIENCE: Have people been able to quantify
+
+1040
+00:59:56,400 --> 00:59:59,440
+how close a network gets to a Gaussian process
+
+1041
+00:59:59,440 --> 01:00:01,465
+if the width is finite?
+
+1042
+01:00:01,465 --> 01:00:02,840
+JEREMY BERNSTEIN: So the question
+
+1043
+01:00:02,840 --> 01:00:07,560
+was, if this is a limiting result that only holds
+
+1044
+01:00:07,560 --> 01:00:10,340
+at infinite width, if you have a finite-width network,
+
+1045
+01:00:10,340 --> 01:00:13,560
+do we know what the deviations are from the limiting result?
+
+1046
+01:00:13,560 --> 01:00:17,140
+I think there are papers on this question.
+
+1047
+01:00:22,260 --> 01:00:25,760
+One answer is, even in the classic central limit theorem,
+
+1048
+01:00:25,760 --> 01:00:28,680
+there's a result called the Berry-Esseen theorem, which
+
+1049
+01:00:28,680 --> 01:00:34,000
+tells you about the deviations from normality
+
+1050
+01:00:34,000 --> 01:00:37,180
+of a large sum of independent random variables and so on.
+
+1051
+01:00:37,180 --> 01:00:40,760
+So you could just say, I'm going to take the Berry-Esseen theorem
+
+1052
+01:00:40,760 --> 01:00:43,580
+and turn the handle and figure it out.
+
+1053
+01:00:43,580 --> 01:00:45,420
+I don't quite know if that actually works.
+
+1054
+01:00:45,420 --> 01:00:47,188
+AUDIENCE: What's the name of that theorem?
+
+1055
+01:00:47,188 --> 01:00:48,480
+JEREMY BERNSTEIN: Like, Berry--
+
+1056
+01:00:48,480 --> 01:00:52,120
+I'm probably not getting the name quite right, but Berry,
+
+1057
+01:00:52,120 --> 01:00:54,520
+and then I think it's like Esseen.
+
+1058
+01:00:54,520 --> 01:00:55,435
+AUDIENCE: OK.
+
+1059
+01:00:55,435 --> 01:00:57,560
+JEREMY BERNSTEIN: I'm not sure how to pronounce it.
+
+1060
+01:00:57,560 --> 01:00:59,883
+AUDIENCE: And then the other question
+
+1061
+01:00:59,883 --> 01:01:01,300
+I had is-- earlier in the lecture,
+
+1062
+01:01:01,300 --> 01:01:02,967
+you said that people were really, really
+
+1063
+01:01:02,967 --> 01:01:04,680
+excited about this result-- and I'm
+
+1064
+01:01:04,680 --> 01:01:08,280
+wondering what the larger effect on the research community
+
+1065
+01:01:08,280 --> 01:01:10,440
+has been, how that's influencing how people
+
+1066
+01:01:10,440 --> 01:01:12,422
+think about intelligent models?
+
+1067
+01:01:12,422 --> 01:01:14,380
+JEREMY BERNSTEIN: Yes, that's a great question.
+
+1068
+01:01:14,380 --> 01:01:17,040
+I think the short answer is that it's
+
+1069
+01:01:17,040 --> 01:01:20,880
+had actually very little impact on what people actually
+
+1070
+01:01:20,880 --> 01:01:23,960
+do in deep learning, realistically.
+
+1071
+01:01:23,960 --> 01:01:27,440
+It may not be the case, but it seems that way.
+
+1072
+01:01:27,440 --> 01:01:30,000
+Maybe at the end, I can talk a bit
+
+1073
+01:01:30,000 --> 01:01:33,840
+about some of the potential limitations of the result.
+
+1074
+01:01:33,840 --> 01:01:38,840
+But it's like, there could have been a version of deep learning
+
+1075
+01:01:38,840 --> 01:01:43,480
+where you're like, ooh, OK, I need to solve this deep learning
+
+1076
+01:01:43,480 --> 01:01:44,400
+problem.
+
+1077
+01:01:44,400 --> 01:01:47,063
+Let me write down what my architecture is, take the limit,
+
+1078
+01:01:47,063 --> 01:01:48,480
+work out what the kernel is, study
+
+1079
+01:01:48,480 --> 01:01:50,000
+the properties of this kernel.
+
+1080
+01:01:50,000 --> 01:01:52,080
+And, OK, now I'm ready to go.
+
+1081
+01:01:52,080 --> 01:01:53,400
+But that's just not what it is.
+
+1082
+01:01:53,400 --> 01:01:56,080
+It's more like, OK, just get an architecture that
+
+1083
+01:01:56,080 --> 01:01:59,080
+seems reasonable and we'll just try it.
+
+1084
+01:01:59,080 --> 01:02:02,080
+And I think there's a lesson, which
+
+1085
+01:02:02,080 --> 01:02:04,400
+is that anything that's too convoluted of a procedure
+
+1086
+01:02:04,400 --> 01:02:07,000
+is actually unlikely to be really capturing
+
+1087
+01:02:07,000 --> 01:02:07,860
+what's going on.
+
+1088
+01:02:07,860 --> 01:02:11,520
+And one thing is, you just don't need
+
+1089
+01:02:11,520 --> 01:02:13,880
+to do that because you can just train the neural net
+
+1090
+01:02:13,880 --> 01:02:15,280
+and you just see.
+
+1091
+01:02:15,280 --> 01:02:17,720
+But I think there are also limitations
+
+1092
+01:02:17,720 --> 01:02:20,560
+of this result that mean it's possibly also
+
+1093
+01:02:20,560 --> 01:02:22,100
+potentially not that useful.
+
+1094
+01:02:26,262 --> 01:02:27,720
+So the point of this lecture is not
+
+1095
+01:02:27,720 --> 01:02:31,200
+to tell you this is something for your practical toolkit
+
+1096
+01:02:31,200 --> 01:02:32,620
+for going out into the wild.
+
+1097
+01:02:32,620 --> 01:02:34,720
+It's more like, if you're interested to really get
+
+1098
+01:02:34,720 --> 01:02:38,393
+into the technical details of deep learning theory
+
+1099
+01:02:38,393 --> 01:02:40,310
+and you want to think about the different ways
+
+1100
+01:02:40,310 --> 01:02:42,852
+that people have come up with to think about neural networks,
+
+1101
+01:02:42,852 --> 01:02:44,170
+here's one of them.
+
+1102
+01:02:47,750 --> 01:02:49,750
+OK.
+
+1103
+01:02:49,750 --> 01:02:50,710
+Yeah?
+
+1104
+01:02:50,710 --> 01:02:52,510
+AUDIENCE: How many parameters do we
+
+1105
+01:02:52,510 --> 01:02:55,710
+need to optimize in Gaussian process?
+
+1106
+01:02:55,710 --> 01:02:58,790
+JEREMY BERNSTEIN: Well, generally,
+
+1107
+01:02:58,790 --> 01:03:01,750
+the kernel, the covariance function
+
+1108
+01:03:01,750 --> 01:03:05,470
+could have an arbitrary number of hyperparameters.
+
+1109
+01:03:05,470 --> 01:03:09,110
+So if you're doing just straight-up Gaussian process
+
+1110
+01:03:09,110 --> 01:03:12,090
+regression, you're going to pick a kernel function.
+
+1111
+01:03:12,090 --> 01:03:14,030
+You get to design it and you get to choose how
+
+1112
+01:03:14,030 --> 01:03:15,950
+many hyperparameters it has.
+
+1113
+01:03:15,950 --> 01:03:19,190
+AUDIENCE: So what's the most critical kernel
+
+1114
+01:03:19,190 --> 01:03:20,190
+function we choose?
+
+1115
+01:03:20,190 --> 01:03:23,990
+And what is the correspondence to the neural network
+
+1116
+01:03:23,990 --> 01:03:25,825
+architecture?
+
+1117
+01:03:25,825 --> 01:03:27,950
+JEREMY BERNSTEIN: Yeah, I have an example coming up
+
+1118
+01:03:27,950 --> 01:03:33,070
+for correspondence to the network architecture.
+
+1119
+01:03:33,070 --> 01:03:36,470
+So the question was, is there an example of a typical kernel
+
+1120
+01:03:36,470 --> 01:03:40,390
+that people use in Gaussian processes?
+
+1121
+01:03:40,390 --> 01:03:42,390
+The first one that most people introduce
+
+1122
+01:03:42,390 --> 01:03:44,630
+is just the squared exponential kernel,
+
+1123
+01:03:44,630 --> 01:03:49,870
+which is e to the negative x minus x-prime squared.
+
+1124
+01:03:49,870 --> 01:03:51,950
+And then you might introduce a hyperparameter,
+
+1125
+01:03:51,950 --> 01:03:54,190
+like dividing by 2 sigma squared,
+
+1126
+01:03:54,190 --> 01:03:56,130
+where sigma is a hyperparameter.
+
+1127
+01:03:56,130 --> 01:03:59,750
+And it controls the length scale of the correlations
+
+1128
+01:03:59,750 --> 01:04:03,650
+that the kernel-- and this is a kernel with one hyperparameter.
+
+1129
+01:04:03,650 --> 01:04:05,710
+But then you could say, oh, what if x
+
+1130
+01:04:05,710 --> 01:04:07,630
+is a multidimensional input.
+
+1131
+01:04:07,630 --> 01:04:09,830
+Then something you could say is, what if I have
+
+1132
+01:04:09,830 --> 01:04:12,750
+one sigma per input coordinate?
+
+1133
+01:04:12,750 --> 01:04:15,430
+That would be a way to introduce more hyperparameters.
+
+1134
+01:04:15,430 --> 01:04:17,610
+Or you could have a different functional form.
+
+1135
+01:04:17,610 --> 01:04:19,490
+You could add something to this kernel.
+
+1136
+01:04:22,510 --> 01:04:24,990
+That's the modeling decisions that people incur.
+
+1137
+01:04:24,990 --> 01:04:26,350
+And you can read up papers.
+
+1138
+01:04:26,350 --> 01:04:29,470
+And there'll be a table of 10 different kernels.
+
+1139
+01:04:29,470 --> 01:04:32,370
+And they'll say, if your problem has this structure,
+
+1140
+01:04:32,370 --> 01:04:36,830
+try kernel x; if it has this other structure, try kernel y.
+
+1141
+01:04:36,830 --> 01:04:40,670
+It's similar to, oh, use a ConvNet for images
+
+1142
+01:04:40,670 --> 01:04:42,530
+and use a transformer for this.
+
+1143
+01:04:42,530 --> 01:04:45,170
+And it's just modeling decisions.
+
+1144
+01:04:45,170 --> 01:04:47,890
+AUDIENCE: OK, thanks.
+
+1145
+01:04:47,890 --> 01:04:50,390
+JEREMY BERNSTEIN: OK, I'm going to keep going, because now I
+
+1146
+01:04:50,390 --> 01:04:52,330
+think we may run out of time.
+
+1147
+01:04:52,330 --> 01:04:53,510
+I'm not sure.
+
+1148
+01:04:53,510 --> 01:04:54,970
+So I didn't actually prove it.
+
+1149
+01:04:54,970 --> 01:04:56,490
+I just wrote down a sketch.
+
+1150
+01:04:56,490 --> 01:04:58,510
+And I think I'm just going to post
+
+1151
+01:04:58,510 --> 01:05:02,710
+a reading about how to actually prove this correspondence.
+
+1152
+01:05:02,710 --> 01:05:07,550
+But I'm just going to give you something high level about how
+
+1153
+01:05:07,550 --> 01:05:10,450
+to prove that this correspondence happens.
+
+1154
+01:05:10,450 --> 01:05:11,950
+So remember, the correspondence is
+
+1155
+01:05:11,950 --> 01:05:14,710
+an infinitely wide neural network with random weights
+
+1156
+01:05:14,710 --> 01:05:17,510
+induces the Gaussian processes--
+
+1157
+01:05:17,510 --> 01:05:20,230
+the random functions you get are equivalent to a Gaussian
+
+1158
+01:05:20,230 --> 01:05:23,470
+process.
+
+1159
+01:05:23,470 --> 01:05:25,070
+And the main tool is something called
+
+1160
+01:05:25,070 --> 01:05:28,430
+the multivariate central limit theorem, where mainly you
+
+1161
+01:05:28,430 --> 01:05:29,830
+just hear about the central limit
+
+1162
+01:05:29,830 --> 01:05:34,150
+theorem for a Gaussian random variable with one coordinate.
+
+1163
+01:05:34,150 --> 01:05:35,910
+But it turns out there's a generalization
+
+1164
+01:05:35,910 --> 01:05:38,670
+of the central limit theorem to Gaussian vectors.
+
+1165
+01:05:38,670 --> 01:05:41,270
+And then proving this result is just
+
+1166
+01:05:41,270 --> 01:05:44,670
+applying that theorem a couple of times
+
+1167
+01:05:44,670 --> 01:05:48,830
+and doing the right induction over depth of the network.
+
+1168
+01:05:48,830 --> 01:05:51,730
+And honestly, it's been a while since I thought about this,
+
+1169
+01:05:51,730 --> 01:05:55,830
+but I think there's two steps.
+
+1170
+01:05:55,830 --> 01:05:57,450
+There's two main steps.
+
+1171
+01:05:57,450 --> 01:06:01,470
+One is, you pick a single input to the network,
+
+1172
+01:06:01,470 --> 01:06:05,350
+and you inspect the network at a particular layer.
+
+1173
+01:06:05,350 --> 01:06:07,510
+And you show that the activations
+
+1174
+01:06:07,510 --> 01:06:12,510
+for that individual input are iid random variables, which
+
+1175
+01:06:12,510 --> 01:06:14,910
+is kind of intuitive that they should be.
+
+1176
+01:06:14,910 --> 01:06:16,890
+If you're randomly initializing the network,
+
+1177
+01:06:16,890 --> 01:06:21,030
+the different activations of a particular layer
+
+1178
+01:06:21,030 --> 01:06:24,970
+on the same input should somehow be iid random variables.
+
+1179
+01:06:24,970 --> 01:06:27,710
+But you have to show that.
+
+1180
+01:06:27,710 --> 01:06:31,960
+And then once you've shown that, you then consider that a layer,
+
+1181
+01:06:31,960 --> 01:06:33,820
+and you consider batching the activations
+
+1182
+01:06:33,820 --> 01:06:35,520
+over the multiple inputs.
+
+1183
+01:06:35,520 --> 01:06:39,900
+And you think about each activation coordinate,
+
+1184
+01:06:39,900 --> 01:06:42,240
+the batch of examples as being a random vector.
+
+1185
+01:06:42,240 --> 01:06:44,362
+And then you apply the multivariate, essentially.
+
+1186
+01:06:44,362 --> 01:06:45,820
+Then you think about the next layer
+
+1187
+01:06:45,820 --> 01:06:49,380
+as summing over those random vectors somehow.
+
+1188
+01:06:49,380 --> 01:06:52,080
+And you do this multivariate central limit theorem.
+
+1189
+01:06:52,080 --> 01:06:53,960
+And anyway, I'm not really explaining it.
+
+1190
+01:06:53,960 --> 01:06:58,580
+So the short answer is, there's a central limit theorem.
+
+1191
+01:06:58,580 --> 01:07:01,660
+And I'll post a reading if someone wants
+
+1192
+01:07:01,660 --> 01:07:03,260
+to go through the details.
+
+1193
+01:07:03,260 --> 01:07:04,240
+Yeah, go ahead.
+
+1194
+01:07:07,420 --> 01:07:10,540
+AUDIENCE: The first question is, as the weight goes
+
+1195
+01:07:10,540 --> 01:07:12,660
+to infinity, you might be rescaling
+
+1196
+01:07:12,660 --> 01:07:15,180
+the weights in some way, right, when you're sampling?
+
+1197
+01:07:15,180 --> 01:07:16,840
+JEREMY BERNSTEIN: Yes, exactly.
+
+1198
+01:07:16,840 --> 01:07:18,420
+AUDIENCE: [INAUDIBLE].
+
+1199
+01:07:18,420 --> 01:07:23,660
+And the second question is, could you talk a little bit more
+
+1200
+01:07:23,660 --> 01:07:28,660
+about why they're going to be independent random variables
+
+1201
+01:07:28,660 --> 01:07:31,260
+when you have the complex dependencies
+
+1202
+01:07:31,260 --> 01:07:33,165
+in the previous layers?
+
+1203
+01:07:33,165 --> 01:07:34,040
+JEREMY BERNSTEIN: OK.
+
+1204
+01:07:34,040 --> 01:07:36,760
+So maybe it's not obvious that they are independent.
+
+1205
+01:07:36,760 --> 01:07:39,560
+And I think I maybe should not have said that.
+
+1206
+01:07:39,560 --> 01:07:41,740
+So I think that's something you've got to show.
+
+1207
+01:07:41,740 --> 01:07:44,020
+And I'm not going to go into it, but it's basically
+
+1208
+01:07:44,020 --> 01:07:45,860
+because of the network being so wide
+
+1209
+01:07:45,860 --> 01:07:49,220
+at every layer that you have a central limit theorem happening
+
+1210
+01:07:49,220 --> 01:07:50,320
+at each layer.
+
+1211
+01:07:50,320 --> 01:07:52,120
+And that's going to cause the independence.
+
+1212
+01:07:52,120 --> 01:07:55,640
+But I'm not giving you a mechanism,
+
+1213
+01:07:55,640 --> 01:07:58,560
+I'm just giving you a hand-wavy justification.
+
+1214
+01:07:58,560 --> 01:08:01,100
+I'm going to post the reading.
+
+1215
+01:08:01,100 --> 01:08:03,780
+So the other question was, what precisely
+
+1216
+01:08:03,780 --> 01:08:05,200
+is the weight initialization?
+
+1217
+01:08:05,200 --> 01:08:07,460
+How does it scale with the width?
+
+1218
+01:08:07,460 --> 01:08:10,740
+So I think I have a concrete example
+
+1219
+01:08:10,740 --> 01:08:13,340
+of this result in action, so let's just
+
+1220
+01:08:13,340 --> 01:08:16,180
+go through it briefly.
+
+1221
+01:08:16,180 --> 01:08:18,340
+So I think this is the instantiation
+
+1222
+01:08:18,340 --> 01:08:22,520
+of the result for an MLP with a ReLU non-linearity.
+
+1223
+01:08:25,140 --> 01:08:27,300
+And it turns out that all of the calculations,
+
+1224
+01:08:27,300 --> 01:08:30,500
+you can solve them exactly for this model.
+
+1225
+01:08:30,500 --> 01:08:34,979
+And actually, one of the papers in the reading
+
+1226
+01:08:34,979 --> 01:08:38,640
+actually solves this kernel for this architecture.
+
+1227
+01:08:38,640 --> 01:08:41,580
+But it's quite an old paper and it may not be that easy to read.
+
+1228
+01:08:41,580 --> 01:08:43,819
+So I wonder if I can post something better
+
+1229
+01:08:43,819 --> 01:08:45,500
+on Piazza, perhaps.
+
+1230
+01:08:45,500 --> 01:08:50,340
+But basically, we set the nonlinearity to square root
+
+1231
+01:08:50,340 --> 01:08:58,979
+2 times ReLU, and we sample the weights with variance 1
+
+1232
+01:08:58,979 --> 01:09:00,040
+over fan-in.
+
+1233
+01:09:00,040 --> 01:09:04,700
+So that's what we would call somehow
+
+1234
+01:09:04,700 --> 01:09:09,439
+the standard parameterization in PyTorch, is doing 1 over fan-in.
+
+1235
+01:09:09,439 --> 01:09:10,973
+It may actually not be the best way.
+
+1236
+01:09:10,973 --> 01:09:13,140
+I actually think it's not the best way to initialize
+
+1237
+01:09:13,140 --> 01:09:14,160
+the weights in practice.
+
+1238
+01:09:14,160 --> 01:09:17,260
+But for this statement to hold, that's
+
+1239
+01:09:17,260 --> 01:09:21,399
+the initialization you've got to use, so 1 over fan-in variance.
+
+1240
+01:09:24,420 --> 01:09:28,220
+And then what you can prove is that the expectation
+
+1241
+01:09:28,220 --> 01:09:30,220
+of the network output is 0.
+
+1242
+01:09:30,220 --> 01:09:33,220
+This is a network with no nonlinearity on the output.
+
+1243
+01:09:33,220 --> 01:09:35,979
+So it makes sense that it means 0.
+
+1244
+01:09:39,700 --> 01:09:41,520
+Because the last layer is a linear layer,
+
+1245
+01:09:41,520 --> 01:09:43,260
+the mean should be 0.
+
+1246
+01:09:43,260 --> 01:09:47,340
+And then the covariance structure,
+
+1247
+01:09:47,340 --> 01:09:53,020
+so the expectation of f of x multiplied with f of x prime
+
+1248
+01:09:53,020 --> 01:09:58,780
+takes something called the compositional arccosine kernel.
+
+1249
+01:09:58,780 --> 01:10:01,700
+So we take the dot product between the inputs.
+
+1250
+01:10:01,700 --> 01:10:04,340
+And then we iteratively apply this function h.
+
+1251
+01:10:07,180 --> 01:10:11,420
+We apply h L minus 1 times, where L minus 1 is the depth.
+
+1252
+01:10:11,420 --> 01:10:13,647
+So it's called the compositional arccosine kernel.
+
+1253
+01:10:13,647 --> 01:10:15,480
+It's just a particular mathematical function
+
+1254
+01:10:15,480 --> 01:10:17,860
+which happens to correspond to this architecture.
+
+1255
+01:10:17,860 --> 01:10:20,580
+Somebody proved it.
+
+1256
+01:10:20,580 --> 01:10:25,690
+So this is an example of the result.
+
+1257
+01:10:25,690 --> 01:10:27,450
+AUDIENCE: Actually, just a clarification.
+
+1258
+01:10:27,450 --> 01:10:30,090
+The whole Gaussian process thing, this
+
+1259
+01:10:30,090 --> 01:10:32,453
+is for untrained neural networks, right?
+
+1260
+01:10:32,453 --> 01:10:33,370
+JEREMY BERNSTEIN: Yes.
+
+1261
+01:10:33,370 --> 01:10:33,690
+AUDIENCE: OK.
+
+1262
+01:10:33,690 --> 01:10:36,090
+JEREMY BERNSTEIN: The thing that I told you about, yes.
+
+1263
+01:10:36,090 --> 01:10:39,630
+There is another thing, the neural tangent kernel,
+
+1264
+01:10:39,630 --> 01:10:43,250
+which is supposed to be a Gaussian process
+
+1265
+01:10:43,250 --> 01:10:45,030
+characterization of trained networks.
+
+1266
+01:10:45,030 --> 01:10:48,030
+But it also holds under some assumptions.
+
+1267
+01:10:48,030 --> 01:10:51,170
+And people have moved away from thinking too much
+
+1268
+01:10:51,170 --> 01:10:52,930
+about that at the moment.
+
+1269
+01:10:52,930 --> 01:10:55,592
+But, yeah, there's an analogous result,
+
+1270
+01:10:55,592 --> 01:10:57,550
+which is supposed to hold for trained networks.
+
+1271
+01:10:57,550 --> 01:10:58,910
+But I didn't talk about that.
+
+1272
+01:11:08,370 --> 01:11:12,330
+OK, I think there's one slide, and then I
+
+1273
+01:11:12,330 --> 01:11:16,350
+can take some questions if anyone has more questions.
+
+1274
+01:11:16,350 --> 01:11:21,150
+But basically, if you really buy into this picture-- you're like,
+
+1275
+01:11:21,150 --> 01:11:27,650
+yes, I believe in the Gaussian process correspondence and I
+
+1276
+01:11:27,650 --> 01:11:29,770
+want to see how far I can take this--
+
+1277
+01:11:29,770 --> 01:11:31,850
+you might have questions along the lines
+
+1278
+01:11:31,850 --> 01:11:36,530
+of, how does the covariance kernel
+
+1279
+01:11:36,530 --> 01:11:39,490
+or the covariance structure depend upon my choice of network
+
+1280
+01:11:39,490 --> 01:11:40,850
+architecture?
+
+1281
+01:11:40,850 --> 01:11:45,130
+How does it depend on the way I initialize the weights?
+
+1282
+01:11:45,130 --> 01:11:48,090
+And could you actually use these considerations
+
+1283
+01:11:48,090 --> 01:11:51,650
+to give you a theoretical way to inform
+
+1284
+01:11:51,650 --> 01:11:57,583
+how we pick our architecture and how we regularize
+
+1285
+01:11:57,583 --> 01:11:58,750
+the weights during training?
+
+1286
+01:11:58,750 --> 01:12:01,970
+Or can this connection actually inform the way
+
+1287
+01:12:01,970 --> 01:12:03,710
+that we do deep learning?
+
+1288
+01:12:03,710 --> 01:12:06,790
+So that was the hope for this type of result.
+
+1289
+01:12:06,790 --> 01:12:09,570
+And it seems to have just not really happened.
+
+1290
+01:12:09,570 --> 01:12:12,050
+Instead, we just do transformer.
+
+1291
+01:12:12,050 --> 01:12:14,530
+Or there's a list of architectures,
+
+1292
+01:12:14,530 --> 01:12:16,890
+and you just pick one from that list.
+
+1293
+01:12:16,890 --> 01:12:22,850
+And so it was a hope of having a formal, analytical way to do
+
+1294
+01:12:22,850 --> 01:12:25,910
+design, principle design in deep learning.
+
+1295
+01:12:25,910 --> 01:12:29,990
+But it doesn't seem that we actually use it.
+
+1296
+01:12:33,050 --> 01:12:35,675
+So I had one thing, I have a blank slide,
+
+1297
+01:12:35,675 --> 01:12:37,050
+there was one thing that I wanted
+
+1298
+01:12:37,050 --> 01:12:41,010
+to talk about at the end, which was basically
+
+1299
+01:12:41,010 --> 01:12:44,090
+this question of the weight initialization
+
+1300
+01:12:44,090 --> 01:12:46,130
+that we talked about.
+
+1301
+01:12:46,130 --> 01:12:54,010
+So that result held if we have a layer with a certain fan-in
+
+1302
+01:12:54,010 --> 01:13:02,170
+and a certain fan-out, and we use this initialization 1
+
+1303
+01:13:02,170 --> 01:13:06,170
+over fan-in, which is actually the PyTorch standard.
+
+1304
+01:13:06,170 --> 01:13:10,290
+People call this Xavier initialization.
+
+1305
+01:13:10,290 --> 01:13:14,230
+But it's not obviously actually the best thing to do,
+
+1306
+01:13:14,230 --> 01:13:16,870
+although it is the thing that's built into PyTorch.
+
+1307
+01:13:19,530 --> 01:13:23,110
+And I'm just going to give you one quick piece of intuition.
+
+1308
+01:13:30,090 --> 01:13:32,370
+Wait, first of all, why do people
+
+1309
+01:13:32,370 --> 01:13:34,027
+believe in this initialization?
+
+1310
+01:13:34,027 --> 01:13:36,110
+Why did people come up with it in the first place?
+
+1311
+01:13:36,110 --> 01:13:38,402
+And it's basically because it's the initialization that
+
+1312
+01:13:38,402 --> 01:13:40,770
+is good at initialization.
+
+1313
+01:13:40,770 --> 01:13:45,352
+And that's the same reason that we use it in the Neural Network
+
+1314
+01:13:45,352 --> 01:13:47,810
+Gaussian Process Correspondence, because the correspondence
+
+1315
+01:13:47,810 --> 01:13:51,210
+is about how networks behave at random initialization.
+
+1316
+01:13:51,210 --> 01:13:54,090
+And basically, this is the way to initialize.
+
+1317
+01:13:54,090 --> 01:13:57,770
+If you want to preserve activation magnitudes
+
+1318
+01:13:57,770 --> 01:14:01,450
+at initialization, you should initialize this way.
+
+1319
+01:14:01,450 --> 01:14:08,970
+But it ignores a fact of linear algebra that if you have
+
+1320
+01:14:08,970 --> 01:14:18,010
+a matrix where the fan-in is much larger than the fan-out--
+
+1321
+01:14:18,010 --> 01:14:20,250
+so the input dimension, the fan-in,
+
+1322
+01:14:20,250 --> 01:14:22,880
+is much larger than the fan-out--
+
+1323
+01:14:22,880 --> 01:14:24,920
+then the special fact about this matrix
+
+1324
+01:14:24,920 --> 01:14:28,360
+is it has a huge null space, meaning that a lot of the inputs
+
+1325
+01:14:28,360 --> 01:14:30,320
+are going to get mapped to 0.
+
+1326
+01:14:30,320 --> 01:14:33,880
+And if you set up things such that at initialization,
+
+1327
+01:14:33,880 --> 01:14:38,420
+the activation magnitudes get preserved-- well,
+
+1328
+01:14:38,420 --> 01:14:41,337
+at initialization the vectors are hitting the null space,
+
+1329
+01:14:41,337 --> 01:14:43,920
+and you're kind of scaling up all the part of the vector which
+
+1330
+01:14:43,920 --> 01:14:46,360
+is not hitting the null space.
+
+1331
+01:14:46,360 --> 01:14:48,565
+But actually, once you get further into training,
+
+1332
+01:14:48,565 --> 01:14:50,440
+actually the inputs to the layer will kind of
+
+1333
+01:14:50,440 --> 01:14:52,440
+align with the non-null space.
+
+1334
+01:14:52,440 --> 01:14:54,440
+And then this principle is kind of bad
+
+1335
+01:14:54,440 --> 01:14:56,820
+because then things are much too large.
+
+1336
+01:14:56,820 --> 01:14:58,560
+Anyway, this is related to something
+
+1337
+01:14:58,560 --> 01:15:01,840
+that people call maximal update parameterization or MUP, which
+
+1338
+01:15:01,840 --> 01:15:05,300
+is something that if you're trying to train giant networks,
+
+1339
+01:15:05,300 --> 01:15:07,600
+people care about this a lot.
+
+1340
+01:15:07,600 --> 01:15:09,420
+Anyway, that's the end.
+
+1341
+01:15:09,420 --> 01:15:11,420
+So if anyone has questions, I'll stick around.
+
+1342
+01:15:11,420 --> 01:15:14,170
+But thank you for listening.

@@ -1,0 +1,815 @@
+1
+00:00:11,030 --> 00:00:21,770
+So when I build the classifier typically right, so what is going to happen if I'm whether I am
+
+2
+00:00:21,770 --> 00:00:28,370
+building this hyper plane business or whether I am using a discriminant function right, there is
+
+3
+00:00:28,370 --> 00:00:35,780
+an additional thing which I can use to tune how am I going to finally assign the labels right,
+
+4
+00:00:35,780 --> 00:00:42,710
+so let us say I have a two class problem so then you can say that I learn a discriminant Delta and
+
+5
+00:00:42,710 --> 00:00:48,050
+typically what we do if Delta is less than 0 we assign it to one class, Delta is greater than 0
+
+6
+00:00:48,050 --> 00:00:57,020
+we assign it to another class, correct. Yes ,so what if I tell you that no,
+
+7
+00:00:57,020 --> 00:01:01,160
+no if Delta is less than some theta you assign it to one class if it's greater than theta assign it
+
+8
+00:01:01,160 --> 00:01:18,940
+to another class, right so what will this let us do let me move things around a little bit right,
+
+9
+00:01:18,940 --> 00:01:24,520
+so essentially what will happen is I can by moving by changing this theta I can take some points
+
+10
+00:01:24,520 --> 00:01:30,550
+which are originally classified as positive and make them negative right, so one way or
+
+11
+00:01:30,550 --> 00:01:34,750
+the other rights i just keep sliding theta around, right, so essentially.
+
+12
+00:01:34,750 --> 00:01:50,770
+Right, so that is a line that marks where they are equal to 0 right, when I say that is greater than
+
+13
+00:01:50,770 --> 00:01:56,770
+some theta so that essentially means I could either have a line this side right or I could
+
+14
+00:01:56,770 --> 00:02:02,710
+have a line that side right, and as you keep moving this what happens when you move here so
+
+15
+00:02:02,710 --> 00:02:08,470
+this will become 0 that will become class O right this is already class 4 now this will additionally
+
+16
+00:02:08,470 --> 00:02:14,920
+become class O at likewise when I move it that side now this will become class x right, so I
+
+17
+00:02:14,920 --> 00:02:22,570
+can actually change where I pitch my line right and I can get different performance right.
+
+18
+00:02:22,570 --> 00:02:28,570
+So what is important here is okay, I have figured out that right but then I can move this that way
+
+19
+00:02:28,570 --> 00:02:39,880
+or that way is little bit I can change me what is it whatever I want to do right, so I can increase
+
+20
+00:02:39,880 --> 00:02:44,260
+the precision of my classifier by just saying okay I have learnt the classifier right I have learnt
+
+21
+00:02:44,260 --> 00:02:50,080
+whatever it is i have learnt the hyper plane but instead of looking at 0 right, I will just move it
+
+22
+00:02:50,080 --> 00:02:54,730
+a little bit that same right when looking at the point where the probability is 0 I will move it
+
+23
+00:02:54,730 --> 00:02:59,890
+a little bit that side or that this side so that I can change my classification that I give right.
+
+24
+00:02:59,890 --> 00:03:06,190
+So given that I can do something like this right, so how do I know i have got a good
+
+25
+00:03:06,190 --> 00:03:20,390
+classification right, how to put it I put it in another way right, so I am asking you to give me
+
+26
+00:03:20,390 --> 00:03:26,990
+a classifier right, but I am not going to tell you right what is the precision I need or what
+
+27
+00:03:26,990 --> 00:03:31,730
+is a recall I need from this classifier right, so you give me a classifier and then i am going
+
+28
+00:03:31,730 --> 00:03:37,340
+to figure out what is the theta I need to set so that i get a good precision or a good recall or
+
+29
+00:03:37,340 --> 00:03:43,490
+a good the classification error whatever it is. Next I want to be able to tune this and figure out
+
+30
+00:03:43,490 --> 00:03:51,320
+where I am going to settle down right, so one way of summarizing all of this is something called the
+
+31
+00:03:51,320 --> 00:04:25,720
+ROC curve right, so the x-axis is a true positive rate the y-axis is the false positive rate so
+
+32
+00:04:25,720 --> 00:04:35,860
+what I mean by this so at any point I am going to look at how many true positives could I possibly
+
+33
+00:04:35,860 --> 00:04:42,520
+get right, now that is my denominator how many of them have actually obtained that is my numerator,
+
+34
+00:04:42,520 --> 00:04:50,530
+okay let us take a simple example. Suppose I have, I say I have 10 data
+
+35
+00:04:50,530 --> 00:04:55,780
+points okay I am going to make it very simple let us say I have 10 data points right and 4
+
+36
+00:04:55,780 --> 00:05:07,570
+are positive 6 are negative okay, 4 are positive 6 are negative right and I have a classifier okay,
+
+37
+00:05:07,570 --> 00:05:30,670
+so of these 4 points it gives me 3 here and 1 here right, yeah, so I got it right okay,
+
+38
+00:05:30,670 --> 00:05:36,760
+fine so it manages to tell me that 4 of the negative points are actually negative right,
+
+39
+00:05:36,760 --> 00:05:42,460
+and 3 of the positive points are actually positive right and one of the positive points
+
+40
+00:05:42,460 --> 00:05:47,080
+it classifies as negative and 2 of the negative points it classifies as positive right.
+
+41
+00:05:47,080 --> 00:05:57,370
+So the true positive rate for this is essentially 3 by4 right, the false positive rate for this is
+
+42
+00:05:57,370 --> 00:06:15,880
+false positive 2 by6 there are totally 6 things which I can say as false positives right of which
+
+43
+00:06:15,880 --> 00:06:21,010
+only 2 I get as false positive so I am not 2 bad right so that is the thing, so typically what you
+
+44
+00:06:21,010 --> 00:06:38,290
+what you would want is maybe I flip this thing around right, is that TPR on this FPR and always
+
+45
+00:06:38,290 --> 00:06:46,900
+get confused with this right, so when I make when I say something right I need to go up yeah,
+
+46
+00:06:46,900 --> 00:06:58,030
+so that is TPR and this is FPR right, yeah so I ideally want a curve that goes like this okay.
+
+47
+00:06:58,030 --> 00:07:07,300
+So I should get a 100 percent true positive rate before I start saying anything is false positive
+
+48
+00:07:12,000 --> 00:07:24,600
+right, does it make sense so here is 100 percent and here is 100 percent so at this point I am
+
+49
+00:07:24,600 --> 00:07:31,980
+classifying everything as positive at this point I am classing classifying everything
+
+50
+00:07:31,980 --> 00:07:36,240
+is positive right, so i will have a 100 percent true positive rate because i got everything is
+
+51
+00:07:36,240 --> 00:07:41,070
+positive and I 100 percent false positive rate so everything that I could say is false, falsely
+
+52
+00:07:41,070 --> 00:07:44,610
+positive I am saying is falsely positive. So at this point I am classifying everything
+
+53
+00:07:49,200 --> 00:07:55,560
+as positive right, but then what I would really like to see is as I when should my false positive
+
+54
+00:07:55,560 --> 00:08:03,960
+rate start going up after I have achieved 100 percent in the true positive axis right,
+
+55
+00:08:03,960 --> 00:08:09,330
+after I have classified every positive point as positive then if I still ask you to move your
+
+56
+00:08:09,330 --> 00:08:16,530
+classifier more that side then I should start getting the negative points as positive right,
+
+57
+00:08:16,530 --> 00:08:21,330
+so you should really go up all the way here before you start moving this way right.
+
+58
+00:08:21,330 --> 00:08:36,210
+And what about that guy this is essentially random behavior right, I mean so for every
+
+59
+00:08:36,210 --> 00:08:42,240
+true positive guy I get a equal fraction of false guys as positive so essentially I am this flipping
+
+60
+00:08:42,240 --> 00:08:49,260
+coins and telling you whether it is positive or negative right, so I am just flipping coins and
+
+61
+00:08:49,260 --> 00:08:55,680
+telling you that this essentially gives me that line right, so the further up you are if the
+
+62
+00:08:55,680 --> 00:09:01,410
+probability of you saying positive is higher. I am tossing a coin like you give me a data set
+
+63
+00:09:01,410 --> 00:09:04,500
+it will give me a data point I will toss a coin and will tell you whether it is positive
+
+64
+00:09:04,500 --> 00:09:10,920
+or negative okay, if the probability of it coming a positive is slow then it will be somewhere here
+
+65
+00:09:10,920 --> 00:09:16,800
+the probability of it coming a positive is high then I will be somewhere here right, makes sense
+
+66
+00:09:16,800 --> 00:09:24,450
+right so that is this line this is bad right, you want to be above that line you never want
+
+67
+00:09:24,450 --> 00:09:28,860
+to be below that line right this is essentially random that you want to be above that line.
+
+68
+00:09:28,860 --> 00:09:34,650
+So typical curves you find will be something like this okay, so obviously you will not get
+
+69
+00:09:34,650 --> 00:09:43,620
+that right ideally would like to get some curves like this right, make sense questions so far
+
+70
+00:09:49,160 --> 00:09:55,430
+so the steeper this rise is the better it is for you right, so sometimes what happens you
+
+71
+00:09:55,430 --> 00:10:08,420
+get curves that rise very steeply and then do that then a good or a bad ROC curve.
+
+72
+00:10:21,350 --> 00:10:26,660
+Yeah, nobody said depends yeah, of course we all know the right answer is depends.
+
+73
+00:10:32,210 --> 00:10:36,890
+Depends on how yeah, what type of performance I am looking at right,
+
+74
+00:10:36,890 --> 00:10:46,100
+so when will this be good right, so when I want to achieve a middling true positive rate right,
+
+75
+00:10:46,100 --> 00:10:51,050
+so this is about middling rates about 50 percent true positive see that means of all the people
+
+76
+00:10:51,050 --> 00:10:56,000
+with dangue I want to capture at least 50 percent of them okay, without putting too many people on
+
+77
+00:10:56,000 --> 00:11:11,120
+quarantine right, so this is a good classifier. But then if I see if you really want to get 90
+
+78
+00:11:11,120 --> 00:11:17,180
+percent right then this becomes unacceptably high false positive rates, well this might not be that
+
+79
+00:11:17,180 --> 00:11:25,310
+bad right want to get 90 percent so this might not be that bad a false positive rate right,
+
+80
+00:11:25,310 --> 00:11:31,820
+but then at this point this classifier is better so if i want for 50 percent false positive
+
+81
+00:11:31,820 --> 00:11:36,740
+rate this classifier is better for 90 percent false positive rate this classifier is better,
+
+82
+00:11:36,740 --> 00:11:41,870
+so there is no sure fire way of saying this is better that is better without knowing what you
+
+83
+00:11:41,870 --> 00:11:47,990
+want from it just because I drew a curve that went below the random line really does not mean
+
+84
+00:11:47,990 --> 00:11:56,240
+that this classifier is uniformly bad, right. So if you want to show true dominance you have to
+
+85
+00:11:56,240 --> 00:12:08,480
+show that one curve is above the other throughout right, this white line truly dominates the pink
+
+86
+00:12:08,480 --> 00:12:16,160
+line that then now in such cases I can say white is better than pink right, but not in these cases
+
+87
+00:12:16,160 --> 00:12:22,760
+in this case this curve is actually better for some points some operating points it is
+
+88
+00:12:22,760 --> 00:12:26,180
+not better for some other operating points, so nobody asked me what ROC stood for.
+
+89
+00:12:32,240 --> 00:12:46,580
+Yeah, receiver operating characteristics I think I wrote curve next to it ROC curve
+
+90
+00:13:02,310 --> 00:13:10,830
+okay, so this essentially was used in olden days when people are talking about radars and things
+
+91
+00:13:10,830 --> 00:13:16,470
+like that so false detection true detection versus false detection right, and then you
+
+92
+00:13:16,470 --> 00:13:24,210
+choose your operating point right based on how much, how sensitive you wanted it to be do you
+
+93
+00:13:24,210 --> 00:13:30,570
+want it to capture everything that came your way in which case it shows a different operating point
+
+94
+00:13:30,570 --> 00:13:37,350
+for your detector right, so that is why these curves came about and you can use it for the
+
+95
+00:13:37,350 --> 00:13:43,080
+same purpose in your machine learning evaluation right, you can use it to figure out which point
+
+96
+00:13:43,080 --> 00:13:53,310
+in the space of parameters that you want your classified operatives okay, makes sense everyone
+
+97
+00:13:53,310 --> 00:14:00,630
+get what ROC curves are all about okay. So the thing with the ROC curves is unfortunately
+
+98
+00:14:00,630 --> 00:14:07,500
+and people do not really use it this way when they have when they run experiments right,
+
+99
+00:14:07,500 --> 00:14:12,750
+so what do they end up doing they do not want to look at the curve right they do not want
+
+100
+00:14:12,750 --> 00:14:16,170
+to look at this curve and try to sit down and do an analysis and write papers because
+
+101
+00:14:16,170 --> 00:14:20,550
+they want to run 100 of experiments they want to generate 100 such curves and they wanted
+
+102
+00:14:20,550 --> 00:14:25,320
+an automatic way of comparing the curves, So what they did was they use this measure call,
+
+103
+00:14:25,320 --> 00:14:46,760
+so area under the curve the uses measure called area under the curve or a AUC right, when they
+
+104
+00:14:46,760 --> 00:14:52,220
+typically mean the area under the curve they do not mention it but they mean the ROC curve right,
+
+105
+00:14:52,220 --> 00:15:00,920
+so the area under the curve is essentially this, so the assumption is the larger the area under
+
+106
+00:15:00,920 --> 00:15:04,970
+the curve the better your classifier is because the ideal classifier is the one that goes like
+
+107
+00:15:04,970 --> 00:15:09,830
+that right, so it gets all the positives before it gets a negative so the area under
+
+108
+00:15:09,830 --> 00:15:16,310
+the curve is one for ideal classifier right. And the area under the curve is 0.5 for random
+
+109
+00:15:16,310 --> 00:15:21,110
+so if you are somewhere between 1 and 0.5 you are better than random so higher the value the
+
+110
+00:15:21,110 --> 00:15:26,780
+better it is okay, all of this is fine provided all your curves are of similar shapes right,
+
+111
+00:15:26,780 --> 00:15:47,510
+but you could get funky curves like this so what do you think went wrong here so the data
+
+112
+00:15:47,510 --> 00:15:52,400
+is something like this right, so there are lots of 0 here and soon so forth and then are a few more
+
+113
+00:15:52,400 --> 00:15:59,780
+x is that and then a few more 0 there right, so if I want to get those x as correct I have to get lot
+
+114
+00:15:59,780 --> 00:16:04,370
+of the 0 as x’s before I get those x is correct so that is essentially what is happening here.
+
+115
+00:16:04,370 --> 00:16:09,170
+I am getting more and more of the 0 both as x is here and then suddenly i get those last two
+
+116
+00:16:09,170 --> 00:16:14,720
+pieces last two x’s and then I get them right, so that is essentially what this means so that your
+
+117
+00:16:14,720 --> 00:16:21,680
+negative class okay, is lying between two bunches of positive data points so you are getting all
+
+118
+00:16:21,680 --> 00:16:25,670
+the initial set of positive data points and then before you get the remaining positive
+
+119
+00:16:25,670 --> 00:16:29,090
+data points you are getting a very, very large fraction of the negative data points and then
+
+120
+00:16:29,090 --> 00:16:33,410
+you are getting the positive data points right. So this could be an indication that your encoding
+
+121
+00:16:33,410 --> 00:16:37,430
+feature encoding is wrong right or you need to go to a different dimension so you need to do an
+
+122
+00:16:37,430 --> 00:16:42,380
+expansion of the dimension so that you can get all the positives before you get the negative ones,
+
+123
+00:16:42,380 --> 00:16:49,430
+but people unfortunately do not actually look at the ROC in fact there is all this code bases
+
+124
+00:16:49,430 --> 00:16:55,100
+for generating AUC directly you just done your experiments feed the data feed the classifier
+
+125
+00:16:55,100 --> 00:17:01,460
+to your AUC generating package and then out comes the string of numbers nobody even plots
+
+126
+00:17:01,460 --> 00:17:08,210
+the ROC and looks at it anymore right, so you can actually get insights about what is
+
+127
+00:17:08,210 --> 00:17:15,560
+happening by looking at ROC okay. So how would you actually go about plotting the
+
+128
+00:17:15,560 --> 00:17:26,000
+ROC okay, so here is a very simple way of thinking about it right ,so I am going to take all these
+
+129
+00:17:26,000 --> 00:17:36,980
+data points right and arrange them in descending order of their likelihood of being positive it
+
+130
+00:17:36,980 --> 00:17:42,080
+could be anyway I choose to do the right so if I am going to slide this thing around okay,
+
+131
+00:17:42,080 --> 00:17:48,140
+the farther I am from the hyper plane right, so the less likely I will be further I am on
+
+132
+00:17:48,140 --> 00:17:51,110
+that side from the hyper plane the less likely I'm going to be positive right so I will start
+
+133
+00:17:51,110 --> 00:17:55,880
+off from here and then I will slowly increases or if I am doing a neural network I can look at
+
+134
+00:17:55,880 --> 00:17:59,750
+the probability of the classification right. I can look at what is the probability this data
+
+135
+00:17:59,750 --> 00:18:03,650
+point is going to be positive right, so like that so whatever is it I am going to arrange
+
+136
+00:18:03,650 --> 00:18:14,690
+it in descending order let us say that I do not need to do the particular class so let us say
+
+137
+00:18:14,690 --> 00:18:36,100
+that I am re arranging it like this right, so this is the true classes I have arranged it in
+
+138
+00:18:36,100 --> 00:18:43,360
+this order okay, now I choose a threshold above which I will classify this as positive right,
+
+139
+00:18:43,360 --> 00:18:59,170
+so let us say choose a threshold here right, so what do I get no, 1 by4th right,
+
+140
+00:18:59,170 --> 00:19:09,550
+so I will just go up by 1 by4th here right. Next what do i do next I move it down one more
+
+141
+00:19:09,550 --> 00:19:16,450
+data point then what we get up I move up by another one for if I see another plus I move
+
+142
+00:19:16,450 --> 00:19:23,410
+up with another 1 by4th likewise next down I will move up to another 1 by 4 th okay, I am assuming
+
+143
+00:19:23,410 --> 00:19:33,820
+all of this is 1 by4th so that means that will be 1 okay, now what do I see say negative point what
+
+144
+00:19:33,820 --> 00:19:44,410
+do I do, I do not go down I go right I go right by 1 by6, and I go right then another negative
+
+145
+00:19:44,410 --> 00:19:58,480
+point I go right another negative point I go right, right and then then right, right ,yeah.
+
+146
+00:19:58,480 --> 00:20:05,410
+So my ROC curve is actually like that because I have only ten points it does not
+
+147
+00:20:05,410 --> 00:20:09,760
+look like a curve anymore right this is all the estimates I can do but this is my curve right,
+
+148
+00:20:09,760 --> 00:20:22,210
+that make sense right and this is my random in fact I should cross the random curve at some
+
+149
+00:20:22,210 --> 00:20:32,380
+point because 3 by4th what is that 2 by3 okay that is fine I will still be about random okay
+
+150
+00:20:32,380 --> 00:20:39,520
+that is fine right, so that is my, that is how I draw the ROC curve right, fairly simple right.
+
+151
+00:20:39,520 --> 00:20:44,830
+So you arrange it in descending order of it being positive right, so whenever you see a
+
+152
+00:20:44,830 --> 00:20:49,720
+positive data point as you go down that list you keep going up whenever you see a negative data
+
+153
+00:20:49,720 --> 00:20:54,940
+point you keep going right the step you go up is one by the number of positive data points step
+
+154
+00:20:54,940 --> 00:20:59,620
+you go right this one by the number of negative data points. Once you do this now you can compute
+
+155
+00:20:59,620 --> 00:21:10,270
+this in the end of this curve fairly easily. So the probability with which my classifier thinks
+
+156
+00:21:10,270 --> 00:21:17,140
+this point is positive right, or whatever measure weight whatever measure I am using so it could be
+
+157
+00:21:17,140 --> 00:21:20,440
+the distance from the hyper plane whatever is the measure the closer it is to the hyper plane
+
+158
+00:21:20,440 --> 00:21:25,330
+the less likely it is to be positive right. I mean the further it is from a hyper plane the
+
+159
+00:21:25,330 --> 00:21:30,190
+more likely it is positive, so whatever is the thing I arrange it according to the criteria
+
+160
+00:21:30,190 --> 00:21:34,960
+that I am using right or if using a discriminant function the larger the value for the positive
+
+161
+00:21:34,960 --> 00:21:40,390
+things then the higher up the ranking it will be right, so like that and I just do this in
+
+162
+00:21:40,390 --> 00:21:44,080
+descending order of what is the probability i think it will be positive or what is the
+
+163
+00:21:44,080 --> 00:21:56,100
+likelihood i think it will be positive right. So this is roc curve, any questions on ROC yeah
+
+164
+00:21:56,100 --> 00:22:00,210
+that is why i said you start of from the leftmost end and then you keep ranking them according to
+
+165
+00:22:00,210 --> 00:22:05,520
+whatever you start of from the one end of it and then you keep ranking them according to that when
+
+166
+00:22:05,520 --> 00:22:09,510
+there are other ways of actually once you train a classifier when you do the hyper plane thingy
+
+167
+00:22:09,510 --> 00:22:14,490
+there other ways are figuring out what the probability should be right, so and from that
+
+168
+00:22:14,490 --> 00:22:20,340
+you can you do not have to actually shift the hyper plane around so you figure out what the
+
+169
+00:22:20,340 --> 00:22:23,610
+probability of the classification will be and then arrange them in the descending order of that.
+
+170
+00:22:23,610 --> 00:22:30,210
+Because you can always say that okay, get my SVM to run give me the output give me the distance
+
+171
+00:22:30,210 --> 00:22:35,880
+from the hyper plane for all the data points I will convert that to a probability and then I
+
+172
+00:22:35,880 --> 00:22:40,080
+will use the probability for making the prediction if it is at least point three probable that it
+
+173
+00:22:40,080 --> 00:22:46,140
+should be positive and classified as a positive class and in decision trees again it is easy to
+
+174
+00:22:46,140 --> 00:22:52,950
+do probabilities so how will you do probability in decision trees, look at the leaves the data
+
+175
+00:22:52,950 --> 00:22:57,120
+point lies in and look at the fraction of data points belonging to one class right,
+
+176
+00:22:57,120 --> 00:23:00,870
+then you can do probability in decision trees. So likewise SVM is the only thing that is tricky
+
+177
+00:23:00,870 --> 00:23:06,180
+but you can there is a way of converting the distance from hyper planes into probabilities,
+
+178
+00:23:09,150 --> 00:23:22,900
+anything else I want to say here so I am not sure if I am going to get to this later so let me
+
+179
+00:23:22,900 --> 00:23:30,460
+actually make the note now there is a another of supervised learning problem right we talked about
+
+180
+00:23:30,460 --> 00:23:36,220
+regression, we talked about classification that is a another problem called ranking problem learning
+
+181
+00:23:36,220 --> 00:23:43,030
+to rank right, so it is inspired by information retrieval right but it is used in a variety of
+
+182
+00:23:43,030 --> 00:23:48,040
+other settings right so I am not interested only knowing it is positive or negative okay,
+
+183
+00:23:48,040 --> 00:23:52,900
+that is not the problem I want to know a ranking okay, so where is this appropriate.
+
+184
+00:23:52,900 --> 00:24:03,700
+So suppose I am yeah, so this is something which people do when they are trying to match protein
+
+185
+00:24:03,700 --> 00:24:08,560
+structures so I will have one structure for a protein right, so and I want to figure out all
+
+186
+00:24:08,560 --> 00:24:14,800
+proteins that look similar to this right which will probably have the same functions that as
+
+187
+00:24:14,800 --> 00:24:19,380
+the original protein that I'm looking at so that I am not interested in you telling me if there
+
+188
+00:24:19,380 --> 00:24:26,110
+is similar or not similar I actually want you to rank it right, or there is another question.
+
+189
+00:24:26,110 --> 00:24:32,620
+So I want you to build a recommender system for me right, I want you to predict whether I like a
+
+190
+00:24:32,620 --> 00:24:37,600
+movie or not like a movie right, but I do not want you to end up giving me like or not like
+
+191
+00:24:38,380 --> 00:24:43,600
+I want you to give me a ranked list of movies so okay, this guy is coming in okay these are all his
+
+192
+00:24:43,600 --> 00:24:50,350
+history last movies that he has seen okay, and he is an old guy so these are the set of movies I am
+
+193
+00:24:50,350 --> 00:24:54,970
+going to recommend to him right, but in an order so this is what learning to rank means I am not
+
+194
+00:24:54,970 --> 00:25:00,970
+just interested in yes or no answers but within the s i am interested in ranking order right.
+
+195
+00:25:00,970 --> 00:25:08,440
+It turns out that one of the ways of improving the performance in the ranking right,
+
+196
+00:25:08,440 --> 00:25:12,400
+is not to look at this precision and recall and Felicity and sincerely in thing it is
+
+197
+00:25:12,400 --> 00:25:22,090
+trying to directly optimize the AUC, trying to improve the things essentially what it
+
+198
+00:25:22,090 --> 00:25:29,830
+means is the more relevant items you are trying to push up in the ranking right,
+
+199
+00:25:29,830 --> 00:25:34,390
+so improving the AUC means what you are essentially making the curve go steeper
+
+200
+00:25:34,390 --> 00:25:39,490
+and steeper right, improving the AUC means you have to make this curve rise steeper
+
+201
+00:25:39,490 --> 00:25:42,550
+and steeper that is why this one will get a higher area under the curve right.
+
+202
+00:25:42,550 --> 00:25:46,510
+So that they essentially would correspond to making more and more of the positive points
+
+203
+00:25:46,510 --> 00:25:53,350
+come higher up the ordering right, because this is a rank order right so you are trying
+
+204
+00:25:53,350 --> 00:25:58,360
+to push these higher up their ordering so that essentially gives you the ranking effect.

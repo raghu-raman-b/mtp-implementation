@@ -1,0 +1,7291 @@
+1
+00:00:02,450 --> 00:00:02,950
+[SQUEAKING]
+
+2
+00:00:02,950 --> 00:00:03,930
+[RUSTLING]
+
+3
+00:00:03,930 --> 00:00:05,400
+[CLICKING]
+
+4
+00:00:12,370 --> 00:00:13,120
+PHILLIP ISOLA: OK.
+
+5
+00:00:13,120 --> 00:00:14,480
+Hi, everyone.
+
+6
+00:00:14,480 --> 00:00:15,940
+So we're going to get started.
+
+7
+00:00:18,840 --> 00:00:21,540
+I'm the third instructor for this course,
+
+8
+00:00:21,540 --> 00:00:24,160
+so I'll just quickly introduce myself.
+
+9
+00:00:24,160 --> 00:00:25,200
+I'm Phillip Isola.
+
+10
+00:00:25,200 --> 00:00:28,820
+I also go by Phil, so feel free to call me by my first name.
+
+11
+00:00:28,820 --> 00:00:30,720
+Just Phil is fine.
+
+12
+00:00:30,720 --> 00:00:35,000
+And I am a professor in EECS.
+
+13
+00:00:35,000 --> 00:00:36,500
+Just-- I love deep learning.
+
+14
+00:00:36,500 --> 00:00:40,960
+Deep learning is, for me, the most beautiful kind
+
+15
+00:00:40,960 --> 00:00:44,920
+of math and intelligence that I could imagine.
+
+16
+00:00:44,920 --> 00:00:48,500
+I think that it's a very popular subject, obviously,
+
+17
+00:00:48,500 --> 00:00:52,200
+but sometimes deep learning gets a little bit of flack
+
+18
+00:00:52,200 --> 00:00:56,252
+because maybe it's too hyped or because people feel
+
+19
+00:00:56,252 --> 00:00:57,460
+like too much money is in it.
+
+20
+00:00:57,460 --> 00:00:59,752
+So there's always this weird pushback to deep learning.
+
+21
+00:00:59,752 --> 00:01:01,400
+And I just want to say, I just love it.
+
+22
+00:01:01,400 --> 00:01:02,002
+It's so cool.
+
+23
+00:01:02,002 --> 00:01:02,960
+And it's OK to love it.
+
+24
+00:01:02,960 --> 00:01:05,440
+We're going to try to convey why it's so cool.
+
+25
+00:01:05,440 --> 00:01:08,220
+So deep learning to me is just the most--
+
+26
+00:01:08,220 --> 00:01:10,300
+my favorite subject of all, and it's
+
+27
+00:01:10,300 --> 00:01:13,220
+great to get to teach you about it.
+
+28
+00:01:13,220 --> 00:01:14,940
+OK, so there's a lot of beautiful things
+
+29
+00:01:14,940 --> 00:01:16,020
+about deep learning.
+
+30
+00:01:16,020 --> 00:01:17,440
+You've already heard some of them.
+
+31
+00:01:17,440 --> 00:01:19,315
+And today we're going to hear one more, which
+
+32
+00:01:19,315 --> 00:01:21,220
+is graph neural networks.
+
+33
+00:01:21,220 --> 00:01:23,300
+This is a continuation of the sequence
+
+34
+00:01:23,300 --> 00:01:26,260
+that we have going on architectures.
+
+35
+00:01:26,260 --> 00:01:27,440
+So we have four lectures.
+
+36
+00:01:27,440 --> 00:01:29,820
+We have the one that Sarah gave on Tuesday
+
+37
+00:01:29,820 --> 00:01:31,040
+on convolutional networks.
+
+38
+00:01:31,040 --> 00:01:32,623
+Now we're going to see graph nets that
+
+39
+00:01:32,623 --> 00:01:35,682
+are a generalization of ConvNets, along with a lot
+
+40
+00:01:35,682 --> 00:01:36,640
+of other architectures.
+
+41
+00:01:36,640 --> 00:01:38,223
+And then we'll see transformers, which
+
+42
+00:01:38,223 --> 00:01:40,220
+are a special kind of graph net and we'll
+
+43
+00:01:40,220 --> 00:01:42,820
+see recurrent networks and memory-based architectures
+
+44
+00:01:42,820 --> 00:01:45,800
+as well over the next few weeks.
+
+45
+00:01:48,780 --> 00:01:52,100
+So the outline of this talk is going to be,
+
+46
+00:01:52,100 --> 00:01:54,740
+first, talking about what types of problems
+
+47
+00:01:54,740 --> 00:01:57,920
+are appropriate to use graph nets on.
+
+48
+00:01:57,920 --> 00:02:02,700
+And then we'll talk about the main way that graph nets work.
+
+49
+00:02:02,700 --> 00:02:05,380
+We'll present that as a message-passing algorithm,
+
+50
+00:02:05,380 --> 00:02:08,960
+but you'll see that it turns out to be very familiar.
+
+51
+00:02:08,960 --> 00:02:10,759
+It's just another neural network that
+
+52
+00:02:10,759 --> 00:02:14,320
+has a forward pass and a backwards pass.
+
+53
+00:02:14,320 --> 00:02:16,320
+And then the last section of this lecture
+
+54
+00:02:16,320 --> 00:02:17,820
+will be on approximation power.
+
+55
+00:02:17,820 --> 00:02:20,880
+So this will be continuing on from the approximation lecture
+
+56
+00:02:20,880 --> 00:02:23,600
+that Jeremy gave, looking at, what types of functions
+
+57
+00:02:23,600 --> 00:02:26,120
+can graph nets approximate?
+
+58
+00:02:26,120 --> 00:02:27,540
+To what degree are they universal?
+
+59
+00:02:27,540 --> 00:02:29,960
+What is their capacity to represent
+
+60
+00:02:29,960 --> 00:02:32,480
+different types of functions?
+
+61
+00:02:32,480 --> 00:02:34,720
+And one of the interesting things
+
+62
+00:02:34,720 --> 00:02:36,360
+I want to point out here at the start
+
+63
+00:02:36,360 --> 00:02:40,280
+is that graph nets are not universal in the same way
+
+64
+00:02:40,280 --> 00:02:42,102
+that MLPs are.
+
+65
+00:02:42,102 --> 00:02:44,060
+And in fact, that's where the power comes from.
+
+66
+00:02:44,060 --> 00:02:47,040
+And that's what Sarah mentioned at the beginning of last lecture
+
+67
+00:02:47,040 --> 00:02:51,280
+as well, that the idea of architecture design
+
+68
+00:02:51,280 --> 00:02:54,320
+is to make systems that are maybe
+
+69
+00:02:54,320 --> 00:02:57,528
+better to run on hardware, on GPUs, to make systems that
+
+70
+00:02:57,528 --> 00:02:59,070
+are easy to parallelize and so forth.
+
+71
+00:02:59,070 --> 00:03:01,290
+But another big part of architecture design
+
+72
+00:03:01,290 --> 00:03:03,650
+is adding constraints.
+
+73
+00:03:03,650 --> 00:03:06,130
+So making a function approximator
+
+74
+00:03:06,130 --> 00:03:09,690
+that actually can't fit certain types of functions because we
+
+75
+00:03:09,690 --> 00:03:13,730
+want to rule those types of functions out.
+
+76
+00:03:13,730 --> 00:03:15,930
+Graph nets and graphs are a language
+
+77
+00:03:15,930 --> 00:03:19,930
+for introducing constraints that limit your system from doing
+
+78
+00:03:19,930 --> 00:03:21,352
+things you don't want it to do.
+
+79
+00:03:21,352 --> 00:03:22,810
+And this is one of the perspectives
+
+80
+00:03:22,810 --> 00:03:26,290
+on architecture design that we'll keep on coming back to.
+
+81
+00:03:26,290 --> 00:03:27,888
+We want to be able to fit the data,
+
+82
+00:03:27,888 --> 00:03:29,930
+but we want to constrain ourselves to fit it only
+
+83
+00:03:29,930 --> 00:03:31,130
+in the right ways.
+
+84
+00:03:31,130 --> 00:03:33,850
+So universality is actually not what we're
+
+85
+00:03:33,850 --> 00:03:37,290
+after in architecture design.
+
+86
+00:03:37,290 --> 00:03:40,150
+But within the family of functions that we do care about,
+
+87
+00:03:40,150 --> 00:03:43,430
+we do want the architecture to build approximate them,
+
+88
+00:03:43,430 --> 00:03:48,370
+and we'll see what family graph nets can approximate.
+
+89
+00:03:48,370 --> 00:03:52,330
+Quick reminder on logistics is that problem sets are due
+
+90
+00:03:52,330 --> 00:03:53,490
+next Tuesday.
+
+91
+00:03:53,490 --> 00:03:55,870
+So hopefully, you're making good progress.
+
+92
+00:03:55,870 --> 00:03:58,003
+But if you haven't started, start now.
+
+93
+00:03:58,003 --> 00:03:59,170
+It's a two-week problem set.
+
+94
+00:03:59,170 --> 00:04:00,503
+There's a lot of stuff in there.
+
+95
+00:04:03,470 --> 00:04:06,070
+OK, so let's talk about what types of problems
+
+96
+00:04:06,070 --> 00:04:07,830
+graph nets are amenable to.
+
+97
+00:04:07,830 --> 00:04:12,030
+And maybe before I tell you some examples that I have in mind,
+
+98
+00:04:12,030 --> 00:04:13,370
+I could just ask the audience.
+
+99
+00:04:13,370 --> 00:04:17,750
+So graph nets are going to be appropriate for problems that
+
+100
+00:04:17,750 --> 00:04:21,350
+naturally can be specified with a graph or data
+
+101
+00:04:21,350 --> 00:04:23,110
+types that exist on a graph.
+
+102
+00:04:23,110 --> 00:04:26,750
+So in your work and your fields that you're coming from,
+
+103
+00:04:26,750 --> 00:04:28,310
+what are some problems that you can
+
+104
+00:04:28,310 --> 00:04:32,650
+think of that are well-stated as graph problems?
+
+105
+00:04:32,650 --> 00:04:33,150
+OK.
+
+106
+00:04:33,150 --> 00:04:34,147
+Yeah, let's go up here.
+
+107
+00:04:34,147 --> 00:04:35,230
+AUDIENCE: Social networks?
+
+108
+00:04:35,230 --> 00:04:36,980
+PHILLIP ISOLA: So one are social networks.
+
+109
+00:04:36,980 --> 00:04:40,270
+Social networks are graphs, people and their friends
+
+110
+00:04:40,270 --> 00:04:41,450
+or their connections.
+
+111
+00:04:41,450 --> 00:04:42,203
+OK, another one?
+
+112
+00:04:42,203 --> 00:04:44,370
+AUDIENCE: Hidden Markov models or time-variant data?
+
+113
+00:04:44,370 --> 00:04:46,078
+PHILLIP ISOLA: Yeah, hidden Markov models
+
+114
+00:04:46,078 --> 00:04:48,690
+are one kind of probabilistic graphical model,
+
+115
+00:04:48,690 --> 00:04:51,430
+and this idea of graphical models for representing
+
+116
+00:04:51,430 --> 00:04:54,520
+probability distributions is a classical idea,
+
+117
+00:04:54,520 --> 00:04:56,770
+and graph nets are appropriate for representing things
+
+118
+00:04:56,770 --> 00:04:57,530
+like this.
+
+119
+00:04:57,530 --> 00:04:58,730
+OK, back here.
+
+120
+00:04:58,730 --> 00:05:00,170
+AUDIENCE: Gene interactions.
+
+121
+00:05:00,170 --> 00:05:01,270
+PHILLIP ISOLA: Gene interactions.
+
+122
+00:05:01,270 --> 00:05:01,770
+Yes.
+
+123
+00:05:01,770 --> 00:05:03,530
+I'll have some examples on that.
+
+124
+00:05:03,530 --> 00:05:06,810
+So whenever I have different genes that
+
+125
+00:05:06,810 --> 00:05:11,450
+are interacting with each other or with proteins that
+
+126
+00:05:11,450 --> 00:05:14,050
+get transcribed from those genes,
+
+127
+00:05:14,050 --> 00:05:16,930
+then these could be thought of as nodes and edges that
+
+128
+00:05:16,930 --> 00:05:18,030
+represent relationships.
+
+129
+00:05:18,030 --> 00:05:19,627
+Let's do just one more.
+
+130
+00:05:19,627 --> 00:05:21,710
+AUDIENCE: Cross referencing of different websites.
+
+131
+00:05:21,710 --> 00:05:23,877
+PHILLIP ISOLA: Cross referencing different websites.
+
+132
+00:05:23,877 --> 00:05:26,930
+So things like PageRank, hyperlinks between different web
+
+133
+00:05:26,930 --> 00:05:27,430
+pages.
+
+134
+00:05:27,430 --> 00:05:30,550
+Like, Google started as a graph search company, essentially.
+
+135
+00:05:30,550 --> 00:05:32,590
+They represent the web as a graph of hyperlinks,
+
+136
+00:05:32,590 --> 00:05:36,370
+and then they try to evaluate where the important nodes are
+
+137
+00:05:36,370 --> 00:05:37,810
+in that graph.
+
+138
+00:05:37,810 --> 00:05:42,570
+So whatever problem you have, if you
+
+139
+00:05:42,570 --> 00:05:45,590
+have studied physics or chemistry or computer science,
+
+140
+00:05:45,590 --> 00:05:47,505
+I'm sure that you have seen a million graphs.
+
+141
+00:05:47,505 --> 00:05:49,130
+That's one of the basic data structures
+
+142
+00:05:49,130 --> 00:05:53,350
+we use for representing the interesting types of data
+
+143
+00:05:53,350 --> 00:05:55,510
+in the world.
+
+144
+00:05:55,510 --> 00:05:59,190
+So graph nets are an appropriate technology for problems
+
+145
+00:05:59,190 --> 00:06:00,610
+that naturally exist on graphs.
+
+146
+00:06:00,610 --> 00:06:02,027
+And there's a few different things
+
+147
+00:06:02,027 --> 00:06:04,330
+we might want to ask about a graph.
+
+148
+00:06:04,330 --> 00:06:07,910
+So one thing is you might want to take a node in a graph.
+
+149
+00:06:07,910 --> 00:06:09,530
+Maybe this is a social network graph.
+
+150
+00:06:09,530 --> 00:06:11,380
+This is a user in that social network.
+
+151
+00:06:11,380 --> 00:06:13,130
+You want to classify something about them.
+
+152
+00:06:13,130 --> 00:06:17,430
+You want to say, is this person somebody
+
+153
+00:06:17,430 --> 00:06:20,210
+who likes jazz music or not?
+
+154
+00:06:20,210 --> 00:06:22,190
+Maybe that's the prediction problem
+
+155
+00:06:22,190 --> 00:06:25,343
+that your social media company wants to make.
+
+156
+00:06:25,343 --> 00:06:27,010
+So that's a node classification problem.
+
+157
+00:06:27,010 --> 00:06:29,797
+We can ask a question about a node.
+
+158
+00:06:29,797 --> 00:06:31,630
+Other times you might want to ask a question
+
+159
+00:06:31,630 --> 00:06:32,690
+about the entire graph.
+
+160
+00:06:32,690 --> 00:06:35,830
+What is the average number of friends that people have
+
+161
+00:06:35,830 --> 00:06:37,010
+within this social network?
+
+162
+00:06:37,010 --> 00:06:38,450
+Maybe that's a property that I care about.
+
+163
+00:06:38,450 --> 00:06:39,950
+So we can ask questions about nodes,
+
+164
+00:06:39,950 --> 00:06:42,673
+about edges, relationships, about the entire graph.
+
+165
+00:06:42,673 --> 00:06:44,590
+I'm going to give you a few different examples
+
+166
+00:06:44,590 --> 00:06:48,510
+just to motivate why graphs are so important.
+
+167
+00:06:48,510 --> 00:06:50,710
+So another one might be this--
+
+168
+00:06:50,710 --> 00:06:53,600
+I think this is from Pinterest.
+
+169
+00:06:53,600 --> 00:06:57,540
+So it's users and the boards that they're interested in.
+
+170
+00:06:57,540 --> 00:07:00,500
+So these topic areas that they're interested in.
+
+171
+00:07:00,500 --> 00:07:02,600
+So assigning you to, what are the topics
+
+172
+00:07:02,600 --> 00:07:06,320
+that you're interested in on this website that
+
+173
+00:07:06,320 --> 00:07:08,920
+allows you to see content under these topics?
+
+174
+00:07:08,920 --> 00:07:12,100
+So this is a graph between people and their interest.
+
+175
+00:07:14,970 --> 00:07:17,620
+These types of graphs are often used in recommender systems.
+
+176
+00:07:17,620 --> 00:07:19,703
+I want to recommend what you might be interested--
+
+177
+00:07:19,703 --> 00:07:22,160
+what next video on YouTube would you want to watch?
+
+178
+00:07:22,160 --> 00:07:24,000
+So it's like a bipartite graph between users
+
+179
+00:07:24,000 --> 00:07:27,080
+and their interests or users and content.
+
+180
+00:07:27,080 --> 00:07:33,080
+So I think we had the gene expression idea previously.
+
+181
+00:07:33,080 --> 00:07:37,400
+But in general, for biology and especially chemistry,
+
+182
+00:07:37,400 --> 00:07:41,660
+molecular biology, we have graphs which are molecules.
+
+183
+00:07:41,660 --> 00:07:44,420
+Molecules are well-represented as graphs.
+
+184
+00:07:44,420 --> 00:07:47,040
+There are atoms and bonds between the atoms.
+
+185
+00:07:47,040 --> 00:07:51,500
+And if we want to do things like predict which--
+
+186
+00:07:51,500 --> 00:07:55,300
+where would the binding site be on that molecule for some drug,
+
+187
+00:07:55,300 --> 00:07:58,960
+or would this molecule be toxic to a human,
+
+188
+00:07:58,960 --> 00:08:00,460
+these are graph prediction problems.
+
+189
+00:08:00,460 --> 00:08:03,180
+I'm trying to ask a question about that graph, which
+
+190
+00:08:03,180 --> 00:08:04,560
+is the molecule structure.
+
+191
+00:08:08,075 --> 00:08:13,140
+So in biology and chemistry, graph nets are used extensively.
+
+192
+00:08:13,140 --> 00:08:17,900
+Here's another example where we have the graph of interactions
+
+193
+00:08:17,900 --> 00:08:22,300
+between different drugs and the drug's effect on the human
+
+194
+00:08:22,300 --> 00:08:24,020
+for some kind of medication.
+
+195
+00:08:24,020 --> 00:08:26,840
+So we might have, in this example,
+
+196
+00:08:26,840 --> 00:08:31,340
+two different drugs that can have a positive effect on you.
+
+197
+00:08:31,340 --> 00:08:33,260
+But if you combine them, they're negative.
+
+198
+00:08:33,260 --> 00:08:36,283
+Interactions between drugs that can be bad.
+
+199
+00:08:36,283 --> 00:08:37,700
+You always have to read the bottle
+
+200
+00:08:37,700 --> 00:08:39,037
+on the pills you're taking.
+
+201
+00:08:39,037 --> 00:08:41,120
+Like, don't take this if you have this other drug.
+
+202
+00:08:41,120 --> 00:08:45,560
+So that can be represented as a more complicated graph.
+
+203
+00:08:45,560 --> 00:08:48,180
+Now, in this graph, we have edges
+
+204
+00:08:48,180 --> 00:08:50,797
+between pharmaceutical interventions,
+
+205
+00:08:50,797 --> 00:08:52,880
+like the drugs that you're going to take, and also
+
+206
+00:08:52,880 --> 00:08:55,500
+edges between the drugs and the proteins that they affect.
+
+207
+00:08:55,500 --> 00:08:58,000
+And so different types of edges and different types of nodes
+
+208
+00:08:58,000 --> 00:09:00,040
+can exist in a graph, and we are going
+
+209
+00:09:00,040 --> 00:09:03,400
+to be wanting to learn properties
+
+210
+00:09:03,400 --> 00:09:06,120
+of these edges and these nodes so that we can make predictions
+
+211
+00:09:06,120 --> 00:09:08,820
+about what combination of drugs might be toxic.
+
+212
+00:09:12,996 --> 00:09:16,480
+So graphs also come up in just classical computer science
+
+213
+00:09:16,480 --> 00:09:17,300
+algorithms.
+
+214
+00:09:17,300 --> 00:09:21,600
+So in shortest path algorithms, in graph search
+
+215
+00:09:21,600 --> 00:09:24,700
+of various forms, tree search algorithms,
+
+216
+00:09:24,700 --> 00:09:28,840
+we often represent classical, discrete optimization problems
+
+217
+00:09:28,840 --> 00:09:31,540
+as some kind of search of a graph.
+
+218
+00:09:31,540 --> 00:09:32,620
+So here's one example.
+
+219
+00:09:32,620 --> 00:09:35,160
+This is from Google Maps.
+
+220
+00:09:35,160 --> 00:09:39,080
+And they're trying to find the shortest path, the fastest
+
+221
+00:09:39,080 --> 00:09:42,920
+driving route between your house and where you want to go.
+
+222
+00:09:42,920 --> 00:09:45,385
+So you probably use Google Maps to do this all the time.
+
+223
+00:09:45,385 --> 00:09:46,260
+So how do they do it?
+
+224
+00:09:46,260 --> 00:09:48,720
+Well, this is a huge, huge graph.
+
+225
+00:09:48,720 --> 00:09:50,620
+It's a whole world of roads.
+
+226
+00:09:50,620 --> 00:09:53,340
+So it's slow to use classical algorithms
+
+227
+00:09:53,340 --> 00:09:55,317
+like Dijkstra's algorithm.
+
+228
+00:09:55,317 --> 00:09:56,900
+And additionally, there might be a lot
+
+229
+00:09:56,900 --> 00:10:01,900
+of constraints beyond just searching over the edge
+
+230
+00:10:01,900 --> 00:10:03,900
+lengths of that road network.
+
+231
+00:10:03,900 --> 00:10:07,400
+It might try to optimize for other properties,
+
+232
+00:10:07,400 --> 00:10:10,892
+like how safe or scenic is the road, or avoid highways,
+
+233
+00:10:10,892 --> 00:10:13,600
+or there's different constraints that you can add on top of this.
+
+234
+00:10:13,600 --> 00:10:15,980
+So it becomes a very difficult graph search problem
+
+235
+00:10:15,980 --> 00:10:17,360
+to solve with classical methods.
+
+236
+00:10:17,360 --> 00:10:19,780
+It might be too slow.
+
+237
+00:10:19,780 --> 00:10:21,900
+And so one use of graph neural networks
+
+238
+00:10:21,900 --> 00:10:25,100
+is to find heuristics and approximate graph search
+
+239
+00:10:25,100 --> 00:10:27,880
+algorithms that can solve these problems more quickly.
+
+240
+00:10:27,880 --> 00:10:33,700
+So Google, in this example, is using a graph neural network
+
+241
+00:10:33,700 --> 00:10:37,740
+to do faster search than classical algorithms,
+
+242
+00:10:37,740 --> 00:10:41,260
+and we'll talk a little bit more about that as well,
+
+243
+00:10:41,260 --> 00:10:43,310
+by learning heuristics
+
+244
+00:10:43,310 --> 00:10:45,560
+Another one-- I don't think anybody mentioned physics,
+
+245
+00:10:45,560 --> 00:10:48,970
+but that's another place where graphs come up all the time.
+
+246
+00:10:48,970 --> 00:10:53,590
+So one of the popular ways to simulate fluids or particles
+
+247
+00:10:53,590 --> 00:10:57,870
+or atoms is by thinking of them as a set of nodes
+
+248
+00:10:57,870 --> 00:11:00,230
+with edges between the nodes that are
+
+249
+00:11:00,230 --> 00:11:02,430
+indicating the physical forces.
+
+250
+00:11:02,430 --> 00:11:04,250
+So two particles might have an edge,
+
+251
+00:11:04,250 --> 00:11:06,910
+and that edge is describing the repelling force
+
+252
+00:11:06,910 --> 00:11:09,310
+between those two particles because we
+
+253
+00:11:09,310 --> 00:11:11,770
+know that two atoms can't occupy the same space,
+
+254
+00:11:11,770 --> 00:11:14,590
+and they might have electrical forces that push them apart.
+
+255
+00:11:14,590 --> 00:11:17,470
+So in this example, it's a particle system that
+
+256
+00:11:17,470 --> 00:11:19,950
+simulates fluid dynamics, and this
+
+257
+00:11:19,950 --> 00:11:22,110
+is represented as a graph neural net that
+
+258
+00:11:22,110 --> 00:11:25,530
+takes in the graph of all of these water particles,
+
+259
+00:11:25,530 --> 00:11:27,750
+and the edges between them are going
+
+260
+00:11:27,750 --> 00:11:30,610
+to learn to push apart those nodes, essentially.
+
+261
+00:11:33,770 --> 00:11:35,397
+So just more examples, and there's
+
+262
+00:11:35,397 --> 00:11:37,230
+some paper references if you want to read up
+
+263
+00:11:37,230 --> 00:11:40,350
+on these in more detail.
+
+264
+00:11:40,350 --> 00:11:46,030
+And then most abstractly, just a lot of optimization problems,
+
+265
+00:11:46,030 --> 00:11:47,510
+especially discrete optimization,
+
+266
+00:11:47,510 --> 00:11:52,370
+combinatorial optimization, take the form of a graph problem
+
+267
+00:11:52,370 --> 00:11:56,908
+where we might have a set of decision variables
+
+268
+00:11:56,908 --> 00:11:57,950
+we're trying to optimize.
+
+269
+00:11:57,950 --> 00:12:01,090
+We're trying to find, what is the setting of these xs that
+
+270
+00:12:01,090 --> 00:12:04,030
+will satisfy a system of constraints?
+
+271
+00:12:04,030 --> 00:12:07,090
+So on the right-hand side here, we have a linear program.
+
+272
+00:12:07,090 --> 00:12:09,650
+We're trying to minimize this linear cost function
+
+273
+00:12:09,650 --> 00:12:11,290
+subject to some constraints.
+
+274
+00:12:11,290 --> 00:12:15,370
+And that can be set up as a graph of constraints that
+
+275
+00:12:15,370 --> 00:12:18,330
+will penalize a certain kind of interaction between the decision
+
+276
+00:12:18,330 --> 00:12:19,195
+variables, x.
+
+277
+00:12:19,195 --> 00:12:21,570
+And we want to find the setting of the decision variables
+
+278
+00:12:21,570 --> 00:12:23,370
+that satisfy those constraints.
+
+279
+00:12:23,370 --> 00:12:26,072
+And so we can phrase this in the language of graphs,
+
+280
+00:12:26,072 --> 00:12:27,530
+and there are graph neural networks
+
+281
+00:12:27,530 --> 00:12:29,850
+that can help us solve these types of problems
+
+282
+00:12:29,850 --> 00:12:30,947
+more efficiently.
+
+283
+00:12:30,947 --> 00:12:32,530
+And something I want to point out here
+
+284
+00:12:32,530 --> 00:12:35,610
+is that, again, just like in the shortest path example
+
+285
+00:12:35,610 --> 00:12:38,290
+I gave, we do, often for these problems,
+
+286
+00:12:38,290 --> 00:12:43,410
+have classical algorithms that we know will find the solution.
+
+287
+00:12:43,410 --> 00:12:45,190
+And so one question you might have in mind
+
+288
+00:12:45,190 --> 00:12:47,130
+is, why would we bother with a learning algorithm?
+
+289
+00:12:47,130 --> 00:12:49,110
+Why would we bother with a neural network that's
+
+290
+00:12:49,110 --> 00:12:50,652
+going to do something that we already
+
+291
+00:12:50,652 --> 00:12:52,890
+have the optimal classical algorithm for?
+
+292
+00:12:52,890 --> 00:12:56,753
+We know exactly how to solve a linear program on the right.
+
+293
+00:12:56,753 --> 00:12:58,670
+We know exactly how to solve for shortest path
+
+294
+00:12:58,670 --> 00:13:01,190
+in a graph on the left.
+
+295
+00:13:01,190 --> 00:13:05,430
+And the reason is, essentially, that these classical algorithms
+
+296
+00:13:05,430 --> 00:13:07,030
+can be slow.
+
+297
+00:13:07,030 --> 00:13:11,570
+And if we want to use a learning-based system,
+
+298
+00:13:11,570 --> 00:13:13,790
+we can potentially learn a faster way
+
+299
+00:13:13,790 --> 00:13:16,470
+of finding an approximate solution.
+
+300
+00:13:16,470 --> 00:13:18,830
+And the trade-off is that the classical algorithm
+
+301
+00:13:18,830 --> 00:13:20,750
+will find-- will be guaranteed to converge
+
+302
+00:13:20,750 --> 00:13:24,430
+to the true solution.
+
+303
+00:13:24,430 --> 00:13:25,510
+But it might be slow.
+
+304
+00:13:25,510 --> 00:13:27,370
+And the neural net, the graph net,
+
+305
+00:13:27,370 --> 00:13:30,430
+might be able to use heuristics that
+
+306
+00:13:30,430 --> 00:13:33,430
+work really well on the data distribution we train it on.
+
+307
+00:13:33,430 --> 00:13:36,150
+And so it will solve the problem more quickly on the data
+
+308
+00:13:36,150 --> 00:13:38,610
+distribution that we're training on,
+
+309
+00:13:38,610 --> 00:13:40,870
+but it won't be guaranteed to find the right answer
+
+310
+00:13:40,870 --> 00:13:42,650
+on other data distributions.
+
+311
+00:13:42,650 --> 00:13:44,090
+So you're learning something that
+
+312
+00:13:44,090 --> 00:13:46,770
+is more specialized to that data distribution.
+
+313
+00:13:46,770 --> 00:13:48,030
+OK, cool.
+
+314
+00:13:50,730 --> 00:13:55,490
+So now let's get into the technical content of how
+
+315
+00:13:55,490 --> 00:13:59,050
+these graph nets work, how do they represent data.
+
+316
+00:13:59,050 --> 00:14:02,950
+And this is how we'll represent graphs for this lecture.
+
+317
+00:14:02,950 --> 00:14:05,950
+We'll say that a graph is a set of nodes.
+
+318
+00:14:05,950 --> 00:14:09,790
+Every node is going to come with a attribute vector.
+
+319
+00:14:09,790 --> 00:14:15,730
+So this is going to be our input to our graph processing
+
+320
+00:14:15,730 --> 00:14:16,890
+algorithm.
+
+321
+00:14:16,890 --> 00:14:19,650
+We will have a attribute vector for each node.
+
+322
+00:14:19,650 --> 00:14:21,770
+If these are molecules, that attribute vector
+
+323
+00:14:21,770 --> 00:14:23,350
+might tell us what is the atom.
+
+324
+00:14:23,350 --> 00:14:24,750
+Is this carbon?
+
+325
+00:14:24,750 --> 00:14:26,090
+Is this hydrogen?
+
+326
+00:14:26,090 --> 00:14:28,810
+So in gray, we have this vector, which
+
+327
+00:14:28,810 --> 00:14:31,130
+is the initial data, our observation
+
+328
+00:14:31,130 --> 00:14:34,310
+about that node in the graph.
+
+329
+00:14:34,310 --> 00:14:36,690
+And what we're going to try to learn
+
+330
+00:14:36,690 --> 00:14:40,610
+is a mapping from our graph nodes
+
+331
+00:14:40,610 --> 00:14:43,422
+to representations of the nodes that
+
+332
+00:14:43,422 --> 00:14:45,630
+are going to be more informative about the properties
+
+333
+00:14:45,630 --> 00:14:48,350
+that we care to predict.
+
+334
+00:14:48,350 --> 00:14:50,830
+Just like we can do take an image patch
+
+335
+00:14:50,830 --> 00:14:53,803
+and embed it into a vector, we can also take a node in a graph
+
+336
+00:14:53,803 --> 00:14:55,470
+and embed it into a vector that tells us
+
+337
+00:14:55,470 --> 00:14:57,430
+something important about that node,
+
+338
+00:14:57,430 --> 00:15:03,350
+maybe classifies is it a binding site for the drug of interest?
+
+339
+00:15:03,350 --> 00:15:07,110
+Additionally, we will represent the edges between the graph
+
+340
+00:15:07,110 --> 00:15:09,310
+with an adjacency matrix, and this
+
+341
+00:15:09,310 --> 00:15:11,810
+will be an additional input to our graph neural network.
+
+342
+00:15:11,810 --> 00:15:13,990
+So we'll have a set of nodes which
+
+343
+00:15:13,990 --> 00:15:16,730
+are represented by vectors of observed data
+
+344
+00:15:16,730 --> 00:15:17,853
+and an adjacency matrix.
+
+345
+00:15:17,853 --> 00:15:19,270
+And then we'll do some computation
+
+346
+00:15:19,270 --> 00:15:22,270
+on that to make a prediction about the nodes.
+
+347
+00:15:22,270 --> 00:15:25,093
+We can also make a prediction about the entire graph itself,
+
+348
+00:15:25,093 --> 00:15:27,010
+and that's sometimes called a graph embedding.
+
+349
+00:15:27,010 --> 00:15:29,350
+So this is graph to vec right.
+
+350
+00:15:29,350 --> 00:15:30,970
+On the left side, we have node to vec.
+
+351
+00:15:30,970 --> 00:15:33,470
+Every node gets embedded into some feature
+
+352
+00:15:33,470 --> 00:15:36,090
+vector that tells us something of interest about it.
+
+353
+00:15:36,090 --> 00:15:38,470
+On the right, we're going to just embed the entire graph
+
+354
+00:15:38,470 --> 00:15:41,160
+into a feature vector that tells something of interest
+
+355
+00:15:41,160 --> 00:15:42,520
+about the entire graph.
+
+356
+00:15:42,520 --> 00:15:45,620
+For example, is this molecule toxic or not?
+
+357
+00:15:45,620 --> 00:15:47,680
+So we can ask questions about nodes in a graph
+
+358
+00:15:47,680 --> 00:15:49,380
+or about the entire graph itself.
+
+359
+00:15:53,370 --> 00:15:57,400
+So GNNs-- graph neural networks are GNNs.
+
+360
+00:15:57,400 --> 00:16:02,280
+They learn a function from these adjacency matrices that tell us
+
+361
+00:16:02,280 --> 00:16:05,200
+the edge structure and the set of graph node
+
+362
+00:16:05,200 --> 00:16:09,500
+attributes that are observed to a set of embedding vectors
+
+363
+00:16:09,500 --> 00:16:12,900
+or predictions about the nodes or the entire graph itself.
+
+364
+00:16:15,880 --> 00:16:17,610
+Do I see a question in the--
+
+365
+00:16:17,610 --> 00:16:18,860
+I think I see a question here.
+
+366
+00:16:18,860 --> 00:16:19,660
+Yeah.
+
+367
+00:16:19,660 --> 00:16:22,520
+AUDIENCE: [INAUDIBLE].
+
+368
+00:16:22,520 --> 00:16:24,240
+Graph embeddings.
+
+369
+00:16:24,240 --> 00:16:26,600
+Do they do the same model?
+
+370
+00:16:26,600 --> 00:16:27,887
+PHILLIP ISOLA: Yeah.
+
+371
+00:16:27,887 --> 00:16:29,720
+So the question is, what is the relationship
+
+372
+00:16:29,720 --> 00:16:31,740
+between node embeddings and graph embeddings.
+
+373
+00:16:31,740 --> 00:16:33,480
+And we'll see more details on this.
+
+374
+00:16:33,480 --> 00:16:38,360
+But the node embedding is going to be a vector that we learn
+
+375
+00:16:38,360 --> 00:16:40,460
+for each node in a graph, and the graph embedding
+
+376
+00:16:40,460 --> 00:16:42,960
+is going to be one vector for the entire graph.
+
+377
+00:16:42,960 --> 00:16:44,700
+We'll see examples of this.
+
+378
+00:16:44,700 --> 00:16:46,600
+And then I saw one other question.
+
+379
+00:16:46,600 --> 00:16:47,180
+Good?
+
+380
+00:16:47,180 --> 00:16:48,140
+OK.
+
+381
+00:16:48,140 --> 00:16:49,280
+In the back?
+
+382
+00:16:49,280 --> 00:16:51,100
+AUDIENCE: For tasks, are you learning
+
+383
+00:16:51,100 --> 00:16:53,320
+either the node embedding or the graph embedding,
+
+384
+00:16:53,320 --> 00:16:56,060
+or do you typically join [INAUDIBLE]?
+
+385
+00:16:56,060 --> 00:16:58,823
+PHILLIP ISOLA: So are we going to learn either node embedding
+
+386
+00:16:58,823 --> 00:17:01,240
+or graph embedding, or are we going to jointly learn them?
+
+387
+00:17:01,240 --> 00:17:02,240
+You could do either one.
+
+388
+00:17:02,240 --> 00:17:03,040
+You could do both.
+
+389
+00:17:05,780 --> 00:17:08,940
+Well, in general, we might learn a set of node embeddings
+
+390
+00:17:08,940 --> 00:17:11,839
+and then sum them up at the end to get a graph embedding.
+
+391
+00:17:11,839 --> 00:17:13,863
+That would be one way of combining the two.
+
+392
+00:17:13,863 --> 00:17:14,780
+OK, one more question.
+
+393
+00:17:14,780 --> 00:17:15,859
+Then I'll move on.
+
+394
+00:17:15,859 --> 00:17:18,845
+Yeah, over here.
+
+395
+00:17:18,845 --> 00:17:19,720
+Sorry, in the middle.
+
+396
+00:17:19,720 --> 00:17:22,140
+Yeah.
+
+397
+00:17:22,140 --> 00:17:24,099
+AUDIENCE: How much do we care about the size
+
+398
+00:17:24,099 --> 00:17:26,940
+of the adjacency matrix and [INAUDIBLE] number
+
+399
+00:17:26,940 --> 00:17:29,460
+of nodes [INAUDIBLE] dimensionality
+
+400
+00:17:29,460 --> 00:17:31,980
+of the [INAUDIBLE] those are constrained
+
+401
+00:17:31,980 --> 00:17:35,715
+not at all [INAUDIBLE]
+
+402
+00:17:35,715 --> 00:17:37,340
+PHILLIP ISOLA: I think, if I understood
+
+403
+00:17:37,340 --> 00:17:41,760
+the question- how much do we care about the dimensionality
+
+404
+00:17:41,760 --> 00:17:44,520
+of the adjacency matrix?
+
+405
+00:17:44,520 --> 00:17:47,180
+If we have a really big graph with a lot of connections,
+
+406
+00:17:47,180 --> 00:17:48,420
+does this become intractable?
+
+407
+00:17:48,420 --> 00:17:51,720
+And I would say that's more-- that's not really
+
+408
+00:17:51,720 --> 00:17:53,180
+our choice as modelers.
+
+409
+00:17:53,180 --> 00:17:55,780
+That's going to be the property of the data
+
+410
+00:17:55,780 --> 00:17:56,780
+that we're working with.
+
+411
+00:17:56,780 --> 00:17:59,720
+So yes, if we have a graph-- if our data type that we're working
+
+412
+00:17:59,720 --> 00:18:01,860
+with are molecules are just very densely connected,
+
+413
+00:18:01,860 --> 00:18:03,902
+then this will be something we have to deal with,
+
+414
+00:18:03,902 --> 00:18:07,400
+and that will be computationally more expensive to deal with.
+
+415
+00:18:07,400 --> 00:18:11,487
+But that's-- we don't usually try to simplify the input graph.
+
+416
+00:18:11,487 --> 00:18:13,320
+We're going to take the input graph as given
+
+417
+00:18:13,320 --> 00:18:15,320
+and ask a question about it.
+
+418
+00:18:15,320 --> 00:18:17,920
+Yeah.
+
+419
+00:18:17,920 --> 00:18:23,240
+So before we get to how graph nets work, let's
+
+420
+00:18:23,240 --> 00:18:25,960
+first ask, what if we just wanted
+
+421
+00:18:25,960 --> 00:18:29,160
+to make a prediction about graph-structured data
+
+422
+00:18:29,160 --> 00:18:30,060
+with an MLP?
+
+423
+00:18:30,060 --> 00:18:31,960
+We've already seen MLPs.
+
+424
+00:18:31,960 --> 00:18:37,340
+So MLP's another name for that fully connected neural network.
+
+425
+00:18:37,340 --> 00:18:40,420
+What if we just use this fully connected neural network?
+
+426
+00:18:40,420 --> 00:18:44,220
+How would we take as input the properties of the graph?
+
+427
+00:18:44,220 --> 00:18:45,860
+So one thing that we need as input
+
+428
+00:18:45,860 --> 00:18:47,620
+is the adjacency matrix that tells
+
+429
+00:18:47,620 --> 00:18:51,300
+us which nodes in the graph are connected to which nodes.
+
+430
+00:18:51,300 --> 00:18:56,200
+And just to quickly show you what that looks like--
+
+431
+00:18:56,200 --> 00:18:56,700
+let's see.
+
+432
+00:18:56,700 --> 00:18:59,060
+What happened to my mouse?
+
+433
+00:18:59,060 --> 00:19:00,340
+How do I find my mouse?
+
+434
+00:19:00,340 --> 00:19:01,140
+OK.
+
+435
+00:19:01,140 --> 00:19:04,060
+Well, anyway, you can see the adjacency matrix up here
+
+436
+00:19:04,060 --> 00:19:07,980
+on the left, and this is just telling us
+
+437
+00:19:07,980 --> 00:19:10,233
+which nodes in the graph up at the top right
+
+438
+00:19:10,233 --> 00:19:11,400
+are connected to each other.
+
+439
+00:19:11,400 --> 00:19:14,940
+So 1 means there's an edge between the node index i
+
+440
+00:19:14,940 --> 00:19:16,840
+and the node index j in that matrix.
+
+441
+00:19:16,840 --> 00:19:19,100
+And a 0 means there's no edge.
+
+442
+00:19:19,100 --> 00:19:22,880
+So what is the fourth row of that adjacency matrix?
+
+443
+00:19:22,880 --> 00:19:25,920
+Which node in the graph at the top right does that refer to?
+
+444
+00:19:29,040 --> 00:19:29,540
+Blue?
+
+445
+00:19:29,540 --> 00:19:30,200
+OK, I heard it.
+
+446
+00:19:30,200 --> 00:19:30,340
+Yeah.
+
+447
+00:19:30,340 --> 00:19:31,040
+So blue, right?
+
+448
+00:19:31,040 --> 00:19:35,150
+So there's three 1s, and that's the only node in that graph that
+
+449
+00:19:35,150 --> 00:19:37,350
+has three edges, so that's how you would know that
+
+450
+00:19:37,350 --> 00:19:39,230
+that's the relationship.
+
+451
+00:19:39,230 --> 00:19:43,750
+So the adjacency matrix tells us the connectivity of the graph.
+
+452
+00:19:43,750 --> 00:19:46,710
+And we additionally would have a set of attribute vectors
+
+453
+00:19:46,710 --> 00:19:50,590
+for every single node, the observed vector for that node.
+
+454
+00:19:50,590 --> 00:19:54,110
+And we could just put these into an MLP
+
+455
+00:19:54,110 --> 00:19:58,630
+by simply creating a serialization
+
+456
+00:19:58,630 --> 00:20:01,670
+of our adjacency matrix and all the node
+
+457
+00:20:01,670 --> 00:20:03,850
+attribute vectors and just one really big vector
+
+458
+00:20:03,850 --> 00:20:05,970
+and just put that into a multi-layer perceptron.
+
+459
+00:20:05,970 --> 00:20:12,330
+So can anyone think of why that might not be the best strategy?
+
+460
+00:20:12,330 --> 00:20:14,870
+What might be an undesirable property
+
+461
+00:20:14,870 --> 00:20:18,070
+of just serializing our adjacency matrix
+
+462
+00:20:18,070 --> 00:20:20,670
+and our node attributes?
+
+463
+00:20:20,670 --> 00:20:22,190
+Let's go over here.
+
+464
+00:20:22,190 --> 00:20:25,030
+AUDIENCE: So adjacency matrices can only consist of 1s and 0s,
+
+465
+00:20:25,030 --> 00:20:27,750
+whereas MLPs can take in real numbers.
+
+466
+00:20:27,750 --> 00:20:28,750
+PHILLIP ISOLA: OK, yeah.
+
+467
+00:20:28,750 --> 00:20:31,435
+So adjacency matrices only consist of 1s and 0s.
+
+468
+00:20:31,435 --> 00:20:33,810
+Maybe we're not making use of the full capacity of an MLP
+
+469
+00:20:33,810 --> 00:20:34,950
+to take in real numbers.
+
+470
+00:20:34,950 --> 00:20:37,030
+That's a good idea.
+
+471
+00:20:37,030 --> 00:20:39,750
+AUDIENCE: It depends on the index you put on the nodes.
+
+472
+00:20:39,750 --> 00:20:44,010
+So if you permute, it's not going to work.
+
+473
+00:20:44,010 --> 00:20:44,930
+PHILLIP ISOLA: Yeah.
+
+474
+00:20:44,930 --> 00:20:47,810
+So the answer-- and this is the answer that I always had in
+
+475
+00:20:47,810 --> 00:20:54,530
+mind myself, is the adjacency matrix, represented as a vector,
+
+476
+00:20:54,530 --> 00:20:59,330
+is going to depend on how we assigned indices to the nodes
+
+477
+00:20:59,330 --> 00:21:00,330
+in the graph.
+
+478
+00:21:00,330 --> 00:21:03,410
+And that decision was arbitrary.
+
+479
+00:21:03,410 --> 00:21:06,270
+We decided that the fourth row of the adjacency matrix--
+
+480
+00:21:06,270 --> 00:21:08,110
+the index 4 is the blue node.
+
+481
+00:21:08,110 --> 00:21:11,410
+But why didn't I say that index 3 is the blue node.
+
+482
+00:21:11,410 --> 00:21:14,590
+So generally, for graph-structured data,
+
+483
+00:21:14,590 --> 00:21:19,290
+we want to be processing it in a way that is invariant to how we
+
+484
+00:21:19,290 --> 00:21:21,622
+chose to index into the nodes.
+
+485
+00:21:21,622 --> 00:21:23,330
+The structure of the graph, the structure
+
+486
+00:21:23,330 --> 00:21:26,730
+of a model-- of a molecule in many types of graph data
+
+487
+00:21:26,730 --> 00:21:31,570
+don't really depend on the ordering of the nodes.
+
+488
+00:21:31,570 --> 00:21:33,390
+So in math terms, we would say that we
+
+489
+00:21:33,390 --> 00:21:36,750
+want a function which is permutation-invariant
+
+490
+00:21:36,750 --> 00:21:41,710
+to permuting the indices of the adjacency matrix
+
+491
+00:21:41,710 --> 00:21:45,310
+and permuting the ordering of the node attribute
+
+492
+00:21:45,310 --> 00:21:47,910
+vectors that we put into our system.
+
+493
+00:21:47,910 --> 00:21:52,510
+So here is a permutation matrix, P,
+
+494
+00:21:52,510 --> 00:21:56,430
+applied to the rows and the columns of our adjacency matrix.
+
+495
+00:21:56,430 --> 00:22:02,230
+And the graph that is described by this permutation
+
+496
+00:22:02,230 --> 00:22:04,150
+is the same, structurally, as the graph
+
+497
+00:22:04,150 --> 00:22:07,290
+that's described by the original adjacency matrix.
+
+498
+00:22:07,290 --> 00:22:10,910
+We've just chosen a different ordering of the indexes
+
+499
+00:22:10,910 --> 00:22:12,270
+to label the nodes.
+
+500
+00:22:12,270 --> 00:22:16,110
+So the first matrix, P, permutes the rows,
+
+501
+00:22:16,110 --> 00:22:19,990
+and the P transpose permute the columns.
+
+502
+00:22:19,990 --> 00:22:24,490
+Additionally, if we have a matrix of node attributes--
+
+503
+00:22:24,490 --> 00:22:28,990
+so we have four nodes, and so we'll have a 4-by-D-dimensional
+
+504
+00:22:28,990 --> 00:22:31,010
+matrix, X, of the node attributes.
+
+505
+00:22:31,010 --> 00:22:34,730
+This is the observed data at each node.
+
+506
+00:22:34,730 --> 00:22:38,930
+We can permute that with our permutation matrix, P.
+
+507
+00:22:38,930 --> 00:22:42,530
+And in order for the graph net, f, or the function,
+
+508
+00:22:42,530 --> 00:22:45,810
+f, to be invariant to these types of reindexing
+
+509
+00:22:45,810 --> 00:22:49,810
+of our graph, we would want that permuting the adjacency matrix
+
+510
+00:22:49,810 --> 00:22:52,370
+and permuting the nodes-- the node attributes
+
+511
+00:22:52,370 --> 00:22:57,290
+will result in the same answer as any other permutation.
+
+512
+00:22:57,290 --> 00:23:00,170
+So this property's called permutation invariance.
+
+513
+00:23:00,170 --> 00:23:03,850
+Very related to what we heard about on Tuesday.
+
+514
+00:23:03,850 --> 00:23:07,810
+Where convolutional networks are invariant or equivariant
+
+515
+00:23:07,810 --> 00:23:10,210
+to translation, graph nets are going
+
+516
+00:23:10,210 --> 00:23:16,930
+to be invariant or equivariant to permutations of the inputs.
+
+517
+00:23:16,930 --> 00:23:20,550
+So permutation equivariance is almost the same thing.
+
+518
+00:23:20,550 --> 00:23:24,090
+It just says that if you permute the way that you
+
+519
+00:23:24,090 --> 00:23:28,350
+have indexed into the data, then you should permute your outputs.
+
+520
+00:23:28,350 --> 00:23:32,790
+So if I shuffle my nodes, then I should end up
+
+521
+00:23:32,790 --> 00:23:35,670
+shuffling my predictions.
+
+522
+00:23:35,670 --> 00:23:38,610
+So same idea as translation invariance versus equivariance.
+
+523
+00:23:38,610 --> 00:23:41,470
+I would want to be permutation-invariant
+
+524
+00:23:41,470 --> 00:23:44,910
+if I'm trying to, let's say, predict something
+
+525
+00:23:44,910 --> 00:23:47,070
+about the entire graph.
+
+526
+00:23:47,070 --> 00:23:49,410
+So no matter how I index those nodes,
+
+527
+00:23:49,410 --> 00:23:52,050
+then the prediction about the graph will be the same.
+
+528
+00:23:52,050 --> 00:23:54,710
+And if I want to predict something about every node,
+
+529
+00:23:54,710 --> 00:23:56,330
+like I want to output node embeddings,
+
+530
+00:23:56,330 --> 00:23:58,870
+then I would want to be permutation-equivariant so
+
+531
+00:23:58,870 --> 00:24:01,510
+that if I shuffle the nodes, my predictions about the nodes
+
+532
+00:24:01,510 --> 00:24:04,230
+get shuffled in the same way, just
+
+533
+00:24:04,230 --> 00:24:06,790
+like I want translation equivariance if I want
+
+534
+00:24:06,790 --> 00:24:10,710
+to have the output of my convolutional network
+
+535
+00:24:10,710 --> 00:24:13,790
+have the property that if I shuffle or translate the input
+
+536
+00:24:13,790 --> 00:24:17,710
+image, I will translate the dense set of predictions
+
+537
+00:24:17,710 --> 00:24:18,650
+in the output.
+
+538
+00:24:18,650 --> 00:24:20,890
+I'll translate the feature map that comes out.
+
+539
+00:24:23,510 --> 00:24:25,430
+So this is the kind of fundamental symmetry
+
+540
+00:24:25,430 --> 00:24:28,720
+that we're going to be exploiting with graph neural
+
+541
+00:24:28,720 --> 00:24:29,560
+networks.
+
+542
+00:24:29,560 --> 00:24:33,480
+They'll be appropriate for processing data for which
+
+543
+00:24:33,480 --> 00:24:35,160
+the problem of interest is actually
+
+544
+00:24:35,160 --> 00:24:38,640
+permutation-equivariant or invariant.
+
+545
+00:24:38,640 --> 00:24:40,863
+Yeah, question.
+
+546
+00:24:40,863 --> 00:24:42,280
+AUDIENCE: I think I understand why
+
+547
+00:24:42,280 --> 00:24:46,280
+we need to make it invariant, but is that under the assumption
+
+548
+00:24:46,280 --> 00:24:51,840
+that all graphs could be made into this invariant form?
+
+549
+00:24:51,840 --> 00:24:56,000
+What are some problems where the nodes are just not
+
+550
+00:24:56,000 --> 00:24:58,680
+able to become invariant?
+
+551
+00:24:58,680 --> 00:25:00,520
+PHILLIP ISOLA: Yeah, we'll see, at the end
+
+552
+00:25:00,520 --> 00:25:02,312
+of the class, some cases where you wouldn't
+
+553
+00:25:02,312 --> 00:25:05,040
+want permutation invariance.
+
+554
+00:25:05,040 --> 00:25:11,240
+But if, for example, you live in a world where molecules always
+
+555
+00:25:11,240 --> 00:25:14,440
+come in some orientation, like the heavier--
+
+556
+00:25:14,440 --> 00:25:17,240
+the blue is a heavier atom and it always
+
+557
+00:25:17,240 --> 00:25:20,502
+lives on-- it has a position, a canonical position, that you're
+
+558
+00:25:20,502 --> 00:25:21,960
+always going to observe, then you'd
+
+559
+00:25:21,960 --> 00:25:23,460
+want to use that information.
+
+560
+00:25:23,460 --> 00:25:24,700
+But in our world--
+
+561
+00:25:29,060 --> 00:25:31,230
+yeah, .
+
+562
+00:25:31,230 --> 00:25:32,980
+Yeah, I'll have to think a little bit more
+
+563
+00:25:32,980 --> 00:25:34,980
+about a good example, but we're going to see one
+
+564
+00:25:34,980 --> 00:25:37,890
+at the end of the class.
+
+565
+00:25:37,890 --> 00:25:38,640
+One more question.
+
+566
+00:25:38,640 --> 00:25:39,140
+Yeah?
+
+567
+00:25:39,140 --> 00:25:40,820
+AUDIENCE: [INAUDIBLE] invariance, why
+
+568
+00:25:40,820 --> 00:25:43,420
+is the output a single vector?
+
+569
+00:25:43,420 --> 00:25:45,060
+Does that [INAUDIBLE] have anything
+
+570
+00:25:45,060 --> 00:25:46,680
+to do with the entire graph itself,
+
+571
+00:25:46,680 --> 00:25:49,820
+or is there a reason why that output's a single vector?
+
+572
+00:25:49,820 --> 00:25:53,972
+PHILLIP ISOLA: Yeah, for permutation invariance,
+
+573
+00:25:53,972 --> 00:25:55,680
+the output could be more than one vector.
+
+574
+00:25:55,680 --> 00:25:56,972
+It could be any dimensionality.
+
+575
+00:25:56,972 --> 00:25:58,900
+It just means that if I permute the inputs,
+
+576
+00:25:58,900 --> 00:26:01,700
+then I get the same output no matter what.
+
+577
+00:26:01,700 --> 00:26:03,740
+And that's going to be most appropriate if I'm
+
+578
+00:26:03,740 --> 00:26:06,760
+making some prediction about the entire graph.
+
+579
+00:26:06,760 --> 00:26:09,240
+If I'm making predictions about a single node in the graph,
+
+580
+00:26:09,240 --> 00:26:13,940
+I want my prediction for the nth node in the graph
+
+581
+00:26:13,940 --> 00:26:19,160
+to always be in the nth output row of my output matrix
+
+582
+00:26:19,160 --> 00:26:24,300
+if I'm predicting a matrix as output or a set of vectors--
+
+583
+00:26:24,300 --> 00:26:26,100
+vector embeddings per node as output.
+
+584
+00:26:28,780 --> 00:26:31,920
+So let's, again, make the connection to graph neural
+
+585
+00:26:31,920 --> 00:26:34,460
+networks-- sorry, to convolutional neural networks.
+
+586
+00:26:34,460 --> 00:26:39,000
+So ConvNets are graph nets applied on a grid.
+
+587
+00:26:39,000 --> 00:26:40,760
+We said that ConvNets are appropriate
+
+588
+00:26:40,760 --> 00:26:42,880
+for grid-structured data.
+
+589
+00:26:42,880 --> 00:26:45,680
+And if we're processing an image, which
+
+590
+00:26:45,680 --> 00:26:48,480
+is one of the main applications of convolutional networks,
+
+591
+00:26:48,480 --> 00:26:52,640
+then we'll have a grid of pixels or patches.
+
+592
+00:26:52,640 --> 00:26:55,220
+And we can think of that as just a graph of nodes,
+
+593
+00:26:55,220 --> 00:26:58,640
+and the edges between the nodes are the weights
+
+594
+00:26:58,640 --> 00:27:00,660
+of the convolutional filter.
+
+595
+00:27:00,660 --> 00:27:05,540
+And in a graph net, it's just the same idea,
+
+596
+00:27:05,540 --> 00:27:08,160
+except generalized to non-grid topologies.
+
+597
+00:27:08,160 --> 00:27:10,720
+So if I want to process something
+
+598
+00:27:10,720 --> 00:27:12,940
+about the node in the center of that green region,
+
+599
+00:27:12,940 --> 00:27:14,520
+I'm going to look at all my neighbors
+
+600
+00:27:14,520 --> 00:27:17,142
+and aggregate information from all of them,
+
+601
+00:27:17,142 --> 00:27:18,600
+just like in a ConvNet, we're going
+
+602
+00:27:18,600 --> 00:27:21,183
+to run a filter that's going to look at all my local neighbors
+
+603
+00:27:21,183 --> 00:27:25,540
+in a patch around a pixel, or around a node on a grid graph,
+
+604
+00:27:25,540 --> 00:27:28,220
+and aggregate information to make a new representation
+
+605
+00:27:28,220 --> 00:27:32,240
+of that location in the image.
+
+606
+00:27:35,020 --> 00:27:36,040
+So one question for you.
+
+607
+00:27:36,040 --> 00:27:38,760
+So graph nets look a lot like ConvNets,
+
+608
+00:27:38,760 --> 00:27:40,340
+but now they're on arbitrary graphs,
+
+609
+00:27:40,340 --> 00:27:42,862
+as opposed to just on a grid.
+
+610
+00:27:42,862 --> 00:27:44,820
+So what are some of the interesting differences
+
+611
+00:27:44,820 --> 00:27:47,020
+between a ConvNet and a graph net?
+
+612
+00:27:49,740 --> 00:27:52,220
+What is the new problem you might encounter with a graph
+
+613
+00:27:52,220 --> 00:27:53,887
+that you won't encounter with a ConvNet?
+
+614
+00:27:53,887 --> 00:27:54,460
+Yeah.
+
+615
+00:27:54,460 --> 00:27:56,043
+AUDIENCE: The neighborhood of a vertex
+
+616
+00:27:56,043 --> 00:27:57,987
+is not the same shape all the time?
+
+617
+00:27:57,987 --> 00:27:58,820
+PHILLIP ISOLA: Yeah.
+
+618
+00:27:58,820 --> 00:28:01,058
+So the neighborhood of a vertex is not the same shape
+
+619
+00:28:01,058 --> 00:28:01,600
+all the time.
+
+620
+00:28:01,600 --> 00:28:05,060
+So you need a architecture that can handle having
+
+621
+00:28:05,060 --> 00:28:06,808
+variable numbers of neighbors.
+
+622
+00:28:06,808 --> 00:28:09,100
+It's not going to be something that's always, like, a 3
+
+623
+00:28:09,100 --> 00:28:10,160
+by 3 patch.
+
+624
+00:28:10,160 --> 00:28:12,452
+And this is going to have hardware implications, right?
+
+625
+00:28:12,452 --> 00:28:15,940
+It's going to mean that I can't just have baked onto my hardware
+
+626
+00:28:15,940 --> 00:28:19,100
+that I'm going to look at, a 3 by 3 grid.
+
+627
+00:28:19,100 --> 00:28:23,190
+I'm going to have to make that flexible enough that if the node
+
+628
+00:28:23,190 --> 00:28:25,230
+has a lot of edge neighbors, then
+
+629
+00:28:25,230 --> 00:28:28,590
+I will be able to aggregate over a bigger set.
+
+630
+00:28:28,590 --> 00:28:29,130
+Any others?
+
+631
+00:28:29,130 --> 00:28:29,942
+Yeah.
+
+632
+00:28:29,942 --> 00:28:32,150
+AUDIENCE: There is no structure in the neighborhoods.
+
+633
+00:28:32,150 --> 00:28:33,730
+All these should be treated equally.
+
+634
+00:28:33,730 --> 00:28:34,890
+PHILLIP ISOLA: Yes, excellent.
+
+635
+00:28:34,890 --> 00:28:36,050
+There's no structure in the neighborhood.
+
+636
+00:28:36,050 --> 00:28:37,300
+All should be treated equally.
+
+637
+00:28:37,300 --> 00:28:41,310
+So in a convolutional network, there
+
+638
+00:28:41,310 --> 00:28:44,090
+is this kind of spatial dimensionality to it,
+
+639
+00:28:44,090 --> 00:28:46,550
+where left and right have a different meaning than up
+
+640
+00:28:46,550 --> 00:28:48,510
+and down, and I might want to treat left and right differently
+
+641
+00:28:48,510 --> 00:28:49,550
+than up and down.
+
+642
+00:28:49,550 --> 00:28:52,670
+And in a graph net, we actually are
+
+643
+00:28:52,670 --> 00:28:57,550
+going to represent the operation that
+
+644
+00:28:57,550 --> 00:29:00,750
+updates the node representation given the neighbors
+
+645
+00:29:00,750 --> 00:29:03,750
+in a way that is--
+
+646
+00:29:03,750 --> 00:29:07,590
+doesn't depend on, spatially, where those nodes land.
+
+647
+00:29:07,590 --> 00:29:09,070
+So the structures are more abstract
+
+648
+00:29:09,070 --> 00:29:11,790
+than the spatial structure of a ConvNet.
+
+649
+00:29:11,790 --> 00:29:14,863
+So there are a few important differences,
+
+650
+00:29:14,863 --> 00:29:16,530
+but there's also a lot of commonalities.
+
+651
+00:29:16,530 --> 00:29:18,510
+So here's a few of the commonalities.
+
+652
+00:29:18,510 --> 00:29:20,670
+One is that both of these architectures
+
+653
+00:29:20,670 --> 00:29:22,770
+are based on local operations.
+
+654
+00:29:22,770 --> 00:29:25,490
+So we run local convolutional filters
+
+655
+00:29:25,490 --> 00:29:28,630
+to update our representation of the data at that location.
+
+656
+00:29:28,630 --> 00:29:33,170
+And we graph local computations where every node in the graph
+
+657
+00:29:33,170 --> 00:29:36,507
+is going to get input from just its neighbors.
+
+658
+00:29:36,507 --> 00:29:38,090
+And the way you make a global decision
+
+659
+00:29:38,090 --> 00:29:40,257
+or you propagate information across the entire graph
+
+660
+00:29:40,257 --> 00:29:43,650
+or the entire image is just by stacking those local operations.
+
+661
+00:29:43,650 --> 00:29:46,772
+So you can filter an image over and over again,
+
+662
+00:29:46,772 --> 00:29:49,230
+and the receptive fields gets bigger and bigger and bigger.
+
+663
+00:29:49,230 --> 00:29:51,530
+And that location in the image aggregates information
+
+664
+00:29:51,530 --> 00:29:52,780
+from farther and farther away.
+
+665
+00:29:52,780 --> 00:29:54,410
+It's the exact same in a graph net.
+
+666
+00:29:54,410 --> 00:29:57,770
+If I update a node based on its neighbors,
+
+667
+00:29:57,770 --> 00:30:01,310
+then if I repeat that operation, I will-- every time I repeat it,
+
+668
+00:30:01,310 --> 00:30:03,297
+I will hop one more neighbor away,
+
+669
+00:30:03,297 --> 00:30:05,130
+and eventually, I'll cover the entire graph,
+
+670
+00:30:05,130 --> 00:30:06,732
+and I'll globalize.
+
+671
+00:30:06,732 --> 00:30:08,690
+Another idea that's shared between these things
+
+672
+00:30:08,690 --> 00:30:10,810
+is that just like a ConvNet is chopping up
+
+673
+00:30:10,810 --> 00:30:13,330
+the image into patches and operating on each patch
+
+674
+00:30:13,330 --> 00:30:16,030
+independently and identically with the same parameters,
+
+675
+00:30:16,030 --> 00:30:18,930
+a graph net will also chop up graphs into little local regions
+
+676
+00:30:18,930 --> 00:30:23,030
+and operate on each local region independently and identically.
+
+677
+00:30:23,030 --> 00:30:27,630
+And it's going to share the same parameters to update
+
+678
+00:30:27,630 --> 00:30:30,812
+each region that-- each region of that graph.
+
+679
+00:30:30,812 --> 00:30:32,270
+And another interesting property is
+
+680
+00:30:32,270 --> 00:30:34,630
+that ConvNets can operate functionally
+
+681
+00:30:34,630 --> 00:30:36,010
+on any size input image.
+
+682
+00:30:36,010 --> 00:30:38,790
+They just slide that filter over as much as they need to go.
+
+683
+00:30:38,790 --> 00:30:41,410
+And a graph that can operate on any size graph.
+
+684
+00:30:41,410 --> 00:30:43,830
+You just continue running that local operation
+
+685
+00:30:43,830 --> 00:30:45,590
+at every node in the graph.
+
+686
+00:30:45,590 --> 00:30:48,310
+So that's a big difference from MLPs, which require
+
+687
+00:30:48,310 --> 00:30:49,710
+a fixed dimensional input.
+
+688
+00:30:49,710 --> 00:30:50,650
+OK, one question.
+
+689
+00:30:50,650 --> 00:30:52,150
+AUDIENCE: Are we sharing the weights
+
+690
+00:30:52,150 --> 00:30:54,332
+across different depths or only on [INAUDIBLE]?
+
+691
+00:30:54,332 --> 00:30:55,790
+PHILLIP ISOLA: Yeah, so we're going
+
+692
+00:30:55,790 --> 00:30:56,890
+to get into that in a minute.
+
+693
+00:30:56,890 --> 00:30:58,670
+So are we sharing the weights across depth?
+
+694
+00:30:58,670 --> 00:31:00,170
+And the answer is, that's an option.
+
+695
+00:31:00,170 --> 00:31:01,670
+You can, or you don't have to.
+
+696
+00:31:01,670 --> 00:31:04,390
+But we'll see that in just a second.
+
+697
+00:31:04,390 --> 00:31:06,710
+So here's one more, just pointing out
+
+698
+00:31:06,710 --> 00:31:08,690
+the exact relationship between a graph.
+
+699
+00:31:08,690 --> 00:31:10,430
+Net and a convolutional network.
+
+700
+00:31:10,430 --> 00:31:16,510
+So this is a CNN visualized like a graph net,
+
+701
+00:31:16,510 --> 00:31:18,710
+so every single node in the graph
+
+702
+00:31:18,710 --> 00:31:21,250
+is going to be connected to its neighbors,
+
+703
+00:31:21,250 --> 00:31:25,050
+and every node will have this gray--
+
+704
+00:31:25,050 --> 00:31:27,210
+let me try to get my mouse back.
+
+705
+00:31:27,210 --> 00:31:30,757
+OK, there we go.
+
+706
+00:31:30,757 --> 00:31:32,590
+I don't know why my mouse is not showing up.
+
+707
+00:31:35,210 --> 00:31:36,990
+Anyway, It's fine.
+
+708
+00:31:36,990 --> 00:31:40,990
+So the gray columns are meant to be the node attribute vectors.
+
+709
+00:31:40,990 --> 00:31:42,930
+But what would the name of those gray columns
+
+710
+00:31:42,930 --> 00:31:47,078
+be if we were working with a CNN?
+
+711
+00:31:47,078 --> 00:31:47,870
+Anyone want to say?
+
+712
+00:31:47,870 --> 00:31:48,830
+I think it's on the slide.
+
+713
+00:31:48,830 --> 00:31:50,250
+AUDIENCE: Embeddings [INAUDIBLE].
+
+714
+00:31:50,250 --> 00:31:52,083
+PHILLIP ISOLA: Embeddings or channels, yeah.
+
+715
+00:31:52,083 --> 00:31:54,610
+So in a CNN, every point in the grid
+
+716
+00:31:54,610 --> 00:31:56,990
+has this column of channels underneath it,
+
+717
+00:31:56,990 --> 00:32:00,210
+and that's equivalent to the node vectors in a graph neural
+
+718
+00:32:00,210 --> 00:32:01,130
+network.
+
+719
+00:32:01,130 --> 00:32:04,770
+So maybe some CNN review questions very quickly.
+
+720
+00:32:04,770 --> 00:32:09,755
+In this convolutional network, what is the kernel size?
+
+721
+00:32:09,755 --> 00:32:10,513
+AUDIENCE: 3 by 3.
+
+722
+00:32:10,513 --> 00:32:11,430
+PHILLIP ISOLA: 3 by 3.
+
+723
+00:32:11,430 --> 00:32:12,610
+OK, great.
+
+724
+00:32:12,610 --> 00:32:13,950
+And what is the stride?
+
+725
+00:32:17,210 --> 00:32:18,280
+The stride is 3.
+
+726
+00:32:18,280 --> 00:32:19,780
+So why is stride 3?
+
+727
+00:32:19,780 --> 00:32:23,040
+Because I didn't draw edges between--
+
+728
+00:32:28,260 --> 00:32:30,038
+if you look at the pattern of edges,
+
+729
+00:32:30,038 --> 00:32:32,080
+it's like I'm taking that pattern, that template,
+
+730
+00:32:32,080 --> 00:32:38,220
+and moving it over by 3 to get the next filter's application.
+
+731
+00:32:38,220 --> 00:32:40,080
+OK, cool.
+
+732
+00:32:40,080 --> 00:32:43,220
+So CNNs are GNNs.
+
+733
+00:32:43,220 --> 00:32:45,100
+But now let's look at GNNs more generally
+
+734
+00:32:45,100 --> 00:32:48,340
+and get into the exact equations of how they operate.
+
+735
+00:32:48,340 --> 00:32:53,660
+So the way I'm going to present this is that there's two steps.
+
+736
+00:32:53,660 --> 00:32:59,900
+One step is we're going to pass messages
+
+737
+00:32:59,900 --> 00:33:02,380
+from each node to its neighbors.
+
+738
+00:33:02,380 --> 00:33:04,380
+And the next step is we're going to aggregate
+
+739
+00:33:04,380 --> 00:33:08,460
+all of those messages to update the representation of each node.
+
+740
+00:33:08,460 --> 00:33:11,440
+So every node has a vector associated with it,
+
+741
+00:33:11,440 --> 00:33:15,180
+and that vector's going to be modified layer
+
+742
+00:33:15,180 --> 00:33:17,157
+by layer through my graph net in order
+
+743
+00:33:17,157 --> 00:33:19,240
+to come up with a better embedding that then makes
+
+744
+00:33:19,240 --> 00:33:20,740
+a prediction at the very end of the day,
+
+745
+00:33:20,740 --> 00:33:22,365
+just like in a ConvNet, how every layer
+
+746
+00:33:22,365 --> 00:33:24,000
+modifies the set of channels underneath
+
+747
+00:33:24,000 --> 00:33:25,300
+every spatial location.
+
+748
+00:33:28,280 --> 00:33:32,220
+So here's the general form of one layer application of a graph
+
+749
+00:33:32,220 --> 00:33:33,065
+net.
+
+750
+00:33:33,065 --> 00:33:34,940
+So going to look at a really tiny graph here.
+
+751
+00:33:34,940 --> 00:33:37,280
+I'm going to highlight that middle node
+
+752
+00:33:37,280 --> 00:33:40,280
+and ask, how does that middle nodes node vector get
+
+753
+00:33:40,280 --> 00:33:44,080
+updated after one application--
+
+754
+00:33:44,080 --> 00:33:45,460
+one layer of processing?
+
+755
+00:33:45,460 --> 00:33:48,160
+So what does one layer of processing-- so we call this--
+
+756
+00:33:48,160 --> 00:33:51,660
+in each round k, in each layer k, we're going to do two things.
+
+757
+00:33:51,660 --> 00:33:53,680
+We're going to aggregate and then update.
+
+758
+00:33:53,680 --> 00:33:55,920
+So the aggregate function is going
+
+759
+00:33:55,920 --> 00:33:59,560
+to be a function that takes the node vectors denoted
+
+760
+00:33:59,560 --> 00:34:02,120
+as h of all of my neighbors, and it's
+
+761
+00:34:02,120 --> 00:34:08,420
+going to produce a message, m, from that set.
+
+762
+00:34:08,420 --> 00:34:09,880
+And importantly, aggregate is going
+
+763
+00:34:09,880 --> 00:34:13,679
+to be a function that is permutation-invariant.
+
+764
+00:34:13,679 --> 00:34:17,600
+So if I reindex into my neighbors,
+
+765
+00:34:17,600 --> 00:34:20,940
+then I shouldn't get any different output message, m.
+
+766
+00:34:20,940 --> 00:34:24,739
+OK, so the italic n is the set of neighbors
+
+767
+00:34:24,739 --> 00:34:30,020
+of a vector of a node v. And I'm going
+
+768
+00:34:30,020 --> 00:34:34,580
+to take the attribute vectors, h, from all my neighbors
+
+769
+00:34:34,580 --> 00:34:35,860
+in that set.
+
+770
+00:34:35,860 --> 00:34:38,942
+And I'm going to then somehow aggregate them.
+
+771
+00:34:38,942 --> 00:34:40,400
+Now, once I've gotten that message,
+
+772
+00:34:40,400 --> 00:34:43,080
+which is now just a vector-- it's a D-dimensional vector,
+
+773
+00:34:43,080 --> 00:34:44,380
+let's say.
+
+774
+00:34:44,380 --> 00:34:49,739
+Then I will update the red node, node vector,
+
+775
+00:34:49,739 --> 00:34:52,007
+using another function called Update.
+
+776
+00:34:52,007 --> 00:34:53,840
+So I'll take the messages from my neighbors.
+
+777
+00:34:53,840 --> 00:34:55,548
+My neighbors told me something about what
+
+778
+00:34:55,548 --> 00:34:57,860
+they know about the graph and about the world.
+
+779
+00:34:57,860 --> 00:34:59,300
+And I'll combine that information
+
+780
+00:34:59,300 --> 00:35:02,700
+with what I know about myself to update my own representation.
+
+781
+00:35:02,700 --> 00:35:05,500
+And now I can repeat this process k times.
+
+782
+00:35:05,500 --> 00:35:08,500
+And as k gets larger, it's like going in depth
+
+783
+00:35:08,500 --> 00:35:11,217
+in a neural network where I'm just updating my representation
+
+784
+00:35:11,217 --> 00:35:13,300
+to be better and better and better, until finally,
+
+785
+00:35:13,300 --> 00:35:14,740
+at the end, I make a prediction.
+
+786
+00:35:18,704 --> 00:35:23,120
+So every application of those two steps
+
+787
+00:35:23,120 --> 00:35:26,680
+is going to essentially increase my receptive field by one.
+
+788
+00:35:26,680 --> 00:35:29,200
+So that red node is going to get information
+
+789
+00:35:29,200 --> 00:35:32,353
+about the green nodes if I run this algorithm twice.
+
+790
+00:35:32,353 --> 00:35:34,520
+So I get a message that's passed from the green node
+
+791
+00:35:34,520 --> 00:35:37,260
+to the blue node, now to the red node on the second round.
+
+792
+00:35:39,920 --> 00:35:42,200
+So some of you will be familiar with message
+
+793
+00:35:42,200 --> 00:35:47,200
+passing algorithms and hidden Markov chains and so forth.
+
+794
+00:35:47,200 --> 00:35:49,180
+And that's one perspective on this.
+
+795
+00:35:49,180 --> 00:35:52,400
+But I'll try to give a few different perspectives.
+
+796
+00:35:52,400 --> 00:35:56,400
+So what is the aggregate function, and what
+
+797
+00:35:56,400 --> 00:35:58,480
+is the update function?
+
+798
+00:35:58,480 --> 00:36:00,400
+OK, let's make it a little bit more precise.
+
+799
+00:36:00,400 --> 00:36:05,100
+So the aggregate function is going to be any set function.
+
+800
+00:36:05,100 --> 00:36:07,600
+That means it takes as input a set of items where
+
+801
+00:36:07,600 --> 00:36:08,940
+the ordering doesn't matter.
+
+802
+00:36:08,940 --> 00:36:11,480
+So it's permutation-invariant to the ordering.
+
+803
+00:36:11,480 --> 00:36:14,540
+And it produces an output vector.
+
+804
+00:36:14,540 --> 00:36:16,340
+Now, technically, we would call this
+
+805
+00:36:16,340 --> 00:36:21,580
+a multiset function because the set of inputs, which
+
+806
+00:36:21,580 --> 00:36:26,477
+are the node vectors, h, could potentially have duplicates.
+
+807
+00:36:26,477 --> 00:36:28,060
+So multiset is just the technical name
+
+808
+00:36:28,060 --> 00:36:31,148
+for a set that can potentially have duplicate items.
+
+809
+00:36:31,148 --> 00:36:33,440
+So if you come across this in the reading and so forth,
+
+810
+00:36:33,440 --> 00:36:35,000
+they'll call it a multiset function.
+
+811
+00:36:35,000 --> 00:36:37,240
+But unless you're deep into set theory,
+
+812
+00:36:37,240 --> 00:36:40,340
+then it's just a function from a set of items to a vector.
+
+813
+00:36:40,340 --> 00:36:44,420
+The set of items can have duplicates.
+
+814
+00:36:44,420 --> 00:36:47,920
+So let's look at some examples of aggregate functions.
+
+815
+00:36:47,920 --> 00:36:50,140
+So one example would be summation.
+
+816
+00:36:50,140 --> 00:36:53,260
+A summation takes a set of any length,
+
+817
+00:36:53,260 --> 00:36:55,660
+and it produces a vector.
+
+818
+00:36:55,660 --> 00:36:58,160
+So summation-- and also is permutation-invariant.
+
+819
+00:36:58,160 --> 00:37:00,460
+It doesn't matter how you order the items in that set.
+
+820
+00:37:00,460 --> 00:37:03,580
+So summation is a multiset function that
+
+821
+00:37:03,580 --> 00:37:08,380
+produces a vector m as output.
+
+822
+00:37:08,380 --> 00:37:12,550
+And that will be the message that is passed to the red node.
+
+823
+00:37:12,550 --> 00:37:14,290
+And another one could be average.
+
+824
+00:37:14,290 --> 00:37:16,810
+So on the left here, I have summation.
+
+825
+00:37:16,810 --> 00:37:19,670
+But then in gray, I'm dividing by the number of neighbors, So.
+
+826
+00:37:19,670 --> 00:37:21,590
+Would be the average, as opposed to the sum.
+
+827
+00:37:21,590 --> 00:37:23,257
+It has interesting different properties.
+
+828
+00:37:23,257 --> 00:37:24,630
+We'll get into that in a bit.
+
+829
+00:37:24,630 --> 00:37:28,090
+And on the right is just another popular aggregation function,
+
+830
+00:37:28,090 --> 00:37:32,390
+which is normalizing by the number of neighbors
+
+831
+00:37:32,390 --> 00:37:36,470
+that both you and what are the messages coming from have.
+
+832
+00:37:36,470 --> 00:37:40,590
+So just another variation on the same thing.
+
+833
+00:37:40,590 --> 00:37:43,430
+So the key property is that aggregate is not
+
+834
+00:37:43,430 --> 00:37:45,970
+a universal function, and it can't represent everything.
+
+835
+00:37:45,970 --> 00:37:47,130
+Aggregate is constrained.
+
+836
+00:37:47,130 --> 00:37:51,890
+Aggregate is a multiset function that's permutation-invariant.
+
+837
+00:37:51,890 --> 00:37:55,870
+It maps a set of items to a vector,
+
+838
+00:37:55,870 --> 00:37:59,910
+and the ordering of the set doesn't matter.
+
+839
+00:37:59,910 --> 00:38:02,510
+Another interesting aggregate function
+
+840
+00:38:02,510 --> 00:38:06,130
+that satisfies those rules is max or min.
+
+841
+00:38:06,130 --> 00:38:08,270
+This is a lot like the pooling operations
+
+842
+00:38:08,270 --> 00:38:10,370
+in convolutional networks.
+
+843
+00:38:10,370 --> 00:38:16,170
+So max will just take the largest item in the set.
+
+844
+00:38:16,170 --> 00:38:19,893
+It produces a fixed-length vector
+
+845
+00:38:19,893 --> 00:38:21,310
+regardless of the size of the set.
+
+846
+00:38:21,310 --> 00:38:23,450
+So it's a multiset function.
+
+847
+00:38:23,450 --> 00:38:26,032
+Min, same property.
+
+848
+00:38:26,032 --> 00:38:27,490
+And there's some interesting things
+
+849
+00:38:27,490 --> 00:38:28,865
+you can do when you start to look
+
+850
+00:38:28,865 --> 00:38:30,790
+at different aggregate functions.
+
+851
+00:38:30,790 --> 00:38:34,170
+So here's a graph algorithm that can be implemented
+
+852
+00:38:34,170 --> 00:38:36,330
+with min aggregation.
+
+853
+00:38:36,330 --> 00:38:40,490
+And this is the shortest-path Bellman-Ford algorithm.
+
+854
+00:38:40,490 --> 00:38:43,550
+So a lot of you will have seen this in Intro to Algorithms.
+
+855
+00:38:43,550 --> 00:38:46,650
+But in case you don't remember, to find the shortest
+
+856
+00:38:46,650 --> 00:38:48,410
+path with Bellman-Ford, what you do
+
+857
+00:38:48,410 --> 00:38:51,490
+is you assign to every node in your graph
+
+858
+00:38:51,490 --> 00:38:53,730
+an attribute vector, which is just
+
+859
+00:38:53,730 --> 00:38:57,152
+going to be the distance to the target node
+
+860
+00:38:57,152 --> 00:38:58,110
+you're trying to reach.
+
+861
+00:38:58,110 --> 00:38:59,870
+So I'm trying to find the shortest path to the target.
+
+862
+00:38:59,870 --> 00:39:01,472
+So every node will have an attribute,
+
+863
+00:39:01,472 --> 00:39:02,430
+which is just a scalar.
+
+864
+00:39:02,430 --> 00:39:03,970
+It's just the distance--
+
+865
+00:39:03,970 --> 00:39:07,050
+my estimate of the shortest distance or the cost
+
+866
+00:39:07,050 --> 00:39:10,270
+of the shortest path to get to the target,
+
+867
+00:39:10,270 --> 00:39:15,590
+and I'll initialize those vectors, d, with infinity.
+
+868
+00:39:15,590 --> 00:39:20,190
+And then I will run this recurrence over and over
+
+869
+00:39:20,190 --> 00:39:22,070
+again until I converge, where I'm
+
+870
+00:39:22,070 --> 00:39:25,830
+trying to say- I will say that the attribute
+
+871
+00:39:25,830 --> 00:39:31,190
+vector for the target node is 0, and everything else is infinity.
+
+872
+00:39:31,190 --> 00:39:34,110
+And then as I run this, I'll look at all of my neighbors,
+
+873
+00:39:34,110 --> 00:39:41,790
+and I will see if the distance between myself and the neighbor,
+
+874
+00:39:41,790 --> 00:39:43,790
+plus the estimate that the neighbor has
+
+875
+00:39:43,790 --> 00:39:45,152
+of the distance to the target--
+
+876
+00:39:45,152 --> 00:39:47,610
+I'll see what that is, and I'll take the minimum over that.
+
+877
+00:39:47,610 --> 00:39:49,277
+And that will give me the shortest path.
+
+878
+00:39:49,277 --> 00:39:52,950
+If I kind of propagate out, now, from that target,
+
+879
+00:39:52,950 --> 00:39:54,670
+these distances initially it will be 0,
+
+880
+00:39:54,670 --> 00:39:56,003
+and everything will be infinity.
+
+881
+00:39:56,003 --> 00:39:58,030
+And then all the neighbors of that target
+
+882
+00:39:58,030 --> 00:40:01,948
+will be 1, if the cost is 1 to go one hop in the graph.
+
+883
+00:40:01,948 --> 00:40:03,490
+And then this will propagate outward,
+
+884
+00:40:03,490 --> 00:40:05,070
+and this will tell me the shortest--
+
+885
+00:40:05,070 --> 00:40:07,210
+the cost of the shortest path to that target.
+
+886
+00:40:07,210 --> 00:40:08,330
+Yeah.
+
+887
+00:40:08,330 --> 00:40:10,410
+AUDIENCE: So because the aggregate function
+
+888
+00:40:10,410 --> 00:40:12,250
+is constrained, how--
+
+889
+00:40:12,250 --> 00:40:14,970
+I guess this is more of a question of designing a problem
+
+890
+00:40:14,970 --> 00:40:16,510
+to then use a graph--
+
+891
+00:40:16,510 --> 00:40:17,930
+a graph network.
+
+892
+00:40:17,930 --> 00:40:21,170
+How do you know that your information needs
+
+893
+00:40:21,170 --> 00:40:22,590
+to be permutation-invariant?
+
+894
+00:40:22,590 --> 00:40:24,310
+Or how do you classify a set of problems
+
+895
+00:40:24,310 --> 00:40:27,425
+to where you say, OK, I need to just aggregate
+
+896
+00:40:27,425 --> 00:40:29,050
+my information together, and it doesn't
+
+897
+00:40:29,050 --> 00:40:31,370
+matter what order they come in?
+
+898
+00:40:31,370 --> 00:40:33,790
+How do when to classify a problem like that?
+
+899
+00:40:33,790 --> 00:40:35,290
+PHILLIP ISOLA: Yeah, so the question
+
+900
+00:40:35,290 --> 00:40:38,810
+is, how do when you want permutation invariance?
+
+901
+00:40:38,810 --> 00:40:40,310
+And I think that's a good question.
+
+902
+00:40:40,310 --> 00:40:42,510
+It's going to depend a lot on the domain.
+
+903
+00:40:45,690 --> 00:40:51,730
+But yeah, so any problem where the ordering of inputs
+
+904
+00:40:51,730 --> 00:40:54,513
+doesn't change the optimal thing you want to do,
+
+905
+00:40:54,513 --> 00:40:55,930
+the prediction you want to make is
+
+906
+00:40:55,930 --> 00:40:57,610
+going to be something you want to apply
+
+907
+00:40:57,610 --> 00:41:00,410
+this constraint to being permutation-invariant to.
+
+908
+00:41:00,410 --> 00:41:02,210
+And we're seeing a lot of examples
+
+909
+00:41:02,210 --> 00:41:04,510
+where, structurally, that actually does make sense.
+
+910
+00:41:04,510 --> 00:41:08,900
+Like, the shortest path in the graph has that property.
+
+911
+00:41:08,900 --> 00:41:12,900
+I think that maybe a clearer example of a case where
+
+912
+00:41:12,900 --> 00:41:15,220
+you wouldn't want permutation invariance
+
+913
+00:41:15,220 --> 00:41:17,860
+is if I'm doing image processing,
+
+914
+00:41:17,860 --> 00:41:19,940
+and I know that the top of the image
+
+915
+00:41:19,940 --> 00:41:23,020
+is more likely to be sky than the bottom of the image.
+
+916
+00:41:23,020 --> 00:41:26,740
+If I have a graph which has these local patches
+
+917
+00:41:26,740 --> 00:41:29,740
+that I'm processing, I want to know where I am in the image.
+
+918
+00:41:29,740 --> 00:41:32,860
+And I think Sarah talked about adding positional encoding
+
+919
+00:41:32,860 --> 00:41:35,220
+to tell you where you are in an image
+
+920
+00:41:35,220 --> 00:41:38,160
+if you don't want this translation invariance.
+
+921
+00:41:38,160 --> 00:41:41,360
+So translation invariance is one type of permutation invariance,
+
+922
+00:41:41,360 --> 00:41:45,380
+but permutation invariance is a more general version of that.
+
+923
+00:41:45,380 --> 00:41:46,100
+OK.
+
+924
+00:41:46,100 --> 00:41:46,725
+Yeah, question.
+
+925
+00:41:46,725 --> 00:41:48,475
+AUDIENCE: Yeah, quick clarifying question.
+
+926
+00:41:48,475 --> 00:41:51,180
+You mentioned the output of the aggregate function is a vector.
+
+927
+00:41:51,180 --> 00:41:54,780
+Can you just quickly just say what the dimensions
+
+928
+00:41:54,780 --> 00:41:55,860
+of that vector are?
+
+929
+00:41:55,860 --> 00:41:58,360
+PHILLIP ISOLA: Yeah, so the output of the aggregate function
+
+930
+00:41:58,360 --> 00:42:00,280
+is a D-dimensional column vector.
+
+931
+00:42:04,840 --> 00:42:06,520
+So yeah, on your problem set, you'll
+
+932
+00:42:06,520 --> 00:42:09,220
+have some questions about this shortest-path computation.
+
+933
+00:42:09,220 --> 00:42:11,220
+So you'll get a little bit more intuition of it.
+
+934
+00:42:11,220 --> 00:42:13,760
+But it's just a construction to demonstrate
+
+935
+00:42:13,760 --> 00:42:18,720
+that you can represent classical graph problems, like graph
+
+936
+00:42:18,720 --> 00:42:21,800
+search and shortest path problems, with these aggregate
+
+937
+00:42:21,800 --> 00:42:23,180
+and update operations.
+
+938
+00:42:23,180 --> 00:42:25,360
+In this particular case, Bellman-Ford
+
+939
+00:42:25,360 --> 00:42:28,380
+can be implemented just as a GNN that only does aggregate,
+
+940
+00:42:28,380 --> 00:42:30,840
+and the update is trivial in this case.
+
+941
+00:42:30,840 --> 00:42:33,793
+So Bellman-Ford is on the left, and the equivalent graph net
+
+942
+00:42:33,793 --> 00:42:34,460
+is on the right.
+
+943
+00:42:34,460 --> 00:42:37,160
+The graph net-- the aggregate is going
+
+944
+00:42:37,160 --> 00:42:40,840
+to be a min for Bellman-Ford rather than the sum.
+
+945
+00:42:40,840 --> 00:42:47,020
+And the computation of-- the node embedding of your neighbor
+
+946
+00:42:47,020 --> 00:42:49,500
+plus this cost could be represented as an MLP,
+
+947
+00:42:49,500 --> 00:42:50,938
+which just adds 1--
+
+948
+00:42:50,938 --> 00:42:52,480
+adds the cost of 1, if we're assuming
+
+949
+00:42:52,480 --> 00:42:56,040
+that every edge in the graph has length 1.
+
+950
+00:42:56,040 --> 00:42:58,640
+So you'll work through that a little bit more in your problem
+
+951
+00:42:58,640 --> 00:43:00,680
+set.
+
+952
+00:43:00,680 --> 00:43:04,800
+So one question you might have is, well,
+
+953
+00:43:04,800 --> 00:43:06,960
+sum seems like a fine aggregation function.
+
+954
+00:43:06,960 --> 00:43:08,780
+Min seems like a fine one.
+
+955
+00:43:08,780 --> 00:43:11,100
+Is there a family of aggregation functions
+
+956
+00:43:11,100 --> 00:43:14,980
+that are universal in the sense that any multiset permutation
+
+957
+00:43:14,980 --> 00:43:20,100
+invariant mapping can be represented in that family?
+
+958
+00:43:20,100 --> 00:43:23,940
+And the answer is that, yes, this family
+
+959
+00:43:23,940 --> 00:43:27,660
+of aggregation functions is universal in that sense.
+
+960
+00:43:27,660 --> 00:43:36,020
+So take my neighbor's node embedding or my neighbor's
+
+961
+00:43:36,020 --> 00:43:38,540
+node vector, and take my own node vector,
+
+962
+00:43:38,540 --> 00:43:40,740
+pass those through an MLP, then sum up
+
+963
+00:43:40,740 --> 00:43:43,600
+over- sum of that operation over all of my neighbors,
+
+964
+00:43:43,600 --> 00:43:45,860
+and then pass the output through another MLP.
+
+965
+00:43:45,860 --> 00:43:48,700
+This is a universal approximator of the family
+
+966
+00:43:48,700 --> 00:43:52,220
+of multiset functions.
+
+967
+00:43:52,220 --> 00:43:54,840
+And one question you might have is, wait a second.
+
+968
+00:43:54,840 --> 00:43:57,740
+Didn't we say that MLPs on their own are universal approximators?
+
+969
+00:43:57,740 --> 00:44:02,320
+And they are if I increase the width to infinity.
+
+970
+00:44:02,320 --> 00:44:05,820
+But here we're, not trying to approximate all functions.
+
+971
+00:44:05,820 --> 00:44:07,680
+We're trying to only approximate-- we
+
+972
+00:44:07,680 --> 00:44:10,640
+want to have an approximator that can't fit functions that
+
+973
+00:44:10,640 --> 00:44:13,640
+are not multiset functions.
+
+974
+00:44:13,640 --> 00:44:15,693
+So the sum is the thing that makes it
+
+975
+00:44:15,693 --> 00:44:17,360
+so it's one of these multiset functions,
+
+976
+00:44:17,360 --> 00:44:20,658
+that the ordering of the edges-- sorry,
+
+977
+00:44:20,658 --> 00:44:22,200
+the ordering of the neighbors doesn't
+
+978
+00:44:22,200 --> 00:44:25,720
+matter because we're just going to summate over them.
+
+979
+00:44:25,720 --> 00:44:30,200
+So this has the property that it is a universal approximator
+
+980
+00:44:30,200 --> 00:44:32,100
+to the family of multiset functions,
+
+981
+00:44:32,100 --> 00:44:37,120
+but it can't represent other functions.
+
+982
+00:44:37,120 --> 00:44:37,980
+So that's good.
+
+983
+00:44:37,980 --> 00:44:41,000
+It's a constrained family.
+
+984
+00:44:41,000 --> 00:44:45,180
+The other thing that we need is what we call an update function,
+
+985
+00:44:45,180 --> 00:44:47,600
+and the update function will take our messages
+
+986
+00:44:47,600 --> 00:44:51,320
+from our neighbors and combine them with our current node
+
+987
+00:44:51,320 --> 00:44:53,320
+vector and update that node vector
+
+988
+00:44:53,320 --> 00:44:56,640
+to be a better representation of the graph,
+
+989
+00:44:56,640 --> 00:44:59,080
+of the information that we're trying to process.
+
+990
+00:44:59,080 --> 00:45:02,070
+And for this one, we're just going to use a very--
+
+991
+00:45:02,070 --> 00:45:05,850
+a simple update, which is going to be an MLP, just
+
+992
+00:45:05,850 --> 00:45:07,830
+a tiny, one-layer MLP.
+
+993
+00:45:07,830 --> 00:45:12,598
+It goes linear transformation of my each of my neighbors.
+
+994
+00:45:12,598 --> 00:45:14,390
+Oh, sorry, linear transformation of myself,
+
+995
+00:45:14,390 --> 00:45:16,650
+plus linear transformation of the message coming
+
+996
+00:45:16,650 --> 00:45:18,807
+from my neighbors, plus a bias, pass
+
+997
+00:45:18,807 --> 00:45:21,390
+through sigma, which is going to be a pointwise non-linearity.
+
+998
+00:45:21,390 --> 00:45:22,770
+That could be a ReLU.
+
+999
+00:45:22,770 --> 00:45:26,130
+That's a canonical update function.
+
+1000
+00:45:26,130 --> 00:45:29,070
+So once we have those two things,
+
+1001
+00:45:29,070 --> 00:45:30,130
+then we have a graph net.
+
+1002
+00:45:36,610 --> 00:45:39,143
+That will give me updated node embeddings,
+
+1003
+00:45:39,143 --> 00:45:40,810
+and I can apply that over and over again
+
+1004
+00:45:40,810 --> 00:45:45,050
+to get my node embeddings into a better and better state.
+
+1005
+00:45:45,050 --> 00:45:46,550
+And then at the very end of the day,
+
+1006
+00:45:46,550 --> 00:45:48,175
+I could just take those node embeddings
+
+1007
+00:45:48,175 --> 00:45:50,270
+as my prediction about properties of the nodes.
+
+1008
+00:45:50,270 --> 00:45:52,330
+But if I want to instead predict something
+
+1009
+00:45:52,330 --> 00:45:55,070
+about the entire graph, I just do one more step,
+
+1010
+00:45:55,070 --> 00:45:58,170
+which is very simple, which is I aggregate the node embeddings
+
+1011
+00:45:58,170 --> 00:46:00,570
+into a final prediction.
+
+1012
+00:46:00,570 --> 00:46:04,050
+So here is my mapping from a graph to an embedding,
+
+1013
+00:46:04,050 --> 00:46:07,770
+and it requires this final step, which we call readout.
+
+1014
+00:46:07,770 --> 00:46:09,270
+There's other ways that you could've
+
+1015
+00:46:09,270 --> 00:46:11,827
+decided on the conventions of how to break down
+
+1016
+00:46:11,827 --> 00:46:12,910
+the pieces of a graph net.
+
+1017
+00:46:12,910 --> 00:46:14,430
+I'm just giving you one that makes
+
+1018
+00:46:14,430 --> 00:46:17,350
+some of the analysis simple and clean.
+
+1019
+00:46:17,350 --> 00:46:19,270
+But we're going to define this extra layer
+
+1020
+00:46:19,270 --> 00:46:22,313
+at the end, which is going to take all of my node embeddings.
+
+1021
+00:46:22,313 --> 00:46:24,230
+So it's going to be a multiset function again.
+
+1022
+00:46:24,230 --> 00:46:26,210
+It's going to take a set of node embeddings,
+
+1023
+00:46:26,210 --> 00:46:29,590
+possibly with duplicates, and it's going to output a vector.
+
+1024
+00:46:29,590 --> 00:46:31,270
+And this will be how I get a vector
+
+1025
+00:46:31,270 --> 00:46:34,110
+embedding of an entire graph.
+
+1026
+00:46:34,110 --> 00:46:35,730
+It's just another aggregate operator.
+
+1027
+00:46:35,730 --> 00:46:37,610
+It has exactly the same form as aggregate,
+
+1028
+00:46:37,610 --> 00:46:38,910
+but it's over all nodes in the graph,
+
+1029
+00:46:38,910 --> 00:46:40,530
+as opposed to the neighbors of a node.
+
+1030
+00:46:45,330 --> 00:46:49,570
+So this is the message-passing view of graph.
+
+1031
+00:46:49,570 --> 00:46:53,190
+Net that connects to classical theory of message-passing
+
+1032
+00:46:53,190 --> 00:46:54,733
+algorithms in graphs.
+
+1033
+00:46:54,733 --> 00:46:57,150
+But I actually think that there's a better and simpler way
+
+1034
+00:46:57,150 --> 00:47:00,570
+of understanding all of this, which
+
+1035
+00:47:00,570 --> 00:47:03,230
+will connect very intimately to what we'll see soon,
+
+1036
+00:47:03,230 --> 00:47:06,410
+which is transformers.
+
+1037
+00:47:06,410 --> 00:47:07,990
+So here's how I like to think of it.
+
+1038
+00:47:07,990 --> 00:47:15,590
+So if I unroll those message passing iterations for k steps,
+
+1039
+00:47:15,590 --> 00:47:22,210
+I can just think of every step as taking a set of node vectors
+
+1040
+00:47:22,210 --> 00:47:24,490
+and updating them.
+
+1041
+00:47:24,490 --> 00:47:27,030
+And here's my set of node vectors at the input.
+
+1042
+00:47:27,030 --> 00:47:30,530
+That's my input data, the observed data about the nodes
+
+1043
+00:47:30,530 --> 00:47:31,610
+in the graph.
+
+1044
+00:47:31,610 --> 00:47:36,030
+Again, if they're drugs, it might be the name of the drug.
+
+1045
+00:47:36,030 --> 00:47:39,450
+If the graph is a molecule it might be the atom,
+
+1046
+00:47:39,450 --> 00:47:42,130
+like is it carbon or is it hydrogen.
+
+1047
+00:47:42,130 --> 00:47:44,250
+If it's a social network, then the input could
+
+1048
+00:47:44,250 --> 00:47:47,170
+be a description of the user profile
+
+1049
+00:47:47,170 --> 00:47:49,810
+for every person in that graph.
+
+1050
+00:47:49,810 --> 00:47:53,970
+OK, I take that set of node vectors,
+
+1051
+00:47:53,970 --> 00:47:55,255
+and now I will do aggregate.
+
+1052
+00:47:55,255 --> 00:47:56,630
+So what is aggregate going to do?
+
+1053
+00:47:59,790 --> 00:48:06,430
+I'm trying to make it so that the vertical aligned nodes are
+
+1054
+00:48:06,430 --> 00:48:07,650
+corresponding to each other.
+
+1055
+00:48:07,650 --> 00:48:12,430
+So my message that's going to be passed to the red node--
+
+1056
+00:48:12,430 --> 00:48:19,390
+it's going to be that black vector, which is the second one.
+
+1057
+00:48:19,390 --> 00:48:22,750
+And as you can see, the red node in the graph
+
+1058
+00:48:22,750 --> 00:48:26,510
+gets input from the teal, the blue, and the yellow node.
+
+1059
+00:48:26,510 --> 00:48:28,870
+So the message is going to be coming from them.
+
+1060
+00:48:28,870 --> 00:48:35,070
+And aggregate is going to take all the node vectors
+
+1061
+00:48:35,070 --> 00:48:37,390
+from those three neighbors and combine them
+
+1062
+00:48:37,390 --> 00:48:39,210
+into a single D-dimensional vector.
+
+1063
+00:48:39,210 --> 00:48:42,810
+And that's my message that will be used to update
+
+1064
+00:48:42,810 --> 00:48:45,350
+the red nodes' node embedding.
+
+1065
+00:48:45,350 --> 00:48:47,245
+And then I will run Update, which
+
+1066
+00:48:47,245 --> 00:48:49,870
+is going to take the red nodes' node embedding plus the message
+
+1067
+00:48:49,870 --> 00:48:53,590
+from those neighbors and provide an updated
+
+1068
+00:48:53,590 --> 00:48:55,630
+representation of the red node.
+
+1069
+00:48:55,630 --> 00:48:56,990
+So what does this look like?
+
+1070
+00:48:56,990 --> 00:49:01,035
+This now looks a lot like a neural network MLP.
+
+1071
+00:49:01,035 --> 00:49:02,410
+Just like we saw before, we would
+
+1072
+00:49:02,410 --> 00:49:04,850
+have a set of neurons as input, and then we
+
+1073
+00:49:04,850 --> 00:49:07,690
+would take a linear combination, some aggregation of them.
+
+1074
+00:49:07,690 --> 00:49:09,710
+And then we would do a pointwise nonlinearity.
+
+1075
+00:49:09,710 --> 00:49:13,290
+Now we have a set of vectors as input.
+
+1076
+00:49:13,290 --> 00:49:15,730
+For every output vector, we're going
+
+1077
+00:49:15,730 --> 00:49:18,050
+to aggregate information over the neighbors
+
+1078
+00:49:18,050 --> 00:49:19,030
+that it connects to.
+
+1079
+00:49:19,030 --> 00:49:21,592
+And we're going to do a pointwise non-linearity,
+
+1080
+00:49:21,592 --> 00:49:23,550
+but it's going to be a node-wise non-linearity.
+
+1081
+00:49:23,550 --> 00:49:25,690
+It's going to be this update function which
+
+1082
+00:49:25,690 --> 00:49:28,610
+will apply the same vector-to-vector mapping
+
+1083
+00:49:28,610 --> 00:49:32,970
+to every single node in our graph.
+
+1084
+00:49:32,970 --> 00:49:34,770
+And then we'll repeat the process again
+
+1085
+00:49:34,770 --> 00:49:37,950
+on the next step of this message-passing algorithm.
+
+1086
+00:49:37,950 --> 00:49:42,050
+But if we unroll it like this, it just looks like an MLP.
+
+1087
+00:49:42,050 --> 00:49:47,730
+The only difference is that the neurons in this MLP
+
+1088
+00:49:47,730 --> 00:49:49,510
+are going to be vectors.
+
+1089
+00:49:49,510 --> 00:49:51,170
+They're going to be node embeddings.
+
+1090
+00:49:51,170 --> 00:49:53,610
+And that means that the pointwise operation will
+
+1091
+00:49:53,610 --> 00:49:55,240
+be a vector-to-vector mapping.
+
+1092
+00:49:55,240 --> 00:49:58,820
+The aggregate operation will be a vector-- a set of vectors
+
+1093
+00:49:58,820 --> 00:50:00,980
+to a vector operation.
+
+1094
+00:50:00,980 --> 00:50:03,900
+But topologically, it looks very similar to just a regular old
+
+1095
+00:50:03,900 --> 00:50:05,020
+neural network.
+
+1096
+00:50:05,020 --> 00:50:07,200
+OK, a few questions.
+
+1097
+00:50:07,200 --> 00:50:07,917
+Let's go here.
+
+1098
+00:50:07,917 --> 00:50:10,500
+AUDIENCE: How is this different from an attention head and how
+
+1099
+00:50:10,500 --> 00:50:11,780
+it--
+
+1100
+00:50:11,780 --> 00:50:12,740
+PHILLIP ISOLA: Yeah.
+
+1101
+00:50:12,740 --> 00:50:15,060
+So how is this different from an attention head?
+
+1102
+00:50:15,060 --> 00:50:19,140
+So this perspective is the connection between graph nets
+
+1103
+00:50:19,140 --> 00:50:19,920
+and transformers.
+
+1104
+00:50:19,920 --> 00:50:21,700
+And transformers are a special kind of graph net,
+
+1105
+00:50:21,700 --> 00:50:23,360
+so we're going to talk a lot more in detail about that,
+
+1106
+00:50:23,360 --> 00:50:24,860
+and we'll get to attention then.
+
+1107
+00:50:24,860 --> 00:50:27,720
+Attention is just a special aggregation operator.
+
+1108
+00:50:27,720 --> 00:50:30,600
+It's a particular kind of aggregation operator.
+
+1109
+00:50:30,600 --> 00:50:34,323
+AUDIENCE: Is update always nonlinear, and why?
+
+1110
+00:50:34,323 --> 00:50:35,740
+PHILLIP ISOLA: So you need to have
+
+1111
+00:50:35,740 --> 00:50:37,320
+some nonlinearities in here.
+
+1112
+00:50:37,320 --> 00:50:39,900
+And in graph nets, you can have nonlinearities
+
+1113
+00:50:39,900 --> 00:50:42,100
+in the aggregate and/or the update.
+
+1114
+00:50:42,100 --> 00:50:45,260
+And I think typically, they'll both be nonlinear.
+
+1115
+00:50:45,260 --> 00:50:47,460
+But theoretically, you probably can
+
+1116
+00:50:47,460 --> 00:50:50,425
+prove universal approximation even if only one is nonlinear.
+
+1117
+00:50:50,425 --> 00:50:52,300
+I have to think about that a little bit more.
+
+1118
+00:50:52,300 --> 00:50:54,600
+Yeah.
+
+1119
+00:50:54,600 --> 00:50:57,960
+AUDIENCE: So [INAUDIBLE] the optimal number of iterations
+
+1120
+00:50:57,960 --> 00:50:59,560
+per k, which is [INAUDIBLE] k?
+
+1121
+00:50:59,560 --> 00:51:01,893
+PHILLIP ISOLA: So is the question, how should you set k?
+
+1122
+00:51:01,893 --> 00:51:03,080
+What is the optimal k?
+
+1123
+00:51:03,080 --> 00:51:06,080
+Yeah, so typically we will--
+
+1124
+00:51:06,080 --> 00:51:07,440
+k is like your depth.
+
+1125
+00:51:07,440 --> 00:51:09,840
+Now, in graph nets, the interesting thing
+
+1126
+00:51:09,840 --> 00:51:13,060
+is that we could choose to share parameters.
+
+1127
+00:51:13,060 --> 00:51:15,400
+We could choose to do the same message-passing algorithm
+
+1128
+00:51:15,400 --> 00:51:17,000
+at every iteration.
+
+1129
+00:51:17,000 --> 00:51:20,880
+Or we could choose to say that my aggregate function has
+
+1130
+00:51:20,880 --> 00:51:23,800
+the superscript k, so I use a different set of parameters
+
+1131
+00:51:23,800 --> 00:51:28,160
+for every iteration of that aggregate function.
+
+1132
+00:51:28,160 --> 00:51:31,140
+Now, aggregate is going to be some parametrized function, psi,
+
+1133
+00:51:31,140 --> 00:51:31,640
+here.
+
+1134
+00:51:31,640 --> 00:51:36,760
+We said it could be in this form of an MLP.
+
+1135
+00:51:36,760 --> 00:51:40,602
+And we could choose to make it time-dependent, dependent on k,
+
+1136
+00:51:40,602 --> 00:51:42,060
+and use different parameters per k.
+
+1137
+00:51:42,060 --> 00:51:44,000
+Or we can choose to make it--
+
+1138
+00:51:44,000 --> 00:51:46,140
+use the same parameters for every single layer.
+
+1139
+00:51:46,140 --> 00:51:48,740
+If we choose to make it time-dependent,
+
+1140
+00:51:48,740 --> 00:51:52,060
+then we'll have to pick a fixed depth, k,
+
+1141
+00:51:52,060 --> 00:51:54,400
+that we're going to unroll to and train for that depth
+
+1142
+00:51:54,400 --> 00:51:56,420
+because we'll have a different set of parameters
+
+1143
+00:51:56,420 --> 00:51:58,280
+for each of these operations.
+
+1144
+00:51:58,280 --> 00:52:01,220
+But if we choose to make it not depend on k and share parameters
+
+1145
+00:52:01,220 --> 00:52:04,700
+across time, across depth, then you
+
+1146
+00:52:04,700 --> 00:52:06,880
+can just run this as long as you want,
+
+1147
+00:52:06,880 --> 00:52:08,660
+and it will keep doing computation.
+
+1148
+00:52:08,660 --> 00:52:10,467
+And you might want to ensure that there's
+
+1149
+00:52:10,467 --> 00:52:12,800
+good asymptotic properties, like, if you run it forever,
+
+1150
+00:52:12,800 --> 00:52:13,840
+it will converge to a good value.
+
+1151
+00:52:13,840 --> 00:52:15,548
+And those are two different settings that
+
+1152
+00:52:15,548 --> 00:52:17,740
+can be interesting to look at.
+
+1153
+00:52:17,740 --> 00:52:20,060
+Let's go in the back over here.
+
+1154
+00:52:20,060 --> 00:52:22,620
+AUDIENCE: Can you explain the intuition behind the update
+
+1155
+00:52:22,620 --> 00:52:23,380
+formula again?
+
+1156
+00:52:23,380 --> 00:52:25,100
+And specifically, I'm curious why
+
+1157
+00:52:25,100 --> 00:52:28,300
+we use different weight matrices for the self
+
+1158
+00:52:28,300 --> 00:52:29,900
+and the neighborhoods.
+
+1159
+00:52:29,900 --> 00:52:34,020
+PHILLIP ISOLA: So what is the intuition behind the update
+
+1160
+00:52:34,020 --> 00:52:35,500
+formula?
+
+1161
+00:52:35,500 --> 00:52:37,332
+Why do we use different weight matrices?
+
+1162
+00:52:37,332 --> 00:52:39,540
+So I think what you could do is you could always just
+
+1163
+00:52:39,540 --> 00:52:44,900
+concatenate h, your node embedding, with the message
+
+1164
+00:52:44,900 --> 00:52:48,160
+from the neighbors, with m, and then have one big W.
+
+1165
+00:52:48,160 --> 00:52:52,600
+And then it will just look like a linear followed by ReLU layer.
+
+1166
+00:52:52,600 --> 00:52:58,480
+It's just separated here for notational clarity, I suppose.
+
+1167
+00:52:58,480 --> 00:53:00,680
+OK, one more, and then I'll move on.
+
+1168
+00:53:00,680 --> 00:53:01,818
+Yeah.
+
+1169
+00:53:01,818 --> 00:53:03,360
+AUDIENCE: How do you pass information
+
+1170
+00:53:03,360 --> 00:53:06,280
+if you have edge information, for example, the distances
+
+1171
+00:53:06,280 --> 00:53:07,705
+between the nodes?
+
+1172
+00:53:07,705 --> 00:53:09,580
+PHILLIP ISOLA: Yeah, that's a great question.
+
+1173
+00:53:09,580 --> 00:53:11,580
+So what if you have edge information?
+
+1174
+00:53:11,580 --> 00:53:14,180
+So I said you have node attributes,
+
+1175
+00:53:14,180 --> 00:53:16,920
+and you just send messages based on which
+
+1176
+00:53:16,920 --> 00:53:18,755
+edges connect to which nodes.
+
+1177
+00:53:18,755 --> 00:53:20,880
+So the edges only tell you about who your neighbors
+
+1178
+00:53:20,880 --> 00:53:22,060
+are to send messages to you.
+
+1179
+00:53:22,060 --> 00:53:25,840
+There's no other weight on the edge or information on the edge.
+
+1180
+00:53:25,840 --> 00:53:28,100
+And so I won't get into it in detail,
+
+1181
+00:53:28,100 --> 00:53:31,840
+but you can also have edge attribute vectors
+
+1182
+00:53:31,840 --> 00:53:34,560
+and then have a generalization of a GNN
+
+1183
+00:53:34,560 --> 00:53:36,895
+that has node attributes and edge attributes.
+
+1184
+00:53:36,895 --> 00:53:38,520
+And then the update and the aggregation
+
+1185
+00:53:38,520 --> 00:53:41,600
+is going to also take into account the edge attributes.
+
+1186
+00:53:41,600 --> 00:53:42,760
+Yeah.
+
+1187
+00:53:42,760 --> 00:53:43,260
+OK.
+
+1188
+00:53:48,640 --> 00:53:51,970
+So this is the picture how I like to think about GNNs.
+
+1189
+00:53:51,970 --> 00:53:53,750
+And you might be wondering, wait a second,
+
+1190
+00:53:53,750 --> 00:53:55,850
+where is backprop coming in here?
+
+1191
+00:53:55,850 --> 00:53:57,070
+Is this message passing?
+
+1192
+00:53:57,070 --> 00:53:58,630
+Is that an optimization algorithm?
+
+1193
+00:53:58,630 --> 00:54:01,610
+No, the message passing in this propagation-- that's the forward
+
+1194
+00:54:01,610 --> 00:54:02,890
+pass through the network.
+
+1195
+00:54:02,890 --> 00:54:06,813
+It's taking data about the graph and updating the representation
+
+1196
+00:54:06,813 --> 00:54:08,730
+of the nodes over and over again until finally
+
+1197
+00:54:08,730 --> 00:54:11,083
+having a readout at the end that makes a prediction.
+
+1198
+00:54:11,083 --> 00:54:12,250
+So how would you train that?
+
+1199
+00:54:12,250 --> 00:54:15,210
+You just backpropagate through this computation graph.
+
+1200
+00:54:15,210 --> 00:54:16,610
+Nothing different.
+
+1201
+00:54:16,610 --> 00:54:20,092
+So these message-passing steps are just a new computation graph
+
+1202
+00:54:20,092 --> 00:54:21,550
+that looks like that when unrolled,
+
+1203
+00:54:21,550 --> 00:54:23,342
+and I can backprop through the whole thing.
+
+1204
+00:54:23,342 --> 00:54:26,410
+So same exact algorithm that we saw for training
+
+1205
+00:54:26,410 --> 00:54:28,930
+any other neural network.
+
+1206
+00:54:28,930 --> 00:54:32,130
+OK, cool.
+
+1207
+00:54:32,130 --> 00:54:36,450
+OK, this might be a slightly tricky question.
+
+1208
+00:54:36,450 --> 00:54:39,930
+But I said that convolutional networks
+
+1209
+00:54:39,930 --> 00:54:44,250
+can be represented as a graph, and then you can observe--
+
+1210
+00:54:44,250 --> 00:54:46,010
+you can just treat them like a graph net.
+
+1211
+00:54:46,010 --> 00:54:48,470
+It's a graph that has this grid connectivity.
+
+1212
+00:54:48,470 --> 00:54:52,612
+What is the graph net for an MLP?
+
+1213
+00:54:52,612 --> 00:54:53,570
+What does it look like?
+
+1214
+00:54:53,570 --> 00:54:55,278
+What does the graph look like for an MLP?
+
+1215
+00:54:58,670 --> 00:55:00,110
+Somebody who hasn't spoken.
+
+1216
+00:55:00,110 --> 00:55:00,693
+Did you speak?
+
+1217
+00:55:00,693 --> 00:55:01,193
+No.
+
+1218
+00:55:01,193 --> 00:55:01,710
+OK.
+
+1219
+00:55:01,710 --> 00:55:03,230
+Yeah, in the back there.
+
+1220
+00:55:03,230 --> 00:55:05,238
+AUDIENCE: [INAUDIBLE]
+
+1221
+00:55:05,238 --> 00:55:06,030
+PHILLIP ISOLA: Yes.
+
+1222
+00:55:06,030 --> 00:55:06,770
+Just a chain.
+
+1223
+00:55:06,770 --> 00:55:08,770
+So in particular, what does the graph look like?
+
+1224
+00:55:08,770 --> 00:55:12,650
+It's really just a node because the message-passing algorithm--
+
+1225
+00:55:12,650 --> 00:55:15,910
+so remember that an MLP takes a vector of neurons as input
+
+1226
+00:55:15,910 --> 00:55:18,830
+and then does linear, [INAUDIBLE], nonlinear, linear.
+
+1227
+00:55:18,830 --> 00:55:21,490
+So a node in a graph net comes with a vector.
+
+1228
+00:55:21,490 --> 00:55:23,830
+So that has the generality of being the vector of inputs
+
+1229
+00:55:23,830 --> 00:55:25,190
+to an MLP.
+
+1230
+00:55:25,190 --> 00:55:29,190
+And then if we unroll the message-passing algorithm.
+
+1231
+00:55:29,190 --> 00:55:30,130
+It's just this.
+
+1232
+00:55:30,130 --> 00:55:33,170
+It's just a chain of, take that vector, update it.
+
+1233
+00:55:33,170 --> 00:55:35,068
+And in this case, there's only one vector,
+
+1234
+00:55:35,068 --> 00:55:36,610
+so the aggregate function is trivial.
+
+1235
+00:55:36,610 --> 00:55:37,870
+It can be identity.
+
+1236
+00:55:37,870 --> 00:55:42,672
+And the update we said is just W times my node vector, right?
+
+1237
+00:55:42,672 --> 00:55:44,130
+Here's what we said for the update.
+
+1238
+00:55:44,130 --> 00:55:45,588
+There's no neighbors, so it'll just
+
+1239
+00:55:45,588 --> 00:55:49,770
+be W self times my node vector h, Pass through a ReLU
+
+1240
+00:55:49,770 --> 00:55:51,490
+or a pointwise nonlinearity.
+
+1241
+00:55:51,490 --> 00:55:52,690
+That's an MLP.
+
+1242
+00:55:52,690 --> 00:55:55,930
+So an MLP is just a graph net that's a single node.
+
+1243
+00:55:55,930 --> 00:55:58,230
+ConvNet is a graph net that is a grid.
+
+1244
+00:56:01,410 --> 00:56:01,910
+OK.
+
+1245
+00:56:01,910 --> 00:56:03,850
+So throughout this class I'm going
+
+1246
+00:56:03,850 --> 00:56:06,470
+to try to point out connections between different things
+
+1247
+00:56:06,470 --> 00:56:08,290
+because I think sometimes when you first
+
+1248
+00:56:08,290 --> 00:56:11,790
+learn about deep learning and just any topic,
+
+1249
+00:56:11,790 --> 00:56:13,910
+it'll seem like everything is different,
+
+1250
+00:56:13,910 --> 00:56:16,390
+but really, everything is the same.
+
+1251
+00:56:16,390 --> 00:56:19,990
+Really, everything is densely connected to all other concepts,
+
+1252
+00:56:19,990 --> 00:56:22,170
+and it's just like-- you can cast
+
+1253
+00:56:22,170 --> 00:56:25,390
+one concept as another concept with small manipulations.
+
+1254
+00:56:25,390 --> 00:56:28,090
+And I find this really helps me to get inside and understand
+
+1255
+00:56:28,090 --> 00:56:29,410
+how these things work.
+
+1256
+00:56:29,410 --> 00:56:31,393
+OK.
+
+1257
+00:56:31,393 --> 00:56:33,310
+So there was a question about edge attributes,
+
+1258
+00:56:33,310 --> 00:56:35,670
+and I'm not going to go into details on that.
+
+1259
+00:56:35,670 --> 00:56:38,810
+But yes, you can add vectors describing the information
+
+1260
+00:56:38,810 --> 00:56:41,490
+that an edge carries as well.
+
+1261
+00:56:41,490 --> 00:56:46,390
+We could have not just like a single message-passing
+
+1262
+00:56:46,390 --> 00:56:48,230
+algorithm, but maybe k--
+
+1263
+00:56:48,230 --> 00:56:50,150
+or n different message-passing algorithms
+
+1264
+00:56:50,150 --> 00:56:52,570
+in parallel that are passing different types of messages.
+
+1265
+00:56:52,570 --> 00:56:56,390
+There's a lot of variations and riffs on these general themes.
+
+1266
+00:56:56,390 --> 00:56:57,950
+One of the most important ones is
+
+1267
+00:56:57,950 --> 00:57:02,030
+that we can aggregate with a operation which is not just
+
+1268
+00:57:02,030 --> 00:57:03,630
+summing or averaging, but instead
+
+1269
+00:57:03,630 --> 00:57:07,870
+is called attention, which is like a summation that's
+
+1270
+00:57:07,870 --> 00:57:10,150
+dependent on the value of your node embeddings.
+
+1271
+00:57:10,150 --> 00:57:12,150
+We're going to talk a lot more detail about that
+
+1272
+00:57:12,150 --> 00:57:14,525
+because the name for that system is called a transformer.
+
+1273
+00:57:14,525 --> 00:57:17,230
+So transformers are graph nets with attention
+
+1274
+00:57:17,230 --> 00:57:19,550
+as the aggregation operator.
+
+1275
+00:57:19,550 --> 00:57:22,330
+And you can read up on some of these other variations, too,
+
+1276
+00:57:22,330 --> 00:57:24,910
+but I'm not going to go into detail on them.
+
+1277
+00:57:24,910 --> 00:57:27,790
+The reading that we assigned for today
+
+1278
+00:57:27,790 --> 00:57:33,887
+is a chapter on graph nets, but if you continue reading forward
+
+1279
+00:57:33,887 --> 00:57:35,470
+from the part that we assigned, you'll
+
+1280
+00:57:35,470 --> 00:57:38,210
+see that there's a lot-- a lot more in that document.
+
+1281
+00:57:38,210 --> 00:57:39,910
+It's a very good--
+
+1282
+00:57:39,910 --> 00:57:41,310
+almost a book, really--
+
+1283
+00:57:41,310 --> 00:57:44,080
+manuscript.
+
+1284
+00:57:44,080 --> 00:57:46,980
+So in the last section of this lecture,
+
+1285
+00:57:46,980 --> 00:57:49,840
+I want to talk a little bit about the theoretical properties
+
+1286
+00:57:49,840 --> 00:57:52,560
+of graph nets, what types of--
+
+1287
+00:57:52,560 --> 00:57:54,227
+what types of problems can they solve,
+
+1288
+00:57:54,227 --> 00:57:56,060
+and what types of problems can't they solve,
+
+1289
+00:57:56,060 --> 00:57:58,920
+and it's going to be related to approximation theory.
+
+1290
+00:57:58,920 --> 00:58:01,720
+So to set this up, I'm going to give one more perspective on how
+
+1291
+00:58:01,720 --> 00:58:05,000
+graph nets are operating, and this is the tree perspective
+
+1292
+00:58:05,000 --> 00:58:06,920
+of what a node will see.
+
+1293
+00:58:06,920 --> 00:58:09,800
+So here, we have a node of interest, node A,
+
+1294
+00:58:09,800 --> 00:58:14,280
+it has neighbors B, C, and D. And
+
+1295
+00:58:14,280 --> 00:58:16,800
+the message-passing algorithm, layer by layer,
+
+1296
+00:58:16,800 --> 00:58:17,793
+will do the following.
+
+1297
+00:58:17,793 --> 00:58:19,460
+This gray box is the aggregate function.
+
+1298
+00:58:19,460 --> 00:58:21,865
+It's going to take messages from all the neighbors,
+
+1299
+00:58:21,865 --> 00:58:24,240
+combine them, aggregate them together, and send a message
+
+1300
+00:58:24,240 --> 00:58:28,480
+to node A. And so node A only is learning something
+
+1301
+00:58:28,480 --> 00:58:30,320
+from these neighbors.
+
+1302
+00:58:30,320 --> 00:58:33,440
+But if we run multiple steps of message passing
+
+1303
+00:58:33,440 --> 00:58:37,880
+or we unroll this graph net deep--
+
+1304
+00:58:37,880 --> 00:58:39,960
+so two steps, so two-layer graph net,
+
+1305
+00:58:39,960 --> 00:58:44,750
+essentially-- now we'll get messages not only from B, C, D,
+
+1306
+00:58:44,750 --> 00:58:50,160
+but also from A and C, going into B, and so forth.
+
+1307
+00:58:50,160 --> 00:58:53,440
+So the information flow from the perspective--
+
+1308
+00:58:53,440 --> 00:58:54,940
+suppose you're standing on the graph
+
+1309
+00:58:54,940 --> 00:58:57,640
+at node A. This is who's talking to you,
+
+1310
+00:58:57,640 --> 00:59:00,340
+and this is the funnel of information coming into you.
+
+1311
+00:59:00,340 --> 00:59:02,540
+And every iteration of the message passing
+
+1312
+00:59:02,540 --> 00:59:05,360
+will increase the depth of this tree by 1.
+
+1313
+00:59:10,460 --> 00:59:12,460
+So the layer 2 representation of A
+
+1314
+00:59:12,460 --> 00:59:14,740
+is going to be messages passed from the layer 1
+
+1315
+00:59:14,740 --> 00:59:16,740
+representation of these other nodes, which
+
+1316
+00:59:16,740 --> 00:59:20,900
+is going to be messages passed from the input, raw layer 0
+
+1317
+00:59:20,900 --> 00:59:24,140
+node vectors for those nodes.
+
+1318
+00:59:24,140 --> 00:59:25,060
+Question.
+
+1319
+00:59:25,060 --> 00:59:28,780
+AUDIENCE: How do you know- of I guess when you're starting
+
+1320
+00:59:28,780 --> 00:59:32,300
+to train your graph, your GNN, do you start with all
+
+1321
+00:59:32,300 --> 00:59:33,920
+the different nodes densely connected,
+
+1322
+00:59:33,920 --> 00:59:36,460
+and then you set some sort of parameter to be connected
+
+1323
+00:59:36,460 --> 00:59:39,380
+to the certain nodes, or does it start where none of the nodes
+
+1324
+00:59:39,380 --> 00:59:40,130
+are connected or--
+
+1325
+00:59:40,130 --> 00:59:41,380
+PHILLIP ISOLA: Great question.
+
+1326
+00:59:41,380 --> 00:59:43,100
+So how do the connectivity of the graph?
+
+1327
+00:59:43,100 --> 00:59:44,940
+Do you start with a fully connected graph?
+
+1328
+00:59:44,940 --> 00:59:45,900
+Do you prune it?
+
+1329
+00:59:48,600 --> 00:59:53,480
+The vanilla answer for GNNs is the--
+
+1330
+00:59:53,480 --> 00:59:55,365
+the data tells you the connectivity
+
+1331
+00:59:55,365 --> 00:59:56,740
+that you're going to have to use.
+
+1332
+00:59:56,740 --> 00:59:58,400
+Like, the molecule that you're going
+
+1333
+00:59:58,400 --> 01:00:00,520
+to be making a prediction about-- it
+
+1334
+01:00:00,520 --> 01:00:02,960
+has a particular graph structure, which
+
+1335
+01:00:02,960 --> 01:00:05,200
+is just given by the data.
+
+1336
+01:00:05,200 --> 01:00:07,880
+If it's some hydrocarbon, it will have hydrogen
+
+1337
+01:00:07,880 --> 01:00:09,140
+connected to a few carbons.
+
+1338
+01:00:09,140 --> 01:00:10,640
+And so forth.
+
+1339
+01:00:10,640 --> 01:00:13,260
+And that's not something you're going to optimize.
+
+1340
+01:00:13,260 --> 01:00:14,595
+That's given to you.
+
+1341
+01:00:14,595 --> 01:00:16,220
+So the graph structure is given to you,
+
+1342
+01:00:16,220 --> 01:00:18,060
+and then you try to process that graph.
+
+1343
+01:00:18,060 --> 01:00:19,760
+It's like that's the data.
+
+1344
+01:00:19,760 --> 01:00:24,800
+Now, you're alluding to, could I somehow take nodes and learn
+
+1345
+01:00:24,800 --> 01:00:26,610
+the graph structure that makes me
+
+1346
+01:00:26,610 --> 01:00:27,860
+able to make good predictions?
+
+1347
+01:00:27,860 --> 01:00:29,137
+This is a meta--
+
+1348
+01:00:29,137 --> 01:00:30,720
+this is another problem, but we're not
+
+1349
+01:00:30,720 --> 01:00:31,845
+going to get to that today.
+
+1350
+01:00:31,845 --> 01:00:33,980
+So for now, you're given the graph structure,
+
+1351
+01:00:33,980 --> 01:00:36,360
+and that tells you how to send messages
+
+1352
+01:00:36,360 --> 01:00:41,220
+to process information on that graph
+
+1353
+01:00:41,220 --> 01:00:43,820
+So this tree structure is important.
+
+1354
+01:00:43,820 --> 01:00:45,580
+Oh-- and additionally, we're going
+
+1355
+01:00:45,580 --> 01:00:49,420
+to just understand that every single aggregate function is
+
+1356
+01:00:49,420 --> 01:00:50,120
+the same.
+
+1357
+01:00:50,120 --> 01:00:51,360
+So we're sharing the weights.
+
+1358
+01:00:51,360 --> 01:00:53,990
+All those gray boxes are the same function.
+
+1359
+01:00:53,990 --> 01:00:56,240
+They could be different functions at different layers,
+
+1360
+01:00:56,240 --> 01:00:58,980
+but in parallel, across all operations
+
+1361
+01:00:58,980 --> 01:01:01,420
+of aggregation within one layer of the message-passing
+
+1362
+01:01:01,420 --> 01:01:05,020
+algorithm, are going to be using the same function.
+
+1363
+01:01:05,020 --> 01:01:08,820
+So that's the weight sharing idea,
+
+1364
+01:01:08,820 --> 01:01:11,340
+and that has some really nice properties.
+
+1365
+01:01:11,340 --> 01:01:15,580
+That means that if we add more nodes to the graph
+
+1366
+01:01:15,580 --> 01:01:17,660
+after having trained-- so we're learning
+
+1367
+01:01:17,660 --> 01:01:19,200
+the parameters of these gray boxes,
+
+1368
+01:01:19,200 --> 01:01:21,892
+learning the parameters of the Aggregate and Update functions.
+
+1369
+01:01:21,892 --> 01:01:23,600
+But after we've learned those parameters,
+
+1370
+01:01:23,600 --> 01:01:28,500
+we could run the same GNN with the same aggregate function
+
+1371
+01:01:28,500 --> 01:01:31,888
+on a graph that has a different shape because in order
+
+1372
+01:01:31,888 --> 01:01:33,680
+to aggregate over a different set of nodes,
+
+1373
+01:01:33,680 --> 01:01:37,120
+we just use the same function again on those new set of nodes.
+
+1374
+01:01:37,120 --> 01:01:39,443
+Just like in ConvNets, I can train on a small image
+
+1375
+01:01:39,443 --> 01:01:41,360
+and run the filters on a big image because I'm
+
+1376
+01:01:41,360 --> 01:01:43,200
+going to use the learn filter, but just
+
+1377
+01:01:43,200 --> 01:01:46,080
+on a different set of inputs.
+
+1378
+01:01:46,080 --> 01:01:47,838
+OK, so that means that graph nets
+
+1379
+01:01:47,838 --> 01:01:49,380
+can be trained on graphs of one size,
+
+1380
+01:01:49,380 --> 01:01:53,120
+but they'll generalize to graphs of other size.
+
+1381
+01:01:53,120 --> 01:01:56,240
+Statistically, they might only generalize
+
+1382
+01:01:56,240 --> 01:01:57,920
+to graphs of a slightly different size
+
+1383
+01:01:57,920 --> 01:01:59,600
+because they'll have maybe overfit
+
+1384
+01:01:59,600 --> 01:02:02,960
+to the training data which came in a certain size.
+
+1385
+01:02:02,960 --> 01:02:04,838
+But functionally, they can process--
+
+1386
+01:02:04,838 --> 01:02:06,880
+they can just repeat the same operation no matter
+
+1387
+01:02:06,880 --> 01:02:09,960
+how big the graph becomes.
+
+1388
+01:02:09,960 --> 01:02:13,880
+So we're going to get to the theory that
+
+1389
+01:02:13,880 --> 01:02:16,800
+makes use of these trees in just a second.
+
+1390
+01:02:16,800 --> 01:02:20,640
+But let's quickly make sure we understand how to set up a GNN
+
+1391
+01:02:20,640 --> 01:02:22,500
+and train it on a problem.
+
+1392
+01:02:22,500 --> 01:02:25,340
+So let's say I want to train a graph
+
+1393
+01:02:25,340 --> 01:02:28,440
+net on some problem of interest, like predicting
+
+1394
+01:02:28,440 --> 01:02:30,080
+the toxicity of molecules.
+
+1395
+01:02:30,080 --> 01:02:32,120
+So what would a data point be?
+
+1396
+01:02:32,120 --> 01:02:34,135
+What would a training data point look like?
+
+1397
+01:02:34,135 --> 01:02:35,760
+So who can tell me what a training data
+
+1398
+01:02:35,760 --> 01:02:37,450
+point would look like for classifying
+
+1399
+01:02:37,450 --> 01:02:39,050
+toxicity of molecules?
+
+1400
+01:02:39,050 --> 01:02:41,370
+Let's go to somebody new.
+
+1401
+01:02:41,370 --> 01:02:42,770
+Over here, yeah.
+
+1402
+01:02:42,770 --> 01:02:45,750
+AUDIENCE: [INAUDIBLE] the different molecules [INAUDIBLE],
+
+1403
+01:02:45,750 --> 01:02:50,110
+and each [INAUDIBLE] molecule would have an embedding.
+
+1404
+01:02:50,110 --> 01:02:53,370
+So one data point would be like a set of node embeddings,
+
+1405
+01:02:53,370 --> 01:02:56,010
+as well as a set of edges defining that molecule.
+
+1406
+01:02:56,010 --> 01:02:59,357
+And then you would have a label for the toxicity?
+
+1407
+01:02:59,357 --> 01:03:00,190
+PHILLIP ISOLA: Yeah.
+
+1408
+01:03:00,190 --> 01:03:06,890
+So I think you're roughly saying what I wanted to say here.
+
+1409
+01:03:06,890 --> 01:03:10,450
+If I have a supervised learning problem where
+
+1410
+01:03:10,450 --> 01:03:14,450
+I know the desirable prediction I want to make for every node,
+
+1411
+01:03:14,450 --> 01:03:16,050
+like, the label of every node, then I
+
+1412
+01:03:16,050 --> 01:03:17,970
+would have node and label pairs, and that
+
+1413
+01:03:17,970 --> 01:03:19,330
+would be my training data.
+
+1414
+01:03:19,330 --> 01:03:21,990
+If I want to predict a property of the whole graph,
+
+1415
+01:03:21,990 --> 01:03:24,390
+like I was saying, the toxicity of that entire molecule,
+
+1416
+01:03:24,390 --> 01:03:28,670
+it'd be the whole graph plus the label,
+
+1417
+01:03:28,670 --> 01:03:30,670
+is it toxic or not, maybe a binary label.
+
+1418
+01:03:30,670 --> 01:03:32,970
+So that's what my training data looks like.
+
+1419
+01:03:32,970 --> 01:03:37,313
+So molecule, toxicity, or a social network,
+
+1420
+01:03:37,313 --> 01:03:39,230
+and for every single node, every single person
+
+1421
+01:03:39,230 --> 01:03:40,688
+in the social network, a prediction
+
+1422
+01:03:40,688 --> 01:03:42,310
+of what music they like to listen to.
+
+1423
+01:03:42,310 --> 01:03:44,150
+And that would be a label of what music
+
+1424
+01:03:44,150 --> 01:03:47,430
+they truly like to listen to if I'm going to fit to that data.
+
+1425
+01:03:47,430 --> 01:03:48,570
+OK, so then what do we do?
+
+1426
+01:03:48,570 --> 01:03:49,290
+How do we train on that?
+
+1427
+01:03:49,290 --> 01:03:50,415
+What do we have to specify?
+
+1428
+01:03:50,415 --> 01:03:53,230
+We have to specify the aggregate function, the update function,
+
+1429
+01:03:53,230 --> 01:03:55,395
+and the readout function, the loss function.
+
+1430
+01:03:55,395 --> 01:03:56,770
+If it's a classification problem.
+
+1431
+01:03:56,770 --> 01:04:00,510
+Maybe I'm going to have a cross-entropy loss
+
+1432
+01:04:00,510 --> 01:04:03,830
+between the predictions at each node
+
+1433
+01:04:03,830 --> 01:04:06,333
+and the ground-truth labels.
+
+1434
+01:04:06,333 --> 01:04:08,750
+And then we'll train this with backpropagation, stochastic
+
+1435
+01:04:08,750 --> 01:04:12,150
+gradient descent.
+
+1436
+01:04:12,150 --> 01:04:12,870
+Yeah, question
+
+1437
+01:04:12,870 --> 01:04:15,810
+AUDIENCE: For clarification, for the node label pair,
+
+1438
+01:04:15,810 --> 01:04:18,878
+how do you [INAUDIBLE]?
+
+1439
+01:04:18,878 --> 01:04:20,670
+PHILLIP ISOLA: Oh, for the node label pair,
+
+1440
+01:04:20,670 --> 01:04:24,510
+we'll also take as input the adjacency matrix.
+
+1441
+01:04:24,510 --> 01:04:28,910
+So a single data point would be a graph
+
+1442
+01:04:28,910 --> 01:04:32,237
+with a target ground-truth label for every node,
+
+1443
+01:04:32,237 --> 01:04:34,070
+and additionally, the connectivity structure
+
+1444
+01:04:34,070 --> 01:04:36,050
+of that graph because that's going to be
+
+1445
+01:04:36,050 --> 01:04:37,190
+used in the algorithm, too.
+
+1446
+01:04:37,190 --> 01:04:37,690
+Yeah.
+
+1447
+01:04:37,690 --> 01:04:40,110
+AUDIENCE: And how is that different from the graph
+
+1448
+01:04:40,110 --> 01:04:40,610
+label pair?
+
+1449
+01:04:40,610 --> 01:04:44,690
+PHILLIP ISOLA: The graph label pair would just be the graph--
+
+1450
+01:04:44,690 --> 01:04:46,810
+the same input, but then the target output
+
+1451
+01:04:46,810 --> 01:04:48,890
+would be a label for the entire graph.
+
+1452
+01:04:48,890 --> 01:04:50,370
+Yeah.
+
+1453
+01:04:50,370 --> 01:04:53,930
+So I suppose I should have said node, comma, adjacency matrix,
+
+1454
+01:04:53,930 --> 01:04:55,890
+comma, labels.
+
+1455
+01:04:55,890 --> 01:04:57,910
+But every node has a label is the point there,
+
+1456
+01:04:57,910 --> 01:05:00,570
+and then you'd also need that other information.
+
+1457
+01:05:00,570 --> 01:05:03,330
+OK, one more question here.
+
+1458
+01:05:03,330 --> 01:05:06,990
+AUDIENCE: Why do you color these areas blue?
+
+1459
+01:05:06,990 --> 01:05:10,170
+So does that mean that some nodes cannot have labels?
+
+1460
+01:05:10,170 --> 01:05:14,130
+PHILLIP ISOLA: Yeah, that's really just meant to refer to--
+
+1461
+01:05:14,130 --> 01:05:17,590
+we are isolating one node and looking at its set of neighbors.
+
+1462
+01:05:17,590 --> 01:05:22,370
+And yeah, don't read too much into the visualization.
+
+1463
+01:05:22,370 --> 01:05:22,870
+OK.
+
+1464
+01:05:22,870 --> 01:05:23,370
+Sorry.
+
+1465
+01:05:23,370 --> 01:05:26,490
+This wasn't the best visualization
+
+1466
+01:05:26,490 --> 01:05:26,990
+OK.
+
+1467
+01:05:26,990 --> 01:05:29,990
+So I think I'm going to skip past this.
+
+1468
+01:05:29,990 --> 01:05:33,050
+This is just giving an example of,
+
+1469
+01:05:33,050 --> 01:05:36,290
+in that paper that I showed at the start, how they can use--
+
+1470
+01:05:36,290 --> 01:05:40,070
+how they can set it up as a GNN to predict something
+
+1471
+01:05:40,070 --> 01:05:41,570
+about molecules.
+
+1472
+01:05:41,570 --> 01:05:44,070
+And you can see on the left over there
+
+1473
+01:05:44,070 --> 01:05:47,830
+that we have these boxes, which are aggregating information
+
+1474
+01:05:47,830 --> 01:05:52,550
+from all the different proteins and pharmaceuticals
+
+1475
+01:05:52,550 --> 01:05:54,630
+that are interacting in this system.
+
+1476
+01:05:54,630 --> 01:05:56,910
+You can read that more if you're interested.
+
+1477
+01:05:56,910 --> 01:05:57,890
+This is the same.
+
+1478
+01:05:57,890 --> 01:06:02,870
+We can set up our Google Maps problem.
+
+1479
+01:06:02,870 --> 01:06:05,830
+And there's a lot of connections for you
+
+1480
+01:06:05,830 --> 01:06:07,850
+to read up on if you're interested.
+
+1481
+01:06:07,850 --> 01:06:09,730
+So of course, graphs come up everywhere.
+
+1482
+01:06:09,730 --> 01:06:13,350
+So signal processing and probabilistic graphical models
+
+1483
+01:06:13,350 --> 01:06:16,190
+and inference, and graph nets are intimately
+
+1484
+01:06:16,190 --> 01:06:19,310
+connected to these, and here's a few examples.
+
+1485
+01:06:19,310 --> 01:06:21,970
+But let's get into the final section,
+
+1486
+01:06:21,970 --> 01:06:24,310
+which is the theory of what kinds of functions
+
+1487
+01:06:24,310 --> 01:06:27,110
+can GNNs approximate.
+
+1488
+01:06:27,110 --> 01:06:30,270
+And the key question here is going to be,
+
+1489
+01:06:30,270 --> 01:06:33,097
+which graphs can a GNN again distinguish?
+
+1490
+01:06:33,097 --> 01:06:34,680
+And we'll see that they actually can't
+
+1491
+01:06:34,680 --> 01:06:37,000
+distinguish all possible graphs from each other.
+
+1492
+01:06:37,000 --> 01:06:38,720
+There will be these equivalent sets
+
+1493
+01:06:38,720 --> 01:06:42,120
+where there'll be two different graphs where a GNN will
+
+1494
+01:06:42,120 --> 01:06:44,220
+necessarily have to make the same prediction,
+
+1495
+01:06:44,220 --> 01:06:46,920
+because according to GNN, those are the same graphs.
+
+1496
+01:06:46,920 --> 01:06:48,840
+So what is the equivalent set.
+
+1497
+01:06:48,840 --> 01:06:52,500
+So here are a bunch of graphs.
+
+1498
+01:06:52,500 --> 01:06:57,920
+And you can imagine that from the perspective of certain types
+
+1499
+01:06:57,920 --> 01:07:02,920
+of algorithms, certain sets of these graphs
+
+1500
+01:07:02,920 --> 01:07:04,618
+will be seen as the same.
+
+1501
+01:07:04,618 --> 01:07:07,160
+And we want to ask, which sets of graphs are going to be seen
+
+1502
+01:07:07,160 --> 01:07:10,320
+as the, same as the graph that cannot make a separate
+
+1503
+01:07:10,320 --> 01:07:13,500
+prediction on one graph versus the other graph,
+
+1504
+01:07:13,500 --> 01:07:16,240
+if they're part of the same equivalence class?
+
+1505
+01:07:16,240 --> 01:07:20,760
+So we're trying to understand what types of predictions
+
+1506
+01:07:20,760 --> 01:07:22,468
+and functions graph nets can approximate.
+
+1507
+01:07:22,468 --> 01:07:25,052
+And the way we'll do that is by showing that graph nets cannot
+
+1508
+01:07:25,052 --> 01:07:26,885
+distinguish between certain types of inputs.
+
+1509
+01:07:26,885 --> 01:07:28,302
+So they, necessarily, would not be
+
+1510
+01:07:28,302 --> 01:07:30,680
+able to approximate a function that has to distinguish
+
+1511
+01:07:30,680 --> 01:07:33,340
+between those inputs.
+
+1512
+01:07:33,340 --> 01:07:41,940
+So yeah, the theorem is just a formal statement of that,
+
+1513
+01:07:41,940 --> 01:07:46,460
+that if a graph net cannot distinguish between two items
+
+1514
+01:07:46,460 --> 01:07:48,300
+in an equivalence class, then clearly,
+
+1515
+01:07:48,300 --> 01:07:52,020
+it must incur an approximation error if the function I'm trying
+
+1516
+01:07:52,020 --> 01:07:55,540
+to approximate does distinguish between those two graphs in that
+
+1517
+01:07:55,540 --> 01:07:57,120
+equivalence class.
+
+1518
+01:07:57,120 --> 01:08:00,220
+So what is the set of equivalence classes
+
+1519
+01:08:00,220 --> 01:08:02,380
+for graph nets?
+
+1520
+01:08:02,380 --> 01:08:06,800
+What graphs are considered equivalent to each other?
+
+1521
+01:08:06,800 --> 01:08:10,140
+So the way to understand this is the tree structure.
+
+1522
+01:08:10,140 --> 01:08:14,980
+So according to a graph net, that graph on the left--
+
+1523
+01:08:14,980 --> 01:08:17,939
+according to-- any node that's trying to update its
+
+1524
+01:08:17,939 --> 01:08:21,020
+representation based on messages coming in--
+
+1525
+01:08:21,020 --> 01:08:23,640
+what it sees is these tree structures.
+
+1526
+01:08:23,640 --> 01:08:27,500
+So the red node is going to see this neighborhood structure that
+
+1527
+01:08:27,500 --> 01:08:28,200
+has that tree.
+
+1528
+01:08:28,200 --> 01:08:32,100
+So it's connected on the first hop to the blue and green,
+
+1529
+01:08:32,100 --> 01:08:34,439
+and on the second hop to all the other nodes.
+
+1530
+01:08:34,439 --> 01:08:36,979
+And the green node is going to have that tree structure,
+
+1531
+01:08:36,979 --> 01:08:38,354
+and the other green node is going
+
+1532
+01:08:38,354 --> 01:08:40,279
+to have that tree structure.
+
+1533
+01:08:40,279 --> 01:08:43,600
+So from the perspective of a graph net,
+
+1534
+01:08:43,600 --> 01:08:47,319
+these trees are the entire characterization of that graph.
+
+1535
+01:08:47,319 --> 01:08:49,560
+That's all they can see because that's how
+
+1536
+01:08:49,560 --> 01:08:52,120
+the messages get propagated.
+
+1537
+01:08:52,120 --> 01:08:55,520
+So if two graphs have the same tree structures
+
+1538
+01:08:55,520 --> 01:08:57,840
+for all the nodes, then those two graphs
+
+1539
+01:08:57,840 --> 01:09:00,800
+are equivalent according to the graph net.
+
+1540
+01:09:00,800 --> 01:09:03,359
+So this may not be obvious, but it turns out
+
+1541
+01:09:03,359 --> 01:09:06,840
+we can find two graphs that are different
+
+1542
+01:09:06,840 --> 01:09:08,560
+and yet have the same tree structure.
+
+1543
+01:09:08,560 --> 01:09:11,200
+And those two graphs will be two graphs that graph net cannot
+
+1544
+01:09:11,200 --> 01:09:13,377
+distinguish, cannot make different predictions for.
+
+1545
+01:09:13,377 --> 01:09:14,960
+So here's an example, and you're going
+
+1546
+01:09:14,960 --> 01:09:16,502
+to work on your problem set on trying
+
+1547
+01:09:16,502 --> 01:09:18,458
+to show some other examples.
+
+1548
+01:09:18,458 --> 01:09:20,500
+But I'm going to show you this one in particular.
+
+1549
+01:09:20,500 --> 01:09:24,660
+So first, convince yourself that these are not the same graph.
+
+1550
+01:09:24,660 --> 01:09:26,660
+Structurally, these are different graphs, right?
+
+1551
+01:09:26,660 --> 01:09:29,319
+One has these two closed planar regions,
+
+1552
+01:09:29,319 --> 01:09:33,180
+and the other has two regions, but there are triangles.
+
+1553
+01:09:33,180 --> 01:09:36,080
+These are structurally distinct graphs.
+
+1554
+01:09:38,620 --> 01:09:41,779
+But let's look at the tree structure
+
+1555
+01:09:41,779 --> 01:09:44,899
+of the top left red node.
+
+1556
+01:09:44,899 --> 01:09:47,740
+It has exactly the same tree structure for both graphs.
+
+1557
+01:09:47,740 --> 01:09:49,800
+We can expand those trees going further down,
+
+1558
+01:09:49,800 --> 01:09:52,899
+but this is enough to make the point.
+
+1559
+01:09:52,899 --> 01:09:55,580
+So the red node has a yellow node and a red node
+
+1560
+01:09:55,580 --> 01:09:57,620
+as a neighbor, and the yellow node
+
+1561
+01:09:57,620 --> 01:09:59,998
+has a red, yellow, and red node as neighbor.
+
+1562
+01:09:59,998 --> 01:10:02,040
+And then we can just keep repeating that process.
+
+1563
+01:10:02,040 --> 01:10:04,620
+You'll see they're entirely equivalent.
+
+1564
+01:10:04,620 --> 01:10:06,143
+And yet, they're not the same graph.
+
+1565
+01:10:06,143 --> 01:10:08,060
+So two graphs can have the same tree structure
+
+1566
+01:10:08,060 --> 01:10:09,700
+but not be the same graph.
+
+1567
+01:10:09,700 --> 01:10:12,180
+That means that if one of these molecules is toxic
+
+1568
+01:10:12,180 --> 01:10:13,763
+and the other is not-- let's say these
+
+1569
+01:10:13,763 --> 01:10:16,280
+are molecules and one of them is toxic and the other's not.
+
+1570
+01:10:16,280 --> 01:10:18,420
+These are different physical things, and so one of them
+
+1571
+01:10:18,420 --> 01:10:19,120
+could be different.
+
+1572
+01:10:19,120 --> 01:10:20,953
+It could be toxic, and then it might not be.
+
+1573
+01:10:20,953 --> 01:10:23,520
+A graph net will have to assign the same label to them.
+
+1574
+01:10:23,520 --> 01:10:24,020
+Yeah.
+
+1575
+01:10:24,020 --> 01:10:28,080
+AUDIENCE: So if you just gave each node in the graph
+
+1576
+01:10:28,080 --> 01:10:32,000
+the one-hot encoding in addition to its node attribute,
+
+1577
+01:10:32,000 --> 01:10:32,897
+then you could.
+
+1578
+01:10:32,897 --> 01:10:35,480
+PHILLIP ISOLA: Yeah, so you're giving the answer to a question
+
+1579
+01:10:35,480 --> 01:10:37,120
+I was going to ask in a few slides.
+
+1580
+01:10:37,120 --> 01:10:40,020
+So if you simply give each node a one-hot encoding,
+
+1581
+01:10:40,020 --> 01:10:43,600
+like, tell it its position in the graph,
+
+1582
+01:10:43,600 --> 01:10:45,655
+then the symmetry can be broken.
+
+1583
+01:10:45,655 --> 01:10:47,280
+But the power of graph nets is that you
+
+1584
+01:10:47,280 --> 01:10:50,540
+want to be invariant to the ordering of the nodes.
+
+1585
+01:10:50,540 --> 01:10:52,160
+And so by breaking that symmetry,
+
+1586
+01:10:52,160 --> 01:10:53,740
+you break the permutation invariance.
+
+1587
+01:10:53,740 --> 01:10:57,680
+So it's a trade-off.
+
+1588
+01:10:57,680 --> 01:10:59,700
+Here's another case, a bit harder to see,
+
+1589
+01:10:59,700 --> 01:11:04,160
+but these two graphs are equivalent according to a GNN.
+
+1590
+01:11:04,160 --> 01:11:07,680
+But they're not the same graph.
+
+1591
+01:11:07,680 --> 01:11:09,520
+So those are equivalence classes according
+
+1592
+01:11:09,520 --> 01:11:13,240
+to the GNNs because a GNN can only
+
+1593
+01:11:13,240 --> 01:11:16,720
+distinguish two graphs that have different neighborhood tree
+
+1594
+01:11:16,720 --> 01:11:17,920
+structures.
+
+1595
+01:11:17,920 --> 01:11:20,720
+Now, this actually connects to some deep and old theory
+
+1596
+01:11:20,720 --> 01:11:23,280
+in graphs, graph isomorphism, where
+
+1597
+01:11:23,280 --> 01:11:26,330
+you're trying to say, how can I tell if one graph is
+
+1598
+01:11:26,330 --> 01:11:28,090
+the same as another graph?
+
+1599
+01:11:28,090 --> 01:11:30,690
+And GNNs have the same power to distinguish graphs
+
+1600
+01:11:30,690 --> 01:11:35,370
+as this thing called the one WL algorithm?
+
+1601
+01:11:35,370 --> 01:11:37,722
+So some of you might have seen this before.
+
+1602
+01:11:37,722 --> 01:11:39,430
+I'm not going to go into all the details.
+
+1603
+01:11:39,430 --> 01:11:41,750
+But this is going back to the 1960s.
+
+1604
+01:11:41,750 --> 01:11:44,650
+This is really classical graph theory.
+
+1605
+01:11:44,650 --> 01:11:47,308
+And the Weisfeiler-Leman algorithm
+
+1606
+01:11:47,308 --> 01:11:48,850
+is an algorithm that takes two graphs
+
+1607
+01:11:48,850 --> 01:11:51,130
+and decides if they're the same or different.
+
+1608
+01:11:51,130 --> 01:11:54,003
+And the one Weisfeiler-Leman algorithm
+
+1609
+01:11:54,003 --> 01:11:55,670
+can distinguish certain kinds of graphs,
+
+1610
+01:11:55,670 --> 01:11:57,170
+and it's the same kinds of graphs
+
+1611
+01:11:57,170 --> 01:11:58,710
+that a GNN can distinguish.
+
+1612
+01:11:58,710 --> 01:12:01,770
+And so whatever the Weisfeiler-Leman algorithm
+
+1613
+01:12:01,770 --> 01:12:03,750
+can discriminate a GNN can discriminate.
+
+1614
+01:12:03,750 --> 01:12:08,050
+And this is just a connection to some graph theory.
+
+1615
+01:12:08,050 --> 01:12:12,210
+So roughly, the way that the Weisfeiler-Leman algorithm works
+
+1616
+01:12:12,210 --> 01:12:14,830
+is you assign colors to the nodes in the graph,
+
+1617
+01:12:14,830 --> 01:12:17,010
+and then you do some kind of propagation,
+
+1618
+01:12:17,010 --> 01:12:19,170
+and you'd decide if two graphs are
+
+1619
+01:12:19,170 --> 01:12:25,270
+the same if they result in the same coloring of the nodes.
+
+1620
+01:12:25,270 --> 01:12:30,270
+And let's see.
+
+1621
+01:12:30,270 --> 01:12:34,270
+So yeah, a GNN can, at best, distinguish the same graphs
+
+1622
+01:12:34,270 --> 01:12:36,830
+that the one-dimensional Weisfeiler-Leman algorithm
+
+1623
+01:12:36,830 --> 01:12:37,950
+can distinguish.
+
+1624
+01:12:37,950 --> 01:12:41,870
+But another interesting thing is that it's not only, can best.
+
+1625
+01:12:41,870 --> 01:12:43,530
+It's actually, you can achieve this.
+
+1626
+01:12:43,530 --> 01:12:48,750
+So for any size graph, there exists a GNN such
+
+1627
+01:12:48,750 --> 01:12:52,710
+that you can distinguish two graphs that
+
+1628
+01:12:52,710 --> 01:12:55,830
+are distinguishable by the WL algorithm.
+
+1629
+01:12:55,830 --> 01:12:58,510
+So we have universal approximation
+
+1630
+01:12:58,510 --> 01:13:02,710
+within this family-- a universal ability
+
+1631
+01:13:02,710 --> 01:13:05,670
+to discriminate within this family of graphs
+
+1632
+01:13:05,670 --> 01:13:09,030
+that can be discriminated by this classical theory.
+
+1633
+01:13:09,030 --> 01:13:14,710
+And just giving you the gist of why you get universality
+
+1634
+01:13:14,710 --> 01:13:16,910
+within that family is--
+
+1635
+01:13:16,910 --> 01:13:17,970
+it's a two-part argument.
+
+1636
+01:13:17,970 --> 01:13:21,770
+The first part is that a arbitrary, nonlinear,
+
+1637
+01:13:21,770 --> 01:13:25,930
+some nonlinear function is a universal approximator
+
+1638
+01:13:25,930 --> 01:13:28,970
+of any multiset function, and MLPs
+
+1639
+01:13:28,970 --> 01:13:32,490
+are universal approximators to arbitrary nonlinear functions.
+
+1640
+01:13:32,490 --> 01:13:36,090
+So MLP-- some MLP is a universal approximator
+
+1641
+01:13:36,090 --> 01:13:40,705
+to multiset functions.
+
+1642
+01:13:40,705 --> 01:13:43,010
+And then, yeah, you can essentially
+
+1643
+01:13:43,010 --> 01:13:49,352
+show that the aggregate in this form that
+
+1644
+01:13:49,352 --> 01:13:50,810
+can take on a multiset function can
+
+1645
+01:13:50,810 --> 01:13:52,850
+distinguish exactly the same class of algorithms
+
+1646
+01:13:52,850 --> 01:13:54,790
+as the WL algorithm.
+
+1647
+01:13:54,790 --> 01:13:56,170
+Yeah.
+
+1648
+01:13:56,170 --> 01:13:58,610
+AUDIENCE: How common is it?
+
+1649
+01:13:58,610 --> 01:14:00,110
+PHILLIP ISOLA: Yeah, great question.
+
+1650
+01:14:00,110 --> 01:14:02,370
+So how common is it to find two graphs that cannot be
+
+1651
+01:14:02,370 --> 01:14:04,570
+distinguished in this way?
+
+1652
+01:14:04,570 --> 01:14:07,790
+I think that last year, I said, oh, it's an edge case.
+
+1653
+01:14:07,790 --> 01:14:08,930
+It's not too common.
+
+1654
+01:14:08,930 --> 01:14:11,450
+And then I realized I don't actually know.
+
+1655
+01:14:11,450 --> 01:14:16,030
+So it's hard to come up with them on pencil and paper.
+
+1656
+01:14:20,650 --> 01:14:23,093
+My guess is that this is a theoretically important thing.
+
+1657
+01:14:23,093 --> 01:14:25,010
+It's like an adversarial-- a worst-case thing.
+
+1658
+01:14:25,010 --> 01:14:28,880
+Like, this could exist, and then all your machinery breaks.
+
+1659
+01:14:28,880 --> 01:14:30,630
+But it would be really interesting to know
+
+1660
+01:14:30,630 --> 01:14:32,430
+if actual molecules that you're trying
+
+1661
+01:14:32,430 --> 01:14:36,770
+to classify the toxicity of would ever have this issue.
+
+1662
+01:14:36,770 --> 01:14:40,630
+Would there ever be like a benign and a toxic molecule that
+
+1663
+01:14:40,630 --> 01:14:42,770
+would be indistinguishable, according to graph net,
+
+1664
+01:14:42,770 --> 01:14:45,710
+but actually have different effects on the body?
+
+1665
+01:14:45,710 --> 01:14:47,110
+And the answer is, I don't know.
+
+1666
+01:14:47,110 --> 01:14:50,310
+But I imagine that for health and safety-critical
+
+1667
+01:14:50,310 --> 01:14:54,190
+applications, this is important to understand.
+
+1668
+01:14:54,190 --> 01:14:55,210
+So this is a worst-case.
+
+1669
+01:14:55,210 --> 01:14:57,950
+I'm not sure how common it is in practice.
+
+1670
+01:14:57,950 --> 01:14:59,550
+Yeah.
+
+1671
+01:14:59,550 --> 01:15:00,050
+OK.
+
+1672
+01:15:03,190 --> 01:15:06,030
+So I do want to bring this back to empirical practice
+
+1673
+01:15:06,030 --> 01:15:09,370
+to show that this really does make an important difference.
+
+1674
+01:15:09,370 --> 01:15:12,950
+If you understand the theory of what
+
+1675
+01:15:12,950 --> 01:15:15,678
+are the appropriate aggregation functions that
+
+1676
+01:15:15,678 --> 01:15:17,470
+will lead you to be able to approximate all
+
+1677
+01:15:17,470 --> 01:15:19,910
+the functions you care about within the set
+
+1678
+01:15:19,910 --> 01:15:23,680
+of multiset functions, well, is that theory actually
+
+1679
+01:15:23,680 --> 01:15:25,060
+important in practice?
+
+1680
+01:15:25,060 --> 01:15:27,400
+So let's look at this example.
+
+1681
+01:15:27,400 --> 01:15:31,700
+So here's a paper where we have training accuracy on the y-axis,
+
+1682
+01:15:31,700 --> 01:15:34,640
+and we have the epochs of learning on the x-axis.
+
+1683
+01:15:34,640 --> 01:15:36,420
+And higher is better.
+
+1684
+01:15:36,420 --> 01:15:42,220
+So the red line is using an aggregation function,
+
+1685
+01:15:42,220 --> 01:15:44,560
+which is MLP, some MLP.
+
+1686
+01:15:44,560 --> 01:15:47,960
+So the Gs are an MLP for the red line.
+
+1687
+01:15:47,960 --> 01:15:51,320
+And I stated that that is a universal approximator
+
+1688
+01:15:51,320 --> 01:15:53,320
+to any multiset function.
+
+1689
+01:15:53,320 --> 01:15:57,012
+And indeed, this is able to get 100% accuracy
+
+1690
+01:15:57,012 --> 01:15:58,220
+on fitting the training data.
+
+1691
+01:15:58,220 --> 01:15:59,500
+This is just the training accuracy,
+
+1692
+01:15:59,500 --> 01:16:00,840
+so this is just about approximation, not
+
+1693
+01:16:00,840 --> 01:16:01,820
+about generalization.
+
+1694
+01:16:01,820 --> 01:16:03,880
+Can I fit the training data?
+
+1695
+01:16:03,880 --> 01:16:05,480
+But the interesting thing is that if I
+
+1696
+01:16:05,480 --> 01:16:07,870
+use a different aggregation operation--
+
+1697
+01:16:07,870 --> 01:16:09,920
+like, you might be just hacking away in PyTorch
+
+1698
+01:16:09,920 --> 01:16:14,260
+and think, oh, I'm not going to do MLP-- sum, MLP.
+
+1699
+01:16:14,260 --> 01:16:17,680
+I'll just do sum and linear ReLU.
+
+1700
+01:16:17,680 --> 01:16:19,220
+So linear ReLU is not a full MLP.
+
+1701
+01:16:19,220 --> 01:16:20,860
+It's not a universal approximator.
+
+1702
+01:16:20,860 --> 01:16:22,860
+We have to have linear ReLU linear
+
+1703
+01:16:22,860 --> 01:16:25,333
+is a universal approximator, but linear ReLU is not.
+
+1704
+01:16:25,333 --> 01:16:28,000
+So let's say I just decided, I'm going to save some computation.
+
+1705
+01:16:28,000 --> 01:16:30,180
+I'm going to skip that line in PyTorch.
+
+1706
+01:16:30,180 --> 01:16:32,682
+Well, that's not a universal approximator.
+
+1707
+01:16:32,682 --> 01:16:35,140
+And for this type of data, this protein prediction problem,
+
+1708
+01:16:35,140 --> 01:16:36,557
+I don't know the domain very well.
+
+1709
+01:16:36,557 --> 01:16:38,100
+But for this problem, you actually
+
+1710
+01:16:38,100 --> 01:16:40,920
+just plateau at a lower level of accuracy.
+
+1711
+01:16:40,920 --> 01:16:44,422
+And I suppose that's because you can't even approximate the data
+
+1712
+01:16:44,422 --> 01:16:46,380
+you're trying to approximate because you're not
+
+1713
+01:16:46,380 --> 01:16:49,780
+using an approximation function that has that capacity.
+
+1714
+01:16:49,780 --> 01:16:51,860
+So the theory actually is meaningful here.
+
+1715
+01:16:51,860 --> 01:16:55,380
+And sometimes I think that it's hard to see, like,
+
+1716
+01:16:55,380 --> 01:16:58,503
+why do we need to learn all this theory of what kinds
+
+1717
+01:16:58,503 --> 01:17:00,420
+of functions can be approximated by what kinds
+
+1718
+01:17:00,420 --> 01:17:01,580
+of neural networks?
+
+1719
+01:17:01,580 --> 01:17:04,000
+Well, it actually can matter in practice.
+
+1720
+01:17:04,000 --> 01:17:06,460
+And if you use something that does not have the capacity
+
+1721
+01:17:06,460 --> 01:17:08,420
+to approximate the family you care about,
+
+1722
+01:17:08,420 --> 01:17:10,940
+you can just be fundamentally limited.
+
+1723
+01:17:10,940 --> 01:17:14,978
+The other curves are even worse aggregation functions.
+
+1724
+01:17:14,978 --> 01:17:16,520
+So here's one really interesting one.
+
+1725
+01:17:16,520 --> 01:17:17,280
+Look at this one.
+
+1726
+01:17:17,280 --> 01:17:19,280
+That is, I just used-- the blue curve is using
+
+1727
+01:17:19,280 --> 01:17:21,560
+the mean as opposed to the sum.
+
+1728
+01:17:21,560 --> 01:17:25,180
+So I believe it's the same as the equation at the top.
+
+1729
+01:17:25,180 --> 01:17:28,280
+But rather than taking a sum, I take the mean.
+
+1730
+01:17:28,280 --> 01:17:29,540
+And suddenly, it doesn't work.
+
+1731
+01:17:29,540 --> 01:17:33,040
+And you might think, that seems like a tiny, tiny difference.
+
+1732
+01:17:33,040 --> 01:17:35,740
+Instead of taking the sum over my node, my neighbors,
+
+1733
+01:17:35,740 --> 01:17:37,520
+I'm taking the mean over my neighbors.
+
+1734
+01:17:37,520 --> 01:17:38,742
+Surely that should work.
+
+1735
+01:17:38,742 --> 01:17:40,700
+And you might be coding this way and just said,
+
+1736
+01:17:40,700 --> 01:17:43,155
+oh, I bet taking the average as opposed to the sum
+
+1737
+01:17:43,155 --> 01:17:44,780
+is going to be more numerically stable.
+
+1738
+01:17:44,780 --> 01:17:45,740
+I'll just do that.
+
+1739
+01:17:45,740 --> 01:17:47,660
+Well, the thing would fail completely.
+
+1740
+01:17:47,660 --> 01:17:52,920
+Anyone know why taking the mean is going to lose information
+
+1741
+01:17:52,920 --> 01:17:54,200
+that the sum has?
+
+1742
+01:17:54,200 --> 01:17:57,000
+Let's see if we can go-- right back here.
+
+1743
+01:17:57,000 --> 01:17:57,702
+Yeah.
+
+1744
+01:17:57,702 --> 01:17:59,160
+AUDIENCE: Maybe you can't calculate
+
+1745
+01:17:59,160 --> 01:18:00,960
+how many neighbors [INAUDIBLE].
+
+1746
+01:18:00,960 --> 01:18:01,560
+PHILLIP ISOLA: Yeah, so maybe you
+
+1747
+01:18:01,560 --> 01:18:03,140
+can't calculate how many neighbors.
+
+1748
+01:18:03,140 --> 01:18:05,660
+So taking the sum knows something
+
+1749
+01:18:05,660 --> 01:18:07,160
+about the total number of neighbors,
+
+1750
+01:18:07,160 --> 01:18:09,040
+because it gets bigger with more neighbors.
+
+1751
+01:18:09,040 --> 01:18:11,580
+Taking the mean divides by the number of neighbors,
+
+1752
+01:18:11,580 --> 01:18:13,140
+so it loses information.
+
+1753
+01:18:13,140 --> 01:18:15,440
+And by losing that information on this problem,
+
+1754
+01:18:15,440 --> 01:18:17,700
+you just get-- you can't actually
+
+1755
+01:18:17,700 --> 01:18:20,020
+learn the true function because you required knowing
+
+1756
+01:18:20,020 --> 01:18:21,533
+the number of neighbors.
+
+1757
+01:18:21,533 --> 01:18:24,200
+So these tiny little details can actually make a big difference,
+
+1758
+01:18:24,200 --> 01:18:26,860
+and it's important to know that.
+
+1759
+01:18:26,860 --> 01:18:32,540
+So here's a few other properties of graphs that cannot be learned
+
+1760
+01:18:32,540 --> 01:18:35,740
+with a conventional GNN as I've described it so far.
+
+1761
+01:18:35,740 --> 01:18:39,640
+So you can't estimate the longest cycle in a graph.
+
+1762
+01:18:39,640 --> 01:18:42,040
+You can't estimate the diameter of the graph.
+
+1763
+01:18:42,040 --> 01:18:44,332
+These are things that, no matter how much training data
+
+1764
+01:18:44,332 --> 01:18:46,130
+you have, the graph net is--
+
+1765
+01:18:46,130 --> 01:18:48,380
+there's going to be cases where you'll get arbitrarily
+
+1766
+01:18:48,380 --> 01:18:53,020
+large error on these estimates because you can construct
+
+1767
+01:18:53,020 --> 01:18:55,597
+two graphs that are isomorphic according to the GNN, two
+
+1768
+01:18:55,597 --> 01:18:57,180
+graphs that have the same neighborhood
+
+1769
+01:18:57,180 --> 01:18:59,620
+structure but different diameters.
+
+1770
+01:18:59,620 --> 01:19:02,200
+OK, so there's fundamental limits to what GNNs can do.
+
+1771
+01:19:02,200 --> 01:19:04,433
+But how do we get around these fundamental limits?
+
+1772
+01:19:04,433 --> 01:19:05,600
+We heard the answer already.
+
+1773
+01:19:05,600 --> 01:19:08,320
+But anyone want to shout it out again?
+
+1774
+01:19:08,320 --> 01:19:11,040
+What would be a way of making a graph
+
+1775
+01:19:11,040 --> 01:19:18,390
+net that is not going to be invariant to permutations
+
+1776
+01:19:18,390 --> 01:19:20,210
+of the nodes?
+
+1777
+01:19:20,210 --> 01:19:21,252
+AUDIENCE: One-hot coding?
+
+1778
+01:19:21,252 --> 01:19:22,585
+PHILLIP ISOLA: One-hot encoding.
+
+1779
+01:19:22,585 --> 01:19:23,270
+Yeah.
+
+1780
+01:19:23,270 --> 01:19:26,740
+So more generally, positional encodings.
+
+1781
+01:19:26,740 --> 01:19:28,990
+So just like we can make a convolutional network which
+
+1782
+01:19:28,990 --> 01:19:30,550
+is not translation-equivariant, we
+
+1783
+01:19:30,550 --> 01:19:33,430
+can make a graph net that is not invariant to permutations
+
+1784
+01:19:33,430 --> 01:19:35,830
+by adding-- telling each node where it is,
+
+1785
+01:19:35,830 --> 01:19:37,670
+what position it's at.
+
+1786
+01:19:37,670 --> 01:19:40,230
+And this allows you to break some of these symmetries
+
+1787
+01:19:40,230 --> 01:19:44,230
+with these equivalence classes of two graphs that
+
+1788
+01:19:44,230 --> 01:19:46,470
+have the same neighborhood structure because now
+
+1789
+01:19:46,470 --> 01:19:50,190
+we actually can see that the nodes have different positions
+
+1790
+01:19:50,190 --> 01:19:51,670
+in the graph.
+
+1791
+01:19:51,670 --> 01:19:53,930
+And one of the common ways of doing this--
+
+1792
+01:19:53,930 --> 01:19:58,510
+remember that Sarah talked about adding a sinusoidal positional
+
+1793
+01:19:58,510 --> 01:20:03,150
+encoding, where every position in your image is going to get--
+
+1794
+01:20:03,150 --> 01:20:05,930
+it's going to get a vector that tells us where it is.
+
+1795
+01:20:05,930 --> 01:20:06,670
+Is it upper left?
+
+1796
+01:20:06,670 --> 01:20:07,290
+Is it middle?
+
+1797
+01:20:07,290 --> 01:20:08,230
+Is it right?
+
+1798
+01:20:08,230 --> 01:20:10,750
+Well, in a graph, we can get a kind of generalized version
+
+1799
+01:20:10,750 --> 01:20:13,630
+of where you are in the graph using the eigenvectors
+
+1800
+01:20:13,630 --> 01:20:14,793
+of the graph Laplacian.
+
+1801
+01:20:14,793 --> 01:20:16,710
+So I'm not going to talk in detail about that.
+
+1802
+01:20:16,710 --> 01:20:18,710
+But this is just a generalized coordinate system
+
+1803
+01:20:18,710 --> 01:20:21,090
+for your location of a node within a graph.
+
+1804
+01:20:21,090 --> 01:20:24,170
+And if you add those to your graph node
+
+1805
+01:20:24,170 --> 01:20:27,550
+inputs, the node vectors of the input layer to the graph net,
+
+1806
+01:20:27,550 --> 01:20:29,750
+then you will break some of these symmetries.
+
+1807
+01:20:29,750 --> 01:20:32,330
+And that can be good or bad because now you might not
+
+1808
+01:20:32,330 --> 01:20:34,210
+generalize to new permutations, but you
+
+1809
+01:20:34,210 --> 01:20:36,752
+will be able to discriminate things you couldn't discriminate
+
+1810
+01:20:36,752 --> 01:20:37,410
+before.
+
+1811
+01:20:37,410 --> 01:20:40,130
+So it's a trade-off.
+
+1812
+01:20:40,130 --> 01:20:44,350
+So yeah, that's just like positional encoding in CNNs,
+
+1813
+01:20:44,350 --> 01:20:46,090
+which we saw on the previous day.
+
+1814
+01:20:46,090 --> 01:20:48,602
+So I'm going to end there.
+
+1815
+01:20:48,602 --> 01:20:50,810
+We saw that graph nets are appropriate for processing
+
+1816
+01:20:50,810 --> 01:20:52,088
+graph-structured data.
+
+1817
+01:20:52,088 --> 01:20:54,130
+It turns out that a special case of the graph net
+
+1818
+01:20:54,130 --> 01:20:55,450
+is called the transformer, and that's
+
+1819
+01:20:55,450 --> 01:20:57,200
+just the dominant architecture these days.
+
+1820
+01:20:57,200 --> 01:21:00,250
+And we're going to hear a lot more about that in a week or so.
+
+1821
+01:21:00,250 --> 01:21:02,390
+And I can take questions up here at the end,
+
+1822
+01:21:02,390 --> 01:21:03,910
+but you're welcome to all leave now.
+
+1823
+01:21:03,910 --> 01:21:05,640
+Thank you.

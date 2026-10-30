@@ -1,0 +1,421 @@
+DATASET PREPROCESSING
+=====================
+
+Lecture subtitles (.srt) and transcripts (.txt) from three NPTEL courses and
+three MIT OpenCourseWare courses.
+Prepared 2026-10-27.
+
+
+1. CONTENTS
+-----------
+
+Course folder                               Lectures  Tutorials  .srt  transcripts
+virtual_and_augmented_reality                     63          -    61           63
+introduction_to_machine_learning                  79          7    86           86
+problem_solving_through_programming_in_c          61          -    61           61
+mit_18_06_linear_algebra                          35          -    35           35
+mit_9_00sc_introduction_to_psychology             24          -    24           24
+mit_6_7960_deep_learning                          23          1    24           24
+Total                                            285          8   291          293
+
+Layout (per course):
+
+  <course>/
+    subs/week_<n>/lec_<n>.srt                      input: timed subtitles
+    subs/tutorials/week_<n>/tut_<n>[_part<k>].srt  (machine learning only)
+    transcripts/week_<n>/lec_<n>.txt               target: plain-text transcript
+    transcripts/tutorials/week_<n>/tut_<n>[_part<k>].txt
+    titles.tsv                                     per-item metadata (section 6)
+
+- The MIT courses have no week folders:
+      subs/lec_<n>.srt, transcripts/lec_<n>.txt
+      subs/tutorials/tut_<n>.srt, transcripts/tutorials/tut_<n>.txt
+- Week and lecture numbers are not zero-padded in file names (week_1/lec_1).
+- Lecture numbers run continuously across the course; they do not restart
+  each week (e.g. week_10/lec_48).
+- An .srt and a .txt with the same relative path are the same lecture.
+
+
+2. SOURCES
+----------
+
+2.1 Foundation for Virtual and Augmented Reality Systems
+    (folder: virtual_and_augmented_reality)
+
+- Subtitles: the NPTEL-provided file raw/106103842_Lecture<NN>_english.srt
+  from each lecture folder of the local course material.
+- Transcripts: the NPTEL-provided edited transcript content/lec<N>.txt, for
+  lectures 1-32 and 48-63.
+- Lectures 33-47 have no official transcript. Their transcripts were built
+  from the subtitles (section 5.2).
+- Lectures 4 and 5 have no subtitle file in the source material, so only
+  their transcripts are included.
+- Week assignment: taken from the source folder structure for weeks 1-6 and
+  10-12. Lectures 33-47 were unassigned in the source and were placed as
+  week 7 = lectures 33-38, week 8 = 39-42, week 9 = 43-47.
+
+2.2 Introduction to Machine Learning
+    (folder: introduction_to_machine_learning)
+
+- Subtitles: downloaded from the YouTube playlist
+  https://www.youtube.com/playlist?list=PL1xHD4vteKYVpaIiy295pg6_SY5qznc77
+  using yt-dlp 2026.08.19 in SRT format.
+- Only the subtitle track named "English - NPTEL Verified" was used. The
+  name was compared after removing leading and trailing whitespace, because
+  some videos name the track "English - NPTEL Verified " (with a trailing
+  space). Other English tracks ("English - NPTEL Official", auto-generated)
+  were not used.
+- Week and lecture numbers were taken from the video titles
+  ("Week W Lecture L ..."). Titles without them were assigned manually:
+      "MAXIMUM LIKELIHOOD ESTIMATE"                   -> week 5,  lecture 30
+      "Week 8 Lecture 60 ... Potential Functions"     -> week 9,  lecture 60
+                         (title says week 8; it sits between week-9 lectures)
+      "Lecture 64 Multi-class Classification"         -> week 9,  lecture 64
+      "Lecture 76 Spectral Clustering"                -> week 11, lecture 76
+      "Frequent Itemset Mining"                       -> week 11, lecture 77
+      "The Apriori Property"                          -> week 11, lecture 78
+      "Lecture 79" ... "Lecture 82"                   -> week 12, lectures 79-82
+- Tutorials are stored separately as tut_<week> (tutorial n is in week n).
+  A tutorial split over two videos is stored as _part1 and _part2:
+      week 1: Probability Basics (2 parts)   week 2: Linear Algebra (2 parts)
+      week 3: Weka Tutorial                  week 4: Optimization
+      week 6: Decision Trees Tutorial
+- Not included:
+      course trailer video        (no subtitles)
+      lecture 41 "Decision Trees - Example"
+                                  (the video has no English subtitles)
+      lectures 74 and 75          (not in the playlist)
+- Transcripts: none are published, so all were built from the subtitles
+  (section 5.2).
+
+2.3 Problem Solving through Programming in C
+    (folder: problem_solving_through_programming_in_c)
+
+- Subtitles: downloaded from the YouTube playlist
+  https://www.youtube.com/playlist?list=PLJ5C_6qdAvBFzL9su5J-FX8x80BMhkPy1
+  in the same way as 2.2. All 61 videos have the "English - NPTEL Verified"
+  track.
+- Lecture number = position in the playlist (1-61). The titles carry no
+  week or lecture numbers.
+- Week assignment:
+      weeks 1-10: 5 lectures each (1-5, 6-10, ..., 46-50)
+      week 11:    lectures 51-56
+      week 12:    lectures 57-61
+- Transcripts: all built from the subtitles (section 5.2).
+
+2.4 MIT 18.06 Linear Algebra, Spring 2005 (Gilbert Strang)
+    (folder: mit_18_06_linear_algebra)
+
+- Subtitles: downloaded from the YouTube playlist
+  https://www.youtube.com/playlist?list=PL49CF3715CB9EF31D
+  (uploaded by MIT OpenCourseWare; licence CC BY-NC-SA,
+  https://ocw.mit.edu/terms) in the same way as 2.2.
+- Only the human-made caption track "English - CC" was used, never
+  YouTube's auto-generated captions. For lectures 2, 8 and 13 the same
+  track is named "English - CC (English)" and was used instead. It is the
+  only manual English track on those videos.
+- Lecture numbers are MIT's own numbers, 1-34. There is also an extra
+  quiz-review lecture between 24 and 25, which MIT numbers "24b" and is
+  stored as lec_24b.
+- No week split. All 35 lectures are in one folder.
+- Transcripts: all built from the subtitles (section 5.2).
+
+2.5 MIT 9.00SC Introduction to Psychology, Spring 2011 (John Gabrieli)
+    (folder: mit_9_00sc_introduction_to_psychology)
+
+- Subtitles: downloaded from the YouTube playlist
+  https://www.youtube.com/playlist?list=PL44ABC9278E2EE706
+  (uploaded by MIT OpenCourseWare; licence CC BY-NC-SA) in the same way as
+  2.2. The playlist is titled "Fall 2011", but the videos and the OCW course
+  page (ocw.mit.edu/9-00SCS11) say Spring 2011.
+- These videos have no "English - CC" track. The only human-made English
+  track is named "English", and that was used. YouTube's auto-generated
+  captions were not used.
+- Lecture number = MIT's lecture number = position in the playlist (1-24).
+- No week split. All 24 lectures are in one folder.
+- Transcripts: all built from the subtitles (section 5.2).
+
+2.6 MIT 6.7960 Deep Learning, Fall 2024
+    (folder: mit_6_7960_deep_learning)
+
+- Subtitles: downloaded from the YouTube playlist
+  https://www.youtube.com/playlist?list=PLUl4u3cNGP63URZnh5iqBzDTDYPUTQT-8
+  (uploaded by MIT OpenCourseWare; licence CC BY-NC-SA) in the same way as
+  2.2. The lecturers named in the speaker labels are Phillip Isola, Sara
+  Beery and Jeremy Bernstein.
+- Track: "English - CC" or "English - CC (English)" was accepted. All 24
+  videos have the track "English - CC (English)", and that was used.
+  YouTube's auto-generated captions were not used.
+- Lecture number = MIT's number from the video title ("Lec NN. ...").
+  Lecture 22 is not in the playlist, so the lectures are 1-21, 23 and 24.
+- The playlist's "PyTorch Tutorial" video is stored as tutorials/tut_1.
+- No week split.
+- Transcripts: all built from the subtitles (section 5.2).
+
+
+3. SUBTITLE (.srt) PREPROCESSING
+--------------------------------
+
+Every .srt file was rewritten into one standard format. Apart from the
+timestamp fix in step 3.8, no timestamp was changed and no word was
+added, removed or edited. After processing, the total word count of every
+course's subtitles was checked against the sources, and the words matched
+exactly (VR 202,052; ML 266,278; C 195,223; LA 195,842; PSY 246,201;
+DL 286,393).
+
+Cue = one numbered subtitle entry: an index line, a timing line
+"HH:MM:SS,mmm --> HH:MM:SS,mmm", then one or more text lines. Cues are
+separated by a blank line.
+
+Steps, with the number of items each affected (VR / ML / C / LA / PSY / DL),
+where LA = mit_18_06_linear_algebra, PSY = mit_9_00sc_introduction_to_psychology
+and DL = mit_6_7960_deep_learning:
+
+3.1 Cue detection
+    A cue starts at a line that holds only a number and is followed directly
+    by a timing line. All lines up to the next cue start belong to that cue's
+    text. The more common method of splitting on blank lines was not used,
+    because some source cues contain blank lines (see 3.4).
+
+3.2 Text lines within a cue joined into one line, separated by a space
+    The YouTube files wrap each cue's text over two lines to fit the screen.
+      Before:  ways in which we can build linear classifiers. So
+               one was the discriminant function approach right,
+      After:   ways in which we can build linear classifiers. So one was the
+               discriminant function approach right,
+    Affected cues: 0 / 15,313 / 10,636 / 16,947 / 22,947 / 29,376
+
+3.3 Whitespace collapsed and trimmed
+    Runs of spaces, tabs and non-breaking spaces (U+00A0) were replaced by a
+    single space. Leading and trailing whitespace was removed. The YouTube
+    files end almost every line with one or two U+00A0 characters.
+    Affected lines: 32 / 24,498 / 19,393 / 0 / 0 / 0
+
+3.4 Blank or whitespace-only lines inside a cue removed
+    These lines would otherwise be read as the end of a cue by standard SRT
+    parsers, which would cut the cue in two.
+    Affected cues: 0 / 116 / 45 / 0 / 0 / 0
+
+3.5 Invisible characters removed
+    Byte-order marks (U+FEFF) and zero-width characters (U+200B, U+200C,
+    U+200D). In the YouTube files a U+FEFF typically appears as a text line
+    of the first cue.
+    Characters removed: 0 / 30 / 2 / 0 / 0 / 0
+
+3.6 Empty cues dropped
+    A cue with no text left after steps 3.2-3.5 was removed.
+    Cues dropped: 0 / 1 / 0 / 1,670 / 690 / 830
+    - ML: lecture 78, cue 1, 00:00:00,000 --> 00:00:06,000. It contained
+      only a U+FEFF.
+    - LA, PSY and DL: the MIT captions mark pauses in speech with cues that
+      have no text at all. Dropping them removes no words and changes no
+      other cue's timing; each pause remains as a gap between cues.
+        LA:  29 at the start of a lecture, 1,610 in the middle, 31 at the
+             end; median 3.4 s, max 77.2 s; 28,202 cues -> 26,532.
+        PSY: 23 at the start, 643 in the middle, 24 at the end;
+             median 3.2 s, max 42.5 s; 34,386 cues -> 33,696.
+        DL:  15 at the start, 792 in the middle, 23 at the end;
+             median 3.4 s, max 21.8 s; 39,326 cues -> 38,496.
+
+3.7 Cues renumbered 1..N in file order
+    All sources were already numbered without gaps, so this only changed ML
+    lecture 78 and all LA, PSY and DL files (because of 3.6).
+
+3.8 Zero-duration cues fixed
+    Rule: a cue whose end time is not after its start time gets the start
+    time of the next cue as its end time.
+    Affected cues: 5 / 0 / 0 / 0 / 0 / 0
+    The five VR cues had end time = start time. Each was
+    the second half of a sentence started in the previous cue, followed by
+    several seconds of speech before the next cue. Their end time was set to
+    the start time of the next cue:
+      week_2/lec_11  cue 136  00:21:52,093 -> end 00:22:06,642
+      week_3/lec_12  cue 28   00:03:50,195 -> end 00:04:07,543
+      week_3/lec_12  cue 33   00:04:30,511 -> end 00:04:38,755
+      week_3/lec_15  cue 39   00:05:14,486 -> end 00:05:23,144
+      week_4/lec_20  cue 264  00:34:31,076 -> end 00:34:43,773
+    This is the only change made to any timestamp.
+
+3.9 Output encoding
+    UTF-8 without byte-order mark, LF line endings, one blank line between
+    cues, single trailing newline. Each cue is exactly three lines:
+        <index>
+        <start> --> <end>
+        <text>
+
+Known issue left unchanged:
+  Overlapping cues, i.e. a cue that starts before the previous one ends:
+  0 / 4 / 1 / 0 / 0 / 0. These come from YouTube's subtitle timing.
+
+
+4. TRANSCRIPT FORMAT
+--------------------
+
+All transcripts share this format:
+
+    <Course title>
+    Week – <WW>
+    Lecture – <LL>            ("Tutorial – <TT> (Part <k>)" for tutorials)
+    <blank line>
+    <paragraph 1>
+    <paragraph 2>
+    ...
+
+- Week and lecture numbers in the header are zero-padded to 2 digits
+  ("Lecture – 24b" keeps its letter). The dash is an en dash (U+2013).
+- Courses without weeks (the MIT courses) have no "Week" line.
+  To find where the body starts, split the file at the first blank line;
+  don't rely on a fixed line number.
+- Course titles in the header:
+      Foundation for Virtual and Augmented Reality Systems
+      Introduction to Machine Learning
+      Problem Solving through Programming in C
+      MIT 18.06 Linear Algebra
+      MIT 9.00SC Introduction to Psychology
+      MIT 6.7960 Deep Learning
+- Each paragraph is one line. There are no blank lines between paragraphs
+  and no leading or trailing whitespace.
+- UTF-8, LF line endings, single trailing newline.
+
+
+5. HOW THE TRANSCRIPTS WERE MADE
+--------------------------------
+
+There are two kinds of transcript, and they differ in quality.
+
+5.1 Official NPTEL transcripts (48 files)
+    Courses: virtual_and_augmented_reality, lectures 1-32 and 48-63.
+
+    These are NPTEL's edited transcripts. Their punctuation and wording are
+    cleaned up, and their paragraph breaks were made by an editor. Because
+    of this editing, they do not match the corresponding .srt files word for
+    word.
+
+    Only the header and whitespace were changed:
+    a. The original header was removed: course title, instructor,
+       department, institute, "Week – NN", and "Lecture – NN" where present.
+    b. A short topic line found under the header in 24 lectures was
+       removed, so all files have the same format. These were lectures
+       3-5, 28-32 and 48-63, e.g. "VR resource optimization". The topics
+       are kept in titles.tsv.
+    c. CRLF line endings were converted to LF, whitespace within each line
+       was collapsed, and blank lines were removed.
+    d. The standard header (section 4) was added.
+
+    The body text is word-for-word the original, with its original paragraph
+    breaks (checked automatically).
+
+5.2 Transcripts built from subtitles (245 files)
+    Courses: virtual_and_augmented_reality lectures 33-47, all of
+    introduction_to_machine_learning, all of
+    problem_solving_through_programming_in_c, all of
+    mit_18_06_linear_algebra, all of mit_9_00sc_introduction_to_psychology,
+    all of mit_6_7960_deep_learning.
+
+    Built from the processed .srt file (section 3):
+    a. Take each cue's text in order. Drop the indices and timestamps.
+    b. Join them with single spaces and collapse whitespace.
+    c. Split into sentences at every position where ".", "?" or "!" is
+       followed by whitespace and then an uppercase letter, a quotation mark
+       or "(". The regular expression is
+       (?<=[.?!])\s+(?=[A-Z"'(]).
+    d. Group the sentences into paragraphs, adding them one at a time:
+       - If adding the next sentence would make the paragraph longer than
+         180 words, the paragraph is ended first.
+       - A single sentence longer than 180 words (a stretch with no
+         punctuation) is cut into 180-word pieces. Each full piece becomes
+         its own paragraph.
+       - Once a paragraph reaches 90 words or more, it is ended at the
+         sentence boundary.
+       Resulting paragraph lengths (median / 90th percentile / max words):
+         ML 108 / 158 / 180
+         C  101 / 125 / 178
+         LA  97 / 112 / 170
+         PSY 96 / 110 / 159
+         DL  98 / 116 / 170
+    e. Add the standard header (section 4).
+
+    No words were changed. The text is the subtitle text exactly: no
+    punctuation restoration, no removal of filler words or false starts,
+    no spelling correction. For every file, the transcript's words were
+    checked to equal its .srt words in the same order.
+
+    Paragraph breaks in these files come from the word-count rule above.
+    They do not mark topic changes and must not be used as segmentation
+    labels.
+
+
+6. METADATA: titles.tsv
+-----------------------
+
+One row per lecture or tutorial in the dataset. Tab-separated, with a
+header row, UTF-8.
+
+    id          path under subs/ and transcripts/ without extension,
+                e.g. week_4/lec_20 or tutorials/week_1/tut_1_part2
+    week        week number (empty for the MIT courses)
+    type        lecture | tutorial
+    number      lecture number (tutorials: tutorial number); may carry a
+                letter, e.g. 24b
+    part        part number for multi-part tutorials, otherwise empty
+    title       YouTube video title (see below)
+    youtube_id  YouTube video ID; the video URL is
+                https://www.youtube.com/watch?v=<id>
+
+Titles were taken from the course playlists:
+  VR: https://www.youtube.com/playlist?list=PLwdnzlV3ogoVHdoJZk7CgKOPe-eM27er6
+  ML: see 2.2
+  C:  see 2.3
+  MIT: see 2.4. Ten videos are titled only "Lec N | MIT 18.06 Linear
+       Algebra, Spring 2005". For these, the title was taken from the
+       first line of the video description ("Lecture N: <title>.").
+  PSY: all videos are titled only "Lec N | MIT 9.00SC ...", so every title
+       comes from the description ("Lecture N: <title>"). Lecture 13's
+       description has no such line; its title "Judgement and Decision
+       Making: Heuristics" is a line further down that description.
+  DL:  video titles with the "Lec NN." prefix removed.
+
+Title cleaning:
+- Removed numbering prefixes such as "Lec-32:", "Lec 1:",
+  "Week 4 Lecture 20 -" and "Tutorial 2 -", and the "(1)"/"(2)" part
+  suffixes.
+- Collapsed whitespace, and removed trailing "." and "*" (MIT).
+- Changed the two all-caps ML titles to normal capitalisation
+  ("Maximum Likelihood Estimate", "Student's T-test").
+- Otherwise the titles are as published, including typos
+  (e.g. VR lecture 7 "Historial Evolution").
+
+Several consecutive VR lectures share one title (e.g. lectures 54-59
+"VR resource optimization") because the course publishes topic names
+rather than individual lecture titles.
+
+
+7. CAPTION CONTENT KEPT AS-IS
+-----------------------------
+
+The subtitle text was not edited (section 3), so these caption conventions
+are in both the .srt files and the transcripts. Remove them downstream if
+they are not wanted.
+
+- OCW licence notice (PSY: all 24 lectures; no other course). Each PSY
+  lecture opens with "The following content is provided under a Creative
+  Commons license. Your support will help MIT OpenCourseWare continue to
+  offer high quality educational resources for free. To make a donation or
+  view additional materials from hundreds of MIT courses, visit MIT
+  OpenCourseWare at ocw.mit.edu." This is not part of the lecture.
+- Speaker labels.
+    PSY: PROFESSOR: 279, AUDIENCE: 235, RECORDING: 9, GUEST SPEAKER: 7,
+         JOHN GABRIELI: 6, NARRATOR: 1
+    DL:  AUDIENCE: 610, PHILLIP ISOLA: 242, SARA BEERY: 227,
+         JEREMY BERNSTEIN: 153, JACOB ANDREAS: 9, JAMISON MEINDL: 2
+    LA:  STRANG: 16, STUDENT: 11, STUDENTS: 4
+    VR, ML, C: none
+- Sound and transcription tags in square brackets.
+    PSY: [INAUDIBLE] 95, [LAUGHTER] 13, [LAUGHS] 2, and 6 others used once
+         (e.g. [CHUCKLES], [CHATTER], [? Broadbent ?])
+    DL:  353 tags of 21 kinds: [INAUDIBLE] 237, [CLICKING] 25,
+         [RUSTLING] 24, [SQUEAKING] 23, [LAUGHS] 13, [LAUGHTER] 11,
+         [APPLAUSE] 4, ... All 24 DL files open with a run of sound tags
+         before any speech, usually "[SQUEAKING] [RUSTLING] [CLICKING]".
+    ML:  [Student] 2, [student gives answer] 1
+    VR, C, LA: none

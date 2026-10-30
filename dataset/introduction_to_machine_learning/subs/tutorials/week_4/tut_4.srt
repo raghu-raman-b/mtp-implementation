@@ -1,0 +1,1159 @@
+1
+00:00:16,753 --> 00:00:18,400
+Hello everyone.
+
+2
+00:00:18,400 --> 00:00:24,080
+I am Abhinav and in this unit we will be covering the basic concept of optimization,
+
+3
+00:00:24,800 --> 00:00:26,480
+which should be useful in this course.
+
+4
+00:00:28,640 --> 00:00:35,440
+So before going in to details a small disclaimer this tutorial is meant to be a small introduction
+
+5
+00:00:36,640 --> 00:00:41,440
+for a complete understanding of these concepts please refer to any standard
+
+6
+00:00:41,440 --> 00:00:49,360
+text book. This tutorial is broken in to five chunks first
+
+7
+00:00:49,360 --> 00:00:51,200
+let us start off with the introduction.
+
+8
+00:00:54,560 --> 00:01:01,760
+What is mathematical optimization? Mathematical optimization according to Wikipedia is a selection
+
+9
+00:01:01,760 --> 00:01:08,640
+of a best element with regard to some criteria from some set of available alternatives. Now
+
+10
+00:01:09,680 --> 00:01:18,240
+let us look at the mathematical formulation for the same. Here we are trying to minimize f0 (x)
+
+11
+00:01:19,280 --> 00:01:30,160
+subject to m constraints of the form fi(x) <=bi. f0 is also known as the objective function fi
+
+12
+00:01:31,600 --> 00:01:35,760
+are the constraints and x is known as the optimization variable.
+
+13
+00:01:39,920 --> 00:01:45,200
+x is known as the solution for the problem if it is satisfies all the constraints and
+
+14
+00:01:45,200 --> 00:01:52,880
+it minimizes f0 (x). Such a solution is known as the optimal solution and it is represented by x*
+
+15
+00:01:54,640 --> 00:01:57,600
+so through all this tutorial whenever you see x*
+
+16
+00:01:58,480 --> 00:02:01,760
+it represents the optimal solution for the optimization problem.
+
+17
+00:02:04,960 --> 00:02:08,480
+Now let us look at some examples where optimization is used.
+
+18
+00:02:09,680 --> 00:02:16,800
+First data fitting, data fitting is a very common problem in the field of machine learning.
+
+19
+00:02:18,080 --> 00:02:22,800
+What I mean by data fitting? Data fitting is fitting of a parametric model
+
+20
+00:02:22,800 --> 00:02:29,760
+given some data. So one such example both linear regression in linear regression we are trying to
+
+21
+00:02:29,760 --> 00:02:37,920
+fit a linear model whose parameters are βi’s, so those translate to the optimization variables here
+
+22
+00:02:41,440 --> 00:02:43,920
+and constraints, constraints in general
+
+23
+00:02:45,200 --> 00:02:49,120
+encode something like parameter limits or prior information which you want to encode.
+
+24
+00:02:49,760 --> 00:02:53,200
+So what is the specific example of linear regression? We do not have any constraints.
+
+25
+00:02:54,480 --> 00:03:01,040
+And what would be the objective? You would try to fit get the best fit for the model.
+
+26
+00:03:01,840 --> 00:03:07,440
+So one way of doing this would be minimizing this error and in linear regression we have
+
+27
+00:03:07,440 --> 00:03:13,040
+seen how see to minimize this squared error. So that forms the objective of the optimization
+
+28
+00:03:13,040 --> 00:03:20,000
+problem. Another example of application of optimization is portfolio optimization.
+
+29
+00:03:22,320 --> 00:03:28,160
+So by portfolio optimization we mean to optimize the amount of money I can invest
+
+30
+00:03:28,160 --> 00:03:33,200
+in various assets. So these assets could be something like shares from different companies
+
+31
+00:03:33,200 --> 00:03:41,440
+or any other investment options. So the variables would be the amount I invest in
+
+32
+00:03:41,440 --> 00:03:47,760
+all the options available. The constraints would bead it overall budget the maximum or
+
+33
+00:03:47,760 --> 00:03:52,480
+the minimum investment per asset. And the minimum return I expect from each asset,
+
+34
+00:03:53,120 --> 00:03:59,840
+objective would be to minimize overall risk or minimize the return variants.
+
+35
+00:04:02,160 --> 00:04:07,120
+You have seen what optimization problems are and you seen some examples. Now the next big
+
+36
+00:04:07,120 --> 00:04:12,560
+question is how do we solve them. Optimization problems very difficult problems
+
+37
+00:04:12,560 --> 00:04:19,200
+to solve in general optimization problems are classified in to different types based on the
+
+38
+00:04:19,760 --> 00:04:25,600
+properties of objectives and constraints. Some of the examples are linear programs,
+
+39
+00:04:25,600 --> 00:04:34,240
+least square programs and convex optimization problems. These problems are well studied and can
+
+40
+00:04:34,240 --> 00:04:40,640
+we solved efficiently. Not all class of problems can we solve very efficiently. In this tutorial
+
+41
+00:04:40,640 --> 00:04:43,680
+we will be covering convex optimization problems in detail.
+
+42
+00:04:46,880 --> 00:04:50,480
+In this tutorial first we will be looking at convexity.
+
+43
+00:04:51,520 --> 00:04:58,560
+What convexity means and how do we define it? Then we will look at properties of convex functions
+
+44
+00:04:58,560 --> 00:05:04,720
+and then we will look at properties of convex optimization problems. And at the end we have
+
+45
+00:05:05,520 --> 00:05:09,840
+briefly cover some numerical methods for solving optimization problems.
+
+46
+00:05:13,360 --> 00:05:19,520
+A set C is set to be convex if for all point a,b belong to the set
+
+47
+00:05:19,520 --> 00:05:23,840
+the lines segment passing through this points should also lie inside the set.
+
+48
+00:05:24,720 --> 00:05:33,360
+So mathematically we can see the sets all the points of the forms θa + (1-θ) b, when θ lies
+
+49
+00:05:33,360 --> 00:05:43,280
+in [0,1] should also belong to the set C. Next let us look at the definition of convex combination.
+
+50
+00:05:48,800 --> 00:05:57,040
+A point of the form θ1 x1 + θ2 x2 so what it θkxk such that the coefficient sum up to 1
+
+51
+00:05:57,040 --> 00:06:03,200
+and the coefficients are non negative is known as the convex combination of this
+
+52
+00:06:03,200 --> 00:06:07,360
+k point. Now let us look at examples
+
+53
+00:06:08,080 --> 00:06:15,680
+of convex set. This pentagon is a convex set because any line joining two points inside the
+
+54
+00:06:15,680 --> 00:06:23,520
+set lies inside the set. Whereas this set is a non convex set because this lines are going with
+
+55
+00:06:23,520 --> 00:06:29,840
+joints 2 points here passes outside the set. Thus theses points do not lie inside the set hence this
+
+56
+00:06:30,960 --> 00:06:35,200
+does not satisfied the definition of convex set right it is not a convex set.
+
+57
+00:06:37,920 --> 00:06:42,640
+Let us look at the definition of convex function. A function f is set to be convex
+
+58
+00:06:42,640 --> 00:06:52,400
+if the domain is a convex set and if for all x, y which belong to the domain f the convex
+
+59
+00:06:53,280 --> 00:06:58,880
+the value of the convex combination of these two points is less than or equal to the convex
+
+60
+00:06:58,880 --> 00:07:23,840
+combination of the values at these individual points. So what I mean is . So geometrically
+
+61
+00:07:23,840 --> 00:07:31,200
+you can see that the line joining (x, f(x)) and (y, f (y)) should lie above the curve.
+
+62
+00:07:32,240 --> 00:07:46,480
+So if this happens we can see that the value are the points along the curve are points along the
+
+63
+00:07:46,480 --> 00:07:53,200
+line segment joining (x, f(x)) and (y, f (y)). So by ensuring that this always above the function
+
+64
+00:07:55,920 --> 00:07:59,840
+we ensure that the inequality holds this making it a convex function.
+
+65
+00:08:02,480 --> 00:08:10,400
+Now let us define what a strictly convex functions is. In strictly convex functions the inequality
+
+66
+00:08:10,400 --> 00:08:25,760
+becomes a strong in equality that is . And now let us define what is concave function is a function f
+
+67
+00:08:25,760 --> 00:08:32,400
+is said to be concave if, –f is convex and then similarly we define a strictly concave function
+
+68
+00:08:35,120 --> 00:08:40,320
+a function f is said to be strictly concave function if, –f is strictly convex.
+
+69
+00:08:43,200 --> 00:08:52,000
+Now let us look some examples. First f(x) =x2 is a convex function from the graph it is clearly
+
+70
+00:08:52,000 --> 00:08:59,760
+evident that any line joining two points this will lie above the curve between these two points.
+
+71
+00:09:01,840 --> 00:09:04,960
+This claim can also be verified by using the definition.
+
+72
+00:09:07,200 --> 00:09:14,160
+The next example that we see is graph of f (x)= ex . Again
+
+73
+00:09:14,800 --> 00:09:18,000
+graphically you can clearly see that this is the convex function.
+
+74
+00:09:20,880 --> 00:09:25,520
+If you try to prove this according to the definition you can see that this is not trivial.
+
+75
+00:09:26,320 --> 00:09:35,920
+So we would like to see if any other ways to check the convexity of function.
+
+76
+00:09:35,920 --> 00:09:38,560
+Let us look at the first order condition for the convexity.
+
+77
+00:09:40,240 --> 00:09:50,320
+Let f be a differentiable function that is exists for all x in a domain of f. So
+
+78
+00:09:50,320 --> 00:09:59,120
+a function f is convex if and only if the domain of f is convex and this inequalites satisfy. This
+
+79
+00:09:59,120 --> 00:10:06,960
+inequality states that function should always lie above all it is tangents. If you look at
+
+80
+00:10:06,960 --> 00:10:12,000
+the right hand side carefully it is nothing but the equation of the tangent at (x,f(x))
+
+81
+00:10:15,120 --> 00:10:22,240
+and we expect this value to be less than f(y) this is nothing but the condition saying
+
+82
+00:10:22,240 --> 00:10:25,112
+that the curve should be above the tangent. C:\Documents and Settings\user\Desktop\2017-09-13
+
+83
+00:10:25,112 --> 00:10:26,960
+17_53_01-0_10_24.3 Express Scribe Transcription Software Pro (Unlicensed) Non-commercial .png
+
+84
+00:10:26,960 --> 00:10:29,760
+Now let us look at the second order condition for convexity.
+
+85
+00:10:30,800 --> 00:10:35,680
+Let f be twice differentiable function and the f will be convex if and only if
+
+86
+00:10:35,680 --> 00:10:40,800
+domain of the f is convex and its hessian is positive semidefinite.
+
+87
+00:10:43,520 --> 00:10:51,760
+So if you look at the second example of the ex the second derivative is always positive hence
+
+88
+00:10:52,800 --> 00:10:59,840
+it can be proved that it is a convex function
+
+89
+00:11:04,320 --> 00:11:11,520
+Now we defined a epigraph of function. For a given function f, the epigraph of f, is defined as
+
+90
+00:11:12,320 --> 00:11:20,240
+the set of all pairs (x,t) such that x belong to the domain of f and t is greater than or equal to
+
+91
+00:11:20,240 --> 00:11:27,040
+f(x). So if you look at the graph you can see that the area above
+
+92
+00:11:27,600 --> 00:11:36,160
+the curve is belongs to the epigraph of the function. One important property to know is for
+
+93
+00:11:36,160 --> 00:11:42,160
+a convex function, the epigraph is always a convex set and the converse also holds,
+
+94
+00:11:42,160 --> 00:11:47,600
+that is if for a function the epigraph is a convex set then the function is convex.
+
+95
+00:11:51,200 --> 00:11:57,600
+So we till now we have seen three ways of checking for convexity of a function. First you can do the
+
+96
+00:11:57,600 --> 00:12:05,440
+first order test or the second order set or you can check for convexity of the epigraph of the
+
+97
+00:12:05,440 --> 00:12:12,370
+function. Now let us look at what is
+
+98
+00:12:12,370 --> 00:12:19,440
+sublevel sets of function are. An alpha sub level set of a function f is set of all pints x which
+
+99
+00:12:19,440 --> 00:12:26,000
+belong to the domain of f such that the value of the function at these points is <= alpha.
+
+100
+00:12:28,640 --> 00:12:35,040
+There is one important property that if the function is convex, the sublevel set sets of
+
+101
+00:12:35,040 --> 00:12:40,000
+the function are also convex it is important to note the converse is not true.
+
+102
+00:12:47,440 --> 00:12:54,240
+Now let us look at some other properties of convex functions. First we will look at the operations
+
+103
+00:12:54,240 --> 00:13:01,160
+which preserve the convexity of the function. First non-negative weighted sum. That is a non
+
+104
+00:13:01,160 --> 00:13:06,480
+negative weighted some of various convex functions which still remain a convex function. Consider
+
+105
+00:13:07,680 --> 00:13:14,480
+fi is the series of convex functions where αi’s are greater than 0,
+
+106
+00:13:16,160 --> 00:13:21,760
+will also remain a convex function. Next, composition with affline function.
+
+107
+00:13:22,560 --> 00:13:28,640
+Affline function is a linear transformation of x so ax + b is an affline function.
+
+108
+00:13:30,480 --> 00:13:34,320
+If f is convex then f(ax + b) is also convex.
+
+109
+00:13:36,160 --> 00:13:40,800
+Point wise maximum and supermum of two convex functions will also remain convex.
+
+110
+00:13:43,440 --> 00:13:49,200
+Minimization if you look at as two variable function f(x,y) which is convex,
+
+111
+00:13:51,680 --> 00:13:57,920
+then if you try to minimize the function allowing any one variable in a convex set,
+
+112
+00:13:57,920 --> 00:14:01,840
+the resultant function is also convex function.
+
+113
+00:14:03,920 --> 00:14:09,360
+The most important property of convex functions is that the local minima is also the global minima.
+
+114
+00:14:10,240 --> 00:14:18,000
+It is a very powerful result which can proved easily. This result gurantees that the minima
+
+115
+00:14:18,000 --> 00:14:22,960
+option while searching for the minimum of a convex function is the optimal solution.
+
+116
+00:14:25,360 --> 00:14:30,640
+Another important property of convex function is that they satisfy the Jensen’s inequality.
+
+117
+00:14:31,600 --> 00:14:35,440
+This is a generalization of the inequality which we have seen in the definition of the
+
+118
+00:14:35,440 --> 00:14:39,840
+convex function. Here instead of two points, we have n points. So
+
+119
+00:14:40,720 --> 00:14:45,920
+the value of the convex combinations of n points is less than or equal to
+
+120
+00:14:45,920 --> 00:14:51,040
+the convex combination of the values each of the function at each of the individual points.
+
+121
+00:14:52,560 --> 00:14:57,760
+A colloquial way of saying this is that the value of the average is less than the
+
+122
+00:14:57,760 --> 00:15:01,680
+average of the values. Here by the average I mean a weighted average.
+
+123
+00:15:06,160 --> 00:15:09,120
+Now let us look at a general optimization problem.
+
+124
+00:15:09,680 --> 00:15:16,240
+Any optimization problem in generally can be reduced to this form. Of minimize an
+
+125
+00:15:16,240 --> 00:15:25,840
+objective function subject to few inequality constraints and few equality constraints.
+
+126
+00:15:31,600 --> 00:15:35,120
+So the optimal value p* can also be written as
+
+127
+00:15:48,080 --> 00:15:51,360
+Now the next question is why did we use infimum instead of minimum?
+
+128
+00:15:52,800 --> 00:15:57,360
+In some function the minimum might not be attainable; it might just tend to a minimum
+
+129
+00:15:57,360 --> 00:16:01,600
+value but not actually attain it. Hence we write infimum instead of minimum.
+
+130
+00:16:02,560 --> 00:16:07,600
+An optimization problem with satisfies the given three condition is not as a convex optimization
+
+131
+00:16:07,600 --> 00:16:14,960
+problem. So first f0 the objective function should be convex then the inequality constraints
+
+132
+00:16:14,960 --> 00:16:21,920
+fi should also be convex. And the equality constraints should be affline. When I say affline
+
+133
+00:16:22,480 --> 00:16:28,880
+it should be at the form aiT x =bi . So one can observe that the domain has become
+
+134
+00:16:30,320 --> 00:16:36,400
+a convex set right now. So these inequality constraints represent a sublevel set
+
+135
+00:16:37,520 --> 00:16:42,240
+of a convex function so it is a convex set. And a convex set intersection with affline function
+
+136
+00:16:42,240 --> 00:16:49,840
+is a convex set. So why a convex problems are so interesting. So convex representation problems are
+
+137
+00:16:50,640 --> 00:16:53,200
+interesting because with the properties of a convex functions
+
+138
+00:16:54,720 --> 00:17:01,680
+and the convex set. So first the most important property which is useful for us is that the
+
+139
+00:17:02,320 --> 00:17:08,320
+if there is local minima anywhere, it is guarantee that is the global minimum for the function. So
+
+140
+00:17:08,320 --> 00:17:12,640
+it makes are like very simple and we do not have search a lot for global minimum.
+
+141
+00:17:15,840 --> 00:17:20,480
+Every optimization problem can be seen in two perspectives. One the primal form
+
+142
+00:17:20,480 --> 00:17:25,120
+and the dual form, so whatever we seen till now is generally known as the primal form.
+
+143
+00:17:25,920 --> 00:17:32,880
+And we will now develop the dual form. So why do we need another view of the problem?
+
+144
+00:17:32,880 --> 00:17:38,000
+So sometimes the primal form might be very difficult to solve it. So the dual form might be
+
+145
+00:17:38,000 --> 00:17:46,160
+easier to solve and also cases some understanding on how the solution of the primal form may be. So
+
+146
+00:17:46,960 --> 00:17:51,840
+before going ahead let me just recap the notation which we going to use. So this is the standard
+
+147
+00:17:53,840 --> 00:17:59,280
+optimal convex optimization problem and when I said p* it denotes that the optimal value of
+
+148
+00:17:59,280 --> 00:18:06,160
+this problem and the value of p* is attained at x* which is the solution of a solution.
+
+149
+00:18:08,240 --> 00:18:13,920
+Now let us consider the alternative relaxed problem. Instead of minimizing the f0 will
+
+150
+00:18:13,920 --> 00:18:18,080
+may the weighted some of the objective functions and the constraints.
+
+151
+00:18:18,640 --> 00:18:27,840
+So we will be minimizing Here we also have an addition constraint
+
+152
+00:18:27,840 --> 00:18:33,360
+that λ should be greater than or equal to 0. And as usual x should belong to the domain
+
+153
+00:18:35,280 --> 00:18:39,280
+we call the object of this optimization of this optimization problem as the Lagrangian.
+
+154
+00:18:39,840 --> 00:18:44,520
+So is defined .
+
+155
+00:18:52,800 --> 00:18:59,280
+Infimum of the Lagrangian over x is less than equal to p* this can be seen very easily. But
+
+156
+00:19:00,160 --> 00:19:07,200
+thing to be noted as in equality is valid only when x is feasible. So now we define
+
+157
+00:19:07,840 --> 00:19:13,280
+g as a function of λ and as the infimum of the Lagrangian over x.
+
+158
+00:19:17,440 --> 00:19:21,600
+So we have seen of a function g which cases lower bound of the optimal value
+
+159
+00:19:22,400 --> 00:19:28,880
+of the primal problem. So if you try to maximize the function g we will achieve a very good lower
+
+160
+00:19:28,880 --> 00:19:37,040
+bound of the optimal value. So this is what is may known as the dual problem. So maximizing
+
+161
+00:19:37,040 --> 00:19:46,200
+g(λ , ) such that λi>= 0. The optimal value of the problem is λ* and *,
+
+162
+00:19:48,160 --> 00:19:54,640
+we can see that this function g is concave irrerespective of the form of the primal problem.
+
+163
+00:19:55,280 --> 00:19:58,080
+So if you go back and see we started with the general
+
+164
+00:19:58,720 --> 00:20:08,320
+form of primal problem and we achieve when reached with g which is concave. So g can always be solved
+
+165
+00:20:11,600 --> 00:20:18,320
+the optimum value of the dual problem is denoted by d* so now we would like to see
+
+166
+00:20:18,320 --> 00:20:24,720
+how far is this d* from the actual value p*. So p* - d* is known duality gap.
+
+167
+00:20:27,520 --> 00:20:35,200
+The next obvious question is to find out when this p* -d* will be 0 and when it is not so whenever
+
+168
+00:20:35,200 --> 00:20:40,000
+it is 0 it is known as the strong duality and when it is not it is known as the weak duality.
+
+169
+00:20:41,360 --> 00:20:50,880
+So next we will try to further characterize when what can occur. So first decide we can see that
+
+170
+00:20:50,880 --> 00:20:52,000
+p* can be written as d* can be written as
+
+171
+00:21:02,480 --> 00:21:10,400
+So when this strong duality holds we know that p* = d*. So you can see that the order of the
+
+172
+00:21:10,400 --> 00:21:17,040
+infimum supremum can be interchanged and it is equivalent. So this means that at the same point
+
+173
+00:21:17,680 --> 00:21:23,920
+we have maxima in one direction and the minima in another direction. So it is a saddle point,
+
+174
+00:21:24,720 --> 00:21:30,640
+so we have one good result here, that is whenever that is strong duality
+
+175
+00:21:31,440 --> 00:21:34,320
+optimal variables occur at the saddle point of the Lagrangian.
+
+176
+00:21:35,200 --> 00:21:40,400
+Now let us look at sufficiency conditions for strong duality. So we look at slater’s
+
+177
+00:21:40,400 --> 00:21:45,600
+conditions which gives us conditions for a convex optimization problem to be strongly dual.
+
+178
+00:21:46,560 --> 00:21:51,840
+So Slater’s conditions states that for a convex optimization problem, there exists an x, such that
+
+179
+00:21:51,840 --> 00:21:59,520
+it belongs to the relative interior of the domain such that fi(x) < 0 and hi(x) = 0, then strong
+
+180
+00:21:59,520 --> 00:22:05,840
+duality holds. So here we require the inequality constrains to be strongly strictly unequal
+
+181
+00:22:07,520 --> 00:22:11,840
+and the function should be the point should belong to the relative interior and not the boundary.
+
+182
+00:22:12,480 --> 00:22:17,680
+So Slater’s conditions state that for any convex optimization problem if that exits
+
+183
+00:22:17,680 --> 00:22:27,120
+a point inside the feasible region then strong duality surely holds. So note that
+
+184
+00:22:27,120 --> 00:22:30,720
+this is only for convex optimization problems and not a general result.
+
+185
+00:22:34,560 --> 00:22:37,200
+So now we look at complementary slackness.
+
+186
+00:22:38,800 --> 00:22:45,680
+Assume strong duality holds and x* is the primal variable and λ* also dual variables.
+
+187
+00:22:48,560 --> 00:22:52,080
+So when I say strong duality holds, we know that
+
+188
+00:22:57,600 --> 00:23:05,680
+So by expanding g by this definition and looking at some simple inequities, we can reach to a
+
+189
+00:23:05,680 --> 00:23:19,520
+conclusion that for all i, λi*fi(x*) should be 0. Okay so basically we know that fi(x*) is ≤
+
+190
+00:23:19,520 --> 00:23:28,160
+0 because x* is a feasible value. So whenever fi(x*) is not equal to 0 we know that λi = 0.
+
+191
+00:23:29,120 --> 00:23:36,160
+So this is known as complementary slackness. That is either λx* = 0 or fi(x*)= 0
+
+192
+00:23:39,520 --> 00:23:40,960
+then strong duality holds.
+
+193
+00:23:45,840 --> 00:23:53,600
+Now we will look at Karush Kuhn Tucker conditions, also known as KKT conditions. So these provide us
+
+194
+00:23:53,600 --> 00:24:03,040
+the necessary conditions for a point x*λ* to be optimal. So consider any point x* λ*
+
+195
+00:24:05,600 --> 00:24:10,000
+if it has to be a optimization these things have to be satisfied. So first
+
+196
+00:24:11,360 --> 00:24:14,720
+stationarity so since you already seen that
+
+197
+00:24:16,320 --> 00:24:24,640
+at the optimal point l has a saddle point so the gradient at that point should be 0 so that is
+
+198
+00:24:24,640 --> 00:24:31,600
+trivial to c and then primal feasibility and dual feasibility should hold and then you have seen
+
+199
+00:24:31,600 --> 00:24:36,400
+complementary clackness as you seen previously we also be valid at this point.
+
+200
+00:24:41,280 --> 00:24:48,480
+So just to reiterate what you already seen if x, λ, ν satisfy strong duality then KKT conditions
+
+201
+00:24:48,480 --> 00:24:54,080
+hold. So these are just necessary conditions and sufficient but for our optimization problems
+
+202
+00:24:54,080 --> 00:24:59,840
+when Slater’s conditions are satisfied then KKT became sufficient also.
+
+203
+00:25:06,640 --> 00:25:11,440
+Now we look at some examples first is the most popular example of least squares,
+
+204
+00:25:11,440 --> 00:25:14,480
+so we are trying to minimize a least square function so we are trying to
+
+205
+00:25:14,480 --> 00:25:21,280
+minimize a least square function so we are trying to minimize this with no constraints so we can
+
+206
+00:25:21,280 --> 00:25:28,240
+clearly say that this a convex function and there is no constraints and we solved in this thing in
+
+207
+00:25:28,240 --> 00:25:43,680
+while solving linear regression to give x* as . So this is a very trivial convex optimization problem
+
+208
+00:25:43,680 --> 00:25:46,240
+which you are able to solve but just by differentiating.
+
+209
+00:25:49,840 --> 00:25:55,840
+Now let us look at another example, so here we are trying to minimize x12 + x22
+
+210
+00:25:57,120 --> 00:26:05,360
+subject to these two linear quadratic constraints. So you look at these constraints carefully
+
+211
+00:26:07,680 --> 00:26:12,640
+both of them are circular regions one centered at (1, 1) and the other centered at (1,
+
+212
+00:26:12,640 --> 00:26:19,280
+-1). Each of which is radius at one. So if you just plot them and see that you can see that
+
+213
+00:26:19,280 --> 00:26:26,240
+there is only one feasible point that is (1, 0) so trivially the optimal value will become one.
+
+214
+00:26:27,440 --> 00:26:31,200
+But now let us do analysis which we have learnt and how to do
+
+215
+00:26:31,200 --> 00:26:37,840
+and then try to arrive at the same answer, so first when you have a convex of machine
+
+216
+00:26:38,560 --> 00:26:43,760
+value or for that matter optimization problem, the first thing you do is write that like Lagrangian
+
+217
+00:26:46,160 --> 00:26:47,680
+so here the lagrngian will be
+
+218
+00:26:57,920 --> 00:27:02,320
+So now that you have seen the lagrangian let us try to list out the KKT conditions.
+
+219
+00:27:03,040 --> 00:27:07,920
+So here the first two are the primary feasibility conditions
+
+220
+00:27:07,920 --> 00:27:11,360
+second two are the dual feasibility conditions and the next two
+
+221
+00:27:12,480 --> 00:27:19,840
+are obtained by differentiating the lagrangian with x1 and x2 respectively and the next
+
+222
+00:27:23,200 --> 00:27:27,360
+two are obtained by writing the complimentary slackness equations.
+
+223
+00:27:32,160 --> 00:27:37,600
+And we have seen that there is only one feasible point (1, 0) and at that point these conditions
+
+224
+00:27:37,600 --> 00:27:46,000
+are not valid. You get contradictory answers for λ1 and λ2 and you try to solve. See that is KKT
+
+225
+00:27:46,000 --> 00:27:52,560
+conditions are not valid. But this is tricky so we have already seen that we have an optimal value
+
+226
+00:27:53,520 --> 00:28:01,840
+but KKT conditions are not satisfied. We will try to see why this is happening here.
+
+227
+00:28:04,560 --> 00:28:07,600
+Now let us try to investigate what exactly is happening so we will try
+
+228
+00:28:07,600 --> 00:28:12,080
+to solve that your problem now. So for solving the dual problem we have find the
+
+229
+00:28:12,080 --> 00:28:21,520
+maxima for g. So first let us find out what the function g is. g is in few form of the lagrangian
+
+230
+00:28:21,520 --> 00:28:28,400
+over x. So we will substitute we will try to take the derivative of l with respect to x solve it and
+
+231
+00:28:28,400 --> 00:28:35,200
+then if we arrive at this g function which is the function of λ1 and λ2 now you can see that this
+
+232
+00:28:35,200 --> 00:28:43,840
+is a concave function which is symmetric λ1 and λ2 so we can substitute this λ1 =λ2= λ1 and the
+
+233
+00:28:44,400 --> 00:28:54,560
+go ahead. So when we do that we get this as that g function. So if you see that
+
+234
+00:28:55,360 --> 00:29:02,800
+under the limit λ1 tending into ∞, g tends to 1 but otherwise there is no maxima achieved.
+
+235
+00:29:04,240 --> 00:29:12,960
+So under a simple conditions p* = d* = 1 and because this is these points are not been attained
+
+236
+00:29:12,960 --> 00:29:19,280
+at point KKT conditions and Slater’s conditions are not satisfied. So this example is just to show
+
+237
+00:29:19,280 --> 00:29:25,680
+you that just solving KKT conditions or checking first latest condition is not sufficient we might
+
+238
+00:29:25,680 --> 00:29:29,680
+have to solve sometimes the dual problem and see what exactly is happening.
+
+239
+00:29:33,200 --> 00:29:38,640
+So we have seen the mathematical characterization for optimization problems, now we will try to see
+
+240
+00:29:38,640 --> 00:29:45,200
+how to solve them. So there exists very many standard algorithms to solve optimization
+
+241
+00:29:45,200 --> 00:29:49,920
+problems once you taken them to standard form. So for linear programs there is this feel known
+
+242
+00:29:49,920 --> 00:29:55,440
+simplex method and the most popular methods for solving general optimization problems right now
+
+243
+00:29:55,440 --> 00:30:00,320
+are interior point methods. We will not be covering in these methods in detail at all
+
+244
+00:30:00,880 --> 00:30:10,720
+will be looking at simpler class problems that is, optimization under no constraints. So that is
+
+245
+00:30:11,760 --> 00:30:15,680
+given an objective function under no constraints, how can we solve this? We will look at algorithms,
+
+246
+00:30:16,640 --> 00:30:22,320
+so to do this there exist a lot of algorithms; gradient based methods,
+
+247
+00:30:22,320 --> 00:30:28,880
+genetic algorithms and simulated annealing. First we will look at gradient based methods
+
+248
+00:30:28,880 --> 00:30:35,920
+which are very popular used in machine learning.
+
+249
+00:30:35,920 --> 00:30:41,520
+So first let us look at proper mathematical definition of unconstrained minimization. Consider
+
+250
+00:30:41,520 --> 00:30:46,880
+a convex which is twice differentiable function is and we want to find minimum of this function.
+
+251
+00:30:47,680 --> 00:30:53,520
+So assume p* is minimum and it is finite and it is attained by f,
+
+252
+00:30:55,440 --> 00:31:05,600
+so we want algorithms, start from some point and give a series of xi’s, such that value of f(xk)
+
+253
+00:31:07,040 --> 00:31:15,440
+tends to this optimal minimum. So these algorithms required one condition that is
+
+254
+00:31:17,440 --> 00:31:22,640
+the sublevel set should be closed. So what exactly this condition means is,
+
+255
+00:31:22,640 --> 00:31:27,280
+so when I start from x0 and I go to some other point is which is < then
+
+256
+00:31:28,560 --> 00:31:34,240
+so basically each time I am trying to reduce the value of f. So x1,x0
+
+257
+00:31:35,200 --> 00:31:43,200
+to x1 where f(x1) < then f(x0). So that is, this belongs to the subset of
+
+258
+00:31:44,960 --> 00:31:56,400
+f(x0) and this point x1 should be inside the set. So we just need this condition,
+
+259
+00:31:56,400 --> 00:32:02,880
+so that we get a chain of points, which are in the domain of the function.
+
+260
+00:32:04,400 --> 00:32:10,080
+So now we will look at what are the most popular algorithms gradient descent. So this works in
+
+261
+00:32:10,080 --> 00:32:17,360
+convex problems where there exist in minimum and you start from one point from the top and
+
+262
+00:32:17,360 --> 00:32:22,000
+go down according to the gradient, so if you see this visualization gives you
+
+263
+00:32:25,760 --> 00:32:35,200
+the 3-dimensional surface, which is basically f(x1,x2) say. So if we start of f(x1, x2) at
+
+264
+00:32:35,200 --> 00:32:41,840
+the top point and we take the gradient there and move along the negative direction slowly.
+
+265
+00:32:42,800 --> 00:32:51,120
+As we keep going down we reach the bottom of this, so and the bottom is where the minima exist,
+
+266
+00:32:51,120 --> 00:32:58,400
+at the last point the gradient become 0. So this is the motivation for gradient descent algorithms
+
+267
+00:32:58,400 --> 00:33:03,280
+that is by going along the negative direction of the gradient, we reach
+
+268
+00:33:03,280 --> 00:33:12,320
+the minima in convex functions. So let us formally look at the gradient descent,
+
+269
+00:33:13,360 --> 00:33:19,680
+we intuitively seen that if you move in the direction opposite to the gradient we
+
+270
+00:33:19,680 --> 00:33:27,200
+will reach the minima, so will state that as an algorithm,. So if we start x0 in the domain of f,
+
+271
+00:33:28,320 --> 00:33:39,520
+you can update in every iteration x as x = x+ t∆x. so essentially what we are doing is,
+
+272
+00:33:39,520 --> 00:33:44,960
+we are moving along the negative direction of the function
+
+273
+00:33:46,240 --> 00:33:51,360
+in some step size of t, basically this t is the multiplicative factor, which will magnify or
+
+274
+00:33:52,240 --> 00:33:55,760
+minimize step size that you are taking in the direction.
+
+275
+00:33:56,320 --> 00:34:07,360
+So the next question is how do we choose t? Should t be constant? So in the ideal case
+
+276
+00:34:08,000 --> 00:34:12,880
+t should be depended on the curvature of the functions? So if you look at the graph in the
+
+277
+00:34:12,880 --> 00:34:19,520
+previous slide carefully, so where ever there is low curvature you could afford to take larger
+
+278
+00:34:19,520 --> 00:34:25,520
+steps, where ever there is high curvature at the bottom especially where there are minima,
+
+279
+00:34:25,520 --> 00:34:29,840
+you should take small steps, so you do not jump over the minima value.
+
+280
+00:34:31,120 --> 00:34:35,680
+Methods which choose t according this are out of the scope of this tutorial,
+
+281
+00:34:37,760 --> 00:34:44,720
+so but we will just answer this question, is t constant is enough for us. In most
+
+282
+00:34:44,720 --> 00:34:51,600
+conditions a small t if you take a small enough step size it is fine and you will
+
+283
+00:34:53,200 --> 00:35:01,840
+very reasonably very close to the minima. So in practice the constant t works.
+
+284
+00:35:05,520 --> 00:35:08,400
+So we will end this tutorial session with this.
+
+285
+00:35:10,240 --> 00:35:13,840
+So the main take home message from this tutorial session should be, what
+
+286
+00:35:13,840 --> 00:35:19,440
+optimization problems are? What is the generic form? What are convex optimization problems?
+
+287
+00:35:22,160 --> 00:35:27,440
+What is duality? What is strong duality? What is KKT and Slater’s conditions?
+
+288
+00:35:27,440 --> 00:35:33,520
+So knowing these will be enough for you to navigate, whatever the optimization
+
+289
+00:35:33,520 --> 00:35:39,760
+that come across this course but ideally we can look up other resource online if you are
+
+290
+00:35:39,760 --> 00:35:43,840
+not clear with these basics still.
