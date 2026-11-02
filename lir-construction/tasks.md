@@ -127,6 +127,8 @@ QC notes for the content review (not changed):
 | ✅ | Docs, formal detail: division of work, lecture representation, graph representation | now in the Reference part |
 | ✅ | Docs: configuration, every field, local vs API examples | `[judge_fallback]` added |
 | ✅ | Docs: NPTEL vs MIT comparison | section "NPTEL vs MIT" in part 3 |
+| ✅ | Docs: "The lecture as data" (what the LIR allows: O(1) coverage lookups, segment-wise fetch, RAG chunks, advantages) | part 3, `#lirdata`; lookups tested on the VR LIR |
+| ✅ | Docs: Part 4 "A run, call by call": L01 through every stage with real prompts and answers, batches, parallelism, call counts | prompts and answers from an offline replay of the answer cache (5,149 calls, 0 misses; rebuilt LIR identical to `lir/` apart from map node order); slot timeline from the generator's server log |
 
 ## Notes
 

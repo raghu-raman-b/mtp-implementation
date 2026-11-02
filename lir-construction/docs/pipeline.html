@@ -254,6 +254,58 @@ summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 14
 .course dd { margin: 2px 0 0; font: 600 18px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
 @media (max-width: 520px) { .course dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 #cmp-table td.grp { font: 500 11px var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); background: var(--surface-2); }
+/* the lecture as data */
+.anat { display: grid; grid-template-columns: 1.15fr auto 1.4fr auto .8fr; gap: 12px; align-items: center; }
+.acol { display: grid; gap: 8px; }
+.abox { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.abox.core { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.abox b { display: block; font: 600 14px var(--font-display); margin-bottom: 4px; }
+.abox span { display: block; font-size: 12.5px; color: var(--ink-2); line-height: 1.45; margin-top: 3px; }
+.abox code { font-size: 11.5px; padding: 0 4px; }
+.aarr { color: var(--muted); font: 18px var(--font-mono); text-align: center; }
+.aarr small { display: block; font: 10.5px var(--font-mono); color: var(--muted); }
+
+/* run-through: one model call */
+.callcard { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); margin: 18px 0; overflow: hidden; }
+.callcard > header { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); font: 500 12px var(--font-mono); color: var(--muted); }
+.callcard > header b { color: var(--ink); font-weight: 600; }
+.tag { font: 500 11px var(--font-mono); padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line-2); color: var(--muted); white-space: nowrap; }
+.tag.g { color: var(--s1); border-color: color-mix(in srgb, var(--s1) 45%, transparent); }
+.tag.j { color: var(--s7); border-color: color-mix(in srgb, var(--s7) 45%, transparent); }
+.tag.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.tag.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.io { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.io + .io { border-top: 1px solid var(--line); }
+.io.one { grid-template-columns: minmax(0, 1fr); }
+.io > div { min-width: 0; padding: 12px 16px; }
+.io > div + div { border-left: 1px solid var(--line); }
+.io h5 { font: 500 11px var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 6px; }
+.io pre { margin: 0; max-height: 400px; overflow: auto; font-size: 12px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; background: none; border: 0; padding: 0; border-radius: 0; }
+.io pre.prose { font-family: var(--font-body); font-size: 13.5px; color: var(--ink-2); }
+.callcard .after { padding: 10px 16px 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-2); }
+.think { color: var(--muted); font-style: italic; }
+.bad { color: var(--bad); }
+.okc { color: var(--ok); }
+.flowline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 500 12px var(--font-mono); margin: 12px 0 6px; }
+.flowline span { padding: 4px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
+.flowline span.g { color: var(--s1); border-color: color-mix(in srgb, var(--s1) 45%, transparent); }
+.flowline span.j { color: var(--s7); border-color: color-mix(in srgb, var(--s7) 45%, transparent); }
+.flowline span.e { color: var(--s3); border-color: color-mix(in srgb, var(--s3) 45%, transparent); }
+.flowline span.c { background: var(--surface-2); }
+.flowline i { color: var(--muted); font-style: normal; }
+.prefix { display: grid; gap: 6px; }
+.pre-shared { font: 500 12.5px var(--font-mono); padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--s1) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--s1) 40%, transparent); color: var(--ink); }
+.pre-tasks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.pre-tasks span { font: 500 11.5px var(--font-mono); text-align: center; padding: 8px 6px; border-radius: 10px; border: 1px dashed var(--line-2); color: var(--ink-2); }
+ol.steps { padding-left: 22px; }
+ol.steps li { margin: 6px 0; }
+tr.total td { font-weight: 600; border-top: 1px solid var(--line-2); }
+@media (max-width: 960px) {
+  .io { grid-template-columns: minmax(0, 1fr); }
+  .io > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .anat { grid-template-columns: 1fr; }
+  .aarr { transform: rotate(90deg); }
+}
 </style>
 </head>
 <body>
@@ -271,12 +323,25 @@ summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 14
     <a href="#principles">Why these activities</a>
     <div class="part">How it is built</div>
     <a href="#lir">The LIR</a>
+    <a href="#lirdata">The lecture as data</a>
     <a href="#rules">Five design rules</a>
     <a href="#pipeline">The pipeline</a>
     <a href="#stages">Stage by stage</a>
     <a href="#quality">How items are checked</a>
     <a href="#numbers">The VR course in numbers</a>
     <a href="#compare">NPTEL vs MIT</a>
+    <div class="part">A run, call by call</div>
+    <a href="#walk">Lecture 1, start to end</a>
+    <a href="#step0">0 · Transcripts</a>
+    <a href="#step1">1 · Segment</a>
+    <a href="#step2">2 · Annotate</a>
+    <a href="#step3">3 · Goals</a>
+    <a href="#step4">4 · Course knowledge</a>
+    <a href="#step5">5 · Generate</a>
+    <a href="#step6">6 · Judge and repair</a>
+    <a href="#step7">7 · Assemble</a>
+    <a href="#schedule">Scheduling and parallelism</a>
+    <a href="#callcount">Every call, counted</a>
     <div class="part">Using it</div>
     <a href="#run">Running it</a>
     <a href="#config">Configuration</a>
@@ -496,6 +561,118 @@ summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 14
   list and draws each phase by its type.</p>
 </section>
 
+<section id="lirdata">
+  <div class="eyebrow">The lecture as data</div>
+  <h3 style="margin-top:12px">A lecture you can query, not only play</h3>
+  <p>The viewer is one reader of the LIR. The files are also a structured record of what each lecture teaches, where in
+  the video it teaches it, and how it connects to the rest of the course. Every part of that record has an ID and points
+  back to sentence IDs, and sentence IDs point to times in the video. So a program can answer "where is this taught?" or
+  "what does this part cover?" by following IDs, without reading the transcript and without calling a model.</p>
+
+  <figure class="panel scroll">
+    <div class="anat" style="min-width:720px">
+      <div class="acol">
+        <div class="abox core"><b>course.json</b>
+          <span><code>course_goals</code> → lecture IDs</span>
+          <span><code>concepts</code>: name, aliases, definition, <code>introduced</code> {lecture, segment, sentence, t}, <code>mentions</code> [{lecture, segment, sentence IDs}]</span>
+          <span><code>edges</code>: src → rel → dst, label, evidence sentence IDs</span>
+          <span><code>concept_embeddings</code>: one 768-d vector per concept</span></div>
+      </div>
+      <div class="aarr">⇄<small>concept IDs</small></div>
+      <div class="acol">
+        <div class="abox"><b>Lxx.json · roadmap</b><span>lecture goal → objectives O1… → segment IDs</span></div>
+        <div class="abox"><b>Lxx.json · segments</b><span>S1…: <code>sentence_range</code>, <code>start</code>/<code>end</code> (s), sub-goal, content type, objective, key points (with sentence IDs), key terms, <code>concept_ids</code></span></div>
+        <div class="abox"><b>Lxx.json · sentences</b><span>[{id, start, end, text}] · the ID is the list index</span></div>
+        <div class="abox"><b>Lxx.json · phases</b><span>primer → (segment, active) × n → constructive · every item has an intent and sources</span></div>
+        <div class="abox"><b>Lxx.json · origin, quality</b><span>model, prompt ID and version, input hash, checks and judge verdicts for every item</span></div>
+      </div>
+      <div class="aarr">→<small>t in seconds</small></div>
+      <div class="acol">
+        <div class="abox"><b>Video</b><span><code>media/&lt;course&gt;/Lxx.mp4</code> or YouTube ID; a segment is the clip [start, end]</span></div>
+      </div>
+    </div>
+    <figcaption>One lecture's file and the course file. Arrows are ID references: course goals list lectures, objectives
+    list segments, segments list concepts and sentence ranges, concepts list the segments and sentences that mention them.</figcaption>
+  </figure>
+
+  <h4>What was covered, in one lookup</h4>
+  <p>Load the course once and build a few dictionaries; one pass over the VR course (course.json and 63 lecture files)
+  takes 0.18 s. After that, the questions below are each a dictionary lookup, so their cost does not grow with the
+  course. Two of them are not constant time, and the table says so.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Question</th><th>Where the answer is</th><th>Cost</th><th>Example (VR course)</th></tr></thead>
+    <tbody>
+      <tr><td>Was a concept taught, and where first?</td><td><code>concept[id].introduced</code></td><td>O(1)</td><td>Augmented virtuality → L01 · S4 · sentence 121 · 16:33</td></tr>
+      <tr><td>Everywhere the course comes back to it</td><td><code>concept[id].mentions</code></td><td>O(1)</td><td>Field of view → L06, L11, L15, L28, L49, L57</td></tr>
+      <tr><td>What does one part cover?</td><td><code>segment[(lecture, id)]</code>: sub-goal, key points, concept IDs</td><td>O(1)</td><td>L01 · S4 → "Define the reality-virtuality continuum and its components", 4 key points, 5 concepts</td></tr>
+      <tr><td>Which parts serve a learning objective, or a course goal?</td><td><code>roadmap.objectives[].segment_ids</code>, <code>course_goals[].lecture_ids</code></td><td>O(1)</td><td>L01 · O2 → S3, S4</td></tr>
+      <tr><td>What does a learner know after lecture <i>k</i>?</td><td><code>output/&lt;course&gt;/state/state_Lxx.json</code> (build file), or concepts whose <code>introduced</code> lecture ≤ <i>k</i></td><td>one file read</td><td>after L01: 13 concepts</td></tr>
+      <tr><td>What is being said at time <i>t</i>?</td><td>binary search over sentence start times</td><td>O(log n)</td><td>L01 at 16:40 → "This is just the opposite of augmented reality …"</td></tr>
+      <tr><td>Is a topic named in free text covered?</td><td>cosine similarity against <code>concept_embeddings</code></td><td>one pass over 883 vectors</td><td>a few milliseconds on a CPU</td></tr>
+    </tbody>
+  </table></div>
+<pre><code>concept = {c["id"]: c for c in course["concepts"]}
+by_name = {n.lower(): c["id"] for c in course["concepts"] for n in [c["name"], *c["aliases"]]}
+segment = {(l, s["id"]): s for l, L in lec.items() for s in L["segments"]}
+
+concept[by_name["augmented virtuality"]]["introduced"]
+# {'lecture_id': 'L01', 'segment_id': 'S4', 'sentence_id': 121, 't': 993.299}
+
+s = segment[("L01", "S4")]; a, b = s["sentence_range"]
+lec["L01"]["sentences"][a:b + 1]          # the 18 sentences of the part (sentence ID = list index)
+s["start"], s["end"]                       # 930.721, 1092.999  → the clip 15:31–18:13</code></pre>
+
+  <h4>Fetching a lecture part by part</h4>
+  <p>A segment is a complete, addressable unit: <code>(course, lecture, segment)</code> gives its sentence range, its
+  start and end times, and everything generated for it. The text is a slice of the sentence list, and the video is the
+  clip from <code>start</code> to <code>end</code>. <code>serve.py</code> answers HTTP range requests, so a player can
+  seek straight to the clip in the local file, or pass the times to YouTube. The viewer plays each part this way, as its
+  own clip. Because stage 1 cuts only where the instructor finishes a topic, each part makes sense on its own.</p>
+
+  <h4>As a source for retrieval (RAG)</h4>
+  <p>The pipeline does not include a retriever yet. The format already provides what one needs. Each segment is a
+  natural chunk: a complete topic, about 4 minutes long, with a median of 457 words in the VR course and 644 in MIT 6.7960.
+  Its metadata says what it is about, and every sentence in it has an ID and a time. A chunk for L01 · S4, built from
+  fields of the LIR without generating anything new, looks like this:</p>
+<pre style="white-space:pre-wrap;overflow-wrap:anywhere"><code>{"id": "nptel-virtual-and-augmented-reality/L01/S4",
+ "text": "[113] But before that, let me draw your attention to … [130] … is broadly sometimes referred to as mixed reality.",
+ "subgoal": "Define the reality-virtuality continuum and its components",
+ "key_points": ["The reality-virtuality continuum is a scale ranging from a purely real environment to a purely virtual environment.", …],
+ "concepts": ["Augmented reality", "Mixed reality", "Reality-virtuality continuum", "Virtual environment", "Augmented virtuality"],
+ "lecture_index": 1, "objective": "O2", "content_type": "definition",
+ "start": 930.721, "end": 1092.999, "video": "media/nptel-virtual-and-augmented-reality/L01.mp4"}</code></pre>
+  <div class="rules">
+    <div class="rule"><b>Chunks follow topics</b><p>Boundaries are where the instructor finishes a goal (WindowDiff 0.09
+    against a human annotator), not every 512 tokens. A retrieved chunk does not start or stop mid-explanation.</p></div>
+    <div class="rule"><b>Answers can cite and play</b><p>Every chunk, key point and definition carries sentence IDs, and
+    sentence IDs carry times. An answer can quote the exact sentences and offer "▶ watch 15:31–18:13".</p></div>
+    <div class="rule"><b>Filter before you search</b><p>Lecture index, objective, content type and concept IDs are
+    fields, so a query can be limited to "definitions in lectures 1–5" before any similarity search. Limiting to lectures
+    ≤ <i>k</i> keeps the no-look-ahead rule for a learner who is at lecture <i>k</i>.</p></div>
+    <div class="rule"><b>Several levels of detail</b><p>Course goals → lecture goal → objectives → sub-goals → key points
+    → sentences. A retriever can match a short summary first and then open the sentences under it.</p></div>
+    <div class="rule"><b>Concepts are already resolved</b><p>"AR", "augmented reality" and "Augmented Reality (AR)"
+    are one concept ID with aliases, so a question in any form finds the same parts. Concept embeddings are stored.
+    Segment and key-point embeddings would be computed when the index is built; only open-question key points have stored embeddings today.</p></div>
+    <div class="rule"><b>A known source</b><p>Every generated item records its model, prompt version, input hash and
+    the judge's verdict, so retrieved text can be traced to how it was made, or filtered to judge-approved items only.</p></div>
+  </div>
+
+  <h4>Why this representation</h4>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Property</th><th>What it allows</th></tr></thead>
+    <tbody>
+      <tr><td>Built once, read many times</td><td>No model runs when a learner opens a lecture; the viewer, a VR classroom, an analytics script or a retriever all read the same files.</td></tr>
+      <tr><td>Everything has an ID</td><td>Lecture, segment, objective, key point, concept, quiz item and sentence can each be addressed, linked to and stored against (the viewer stores a learner's highlights by sentence ID).</td></tr>
+      <tr><td>Grounded in sentence IDs</td><td>Any item can be checked against the transcript, and any item can jump the video to the moment it came from.</td></tr>
+      <tr><td>Course-level concept registry</td><td>One place to ask where a concept is introduced, where it comes back, what it links to, and what a learner should know before lecture <i>k</i>.</td></tr>
+      <tr><td>Ordered phases with intent</td><td>A renderer can follow the order without knowing any teaching rules, and a reviewer can see which principle and rule chose each activity.</td></tr>
+      <tr><td>Validated schema (<code>lir_schema.py</code>)</td><td>Every file passes the same Pydantic model, so a consumer can rely on fields being there and having the right types.</td></tr>
+      <tr><td>Plain JSON, cached build</td><td>Files diff cleanly in git; a rebuild only recomputes what changed, and the answer cache rebuilds the LIR on another PC without a GPU.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
 <section id="rules">
   <div class="eyebrow">Five design rules</div>
   <div class="rules">
@@ -536,13 +713,15 @@ summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 14
     time is from the first build (its prompt did not change, so this run reused it). The judge time is estimated from file
     times, because a network drop interrupted that stage once and the run resumed from its cache.</figcaption>
   </figure>
-  <p>Each stage sends all its calls for all lectures at once. The local server decodes up to 32 of them together in one
-  shared KV cache (f16, not quantized). Every answer is cached by a hash of its prompt and model, so a rerun only
+  <p>Each stage sends all its calls for all lectures at once. The local server has 32 slots sharing one KV cache (f16,
+  not quantized); the client admits as many requests as the cache can hold, about 11 at a time for most stages (see
+  <a href="#schedule">Scheduling</a>). Every answer is cached by a hash of its prompt and model, so a rerun only
   recomputes what changed: a prompt edit in stage 5 reruns stage 5 and the judging of its items, nothing else.</p>
 </section>
 
 <section id="stages">
   <div class="eyebrow">Stage by stage</div>
+  <p class="note" style="margin-top:8px">A summary of each stage. <a href="#walk">Part 4</a> follows one lecture through every model call, with the real prompts and answers, call counts and scheduling.</p>
 
   <h3>0 · Transcripts</h3>
   <p>Each subtitle cue is cleaned and merged into sentences: a cue that ends mid-sentence joins the next. Every sentence
@@ -803,7 +982,1295 @@ summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 14
 </section>
 
 <!-- ================================================================== USING -->
-<div class="part-head"><span class="num">PART 4</span><h2>Using it</h2></div>
+<div class="part-head"><span class="num">PART 4</span><h2>A run, call by call</h2></div>
+
+<section id="walk" style="padding-top:28px">
+  <div class="eyebrow">One lecture through the pipeline</div>
+  <h3 style="margin-top:12px">Lecture 1, from subtitles to LIR</h3>
+  <p>This part follows <strong>Lecture 1 of the VR course</strong> (<i>General Intro to XR</i>, 33 minutes) through
+  every stage, and zooms in on its fourth part, <strong>S4, the reality-virtuality continuum</strong> (15:31–18:13). For
+  each stage it shows what goes in, every kind of model call with its real prompt and real answer, the checks, what code
+  does with the answer, and how many such calls the whole course needs. The <a href="#schedule">next section</a> shows
+  how those calls are batched and run in parallel.</p>
+  <div class="callout"><p><strong>Every prompt and answer below is real.</strong> They come from the answer cache of the
+  31 October build (<code>output/&lt;course&gt;/cache/</code>). The build was replayed offline from that cache with
+  every call recorded: 5,149 calls, all answered from the cache, none sent to a model. The replay rebuilt all 63
+  lecture files and <code>course.json</code> identical to the published LIR (apart from the order of concept-map
+  nodes). The model's thinking is shortened, and long transcripts are folded (<span class="mono">… n more sentences …</span>).</p></div>
+
+  <h4>How to read a call</h4>
+  <div class="callcard">
+    <header><b>key</b><span class="tag g">generator</span><span>prompt ID · version</span><span>tokens in → out</span><span>time</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>The exact text sent, as one user message. The answer is constrained to a JSON schema built by code.</pre></div>
+    <div><h5>Answer</h5><pre>The JSON the model returned (after its hidden thinking, shown in italics when useful).</pre></div></div>
+    <div class="after"><b>Then code:</b> what is checked and what code builds from the answer.</div>
+  </div>
+  <p>Gemma 4 E4B (<span class="tag g">generator</span>) runs on the local GPU with thinking on, temperature 0, and an
+  answer constrained to a JSON schema. <code>gpt-6-luna</code> (<span class="tag j">judge</span>) runs on the OpenAI
+  API with a strict schema. Times are the wall time of the HTTP request while other requests ran next to it.</p>
+</section>
+
+<!-- ============================================================ step 0 -->
+<section id="step0">
+  <div class="eyebrow">Step 0 · Transcripts</div>
+  <h3 style="margin-top:12px">Subtitle cues become numbered sentences</h3>
+  <div class="flowline"><span>dataset/…/subs/week_1/lec_1.srt</span><i>→</i><span class="c">code</span><i>→</i><span>231 sentences with IDs 0–230 and times</span><i>·</i><span>no model calls</span></div>
+  <p>The input is the lecture's subtitle file: 247 cues for L01. <code>transcript.py</code> parses each cue, removes
+  sound tags such as <code>[SQUEAKING]</code>, speaker labels and the MIT licence notice, and joins a cue that ends
+  mid-sentence to the next one (or cuts after 50 words with no full stop). Each sentence gets an ID equal to its position
+  and keeps the start of its first cue and the end of its last. From here on, everything refers to a moment of the
+  lecture by sentence ID.</p>
+  <div class="callcard"><header><b>L01 transcript</b><span class="tag">code</span><span>247 cues → 231 sentences</span></header><div class="io"><div><h5>Subtitle file (.srt)</h5><pre>1
+00:00:24,297 --&gt; 00:00:31,884
+Hello, welcome to the NPTEL MOOCs course on Foundation for Virtual and Augmented Reality Systems.
+
+2
+00:00:33,506 --&gt; 00:00:38,850
+We are going to start lecture number 1, which is on introductory concepts.
+
+…
+
+41
+00:04:16,289 --&gt; 00:04:27,922
+Finding answers to these questions is one of the main objectives of this course, although that is not the only objective, and we will soon get to know what the objectives are,
+
+42
+00:04:27,922 --&gt; 00:04:41,652
+but learning the answers to several questions that may be coming to your mind when I use the term virtual reality or augmented reality,</pre></div><div><h5>Sentences</h5><pre>[0] 0:24–0:31  Hello, welcome to the NPTEL MOOCs course on Foundation for Virtual and Augmented Reality Systems.
+[1] 0:33–0:38  We are going to start lecture number 1, which is on introductory concepts.
+…
+[40] 4:16–4:41  Finding answers to these questions is one of the main objectives of this course, although that is not the only objective, and we will soon get to know what the objectives are, but learning the answers to several questions that may be coming to your mind when I use the term virtual reality or augmented reality,</pre></div></div><div class="after">Cue 41 ends without a full stop, so it is joined to the next cue into sentence 40. Every later stage refers to this sentence as <span class="mono">[40]</span>.</div></div>
+  <p class="note">Lectures 4 and 5 have no subtitle file. Their official transcript is aligned word by word to YouTube's
+  automatic captions (<code>media.py</code>), and the result is saved as an .srt in <code>output/&lt;course&gt;/subs/</code>.
+  The VR course has 12,028 sentences in all.</p>
+</section>
+
+<!-- ============================================================ step 1 -->
+<section id="step1">
+  <div class="eyebrow">Step 1 · Segment</div>
+  <h3 style="margin-top:12px">One call finds the topic changes</h3>
+  <div class="flowline"><span>231 sentences</span><i>→</i><span class="g">1 call</span><i>→</i><span>8 proposed cuts</span><i>→</i><span class="c">code: sort, merge &lt; 2 min, flag &gt; 12 min</span><i>→</i><span>7 parts</span></div>
+  <p>The whole transcript goes into one prompt, numbered from 1 (the prompt from the segmentation study, unchanged).
+  The answer is only a list of integers. A lecture longer than 28,000 prompt tokens would be split into overlapping
+  windows of 300 sentences; no lecture in either course needed that.</p>
+  <div class="callcard">
+    <header><b>L01/segment/w0</b><span class="tag g">generator</span><span>segment.standalone · v3</span><span>6,222 → 1,005 tokens</span><span>17.9 s</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>Below is the transcript of a lecture video, one sentence per line, each with its number in brackets.
+
+Split the lecture into segments. Find the apt boundaries: the points where the instructor has completed an instructional goal or a topic and moves on to the next one.
+
+Each segment must stand alone: a learner who starts watching at the first sentence of any segment, without having seen what came before, must be able to follow it. Cut only at a logically concluded point, after the instructor has finished the thought, never while he is in the middle of explaining something. A question and the discussion of that question belong in the same segment. Do not cut at every change of example or sentence-level aside; prefer fewer, complete segments over many fragments.
+
+Answer with a JSON list of the sentence numbers that START a new segment (do not include sentence 1), in order, and nothing else. Example of the format: [14, 52, 97]
+
+Transcript:
+[1] Hello, welcome to the NPTEL MOOCs course on Foundation for Virtual and Augmented Reality Systems.
+[2] We are going to start lecture number 1, which is on introductory concepts.
+[3] I am Dr. Samit Bhattacharya, a member of the Department of Computer Science and Engineering, IIT Guwahati.
+[4] I will be the instructor for this course, and with that, let me start the lecture.
+        … 225 more sentences …
+[230] Looking forward to seeing you in the subsequent lectures.
+[231] Thank you and goodbye.</pre></div>
+    <div><h5>Answer</h5><pre><span class="think">Here&#x27;s a thinking process to determine the segment boundaries:
+
+1.  **Analyze the Goal:** The objective is to split the lecture into segments where each segment is self-contained and logically concluded. Cuts should happen only when the instructor has finished a major thought or topic, not mid-explanation or mid-example. The output must be a JSON list of sentence numbers that *start* a new segment (excluding sentence 1).
+
+2.  **Review the Transcript Flow (Topic Segmentation):**
+
+    *   [1]-[4]: Introduction (Welcome, Instructor ID, Lecture start).
+    *   [5]-[13]: Defining the terms (VR, AR, MR, XR).
+    *   [14]-[39]: Identifying the core questions/problems (What are they? Are they the same? Why should I care?).
+…</span>
+
+[5, 14, 44, 76, 114, 132, 191, 210]</pre></div></div>
+    <div class="after"><b>Then code</b> (<code>s1_segment.py</code>): the numbers are 1-based, so code subtracts 1 and
+    gets 9 ranges. It then merges any part shorter than 2 minutes into its shorter neighbour, shortest first, and flags
+    any part longer than 12 minutes. The model never gives times; code takes them from the sentences.</div>
+  </div>
+  <figure class="panel">
+    <h4>Proposed cuts → final parts</h4><p class="note">Widths are proportional to time.</p>
+    <div class="ba">
+      <div class="ba-row"><div class="ba-label">Model</div><div class="segs">
+        <div class="seg" style="flex:28;--c:var(--s2)"><b>28 s</b></div>
+        <div class="seg" style="flex:62;--c:var(--s2)"><b>62 s</b></div>
+        <div class="seg" style="flex:204;--c:var(--s1)"><b>3.4 m</b></div>
+        <div class="seg" style="flex:322;--c:var(--s1)"><b>5.4 m</b></div>
+        <div class="seg" style="flex:285;--c:var(--s1)"><b>4.8 m</b></div>
+        <div class="seg" style="flex:162;--c:var(--s3)"><b>2.7 m</b></div>
+        <div class="seg" style="flex:476;--c:var(--s1)"><b>7.9 m</b></div>
+        <div class="seg" style="flex:221;--c:var(--s1)"><b>3.7 m</b></div>
+        <div class="seg" style="flex:208;--c:var(--s1)"><b>3.5 m</b></div></div></div>
+      <div class="ba-row"><div class="ba-label">After code</div><div class="segs">
+        <div class="seg" style="flex:296;--c:var(--s1)"><b>S1</b><span>Identify the core concepts and objectives of the XR course</span></div>
+        <div class="seg" style="flex:322;--c:var(--s1)"><b>S2</b><span>Distinguish between common entertainment and diverse XR applications</span></div>
+        <div class="seg" style="flex:285;--c:var(--s1)"><b>S3</b><span>Define Extended Reality (XR) …</span></div>
+        <div class="seg" style="flex:162;--c:var(--s3)"><b>S4</b><span>Define the reality-virtuality continuum …</span></div>
+        <div class="seg" style="flex:476;--c:var(--s1)"><b>S5</b><span>Justify the growing commercial … importance of XR</span></div>
+        <div class="seg" style="flex:221;--c:var(--s1)"><b>S6</b><span>Outline the objectives, structure …</span></div>
+        <div class="seg" style="flex:208;--c:var(--s1)"><b>S7</b><span>Outline the course scope …</span></div></div></div>
+    </div>
+    <figcaption>The 28-second opening (sentences 0–3) merged into the next part (4–12); that was still 90 seconds, so it
+    merged again into 13–42, which became S1 (sentences 0–42, 0:24–5:21). S4 is sentences 113–130, 15:31–18:13. The
+    sub-goals shown come from step 2.</figcaption>
+  </figure>
+  <p><strong>Whole course:</strong> 63 calls, one per lecture, in one batch; all 63 answers passed the check (a list of
+  integers) first time. Median 4,923 tokens in and 1,339 out per call. 388 parts in all, 16 flagged as long.</p>
+</section>
+
+<!-- ============================================================ step 2 -->
+<section id="step2">
+  <div class="eyebrow">Step 2 · Annotate</div>
+  <h3 style="margin-top:12px">Two narrow calls per part</h3>
+  <div class="flowline"><span>one part's sentences</span><i>→</i><span class="g">annotate</span><span class="g">terms</span><i>→</i><span class="c">code checks, retries</span><i>→</i><span>sub-goal, content type, key points, key terms, used concepts</span></div>
+  <p>Every call about one part starts with the same text: a role line, the course and lecture titles, and the part's
+  sentences with their IDs. Only the task at the end differs. Calls on the same part therefore share a prefix that
+  llama.cpp can reuse from its cache; across the run, 29% of all prompt tokens were served from that cache instead
+  of being computed again. The IDs here are the real sentence IDs (0-based), so S4 shows <span class="mono">[113]</span>
+  to <span class="mono">[130]</span>.</p>
+  <figure class="panel scroll"><div class="prefix" style="min-width:640px">
+    <div class="pre-shared">ROLE · Course · Lecture · <b>[113] … [130]</b> (the part's sentences)</div>
+    <div class="pre-tasks"><span>Task: annotate</span><span>Task: terms</span><span>Task: quiz</span><span>Task: summary</span><span>Task: open question</span><span>Judge repairs</span></div>
+  </div><figcaption>One shared prefix per part, many tasks: steps 2, 5 and the repairs in step 6 all build their prompts this way (<code>prompts.segment_block</code>).</figcaption></figure>
+
+  <div class="callcard">
+    <header><b>L01/S4/annotate</b><span class="tag g">generator</span><span>annotate.subgoal_points · v2</span><span>872 → 1,285 tokens</span><span>28.5 s</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>You are helping turn a recorded university lecture into a guided learning experience for students.
+
+Course: Foundation for Virtual and Augmented Reality Systems
+Lecture: General Intro to XR
+
+Transcript of one segment of the lecture, one sentence per line with its sentence ID in brackets:
+[113] But before that, let me draw your attention to one more important concept that is called the reality-virtuality continuum.
+[114] At the end, I will talk about the reference from where this term has been taken.
+[115] What does this refer to?
+[116] So, it is essentially referring to a scale, a continuum.
+[117] At one extreme of the scale is the real environment, nothing virtual there.
+[118] At the other extreme is the virtual environment, so there is nothing real here.
+[119] So, completely virtual at one end, completely real at the other end.
+[120] In between, there is an interval where at one end we have augmented reality, that means we are augmenting the real world with some digital content, virtual content and at the other end there is augmented virtuality.
+[121] This is just the opposite of augmented reality where we are augmenting the virtual world with real world content.
+[122] In augmented reality, we are augmenting the real world with virtual content.
+[123] In augmented virtuality, we are augmenting the virtual world with real world content.
+[124] Say for example, here as you can see under augmented virtuality, you can see the human figure which is from the real world augmented within this virtual environment.
+[125] Whereas, under augmented reality here, what we can see is that digital content, say this character, appearing in the real world setting.
+[126] So, this in a very broad sense, this entire space between the two extremes, that is virtual environment and real environment, is called mixed reality.
+[127] But later on we will see different definitions of mixed reality.
+[128] So, just to sum up, we have a way to visualize this reality-virtuality continuum that is in the form of a scale.
+[129] At one end is the virtual environment, at the other end is the real environment.
+[130] In between, there are different degrees of augmentation of the real environment with virtual content as well as the virtual environment with real content, and that entire space in between is broadly sometimes referred to as mixed reality.
+
+Task: describe this segment.
+- subgoal: what the learner achieves in this segment, as one short phrase that starts with a verb, for example &quot;Explain why ...&quot;, &quot;Derive ...&quot;, &quot;Compare ...&quot;, &quot;Apply ...&quot;. Be specific to this segment, at most 15 words.
+- content_type: the one type that best describes what the instructor mainly does in this segment:
+  motivation (why the topic matters), definition (introduces what something is), mechanism_explanation (how or why something works), derivation_or_proof, procedure_or_algorithm (steps to follow), worked_example (solves a specific instance), comparison, application_or_demo, recap (summarises earlier material), discussion (questions, opinions, course logistics).
+- key_points: 2 to 5 key points. Each is one atomic, self-contained statement of something the segment teaches (a fact, claim, step or result), understandable without the transcript, with the IDs of the sentences that state it.
+  For each key point, about: &quot;subject&quot; if it is about the subject matter itself, or &quot;course&quot; if it is about the course, the lecture or its organisation (what the course covers, its goals, structure, schedule, assignments or the instructor&#x27;s plans). Write subject key points as facts of the subject (&quot;Optical flow is ...&quot;), not as reports of the lecture (&quot;The lecture explains that ...&quot;).
+Use only what is said in this segment.
+
+</pre></div>
+    <div><h5>Answer</h5><pre><span class="think">Here&#x27;s a thinking process to arrive at the desired output:
+
+1.  **Analyze the Request and Constraints:**
+    *   **Goal:** Turn a lecture segment into a guided learning experience description.
+    *   **Input:** A transcript segment (sentences [113] to [130]).
+    *   **Output Requirements:**
+        *   `subgoal`: Short phrase (max 15 words), starts with a verb, specific to the segment.
+        *   `content_type`: One category from the provided list (motivation, definition, mechanism_explanation, etc.).
+…</span>
+
+{
+  &quot;subgoal&quot;: &quot;Define the reality-virtuality continuum and its components.&quot;,
+  &quot;content_type&quot;: &quot;definition&quot;,
+  &quot;key_points&quot;: [
+    {
+      &quot;text&quot;: &quot;The reality-virtuality continuum is a scale ranging from a purely real environment to a purely virtual environment. [116, 117, 118]&quot;,
+      &quot;sentence_ids&quot;: [116, 117, 118],
+      &quot;about&quot;: &quot;subject&quot;
+    },
+    {
+      &quot;text&quot;: &quot;Augmented Reality (AR) involves augmenting the real world with digital or virtual content. [120, 122]&quot;,
+      &quot;sentence_ids&quot;: [120, 122],
+      &quot;about&quot;: &quot;subject&quot;
+    },
+    {
+      &quot;text&quot;: &quot;Augmented Virtuality (AV) involves augmenting a virtual world with real-world content. [120, 121, 123]&quot;,
+      &quot;sentence_ids&quot;: [120, 121, 123],
+      &quot;about&quot;: &quot;subject&quot;
+    },
+    {
+      &quot;text&quot;: &quot;Mixed Reality (MR) is the broad term for the entire space between the purely real and purely virtual environments. [126, 130]&quot;,
+      &quot;sentence_ids&quot;: [126, 130],
+      &quot;about&quot;: &quot;subject&quot;
+    }
+  ]
+}</pre></div></div>
+    <div class="after"><b>Checks:</b> the schema allows 2–5 key points and only the 10 content types. Code checks that
+    the sub-goal starts with a verb from a fixed list and that every cited ID is inside the part (113–130).
+    <b>Then code</b> removes the IDs the model copied into the text ("… environment. [116, 117, 118]"), drops the full
+    stop from the sub-goal, and numbers the key points S4.K1 to S4.K4.</div>
+  </div>
+
+  <div class="callcard">
+    <header><b>L01/S4/terms</b><span class="tag g">generator</span><span>annotate.terms · v3</span><span>967 → 1,822, then 1,002 → 1,630 tokens</span><span>35.1 s + 24.6 s</span><span class="tag warn">passed on retry</span></header>
+    <div class="io"><div><h5>Prompt (first try)</h5><pre>You are helping turn a recorded university lecture into a guided learning experience for students.
+
+Course: Foundation for Virtual and Augmented Reality Systems
+Lecture: General Intro to XR
+
+Transcript of one segment of the lecture, one sentence per line with its sentence ID in brackets:
+[113] But before that, let me draw your attention to one more important concept that is called the reality-virtuality continuum.
+[114] At the end, I will talk about the reference from where this term has been taken.
+        … 15 more sentences …
+[130] In between, there are different degrees of augmentation of the real environment with virtual content as well as the virtual environment with real content, and that entire space in between is broadly sometimes referred to as mixed reality.
+
+Task: list the key terms a student should learn from this segment, and the other concepts it relies on.
+- key_terms: up to 5 terms of the subject that the instructor explains in this segment: concepts a student must understand to follow this course, the kind that belong in the subject&#x27;s glossary. Leave out generic words (such as &quot;system&quot;, &quot;example&quot;, &quot;technology&quot;, &quot;approach&quot;, &quot;application areas&quot;, &quot;categories&quot;, &quot;forecasts&quot;), passing mentions that the instructor does not explain, course logistics, and names of people, institutions or courses. Never list an abbreviation on its own: write the full name with the abbreviation in brackets, for example &quot;Augmented reality (AR)&quot;.
+  For each key term give:
+  - term: the name as the instructor says it, a short noun phrase in the singular.
+  - definition: one or two self-contained sentences that start with the term itself and say what kind of thing it is and what sets it apart from related ideas, for example &quot;Optical flow is the apparent motion of the scene that a viewer perceives when they or the objects around them move.&quot; Write it in your own clear words, faithful to what the instructor says: do not copy the instructor&#x27;s spoken sentences and do not repeat yourself. A student who has never heard the term must understand what it is from the definition alone. Never start with &quot;It&quot;, &quot;This&quot;, &quot;These&quot; or &quot;They&quot;, never just spell out an abbreviation, and do not define the term with its own words. One concept per term: never list several concepts as one term.
+  - sentence_ids: the IDs of the sentences where it is defined or explained.
+- used_concepts: up to 8 other technical concepts of the subject that the segment uses or mentions without explaining them (short noun phrases; no generic words, people, institutions or courses).
+If the segment explains no subject terms, return an empty key_terms list.</pre></div>
+    <div><h5>First answer</h5><pre>{
+  &quot;key_terms&quot;: [
+    {
+      &quot;term&quot;: &quot;Reality-virtuality continuum&quot;,
+      &quot;definition&quot;: &quot;Reality-virtuality continuum is a scale that ranges from a completely real environment to a completely virtual environment. It represents the spectrum of how real or virtual an experience is.&quot;,
+      &quot;sentence_ids&quot;: [113, 116, 117, 118, 119]
+    },
+    {
+      &quot;term&quot;: &quot;Augmented reality&quot;,
+      &quot;definition&quot;: &quot;Augmented reality is a state where the real world is enhanced by overlaying digital or virtual content. This means the real world is being augmented with virtual content.&quot;,
+      &quot;sentence_ids&quot;: [122, 125]
+    },
+    {
+      &quot;term&quot;: &quot;Augmented virtuality&quot;,
+      &quot;definition&quot;: &quot;Augmented virtuality is a state where a virtual world is enhanced by incorporating real-world content. This is the opposite of augmented reality, where the virtual world is augmented with real world content.&quot;,
+      &quot;sentence_ids&quot;: [121, 123, 124]
+    },
+    {
+      &quot;term&quot;: &quot;Mixed reality&quot;,
+      &quot;definition&quot;: &quot;Mixed reality is the broad term for the entire space between a purely real environment and a purely virtual environment. This space includes various degrees of augmentation.&quot;,
+      &quot;sentence_ids&quot;: [126, 130]
+    }
+  ],
+  &quot;used_concepts&quot;: [
+    &quot;Digital content&quot;,
+    &quot;Virtual content&quot;,
+    &quot;Real world content&quot;,
+    &quot;Augmentation&quot;
+  ]
+}</pre></div></div>
+    <div class="io"><div><h5>Retry: same prompt, plus</h5><pre>…
+
+Your previous answer was rejected for these reasons:
+- term &quot;Augmented virtuality&quot;: the definition repeats itself; say it once, clearly
+Write a corrected answer.</pre></div>
+    <div><h5>Second answer</h5><pre>{
+  &quot;key_terms&quot;: [
+    {
+      &quot;term&quot;: &quot;Reality-virtuality continuum&quot;,
+      &quot;definition&quot;: &quot;Reality-virtuality continuum is a scale used to visualize the spectrum between a completely real environment and a completely virtual environment.&quot;,
+      &quot;sentence_ids&quot;: [113, 116, 128]
+    },
+    {
+      &quot;term&quot;: &quot;Virtual environment&quot;,
+      &quot;definition&quot;: &quot;Virtual environment is one extreme of the scale where there is nothing real present, meaning the environment is completely virtual.&quot;,
+      &quot;sentence_ids&quot;: [118, 119, 129]
+    },
+    {
+      &quot;term&quot;: &quot;Augmented reality (AR)&quot;,
+      &quot;definition&quot;: &quot;Augmented reality is a state where the real world is enhanced by adding digital or virtual content.&quot;,
+      &quot;sentence_ids&quot;: [120, 122]
+    },
+    {
+      &quot;term&quot;: &quot;Augmented virtuality&quot;,
+      &quot;definition&quot;: &quot;Augmented virtuality is the opposite of augmented reality, where a virtual world is enhanced by incorporating real-world content.&quot;,
+      &quot;sentence_ids&quot;: [121, 123]
+    },
+    {
+      &quot;term&quot;: &quot;Mixed reality&quot;,
+      &quot;definition&quot;: &quot;Mixed reality is the broad space between the completely real and completely virtual environments, encompassing various degrees of augmentation.&quot;,
+      &quot;sentence_ids&quot;: [126, 130]
+    }
+  ],
+  &quot;used_concepts&quot;: [
+    &quot;Real environment&quot;,
+    &quot;Digital content&quot;,
+    &quot;Virtual content&quot;,
+    &quot;Real world content&quot;
+  ]
+}</pre></div></div>
+    <div class="after"><b>Checks</b> (<code>validate.check_definition</code>): the cited sentences must contain the
+    term; the definition must start with the term, not with "It" or "This"; it must say more than the term's own words;
+    it must not just spell out an abbreviation; and its two sentences must not repeat each other. The first answer
+    failed the last rule ("Augmented virtuality is … This is the opposite of augmented reality, where the virtual world
+    is augmented …"). A retry sends the same prompt with the error messages appended, so the shared prefix is kept.
+    <b>Then code</b> keeps each term that passes on its own (terms are optional: a term that still fails after two
+    retries is dropped, not the whole list) and capitalises names.</div>
+  </div>
+  <p><strong>Whole course:</strong> 776 calls (388 annotate + 388 terms) in one batch. Annotate: 382 passed first
+  time, 6 after a retry, none failed. Terms: 308 first time, 39 after a retry, 41 still had a failing term after two
+  retries (those terms were dropped).</p>
+</section>
+
+<!-- ============================================================ step 3 -->
+<section id="step3">
+  <div class="eyebrow">Step 3 · Goal hierarchy</div>
+  <h3 style="margin-top:12px">Sub-goals become objectives; lecture goals become course goals</h3>
+  <div class="flowline"><span>7 sub-goals</span><i>→</i><span class="g">1 call</span><i>→</i><span class="c">contiguity check</span><i>→</i><span>3 objectives + lecture goal</span><i>·</i><span>then 63 lecture goals</span><i>→</i><span class="g">1 call</span><i>→</i><span>course goals</span></div>
+  <p>This call never sees the transcript, only the part IDs and their sub-goals. The schema lists the part IDs as the
+  only allowed values, so the model cannot invent one. L01 needed three tries:</p>
+  <div class="callcard">
+    <header><b>L01/goals</b><span class="tag g">generator</span><span>goals.hierarchy · v1</span><span>288 → 1,515 tokens (first try)</span><span>20.8 + 16.7 + 14.8 s</span><span class="tag warn">passed on 2nd retry</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>You are helping turn a recorded university lecture into a guided learning experience for students.
+
+Lecture: General Intro to XR
+The lecture is split into these segments, in playback order, each with what a learner achieves in it:
+S1: Identify the core concepts and objectives of the XR course
+S2: Distinguish between common public perceptions and technical applications of XR technologies
+S3: Define Extended Reality (XR) and differentiate it from specific immersive technologies
+S4: Define the reality-virtuality continuum and its components
+S5: Justify the growing commercial and technological importance of XR
+S6: Outline the objectives, structure, and learning focus of the XR course
+S7: Outline the course scope and the importance of XR technologies
+
+Task: build the lecture&#x27;s goal hierarchy.
+- objectives: group the segments into 2 to 6 learning objectives. Each objective covers a contiguous run of segments (no gaps, no reordering), and every segment belongs to exactly one objective. Write each objective as what the learner will be able to do, starting with an action verb in lower case, for example &quot;explain how ...&quot; or &quot;compute ...&quot;. It will be shown after the words &quot;You&#x27;ll be able to&quot;.
+- lecture_goal: one sentence that starts with a verb: the overall goal of the lecture.</pre></div>
+    <div><h5>Answers</h5><pre><b>Try 1</b> lecture_goal: &quot;Establish the foundational knowledge, technological context, and learning objectives for the study of Extended Reality.&quot;
+<span class="bad">✗ "Establish" is not in the verb list</span>
+
+<b>Try 2</b> objective 2 = [&quot;S5&quot;, &quot;S7&quot;]
+<span class="bad">✗ objective 2 covers ['S5', 'S7'], which is not a contiguous run of segments</span>
+
+<b>Try 3</b>
+{
+  &quot;objectives&quot;: [
+    {
+      &quot;ability&quot;: &quot;identify the core concepts of XR and distinguish between common public perceptions and technical applications.&quot;,
+      &quot;segments&quot;: [
+        &quot;S1&quot;,
+        &quot;S2&quot;
+      ]
+    },
+    {
+      &quot;ability&quot;: &quot;define Extended Reality (XR) and explain the components of the reality-virtuality continuum.&quot;,
+      &quot;segments&quot;: [
+        &quot;S3&quot;,
+        &quot;S4&quot;
+      ]
+    },
+    {
+      &quot;ability&quot;: &quot;justify the growing commercial importance of XR and outline the scope and structure of the course.&quot;,
+      &quot;segments&quot;: [
+        &quot;S5&quot;,
+        &quot;S6&quot;,
+        &quot;S7&quot;
+      ]
+    }
+  ],
+  &quot;lecture_goal&quot;: &quot;Introduce the foundational concepts, definitions, and practical importance of Extended Reality (XR) technologies.&quot;
+}
+<span class="okc">✓ passed</span></pre></div></div>
+    <div class="after"><b>Checks:</b> every part in exactly one objective, each objective a contiguous run, everything
+    verb-first. If all three tries fail, code repairs the grouping itself (order the objectives by their first part and
+    cut there). <b>Then code</b> writes each objective as "You'll be able to …", numbers them O1–O3, and sets
+    each part's <code>objective_id</code>.</div>
+  </div>
+  <p>After all 63 lecture calls return, one more call reads the 63 lecture goals and groups lectures into course goals.
+  Its first answer was rejected because "Optimize" is not in the verb list; the retry gave 5 goals, each listing its
+  lectures (L01–L12 and L23–L31 under the first).</p>
+  <p><strong>Whole course:</strong> 2 batches: 63 calls (56 passed first time, 7 after a retry), then 1 call (passed
+  after a retry). This is the cheapest stage: about 280 tokens in per lecture call.</p>
+</section>
+
+<!-- ============================================================ step 4 -->
+<section id="step4">
+  <div class="eyebrow">Step 4 · Course knowledge</div>
+  <h3 style="margin-top:12px">Terms from all lectures become one concept registry, then links</h3>
+  <div class="flowline"><span>terms + used concepts of 63 lectures</span><i>→</i><span class="c">3,668 groups</span><i>→</i><span class="e">embed</span><i>→</i><span class="c">rules</span><i>→</i><span class="g">948 yes/no calls</span><i>→</i><span class="c">1,035 concepts</span><i>→</i><span class="g">63 link calls</span><i>→</i><span class="c">state[k] per lecture</span></div>
+  <h4>4a · Same concept or not?</h4>
+  <p>Code collects every key term (with its definition) and every used concept (without one) from step 2, and groups
+  them per lecture by normalised name: 3,668 groups. Each group's name is embedded on the CPU
+  (<code>all-mpnet-base-v2</code>), then compared with every earlier group:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Rule, in order</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td>Same normalised name, or an alias or acronym matches ("AR" = initials of "Augmented Reality")</td><td>same concept, no call</td></tr>
+      <tr><td>Cosine similarity ≥ 0.93 with an earlier group</td><td>same concept, no call</td></tr>
+      <tr><td>0.78 ≤ similarity &lt; 0.93 (up to the 3 nearest)</td><td>ask the model, one yes/no call per pair</td></tr>
+      <tr><td>Below 0.78</td><td>a new concept if it has a definition; a used-only term that matches nothing is dropped</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid2">
+    <div class="callcard" style="margin:0">
+      <header><b>L24/same/…</b><span class="tag g">generator</span><span>state.same_concept · v1</span><span>170 → 740</span><span class="tag ok">same</span></header>
+      <div class="io one"><div><pre>Two terms from the same course:
+A: &quot;User-centric design&quot; (lecture L24): User-centric design is a concept that can be viewed differently by various stakeholders, such as designers, depending on their specific role in the product development process.
+B: &quot;User-centered design&quot; (lecture L24): User-centered design is the process where users are involved, either actively or passively, in the design lifecycle of a product. This design process aims to create products that increase usability.
+
+Do A and B name the same concept (synonyms, abbreviations, or spelling variants), so a learner should treat them as one idea? Answer same=false if one is a special case, a part, or an example of the other.
+
+<b>→</b> {&quot;same&quot;: true}</pre></div></div>
+    </div>
+    <div class="callcard" style="margin:0">
+      <header><b>L01/same/…</b><span class="tag g">generator</span><span>state.same_concept · v1</span><span class="tag">not same</span></header>
+      <div class="io one"><div><pre>Two terms from the same course:
+A: &quot;Virtual reality&quot; (lecture L01): Virtual reality (VR) is a specific type of immersive experience mentioned in the course title. It involves creating a simulated environment that users can interact with.
+B: &quot;Virtual reality technology&quot; (lecture L01): (not defined)
+
+Do A and B name the same concept (synonyms, abbreviations, or spelling variants), so a learner should treat them as one idea? Answer same=false if one is a special case, a part, or an example of the other.
+
+<b>→</b> {&quot;same&quot;: false}</pre></div></div>
+    </div>
+  </div>
+  <p>All 948 yes/no calls for the whole course go out as one batch (they are short, so 26 run at once; see
+  <a href="#schedule">scheduling</a>). 114 answered yes. Then code walks the lectures in order and builds the
+  registry: 1,035 concepts, each with ID, name, aliases, every definition given, where it was introduced, and every
+  mention. Concept IDs are assigned in course order, so L01's concepts are C001–C013.</p>
+
+  <h4>4b · Links between concepts</h4>
+  <p>One call per lecture. Code builds the prompt from the registry: up to 30 concepts of this lecture (defined here
+  first), up to 15 earlier concepts picked by embedding similarity and shared parts, and the lecture's key points and
+  definitions as evidence lines with sentence IDs. The schema allows only the listed concept names and the six relation types.</p>
+  <div class="callcard">
+    <header><b>L01/edges</b><span class="tag g">generator</span><span>state.edges · v3</span><span>2,889 → 2,456 tokens</span><span>36.7 s</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>You are helping turn a recorded university lecture into a guided learning experience for students.
+
+Course: Foundation for Virtual and Augmented Reality Systems
+Lecture L01: General Intro to XR
+
+Concepts in this lecture:
+- Augmented reality: Augmented reality (AR) is another specific type of immersive experience mentioned in the course title. It involves overlaying digital information onto the real world.
+- Mixed reality: Mixed reality (MR) is a distinct term that is currently being heard in the field. It represents a specific type of reality blending.
+- Extended reality: Extended reality (XR) is a broad term used to encompass several related immersive experiences. It refers to the umbrella concept that includes various forms of reality blending.
+- Virtual reality: Virtual reality (VR) is a specific type of immersive experience mentioned in the course title. It involves creating a simulated environment that users can interact with.
+- Reality-virtuality continuum: Reality-virtuality continuum is a scale used to visualize the spectrum between a completely real environment and a completely virtual environment.
+- Immersive technology: Immersive technology is a type of technology where the user experiences an environment through sensory organs in such a way that they fail to distinguish it from the real environment. This perceived experience leads the user to assume the environment is real.
+        … 6 more concepts …
+- Interactions: Interactions refers to the process of designing and implementing how users engage with the environment within VR or AR systems.
+
+Concepts from earlier lectures that may be related:
+(none)
+
+Evidence from this lecture, one statement per line with its sentence IDs:
+[9, 10, 11, 12] The field commonly uses terms such as Virtual Reality (VR), Augmented Reality (AR), Extended Reality (XR), and Mixed Reality (MR).
+[19, 20, 21, 27, 28] A primary objective of the course is to clarify the meanings and differences between these multiple terms.
+[29, 30, 33] The course aims to help students find answers to questions regarding the significance of these technologies in their future prospects.
+[40, 41] Finding answers to the questions about XR, AR, VR, and MR is one of the main objectives of this course.
+[9] Extended reality (XR): Extended reality (XR) is a broad term used to encompass several related immersive experiences. It refers to the umbrella concept that includes various forms of reality blending.
+[10] Virtual reality (VR): Virtual reality (VR) is a specific type of immersive experience mentioned in the course title. It involves creating a simulated environment that users can interact with.
+[11] Augmented reality (AR): Augmented reality (AR) is another specific type of immersive experience mentioned in the course title. It involves overlaying digital information onto the real world.
+[12] Mixed reality (MR): Mixed reality (MR) is a distinct term that is currently being heard in the field. It represents a specific type of reality blending.
+        … 41 more evidence lines …
+[213] Augmented reality (AR): Augmented reality (AR) is an extended reality concept that exists between the extremes of the reality-virtuality continuum. It is one of the concepts that falls under the broader category of extended reality.
+[213] Mixed reality (MR): Mixed reality (MR) is a broad term used to refer to the extended reality or augmented reality concepts. These concepts are situated between the complete replacement of reality and the entirely real world.
+
+Task: list the relationships between these concepts that this lecture states or clearly implies.
+Every edge reads as a sentence &quot;src rel dst&quot;, and that sentence must be true. Relation types:
+- prerequisite_of: src must be understood before dst (e.g. &quot;derivative prerequisite_of gradient&quot;)
+- part_of: src is a component of dst (e.g. &quot;encoder part_of transformer&quot;)
+- example_of: src is an instance of the more general dst (e.g. &quot;virtual reality example_of extended reality&quot;; the specific thing is src, the general category is dst)
+- contrasts_with: src is set against dst
+- leads_to: src causes or produces dst
+- used_in: src is used as a tool or step in dst
+src and dst must be two different concepts.
+label: a link phrase of 2 to 5 words that sits between the two concept names on a concept map, read as &quot;src label dst&quot;, e.g. &quot;is a kind of&quot;, &quot;is computed by&quot;, &quot;is needed for&quot;. &quot;src label dst&quot; must read as a complete, grammatical sentence: the label never ends in &quot;and&quot;, &quot;or&quot;, &quot;the&quot;, &quot;a&quot; or &quot;between&quot;. Do not repeat the concept names in the label.
+evidence: the sentence IDs from the evidence list that support the edge.
+At least one end of every edge must be a concept from this lecture. Give at most 20 edges, the most important first. Do not invent relations the lecture does not support.</pre></div>
+    <div><h5>Answer (14 links; first 5 shown)</h5><pre>{
+  &quot;edges&quot;: [
+    {
+      &quot;src&quot;: &quot;Augmented reality&quot;,
+      &quot;rel&quot;: &quot;example_of&quot;,
+      &quot;dst&quot;: &quot;Extended reality&quot;,
+      &quot;label&quot;: &quot;is a type of&quot;,
+      &quot;evidence&quot;: [9, 85, 88, 89, 90, 110]
+    },
+    {
+      &quot;src&quot;: &quot;Virtual reality&quot;,
+      &quot;rel&quot;: &quot;example_of&quot;,
+      &quot;dst&quot;: &quot;Extended reality&quot;,
+      &quot;label&quot;: &quot;is a type of&quot;,
+      &quot;evidence&quot;: [9, 85, 88, 89, 90, 110]
+    },
+    {
+      &quot;src&quot;: &quot;Mixed reality&quot;,
+      &quot;rel&quot;: &quot;example_of&quot;,
+      &quot;dst&quot;: &quot;Extended reality&quot;,
+      &quot;label&quot;: &quot;is a type of&quot;,
+      &quot;evidence&quot;: [9, 85, 88, 89, 90, 110]
+    },
+    {
+      &quot;src&quot;: &quot;Augmented reality&quot;,
+      &quot;rel&quot;: &quot;part_of&quot;,
+      &quot;dst&quot;: &quot;Immersive technology&quot;,
+      &quot;label&quot;: &quot;is a form of&quot;,
+      &quot;evidence&quot;: [106, 108, 120, 122]
+    },
+    {
+      &quot;src&quot;: &quot;Virtual reality&quot;,
+      &quot;rel&quot;: &quot;part_of&quot;,
+      &quot;dst&quot;: &quot;Immersive technology&quot;,
+      &quot;label&quot;: &quot;is a form of&quot;,
+      &quot;evidence&quot;: [106, 108, 10, 11]
+    },
+    … 9 more …
+  ]
+}</pre></div></div>
+    <div class="after"><b>Checks</b> (per link): label of 2–5 words that does not end in "and", "the", "between" …;
+    two different concepts; at least one end in this lecture; evidence IDs inside the lecture. Links are optional: a
+    failing link is dropped on its own. <b>Then code</b> maps names to concept IDs, removes duplicates (a
+    <i>contrasts with</i> link counts once in either direction), and records the lecture position on every link.</div>
+  </div>
+  <p>Finally code writes a snapshot <code>state[k]</code> after every lecture <i>k</i>: the concepts introduced so far,
+  their best definition so far, their mentions, the links so far and a salience score. Lecture <i>k</i> reads only
+  <code>state[k]</code>; its primer reads <code>state[k−1]</code>. This is what makes "no looking ahead" checkable.</p>
+  <p><strong>Whole course:</strong> 948 + 63 calls in 2 batches. Same-concept: all answered first time (a boolean).
+  Links: 34 lectures passed first time, 22 after a retry, 7 still had failing links after two retries (those links were
+  dropped). L01 kept 14 links.</p>
+</section>
+
+<!-- ============================================================ step 5 -->
+<section id="step5">
+  <div class="eyebrow">Step 5 · Generate</div>
+  <h3 style="margin-top:12px">Code plans every item, then one batch writes them</h3>
+  <div class="flowline"><span>state[k], parts, key points</span><i>→</i><span class="c">plan: targets, types, rules</span><i>→</i><span class="g">1,088 calls in one batch</span><i>→</i><span class="c">shuffle, attach links and times</span><i>→</i><span>phases</span></div>
+  <p>Before any call, code decides what to ask for. For each lecture it picks the recall concepts from
+  <code>state[k−1]</code>, for each part the quiz targets (only <em>subject</em> key points, plus at most one earlier
+  concept for an interleaved item), and for the lecture the four open-question types from the rule table. All four
+  kinds of call, for all 63 lectures, go to the server as <strong>one batch of 1,088 calls</strong>: 62 recall, 386 quiz,
+  388 summary and 252 open-question calls. L01 is the first lecture, so it has no recall call; its part S6 has only
+  key points about the course itself, so it gets no quiz. That leaves 17 calls for L01.</p>
+
+  <h4>Quiz</h4>
+  <div class="callcard">
+    <header><b>L01/S4/quiz</b><span class="tag g">generator</span><span>active.quiz · v3</span><span>1,049 → 1,632 tokens</span><span>37.2 s</span><span class="tag ok">passed the code checks</span></header>
+    <div class="io"><div><h5>Prompt (after the shared prefix)</h5><pre>‹shared prefix: role, course, lecture, the part&#x27;s sentences›
+
+Task: write a short quiz that checks whether a learner understood the subject matter of this segment. These are the segment&#x27;s key points, by ID:
+S4.K1: The reality-virtuality continuum is a scale ranging from a purely real environment to a purely virtual environment.
+S4.K2: Augmented Reality (AR) involves augmenting the real world with digital or virtual content.
+S4.K3: Augmented Virtuality (AV) involves augmenting a virtual world with real-world content.
+S4.K4: Mixed Reality (MR) is the broad term for the entire space between the purely real and purely virtual environments.
+
+Write 1 to 4 questions: as many as the segment has ideas worth testing, and no more. Do not pad the quiz with trivial questions. Each question tests one key point (give its ID), and no two questions test the same point.
+For each question choose the item type that suits its point:
+- multiple_choice: a question with exactly 4 options and exactly one correct option, the correct option first (the order is shuffled later). Wrong options are plausible misconceptions of similar length and style. No &quot;all of the above&quot; or &quot;none of the above&quot;. correct_answer: &quot;first option&quot;.
+- true_false: a statement that the segment makes clearly true or clearly false; correct_answer: &quot;True&quot; or &quot;False&quot;.
+- yes_no: a question with a clear yes or no answer; correct_answer: &quot;Yes&quot; or &quot;No&quot;.
+explanations: one sentence per option saying why it is right or wrong (multiple choice: 4, in option order; true/false: 2, for True then False; yes/no: 2, for Yes then No).
+
+Rules:
+- Test understanding of the subject: what something is, how or why it works, how ideas relate, when to use it. Never test what the course, the lecture or the instructor says, covers or plans, and never write &quot;according to the lecture&quot; or &quot;does the lecture describe&quot;. Do not ask what an abbreviation stands for.
+- Every question must be answerable from this segment alone.
+- Do not copy the key point. Multiple-choice and yes/no questions end with &quot;?&quot;; a true/false item is a statement.</pre></div>
+    <div><h5>Answer</h5><pre>{
+  &quot;items&quot;: [
+    {
+      &quot;key_point&quot;: &quot;S4.K1&quot;,
+      &quot;type&quot;: &quot;multiple_choice&quot;,
+      &quot;question&quot;: &quot;What does the reality-virtuality continuum represent?&quot;,
+      &quot;options&quot;: [
+        &quot;A scale ranging from a purely real environment to a purely virtual environment.&quot;,
+        &quot;The specific boundary where augmented reality transitions into augmented virtuality.&quot;,
+        &quot;The set of all digital content that can be overlaid onto a physical space.&quot;,
+        &quot;The technical definition of mixed reality systems.&quot;
+      ],
+      &quot;correct_answer&quot;: &quot;first option&quot;,
+      &quot;explanations&quot;: [
+        &quot;This continuum is a scale that defines the spectrum from environments with no virtual content to environments with no real content.&quot;,
+        &quot;This describes the specific transition point between AR and AV, not the entire scale.&quot;,
+        &quot;This describes the content itself, not the conceptual scale used to categorize environments.&quot;,
+        &quot;Mixed reality is a broad term for the entire space between the two extremes, but the continuum is the scale itself.&quot;
+      ]
+    },
+    {
+      &quot;key_point&quot;: &quot;S4.K2&quot;,
+      &quot;type&quot;: &quot;true_false&quot;,
+      &quot;question&quot;: &quot;Augmented Reality involves augmenting the real world with virtual content.&quot;,
+      &quot;options&quot;: [
+        &quot;True&quot;,
+        &quot;False&quot;
+      ],
+      &quot;correct_answer&quot;: &quot;True&quot;,
+      &quot;explanations&quot;: [
+        &quot;The segment explicitly states that in augmented reality, the real world is augmented with virtual content.&quot;,
+        &quot;Augmented virtuality is the process where the virtual world is augmented with real-world content.&quot;
+      ]
+    },
+    {
+      &quot;key_point&quot;: &quot;S4.K3&quot;,
+      &quot;type&quot;: &quot;multiple_choice&quot;,
+      &quot;question&quot;: &quot;How is Augmented Virtuality (AV) defined?&quot;,
+      &quot;options&quot;: [
+        &quot;Augmenting the real world with digital content.&quot;,
+        &quot;Augmenting the virtual world with real-world content.&quot;,
+        &quot;The complete absence of both real and virtual content.&quot;,
+        &quot;The blending of two separate, non-interactive environments.&quot;
+      ],
+      &quot;correct_answer&quot;: &quot;first option&quot;,
+      &quot;explanations&quot;: [
+        &quot;This is the definition of Augmented Reality, not Augmented Virtuality.&quot;,
+        &quot;Augmented Virtuality is defined as augmenting the virtual world with real-world content.&quot;,
+        &quot;The continuum requires at least one extreme to be purely real or purely virtual.&quot;,
+        &quot;Mixed reality is the broad term for the space between the two extremes.&quot;
+      ]
+    },
+    {
+      &quot;key_point&quot;: &quot;S4.K4&quot;,
+      &quot;type&quot;: &quot;true_false&quot;,
+      &quot;question&quot;: &quot;Mixed Reality is the broad term that encompasses all degrees of augmentation between a purely real and a purely virtual environment.&quot;,
+      &quot;options&quot;: [
+        &quot;True&quot;,
+        &quot;False&quot;
+      ],
+      &quot;correct_answer&quot;: &quot;True&quot;,
+      &quot;explanations&quot;: [
+        &quot;The entire space between the two extremes—the real and the virtual—is broadly referred to as mixed reality.&quot;,
+        &quot;Mixed reality is only used to describe the specific instances of augmented reality and augmented virtuality.&quot;
+      ]
+    }
+  ]
+}</pre></div></div>
+    <div class="after"><b>Checks:</b> 4 options and 4 explanations for multiple choice, 2 for the others; correct answer
+    "first option" for multiple choice; stems end with "?" except true/false; no stem that copies its key point; no
+    question about the lecture instead of the subject; each item a different key point. All passed. <b>Then code</b>
+    shuffles the options with a seed from the item's key, so Q1's correct option moved from first to C, and writes
+    the intent (retrieval practice, rule <code>quiz.target_key_point.multiple_choice</code>, sources = the key point's
+    sentence IDs).<br><span class="bad">Note Q3:</span> the model put the augmented <em>reality</em> definition first,
+    so "first option" marks the wrong answer. No code check can see that; the judge does in step 6.</div>
+  </div>
+
+  <h4>Summary</h4>
+  <div class="callcard">
+    <header><b>L01/S4/summary</b><span class="tag g">generator</span><span>active.summary · v2</span><span>773 → 1,138 tokens</span><span>27.1 s</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt (after the shared prefix)</h5><pre>‹shared prefix: role, course, lecture, the part&#x27;s sentences›
+
+Task: write an interactive summary of this segment for a learner who has just watched it.
+- recap: 2 to 3 sentences in plain language, nothing that is not in the segment, and do not start with &quot;In this segment&quot;.
+- review: one check-yourself question for each of these key points, with a short answer (1 or 2 sentences) that the learner can reveal after thinking. The question asks about the subject (not about the lecture) and does not give the answer away.
+S4.K1: The reality-virtuality continuum is a scale ranging from a purely real environment to a purely virtual environment.
+S4.K2: Augmented Reality (AR) involves augmenting the real world with digital or virtual content.
+S4.K3: Augmented Virtuality (AV) involves augmenting a virtual world with real-world content.
+S4.K4: Mixed Reality (MR) is the broad term for the entire space between the purely real and purely virtual environments.
+</pre></div>
+    <div><h5>Answer</h5><pre>{
+  &quot;recap&quot;: &quot;The reality-virtuality continuum is a scale that ranges from a completely real environment to a completely virtual one. Between these two extremes, there are various degrees of augmentation. This entire space, where real and virtual elements interact, is broadly referred to as mixed reality.&quot;,
+  &quot;review&quot;: [
+    {
+      &quot;key_point&quot;: &quot;S4.K1&quot;,
+      &quot;question&quot;: &quot;What does the reality-virtuality continuum represent in terms of environments?&quot;,
+      &quot;answer&quot;: &quot;It is a scale that places the purely real environment at one end and the purely virtual environment at the other.&quot;
+    },
+    {
+      &quot;key_point&quot;: &quot;S4.K2&quot;,
+      &quot;question&quot;: &quot;If you are using Augmented Reality (AR), what is being augmented and what kind of content is being added?&quot;,
+      &quot;answer&quot;: &quot;AR involves taking the real world and augmenting it by adding digital or virtual content.&quot;
+    },
+    {
+      &quot;key_point&quot;: &quot;S4.K3&quot;,
+      &quot;question&quot;: &quot;How does Augmented Virtuality (AV) differ from Augmented Reality in terms of content placement?&quot;,
+      &quot;answer&quot;: &quot;In AV, the virtual world is augmented by incorporating real-world content.&quot;
+    },
+    {
+      &quot;key_point&quot;: &quot;S4.K4&quot;,
+      &quot;question&quot;: &quot;What broad term is used to describe the entire range of environments between the purely real and purely virtual?&quot;,
+      &quot;answer&quot;: &quot;This entire space is broadly referred to as mixed reality.&quot;
+    }
+  ],
+  &quot;explanations&quot;: []
+}</pre></div></div>
+    <div class="after"><b>Checks:</b> 2–3 sentence recap; one review question per listed key point, each a question
+    about the subject, answers of at most 3 sentences. <code>explanations</code> is empty because every concept of S4
+    already has a registry definition; the model is asked to explain only concepts that lack one. <b>Then code</b> adds
+    the key concepts with their registry definitions, the links to earlier concepts (here: Extended reality, introduced in S1, and
+    Immersive technology, introduced in S3), and each review question's jump time (the start of its key point's first sentence,
+    e.g. S4.K1 → 15:51).</div>
+  </div>
+
+  <h4>Open questions</h4>
+  <p>Code picks the types. For L01 the rule table matched one rule: there is a <em>contrasts with</em> link between
+  Augmented reality and Augmented virtuality whose evidence is in S4, so OQ1 is a compare-and-contrast question on S4.
+  No part is a mechanism, derivation, worked example or procedure, so OQ2–OQ4 use the fallback "explain it to a
+  classmate" on the longest parts not yet used (S5, S2, S1).</p>
+  <div class="callcard">
+    <header><b>L01/OQ1</b><span class="tag g">generator</span><span>constructive.open_question · v3</span><span>737 → 1,227, then 782 → 1,655 tokens</span><span>27.7 + 40.3 s</span><span class="tag warn">passed on retry</span></header>
+    <div class="io"><div><h5>Prompt (after the shared prefix)</h5><pre>‹shared prefix: role, course, lecture, the part&#x27;s sentences›
+
+Task: write one open-ended question for the learner. The question asks the learner to compare and contrast Augmented reality and Augmented virtuality: how they are similar, how they differ, and when each applies.
+Write the question itself, addressed to the learner (for example &quot;Explain ...&quot; or &quot;Your friend asks ...&quot;), not instructions about writing a question. The learner never sees segment numbers, so name the topic itself instead of saying &quot;this segment&quot;.
+Then write a reference answer of 3 to 6 sentences based only on the segment, and 3 to 5 key points that a good answer must contain. Each key point is one short statement with 2 to 6 keywords: single words or short phrases that appear word for word in your reference answer (at most 3 words each) and that a learner covering the point would likely use.</pre></div>
+    <div><h5>First answer</h5><pre>{
+  &quot;prompt&quot;: &quot;Explain the relationship between Augmented Reality and Augmented Virtuality. How does the content being augmented differ between the two, and what does this imply about their application?&quot;,
+  &quot;reference_answer&quot;: &quot;Both Augmented Reality and Augmented Virtuality exist within the reality-virtuality continuum. The key difference lies in the direction of augmentation. In Augmented Reality, we are augmenting the real world with virtual content. Conversely, Augmented Virtuality involves augmenting the virtual world with real world content. This entire space between the two extremes is broadly referred to as mixed reality.&quot;,
+  &quot;key_points&quot;: [
+    {
+      &quot;text&quot;: &quot;Augmented reality augments the real world with virtual content.&quot;,
+      &quot;keywords&quot;: [
+        &quot;augmenting the real world&quot;,
+        &quot;virtual content&quot;
+      ]
+    },
+    {
+      &quot;text&quot;: &quot;Augmented virtuality augments the virtual world with real world content.&quot;,
+      &quot;keywords&quot;: [
+        &quot;augmenting the virtual world&quot;,
+        &quot;real world content&quot;
+      ]
+    },
+    {
+      &quot;text&quot;: &quot;The two concepts are opposites of each other.&quot;,
+      &quot;keywords&quot;: [
+        &quot;just the opposite&quot;,
+        &quot;augmented reality&quot;
+      ]
+    },
+    {
+      &quot;text&quot;: &quot;Both concepts fall under the broad definition of mixed reality.&quot;,
+      &quot;keywords&quot;: [
+        &quot;entire space&quot;,
+        &quot;mixed reality&quot;
+      ]
+    }
+  ]
+}
+<span class="bad">✗ key point 3 needs at least 2 keywords that appear word for word in the reference answer; ['just the opposite'] do not</span></pre></div></div>
+    <div class="io"><div><h5>Second answer</h5><pre>{
+  &quot;prompt&quot;: &quot;Compare and contrast Augmented Reality and Augmented Virtuality. How are they similar, how do they differ, and when would each concept be applied?&quot;,
+  &quot;reference_answer&quot;: &quot;Augmented Reality involves augmenting the real world with virtual content. Conversely, Augmented Virtuality is defined by augmenting the virtual world with real world content. Both concepts exist within the reality-virtuality continuum, which spans from the completely real environment to the completely virtual environment. For instance, AR places digital content in a real setting, while AV places a real figure within a virtual environment.&quot;,
+  &quot;key_points&quot;: [
+    {
+      &quot;text&quot;: &quot;Augmented reality augments the real world with virtual content.&quot;,
+      &quot;keywords&quot;: [
+        &quot;augmented reality&quot;,
+        &quot;real world&quot;,
+        &quot;virtual content&quot;
+      ]
+    },
+    {
+      &quot;text&quot;: &quot;Augmented virtuality augments the virtual world with real world content.&quot;,
+      &quot;keywords&quot;: [
+        &quot;augmented virtuality&quot;,
+        &quot;virtual world&quot;,
+        &quot;real world content&quot;
+      ]
+    },
+    {
+      &quot;text&quot;: &quot;AR and AV are opposite in their augmentation focus.&quot;,
+      &quot;keywords&quot;: [
+        &quot;real world&quot;,
+        &quot;virtual world&quot;
+      ]
+    },
+    {
+      &quot;text&quot;: &quot;Both concepts exist within the reality-virtuality continuum.&quot;,
+      &quot;keywords&quot;: [
+        &quot;reality-virtuality continuum&quot;,
+        &quot;real environment&quot;
+      ]
+    }
+  ]
+}</pre></div>
+    <div><h5>Then code</h5><pre class="prose">Keywords must appear word for word in the reference answer, because the runtime scorer
+matches a learner's answer against them. Code tidies the keyword lists (drops missing ones,
+splits phrases over 3 words) and retries only if a key point is left with fewer than 2.
+It then attaches the intent: elaboration, bloom "analyze", rule oq.compare.contrasts_edge,
+sources = the link's evidence sentences.</pre></div></div>
+  </div>
+
+  <h4>Recall (from L02, since L01 has none)</h4>
+  <div class="callcard">
+    <header><b>L02/recall</b><span class="tag g">generator</span><span>primer.recall · v2</span><span>358 → 1,029 tokens</span><span>25.7 s</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>You are helping turn a recorded university lecture into a guided learning experience for students.
+
+The learner is about to watch lecture L02: Application Domains and System Categories
+It builds on these concepts from earlier lectures:
+C002: Virtual reality (lecture L01): Virtual reality (VR) is a specific type of immersive experience mentioned in the course title. It involves creating a simulated environment that users can interact with. | needed for: Non-immersive
+C001: Extended reality (lecture L01): Extended reality (XR) refers to extending reality by some means. Systematically, it involves using systems to either augment our reality or replace our perception of reality. | needed for: Virtual reality
+C005: Immersive technology (lecture L01): Immersive technology is a type of technology where the user experiences an environment through sensory organs in such a way that they fail to distinguish it from the real environment. This perceived experience leads the user to assume the environment is real. | needed for: Non-immersive
+C003: Augmented reality (lecture L01): Augmented reality (AR) is another specific type of immersive experience mentioned in the course title. It involves overlaying digital information onto the real world. | used again in this lecture
+
+Task: for each earlier concept, write
+- question: a short recall question that makes the learner retrieve what the concept means or how it works, in the subject&#x27;s own terms (the question must not give the answer away, and must not just ask what an abbreviation stands for),
+- recap: one or two sentences that answer the question and remind the learner what the concept is.
+
+</pre></div>
+    <div><h5>Answer</h5><pre>{
+  &quot;items&quot;: [
+    {
+      &quot;concept_id&quot;: &quot;C002&quot;,
+      &quot;question&quot;: &quot;In your own words, how is a virtual reality (VR) environment created and experienced by a user?&quot;,
+      &quot;recap&quot;: &quot;Virtual reality creates a fully simulated environment where the user can interact with the digital world, making them feel as if they are in a completely artificial setting.&quot;
+    },
+    {
+      &quot;concept_id&quot;: &quot;C001&quot;,
+      &quot;question&quot;: &quot;What is the fundamental goal of Extended Reality (XR) when it interacts with our perception of reality?&quot;,
+      &quot;recap&quot;: &quot;XR is a broad category of systems designed to either enhance our existing reality (augment it) or completely replace how we perceive the world around us.&quot;
+    },
+    {
+      &quot;concept_id&quot;: &quot;C005&quot;,
+      &quot;question&quot;: &quot;What characteristic defines an immersive technology experience?&quot;,
+      &quot;recap&quot;: &quot;Immersive technology uses sensory input to create an experience so convincing that the user fails to distinguish it from the real environment, leading them to assume it is real.&quot;
+    },
+    {
+      &quot;concept_id&quot;: &quot;C003&quot;,
+      &quot;question&quot;: &quot;How does Augmented Reality (AR) integrate digital content into the user&#x27;s experience?&quot;,
+      &quot;recap&quot;: &quot;AR works by taking a view of the real world and overlaying digital information, such as graphics or data, onto that existing environment.&quot;
+    }
+  ]
+}</pre></div></div>
+    <div class="after">Code chose these four from <code>state[1]</code>: concepts that a <em>prerequisite of</em> or
+    <em>used in</em> link ties to L02's concepts come first, then other links, then concepts L02 mentions again. The
+    "needed for" text in the prompt is that reason. Code adds the jump link to where each was introduced in L01.</div>
+  </div>
+
+  <h4>Concept map (code only)</h4>
+  <p>No call. From <code>state[1]</code>, code keeps the links that touch L01's concepts, ranks concepts by links and
+  salience, and cuts to at most 14 concepts. L01's reference map has 11 concepts and 11 links; the seeds shown to the
+  learner are Augmented reality, Mixed reality, Extended reality and Virtual reality.</p>
+  <p><strong>Whole course:</strong> 1,088 calls in one batch. Passed first time / after a retry / still failing after
+  two retries: quiz 225 / 118 / 43, summary 314 / 70 / 4, open questions 108 / 122 / 22, recall 62 / 0 / 0. A quiz
+  that still fails keeps only its passing items; a summary or open question that still fails is kept if its answer
+  parsed, flagged, and judged with the rest.</p>
+</section>
+
+<!-- ============================================================ step 6 -->
+<section id="step6">
+  <div class="eyebrow">Step 6 · Calibrate, judge, repair</div>
+  <h3 style="margin-top:12px">A second model reads every item; the first one fixes what it rejects</h3>
+  <div class="flowline"><span class="g">16 calibration calls</span><i>→</i><span class="j">judge round 1: 604 calls</span><i>→</i><span class="c">drop optional failures</span><i>→</i><span class="g">repair: 775 calls</span><i>→</i><span class="j">round 2: 332</span><i>→</i><span class="g">repair: 245</span><i>→</i><span class="j">round 3: 175</span><i>→</i><span class="c">resolve the rest</span></div>
+
+  <h4>6a · Calibration answers</h4>
+  <p>16 open questions, spread over the question types, get three made-up student answers each (good, partial, wrong),
+  written by the generator. Code later uses them to choose the scorer's two settings (step 7).</p>
+  <div class="callcard">
+    <header><b>L01/OQ1/calibration</b><span class="tag g">generator</span><span>calibrate.answers · v1</span><span>825 → 1,007 tokens</span><span>16.3 s</span></header>
+    <div class="io one"><div><pre>{
+  &quot;good&quot;: &quot;The main difference between Augmented Reality and Augmented Virtuality is the direction of the augmentation. AR takes the real world and enhances it by overlaying digital or virtual content, like seeing a character appear in your living room. Conversely, AV is the opposite; it involves placing real-world objects, such as a person, into a completely simulated virtual environment. Both concepts are essentially forms of mixed reality, existing on a spectrum between a purely real and a purely virtual experience.&quot;,
+  &quot;partial&quot;: &quot;Augmented Reality is when we add virtual elements to the real world, such as using a phone to see digital information on a physical sign. Augmented Virtuality is the reverse, where you put real objects into a virtual space. They are both types of augmentation, but they focus on different starting points—one starts real and adds virtual, and the other starts virtual and adds real.&quot;,
+  &quot;wrong&quot;: &quot;Both Augmented Reality and Augmented Virtuality are basically just ways to make the real world look more futuristic. They both involve putting digital content into a physical setting, like adding a filter to a photo. The difference is really just about how complex the virtual content is, not whether the real world is involved in the process.&quot;
+}</pre></div></div>
+  </div>
+
+  <h4>6b · Judge round 1</h4>
+  <p>Items are grouped so that the judge reads each part's transcript once. One call per part checks the part's
+  sub-goal, key terms, quiz items, summary and open questions together; each item gets its own verdict field with a
+  reason first. Recall items and links are checked in lecture-level calls against the concepts' definitions and the
+  evidence sentences, at most 6 links per call. Round 1: <strong>4,903 items in 604 calls</strong> (388 part calls +
+  216 lecture calls), 16 at a time on the API.</p>
+  <div class="callcard">
+    <header><b>L01/S4/judge</b><span class="tag j">judge</span><span>judge.segment · v2</span><span>2,921 → 1,009 tokens</span><span>9.3 s</span><span>12 items</span></header>
+    <div class="io"><div><h5>Prompt</h5><pre>You are a strict reviewer of learning material that was generated automatically from a lecture transcript. An item passes only if the transcript supports it.
+
+Course: Foundation for Virtual and Augmented Reality Systems
+Lecture: General Intro to XR
+
+Transcript of one segment, one sentence per line with its ID in brackets:
+[113] But before that, let me draw your attention to one more important concept that is called the reality-virtuality continuum.
+[114] At the end, I will talk about the reference from where this term has been taken.
+        … 15 more sentences …
+[130] In between, there are different degrees of augmentation of the real environment with virtual content as well as the virtual environment with real content, and that entire space in between is broadly sometimes referred to as mixed reality.
+
+Check each item below against this transcript.
+
+subgoal: &quot;Define the reality-virtuality continuum and its components&quot;
+  ok = the sub-goal accurately describes what this segment teaches.
+
+term_1: key term &quot;Reality-virtuality continuum&quot; defined as &quot;Reality-virtuality continuum is a scale used to visualize the spectrum between a completely real environment and a completely virtual environment.&quot; (cited sentences [113] [116] [128])
+  worth_learning = it is a concept of the subject that this lecture actually teaches and a student should learn; false for a generic word, a passing mention, course logistics, or a bare abbreviation.
+  faithful = the definition agrees with the cited sentences and invents nothing important.
+  useful = a student who has never heard the term would understand what it is from the definition alone: it starts with the term (not &quot;It&quot; or &quot;This&quot;), says what kind of thing the term is and what sets it apart from related terms; false if it mostly repeats the term&#x27;s own words, repeats itself, reads like copied speech, or only expands an abbreviation.
+
+term_2: key term &quot;Virtual environment&quot; defined as &quot;Virtual environment is one extreme of the scale where there is nothing real present, meaning the environment is completely virtual.&quot; (cited sentences [118] [119] [129])
+  worth_learning = it is a concept of the subject that this lecture actually teaches and a student should learn; false for a generic word, a passing mention, course logistics, or a bare abbreviation.
+  faithful = the definition agrees with the cited sentences and invents nothing important.
+  useful = a student who has never heard the term would understand what it is from the definition alone: it starts with the term (not &quot;It&quot; or &quot;This&quot;), says what kind of thing the term is and what sets it apart from related terms; false if it mostly repeats the term&#x27;s own words, repeats itself, reads like copied speech, or only expands an abbreviation.
+
+term_3: key term &quot;Augmented reality (AR)&quot; defined as &quot;Augmented reality is a state where the real world is enhanced by adding digital or virtual content.&quot; (cited sentences [120] [122])
+  worth_learning = it is a concept of the subject that this lecture actually teaches and a student should learn; false for a generic word, a passing mention, course logistics, or a bare abbreviation.
+  faithful = the definition agrees with the cited sentences and invents nothing important.
+  useful = a student who has never heard the term would understand what it is from the definition alone: it starts with the term (not &quot;It&quot; or &quot;This&quot;), says what kind of thing the term is and what sets it apart from related terms; false if it mostly repeats the term&#x27;s own words, repeats itself, reads like copied speech, or only expands an abbreviation.
+
+term_4: key term &quot;Augmented virtuality&quot; defined as &quot;Augmented virtuality is the opposite of augmented reality, where a virtual world is enhanced by incorporating real-world content.&quot; (cited sentences [121] [123])
+  worth_learning = it is a concept of the subject that this lecture actually teaches and a student should learn; false for a generic word, a passing mention, course logistics, or a bare abbreviation.
+  faithful = the definition agrees with the cited sentences and invents nothing important.
+  useful = a student who has never heard the term would understand what it is from the definition alone: it starts with the term (not &quot;It&quot; or &quot;This&quot;), says what kind of thing the term is and what sets it apart from related terms; false if it mostly repeats the term&#x27;s own words, repeats itself, reads like copied speech, or only expands an abbreviation.
+
+term_5: key term &quot;Mixed reality&quot; defined as &quot;Mixed reality is the broad space between the completely real and completely virtual environments, encompassing various degrees of augmentation.&quot; (cited sentences [126] [130])
+  worth_learning = it is a concept of the subject that this lecture actually teaches and a student should learn; false for a generic word, a passing mention, course logistics, or a bare abbreviation.
+  faithful = the definition agrees with the cited sentences and invents nothing important.
+  useful = a student who has never heard the term would understand what it is from the definition alone: it starts with the term (not &quot;It&quot; or &quot;This&quot;), says what kind of thing the term is and what sets it apart from related terms; false if it mostly repeats the term&#x27;s own words, repeats itself, reads like copied speech, or only expands an abbreviation.
+
+q1 (multiple choice): &quot;What does the reality-virtuality continuum represent?&quot;
+  A) The set of all digital content that can be overlaid onto a physical space.  B) The specific boundary where augmented reality transitions into augmented virtuality.  C) A scale ranging from a purely real environment to a purely virtual environment.  D) The technical definition of mixed reality systems.
+  Marked correct: C)
+  worth_asking = it tests an idea of the subject that matters; false if it asks what the course, lecture or instructor says or plans, what an abbreviation stands for, or other trivia.
+  answerable = a learner who watched only this segment can answer it; correct = the marked option is right and no other option is also right.
+
+q2 (true false): &quot;Augmented Reality involves augmenting the real world with virtual content.&quot;
+  A) True  B) False
+  Marked correct: A)
+  worth_asking = it tests an idea of the subject that matters; false if it asks what the course, lecture or instructor says or plans, what an abbreviation stands for, or other trivia.
+  answerable = a learner who watched only this segment can answer it; correct = the marked option is right and no other option is also right.
+
+q3 (multiple choice): &quot;How is Augmented Virtuality (AV) defined?&quot;
+  A) Augmenting the real world with digital content.  B) The blending of two separate, non-interactive environments.  C) The complete absence of both real and virtual content.  D) Augmenting the virtual world with real-world content.
+  Marked correct: A)
+  worth_asking = it tests an idea of the subject that matters; false if it asks what the course, lecture or instructor says or plans, what an abbreviation stands for, or other trivia.
+  answerable = a learner who watched only this segment can answer it; correct = the marked option is right and no other option is also right.
+
+q4 (true false): &quot;Mixed Reality is the broad term that encompasses all degrees of augmentation between a purely real and a purely virtual environment.&quot;
+  A) True  B) False
+  Marked correct: A)
+  worth_asking = it tests an idea of the subject that matters; false if it asks what the course, lecture or instructor says or plans, what an abbreviation stands for, or other trivia.
+  answerable = a learner who watched only this segment can answer it; correct = the marked option is right and no other option is also right.
+
+summary: &quot;The reality-virtuality continuum is a scale that ranges from a completely real environment to a completely virtual one. Between these two extremes, there are various degrees of augmentation. This entire space, where real and virtual elements interact, is broadly referred to as mixed reality.&quot;
+  review question: &quot;What does the reality-virtuality continuum represent in terms of environments?&quot; answer: &quot;It is a scale that places the purely real environment at one end and the purely virtual environment at the other.&quot;
+  review question: &quot;If you are using Augmented Reality (AR), what is being augmented and what kind of content is being added?&quot; answer: &quot;AR involves taking the real world and augmenting it by adding digital or virtual content.&quot;
+  review question: &quot;How does Augmented Virtuality (AV) differ from Augmented Reality in terms of content placement?&quot; answer: &quot;In AV, the virtual world is augmented by incorporating real-world content.&quot;
+  review question: &quot;What broad term is used to describe the entire range of environments between the purely real and purely virtual?&quot; answer: &quot;This entire space is broadly referred to as mixed reality.&quot;
+  ok = every statement in the recap is supported by the transcript, and each review answer is correct, answers its question, and the question asks about the subject.
+
+question_1 (open question for the learner): &quot;Compare and contrast Augmented Reality and Augmented Virtuality. How are they similar, how do they differ, and when would each concept be applied?&quot;
+  reference answer: &quot;Augmented Reality involves augmenting the real world with virtual content. Conversely, Augmented Virtuality is defined by augmenting the virtual world with real world content. Both concepts exist within the reality-virtuality continuum, which spans from the completely real environment to the completely virtual environment. For instance, AR places digital content in a real setting, while AV places a real figure within a virtual environment.&quot;
+  key points: Augmented reality augments the real world with virtual content.; Augmented virtuality augments the virtual world with real world content.; AR and AV are opposite in their augmentation focus.; Both concepts exist within the reality-virtuality continuum.
+  ok = a learner who watched the lecture can answer it, the reference answer is correct and supported by the transcript, and the key points match the reference answer.
+
+For every item give a short reason first (what is wrong, or &quot;fine&quot;), then the verdict.</pre></div>
+    <div><h5>Answer</h5><pre>{
+  &quot;subgoal&quot;: {
+    &quot;reason&quot;: &quot;The segment explains the reality-virtuality continuum and its endpoints, augmented reality, augmented virtuality, and mixed reality.&quot;,
+    &quot;ok&quot;: true
+  },
+  &quot;term_1&quot;: {
+    &quot;reason&quot;: &quot;The definition accurately describes the continuum as a scale between the real and virtual extremes.&quot;,
+    &quot;worth_learning&quot;: true,
+    &quot;faithful&quot;: true,
+    &quot;useful&quot;: true
+  },
+  &quot;term_2&quot;: {
+    &quot;reason&quot;: &quot;The transcript identifies the virtual environment as the completely virtual extreme, with nothing real present.&quot;,
+    &quot;worth_learning&quot;: true,
+    &quot;faithful&quot;: true,
+    &quot;useful&quot;: true
+  },
+  &quot;term_3&quot;: {
+    &quot;reason&quot;: &quot;The definition matches the transcript’s description of adding virtual or digital content to the real world.&quot;,
+    &quot;worth_learning&quot;: true,
+    &quot;faithful&quot;: true,
+    &quot;useful&quot;: true
+  },
+  &quot;term_4&quot;: {
+    &quot;reason&quot;: &quot;The definition correctly contrasts augmented virtuality with augmented reality and describes adding real-world content to a virtual world.&quot;,
+    &quot;worth_learning&quot;: true,
+    &quot;faithful&quot;: true,
+    &quot;useful&quot;: true
+  },
+  &quot;term_5&quot;: {
+    &quot;reason&quot;: &quot;The transcript broadly calls the space between the real and virtual extremes, including degrees of augmentation, mixed reality.&quot;,
+    &quot;worth_learning&quot;: true,
+    &quot;faithful&quot;: true,
+    &quot;useful&quot;: true
+  },
+  &quot;q1&quot;: {
+    &quot;reason&quot;: &quot;The scale from a purely real to a purely virtual environment is directly described, and C is the only correct option.&quot;,
+    &quot;worth_asking&quot;: true,
+    &quot;answerable&quot;: true,
+    &quot;correct&quot;: true
+  },
+  &quot;q2&quot;: {
+    &quot;reason&quot;: &quot;The transcript explicitly says augmented reality adds virtual content to the real world.&quot;,
+    &quot;worth_asking&quot;: true,
+    &quot;answerable&quot;: true,
+    &quot;correct&quot;: true
+  },
+  &quot;q3&quot;: {
+    &quot;reason&quot;: &quot;The question tests a key distinction and is answerable, but D is correct; the marked answer A describes augmented reality.&quot;,
+    &quot;worth_asking&quot;: true,
+    &quot;answerable&quot;: true,
+    &quot;correct&quot;: false
+  },
+  &quot;q4&quot;: {
+    &quot;reason&quot;: &quot;The transcript broadly describes mixed reality as the space encompassing different degrees of augmentation between the extremes.&quot;,
+    &quot;worth_asking&quot;: true,
+    &quot;answerable&quot;: true,
+    &quot;correct&quot;: true
+  },
+  &quot;summary&quot;: {
+    &quot;reason&quot;: &quot;The recap is accurate except for saying the real and virtual elements “interact”; the transcript describes augmentation but does not establish interaction.&quot;,
+    &quot;ok&quot;: false
+  },
+  &quot;question_1&quot;: {
+    &quot;reason&quot;: &quot;The comparison and examples are supported, but the transcript does not explain when each concept would be applied, so the full question is not answerable from this segment.&quot;,
+    &quot;ok&quot;: false
+  }
+}</pre></div></div>
+    <div class="after">9 of 12 items passed. <b>q3</b> is the wrong answer key from step 5. The <b>summary</b> said real
+    and virtual elements "interact", which the transcript does not say. <b>question_1</b> asks "when would each be
+    applied", which this part does not answer.</div>
+  </div>
+  <div class="callcard">
+    <header><b>L01/lecture/judge/1</b><span class="tag j">judge</span><span>judge.lecture · v2</span><span>1,742 → 1,523 tokens</span><span>16.5 s</span><span>6 links</span></header>
+    <div class="io"><div><h5>Prompt (concepts, then each link with its evidence)</h5><pre>You are a strict reviewer of learning material that was generated automatically from a lecture transcript. An item passes only if the transcript supports it.
+
+Course: Foundation for Virtual and Augmented Reality Systems
+Lecture L01: General Intro to XR
+
+Concepts:
+- Extended reality: Extended reality (XR) refers to extending reality by some means. Systematically, it involves using systems to either augment our reality or replace our perception of reality.
+- Virtual reality: Virtual reality (VR) is a specific type of immersive experience mentioned in the course title. It involves creating a simulated environment that users can interact with.
+- Augmented reality: Augmented reality (AR) is another specific type of immersive experience mentioned in the course title. It involves overlaying digital information onto the real world.
+- Reality-virtuality continuum: Reality-virtuality continuum is a scale used to visualize the spectrum between a completely real environment and a completely virtual environment.
+- Virtual environment: Virtual environment is one extreme of the scale where there is nothing real present, meaning the environment is completely virtual.
+- Augmented virtuality: Augmented virtuality is the opposite of augmented reality, where a virtual world is enhanced by incorporating real-world content.
+- Metaverse: The Metaverse is not merely an application of virtual reality, mixed reality, or augmented reality technology. The Metaverse is a broad concept that involves reimagining how humans interact with the digital world in an all-around 3D environment.
+- Cognitive side: Cognitive side refers to the understanding of the human mind that is necessary to grasp how our senses influence the desired experience when using technology or a system.
+- Psychological side: Psychological side refers to the understanding of the human mind that is necessary to grasp how our senses influence the desired experience when using technology or a system.
+- Interactions: Interactions refers to the process of designing and implementing how users engage with the environment within VR or AR systems.
+
+Relation types: prerequisite_of (src must be understood before dst), part_of (src is a component of dst), example_of (src is an instance of dst), contrasts_with, leads_to (src causes or produces dst), used_in (src is a tool or step in dst).
+
+Check each item:
+
+        … more links in the same form …</pre></div>
+    <div><h5>Answer</h5><pre>{
+  &quot;edge_1&quot;: {
+    &quot;reason&quot;: &quot;The continuum is described as a scale that includes VR at one extreme, not as a tool or step used in VR.&quot;,
+    &quot;ok&quot;: false,
+    &quot;reversed_ok&quot;: false
+  },
+  &quot;edge_2&quot;: {
+    &quot;reason&quot;: &quot;The transcript explicitly places the virtual environment at one extreme of the continuum, supporting this direction; the reverse is not supported.&quot;,
+    &quot;ok&quot;: true,
+    &quot;reversed_ok&quot;: false
+  },
+  &quot;edge_3&quot;: {
+    &quot;reason&quot;: &quot;The transcript explicitly calls augmented virtuality the opposite of augmented reality; the contrast holds in either direction.&quot;,
+    &quot;ok&quot;: true,
+    &quot;reversed_ok&quot;: true
+  },
+  &quot;edge_4&quot;: {
+    &quot;reason&quot;: &quot;The transcript describes the Metaverse as broader than an application of XR technologies and does not say XR produces or underpins it.&quot;,
+    &quot;ok&quot;: false,
+    &quot;reversed_ok&quot;: false
+  },
+  &quot;edge_5&quot;: {
+    &quot;reason&quot;: &quot;The transcript identifies cognitive understanding as foundational for developers and includes designing interactions among the relevant tasks, supporting its use in interaction design.&quot;,
+    &quot;ok&quot;: true,
+    &quot;reversed_ok&quot;: false
+  },
+  &quot;edge_6&quot;: {
+    &quot;reason&quot;: &quot;The transcript identifies psychological understanding as foundational for developers and includes designing interactions among the relevant tasks, supporting its use in interaction design.&quot;,
+    &quot;ok&quot;: true,
+    &quot;reversed_ok&quot;: false
+  }
+}</pre></div></div>
+    <div class="after">Links have two verdicts. If <code>ok</code> is false but <code>reversed_ok</code> is true, code
+    swaps the two ends instead of dropping the link (33 links in the course). Links and recall items are optional:
+    the ones that fail are dropped right away, without a repair, as are quiz items judged not worth asking and terms
+    judged not worth learning.</div>
+  </div>
+
+  <h4>6c · Repair, then judge again</h4>
+  <p>Every other failure goes back to the generator with the judge's reason. The repair prompt is the part's shared
+  prefix plus the rejected item and the reason. Quiz items keep their type and their correct answer (code passes it in),
+  so a true/false item stays true/false. Summaries and open questions reuse their step-5 prompt with the rejection
+  appended.</p>
+  <div class="callcard">
+    <header><b>L01/S4.Q3/repair</b><span class="tag g">generator</span><span>repair.quiz · v1</span><span>825 → 767 tokens</span><span>18.9 s</span><span class="tag ok">passed</span></header>
+    <div class="io"><div><h5>Prompt (after the shared prefix)</h5><pre>‹shared prefix: role, course, lecture, the part&#x27;s sentences›
+
+A reviewer rejected material generated for this segment.
+Rejected quiz item (multiple choice): &quot;How is Augmented Virtuality (AV) defined?&quot; options: Augmenting the real world with digital content. | The blending of two separate, non-interactive environments. | The complete absence of both real and virtual content. | Augmenting the virtual world with real-world content.; marked correct: &quot;Augmenting the real world with digital content.&quot;
+Reason: The question tests a key distinction and is answerable, but D is correct; the marked answer A describes augmented reality.
+
+Task: write a replacement multiple-choice item (4 options, correct option first) that tests this point: Augmented Virtuality (AV) involves augmenting a virtual world with real-world content.
+Rules: the item must be answerable from the material it tests; test understanding of the subject, not what the course, lecture or instructor says, and never what an abbreviation stands for; do not copy the point; multiple choice has exactly 4 options and exactly one correct option, wrong options are plausible misconceptions of similar length, no &quot;all/none of the above&quot;, correct option first; multiple-choice and yes/no stems are questions ending with &quot;?&quot;; give a one-sentence explanation for every option.</pre></div>
+    <div><h5>Answer</h5><pre>{
+  &quot;stem&quot;: &quot;What is the defining characteristic of augmented virtuality?&quot;,
+  &quot;options&quot;: [
+    &quot;Augmenting a virtual environment by incorporating real-world content.&quot;,
+    &quot;Augmenting a real environment by overlaying digital or virtual content.&quot;,
+    &quot;Creating a completely synthetic environment that contains no real-world elements.&quot;,
+    &quot;Blending two separate, distinct environments into a single cohesive experience.&quot;
+  ],
+  &quot;explanations&quot;: [
+    &quot;This describes augmented virtuality, where real-world objects or people are placed within a digital setting.&quot;,
+    &quot;This describes augmented reality, where digital content is added to the existing physical world.&quot;,
+    &quot;This describes a purely virtual environment, which is one extreme of the reality-virtuality continuum.&quot;,
+    &quot;This is a broad description of mixed reality, but it does not specify the direction of the augmentation.&quot;
+  ]
+}</pre></div></div>
+  </div>
+  <div class="callcard">
+    <header><b>L01/S4/judge, round 2</b><span class="tag j">judge</span><span>judge.segment · v2</span><span>1,030 → 215 tokens</span><span>3.4 s</span><span>only the 2 repaired items</span></header>
+    <div class="io one"><div><pre>{
+  &quot;q3&quot;: {
+    &quot;reason&quot;: &quot;Fine: the segment defines augmented virtuality as augmenting a virtual environment with real-world content, and D states this uniquely.&quot;,
+    &quot;worth_asking&quot;: true,
+    &quot;answerable&quot;: true,
+    &quot;correct&quot;: true
+  },
+  &quot;summary&quot;: {
+    &quot;reason&quot;: &quot;Fine: the recap and all review answers are supported by the segment and address the subject.&quot;,
+    &quot;ok&quot;: true
+  }
+}</pre></div></div>
+    <div class="after">Both repairs passed: the new Q3 (shuffled so the correct option is D), and the summary with
+    "encompassing both real and virtual elements" in place of "interact". The compare-and-contrast question took a
+    different path: all three repair attempts failed the keyword check, so code dropped it without judging it again.
+    L01 ends with three open questions.</div>
+  </div>
+  <p>Round 2 judged 750 items in 332 calls (463 passed); repair round 2 sent 245 calls; round 3 judged 245 items in 175
+  calls (89 passed). After the last round, code resolves what is left and never leaves an item for a person:
+  quiz items, open questions and key terms are dropped, a summary is replaced by its key points, a sub-goal by its first
+  key point. A concept whose every definition was rejected leaves the registry (152 concepts). Code then rebuilds
+  everything derived from the registry: primers, earlier links, interleaved items and concept maps.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>L01</th><th class="n">Judged</th><th class="n">Passed first</th><th class="n">Repaired</th><th class="n">Dropped</th><th class="n">Replaced by code</th></tr></thead>
+    <tbody>
+      <tr><td>Sub-goals</td><td class="n">7</td><td class="n">6</td><td class="n">1</td><td class="n">–</td><td class="n">–</td></tr>
+      <tr><td>Key terms</td><td class="n">23</td><td class="n">13</td><td class="n">2</td><td class="n">8</td><td class="n">–</td></tr>
+      <tr><td>Quiz items</td><td class="n">17</td><td class="n">10</td><td class="n">4</td><td class="n">3</td><td class="n">–</td></tr>
+      <tr><td>Summaries</td><td class="n">7</td><td class="n">5</td><td class="n">1</td><td class="n">–</td><td class="n">1</td></tr>
+      <tr><td>Open questions</td><td class="n">4</td><td class="n">1</td><td class="n">2</td><td class="n">1</td><td class="n">–</td></tr>
+      <tr><td>Links</td><td class="n">14</td><td class="n">11</td><td class="n">–</td><td class="n">3</td><td class="n">–</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ step 7 -->
+<section id="step7">
+  <div class="eyebrow">Step 7 · Assemble</div>
+  <h3 style="margin-top:12px">Code writes and checks the files</h3>
+  <div class="flowline"><span>parts, phases, registry</span><i>→</i><span class="c">calibrate m, τ</span><i>→</i><span class="e">embed key points</span><i>→</i><span class="c">fix LaTeX, look-ahead check, schema</span><i>→</i><span>lir/&lt;course&gt;/Lxx.json, course.json, index.json</span></div>
+  <p>No model calls. Code scores the 39 calibration answers that still belong to a question (the judge dropped some
+  questions, including L01's OQ1) for every m in 1–4 and τ in 0.30–0.85, and keeps m = 2, τ = 0.70 (64% of the answers
+  land in their band). It embeds every open-question key point, repairs LaTeX backslashes that JSON escaping broke (10
+  strings), checks that no lecture refers to a concept introduced later and that recall points backwards, validates
+  each file against <code>lir_schema.py</code>, and writes the LIR. L01's file is 349 KB. The largest part is the phases, and much of that is the 768-number embedding stored with
+  each open-question key point for the answer scorer; the 231 sentences and the origin record of every call come next.</p>
+</section>
+
+<!-- ============================================================ scheduling -->
+<section id="schedule">
+  <div class="eyebrow">Scheduling</div>
+  <h3 style="margin-top:12px">Stages in order, every call of a stage at once</h3>
+  <p>A stage cannot start before the previous one finishes, because it reads the previous stage's output: annotation
+  needs the parts, goals need the sub-goals, the registry needs every lecture's terms, generation needs the registry, the
+  judge needs the items. Inside a stage nothing depends on anything else, so <strong>every call of the stage, for every
+  lecture, is sent as one batch</strong>. The run is a fixed sequence of 13 batches:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Batch</th><th>Server</th><th class="n">Calls</th><th class="n">HTTP requests</th><th>What is in it</th><th class="n">Wall time</th></tr></thead>
+    <tbody><tr><td class="n">1</td><td>Segment</td><td><span class="tag g">generator</span></td><td class="n">63</td><td class="n">63</td><td>1 per lecture</td><td class="n">5.7 min*</td></tr>
+<tr><td class="n">2</td><td>Annotate</td><td><span class="tag g">generator</span></td><td class="n">776</td><td class="n">913</td><td>2 per part: annotate + terms</td><td class="n">49.8 min</td></tr>
+<tr><td class="n">3</td><td>Goal hierarchy</td><td><span class="tag g">generator</span></td><td class="n">63</td><td class="n">71</td><td>1 per lecture</td><td class="n">2.3 min</td></tr>
+<tr><td class="n">4</td><td>Course goals</td><td><span class="tag g">generator</span></td><td class="n">1</td><td class="n">2</td><td>1 per course</td><td class="n">0.6 min</td></tr>
+<tr><td class="n">5</td><td>Same concept?</td><td><span class="tag g">generator</span></td><td class="n">948</td><td class="n">948</td><td>1 per ambiguous pair of terms</td><td class="n">10.5 min</td></tr>
+<tr><td class="n">6</td><td>Links</td><td><span class="tag g">generator</span></td><td class="n">63</td><td class="n">107</td><td>1 per lecture</td><td class="n">12.5 min</td></tr>
+<tr><td class="n">7</td><td>Generate</td><td><span class="tag g">generator</span></td><td class="n">1,088</td><td class="n">1,591</td><td>recall, quiz, summary, open questions, all lectures</td><td class="n">70.8 min</td></tr>
+<tr><td class="n">8</td><td>Calibration answers</td><td><span class="tag g">generator</span></td><td class="n">16</td><td class="n">16</td><td>16 sampled open questions</td><td class="n">&lt; 1 min</td></tr>
+<tr><td class="n">9</td><td>Judge, round 1</td><td><span class="tag j">judge</span></td><td class="n">604</td><td class="n">604</td><td>1 per part + lecture calls (recall, 6 links each)</td><td class="n">8.8 min</td></tr>
+<tr><td class="n">10</td><td>Repair, round 1</td><td><span class="tag g">generator</span></td><td class="n">775</td><td class="n">888</td><td>1 per rejected item</td><td class="n">35.4 min</td></tr>
+<tr><td class="n">11</td><td>Judge, round 2</td><td><span class="tag j">judge</span></td><td class="n">332</td><td class="n">332</td><td>repaired items, grouped by part</td><td class="n">≈ 2.7 min</td></tr>
+<tr><td class="n">12</td><td>Repair, round 2</td><td><span class="tag g">generator</span></td><td class="n">245</td><td class="n">262</td><td>1 per item rejected again</td><td class="n">9.8 min</td></tr>
+<tr><td class="n">13</td><td>Judge, round 3</td><td><span class="tag j">judge</span></td><td class="n">175</td><td class="n">175</td><td>repaired items, grouped by part</td><td class="n">≈ 1.1 min</td></tr></tbody>
+  </table></div>
+  <p class="note">HTTP requests include retries. Wall times are from the generator's server log for the 31 October
+  run; *stage 1 was reused from the first build, so its time is from that run; and judge rounds 2 and 3 are estimated from request times. Between
+  batches, code runs on the CPU: building prompts, the registry (with 24 s of embedding before the same-concept
+  batch), and the phases.</p>
+
+  <h4>How one batch runs</h4>
+  <ol class="steps">
+    <li><strong>Plan.</strong> The stage builds a list of <code>Call</code> objects: key, prompt, JSON schema, check
+    function, token limit. Nothing is sent yet.</li>
+    <li><strong>Submit.</strong> <code>LLM.run</code> hands all calls to a thread pool, 32 threads for the generator and
+    16 for the API judge, <em>longest prompt first</em> so the slowest calls do not start last.</li>
+    <li><strong>Cache.</strong> Each thread hashes model + prompt + schema + token limit + temperature. If that hash is in
+    <code>cache/&lt;stage&gt;.jsonl</code>, the stored answer is used and nothing is sent. This is how a rerun skips
+    everything that did not change, and how this page's replay worked.</li>
+    <li><strong>Admit.</strong> For the local server, the thread first reserves room in the shared KV pool: an estimate
+    of the prompt (characters ÷ 3) plus the most the call can generate (its token limit, at most the thinking budget +
+    1,500). It waits until all reservations fit in 85% of the 131,072-token pool. For the API, the ledger reserves the
+    call's worst-case cost and refuses it if that could pass the budget.</li>
+    <li><strong>Decode.</strong> llama-server has 32 slots and decodes every running request together (continuous
+    batching); a new request starts as soon as one finishes. Prompts that start the same way reuse the cached prefix.</li>
+    <li><strong>Check and retry.</strong> The same thread parses the answer, runs the check, and on failure retries up to
+    twice with the errors appended. Retries never wait for the rest of the batch.</li>
+    <li><strong>Collect.</strong> Answers come back in the original order; the stage turns them into data.</li>
+  </ol>
+
+  <figure class="panel">
+    <h4>Requests running on the generator, 31 October run</h4>
+    <p class="note">Average number of requests in llama-server's slots, per 30 seconds, from its log (3,983 requests).
+    The server has 32 slots; the dashed line is the admission limit for a typical call.</p>
+    <div id="slots"></div>
+    <figcaption>The plateaus are the batches. Most stages hold about 11 requests at once, not 32: the client reserves
+    each call's full token limit (8,192) plus its prompt, about 9,600 tokens, and 111,411 ÷ 9,600 ≈ 11. Same-concept
+    calls have a 4,096 limit and short prompts, so 26 fit; link calls have long prompts, so 7–8 fit. A typical call
+    really uses about 1,100 prompt and 1,300 output tokens. The gap at 147–156 min is judge round 1 on the API, while
+    the generator waits.</figcaption>
+  </figure>
+  <div class="grid3">
+    <div class="layer"><div class="k">Per request</div><h4>41–47 tokens/s</h4><p>Median output speed of one request in
+    stage 2 and stage 5, while about 11 run together.</p></div>
+    <div class="layer"><div class="k">Per server</div><h4>≈ 480 tokens/s</h4><p>Stage 2 wrote 1.43 M output tokens
+    (thinking included) in 49.8 minutes.</p></div>
+    <div class="layer"><div class="k">Prefix cache</div><h4>29% reused</h4><p>Share of all prompt tokens the server
+    took from its cache instead of computing them again.</p></div>
+  </div>
+
+  <h4>What else runs at the same time</h4>
+  <ul>
+    <li><strong>Video downloads</strong> run in a background thread for the whole run (one video at a time with yt-dlp),
+    so they cost no build time.</li>
+    <li><strong>The API judge and the local generator</strong> are separate servers, so the generator stays loaded while
+    the judge works. A local judge would need the GPU to itself: the generator would be stopped and restarted around
+    every judge round.</li>
+    <li><strong>The CPU embedder</strong> runs in the main process between batches (registry, stage 7), never on the GPU.</li>
+  </ul>
+</section>
+
+<section id="callcount">
+  <div class="eyebrow">Every call, counted</div>
+  <h3 style="margin-top:12px">5,149 calls, 5,972 requests, 14.4 M tokens</h3>
+  <p>Calls per lecture follow from its number of parts <i>n</i>: 1 segmentation call, 2<i>n</i> annotation calls, 1
+  goals call, 1 links call, about 2<i>n</i> quiz and summary calls, 4 open-question calls and 1 recall call, plus
+  same-concept checks that depend on how many of its terms are close to earlier ones, plus judge calls (<i>n</i> part
+  calls, 1 recall call and 1 call per 6 links) and the repairs.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Stage</th><th>Prompt</th><th>Server</th><th class="n">L01</th><th class="n">Course</th><th class="n">First try</th><th class="n">After retry</th><th class="n">Still failing</th><th class="n">Requests</th><th class="n">Median in → out</th></tr></thead>
+    <tbody><tr><td>1 · Segment</td><td><code>segment.standalone</code></td><td><span class="tag g">generator</span></td><td class="n">1</td><td class="n">63</td><td class="n">63</td><td class="n">0</td><td class="n">0</td><td class="n">63</td><td class="n">4,923 → 1,339</td></tr>
+<tr><td>2 · Annotate</td><td><code>annotate.subgoal_points</code></td><td><span class="tag g">generator</span></td><td class="n">7</td><td class="n">388</td><td class="n">382</td><td class="n">6</td><td class="n">0</td><td class="n">394</td><td class="n">1,060 → 1,239</td></tr>
+<tr><td>2 · Annotate</td><td><code>annotate.terms</code></td><td><span class="tag g">generator</span></td><td class="n">7</td><td class="n">388</td><td class="n">308</td><td class="n">39</td><td class="n">41</td><td class="n">519</td><td class="n">1,207 → 1,813</td></tr>
+<tr><td>3 · Goals</td><td><code>goals.hierarchy</code></td><td><span class="tag g">generator</span></td><td class="n">1</td><td class="n">63</td><td class="n">56</td><td class="n">7</td><td class="n">0</td><td class="n">71</td><td class="n">283 → 1,098</td></tr>
+<tr><td>3 · Goals</td><td><code>goals.course</code></td><td><span class="tag g">generator</span></td><td class="n">0</td><td class="n">1</td><td class="n">0</td><td class="n">1</td><td class="n">0</td><td class="n">2</td><td class="n">1,752 → 1,433</td></tr>
+<tr><td>4 · Knowledge</td><td><code>state.same_concept</code></td><td><span class="tag g">generator</span></td><td class="n">5</td><td class="n">948</td><td class="n">948</td><td class="n">0</td><td class="n">0</td><td class="n">948</td><td class="n">137 → 498</td></tr>
+<tr><td>4 · Knowledge</td><td><code>state.edges</code></td><td><span class="tag g">generator</span></td><td class="n">1</td><td class="n">63</td><td class="n">34</td><td class="n">22</td><td class="n">7</td><td class="n">107</td><td class="n">4,224 → 2,299</td></tr>
+<tr><td>5 · Generate</td><td><code>primer.recall</code></td><td><span class="tag g">generator</span></td><td class="n">0</td><td class="n">62</td><td class="n">62</td><td class="n">0</td><td class="n">0</td><td class="n">62</td><td class="n">351 → 1,194</td></tr>
+<tr><td>5 · Generate</td><td><code>active.quiz</code></td><td><span class="tag g">generator</span></td><td class="n">6</td><td class="n">386</td><td class="n">225</td><td class="n">118</td><td class="n">43</td><td class="n">619</td><td class="n">1,310 → 1,711</td></tr>
+<tr><td>5 · Generate</td><td><code>active.summary</code></td><td><span class="tag g">generator</span></td><td class="n">7</td><td class="n">388</td><td class="n">314</td><td class="n">70</td><td class="n">4</td><td class="n">469</td><td class="n">977 → 1,239</td></tr>
+<tr><td>5 · Generate</td><td><code>constructive.open_question</code></td><td><span class="tag g">generator</span></td><td class="n">4</td><td class="n">252</td><td class="n">108</td><td class="n">122</td><td class="n">22</td><td class="n">441</td><td class="n">1,132 → 1,247</td></tr>
+<tr><td>6 · Calibrate</td><td><code>calibrate.answers</code></td><td><span class="tag g">generator</span></td><td class="n">4</td><td class="n">16</td><td class="n">16</td><td class="n">0</td><td class="n">0</td><td class="n">16</td><td class="n">1,837 → 977</td></tr>
+<tr><td>6 · Judge</td><td><code>judge.segment</code></td><td><span class="tag j">judge</span></td><td class="n">18</td><td class="n">895</td><td class="n">895</td><td class="n">0</td><td class="n">0</td><td class="n">895</td><td class="n">1,798 → 926</td></tr>
+<tr><td>6 · Judge</td><td><code>judge.lecture</code></td><td><span class="tag j">judge</span></td><td class="n">3</td><td class="n">216</td><td class="n">216</td><td class="n">0</td><td class="n">0</td><td class="n">216</td><td class="n">1,103 → 623</td></tr>
+<tr><td>6 · Repair</td><td><code>repair.term</code></td><td><span class="tag g">generator</span></td><td class="n">8</td><td class="n">552</td><td class="n">551</td><td class="n">1</td><td class="n">0</td><td class="n">553</td><td class="n">892 → 802</td></tr>
+<tr><td>6 · Repair</td><td><code>repair.quiz</code></td><td><span class="tag g">generator</span></td><td class="n">8</td><td class="n">166</td><td class="n">142</td><td class="n">8</td><td class="n">16</td><td class="n">206</td><td class="n">1,126 → 1,053</td></tr>
+<tr><td>6 · Repair</td><td><code>active.summary</code></td><td><span class="tag g">generator</span></td><td class="n">3</td><td class="n">199</td><td class="n">175</td><td class="n">24</td><td class="n">0</td><td class="n">224</td><td class="n">1,240 → 1,432</td></tr>
+<tr><td>6 · Repair</td><td><code>constructive.open_question</code></td><td><span class="tag g">generator</span></td><td class="n">3</td><td class="n">91</td><td class="n">45</td><td class="n">37</td><td class="n">9</td><td class="n">155</td><td class="n">1,222 → 1,343</td></tr>
+<tr><td>6 · Repair</td><td><code>repair.subgoal</code></td><td><span class="tag g">generator</span></td><td class="n">2</td><td class="n">12</td><td class="n">12</td><td class="n">0</td><td class="n">0</td><td class="n">12</td><td class="n">1,032 → 564</td></tr>
+<tr class="total"><td colspan="3">All calls</td><td class="n">88</td><td class="n">5,149</td><td class="n">4,552</td><td class="n">455</td><td class="n">142</td><td class="n">5,972</td><td></td></tr></tbody>
+  </table></div>
+  <p class="note">"First try / after retry / still failing" are the code checks (layer 2), not the judge. Tokens include
+  the model's thinking. The judge's 1,111 requests used 2.0 M input and 1.1 M output tokens; the generator's 4,861
+  requests used 5.4 M and 5.8 M.</p>
+</section>
+
+<div class="part-head"><span class="num">PART 5</span><h2>Using it</h2></div>
 
 <section id="run" style="padding-top:28px">
   <div class="eyebrow">Running it</div>
@@ -894,7 +2361,7 @@ kv_tokens = 32768</code></pre>
 </section>
 
 <!-- ================================================================== REFERENCE -->
-<div class="part-head"><span class="num">PART 5</span><h2>Reference</h2></div>
+<div class="part-head"><span class="num">PART 6</span><h2>Reference</h2></div>
 
 <section id="formal" style="padding-top:28px">
   <div class="eyebrow">Formal definitions</div>
@@ -1228,6 +2695,35 @@ function pairs(id, rows, opts) {
   document.getElementById("cmp-table").innerHTML = T.map((r) => r.length === 1
     ? `<tr><td colspan="3" class="grp">${r[0]}</td></tr>`
     : `<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td></tr>`).join("");
+})();
+
+// ---------------------------------------------------------------- requests in flight on the generator (server log, 30 s bins)
+(function () {
+  const S = [6.8, 8.8, 9.0, 9.0, 9.0, 8.8, 9.0, 9.0, 9.7, 10.0, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 9.8, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.2, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.3, 11.8, 10.7, 5.0, 12.0, 12.0, 12.0, 11.7, 2.0, 0.3, 20.5, 24.5, 24.8, 25.0, 24.8, 24.7, 25.3, 25.7, 25.8, 25.8, 26.0, 25.8, 25.5, 25.7, 26.0, 25.7, 26.0, 25.8, 25.8, 26.0, 21.3, 5.0, 6.2, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.7, 8.0, 8.0, 7.3, 7.2, 7.0, 7.0, 7.5, 7.5, 7.0, 5.0, 2.5, 6.7, 8.5, 9.0, 9.0, 9.0, 9.0, 8.8, 9.0, 9.0, 9.2, 10.0, 10.0, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 9.8, 10.0, 10.0, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.7, 12.0, 12.0, 12.0, 12.0, 11.8, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 4.7, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.7, 8.3, 9.0, 9.0, 8.8, 9.3, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.7, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 10.8, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.8, 12.0, 12.0, 12.0, 12.0, 12.0, 11.8, 10.8, 1.3, 1.0];
+  const step = 0.5;  // minutes per bin
+  const bands = [["Annotate", 0, 49.8], ["Goals", 49.8, 52.6], ["Same concept", 53.0, 63.5], ["Links", 63.5, 76.0],
+    ["Generate", 76.0, 146.8], ["Judge 1 (API)", 147.0, 155.8], ["Repair 1", 155.8, 191.2]];
+  const W = 720, H = 240, L = 34, R = 10, T = 40, Bm = 26, ymax = 32, xmax = S.length * step;
+  const x = (m) => L + m / xmax * (W - L - R), y = (v) => T + (1 - v / ymax) * (H - T - Bm);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img",
+    "aria-label": "Requests in flight on the generator over the run: about 11 during most stages, 26 during the same-concept checks, 7 to 8 during link extraction, none during judge round 1" });
+  bands.forEach(([name, a, b], i) => {
+    const r = el("rect", { x: x(a), y: T, width: x(b) - x(a), height: H - T - Bm, fill: i % 2 ? "var(--surface-2)" : "transparent" });
+    hover(r, `<b>${name}</b><br>${a.toFixed(1)}–${b.toFixed(1)} min (${(b - a).toFixed(1)} min)`);
+    svg.append(r);
+    if (b - a > 6) svg.append(el("text", { x: (x(a) + x(b)) / 2, y: name === "Links" ? T - 20 : T - 6, "text-anchor": "middle" }, name));
+  });
+  [0, 8, 16, 24, 32].forEach((v) => {
+    svg.append(el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }));
+    svg.append(el("text", { x: L - 6, y: y(v) + 4, "text-anchor": "end" }, v));
+  });
+  for (let m = 0; m <= xmax; m += 30) svg.append(el("text", { x: x(m), y: H - 8, "text-anchor": "middle" }, m + " min"));
+  const pts = S.map((v, i) => `${x(i * step + step / 2).toFixed(1)},${y(v).toFixed(1)}`);
+  svg.append(el("path", { d: `M${x(0)},${y(0)} L${pts.join(" L")} L${x(xmax)},${y(0)} Z`, fill: "color-mix(in srgb, var(--s1) 30%, transparent)", stroke: "var(--s1)", "stroke-width": 1.2 }));
+  svg.append(el("line", { x1: L, x2: W - R, y1: y(11.6), y2: y(11.6), stroke: "var(--muted)", "stroke-dasharray": "4 4" }));
+  svg.append(el("text", { x: W - R - 4, y: y(11.6) - 5, "text-anchor": "end" }, "admission limit ≈ 11.6 for a 9.6k-token reservation"));
+  svg.append(el("text", { x: W - R - 4, y: y(32) + 12, "text-anchor": "end" }, "32 slots"));
+  document.getElementById("slots").append(svg);
 })();
 </script>
 </body>
