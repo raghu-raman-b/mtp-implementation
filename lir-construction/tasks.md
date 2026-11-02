@@ -119,7 +119,6 @@ open questions) as a list renderers can follow or ignore.
 | 🔄 | Real-model check on VR L01 | |
 | ⬜ | Full run on EC2: VR and Deep Learning together | |
 | ⬜ | Hand check against v1 on the same lectures: registry (duplicates, aliases, definitions), links, key points, quiz, summary, open questions, concept maps | |
-| ⬜ | Fix what the check finds; rerun from the cache | |
 
 ### Phase 4: docs, other tests, viewer
 
