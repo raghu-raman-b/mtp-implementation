@@ -111,7 +111,9 @@ class Models:
     model for all three loads once. With [engine] exclusive_gpu, starting a server stops the others. Without a
     [judge] section, the verifier judges."""
 
-    def __init__(self, cfg: Config, out: Path, ledger: Ledger, log, ui, records: list):
+    def __init__(self, cfg: Config, out: Path, ledger: Ledger, log, ui, records: list,
+                 slot_range: tuple[int, int] | None = None):
+        """slot_range (first, count): use only these server slots, so two runs (two courses) can share one server."""
         self.cfg, self.log = cfg, log
         if cfg.verifier is None:
             raise SystemExit(f"{cfg.path} has no [verifier] model")
@@ -121,7 +123,9 @@ class Models:
         for role, spec in specs.items():
             if spec.name not in by_model:
                 srv = Server(spec, cfg, out / "logs", ledger)
-                by_model[spec.name] = (srv, LLM(srv, out / "cache", workers=srv.slots, log=log, ui=ui, records=records))
+                first, count = slot_range or (0, srv.slots)
+                by_model[spec.name] = (srv, LLM(srv, out / "cache", workers=count, log=log, ui=ui, records=records,
+                                                slot_offset=first))
             self.servers[role], self.llms[role] = by_model[spec.name]
         self._lock = threading.Lock()
 

@@ -36,17 +36,46 @@ python3 tests/smoke_pipeline2.py      # plumbing check with a fake model: no GPU
 
 Output: `lir-v2/<course>/` (`course.json`, `Lxx.json`, `activities/Lxx.json`, `decisions.jsonl`, `embeddings.json`;
 schema in `lir2_schema.py`); build files and `report.md` (time, calls, judge pass rates, drops) in
-`output/<course>/v2/`. Models per role and per step are in `lir2_config.toml`: the generator (Gemma 4 E4B) finds and
-writes, the verifier (Gemma 4 12B) decides keep/drop, names, definitions, same-concept and relations, and the judge
-checks every item and rewrites failures once. Roles that name the same model share one server.
+`output/<course>/v2/`. Models per role and per step are in `lir2_config.toml`: the generator finds and writes, the
+verifier decides keep/drop, names, definitions, same-concept and relations, and the judge checks every item and
+rewrites failures once. Roles that name the same model share one server. Current setup: Qwen 3.8 27B (FP8) on vLLM
+for all three roles, thinking uncapped, Qwen's thinking-mode sampling (temperature 1.0, top-p 0.95, top-k 20).
 
-On a cloud GPU (e.g. EC2):
+Engines (`engine` per role): `vllm` (a Hugging Face repo), `llamacpp` (an `org/repo:file.gguf`), `openai` (an API
+model name). On the RTX PRO 6000 (96 GB), Qwen 27B with thinking on and a JSON schema, total output tokens per second:
 
-1. `pip install -r requirements.txt`, and build llama.cpp's `llama-server` with CUDA.
-2. In `lir2_config.toml`: `[engine] llama_server = "/path/to/llama-server"` (or set `LLAMA_SERVER`). With enough GPU
-   memory for both models, set `exclusive_gpu = false` and raise `slots` / `kv_tokens` for each role.
-3. The models download from Hugging Face on first use. The answer cache (`output/<course>/v2/cache/`) makes a rerun
-   only recompute what changed; copy it back to keep the answers.
+| Requests at once | llama.cpp, Q8 GGUF | vLLM, FP8 |
+|--:|--:|--:|
+| 1 | 45 | 45 |
+| 32 | 338 | 752 |
+| 64 | | ~1,400 |
+| 128 | | 1,353 per wave, ~1,750 steady |
+
+### On EC2 (or any big NVIDIA GPU)
+
+```bash
+git clone https://github.com/raghu-raman-b/mtp-implementation.git && cd mtp-implementation/lir-construction
+bash setup_ec2.sh                 # 15-20 min on a fresh instance; HF_TOKEN=... for faster downloads
+```
+
+`setup_ec2.sh` installs ffmpeg and ninja, the pipeline venv (`.venv`, torch for CUDA 13), vLLM 0.32.0 in
+`~/vllm-venv`, downloads Qwen 3.8 27B FP8 and the embedding model, and runs the smoke test. It is safe to rerun.
+`LLAMA=1` also builds llama.cpp and downloads the Q8 GGUF. Stopping (not terminating) the instance keeps all of it;
+an AMI of a set-up instance starts ready.
+
+Both courses on one server: the registry step goes lecture by lecture, so one course alone leaves the GPU partly
+idle. Start the server once, then give each course half of its request slots:
+
+```bash
+python3 serve_lir2.py                    # starts vLLM from lir2_config.toml, waits until ready (logs/)
+python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --slots 0-63 &
+python3 generate_lir2.py --lecture ../dataset/mit_6_7960_deep_learning   --slots 64-127 &
+python3 serve_lir2.py --stop             # when both are done
+```
+
+The answer cache (`output/<course>/v2/cache/`) makes a rerun only recompute what changed; commit it or copy it back
+to keep the answers. Captions for lectures without subtitles (VR L04, L05) are kept in `output/<course>/v2/subs/`,
+because YouTube often refuses cloud machines.
 
 ## Running on another PC
 

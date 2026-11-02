@@ -112,10 +112,14 @@ open questions) as a list renderers can follow or ignore.
 
 | Status | Task | Notes |
 |---|---|---|
-| ⬜ | Full run on EC2: VR course | the user runs it; ask first |
+| ✅ | EC2 setup script (`setup_ec2.sh`): ffmpeg, ninja, venvs, vLLM 0.32.0, Qwen 3.8 27B FP8, smoke test | g7e.2xlarge, RTX PRO 6000 96 GB; llama.cpp optional (`LLAMA=1`) |
+| ✅ | vLLM engine in the client (`engine = "vllm"`): launch, prefix caching, sampling and output cap per model, no slots | llama.cpp ran Qwen 27B at 338 tok/s with 32 requests, vLLM at 752 (1,750 steady at 128) |
+| ✅ | Two courses on one server: `serve_lir2.py`, `generate_lir2.py --slots 0-63` | the registry step is serial per lecture |
+| ✅ | Qwen 3.8 27B for generator, verifier and judge; thinking uncapped; Qwen's thinking-mode sampling | `lir2_config.toml` |
+| 🔄 | Real-model check on VR L01 | |
+| ⬜ | Full run on EC2: VR and Deep Learning together | |
 | ⬜ | Hand check against v1 on the same lectures: registry (duplicates, aliases, definitions), links, key points, quiz, summary, open questions, concept maps | |
 | ⬜ | Fix what the check finds; rerun from the cache | |
-| ⬜ | Full run: Deep Learning course | |
 
 ### Phase 4: docs, other tests, viewer
 

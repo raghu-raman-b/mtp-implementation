@@ -102,6 +102,9 @@ class VideoDownloader(threading.Thread):
 def fetch_auto_captions(youtube_id: str, dest: Path, log_path: Path) -> Path | None:
     import yt_dlp
     dest.parent.mkdir(parents=True, exist_ok=True)
+    saved = sorted(dest.parent.glob(dest.with_suffix("").name + "*.json3"))
+    if saved:  # fetched before (YouTube often refuses cloud machines, so keep and reuse the file)
+        return saved[0]
     opts = {"skip_download": True, "writeautomaticsub": True, "subtitleslangs": ["en"], "subtitlesformat": "json3",
             "outtmpl": str(dest.with_suffix("")), "quiet": True, "logger": _Quiet(log_path)}
     with yt_dlp.YoutubeDL(opts) as ydl:

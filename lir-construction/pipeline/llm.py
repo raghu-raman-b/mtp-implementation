@@ -45,8 +45,8 @@ def toolbox_prefix() -> list[str]:
 
 
 def stop_port(port: int):
-    """Stop a llama-server on this port (it may live inside the toolbox, outside our process group)."""
-    pattern = f"llama-server.*--port {port}"
+    """Stop a llama-server or vLLM server on this port (it may live inside the toolbox, outside our process group)."""
+    pattern = f"(llama-server|vllm serve).*--port {port}"
     subprocess.run(["pkill", "-f", pattern], check=False)
     for _ in range(60):
         if subprocess.run(["pgrep", "-f", pattern], capture_output=True).returncode:
@@ -60,7 +60,7 @@ class Server:
 
     def __init__(self, spec: ModelSpec, cfg: Config, log_dir: Path, ledger: Ledger | None = None):
         self.spec, self.cfg, self.ledger = spec, cfg, ledger
-        self.engine = "llamacpp" if spec.local else "openai"
+        self.engine = spec.engine
         self.slots, self.ctx_total = spec.slots, spec.kv_tokens
         self.port = spec.port
         self.url = f"http://127.0.0.1:{self.port}" if spec.local else cfg.api.get("base_url", "https://api.openai.com/v1")
@@ -78,6 +78,8 @@ class Server:
 
     @property
     def model(self) -> str:
+        if self.engine == "vllm":
+            return f"{self.spec.name} (vLLM)"
         return (f"{self.spec.name} (llama.cpp, KV f16)" if self.spec.local
                 else f"{self.spec.name} (OpenAI API, reasoning {self.spec.reasoning_effort})")
 
@@ -91,6 +93,8 @@ class Server:
             return False
 
     def command(self) -> list[str]:
+        if self.engine == "vllm":
+            return self.vllm_command()
         from huggingface_hub import hf_hub_download
         binary = self.cfg.engine.get("llama_server") or os.environ.get("LLAMA_SERVER") or str(LLAMA_SERVER)
         return toolbox_prefix() + [
@@ -102,7 +106,31 @@ class Server:
             "--reasoning-budget", str(self.think_budget),
             "--reasoning-budget-message", "I have thought enough; now I give the final answer.",
             "--host", "127.0.0.1", "--port", str(self.port), "--metrics",
-        ]
+        ] + [str(x) for x in self.cfg.engine.get("extra_args", [])]   # e.g. batch sizes for a big GPU
+
+    def vllm_command(self) -> list[str]:
+        """vLLM: continuous batching, automatic prefix caching, text only (no vision tower), thinking parsed out."""
+        e = self.cfg.engine
+        binary = e.get("vllm") or os.environ.get("VLLM") or "vllm"
+        return [str(Path(binary).expanduser()), "serve", self.spec.name, "--served-model-name", self.spec.name,
+                "--host", "127.0.0.1", "--port", str(self.port),
+                "--max-num-seqs", str(self.slots), "--max-model-len", str(self.spec.max_model_len),
+                "--gpu-memory-utilization", str(e.get("gpu_memory_utilization", 0.92)),
+                # prefix caching on a hybrid model (Qwen 3.5+) keeps a linear-attention state every block: much memory
+                "--enable-prefix-caching" if e.get("prefix_caching", True) else "--no-enable-prefix-caching",
+                "--reasoning-parser", str(e.get("reasoning_parser", "qwen3")),
+                "--limit-mm-per-prompt", json.dumps({"image": 0, "video": 0}), "--seed", "0",
+                ] + [str(x) for x in e.get("vllm_args", [])]
+
+    def env(self, cmd: list[str]) -> dict:
+        env = dict(os.environ)
+        if self.engine == "vllm":  # vLLM compiles kernels with tools from its venv (ninja) and CUDA's nvcc
+            env["PATH"] = f"{Path(cmd[0]).parent}:/usr/local/cuda/bin:{env.get('PATH', '')}"
+        elif not toolbox_prefix():  # llama-server needs the CUDA 13 runtime; outside the toolbox it is in the main venv
+            cu = HERE.parent / "lib/python3.14/site-packages/nvidia/cu13/lib"
+            if cu.exists():
+                env["LD_LIBRARY_PATH"] = f"{cu}:{env.get('LD_LIBRARY_PATH', '')}"
+        return env
 
     def start(self, log=print):
         if not self.spec.local:
@@ -128,12 +156,7 @@ class Server:
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         cmd = self.command()
         log(f"  starting {self.spec.role}: {self.spec.name}, {self.slots} slots, {self.ctx_total:,}-token KV pool")
-        env = dict(os.environ)
-        if not toolbox_prefix():  # llama-server needs the CUDA 13 runtime; outside the toolbox it is in the main venv
-            cu = HERE.parent / "lib/python3.14/site-packages/nvidia/cu13/lib"
-            if cu.exists():
-                env["LD_LIBRARY_PATH"] = f"{cu}:{env.get('LD_LIBRARY_PATH', '')}"
-        self.proc = subprocess.Popen(cmd, stdout=open(self.log_path, "a"), stderr=subprocess.STDOUT, env=env,
+        self.proc = subprocess.Popen(cmd, stdout=open(self.log_path, "a"), stderr=subprocess.STDOUT, env=self.env(cmd),
                                      start_new_session=True)
         atexit.register(self.stop)
         while not self.health():
@@ -160,7 +183,9 @@ class Server:
     def count_tokens(self, text: str) -> int:
         if not self.spec.local:
             return len(text) // 4
-        req = urllib.request.Request(self.url + "/tokenize", data=json.dumps({"content": text}).encode(),
+        body = ({"model": self.spec.name, "prompt": text, "add_special_tokens": False} if self.engine == "vllm"
+                else {"content": text})
+        req = urllib.request.Request(self.url + "/tokenize", data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=60) as r:
             return len(json.load(r)["tokens"])
@@ -242,8 +267,10 @@ class LLM:
     """Batching client with disk cache, retries with feedback, and per-call cost logging."""
 
     def __init__(self, server: Server, cache_dir: Path, workers: int, temperature: float = 0.0, log=print, ui=None,
-                 records: list | None = None):
+                 records: list | None = None, slot_offset: int = 0):
         self.server, self.workers, self.temperature, self.log, self.ui = server, workers, temperature, log, ui
+        # runs sharing one server each use their own slots (slot_offset .. slot_offset + workers - 1)
+        self.slot_offset = slot_offset
         self.cache_dir = cache_dir
         cache_dir.mkdir(parents=True, exist_ok=True)
         self.model = server.model
@@ -251,7 +278,9 @@ class LLM:
         self._lock = threading.Lock()
         self._caches: dict[str, dict] = {}
         # admission control: llama.cpp's slots share one KV pool, so cap the tokens in flight
-        self._budget = int(server.ctx_total * 0.85) if server.engine == "llamacpp" else 10 ** 12
+        # (a run using only some of the slots gets the same share of the pool)
+        share = min(1.0, workers / server.slots) if server.slots else 1.0
+        self._budget = int(server.ctx_total * 0.85 * share) if server.engine == "llamacpp" else 10 ** 12
         self._in_flight = 0
         self._cv = threading.Condition()
         self._tl = threading.local()           # the server slot the current thread is pinned to (prefix cache)
@@ -278,7 +307,11 @@ class LLM:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     def _hash(self, prompt: str, schema: dict, max_tokens: int) -> str:
-        blob = json.dumps([self.model, prompt, schema, max_tokens, self.temperature], sort_keys=True)
+        parts = [self.model, prompt, schema, max_tokens, self.temperature]
+        spec = self.server.spec
+        if spec.sampling or spec.max_tokens is not None:   # only then: older caches keep their keys
+            parts.append([spec.sampling, spec.max_tokens])
+        blob = json.dumps(parts, sort_keys=True)
         return hashlib.sha256(blob.encode()).hexdigest()[:20]
 
     # -- one HTTP call
@@ -291,6 +324,17 @@ class LLM:
             "response_format": {"type": "json_schema", "json_schema": {"name": "answer", "schema": schema, "strict": True}},
             "chat_template_kwargs": {"enable_thinking": True},
         }
+        if self.server.engine == "vllm":   # vLLM reuses shared prompt starts by itself: no slots, no admission
+            spec = self.server.spec
+            body["model"] = spec.name
+            body.update(spec.sampling)
+            if spec.max_tokens == 0:
+                body.pop("max_tokens")         # no cap: up to max_model_len
+            elif spec.max_tokens:
+                body["max_tokens"] = spec.max_tokens
+            req = urllib.request.Request(self.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
+                                         headers={"Content-Type": "application/json"})
+            return self._post_admitted(req)
         slot = getattr(self._tl, "slot", None)
         if slot is not None:
             body["id_slot"] = slot
@@ -369,7 +413,8 @@ class LLM:
                 self.server.ensure_up(lambda m: self.log(m))
         msg = d["choices"][0]["message"]
         u = d.get("usage", {})
-        return {"content": (msg.get("content") or "").strip(), "reasoning": msg.get("reasoning_content") or "",
+        return {"content": (msg.get("content") or "").strip(),
+                "reasoning": msg.get("reasoning_content") or msg.get("reasoning") or "",
                 "input_tokens": u.get("prompt_tokens", 0), "output_tokens": u.get("completion_tokens", 0),
                 "latency_s": time.time() - t0, "finish": d["choices"][0].get("finish_reason")}
 
@@ -379,7 +424,7 @@ class LLM:
         if hit:
             return {**hit, "cached": True, "latency_s": 0.0}
         r = self._post(prompt, schema, max_tokens, stage)
-        if r["finish"] == "length" and not r["content"]:
+        if r["finish"] == "length" and not r["content"] and self.server.spec.max_tokens != 0:
             # thinking used the whole budget; give it more room once
             r2 = self._post(prompt, schema, max_tokens * 2, stage)
             r2["latency_s"] += r["latency_s"]
@@ -493,14 +538,14 @@ class LLM:
     def _slot_queue(self) -> "queue.Queue[int]":
         q: queue.Queue[int] = queue.Queue()
         for k in range(self.workers):
-            q.put(k)
+            q.put(self.slot_offset + k)
         return q
 
     @contextmanager
     def _pinned(self, slots: "queue.Queue[int]", pin: bool):
         slot = slots.get()
         # pin only on a local server whose slots match the workers (an out-of-range id_slot is an error)
-        self._tl.slot = slot if pin and self.server.engine == "llamacpp" and self.workers <= self.server.slots else None
+        self._tl.slot = slot if pin and self.server.engine == "llamacpp" and self.slot_offset + self.workers <= self.server.slots else None
         try:
             yield
         finally:

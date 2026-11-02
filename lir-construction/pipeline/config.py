@@ -24,10 +24,20 @@ class ModelSpec:
     kv_tokens: int
     think_budget: int
     reasoning_effort: str
+    engine_name: str = ""          # "llamacpp" | "vllm" | "openai"; default from the model name
+    sampling: dict = field(default_factory=dict)   # vLLM: temperature, top_p, top_k, ... (default: greedy)
+    max_tokens: int | None = None  # vLLM: per-call output cap; 0 = none (up to max_model_len); None = the call's own
+    max_model_len: int = 65536     # vLLM: longest prompt + answer
+
+    @property
+    def engine(self) -> str:
+        if self.engine_name:
+            return self.engine_name
+        return "llamacpp" if "/" in self.name and ":" in self.name else "openai"
 
     @property
     def local(self) -> bool:
-        return "/" in self.name and ":" in self.name
+        return self.engine in ("llamacpp", "vllm")
 
     @property
     def repo(self) -> str:
@@ -85,7 +95,9 @@ def load(path: Path | None = None) -> Config:
     def spec(role):
         r = d[role]
         return ModelSpec(role, r["model"], int(r.get("slots", 8)), int(r.get("kv_tokens", 32768)),
-                         int(r.get("think_budget", 4096)), r.get("reasoning_effort", "medium"))
+                         int(r.get("think_budget", 4096)), r.get("reasoning_effort", "medium"),
+                         r.get("engine", ""), dict(r.get("sampling", {})),
+                         int(r["max_tokens"]) if "max_tokens" in r else None, int(r.get("max_model_len", 65536)))
     fb = spec("judge_fallback") if "judge_fallback" in d else None
     if fb is not None and not fb.local:
         raise SystemExit(f"[judge_fallback] in {path} must be a local GGUF model (it runs when the API budget is spent).")

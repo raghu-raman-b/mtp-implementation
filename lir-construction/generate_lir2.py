@@ -97,6 +97,8 @@ def main():
                     help="longest transcript split into parts in one call; longer lectures use windows")
     ap.add_argument("--fresh", action="store_true", help="ignore cached LLM answers for this course")
     ap.add_argument("--keep-server", action="store_true", help="leave the model servers running afterwards")
+    ap.add_argument("--slots", help="use only these server slots, e.g. 0-47, so two courses can share one server "
+                                    "(start it first with serve_lir2.py; implies --keep-server)")
     args = ap.parse_args()
     cfg = load_config(args.config)
 
@@ -128,7 +130,12 @@ def main():
             lectures = load_lectures(course, out, ui, log)
         ledger = Ledger(cfg, course.course_id)
         records: list = []
-        models = Models(cfg, out, ledger, log, ui, records)
+        slot_range = None
+        if args.slots:
+            a, _, b = args.slots.partition("-")
+            slot_range = (int(a), int(b) - int(a) + 1)
+            args.keep_server = True   # the server is shared: the other run may still need it
+        models = Models(cfg, out, ledger, log, ui, records, slot_range)
         ui.server(f"  generator: {cfg.generator.name} · verifier: {cfg.verifier.name} · "
                   f"judge: {(cfg.judge or cfg.verifier).name}")
         R = Run(course, lectures, cfg, models, out, timer, log, ui, args.seg_max_tokens)
