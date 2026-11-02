@@ -2,6 +2,131 @@
 
 Status: ✅ done · 🔄 in progress · ⬜ to do · ⏸ on hold · ⚠️ blocked or needs a decision
 
+## LIR v2: knowledge layer overhaul (started 2026-11-02)
+
+Why: the v1 concept registry is unreliable. "Extended reality" picked up the aliases "ER", "Error rates", "Empirical
+research", "Entity-Relationship" and "Enhanced realism": the model invented "Extended reality (ER)", a first-letters rule
+matched "Error rates" to "ER", and merges chained through any member of a group. A dropped first occurrence also left
+52 duplicate-name concepts ("Loss" ×3, "Gradient" ×3). 48% (VR) and 71% (DL) of concepts have no link, and there are 12
+`prerequisite_of` links across both courses. Key-term extraction misses terms in long parts (VR L02 part 3 defines
+immersion and three kinds of VR system; one term was kept) and keeps non-concepts ("Cognitive side", "Experimental phase").
+
+v2 rebuilds the knowledge layer; the activities are rebuilt on top of it afterwards. Code: `pipeline2/`,
+`generate_lir2.py`, `lir2_schema.py`, config `lir2_config.toml`, output `lir-v2/<course>/`, on branch `lir-v2`. v1 stays
+untouched until v2 is better.
+
+Design rules (agreed):
+- Goal: make the passive lecture interactive and engaging. The LIR is a format any renderer can use (web, VR), so
+  knowledge is kept apart from how activities are shown.
+- Everything has an address and cites sentences: `L05/S0412` sentence, `L05/P03` part (a sentence range), `L05/P03/K2`
+  key point, `L05/P03/T1` term occurrence, `L05/O2` objective, `G3` course goal, `C014` concept, `C014@L05/P03` facet,
+  `E031` edge, `D0420` decision.
+- One task per prompt.
+- Code checks structure and sources only (IDs exist, the text is in the cited sentences, no cycles). Meaning is decided
+  by the model, as a yes/no with a reason. No verb lists, first-letter rules or wording heuristics.
+- Course order: nothing built for lecture k reads a later lecture. Definitions are dated: "as of lecture k", refined
+  from all of the concept's definitions up to k.
+- Every decision (merge, edge, dropped term) is logged with its call, reason and evidence in `decisions.jsonl`.
+- Lean: no salience, content type, Bloom level, ICAP/principle intents, `used_concepts`.
+- Relations: `kind_of`, `part_of`, `depends_on`. Each edge has the relation (for the system) and a label written from
+  the evidence (for learners).
+- Named systems, products and people are concepts when the lecture explains them. Terms the course never explains stay out.
+- Prompts that share a start (a window, a part) run one after another on one server slot, so the prefix cache is reused.
+
+### Phase 0: setup
+
+| Status | Task | Notes |
+|---|---|---|
+| ✅ | Branch `lir-v2` | |
+| ✅ | This task list | |
+| ✅ | Config: `verifier` role (Gemma 4 12B), model per step, llama-server path, "one model on the GPU at a time" switch (off on a big EC2 GPU) | `lir2_config.toml`, `pipeline/config.py` |
+| ✅ | Separate `judge` role (checks and rewrites); roles that name the same model share one server (e.g. one Qwen 27B for all three) | `[judge]` in `lir2_config.toml`; without it the verifier judges |
+| ✅ | LLM client: calls in a group run in order on one server slot (`id_slot`); the llama-server path from the config | `pipeline/llm.py`; v1 unchanged in behaviour |
+| ✅ | LIR v2 schema | `lir2_schema.py` |
+| ✅ | Addresses, decision log, run context | `pipeline2/addr.py`, `pipeline2/context.py` |
+| ✅ | Term matching in text (word stems, phrases, case-sensitive abbreviations) | `pipeline2/match.py` |
+
+### Phase 1: knowledge layer
+
+Built and checked with a fake model on VR L01–L02 (`tests/smoke_pipeline2.py`, which also runs the judge's rewrite
+paths); not yet run on a real model.
+
+| Status | Task | Notes |
+|---|---|---|
+| ✅ | 0 Sentences with addresses | v1 `transcript.py` and caption alignment |
+| ✅ | 1 Parts: the standalone-segments prompt (WD 0.09), parts under 2 min merged | generator |
+| ✅ | 2a Part objective, 1 call per part | generator |
+| ✅ | 2b Key points: every subject point the part teaches, each cited, no cap | generator |
+| ✅ | 3a Term candidates over windows of about 40 sentences inside each part (10 overlap), no cap; code: the term is in its cited sentences | generator |
+| ✅ | 3b Keep or drop each candidate, with a reason | verifier |
+| ✅ | 3c Glossary name (noun phrase, singular); abbreviation only if the lecturer says it, with the sentence; code checks it is there | verifier |
+| ✅ | 3d Definition from the cited sentences | verifier |
+| ✅ | 3e Grounding check; one rewrite with the reason, then drop | verifier |
+| ✅ | 3b–3e for one window run in order on one slot (shared prefix) | |
+| ✅ | 4a Registry candidates: same name, attested alias, or top 5 by embedding at 0.6 or more | code |
+| ✅ | 4b Same-concept yes/no per pair, against the concept's entry; terms in one lecture merge only if every pair says same | verifier |
+| ✅ | 4c Definition as of lecture k from all definitions so far, grounding-checked | verifier |
+| ✅ | 5a Mentions: name and attested aliases in every part from the introducing lecture on | code |
+| ✅ | 5b Facets: what each part says about each concept it mentions, or "only mentioned"; grouped per part | generator |
+| ✅ | 6a Pair candidates: similar but different (4b), a facet in the part where the other is introduced, named in the other's definition or defining sentences | code |
+| ✅ | 6b Relation: `kind_of` / `part_of` / `depends_on` (either direction) / none, with evidence | verifier |
+| ✅ | 6c Code checks: evidence mentions both, no cycles, `depends_on` earlier → later (flagged otherwise) | |
+| ✅ | 6d Link label written from the evidence, then checked; one rewrite | verifier |
+| ✅ | 7a Lecture objectives from the part objectives (contiguous runs) | generator |
+| ✅ | 7b Lecture goal from the objectives | generator |
+| ✅ | 7c Course goals, bottom-up from the lecture goals | generator |
+| ✅ | 8 Lecture map: Li → Lj weighted by concepts carried, top 3 incoming per lecture, carrier concepts listed | code |
+| ✅ | Judge: part objectives (accurate for the part?) and key points (supported by their sentences, about the subject?); one rewrite by the verifier, then a key point is dropped and an objective kept and flagged | verifier, before the goals are built |
+| ✅ | Judge: lecture objectives, lecture goals, course goals (accurate for what they group?); facets (supported by their sentences?); one rewrite, then a facet becomes a mention and a goal is kept and flagged | verifier |
+| ✅ | Step order: generator (parts, objective, key points, candidates) → verifier (judge, key terms, registry) → generator (goals, facets) → verifier (judge, edges) | |
+| ✅ | Assemble: `course.json`, `Lxx.json`, `decisions.jsonl`, alias index, concept embeddings; schema validation | `lir-v2/<course>/` |
+| ✅ | Run report: time and calls per step, counts (candidates, kept, merges, edges by type), drop reasons | `output/<course>/v2/report.md` |
+| ✅ | Entry point `generate_lir2.py` | |
+| ✅ | Smoke test with a fake model (plumbing only, no GPU) | `tests/smoke_pipeline2.py` |
+| ✅ | README: v2 and running on EC2 | |
+
+### Phase 2: activity layer
+
+Every item is tagged with the key points and concepts it tests and cites its sentences. Items are written by the
+generator and judged by the verifier (a different, larger model); one rewrite by the verifier with the judge's reason,
+then the item is dropped (a recap falls back to the part's key points). Built and checked with the same fake-model
+smoke test; not yet run on a real model. Output: `lir-v2/<course>/activities/Lxx.json`,
+kept apart from the knowledge files, with the default order (recall → watch, quiz, summary per part → concept map →
+open questions) as a list renderers can follow or ignore.
+
+| Status | Task | Notes |
+|---|---|---|
+| ✅ | Recall before lecture k: concepts carried by the lecture map's incoming links; one item per concept (question, answer) from the definition as of k−1 and earlier facets, with a jump-back sentence | up to 4 |
+| ✅ | Quiz per part, plan: which key points are worth testing and the type of each (multiple choice / true-false / yes-no), 0 to 4 items | generator; earlier lectures come back through spaced review |
+| ✅ | Quiz per part, write: one call per item; code puts the correct option at a fixed random position, checks options are distinct and the correct one does not stand out by length | v1: correct option longest in 56–64% |
+| ✅ | Summary per part: recap (2–3 sentences); check-yourself questions only on key points the quiz does not test | v1: 88–91% overlap |
+| ✅ | Concept map per lecture, by code: concepts introduced in the lecture plus earlier concepts it teaches about, ranked by links in the lecture's subgraph then facets, at most 14; seeds; edge labels from step 6d; choices logged | |
+| ✅ | Open questions, plan: the model picks 2–4 questions (type, parts, concepts) from the lecture's content | generator |
+| ✅ | Open questions, write: question, reference answer, 3–5 key points with keywords (in the reference answer) and cited sentences | generator |
+| ✅ | Judge every item (recall, quiz, recap, review question, open question); rewrite once; drop | judge |
+| ✅ | Spaced review after each part (shown after its quiz): earlier concepts the part teaches about that are due, re-asked with an earlier quiz item (least used first). "Tested" = in a quiz item or an open question; the gap doubles after each test when due (1, 2, 4, 8 lectures); once per lecture; concepts a new concept depends on first. Up to 4 candidates per part, the first 2 are the default | code, `pipeline2/act_spaced.py`; a renderer with learner history can pick other candidates |
+| ✅ | Scorer calibration (m, τ) from good / partial / wrong answers written for a sample of open questions; key-point embeddings | v1 `calibrate.py` and `scorer.py` |
+| ✅ | Activities schema and assembly; smoke test extended | |
+
+### Phase 3: quality check and running it
+
+| Status | Task | Notes |
+|---|---|---|
+| ⬜ | Full run on EC2: VR course | the user runs it; ask first |
+| ⬜ | Hand check against v1 on the same lectures: registry (duplicates, aliases, definitions), links, key points, quiz, summary, open questions, concept maps | |
+| ⬜ | Fix what the check finds; rerun from the cache | |
+| ⬜ | Full run: Deep Learning course | |
+
+### Phase 4: docs, other tests, viewer
+
+| Status | Task | Notes |
+|---|---|---|
+| ⬜ | Viewer on LIR v2 (knowledge + activities) | |
+| ⬜ | Live Q&A lookup: alias → concept → definition as of k, facets, edges, sentences; limited to the learner's position | serve.py API |
+| ⬜ | Answer scoring in the viewer: open answers vs key points; concept maps through the alias index, direction, label meaning or relation | |
+| ⬜ | Tests: lookups, scorer, schema round trip, leakage (nothing in lecture k cites a later lecture) | |
+| ⬜ | `docs/pipeline.html` and README for v2 | |
+
 ## Pipeline (`generate_lir.py`)
 
 | Status | Task | Notes |
@@ -80,7 +205,7 @@ Status: ✅ done · 🔄 in progress · ⬜ to do · ⏸ on hold · ⚠️ block
 | ✅ | Review questions only for subject key points | the open-question fallback limit was reverted: it cut L01 to one question |
 | ✅ | Test 2 and 3 on VR 1–3, then regenerated the whole VR course | 63 lectures, 388 parts, 883 concepts, 417 edges, 1,272 quiz items, 1,356 review questions, 101 recall items, 236 open questions; judge: 4,903 items, $0.73; about 3.7 h on the RTX 5070 |
 | ✅ | API client waits out network drops (up to ~15 min) instead of stopping the run | the first full run stopped in judge round 2 on a certificate error; resumed from the cache |
-| ⏸ | Content quality (open-question types, key-point wording, review quiz items, recall coverage, prompts) | on hold: the user evaluates both courses first and sends the issues |
+| ⏸ | Content quality (open-question types, key-point wording, review quiz items, recall coverage, prompts) | superseded by LIR v2 (top of this file) |
 
 ## Deep Learning course (MIT 6.7960) full run (2026-10-31)
 

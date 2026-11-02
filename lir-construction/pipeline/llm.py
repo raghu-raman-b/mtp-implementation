@@ -11,6 +11,7 @@ import copy
 import hashlib
 import json
 import os
+import queue
 import shutil
 import subprocess
 import threading
@@ -18,6 +19,7 @@ import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -27,7 +29,7 @@ from pydantic import BaseModel, ValidationError
 from .config import PORTS, BudgetExhausted, Config, Ledger, ModelSpec
 
 HERE = Path(__file__).resolve().parent.parent
-LLAMA_SERVER = Path.home() / "Documents/llama.cpp/build/bin/llama-server"
+LLAMA_SERVER = Path.home() / "Documents/llama.cpp/build/bin/llama-server"   # default; [engine] llama_server overrides
 TOOLBOX = "llm-engine"
 
 
@@ -90,8 +92,9 @@ class Server:
 
     def command(self) -> list[str]:
         from huggingface_hub import hf_hub_download
+        binary = self.cfg.engine.get("llama_server") or os.environ.get("LLAMA_SERVER") or str(LLAMA_SERVER)
         return toolbox_prefix() + [
-            str(LLAMA_SERVER), "-m", hf_hub_download(self.spec.repo, self.spec.file), "--no-mmproj", "-ngl", "99",
+            str(Path(binary).expanduser()), "-m", hf_hub_download(self.spec.repo, self.spec.file), "--no-mmproj", "-ngl", "99",
             # one unified KV pool (f16, not quantized) shared by all slots
             "-c", str(self.ctx_total), "-np", str(self.slots), "--kv-unified",
             "-fa", "on", "--jinja", "--reasoning", "on", "--reasoning-format", "deepseek",
@@ -117,9 +120,10 @@ class Server:
         if self.health():
             log(f"  using the {self.spec.role} server already running on port {self.port}")
             return
-        for p in PORTS.values():  # only one local model fits on the GPU at a time
-            if p != self.port:
-                stop_port(p)
+        if self.cfg.engine.get("exclusive_gpu", True):  # only one local model fits on a 12 GB card at a time
+            for p in PORTS.values():
+                if p != self.port:
+                    stop_port(p)
         t0 = time.time()
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         cmd = self.command()
@@ -197,6 +201,7 @@ class Call:
     required: bool = True
     ctx: dict = field(default_factory=dict)    # anything the caller wants back
     stage: str = ""                            # overrides the batch's stage name (cache file and cost report)
+    group: str = ""                            # calls in one group share a prompt start: run in order on one slot
 
 
 @dataclass
@@ -249,6 +254,7 @@ class LLM:
         self._budget = int(server.ctx_total * 0.85) if server.engine == "llamacpp" else 10 ** 12
         self._in_flight = 0
         self._cv = threading.Condition()
+        self._tl = threading.local()           # the server slot the current thread is pinned to (prefix cache)
 
     # -- disk cache: one JSONL per stage, keyed by input hash
     def _cache(self, stage: str) -> dict:
@@ -285,6 +291,9 @@ class LLM:
             "response_format": {"type": "json_schema", "json_schema": {"name": "answer", "schema": schema, "strict": True}},
             "chat_template_kwargs": {"enable_thinking": True},
         }
+        slot = getattr(self._tl, "slot", None)
+        if slot is not None:
+            body["id_slot"] = slot
         req = urllib.request.Request(self.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json"})
         # rough prompt tokens + the most a call can generate (thinking is capped by the server's budget)
@@ -417,21 +426,83 @@ class LLM:
                        cached_all, h0)
 
     def run(self, stage: str, calls: list[Call], desc: str, max_retries: int = 2) -> list[Outcome]:
-        """Send every call of a stage at once; return outcomes in the same order."""
+        """Send every call of a stage at once; return outcomes in the same order.
+
+        Calls with the same `group` share a prompt start: they run one after another on one server slot, so the
+        slot's prefix cache is reused. Ungrouped calls run independently."""
         if not calls:
             return []
         out: list[Optional[Outcome]] = [None] * len(calls)
         if self.ui:
             self.ui.calls(desc, len(calls))
         retries = 0
-        # longest prompts first, so the long tail does not start last
-        order = sorted(range(len(calls)), key=lambda i: -len(calls[i].prompt))
+        units: dict[str, list[int]] = {}
+        for i, c in enumerate(calls):
+            units.setdefault(c.group or f"\0{i}", []).append(i)
+        # longest work first, so the long tail does not start last
+        order = sorted(units.values(), key=lambda u: -sum(len(calls[i].prompt) for i in u))
+        slots = self._slot_queue()
+
+        def unit(idx: list[int]):
+            with self._pinned(slots, len(idx) > 1):
+                return [(i, self._run_one(calls[i].stage or stage, calls[i], max_retries)) for i in idx]
+
         with ThreadPoolExecutor(self.workers) as ex:
-            futs = {ex.submit(self._run_one, calls[i].stage or stage, calls[i], max_retries): i for i in order}
-            for f in as_completed(futs):
-                o = f.result()
-                out[futs[f]] = o
-                retries += o.retries
-                if self.ui:
-                    self.ui.advance(1, tokens=0 if o.cached else o.output_tokens, retries=retries)
+            for f in as_completed([ex.submit(unit, u) for u in order]):
+                for i, o in f.result():
+                    out[i] = o
+                    retries += o.retries
+                    if self.ui:
+                        self.ui.advance(1, tokens=0 if o.cached else o.output_tokens, retries=retries)
         return out  # type: ignore[return-value]
+
+    def run_jobs(self, stage: str, jobs: list[Callable], desc: str, max_retries: int = 2) -> list[Any]:
+        """Run jobs that each make several dependent calls on one shared prompt start (e.g. one window's candidates:
+        keep? -> name -> define -> check). A job is `fn(send)`, where `send(call)` returns the call's Outcome; all of a
+        job's calls run in order on one server slot. Returns the jobs' results in order."""
+        if not jobs:
+            return []
+        if self.ui:
+            self.ui.calls(desc, len(jobs))
+        slots = self._slot_queue()
+        stats = {"retries": 0}
+        lock = threading.Lock()
+
+        def send(call: Call) -> Outcome:
+            o = self._run_one(call.stage or stage, call, max_retries)
+            if self.ui:
+                with lock:
+                    stats["retries"] += o.retries
+                    self.ui.advance(0, tokens=0 if o.cached else o.output_tokens, retries=stats["retries"])
+            return o
+
+        def job(fn):
+            with self._pinned(slots, True):
+                return fn(send)
+
+        out: list[Any] = [None] * len(jobs)
+        with ThreadPoolExecutor(self.workers) as ex:
+            futs = {ex.submit(job, fn): k for k, fn in enumerate(jobs)}
+            for f in as_completed(futs):
+                out[futs[f]] = f.result()
+                if self.ui:
+                    self.ui.advance(1)
+        return out
+
+    # -- slot pinning: one slot per worker thread while it runs a group
+    def _slot_queue(self) -> "queue.Queue[int]":
+        q: queue.Queue[int] = queue.Queue()
+        for k in range(self.workers):
+            q.put(k)
+        return q
+
+    @contextmanager
+    def _pinned(self, slots: "queue.Queue[int]", pin: bool):
+        slot = slots.get()
+        # pin only on a local server whose slots match the workers (an out-of-range id_slot is an error)
+        self._tl.slot = slot if pin and self.server.engine == "llamacpp" and self.workers <= self.server.slots else None
+        try:
+            yield
+        finally:
+            self._tl.slot = None
+            slots.put(slot)

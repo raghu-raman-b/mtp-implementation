@@ -1,0 +1,49 @@
+# LIR v2: which model does what. Edit and rerun generate_lir2.py; cached answers are kept per model and prompt.
+#
+# A model is either
+#   - a Hugging Face GGUF reference "org/repo:file.gguf"  -> runs locally on llama.cpp, or
+#   - an OpenAI model name, e.g. "gpt-6-luna"              -> runs on the OpenAI API (key from .env, see [api])
+
+[generator]                     # parts, objectives, key points, term candidates, goals, facets
+model = "unsloth/gemma-4-E4B-it-GGUF:gemma-4-E4B-it-UD-Q8_K_XL.gguf"
+slots = 32                      # parallel requests (throughput peaks at 32 on the RTX 5070)
+kv_tokens = 131072              # KV pool shared by all slots (f16)
+think_budget = 8192             # cap on thinking tokens per call
+
+[verifier]                      # keep/drop, names, definitions, grounding, same-concept, relations, labels
+model = "unsloth/gemma-4-12B-it-qat-GGUF:gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+slots = 8                       # fits the 12 GB card with a 32k pool; raise both on a bigger GPU
+kv_tokens = 32768
+think_budget = 4096
+
+[judge]                         # checks every item (knowledge and activities) and rewrites failures once
+model = "unsloth/gemma-4-12B-it-qat-GGUF:gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+slots = 8
+kv_tokens = 32768
+think_budget = 4096
+# Roles that name the same model share one server: e.g. one Qwen 27B GGUF in all three sections loads once.
+# Leave [judge] out and the verifier judges.
+
+[engine]
+# llama_server = "~/llama.cpp/build/bin/llama-server"   # default: ~/Documents/llama.cpp/build/bin/llama-server,
+                                                         # or the LLAMA_SERVER environment variable
+exclusive_gpu = true            # one model on the GPU at a time (12 GB card); false keeps both servers up
+
+[steps]                         # which role runs a step (defaults in pipeline2/context.py DEFAULT_STEPS)
+# keep = "generator"            # e.g. to compare E4B with 12B on keep/drop
+# Steps that share a prompt start must use the same role: objective + key_points; keep + name + define + ground;
+# same + refine.
+
+[api]
+env_file = ".env"
+key_var = "OPEN_AI_API"
+base_url = "https://api.openai.com/v1"
+budget_usd = 2.28               # total across all runs (api_spend.json); no call is sent past it
+
+[api.prices."gpt-6-luna"]       # US$ per million tokens
+input = 0.10
+cached_input = 0.01
+output = 0.50
+
+[videos]
+height = 720

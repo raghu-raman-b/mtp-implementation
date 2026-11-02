@@ -21,6 +21,33 @@ the project venv by itself, and starts and stops the model server in the `llm-en
 | `--fresh` | ignore cached LLM answers |
 | `--keep-server` | leave the local generator running for the next run |
 
+## LIR v2 (branch `lir-v2`, in progress)
+
+v2 rebuilds the LIR on stricter rules: every item cites sentences by address (`L05/S0412`), one task per prompt, code
+checks only sources and structure, a second model judges every item (one rewrite, then dropped), and every decision
+is logged with its reason. It has two layers: the knowledge (parts, key points, key terms, concept registry with dated
+definitions and facets, edges, goals, lecture map) and the activities built on it (recall, quiz, summary, concept
+map, open questions, spaced review). The plan and the status of each step are in `tasks.md` (top section).
+
+```bash
+python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --only 1-10
+python3 tests/smoke_pipeline2.py      # plumbing check with a fake model: no GPU, about a minute
+```
+
+Output: `lir-v2/<course>/` (`course.json`, `Lxx.json`, `activities/Lxx.json`, `decisions.jsonl`, `embeddings.json`;
+schema in `lir2_schema.py`); build files and `report.md` (time, calls, judge pass rates, drops) in
+`output/<course>/v2/`. Models per role and per step are in `lir2_config.toml`: the generator (Gemma 4 E4B) finds and
+writes, the verifier (Gemma 4 12B) decides keep/drop, names, definitions, same-concept and relations, and the judge
+checks every item and rewrites failures once. Roles that name the same model share one server.
+
+On a cloud GPU (e.g. EC2):
+
+1. `pip install -r requirements.txt`, and build llama.cpp's `llama-server` with CUDA.
+2. In `lir2_config.toml`: `[engine] llama_server = "/path/to/llama-server"` (or set `LLAMA_SERVER`). With enough GPU
+   memory for both models, set `exclusive_gpu = false` and raise `slots` / `kv_tokens` for each role.
+3. The models download from Hugging Face on first use. The answer cache (`output/<course>/v2/cache/`) makes a rerun
+   only recompute what changed; copy it back to keep the answers.
+
 ## Running on another PC
 
 The LIR, the viewer and the LLM answer cache are in the repo; the videos are not (9 GB for the two courses, over GitHub's file limit).

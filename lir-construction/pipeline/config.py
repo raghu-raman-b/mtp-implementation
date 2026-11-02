@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
-PORTS = {"generator": 8091, "judge": 8093, "judge_fallback": 8095}
+PORTS = {"generator": 8091, "judge": 8093, "judge_fallback": 8095, "verifier": 8097}
 
 
 @dataclass
@@ -45,11 +45,17 @@ class ModelSpec:
 @dataclass
 class Config:
     generator: ModelSpec
-    judge: ModelSpec
+    judge: ModelSpec | None
     api: dict
     videos: dict
     path: Path
     judge_fallback: ModelSpec | None = None   # local judge for the items left when the API budget runs out
+    verifier: ModelSpec | None = None         # v2: keep/drop, naming, definitions, same-concept and relation calls
+    engine: dict = field(default_factory=dict)  # v2: llama_server path, exclusive_gpu
+    steps: dict = field(default_factory=dict)   # v2: step name -> role
+
+    def roles(self) -> list[ModelSpec]:
+        return [s for s in (self.generator, self.judge, self.judge_fallback, self.verifier) if s is not None]
 
     def api_key(self) -> str:
         env = HERE / self.api.get("env_file", ".env")
@@ -62,7 +68,8 @@ class Config:
         import os
         if os.environ.get(var):
             return os.environ[var]
-        raise SystemExit(f"No API key: set {var} in {env} (needed for {self.judge.name if not self.judge.local else self.generator.name}).")
+        api = next((s.name for s in self.roles() if not s.local), "the API model")
+        raise SystemExit(f"No API key: set {var} in {env} (needed for {api}).")
 
     def prices(self, model: str) -> dict:
         p = self.api.get("prices", {}).get(model)
@@ -82,7 +89,9 @@ def load(path: Path | None = None) -> Config:
     fb = spec("judge_fallback") if "judge_fallback" in d else None
     if fb is not None and not fb.local:
         raise SystemExit(f"[judge_fallback] in {path} must be a local GGUF model (it runs when the API budget is spent).")
-    return Config(spec("generator"), spec("judge"), d.get("api", {}), d.get("videos", {"height": 720}), path, fb)
+    return Config(spec("generator"), spec("judge") if "judge" in d else None, d.get("api", {}),
+                  d.get("videos", {"height": 720}), path, fb, spec("verifier") if "verifier" in d else None,
+                  d.get("engine", {}), d.get("steps", {}))
 
 
 class BudgetExhausted(RuntimeError):
