@@ -126,6 +126,7 @@ class Models:
                 first, count = slot_range or (0, srv.slots)
                 by_model[spec.name] = (srv, LLM(srv, out / "cache", workers=count, log=log, ui=ui, records=records,
                                                 slot_offset=first))
+                by_model[spec.name][1].calls_log = out / "calls.jsonl"
             self.servers[role], self.llms[role] = by_model[spec.name]
         self._lock = threading.Lock()
 

@@ -24,14 +24,16 @@ OBJECTIVE = ("part.objective", "1", """Task: state what a learner achieves by wa
 able to do afterwards, as one phrase that starts with a verb, for example "Explain why ...", "Derive ..." or \
 "Compare ...". Be specific to this part, in at most 20 words, using only what is said in this part.""")
 
-KEY_POINTS = ("part.key_points", "1", """Task: list the key points this part teaches about the subject.
-A key point is one atomic, self-contained statement of a fact, claim, step or result of the subject, understandable \
-without the transcript. Write it as a fact of the subject ("Optical flow is ..."), not as a report of the lecture \
-("The lecturer explains ..."). Cover everything the part teaches about the subject, one point per idea, without \
-repeating yourself. Leave out course logistics: what the course or lecture will cover, its schedule, assignments or \
-the instructor's plans.
-For each key point give the numbers of the sentences that state it.
-If the part teaches nothing about the subject, return an empty list.""")
+# v1's key point instruction (pipeline/prompts.py ANNOTATE v2), on its own: 2 to 5 points, each tagged subject or
+# course. Version 1 ("no cap, cover everything") gave 72 key points for VR L01 (v1: 28), many of them trivia.
+KEY_POINTS = ("part.key_points", "2", """Task: list the key points of this part.
+- key_points: 2 to 5 key points. Each is one atomic, self-contained statement of something the part teaches \
+(a fact, claim, step or result), understandable without the transcript, with the IDs of the sentences that state it.
+  For each key point, about: "subject" if it is about the subject matter itself, or "course" if it is about the \
+course, the lecture or its organisation (what the course covers, its goals, structure, schedule, assignments or \
+the instructor's plans). Write subject key points as facts of the subject ("Optical flow is ..."), not as \
+reports of the lecture ("The lecture explains that ...").
+Use only what is said in this part.""")
 
 # ---------------------------------------------------------------- 3 key terms
 CANDIDATES = ("terms.candidates", "1", """Task: list every term that the lecturer explains in this excerpt.

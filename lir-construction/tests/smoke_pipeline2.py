@@ -44,8 +44,9 @@ def answer(call) -> dict | list:
         return {"objective": "Explain the ideas of this part"}
     if pid == "part.key_points":
         ids = [n for n, _ in lines(p)]
-        return {"key_points": [{"text": "A fact of the subject.", "sentence_ids": ids[:1]},
-                               {"text": "Another fact.", "sentence_ids": ids[1:3] or ids[:1]}]}
+        return {"key_points": [{"text": "A fact of the subject.", "sentence_ids": ids[:1], "about": "subject"},
+                               {"text": "Another fact.", "sentence_ids": ids[1:3] or ids[:1], "about": "subject"},
+                               {"text": "The course covers this.", "sentence_ids": ids[:1], "about": "course"}]}
     if pid == "terms.candidates":
         out = []
         for v in VOCAB:

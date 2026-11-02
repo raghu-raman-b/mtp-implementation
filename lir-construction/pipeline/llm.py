@@ -284,6 +284,7 @@ class LLM:
         self._in_flight = 0
         self._cv = threading.Condition()
         self._tl = threading.local()           # the server slot the current thread is pinned to (prefix cache)
+        self.calls_log: Path | None = None     # calls.jsonl: every request as it finishes (set by the v2 run)
 
     # -- disk cache: one JSONL per stage, keyed by input hash
     def _cache(self, stage: str) -> dict:
@@ -418,11 +419,23 @@ class LLM:
                 "input_tokens": u.get("prompt_tokens", 0), "output_tokens": u.get("completion_tokens", 0),
                 "latency_s": time.time() - t0, "finish": d["choices"][0].get("finish_reason")}
 
-    def _attempt(self, stage: str, call: Call, prompt: str, schema: dict, max_tokens: int) -> dict:
+    def _log_call(self, rec: dict):
+        """One line per request (cache hits too) in calls.jsonl, written as the run goes."""
+        if self.calls_log is None:
+            return
+        with self._lock:
+            with open(self.calls_log, "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec) + "\n")
+
+    def _attempt(self, stage: str, call: Call, prompt: str, schema: dict, max_tokens: int, attempt: int = 0) -> dict:
         h = self._hash(prompt, schema, max_tokens)
         hit = self._cache(stage).get(h)
+        base = {"stage": stage, "prompt_id": call.prompt_id, "lecture_id": call.lecture_id, "key": call.key,
+                "attempt": attempt}
         if hit:
+            self._log_call({**base, "cached": True, "t_end": time.time()})
             return {**hit, "cached": True, "latency_s": 0.0}
+        t_start = time.time()
         r = self._post(prompt, schema, max_tokens, stage)
         if r["finish"] == "length" and not r["content"] and self.server.spec.max_tokens != 0:
             # thinking used the whole budget; give it more room once
@@ -431,10 +444,13 @@ class LLM:
             r = r2
         rec = {"hash": h, "key": call.key, **r}
         self._cache_put(stage, rec)
+        rec2 = {**base, "model": self.model, "input_tokens": r["input_tokens"], "output_tokens": r["output_tokens"],
+                "usd": r.get("usd", 0.0), "latency_s": r["latency_s"], "t_start": t_start, "t_end": time.time(),
+                "finish": r.get("finish"), "reasoning_chars": len(r.get("reasoning") or ""),
+                "answer_chars": len(r.get("content") or ""), "cached": False}
         with self._lock:
-            self.records.append({"stage": stage, "lecture_id": call.lecture_id, "key": call.key, "model": self.model,
-                                 "input_tokens": r["input_tokens"], "output_tokens": r["output_tokens"],
-                                 "usd": r.get("usd", 0.0), "latency_s": r["latency_s"], "t_end": time.time()})
+            self.records.append(rec2)
+        self._log_call(rec2)
         return {**rec, "cached": False}
 
     def _run_one(self, stage: str, call: Call, max_retries: int) -> Outcome:
@@ -449,7 +465,7 @@ class LLM:
         h0 = self._hash(call.prompt, schema, call.max_tokens)
         for attempt in range(max_retries + 1):
             try:
-                r = self._attempt(stage, call, prompt, schema, call.max_tokens)
+                r = self._attempt(stage, call, prompt, schema, call.max_tokens, attempt)
             except BudgetExhausted as e:  # not sent: the caller decides what an unjudged item means
                 return Outcome(call, False, None, "", "", [f"budget: {e}"], attempt, tot_in, tot_out, lat, False, h0)
             tot_in += r["input_tokens"]

@@ -1,6 +1,8 @@
 """Step 2: per part, two separate calls on the same prompt start: (a) the part's objective, (b) its key points."""
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from pipeline import validate as V
@@ -20,8 +22,14 @@ class KP(BaseModel):
     sentence_ids: list[int] = Field(min_length=1, max_length=12)
 
 
-class KeyPoints(BaseModel):
-    key_points: list[KP] = Field(max_length=25)
+class AnnKP(BaseModel):              # v1 pipeline/s2_annotate.py KP
+    text: str = Field(max_length=300)
+    sentence_ids: list[int] = Field(min_length=1, max_length=8)
+    about: Literal["subject", "course"]
+
+
+class KeyPoints(BaseModel):          # v1: 2 to 5
+    key_points: list[AnnKP] = Field(min_length=2, max_length=5)
 
 
 def prefix(R: Run, lec: Lecture, p: Part) -> str:
@@ -75,6 +83,11 @@ def run(R: Run):
             if not ids or not kp.text.strip():
                 R.decisions.add("key_points", [p.id], "key point dropped", "cites no sentence of the part",
                                 o, llm.model, text=kp.text)
+                continue
+            if kp.about == "course":  # v2 keeps the subject only
+                R.decisions.add("key_points", [p.id], "key point dropped", "about the course, not the subject",
+                                o, llm.model, text=kp.text)
+                R.count("key_points_course_dropped")
                 continue
             kept.append({"id": f"{p.id}/K{len(kept) + 1}", "text": strip_ids(kp.text), "sentences": ids})
         p.key_points = kept

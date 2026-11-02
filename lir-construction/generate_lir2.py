@@ -68,18 +68,18 @@ def parse_only(spec):
     return out
 
 
-def load_lectures(course, out, ui, log) -> list[Lecture]:
+def load_lectures(course, subs_dir, ui, log) -> list[Lecture]:
     lectures = []
     ui.calls("load and align transcripts", len(course.lectures))
     for inp in course.lectures:
         if inp.srt is None:  # align the official transcript to YouTube's automatic captions
-            j = fetch_auto_captions(inp.youtube_id, out / "subs" / f"{inp.lecture_id}.json3", out / "logs" / "videos.log")
+            j = fetch_auto_captions(inp.youtube_id, subs_dir / f"{inp.lecture_id}.json3", subs_dir.parent / "logs" / "videos.log")
             if j is None:
                 log(f"  ! {inp.lecture_id}: no captions to align to; skipped", "warn")
                 ui.advance()
                 continue
             inp.sentences = align_transcript(inp.txt, j)
-            inp.srt = out / "subs" / f"{inp.lecture_id}.srt"
+            inp.srt = subs_dir / f"{inp.lecture_id}.srt"
             write_srt(inp.sentences, inp.srt)
         else:
             inp.sentences = load_sentences(inp.srt)
@@ -97,6 +97,9 @@ def main():
                     help="longest transcript split into parts in one call; longer lectures use windows")
     ap.add_argument("--fresh", action="store_true", help="ignore cached LLM answers for this course")
     ap.add_argument("--keep-server", action="store_true", help="leave the model servers running afterwards")
+    ap.add_argument("--run-dir", type=Path,
+                    help="write this run's files to DIR/build (cache, steps, report, calls.jsonl, status.json) and its "
+                         "LIR to DIR/lir, instead of output/<course>/v2/ and lir-v2/<course>/ (run_v2.sh sets it)")
     ap.add_argument("--slots", help="use only these server slots, e.g. 0-47, so two courses can share one server "
                                     "(start it first with serve_lir2.py; implies --keep-server)")
     args = ap.parse_args()
@@ -106,8 +109,11 @@ def main():
     course = discover(args.lecture, parse_only(args.only))
     if not course.lectures:
         sys.exit("no lectures to process")
-    out = HERE / "output" / course.course_id / "v2"
-    lir_dir = HERE / "lir-v2" / course.course_id
+    subs_dir = HERE / "output" / course.course_id / "v2" / "subs"   # captions for lectures without subtitles
+    if args.run_dir:
+        out, lir_dir = args.run_dir.resolve() / "build", args.run_dir.resolve() / "lir"
+    else:
+        out, lir_dir = HERE / "output" / course.course_id / "v2", HERE / "lir-v2" / course.course_id
     (out / "logs").mkdir(parents=True, exist_ok=True)
     if args.fresh and (out / "cache").exists():
         shutil.rmtree(out / "cache")
@@ -115,11 +121,12 @@ def main():
     UImod.STAGE_LABEL.update({k: v[0] for k, v in STAGES.items()})
     ui = UI()
     ui._weights = {k: v[1] for k, v in STAGES.items()}
-    with ui:
+    status = UImod.StatusWriter(ui, out / "status.json", course, len(course.lectures))
+    with ui, status:
         log = ui.log
         log(f"Course  {course.title}  ({course.course_id})  ·  LIR v2", "stage")
-        log(f"        {len(course.lectures)} lectures · LIR → lir-v2/{course.course_id}/ · build files → "
-            f"output/{course.course_id}/v2/", "dim")
+        rel = lambda p: p.relative_to(HERE) if p.is_relative_to(HERE) else p  # noqa: E731
+        log(f"        {len(course.lectures)} lectures · LIR → {rel(lir_dir)}/ · build files → {rel(out)}/", "dim")
         for s in course.skipped:
             log(f"  ! skipped {s}", "warn")
         if args.only and min(parse_only(args.only)) > 1:
@@ -127,7 +134,7 @@ def main():
 
         timer = Timer(ui)
         with timer.stage("transcripts"):
-            lectures = load_lectures(course, out, ui, log)
+            lectures = load_lectures(course, subs_dir, ui, log)
         ledger = Ledger(cfg, course.course_id)
         records: list = []
         slot_range = None
@@ -136,6 +143,7 @@ def main():
             slot_range = (int(a), int(b) - int(a) + 1)
             args.keep_server = True   # the server is shared: the other run may still need it
         models = Models(cfg, out, ledger, log, ui, records, slot_range)
+        status.records = records
         ui.server(f"  generator: {cfg.generator.name} · verifier: {cfg.verifier.name} · "
                   f"judge: {(cfg.judge or cfg.verifier).name}")
         R = Run(course, lectures, cfg, models, out, timer, log, ui, args.seg_max_tokens)
@@ -184,8 +192,8 @@ def main():
         text = report.write(R, records, time.time() - t_start)
 
     ui.console.print(text.split("## Per lecture")[0].strip())
-    ui.log(f"\nLIR v2   → lir-v2/{course.course_id}/", "ok")
-    ui.log(f"Report   → output/{course.course_id}/v2/report.md", "ok")
+    ui.log(f"\nLIR v2   → {lir_dir}/", "ok")
+    ui.log(f"Report   → {out / 'report.md'}", "ok")
 
 
 if __name__ == "__main__":

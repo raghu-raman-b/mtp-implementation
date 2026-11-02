@@ -63,13 +63,31 @@ bash setup_ec2.sh                 # 15-20 min on a fresh instance; HF_TOKEN=... 
 `LLAMA=1` also builds llama.cpp and downloads the Q8 GGUF. Stopping (not terminating) the instance keeps all of it;
 an AMI of a set-up instance starts ready.
 
-Both courses on one server: the registry step goes lecture by lecture, so one course alone leaves the GPU partly
-idle. Start the server once, then give each course half of its request slots:
+Full run, both courses, with a live dashboard and a stats report:
+
+```bash
+bash run_v2.sh                    # every lecture of VR and Deep Learning; --only 1-3, --courses vr, --name, --resume
+```
+
+It opens a tmux session `lir2` (Ctrl-b d detaches, `tmux attach -t lir2` comes back) with a dashboard (GPU, vLLM
+throughput, KV cache, each course's step and progress), one window per course, the server log and a control window.
+Each run gets its own folder, so nothing earlier is overwritten:
+
+```
+runs/<name>/report.md, charts/     time (per step, per lecture), requests and tokens per type, GPU and server stats,
+                                   what was built; rerun python3 run_report.py runs/<name> at any time
+runs/<name>/<course>/lir/          the LIR v2
+runs/<name>/<course>/build/        answer cache, step outputs, calls.jsonl (every request), report.md
+runs/<name>/server.csv             GPU and vLLM metrics every 5 s (run_monitor.py)
+```
+
+By hand, both courses on one server: the registry step goes lecture by lecture, so one course alone leaves the GPU
+partly idle. Start the server once, then run both courses against it:
 
 ```bash
 python3 serve_lir2.py                    # starts vLLM from lir2_config.toml, waits until ready (logs/)
-python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --slots 0-63 &
-python3 generate_lir2.py --lecture ../dataset/mit_6_7960_deep_learning   --slots 64-127 &
+python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --slots 0-127 &   # vLLM queues what does not fit, so
+python3 generate_lir2.py --lecture ../dataset/mit_6_7960_deep_learning   --slots 0-127 &   # each course may use all 128
 python3 serve_lir2.py --stop             # when both are done
 ```
 
