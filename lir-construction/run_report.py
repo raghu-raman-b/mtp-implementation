@@ -354,11 +354,17 @@ def write(D: dict, A: dict, made: list) -> str:
     cfg = {}
     try:
         import tomllib
-        cfg = tomllib.loads((run / "lir2_config.toml").read_text())
+        cf = next((f for f in (run / "config.toml", run / "lir2_config.toml") if f.exists()), None)   # run_v2.sh saves config.toml
+        cfg = tomllib.loads(cf.read_text()) if cf else {}
     except Exception:
         pass
     g = cfg.get("generator", {})
     e = cfg.get("engine", {})
+    roles: dict[str, list[str]] = {}                 # model -> the roles that use it (they share one server)
+    for r in ("generator", "verifier", "judge"):
+        if cfg.get(r, {}).get("model"):
+            roles.setdefault(cfg[r]["model"], []).append(r)
+    num = lambda x: f"{x:,}" if isinstance(x, (int, float)) else "?"
     state = "finished" if meta.get("finished") else "in progress (partial numbers)"
     L = [f"# LIR v2 run `{meta.get('name', run.name)}`", "",
          f"{', '.join(c['title'] for c in A['courses'])}: {A['lectures']} lectures, "
@@ -397,21 +403,24 @@ def write(D: dict, A: dict, made: list) -> str:
                      f"{c['in'] / 1e6:.1f} M", f"{c['out'] / 1e6:.1f} M", f"{c['think_share'] * 100:.0f}%"])
     L += [table(["Course", "Lectures", "Video", "Wall time", "GPU time per lecture", "Requests", "Retries",
                  "Cut at length", "Input tokens", "Output tokens", "Thinking share"], rows), "",
-          "Both courses ran at the same time on one server, so the wall times overlap. GPU time per lecture is the "
+          "Courses ran one after another, each with the whole GPU. GPU time per lecture is the "
           "generation time split by each lecture's share of all output tokens. Thinking share is estimated from "
           "the characters of thinking and answer text.", ""]
 
     L += ["## Setup", "",
           table(["", ""], [
               ["GPU", meta.get("gpu", "?")],
-              ["Model", f"{g.get('model', '?')} on {g.get('engine', '?')} {meta.get('vllm', '')} "
-                        "(generator, verifier and judge)"],
-              ["Requests at once", f"{g.get('slots', '?')} on the server; each course sends up to 128"],
-              ["Context", f"{g.get('max_model_len', '?'):,} tokens; output cap: "
+              *[[f"Model ({', '.join(rs)})", f"{m} on {cfg[rs[0]].get('engine', '?')} {meta.get('vllm', '')}, "
+                 f"{cfg[rs[0]].get('slots', '?')} requests at once, GPU memory "
+                 f"{cfg[rs[0]].get('gpu_memory_utilization', e.get('gpu_memory_utilization', '?'))}"]
+                for m, rs in roles.items()],
+              ["Context", f"{num(g.get('max_model_len'))} tokens; output cap: "
                           f"{'none' if not g.get('max_tokens') else g.get('max_tokens')}"],
               ["Sampling", ", ".join(f"{k} {v}" for k, v in (g.get("sampling") or {}).items())],
-              ["Engine", f"GPU memory {e.get('gpu_memory_utilization')}, prefix caching "
-                         f"{'on' if e.get('prefix_caching') else 'off'}, {' '.join(e.get('vllm_args', []))}"],
+              ["Engine", f"prefix caching "
+                         f"{'on' if e.get('prefix_caching') else 'off'}"
+                         + (f", {' '.join(e['vllm_args'])}" if e.get('vllm_args') else "")
+                         + (", priority scheduling" if e.get('priority') else "")],
               ["Code", f"commit {meta.get('git_commit', '?')}{' + local changes' if meta.get('git_dirty') else ''}"],
               ["Lectures", meta.get("only", "all")]], "ll"), ""]
 

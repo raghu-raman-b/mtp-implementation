@@ -216,8 +216,8 @@ model.
 | Status | Task | Notes |
 |---|---|---|
 | ✅ | Engine checks | done on EC2 before this plan |
-| ⬜ | VR, small setup | today, first: also the shakedown of the new pipeline (~2 h) |
-| ⬜ | VR, large setup | today, second (~5 h) |
+| ✅ | VR, small setup | run `v2-20261103-0755`: 5 h 39 min (plan 2.1 h); findings in `runs/v2-20261103-0755/small/ANALYSIS.md` (links missing in 27 lectures, open questions in 20) |
+| ⏸ | VR, large setup | stopped by hand at 17% on 2026-11-03; cache kept, `--resume v2-20261103-0755 --setups large`; fix the links overflow first |
 | ⬜ | DL, small and large | |
 | ⬜ | Compare the two setups and v1 by hand: registry, facets, links (missed links in big lectures?), key terms, activities | |
 

@@ -1,0 +1,4538 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L55",
+ "index": 55,
+ "title": "VR resource optimization",
+ "source_file": "lec_55.srt",
+ "timing_source": "srt",
+ "youtube_id": "wppm_GdDUjk",
+ "duration_s": 2388.538,
+ "sentences": [
+  {
+   "id": "L55/S0000",
+   "start": 24.078,
+   "end": 29.745,
+   "text": "Hello and welcome to the NPTEL MOOCs course on Foundation for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L55/S0001",
+   "start": 30.406,
+   "end": 34.171,
+   "text": "We are going to continue our discussion on resource optimization."
+  },
+  {
+   "id": "L55/S0002",
+   "start": 34.811,
+   "end": 66.493,
+   "text": "So, earlier we talked about the basic idea of optimization, resource optimization, and in order to fully understand the resource optimization issue and solutions, we also talked about the need to understand computer graphics or CG, which basically deals with how to render an image on the display."
+  },
+  {
+   "id": "L55/S0003",
+   "start": 68.115,
+   "end": 78.328,
+   "text": "Now, we also briefly covered some basic concepts about computer graphics, namely the idea of a generic system architecture."
+  },
+  {
+   "id": "L55/S0004",
+   "start": 80.41,
+   "end": 85.395,
+   "text": "So, in a very broad sense, how a computer graphics system can be organized."
+  },
+  {
+   "id": "L55/S0005",
+   "start": 86.477,
+   "end": 91.186,
+   "text": "We talked about three major components: display controller, video memory, and video controller."
+  },
+  {
+   "id": "L55/S0006",
+   "start": 93.03,
+   "end": 106.476,
+   "text": "Then we talked about frame buffer, vector and raster scan devices, the idea of screen refreshing, and color image generation."
+  },
+  {
+   "id": "L55/S0007",
+   "start": 106.496,
+   "end": 114.603,
+   "text": "So, these are very basic concepts and terminologies that we shall be referring to in our subsequent discussions."
+  },
+  {
+   "id": "L55/S0008",
+   "start": 115.283,
+   "end": 122.772,
+   "text": "So, it is important that you remember these terms and the concepts associated with them."
+  },
+  {
+   "id": "L55/S0009",
+   "start": 125.415,
+   "end": 135.726,
+   "text": "Now, in this lecture, we are going to introduce the 3D graphics pipeline, and we are also going to talk about parts of the pipeline in this part of the lecture."
+  },
+  {
+   "id": "L55/S0010",
+   "start": 137.697,
+   "end": 143.544,
+   "text": "So, let us first talk about the 3D graphics pipeline: what it is and why we need to know it."
+  },
+  {
+   "id": "L55/S0011",
+   "start": 146.748,
+   "end": 152.095,
+   "text": "Earlier, we talked about color values that are stored in the frame buffer."
+  },
+  {
+   "id": "L55/S0012",
+   "start": 152.435,
+   "end": 162.368,
+   "text": "So, based on these values, the video controller controls the pixels so that we perceive a colored image on the screen."
+  },
+  {
+   "id": "L55/S0013",
+   "start": 164.631,
+   "end": 167.786,
+   "text": "The question is, How are these values obtained?"
+  },
+  {
+   "id": "L55/S0014",
+   "start": 169.229,
+   "end": 170.612,
+   "text": "From where do we get these values?"
+  },
+  {
+   "id": "L55/S0015",
+   "start": 173.457,
+   "end": 183.556,
+   "text": "The display processor, which is part of the display controller, is responsible for computing these values in stages."
+  },
+  {
+   "id": "L55/S0016",
+   "start": 184.979,
+   "end": 194.952,
+   "text": "So, there are a few important terms here. One is, that we have some values, real numbers, stored in the framebuffer."
+  },
+  {
+   "id": "L55/S0017",
+   "start": 195.272,
+   "end": 217.078,
+   "text": "These values are used by the video controller to drive the display mechanism, that is, the excitation of pixels, and the values are computed by the display processor, which is part of the display controller unit, and these computations take place in stages, distinct stages."
+  },
+  {
+   "id": "L55/S0018",
+   "start": 219.641,
+   "end": 226.977,
+   "text": "Now, these stages together are known as the graphics pipeline."
+  },
+  {
+   "id": "L55/S0019",
+   "start": 228.158,
+   "end": 235.644,
+   "text": "Since here we are dealing with 3D scenes, we will be talking about the 3D graphics pipeline."
+  },
+  {
+   "id": "L55/S0020",
+   "start": 236.085,
+   "end": 257.325,
+   "text": "So, essentially the process, the stage-wise process to compute the values stored in the frame buffer, which is used to drive the display mechanism by the video controller, that process, the stage-wise process, is the 3D graphics pipeline."
+  },
+  {
+   "id": "L55/S0021",
+   "start": 257.345,
+   "end": 266.653,
+   "text": "So let us have a basic understanding of what happens in this pipeline."
+  },
+  {
+   "id": "L55/S0022",
+   "start": 266.673,
+   "end": 272.118,
+   "text": "First, we define objects that will be part of the image on display."
+  },
+  {
+   "id": "L55/S0023",
+   "start": 272.138,
+   "end": 286.073,
+   "text": "So if you recollect our previous discussion, we mentioned that when we see something on a screen, it comprises objects which may or may not include interface level objects."
+  },
+  {
+   "id": "L55/S0024",
+   "start": 286.093,
+   "end": 298.572,
+   "text": "However, the idea is that first we need to define these objects that together constitute the image that is rendered on a screen."
+  },
+  {
+   "id": "L55/S0025",
+   "start": 298.592,
+   "end": 303.279,
+   "text": "For example, suppose I want to show this cube on the screen."
+  },
+  {
+   "id": "L55/S0026",
+   "start": 305.222,
+   "end": 308.627,
+   "text": "So, then I need to define this cube somewhere."
+  },
+  {
+   "id": "L55/S0027",
+   "start": 309.029,
+   "end": 312.773,
+   "text": "So that is the first stage, that is representing the object."
+  },
+  {
+   "id": "L55/S0028",
+   "start": 316.157,
+   "end": 319.22,
+   "text": "So from the representation, the final rendering takes place."
+  },
+  {
+   "id": "L55/S0029",
+   "start": 322.303,
+   "end": 326.528,
+   "text": "Then in the second stage, we perform something called modeling transformation."
+  },
+  {
+   "id": "L55/S0030",
+   "start": 327.449,
+   "end": 340.784,
+   "text": "When we are saying that we define the object, essentially what we do is we are defining the objects in their own coordinate system which is often called the local coordinate system, local to the object definition."
+  },
+  {
+   "id": "L55/S0031",
+   "start": 341.825,
+   "end": 348.551,
+   "text": "Now, when we are trying to render a scene, the scene is made up of multiple objects, each object defined in its own coordinate."
+  },
+  {
+   "id": "L55/S0032",
+   "start": 348.571,
+   "end": 357.66,
+   "text": "So, we need to put them together in a common coordinate system to construct the overall image."
+  },
+  {
+   "id": "L55/S0033",
+   "start": 357.901,
+   "end": 364.467,
+   "text": "So, essentially we put them together in a common coordinate system to construct the image that is called the world coordinate system."
+  },
+  {
+   "id": "L55/S0034",
+   "start": 365.628,
+   "end": 376.806,
+   "text": "So there is a transformation from the local coordinate system to the world coordinate system, and that is the second stage: the modeling transformation."
+  },
+  {
+   "id": "L55/S0035",
+   "start": 376.826,
+   "end": 384.118,
+   "text": "Like here, so each of these individual objects that you can see here is defined in its own coordinate system."
+  },
+  {
+   "id": "L55/S0036",
+   "start": 384.538,
+   "end": 388.665,
+   "text": "Multiple objects are there of different shapes, sizes, orientations, everything."
+  },
+  {
+   "id": "L55/S0037",
+   "start": 389.446,
+   "end": 392.952,
+   "text": "Now, to construct a scene, we are putting them together."
+  },
+  {
+   "id": "L55/S0038",
+   "start": 393.893,
+   "end": 406.548,
+   "text": "And while doing so, we are essentially bringing them together in a common coordinate system applicable to all objects, and that coordinate system is the world coordinate system."
+  },
+  {
+   "id": "L55/S0039",
+   "start": 406.628,
+   "end": 418.222,
+   "text": "So, modeling transformation transforms objects from their local coordinate system definition to objects in the world coordinate system definition."
+  },
+  {
+   "id": "L55/S0040",
+   "start": 418.242,
+   "end": 422.567,
+   "text": "The third stage is the lighting stage, the lighting or illumination stage."
+  },
+  {
+   "id": "L55/S0041",
+   "start": 424.471,
+   "end": 432.478,
+   "text": "Once the 3D scene is constructed by putting the objects together, we can assign color to the objects."
+  },
+  {
+   "id": "L55/S0042",
+   "start": 435.16,
+   "end": 436.962,
+   "text": "Say here, this is the object definition."
+  },
+  {
+   "id": "L55/S0043",
+   "start": 436.982,
+   "end": 441.966,
+   "text": "It is barely the boundaries shown here."
+  },
+  {
+   "id": "L55/S0044",
+   "start": 442.526,
+   "end": 445.389,
+   "text": "However, when we assign color, we get something like this."
+  },
+  {
+   "id": "L55/S0045",
+   "start": 446.37,
+   "end": 454.056,
+   "text": "As you can see, without assigning color, we do not perceive the 3D nature of the scene."
+  },
+  {
+   "id": "L55/S0046",
+   "start": 454.998,
+   "end": 459.885,
+   "text": "It is there, but once we assign color, it becomes more prominent."
+  },
+  {
+   "id": "L55/S0047",
+   "start": 459.905,
+   "end": 461.307,
+   "text": "The perception becomes better."
+  },
+  {
+   "id": "L55/S0048",
+   "start": 461.367,
+   "end": 471.703,
+   "text": "So, essentially, assigning color is very important, and that we do in a separate stage called the lighting or illumination stage."
+  },
+  {
+   "id": "L55/S0049",
+   "start": 472.464,
+   "end": 481.778,
+   "text": "In our pipeline, we will be doing this as the third stage of the pipeline."
+  },
+  {
+   "id": "L55/S0050",
+   "start": 481.798,
+   "end": 493.705,
+   "text": "Then, there is a fourth stage called viewing transformation, which maps the colored 3D scene to 2D device coordinates."
+  },
+  {
+   "id": "L55/S0051",
+   "start": 494.526,
+   "end": 506.763,
+   "text": "So, essentially, what happens is that we try to simulate the process of taking a snapshot of a scene with a camera."
+  },
+  {
+   "id": "L55/S0052",
+   "start": 506.783,
+   "end": 512.431,
+   "text": "When we look at a scene with our eyes, that is in a 3D world coordinate system."
+  },
+  {
+   "id": "L55/S0053",
+   "start": 512.451,
+   "end": 522.948,
+   "text": "Now, when we are looking at it through the camera eyepiece, that is, we are looking at it through a different mechanism, and then when we take a snapshot, that is on a 2D plane we are seeing it."
+  },
+  {
+   "id": "L55/S0054",
+   "start": 523.068,
+   "end": 535.242,
+   "text": "So, essentially, transforming from the 3D world coordinate scene to a 2D space, which we are calling the device space or device coordinate system."
+  },
+  {
+   "id": "L55/S0055",
+   "start": 538.626,
+   "end": 541.249,
+   "text": "The idea is shown here. Suppose this is the camera."
+  },
+  {
+   "id": "L55/S0056",
+   "start": 542.309,
+   "end": 547.076,
+   "text": "This is the object in the world coordinate system or the scene in the world coordinate system."
+  },
+  {
+   "id": "L55/S0057",
+   "start": 547.136,
+   "end": 555.589,
+   "text": "Now, this is the device coordinate system, that is, the equivalent to the screen."
+  },
+  {
+   "id": "L55/S0058",
+   "start": 557.371,
+   "end": 558.393,
+   "text": "Note the term equivalent."
+  },
+  {
+   "id": "L55/S0059",
+   "start": 558.433,
+   "end": 563.24,
+   "text": "It is not the same as the screen, as we shall see later, but it is the equivalent."
+  },
+  {
+   "id": "L55/S0060",
+   "start": 563.26,
+   "end": 571.793,
+   "text": "Now, with the camera, we are taking a snapshot, meaning we are viewing this same 3D scene on a 2D plane as shown here."
+  },
+  {
+   "id": "L55/S0061",
+   "start": 572.093,
+   "end": 580.802,
+   "text": "And this is the viewing transformation, transferring from the 3D world coordinate scene to the 2D device coordinate space."
+  },
+  {
+   "id": "L55/S0062",
+   "start": 585.828,
+   "end": 589.832,
+   "text": "Then there is the final or the fifth stage, which is scan conversion."
+  },
+  {
+   "id": "L55/S0063",
+   "start": 590.272,
+   "end": 599.502,
+   "text": "Now, we said that we are through view transformation; we are actually transferring from a 3D world coordinate scene to a 2D device coordinate space."
+  },
+  {
+   "id": "L55/S0064",
+   "start": 601.523,
+   "end": 613.376,
+   "text": "Although we are using the term device coordinate, in reality, when we talk of rendering something on a computer display, we know that the display consists of a pixel grid."
+  },
+  {
+   "id": "L55/S0065",
+   "start": 613.896,
+   "end": 621.164,
+   "text": "Now, a pixel grid means there are discrete points."
+  },
+  {
+   "id": "L55/S0066",
+   "start": 623.327,
+   "end": 629.504,
+   "text": "So, essentially, the device coordinate ideally should be a discrete space."
+  },
+  {
+   "id": "L55/S0067",
+   "start": 629.504,
+   "end": 642.385,
+   "text": "Whereas, in our earlier projection, we have assumed earlier transformation we have assumed that from a 3D world coordinate scene we are transforming to a device coordinate space which is a continuous space."
+  },
+  {
+   "id": "L55/S0068",
+   "start": 642.385,
+   "end": 647.311,
+   "text": "That means any point can take any real number as its coordinate."
+  },
+  {
+   "id": "L55/S0069",
+   "start": 647.331,
+   "end": 657.602,
+   "text": "However, when we are actually rendering it on a pixel grid, we know that only integer coordinates are allowed because it is a discrete space."
+  },
+  {
+   "id": "L55/S0070",
+   "start": 658.814,
+   "end": 680.542,
+   "text": "So, essentially, what we need to do is transform the device coordinate space description to a discrete space or the pixel grid description; that is the fifth stage or scan conversion."
+  },
+  {
+   "id": "L55/S0071",
+   "start": 680.602,
+   "end": 685.108,
+   "text": "So, the image is transformed here from the device space to the pixel grid."
+  },
+  {
+   "id": "L55/S0072",
+   "start": 688.548,
+   "end": 697.581,
+   "text": "So, suppose this is the device space description of the image, that is, a straight line as you can see."
+  },
+  {
+   "id": "L55/S0073",
+   "start": 697.621,
+   "end": 707.775,
+   "text": "Now, intermediate points can take any real number in this device space because there is no restriction on the kind of values that the points can take."
+  },
+  {
+   "id": "L55/S0074",
+   "start": 707.915,
+   "end": 719.89,
+   "text": "However, when we are talking of a pixel grid as shown here, we know that pixels, each pixel coordinate is represented by an integer."
+  },
+  {
+   "id": "L55/S0075",
+   "start": 720.23,
+   "end": 721.231,
+   "text": "It is a discrete space."
+  },
+  {
+   "id": "L55/S0076",
+   "start": 723.154,
+   "end": 728.621,
+   "text": "So, points on the line must be mapped to pixels."
+  },
+  {
+   "id": "L55/S0077",
+   "start": 729.503,
+   "end": 743.201,
+   "text": "In other words, the real values of the points, that is, the coordinates of the points, must be mapped to integer values represented by the pixels."
+  },
+  {
+   "id": "L55/S0078",
+   "start": 743.221,
+   "end": 750.678,
+   "text": "This is the scan conversion or the fifth stage of the 3D graphics pipeline."
+  },
+  {
+   "id": "L55/S0079",
+   "start": 750.698,
+   "end": 770.985,
+   "text": "So, putting everything together, we can say that this 3D graphics pipeline contains five stages: object representation, first stage; then modeling transformation, second stage; lighting, third stage."
+  },
+  {
+   "id": "L55/S0080",
+   "start": 772.417,
+   "end": 780.024,
+   "text": "Now, the fourth stage, although we said view transformation, essentially it is a kind of pipeline itself that comprises multiple stages."
+  },
+  {
+   "id": "L55/S0081",
+   "start": 780.064,
+   "end": 787.892,
+   "text": "So, let us call it the viewing pipeline, that is the fourth stage, and finally, scan conversion or the fifth stage."
+  },
+  {
+   "id": "L55/S0082",
+   "start": 790.234,
+   "end": 796.379,
+   "text": "The viewing pipeline comprises several sub-stages, such as viewing transformation."
+  },
+  {
+   "id": "L55/S0083",
+   "start": 796.399,
+   "end": 799.382,
+   "text": "So, we will go through each of these stages in brief to get the idea."
+  },
+  {
+   "id": "L55/S0084",
+   "start": 800.383,
+   "end": 802.305,
+   "text": "Then there is a process called clipping."
+  },
+  {
+   "id": "L55/S0085",
+   "start": 802.589,
+   "end": 811.481,
+   "text": "Another process called hidden surface removal, then one more transformation, projection transformation, and finally, window-to-viewport transformation."
+  },
+  {
+   "id": "L55/S0086",
+   "start": 811.501,
+   "end": 827.203,
+   "text": "So, together, all these stages basically transform a scene in the world coordinate system to a scene in the device coordinate system."
+  },
+  {
+   "id": "L55/S0087",
+   "start": 830.107,
+   "end": 840.513,
+   "text": "Now, the coordinate system on which these processes work, or the transformation that takes place, is also shown on the right-hand side."
+  },
+  {
+   "id": "L55/S0088",
+   "start": 840.593,
+   "end": 849.482,
+   "text": "So, object representation happens in the local coordinate system, local to the objects."
+  },
+  {
+   "id": "L55/S0089",
+   "start": 850.643,
+   "end": 857.431,
+   "text": "Then modeling transformation is essentially transformation from local to world coordinate system."
+  },
+  {
+   "id": "L55/S0090",
+   "start": 860.254,
+   "end": 863.232,
+   "text": "Lighting happens in the world coordinate system."
+  },
+  {
+   "id": "L55/S0091",
+   "start": 864.994,
+   "end": 870.262,
+   "text": "Then viewing transformation essentially transforms from world to view coordinate system."
+  },
+  {
+   "id": "L55/S0092",
+   "start": 870.302,
+   "end": 873.126,
+   "text": "This is a new coordinate system which we will be talking about later."
+  },
+  {
+   "id": "L55/S0093",
+   "start": 874.628,
+   "end": 877.052,
+   "text": "Clipping happens in the view coordinate system."
+  },
+  {
+   "id": "L55/S0094",
+   "start": 879.155,
+   "end": 882.78,
+   "text": "Hidden surface removal and other processes happen in the same view coordinate system."
+  },
+  {
+   "id": "L55/S0095",
+   "start": 883.682,
+   "end": 897.368,
+   "text": "Then projection transformation essentially projects or transforms 3D view coordinate system description of the scene to a 2D view coordinate system description of the scene."
+  },
+  {
+   "id": "L55/S0096",
+   "start": 899.671,
+   "end": 909.626,
+   "text": "Then window to viewport transformation essentially maps the 2D view coordinate or view coordinate system to the device coordinate system."
+  },
+  {
+   "id": "L55/S0097",
+   "start": 909.646,
+   "end": 924.609,
+   "text": "So, this one is 2D view coordinate system to the device coordinate system."
+  },
+  {
+   "id": "L55/S0098",
+   "start": 925.53,
+   "end": 938.865,
+   "text": "And finally, scan conversion or the fifth stage essentially transforms from the device coordinate system to the screen or pixel screen coordinate system or the pixel grid."
+  },
+  {
+   "id": "L55/S0099",
+   "start": 941.648,
+   "end": 951.058,
+   "text": "So, if you notice, in order to perform these five stages, we deal with several coordinate systems."
+  },
+  {
+   "id": "L55/S0100",
+   "start": 952.051,
+   "end": 960.5,
+   "text": "So, essentially one is the local coordinate system, then the world coordinate system, then the 3D view coordinate system."
+  },
+  {
+   "id": "L55/S0101",
+   "start": 962.022,
+   "end": 963.924,
+   "text": "These are all 3D view coordinate systems."
+  },
+  {
+   "id": "L55/S0102",
+   "start": 968.549,
+   "end": 975.477,
+   "text": "Then, the 3D view to 2D view coordinate transformation means another view coordinate system that is the 2D view coordinate system."
+  },
+  {
+   "id": "L55/S0103",
+   "start": 977.397,
+   "end": 981.341,
+   "text": "Then, the device coordinate system and, finally, the screen coordinate system."
+  },
+  {
+   "id": "L55/S0104",
+   "start": 981.361,
+   "end": 992.533,
+   "text": "So, essentially, seven coordinate systems are involved in this overall process."
+  },
+  {
+   "id": "L55/S0105",
+   "start": 993.454,
+   "end": 1005.126,
+   "text": "Again, just to recap: one is the local, then world, then 3D view."
+  },
+  {
+   "id": "L55/S0106",
+   "start": 1008.262,
+   "end": 1029.859,
+   "text": "Then, the 2D view coordinate system, then the device coordinate, and finally, the pixel grid or screen coordinate system, so not seven."
+  },
+  {
+   "id": "L55/S0107",
+   "start": 1029.92,
+   "end": 1048.565,
+   "text": "So, there are six coordinate systems that are used for transforming from the object definition to the pixel-level description of the scene."
+  },
+  {
+   "id": "L55/S0108",
+   "start": 1048.585,
+   "end": 1059.742,
+   "text": "Now, when I say pixel-level description, essentially this means that through all these stages, the intensity values for the pixels are calculated."
+  },
+  {
+   "id": "L55/S0109",
+   "start": 1059.762,
+   "end": 1075.739,
+   "text": "So, essentially, these stages represent the computation involved in calculating the intensities for each pixel, which will be stored in the frame buffer and which will be used to drive the video controller mechanism."
+  },
+  {
+   "id": "L55/S0110",
+   "start": 1079.103,
+   "end": 1082.227,
+   "text": "Now, that is the overall 3D graphics pipeline."
+  },
+  {
+   "id": "L55/S0111",
+   "start": 1082.568,
+   "end": 1086.233,
+   "text": "So, let us quickly have a look at the individual pipeline stages."
+  },
+  {
+   "id": "L55/S0112",
+   "start": 1086.853,
+   "end": 1090.378,
+   "text": "We will be restricting ourselves to a very broad understanding."
+  },
+  {
+   "id": "L55/S0113",
+   "start": 1091.337,
+   "end": 1097.724,
+   "text": "overview of the stages rather than going into the intricate details of each of these stages."
+  },
+  {
+   "id": "L55/S0114",
+   "start": 1097.744,
+   "end": 1103.77,
+   "text": "For further details, you may refer to the references mentioned at the end of these lectures."
+  },
+  {
+   "id": "L55/S0115",
+   "start": 1106.714,
+   "end": 1108.996,
+   "text": "So, let us start with the object representation."
+  },
+  {
+   "id": "L55/S0116",
+   "start": 1110.458,
+   "end": 1119.757,
+   "text": "So, when we are talking of computer generated scenes or synthetic scenes, we are dealing with objects of different shapes and sizes."
+  },
+  {
+   "id": "L55/S0117",
+   "start": 1120.237,
+   "end": 1122.56,
+   "text": "A variety of objects may be there."
+  },
+  {
+   "id": "L55/S0118",
+   "start": 1124.883,
+   "end": 1136.737,
+   "text": "It can range from tiny snowflakes, for example, to complex animated characters."
+  },
+  {
+   "id": "L55/S0119",
+   "start": 1140.121,
+   "end": 1143.805,
+   "text": "Now, if we are talking of a snowflake, it is a quite elegant structure."
+  },
+  {
+   "id": "L55/S0120",
+   "start": 1144.561,
+   "end": 1150.75,
+   "text": "An elegant shape is there, and ideally it should not be represented with a simple sphere."
+  },
+  {
+   "id": "L55/S0121",
+   "start": 1151.37,
+   "end": 1156.998,
+   "text": "Then the elegancy, the intricate details of the shape will be lost."
+  },
+  {
+   "id": "L55/S0122",
+   "start": 1158.14,
+   "end": 1163.327,
+   "text": "It will be a very crude approximation of the shape, and then the realism will be affected."
+  },
+  {
+   "id": "L55/S0123",
+   "start": 1164.488,
+   "end": 1174.382,
+   "text": "Similarly, when we are talking of an animated character, a complex character, it needs to be depicted with its associated complexity so that it looks realistic."
+  },
+  {
+   "id": "L55/S0124",
+   "start": 1174.902,
+   "end": 1185.958,
+   "text": "Again, we should not go for a very simplistic approximation, then the whole purpose of having a realistic viewing experience will be lost."
+  },
+  {
+   "id": "L55/S0125",
+   "start": 1185.978,
+   "end": 1202.682,
+   "text": "So, what these examples illustrate is that we have a variety of objects; we need to render a variety of objects with their intricate details, elegant shapes, sizes, and characteristics."
+  },
+  {
+   "id": "L55/S0126",
+   "start": 1203.826,
+   "end": 1210.516,
+   "text": "Now, to generate scenes with all these disparate objects, we need some way to first represent them."
+  },
+  {
+   "id": "L55/S0127",
+   "start": 1213.741,
+   "end": 1216.185,
+   "text": "And any representation will not work."
+  },
+  {
+   "id": "L55/S0128",
+   "start": 1216.205,
+   "end": 1227.182,
+   "text": "So, if we are using simplistic geometric shapes to represent all the objects, certainly that will lead to a loss of reality."
+  },
+  {
+   "id": "L55/S0129",
+   "start": 1228.584,
+   "end": 1232.23,
+   "text": "It will not be able to approximate all intricate characteristics of the shapes."
+  },
+  {
+   "id": "L55/S0130",
+   "start": 1232.615,
+   "end": 1234.857,
+   "text": "So, any representation will not work."
+  },
+  {
+   "id": "L55/S0131",
+   "start": 1238.521,
+   "end": 1240.382,
+   "text": "So, there are two fundamental questions."
+  },
+  {
+   "id": "L55/S0132",
+   "start": 1240.503,
+   "end": 1254.736,
+   "text": "One is how we can represent different objects with their characteristic complexities so that these can be rendered realistically in a synthesized environment."
+  },
+  {
+   "id": "L55/S0133",
+   "start": 1254.756,
+   "end": 1262.694,
+   "text": "So, essentially we wish to capture all the intricate details of the object so that we can realistically render them."
+  },
+  {
+   "id": "L55/S0134",
+   "start": 1262.875,
+   "end": 1265.357,
+   "text": "That is the first question."
+  },
+  {
+   "id": "L55/S0135",
+   "start": 1265.397,
+   "end": 1266.298,
+   "text": "So, how to do that?"
+  },
+  {
+   "id": "L55/S0136",
+   "start": 1267.319,
+   "end": 1276.549,
+   "text": "The second one is, how can we have a representation that makes the process of rendering efficient?"
+  },
+  {
+   "id": "L55/S0137",
+   "start": 1276.569,
+   "end": 1290.569,
+   "text": "In other words, can we perform the operations of the different stages of the pipeline that we have just discussed, the 3D graphics pipeline, in ways that optimize space and time complexities."
+  },
+  {
+   "id": "L55/S0138",
+   "start": 1290.589,
+   "end": 1302.207,
+   "text": "So, when we say that through the 3D graphics pipeline stages we compute the intensities at pixel levels, these computations depend on the representation."
+  },
+  {
+   "id": "L55/S0139",
+   "start": 1303.268,
+   "end": 1311.441,
+   "text": "So, the more complex the representation is, the more complex the calculations will be."
+  },
+  {
+   "id": "L55/S0140",
+   "start": 1311.882,
+   "end": 1315.187,
+   "text": "So, essentially our objective is to have a balance."
+  },
+  {
+   "id": "L55/S0141",
+   "start": 1315.42,
+   "end": 1319.946,
+   "text": "So, the second fundamental question is how we can maintain that balance."
+  },
+  {
+   "id": "L55/S0142",
+   "start": 1320.106,
+   "end": 1326.474,
+   "text": "We have, on one hand, a representation that is able to represent all intricate details."
+  },
+  {
+   "id": "L55/S0143",
+   "start": 1326.714,
+   "end": 1334.363,
+   "text": "On the other hand, we want to perform the subsequent stages efficiently so that the overall computation is efficient."
+  },
+  {
+   "id": "L55/S0144",
+   "start": 1335.405,
+   "end": 1339.049,
+   "text": "Otherwise, realistic rendering will be again an issue."
+  },
+  {
+   "id": "L55/S0145",
+   "start": 1339.069,
+   "end": 1343.875,
+   "text": "There will be lags and other things, or we will be requiring expensive hardware."
+  },
+  {
+   "id": "L55/S0146",
+   "start": 1345.087,
+   "end": 1346.208,
+   "text": "for doing the calculation."
+  },
+  {
+   "id": "L55/S0147",
+   "start": 1347.931,
+   "end": 1360.267,
+   "text": "So, one question is to be able to capture all characteristics; the second question is to be able to capture them so that subsequent computations are efficiently done by balancing some trade-off."
+  },
+  {
+   "id": "L55/S0148",
+   "start": 1360.967,
+   "end": 1365.253,
+   "text": "So, these two fundamental questions are there when we talk of representing objects."
+  },
+  {
+   "id": "L55/S0149",
+   "start": 1367.736,
+   "end": 1378.049,
+   "text": "Now, the solution lies in the fact that we cannot rely on a single representation technique."
+  },
+  {
+   "id": "L55/S0150",
+   "start": 1378.93,
+   "end": 1382.435,
+   "text": "We have to rely on different object representation techniques."
+  },
+  {
+   "id": "L55/S0151",
+   "start": 1383.236,
+   "end": 1391.888,
+   "text": "In fact, there is a plethora of such techniques available, and we have to choose the right technique to represent an object given a particular problem."
+  },
+  {
+   "id": "L55/S0152",
+   "start": 1395.713,
+   "end": 1403.224,
+   "text": "Now, let us quickly focus on the broad categories of such representation techniques."
+  },
+  {
+   "id": "L55/S0153",
+   "start": 1403.98,
+   "end": 1417.041,
+   "text": "So, if we are talking of 3D object representation techniques, the broad categories are three: point sample rendering, boundary representation, and space partitioning based representation."
+  },
+  {
+   "id": "L55/S0154",
+   "start": 1417.782,
+   "end": 1423.712,
+   "text": "Under boundary representation, we have mesh representation, parametric representation, and implicit representation."
+  },
+  {
+   "id": "L55/S0155",
+   "start": 1424.593,
+   "end": 1426.917,
+   "text": "Under space partitioning, we have the octree method."
+  },
+  {
+   "id": "L55/S0156",
+   "start": 1428.128,
+   "end": 1439.8,
+   "text": "Octree method of representation, binary space partitioning or BSP method of representation, and constructive solid geometry or CSG method of representation."
+  },
+  {
+   "id": "L55/S0157",
+   "start": 1439.82,
+   "end": 1445.085,
+   "text": "Note that we will not go into the details of individual techniques that are mentioned here."
+  },
+  {
+   "id": "L55/S0158",
+   "start": 1445.846,
+   "end": 1449.93,
+   "text": "Again, please refer to the reference mentioned at the end."
+  },
+  {
+   "id": "L55/S0159",
+   "start": 1450.891,
+   "end": 1465.323,
+   "text": "However, let us get some quick idea on each of these broader categories: that is, point sample rendering, boundary representation, and space partitioning-based representation."
+  },
+  {
+   "id": "L55/S0160",
+   "start": 1465.343,
+   "end": 1467.686,
+   "text": "So, point sample rendering is the simplest of all."
+  },
+  {
+   "id": "L55/S0161",
+   "start": 1469.148,
+   "end": 1478.119,
+   "text": "Here, the information captured is in the form of points on the scene, with each point having the information as attributes."
+  },
+  {
+   "id": "L55/S0162",
+   "start": 1480.642,
+   "end": 1489.561,
+   "text": "Now, the capturing of such information happens with input sensors such as 3D range scanner, range finder, or computer vision techniques."
+  },
+  {
+   "id": "L55/S0163",
+   "start": 1490.782,
+   "end": 1500.434,
+   "text": "So, essentially, what we do here is to generate a scene; we first capture the scene from the real world by some input sensors."
+  },
+  {
+   "id": "L55/S0164",
+   "start": 1501.735,
+   "end": 1512.608,
+   "text": "The capturing essentially takes place in the form of capturing information related to points on the scene, and those points are subsequently mapped to the pixels."
+  },
+  {
+   "id": "L55/S0165",
+   "start": 1514.495,
+   "end": 1519.4,
+   "text": "So, these points can subsequently be processed or mapped to the pixels to generate the scene."
+  },
+  {
+   "id": "L55/S0166",
+   "start": 1521.141,
+   "end": 1527.948,
+   "text": "So, here we are relying on the real-world information to generate a synthetic image."
+  },
+  {
+   "id": "L55/S0167",
+   "start": 1528.449,
+   "end": 1535.035,
+   "text": "We are not synthetically defining objects here."
+  },
+  {
+   "id": "L55/S0168",
+   "start": 1535.055,
+   "end": 1540.08,
+   "text": "So, in this case, the representation is nothing but a set of raw data points."
+  },
+  {
+   "id": "L55/S0169",
+   "start": 1543.925,
+   "end": 1546.188,
+   "text": "That is the point sample-based rendering."
+  },
+  {
+   "id": "L55/S0170",
+   "start": 1547.21,
+   "end": 1550.815,
+   "text": "Next is the boundary representation, the second broad category of representation."
+  },
+  {
+   "id": "L55/S0171",
+   "start": 1552.417,
+   "end": 1558.706,
+   "text": "Here, the objects are represented by the surfaces that define the boundary of the object."
+  },
+  {
+   "id": "L55/S0172",
+   "start": 1558.726,
+   "end": 1564.374,
+   "text": "Now, these surfaces can be polygonal or curved surfaces."
+  },
+  {
+   "id": "L55/S0173",
+   "start": 1564.394,
+   "end": 1572.025,
+   "text": "For example, a cube represented as a collection of internally linked rectangles is shown here."
+  },
+  {
+   "id": "L55/S0174",
+   "start": 1572.832,
+   "end": 1590.296,
+   "text": "So, the rectangles are numbered or identified with letters between A to F. So, this is one rectangle, second rectangle, third rectangle, fourth, fifth, sixth."
+  },
+  {
+   "id": "L55/S0175",
+   "start": 1590.316,
+   "end": 1594.261,
+   "text": "So, six rectangles each representing the bounding surface of a cube."
+  },
+  {
+   "id": "L55/S0176",
+   "start": 1595.583,
+   "end": 1604.374,
+   "text": "Now, when we are representing this whole cube in the form of its bounding surfaces, then we are saying that we are following a boundary representation."
+  },
+  {
+   "id": "L55/S0177",
+   "start": 1608.019,
+   "end": 1613.247,
+   "text": "Now, one very popular boundary representation technique is called mesh representation."
+  },
+  {
+   "id": "L55/S0178",
+   "start": 1614.829,
+   "end": 1621.499,
+   "text": "In this mesh representation, we use polygons to represent the surfaces, such as the one shown in the previous example."
+  },
+  {
+   "id": "L55/S0179",
+   "start": 1623.602,
+   "end": 1630.632,
+   "text": "Now, in order to represent each polygon, what we use is basically a vertex or edge list."
+  },
+  {
+   "id": "L55/S0180",
+   "start": 1631.658,
+   "end": 1643.856,
+   "text": "That stores information about all the vertices or edges on the surface and their relationships, how the vertices are connected to each other or edges are connected to each other."
+  },
+  {
+   "id": "L55/S0181",
+   "start": 1645.078,
+   "end": 1651.427,
+   "text": "For example, this cube we can represent in the form of a vertex list as shown here."
+  },
+  {
+   "id": "L55/S0182",
+   "start": 1652.729,
+   "end": 1659.859,
+   "text": "Say V0 is the origin; then it says that it is connected to V1."
+  },
+  {
+   "id": "L55/S0183",
+   "start": 1660.514,
+   "end": 1664.06,
+   "text": "V3 and V5."
+  },
+  {
+   "id": "L55/S0184",
+   "start": 1665.182,
+   "end": 1672.595,
+   "text": "So, this entry indicates the coordinate of the vertex and which other vertices it is connected to."
+  },
+  {
+   "id": "L55/S0185",
+   "start": 1672.615,
+   "end": 1681.41,
+   "text": "Similarly, V1, V2, all 8 vertices are mentioned in the list along with their connections to other vertices."
+  },
+  {
+   "id": "L55/S0186",
+   "start": 1681.49,
+   "end": 1689.543,
+   "text": "From here, we can reconstruct the cube if the information is captured in this way."
+  },
+  {
+   "id": "L55/S0187",
+   "start": 1689.903,
+   "end": 1703.444,
+   "text": "So, here what we see is that essentially it refers to a list of vertices, and these vertices are related to the bounding surfaces which define the overall object."
+  },
+  {
+   "id": "L55/S0188",
+   "start": 1703.905,
+   "end": 1723.024,
+   "text": "So, this is a kind of boundary representation; this is known as the mesh representation because here we are assuming that the bounding surfaces are polygons, and polygons are connected together to create a mesh which represents the whole object."
+  },
+  {
+   "id": "L55/S0189",
+   "start": 1723.044,
+   "end": 1731.075,
+   "text": "So, if there are objects with non-polygonal surfaces, then can we represent them using the mesh representation?"
+  },
+  {
+   "id": "L55/S0190",
+   "start": 1731.095,
+   "end": 1731.816,
+   "text": "The answer is yes."
+  },
+  {
+   "id": "L55/S0191",
+   "start": 1733.117,
+   "end": 1737.803,
+   "text": "We can approximate the surfaces to polygonal meshes."
+  },
+  {
+   "id": "L55/S0192",
+   "start": 1739.105,
+   "end": 1744.016,
+   "text": "Now, typically, meshes are constructed using triangles."
+  },
+  {
+   "id": "L55/S0193",
+   "start": 1746.538,
+   "end": 1758.01,
+   "text": "However, other simple convex polygons may also be used, and the meshes are represented using vertex or edge lists as shown before."
+  },
+  {
+   "id": "L55/S0194",
+   "start": 1758.29,
+   "end": 1769.462,
+   "text": "So, for example, for this hand here, there is no intuitive way to create a polygonal mesh to represent the hand because the surfaces are curved surfaces."
+  },
+  {
+   "id": "L55/S0195",
+   "start": 1770.016,
+   "end": 1793.011,
+   "text": "However, as shown in this figure, we can use a triangular mesh with all these triangles, as you can see, to represent this hand and then subsequently process this mesh to represent or reconstruct the hand here or render it on the screen."
+  },
+  {
+   "id": "L55/S0196",
+   "start": 1794.213,
+   "end": 1806.022,
+   "text": "Clearly, as you can see or as is evident from this image, the greater the number of polygons in the mesh, the better the approximation it will lead to."
+  },
+  {
+   "id": "L55/S0197",
+   "start": 1806.042,
+   "end": 1816.593,
+   "text": "However, the greater the number of polygons in the mesh, the more complex the vertex list which represents the mesh will be."
+  },
+  {
+   "id": "L55/S0198",
+   "start": 1817.594,
+   "end": 1822.939,
+   "text": "So, constructing that vertex list will be even more difficult with the increase in the number of polygons."
+  },
+  {
+   "id": "L55/S0199",
+   "start": 1823.56,
+   "end": 1829.87,
+   "text": "So, again here, there is a balance we have to maintain; there is a trade-off we have to address."
+  },
+  {
+   "id": "L55/S0200",
+   "start": 1834.358,
+   "end": 1841.971,
+   "text": "Now, this mesh is the most basic form of representation for any object in a rendered scene used in computer graphics."
+  },
+  {
+   "id": "L55/S0201",
+   "start": 1842.011,
+   "end": 1851.06,
+   "text": "So, no matter what kind of representation we are following, eventually all of them are mapped to a mesh representation."
+  },
+  {
+   "id": "L55/S0202",
+   "start": 1851.301,
+   "end": 1858.59,
+   "text": "So, all other representations are converted to a mesh representation at the end of the pipeline before the objects are rendered."
+  },
+  {
+   "id": "L55/S0203",
+   "start": 1861.354,
+   "end": 1867.181,
+   "text": "Another way of representing curved surfaces or curves is the spline representation."
+  },
+  {
+   "id": "L55/S0204",
+   "start": 1868.102,
+   "end": 1880.682,
+   "text": "So, this is a higher-level representation typically preferred by developers or designers of scenes who want to create an artificial environment."
+  },
+  {
+   "id": "L55/S0205",
+   "start": 1881.162,
+   "end": 1904.378,
+   "text": "So, splines can be used to construct quality scenes for rendering, and splines are required to represent complex surfaces, surfaces with complex properties so that those cannot be represented with simple polygons or simple polynomial equations."
+  },
+  {
+   "id": "L55/S0206",
+   "start": 1906.737,
+   "end": 1912.722,
+   "text": "Now, this curve representation using splines falls under the broad category of parametric representation."
+  },
+  {
+   "id": "L55/S0207",
+   "start": 1913.042,
+   "end": 1921.329,
+   "text": "So, typically what happens is that when we try to represent a curve, we can use a polynomial to represent the curve."
+  },
+  {
+   "id": "L55/S0208",
+   "start": 1921.349,
+   "end": 1924.752,
+   "text": "The more complex the curve is, the degree of the polynomial increases."
+  },
+  {
+   "id": "L55/S0209",
+   "start": 1926.674,
+   "end": 1939.62,
+   "text": "Now, as the degree of the polynomial increases, computing any point on the curve using a very complex or higher-degree polynomial becomes more and more time-consuming from the point of view of computation."
+  },
+  {
+   "id": "L55/S0210",
+   "start": 1940.121,
+   "end": 1959.045,
+   "text": "So, essentially with spline representation, the idea that is followed is that instead of representing a curve using a single higher-degree complex polynomial, we can represent it using several polynomials, each with a lower degree to a manageable level."
+  },
+  {
+   "id": "L55/S0211",
+   "start": 1962.809,
+   "end": 1967.355,
+   "text": "So, the complete curve consists of several pieces."
+  },
+  {
+   "id": "L55/S0212",
+   "start": 1968.112,
+   "end": 1987.169,
+   "text": "Now, each piece is called a blending function or a basis function, and all pieces are of lower order so that simpler polynomials can be used to compute points on the segment of the curve represented by that particular polynomial piece."
+  },
+  {
+   "id": "L55/S0213",
+   "start": 1989.111,
+   "end": 1997.578,
+   "text": "And third order is the most common form of polynomial used to construct spline curves."
+  },
+  {
+   "id": "L55/S0214",
+   "start": 1999.297,
+   "end": 2015.015,
+   "text": "We also have to ensure that the way we define the polynomial pieces, they must join smoothly, for that certain geometric and other properties need to be satisfied by each of these pieces, but those details we can skip here."
+  },
+  {
+   "id": "L55/S0215",
+   "start": 2015.035,
+   "end": 2017.698,
+   "text": "So, that is about boundary representation."
+  },
+  {
+   "id": "L55/S0216",
+   "start": 2017.718,
+   "end": 2020.201,
+   "text": "Mesh is the most basic form of boundary representation."
+  },
+  {
+   "id": "L55/S0217",
+   "start": 2020.241,
+   "end": 2033.421,
+   "text": "However, higher-level boundary representations using implicit or parametric forms are also there. One such representation is the spline representation."
+  },
+  {
+   "id": "L55/S0218",
+   "start": 2033.441,
+   "end": 2038.629,
+   "text": "Then there is the third broad category, that is space partitioning representation."
+  },
+  {
+   "id": "L55/S0219",
+   "start": 2039.13,
+   "end": 2052.129,
+   "text": "The key idea here is that the 3D space occupied by the object is divided into several disjoint regions, disjoint or non-overlapping regions."
+  },
+  {
+   "id": "L55/S0220",
+   "start": 2052.149,
+   "end": 2056.455,
+   "text": "Any point inside the object lies in exactly one of the regions."
+  },
+  {
+   "id": "L55/S0221",
+   "start": 2056.925,
+   "end": 2069.282,
+   "text": "And this way we can represent the object by representing the region occupied by the object."
+  },
+  {
+   "id": "L55/S0222",
+   "start": 2070.784,
+   "end": 2085.224,
+   "text": "Now, in order to create this particular representation, we need to create a hierarchical way of representation which is called a space partitioning tree."
+  },
+  {
+   "id": "L55/S0223",
+   "start": 2085.264,
+   "end": 2092.371,
+   "text": "So, kind of tree-like structure which represents the space occupied by the object."
+  },
+  {
+   "id": "L55/S0224",
+   "start": 2095.955,
+   "end": 2107.991,
+   "text": "So, there are, as we mentioned, several such representations including Oct tree method, binary space partitioning, or constructive solid geometric methods; again, we will skip the details."
+  },
+  {
+   "id": "L55/S0225",
+   "start": 2108.412,
+   "end": 2119.224,
+   "text": "Now, apart from these broad categories, there are several techniques used to represent objects that are application-specific or very complex photorealistic objects."
+  },
+  {
+   "id": "L55/S0226",
+   "start": 2119.505,
+   "end": 2140.236,
+   "text": "For example, the structure of this leaf, as you can see here, is self-repeating; that is, each individual part is repeating in the larger part."
+  },
+  {
+   "id": "L55/S0227",
+   "start": 2140.256,
+   "end": 2145.489,
+   "text": "Now, this type of elegant structure ideally requires a special way of representation."
+  },
+  {
+   "id": "L55/S0228",
+   "start": 2145.83,
+   "end": 2148.573,
+   "text": "So, one such way is fractal representation."
+  },
+  {
+   "id": "L55/S0229",
+   "start": 2148.593,
+   "end": 2151.396,
+   "text": "It is a specialized way to represent self-repeating structures."
+  },
+  {
+   "id": "L55/S0230",
+   "start": 2153.018,
+   "end": 2166.475,
+   "text": "Similarly, this waterfall, again, requires an elegant way of representation rather than these broader categories of boundary or space partitioning methods."
+  },
+  {
+   "id": "L55/S0231",
+   "start": 2166.956,
+   "end": 2170.48,
+   "text": "So, one such representation is the particle system representation."
+  },
+  {
+   "id": "L55/S0232",
+   "start": 2171.118,
+   "end": 2175.423,
+   "text": "which essentially refers to or relies on the simulation of physical properties."
+  },
+  {
+   "id": "L55/S0233",
+   "start": 2177.165,
+   "end": 2189.36,
+   "text": "Then, representing this complex character, such as a cat, again requires or calls for some sophisticated way to represent it."
+  },
+  {
+   "id": "L55/S0234",
+   "start": 2189.38,
+   "end": 2195.207,
+   "text": "One is the skeletal model, as shown here on the left side of the actual figure."
+  },
+  {
+   "id": "L55/S0235",
+   "start": 2197.149,
+   "end": 2211.46,
+   "text": "So, this skeletal model tries to capture the overall appearance of the character, plus the motion behavior of the character can be captured using the skeletal model."
+  },
+  {
+   "id": "L55/S0236",
+   "start": 2212.481,
+   "end": 2221.774,
+   "text": "Typically, such models are used to represent objects, complex characters in animation, or computer animation."
+  },
+  {
+   "id": "L55/S0237",
+   "start": 2223.596,
+   "end": 2226.38,
+   "text": "These are some of the specialized techniques; there are other techniques also."
+  },
+  {
+   "id": "L55/S0238",
+   "start": 2226.4,
+   "end": 2237.185,
+   "text": "So, broadly, although we can have some categories, there are specialized, sophisticated techniques that are often required for representing photorealistic objects."
+  },
+  {
+   "id": "L55/S0239",
+   "start": 2239.668,
+   "end": 2242.591,
+   "text": "So, let us quickly summarize what we have learned so far."
+  },
+  {
+   "id": "L55/S0240",
+   "start": 2245.735,
+   "end": 2261.063,
+   "text": "We have gone through, in this part of the lecture, the idea of the 3D graphics pipeline, where we talked of several stages, broadly five stages: namely, object representation, modeling transformation, viewing transformation, and scan conversion."
+  },
+  {
+   "id": "L55/S0241",
+   "start": 2263.385,
+   "end": 2270.171,
+   "text": "As we have seen, they involve some transformations from one coordinate system to another; a total of six coordinate systems are involved here."
+  },
+  {
+   "id": "L55/S0242",
+   "start": 2272.333,
+   "end": 2278.318,
+   "text": "And we talked about the first stage of this pipeline, that is, object representation technique."
+  },
+  {
+   "id": "L55/S0243",
+   "start": 2278.338,
+   "end": 2287.626,
+   "text": "One thing to note here is that, for the sake of discussion, we are representing the pipeline in the way we are discussing."
+  },
+  {
+   "id": "L55/S0244",
+   "start": 2289.243,
+   "end": 2296.993,
+   "text": "It may be noted that this sequence may not be exactly followed when the pipeline is implemented."
+  },
+  {
+   "id": "L55/S0245",
+   "start": 2297.013,
+   "end": 2308.247,
+   "text": "So, although we say that the first stage is object representation, the second one is modeling transformation, the third one is lighting, the fourth one is viewing transformation, and the fifth is scan conversion."
+  },
+  {
+   "id": "L55/S0246",
+   "start": 2309.629,
+   "end": 2317.579,
+   "text": "It need not be the exact same sequence when an implementation of this 3D pipeline is done."
+  },
+  {
+   "id": "L55/S0247",
+   "start": 2318.707,
+   "end": 2325.755,
+   "text": "Stages may change; substages may change their order from the way we are discussing here."
+  },
+  {
+   "id": "L55/S0248",
+   "start": 2327.397,
+   "end": 2334.386,
+   "text": "The whole purpose of discussing in this particular way is to give some idea of how the computations take place in a stage-wise manner."
+  },
+  {
+   "id": "L55/S0249",
+   "start": 2335.427,
+   "end": 2343.356,
+   "text": "It may be noted that the sequence is not that important, but the stages are very important."
+  },
+  {
+   "id": "L55/S0250",
+   "start": 2343.376,
+   "end": 2344.798,
+   "text": "So, all stages will be there."
+  },
+  {
+   "id": "L55/S0251",
+   "start": 2345.386,
+   "end": 2350.052,
+   "text": "but they may follow a slightly different sequence than the way we are discussing here."
+  },
+  {
+   "id": "L55/S0252",
+   "start": 2350.853,
+   "end": 2358.262,
+   "text": "Now, we will continue our discussion on these pipeline stages in the subsequent parts of the lecture as well."
+  },
+  {
+   "id": "L55/S0253",
+   "start": 2360.605,
+   "end": 2365.892,
+   "text": "I hope you could follow the discussion and understood the topics covered."
+  },
+  {
+   "id": "L55/S0254",
+   "start": 2367.442,
+   "end": 2379.282,
+   "text": "Here we are discussing everything in a very brief manner to give you an overall idea, as a detailed discussion of computer graphics is not in the scope of this particular course."
+  },
+  {
+   "id": "L55/S0255",
+   "start": 2381.987,
+   "end": 2385.012,
+   "text": "So, looking forward to meeting you again in the next part of the lecture."
+  },
+  {
+   "id": "L55/S0256",
+   "start": 2385.313,
+   "end": 2388.538,
+   "text": "Till then, thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L55/P01",
+   "first": "L55/S0000",
+   "last": "L55/S0110",
+   "start": 24.078,
+   "end": 1082.227,
+   "objective": "Explain the stage-wise process of the 3D graphics pipeline, from object representation to pixel-level description",
+   "objective_id": "L55/O1",
+   "key_points": [
+    {
+     "id": "L55/P01/K1",
+     "text": "The 3D graphics pipeline is the stage-wise process used to compute the values stored in the frame buffer for driving the display mechanism.",
+     "sources": [
+      "L55/S0018",
+      "L55/S0020"
+     ],
+     "concept_ids": [
+      "C0256",
+      "C0470",
+      "C1152",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L55/P01/K2",
+     "text": "The pipeline involves five main stages: object representation, modeling transformation, lighting, viewing transformation, and scan conversion.",
+     "sources": [
+      "L55/S0079"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1137",
+      "C1140",
+      "C1159",
+      "C1163",
+      "C1165",
+      "C1166",
+      "C1167",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L55/P01/K3",
+     "text": "Modeling transformation moves objects from their local coordinate system definition into a common world coordinate system.",
+     "sources": [
+      "L55/S0034",
+      "L55/S0039"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0538",
+      "C0653",
+      "C1137",
+      "C1159",
+      "C1160",
+      "C1161",
+      "C1189"
+     ]
+    },
+    {
+     "id": "L55/P01/K4",
+     "text": "Scan conversion is the final stage that transforms the continuous device coordinate space into a discrete pixel grid.",
+     "sources": [
+      "L55/S0069",
+      "L55/S0070"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1146",
+      "C1164",
+      "C1165",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L55/P01/K5",
+     "text": "The entire process requires coordinating through six different coordinate systems, including local, world, and various viewing and screen coordinate systems.",
+     "sources": [
+      "L55/S0107"
+     ],
+     "concept_ids": [
+      "C0538",
+      "C0653",
+      "C1189"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L55/P01/T1",
+     "surface": "computer graphics",
+     "name": "Computer graphics",
+     "abbreviation": "CG",
+     "abbreviation_at": "L55/S0002",
+     "definition": "Computer graphics is a field that deals with how to render an image onto a display.",
+     "sources": [
+      "L55/S0002"
+     ],
+     "concept_id": "C0409",
+     "concept_name": "Computer graphics"
+    },
+    {
+     "id": "L55/P01/T2",
+     "surface": "display processor",
+     "name": "Display processor",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The display processor is responsible for computing real number values in distinct stages, and it is part of the display controller unit.",
+     "sources": [
+      "L55/S0015",
+      "L55/S0017"
+     ],
+     "concept_id": "C1158",
+     "concept_name": "Display processor"
+    },
+    {
+     "id": "L55/P01/T3",
+     "surface": "frame buffer",
+     "name": "Frame buffer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The frame buffer stores real number values that are used by the video controller to drive the display mechanism, which results in a perceived colored image on the screen.",
+     "sources": [
+      "L55/S0016",
+      "L55/S0020",
+      "L55/S0109"
+     ],
+     "concept_id": "C1152",
+     "concept_name": "Frame buffer"
+    },
+    {
+     "id": "L55/P01/T4",
+     "surface": "graphics pipeline",
+     "name": "Graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The graphics pipeline is the stage-wise process used to compute the values that are stored in the frame buffer, which in turn drives the display mechanism.",
+     "sources": [
+      "L55/S0018",
+      "L55/S0020"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L55/P01/T5",
+     "surface": "3D graphics pipeline",
+     "name": "Three-dimensional graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The three-dimensional graphics pipeline is the stage-wise process utilized to compute the values in the frame buffer for driving the display mechanism when dealing with 3D scenes.",
+     "sources": [
+      "L55/S0019",
+      "L55/S0020",
+      "L55/S0079",
+      "L55/S0109",
+      "L55/S0110"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L55/P01/T6",
+     "surface": "objects",
+     "name": "Object",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Objects are the elements that must be defined and that together constitute the image that is rendered onto a screen.",
+     "sources": [
+      "L55/S0022",
+      "L55/S0023",
+      "L55/S0024"
+     ],
+     "concept_id": "C1137",
+     "concept_name": "Object"
+    },
+    {
+     "id": "L55/P01/T7",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the second stage of the pipeline that transforms objects from their original local coordinate system definition into the world coordinate system definition.",
+     "sources": [
+      "L55/S0029",
+      "L55/S0034",
+      "L55/S0039",
+      "L55/S0079",
+      "L55/S0089"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L55/P01/T8",
+     "surface": "local coordinate system",
+     "name": "Local coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The local coordinate system is the coordinate system used to define an object itself, local to that object's definition.",
+     "sources": [
+      "L55/S0030",
+      "L55/S0035",
+      "L55/S0100"
+     ],
+     "concept_id": "C1160",
+     "concept_name": "Local coordinate system"
+    },
+    {
+     "id": "L55/P01/T9",
+     "surface": "world coordinate system",
+     "name": "World coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate system is the common coordinate system in which multiple individual objects are put together to construct the overall image or scene.",
+     "sources": [
+      "L55/S0033",
+      "L55/S0038",
+      "L55/S0039",
+      "L55/S0090"
+     ],
+     "concept_id": "C1161",
+     "concept_name": "World coordinate system"
+    },
+    {
+     "id": "L55/P01/T10",
+     "surface": "lighting or illumination stage",
+     "name": "Lighting stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The lighting or illumination stage is the third stage of the graphics pipeline where color is assigned to the objects once the 3D scene has been constructed.",
+     "sources": [
+      "L55/S0040",
+      "L55/S0048",
+      "L55/S0049"
+     ],
+     "concept_id": "C1162",
+     "concept_name": "Lighting stage"
+    },
+    {
+     "id": "L55/P01/T11",
+     "surface": "viewing transformation",
+     "name": "Viewing transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewing transformation is the fourth stage of the pipeline, which maps the colored 3D scene from the world coordinate system to a 2D device coordinate space.",
+     "sources": [
+      "L55/S0050",
+      "L55/S0060",
+      "L55/S0061",
+      "L55/S0082",
+      "L55/S0091"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L55/P01/T12",
+     "surface": "device coordinate system",
+     "name": "Device coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The device coordinate system is the 2D space—equivalent to the screen—to which the colored 3D scene is transformed during the viewing transformation.",
+     "sources": [
+      "L55/S0054",
+      "L55/S0057",
+      "L55/S0063",
+      "L55/S0097",
+      "L55/S0103"
+     ],
+     "concept_id": "C1164",
+     "concept_name": "Device coordinate system"
+    },
+    {
+     "id": "L55/P01/T13",
+     "surface": "device coordinate",
+     "name": "Device coordinate",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Device coordinate is the space into which the world scene is transferred, ideally being a discrete space representing the pixel grid, though it is initially treated as continuous.",
+     "sources": [
+      "L55/S0061",
+      "L55/S0063",
+      "L55/S0064"
+     ],
+     "concept_id": "C1164",
+     "concept_name": "Device coordinate system"
+    },
+    {
+     "id": "L55/P01/T14",
+     "surface": "scan conversion",
+     "name": "Scan conversion",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Scan conversion is the fifth and final stage of the 3D graphics pipeline. It is the transformation of the image from the device coordinate space description to a discrete space or pixel grid.",
+     "sources": [
+      "L55/S0062",
+      "L55/S0064",
+      "L55/S0069",
+      "L55/S0070",
+      "L55/S0078",
+      "L55/S0098"
+     ],
+     "concept_id": "C1165",
+     "concept_name": "Scan conversion"
+    },
+    {
+     "id": "L55/P01/T15",
+     "surface": "pixel grid",
+     "name": "Pixel grid",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A pixel grid is the discrete structure of a computer display, which consists of discrete points where only integer coordinates are allowed.",
+     "sources": [
+      "L55/S0064",
+      "L55/S0065"
+     ],
+     "concept_id": "C1146",
+     "concept_name": "Pixel grid"
+    },
+    {
+     "id": "L55/P01/T16",
+     "surface": "object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "This is the first stage of the 3D graphics pipeline and takes place in the local coordinate system of the objects.",
+     "sources": [
+      "L55/S0079",
+      "L55/S0088"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L55/P01/T17",
+     "surface": "lighting",
+     "name": "Lighting",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "This third stage of the pipeline is where lighting calculations take place, operating within the world coordinate system.",
+     "sources": [
+      "L55/S0079",
+      "L55/S0090"
+     ],
+     "concept_id": "C1167",
+     "concept_name": "Lighting"
+    },
+    {
+     "id": "L55/P01/T18",
+     "surface": "viewing pipeline",
+     "name": "Viewing pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "This fourth stage of the graphics pipeline is itself composed of multiple sub-stages, such as viewing transformation.",
+     "sources": [
+      "L55/S0080",
+      "L55/S0082"
+     ],
+     "concept_id": "C1168",
+     "concept_name": "Viewing pipeline"
+    },
+    {
+     "id": "L55/P01/T19",
+     "surface": "clipping",
+     "name": "Clipping",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Clipping is a process that happens in the view coordinate system.",
+     "sources": [
+      "L55/S0084",
+      "L55/S0093"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L55/P01/T20",
+     "surface": "hidden surface removal",
+     "name": "Hidden surface removal",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Hidden surface removal is a process performed within the view coordinate system.",
+     "sources": [
+      "L55/S0085",
+      "L55/S0094"
+     ],
+     "concept_id": "C1169",
+     "concept_name": "Hidden surface removal"
+    },
+    {
+     "id": "L55/P01/T21",
+     "surface": "View coordinate system",
+     "name": "View coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view coordinate system is the coordinate system where processes like clipping and hidden surface removal are executed.",
+     "sources": [
+      "L55/S0091",
+      "L55/S0093",
+      "L55/S0094"
+     ],
+     "concept_id": "C1170",
+     "concept_name": "View coordinate system"
+    },
+    {
+     "id": "L55/P01/T22",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "This transformation projects or converts the 3D view coordinate system description of a scene into a 2D view coordinate system description.",
+     "sources": [
+      "L55/S0095"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L55/P01/T23",
+     "surface": "2D view coordinate system",
+     "name": "Two dimensional view coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "This coordinate system is the resulting description of the scene after the projection transformation has occurred, making it two-dimensional.",
+     "sources": [
+      "L55/S0095",
+      "L55/S0102"
+     ],
+     "concept_id": "C1172",
+     "concept_name": "2D view coordinate system"
+    },
+    {
+     "id": "L55/P01/T24",
+     "surface": "window-to-viewport transformation",
+     "name": "Window to viewport transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "This transformation maps the coordinates from the 2D view coordinate system onto the device coordinate system.",
+     "sources": [
+      "L55/S0096",
+      "L55/S0097"
+     ],
+     "concept_id": "C1173",
+     "concept_name": "Window to viewport transformation"
+    },
+    {
+     "id": "L55/P01/T25",
+     "surface": "Pixel screen coordinate system",
+     "name": "Pixel screen coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The pixel screen coordinate system is the grid or coordinate system of the display device where the final calculated intensity values are stored.",
+     "sources": [
+      "L55/S0098"
+     ],
+     "concept_id": "C1146",
+     "concept_name": "Pixel grid"
+    }
+   ]
+  },
+  {
+   "id": "L55/P02",
+   "first": "L55/S0111",
+   "last": "L55/S0149",
+   "start": 1082.568,
+   "end": 1378.049,
+   "objective": "Compare the necessity of intricate object representation with the requirements for efficient rendering processes",
+   "objective_id": "L55/O2",
+   "key_points": [
+    {
+     "id": "L55/P02/K1",
+     "text": "Objects must be represented with sufficient intricate details to ensure realistic viewing experiences, regardless of shape or size.",
+     "sources": [
+      "L55/S0116",
+      "L55/S0123"
+     ],
+     "concept_ids": [
+      "C1137",
+      "C1140"
+     ]
+    },
+    {
+     "id": "L55/P02/K2",
+     "text": "Object representation involves two fundamental questions: how to capture complexity for realism, and how to maintain rendering efficiency.",
+     "sources": [
+      "L55/S0131",
+      "L55/S0136"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0532",
+      "C1137",
+      "C1140",
+      "C1166"
+     ]
+    },
+    {
+     "id": "L55/P02/K3",
+     "text": "A higher degree of representation complexity leads to more complex calculations in the rendering pipeline, requiring a necessary trade-off.",
+     "sources": [
+      "L55/S0139",
+      "L55/S0141"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C1140"
+     ]
+    },
+    {
+     "id": "L55/P02/K4",
+     "text": "Since a single technique cannot satisfy both the need for detailed representation and computational efficiency, multiple methods must be used.",
+     "sources": [
+      "L55/S0149"
+     ],
+     "concept_ids": [
+      "C0532",
+      "C1140"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L55/P02/T1",
+     "surface": "object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation refers to the chosen method for depicting objects in a computer-generated scene, which must successfully capture all intricate characteristics and details of the object while maintaining a balance that allows subsequent rendering to be efficient.",
+     "sources": [
+      "L55/S0115",
+      "L55/S0126",
+      "L55/S0132",
+      "L55/S0133",
+      "L55/S0148"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L55/P02/T2",
+     "surface": "computer generated scenes or synthetic scenes",
+     "name": "Synthetic scene",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A synthetic scene is a computer-generated scene containing objects of various shapes, sizes, and complexities, requiring careful representation to maintain realism.",
+     "sources": [
+      "L55/S0116"
+     ],
+     "concept_id": "C1174",
+     "concept_name": "Synthetic scene"
+    },
+    {
+     "id": "L55/P02/T3",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 3D graphics pipeline is a series of stages through which the intensities at pixel levels are computed, where the complexity of these calculations is determined by the complexity of the object representation.",
+     "sources": [
+      "L55/S0137",
+      "L55/S0138"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    }
+   ]
+  },
+  {
+   "id": "L55/P03",
+   "first": "L55/S0150",
+   "last": "L55/S0169",
+   "start": 1378.93,
+   "end": 1546.188,
+   "objective": "Categorize 3D object representation techniques and explain the mechanism of point sample rendering",
+   "objective_id": "L55/O2",
+   "key_points": [
+    {
+     "id": "L55/P03/K1",
+     "text": "Three broad categories exist for 3D object representation: point sample rendering, boundary representation, and space partitioning-based representation.",
+     "sources": [
+      "L55/S0153"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0470",
+      "C0480",
+      "C1137",
+      "C1140",
+      "C1166",
+      "C1175",
+      "C1176"
+     ]
+    },
+    {
+     "id": "L55/P03/K2",
+     "text": "Under boundary representation, techniques include mesh representation, parametric representation, and implicit representation.",
+     "sources": [
+      "L55/S0154"
+     ],
+     "concept_ids": [
+      "C0408",
+      "C1140",
+      "C1176",
+      "C1177",
+      "C1180"
+     ]
+    },
+    {
+     "id": "L55/P03/K3",
+     "text": "The point sample rendering technique is the simplest representation method, in which the scene information is captured as a set of raw data points with attributes.",
+     "sources": [
+      "L55/S0160",
+      "L55/S0161",
+      "L55/S0168"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0888",
+      "C1140",
+      "C1175"
+     ]
+    },
+    {
+     "id": "L55/P03/K4",
+     "text": "Point sample rendering captures scene information using input sensors, such as 3D range scanners, range finders, or computer vision techniques, and maps those points to pixels to generate the scene.",
+     "sources": [
+      "L55/S0162",
+      "L55/S0164",
+      "L55/S0165"
+     ],
+     "concept_ids": [
+      "C0054",
+      "C0057",
+      "C0186",
+      "C0257",
+      "C0258",
+      "C0268",
+      "C0318",
+      "C0394",
+      "C0470",
+      "C0888",
+      "C1146",
+      "C1175"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L55/P03/T1",
+     "surface": "point sample rendering",
+     "name": "Point sample rendering",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Point sample rendering is a method where scene information is captured as a set of raw data points, each having attributes. These points, gathered using input sensors, are subsequently mapped to pixels to generate a synthetic image based on real-world information.",
+     "sources": [
+      "L55/S0153",
+      "L55/S0160",
+      "L55/S0161",
+      "L55/S0164",
+      "L55/S0165",
+      "L55/S0166",
+      "L55/S0168",
+      "L55/S0169"
+     ],
+     "concept_id": "C1175",
+     "concept_name": "Point sample rendering"
+    },
+    {
+     "id": "L55/P03/T2",
+     "surface": "boundary representation",
+     "name": "Boundary representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Boundary representation is one of the three broad categories used for 3D object representation techniques, alongside point sample rendering and space partitioning-based representation.",
+     "sources": [
+      "L55/S0153",
+      "L55/S0159"
+     ],
+     "concept_id": "C1176",
+     "concept_name": "Boundary representation"
+    }
+   ]
+  },
+  {
+   "id": "L55/P04",
+   "first": "L55/S0170",
+   "last": "L55/S0217",
+   "start": 1547.21,
+   "end": 2033.421,
+   "objective": "Differentiate between Boundary Representation, Mesh, and Spline representations for defining virtual objects",
+   "objective_id": "L55/O3",
+   "key_points": [
+    {
+     "id": "L55/P04/K1",
+     "text": "Boundary representation defines objects using the surfaces that define the boundary of the object (171, 176).",
+     "sources": [
+      "L55/S0171",
+      "L55/S0176"
+     ],
+     "concept_ids": [
+      "C1137",
+      "C1140",
+      "C1176"
+     ]
+    },
+    {
+     "id": "L55/P04/K2",
+     "text": "Mesh representation uses polygons (often triangles) connected to form a surface, which can approximate curved objects (178, 188, 195).",
+     "sources": [
+      "L55/S0178",
+      "L55/S0188",
+      "L55/S0195"
+     ],
+     "concept_ids": [
+      "C0408",
+      "C1137",
+      "C1140",
+      "C1177"
+     ]
+    },
+    {
+     "id": "L55/P04/K3",
+     "text": "The number of polygons in a mesh determines the accuracy of the object's approximation but also increases computational complexity (196, 197).",
+     "sources": [
+      "L55/S0196",
+      "L55/S0197"
+     ],
+     "concept_ids": [
+      "C0408",
+      "C1137"
+     ]
+    },
+    {
+     "id": "L55/P04/K4",
+     "text": "Spline representation is a higher-level, parametric method that uses several low-degree polynomials instead of one high-degree polynomial to define complex curves (203, 204, 206, 210, 212).",
+     "sources": [
+      "L55/S0203",
+      "L55/S0204",
+      "L55/S0206",
+      "L55/S0210",
+      "L55/S0212"
+     ],
+     "concept_ids": [
+      "C0987",
+      "C0988",
+      "C1140",
+      "C1179"
+     ]
+    },
+    {
+     "id": "L55/P04/K5",
+     "text": "Ultimately, all object representations in a rendered scene are converted to a mesh representation before being displayed (201, 202).",
+     "sources": [
+      "L55/S0201",
+      "L55/S0202"
+     ],
+     "concept_ids": [
+      "C0256",
+      "C0394",
+      "C0408",
+      "C0888",
+      "C1137",
+      "C1140",
+      "C1166",
+      "C1177"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L55/P04/T1",
+     "surface": "boundary representation",
+     "name": "Boundary representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Boundary representation is a broad category where objects are defined by the surfaces that outline their boundaries, which can be polygonal or curved.",
+     "sources": [
+      "L55/S0170",
+      "L55/S0171"
+     ],
+     "concept_id": "C1176",
+     "concept_name": "Boundary representation"
+    },
+    {
+     "id": "L55/P04/T2",
+     "surface": "mesh representation",
+     "name": "Mesh representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Mesh representation is a boundary representation technique that uses polygons to model object surfaces, which are then connected together to form a mesh representing the whole object.",
+     "sources": [
+      "L55/S0177",
+      "L55/S0178",
+      "L55/S0188"
+     ],
+     "concept_id": "C1177",
+     "concept_name": "Mesh representation"
+    },
+    {
+     "id": "L55/P04/T3",
+     "surface": "vertex or edge list",
+     "name": "Vertex or edge list",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A vertex or edge list is a structure that stores information about all the vertices and edges on a surface, detailing how these elements are connected to each other.",
+     "sources": [
+      "L55/S0179",
+      "L55/S0180"
+     ],
+     "concept_id": "C1178",
+     "concept_name": "Vertex or edge list"
+    },
+    {
+     "id": "L55/P04/T4",
+     "surface": "spline representation",
+     "name": "Spline representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Spline representation is a higher-level method, typically preferred by designers, that uses curves to represent complex surfaces that cannot be easily defined by simple polygons or polynomial equations.",
+     "sources": [
+      "L55/S0203",
+      "L55/S0204",
+      "L55/S0205"
+     ],
+     "concept_id": "C1179",
+     "concept_name": "Spline representation"
+    },
+    {
+     "id": "L55/P04/T5",
+     "surface": "parametric representation",
+     "name": "Parametric representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Parametric representation is a broad category that includes spline representation, dealing with the representation of curved surfaces or curves.",
+     "sources": [
+      "L55/S0206"
+     ],
+     "concept_id": "C1180",
+     "concept_name": "Parametric representation"
+    }
+   ]
+  },
+  {
+   "id": "L55/P05",
+   "first": "L55/S0218",
+   "last": "L55/S0238",
+   "start": 2033.441,
+   "end": 2237.185,
+   "objective": "Distinguish between general space partitioning and specialized techniques for representing complex objects",
+   "objective_id": "L55/O3",
+   "key_points": [
+    {
+     "id": "L55/P05/K1",
+     "text": "Space partitioning divides the 3D space occupied by an object into several disjoint regions (non-overlapping).",
+     "sources": [
+      "L55/S0219"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C1137"
+     ]
+    },
+    {
+     "id": "L55/P05/K2",
+     "text": "Space partitioning representations rely on a hierarchical structure called a space partitioning tree.",
+     "sources": [
+      "L55/S0222"
+     ],
+     "concept_ids": [
+      "C1140",
+      "C1181",
+      "C1182"
+     ]
+    },
+    {
+     "id": "L55/P05/K3",
+     "text": "Fractal representation is a specialized method used to depict self-repeating structures.",
+     "sources": [
+      "L55/S0226",
+      "L55/S0228"
+     ],
+     "concept_ids": [
+      "C1140",
+      "C1185"
+     ]
+    },
+    {
+     "id": "L55/P05/K4",
+     "text": "Skeletal models are used to capture the overall appearance and motion behavior of complex animated characters.",
+     "sources": [
+      "L55/S0235"
+     ],
+     "concept_ids": [
+      "C1187"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L55/P05/T1",
+     "surface": "space partitioning representation",
+     "name": "Space partitioning representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Space partitioning representation is a method where the entire 3D space containing an object is divided into several non-overlapping regions, and the object is represented by the region it occupies.",
+     "sources": [
+      "L55/S0218",
+      "L55/S0219",
+      "L55/S0220",
+      "L55/S0221"
+     ],
+     "concept_id": "C1181",
+     "concept_name": "Space partitioning representation"
+    },
+    {
+     "id": "L55/P05/T2",
+     "surface": "space partitioning tree",
+     "name": "Space partitioning tree",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Space partitioning tree is a hierarchical, tree-like structure used to represent the space occupied by an object.",
+     "sources": [
+      "L55/S0222",
+      "L55/S0223"
+     ],
+     "concept_id": "C1182",
+     "concept_name": "Space partitioning tree"
+    },
+    {
+     "id": "L55/P05/T3",
+     "surface": "Oct tree method",
+     "name": "Oct tree method",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Oct tree method is a specific representation used to partition and represent 3D space.",
+     "sources": [
+      "L55/S0224"
+     ],
+     "concept_id": "C1183",
+     "concept_name": "Oct tree method"
+    },
+    {
+     "id": "L55/P05/T4",
+     "surface": "binary space partitioning",
+     "name": "Binary space partitioning",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Binary space partitioning is one of the specific representations used to partition and represent 3D space.",
+     "sources": [
+      "L55/S0224"
+     ],
+     "concept_id": "C1184",
+     "concept_name": "Binary space partitioning"
+    },
+    {
+     "id": "L55/P05/T5",
+     "surface": "fractal representation",
+     "name": "Fractal representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Fractal representation is a specialized way of representation specifically designed for structures that are self-repeating, meaning each part repeats within the larger part.",
+     "sources": [
+      "L55/S0228",
+      "L55/S0229"
+     ],
+     "concept_id": "C1185",
+     "concept_name": "Fractal representation"
+    },
+    {
+     "id": "L55/P05/T6",
+     "surface": "particle system representation",
+     "name": "Particle system representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Particle system representation is a technique for representing objects that relies on simulating their physical properties.",
+     "sources": [
+      "L55/S0231",
+      "L55/S0232"
+     ],
+     "concept_id": "C1186",
+     "concept_name": "Particle system representation"
+    },
+    {
+     "id": "L55/P05/T7",
+     "surface": "skeletal model",
+     "name": "Skeletal model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Skeletal model is a type of representation used for characters that aims to capture both the character's overall appearance and its motion behavior.",
+     "sources": [
+      "L55/S0234",
+      "L55/S0235"
+     ],
+     "concept_id": "C1187",
+     "concept_name": "Skeletal model"
+    }
+   ]
+  },
+  {
+   "id": "L55/P06",
+   "first": "L55/S0239",
+   "last": "L55/S0256",
+   "start": 2239.668,
+   "end": 2388.538,
+   "objective": "Distinguish between the fixed stages and the potentially variable sequence of the 3D graphics pipeline",
+   "objective_id": "L55/O4",
+   "key_points": [
+    {
+     "id": "L55/P06/K1",
+     "text": "The 3D graphics pipeline consists of five broad stages, including object representation, modeling transformation, and scan conversion. (Subject)",
+     "sources": [
+      "L55/S0240"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0481",
+      "C1137",
+      "C1140",
+      "C1159",
+      "C1165",
+      "C1166",
+      "C1188"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L55/P06/T1",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 3D graphics pipeline is a set of sequential stages used for generating 3D graphics, which includes steps like object representation, modeling transformation, lighting, viewing transformation, and scan conversion.",
+     "sources": [
+      "L55/S0240"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L55/P06/T2",
+     "surface": "stages",
+     "name": "Stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A stage is one of the broad, component steps involved in the 3D graphics pipeline that performs specific computational tasks, such as transformations or scan conversion.",
+     "sources": [
+      "L55/S0240",
+      "L55/S0245"
+     ],
+     "concept_id": "C1188",
+     "concept_name": "Stage"
+    },
+    {
+     "id": "L55/P06/T3",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is one of the stages in the 3D graphics pipeline that involves performing specific mathematical transformations on the represented object.",
+     "sources": [
+      "L55/S0240"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L55/P06/T4",
+     "surface": "viewing transformation",
+     "name": "Viewing transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Viewing transformation is a stage in the 3D graphics pipeline that handles transformations related to how the scene is viewed.",
+     "sources": [
+      "L55/S0240",
+      "L55/S0245"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L55/P06/T5",
+     "surface": "scan conversion",
+     "name": "Scan conversion",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Scan conversion is a final stage of the 3D graphics pipeline that converts the processed information into a format that can be displayed.",
+     "sources": [
+      "L55/S0240",
+      "L55/S0245"
+     ],
+     "concept_id": "C1165",
+     "concept_name": "Scan conversion"
+    },
+    {
+     "id": "L55/P06/T6",
+     "surface": "coordinate system",
+     "name": "Coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A coordinate system is a mathematical framework used for defining locations in three dimensions; transformations within the pipeline involve movement between several of these systems.",
+     "sources": [
+      "L55/S0241"
+     ],
+     "concept_id": "C1189",
+     "concept_name": "Coordinate system"
+    },
+    {
+     "id": "L55/P06/T7",
+     "surface": "object representation technique",
+     "name": "Object representation technique",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation technique is the first stage of the 3D graphics pipeline, which involves how the 3D object is defined and stored before processing.",
+     "sources": [
+      "L55/S0242"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L55/P06/T8",
+     "surface": "lighting",
+     "name": "Lighting",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Lighting is a stage in the 3D graphics pipeline that applies the visual effects of light to the object representation.",
+     "sources": [
+      "L55/S0245"
+     ],
+     "concept_id": "C1167",
+     "concept_name": "Lighting"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L55/O1",
+   "text": "explain the stage-wise process of the 3D graphics pipeline, from object representation to pixel-level description",
+   "part_ids": [
+    "L55/P01"
+   ]
+  },
+  {
+   "id": "L55/O2",
+   "text": "compare the necessity of intricate object representation with the requirements for efficient rendering processes, and categorize 3D object representation techniques, including explaining the mechanism of point sample rendering",
+   "part_ids": [
+    "L55/P02",
+    "L55/P03"
+   ]
+  },
+  {
+   "id": "L55/O3",
+   "text": "differentiate between Boundary Representation, Mesh, and Spline representations for defining virtual objects, and distinguish between general space partitioning and specialized techniques for representing complex objects",
+   "part_ids": [
+    "L55/P04",
+    "L55/P05"
+   ]
+  },
+  {
+   "id": "L55/O4",
+   "text": "distinguish between the fixed stages and the potentially variable sequence of the 3D graphics pipeline",
+   "part_ids": [
+    "L55/P06"
+   ]
+  }
+ ],
+ "lecture_goal": "analyze how complex 3D objects are represented and optimized throughout the graphics rendering pipeline.",
+ "flags": [
+  "links: answer unusable (['answer is not valid JSON for the schema: Expecting value: line 561 column 15 (char 8940)'])"
+ ],
+ "origin": [
+  {
+   "item": "L55/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "a9531a64484cae378f15",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7029,
+   "output_tokens": 1959,
+   "latency_s": 78.59,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "c044055af4630e0e4af2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1674,
+   "output_tokens": 614,
+   "latency_s": 48.88,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "dd175281b2d0baeceace",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 783,
+   "output_tokens": 1004,
+   "latency_s": 65.87,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "97d8aa4c69dc4df35338",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 840,
+   "output_tokens": 1100,
+   "latency_s": 70.46,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "ef74c090eec8491d7ef7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 793,
+   "output_tokens": 1240,
+   "latency_s": 76.08,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "67db82c7d675bf8d4224",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3207,
+   "output_tokens": 1326,
+   "latency_s": 79.33,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "9ec9c2b6351ab00f3b6a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1204,
+   "output_tokens": 1373,
+   "latency_s": 80.7,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7261ad82a916cfa2bb13",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 778,
+   "output_tokens": 1450,
+   "latency_s": 308.11,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c1255627a9ad6e3be83c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 926,
+   "output_tokens": 1276,
+   "latency_s": 308.5,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "dd37ffc82c272e3cc62a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1063,
+   "output_tokens": 1266,
+   "latency_s": 44.31,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/terms/239-256",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "9222388fbd3e17190db7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1063,
+   "output_tokens": 2092,
+   "latency_s": 72.53,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "d41d97ff2587e06b42fd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1198,
+   "output_tokens": 1666,
+   "latency_s": 55.66,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/terms/218-238",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "cfd5c0ae67f404eee65d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1115,
+   "output_tokens": 2527,
+   "latency_s": 82.3,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d9a0437866629d9ac5ff",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1898,
+   "output_tokens": 4467,
+   "latency_s": 614.71,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "291f5fa0af8b409b551b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1318,
+   "output_tokens": 1753,
+   "latency_s": 327.68,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e1f82c0863f1b4a93ea3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3362,
+   "output_tokens": 2180,
+   "latency_s": 374.68,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "0bd40f52bbfe1777e6c6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1580,
+   "output_tokens": 1328,
+   "latency_s": 44.36,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/terms/111-149",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "1f0af86df11c144e0223",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1480,
+   "output_tokens": 1672,
+   "latency_s": 55.43,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "9e6f5d6122c2cc80f7f0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3619,
+   "output_tokens": 1753,
+   "latency_s": 55.94,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/30-69",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "1768ba0d9b71a66fc141",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1622,
+   "output_tokens": 2243,
+   "latency_s": 70.65,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/60-99",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "e4627c59c0e9672e9fe5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1617,
+   "output_tokens": 2724,
+   "latency_s": 84.87,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/90-110",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "991b47bf2f8c5a7f840f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1105,
+   "output_tokens": 3138,
+   "latency_s": 96.82,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/0-39",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "6794b0bdb31e8aa8c62a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1652,
+   "output_tokens": 3312,
+   "latency_s": 101.8,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "260911afef74a5e2448c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 913,
+   "output_tokens": 4385,
+   "latency_s": 597.02,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "94d8b3a75820eed0145e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1752,
+   "output_tokens": 2498,
+   "latency_s": 243.25,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f327f3ce96c11903ec83",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1206,
+   "output_tokens": 4583,
+   "latency_s": 425.46,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "58ea79d717397750f8fd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1267,
+   "output_tokens": 4546,
+   "latency_s": 383.05,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "8749db6ae27c3205a871",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 826,
+   "output_tokens": 1412,
+   "latency_s": 310.06,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cfa8c0eae59ec496c24c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1389,
+   "output_tokens": 4332,
+   "latency_s": 552.95,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "88c18595f26b681fef52",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4693,
+   "output_tokens": 5603,
+   "latency_s": 686.15,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "726653b30217d768b616",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1733,
+   "output_tokens": 1390,
+   "latency_s": 393.56,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "25fde1d895a60408db36",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2147,
+   "output_tokens": 1340,
+   "latency_s": 30.83,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/terms/170-217",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "973e95db41e6225dffd0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1952,
+   "output_tokens": 1984,
+   "latency_s": 44.88,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "5f60915c5a0d467d8f9f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1043,
+   "output_tokens": 1545,
+   "latency_s": 346.69,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6382e07c8da7aa182a26",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 835,
+   "output_tokens": 1077,
+   "latency_s": 284.67,
+   "cached": false
+  },
+  {
+   "item": "L55/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "764795d77318a6e7eea1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 322,
+   "output_tokens": 450,
+   "latency_s": 11.14,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "3c406a1baff4567b2941",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1190,
+   "output_tokens": 1656,
+   "latency_s": 38.91,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/terms/150-169",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "cb13f3ebdb38824d4e0c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1071,
+   "output_tokens": 1905,
+   "latency_s": 44.54,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "48ecd867f9c6dbf4edbd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1204,
+   "output_tokens": 741,
+   "latency_s": 287.12,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c1a6fe44a050ebd14b0b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3389,
+   "output_tokens": 2458,
+   "latency_s": 300.69,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8545e9ca595ed61b7653",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1952,
+   "output_tokens": 2914,
+   "latency_s": 344.28,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "970208a15257c407cba4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 931,
+   "output_tokens": 1614,
+   "latency_s": 298.85,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c960b525c7b69faff8b5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1019,
+   "output_tokens": 4348,
+   "latency_s": 489.69,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "01720710ecde38b9f307",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1242,
+   "output_tokens": 2852,
+   "latency_s": 434.72,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f93f832864e574e0d1f5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3343,
+   "output_tokens": 1508,
+   "latency_s": 269.9,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "945393cb5fe61cb59c0f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 939,
+   "output_tokens": 864,
+   "latency_s": 333.58,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "32f9ac2acf303184c302",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1417,
+   "output_tokens": 1911,
+   "latency_s": 398.24,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e65a909502ed6570f7a5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1773,
+   "output_tokens": 2481,
+   "latency_s": 395.93,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d491440c7576b349d201",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3742,
+   "output_tokens": 2366,
+   "latency_s": 376.75,
+   "cached": false
+  },
+  {
+   "item": "L55/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e7360ebf67ad74cd91ad",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1205,
+   "output_tokens": 1740,
+   "latency_s": 183.36,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f84859becd32b24fc4df",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1191,
+   "output_tokens": 1697,
+   "latency_s": 183.6,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d198974e872b28eb7cad",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2453,
+   "output_tokens": 2999,
+   "latency_s": 244.9,
+   "cached": false
+  },
+  {
+   "item": "registry/model transform",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "b509d3e2ef8b942a57dd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1027,
+   "output_tokens": 2645,
+   "latency_s": 120.38,
+   "cached": false
+  },
+  {
+   "item": "registry/scan conversion",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "26ca728f1e77f6417b4c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 817,
+   "output_tokens": 976,
+   "latency_s": 46.35,
+   "cached": false
+  },
+  {
+   "item": "registry/boundary represent",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "ed7746835551b11b2841",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 671,
+   "output_tokens": 848,
+   "latency_s": 44.04,
+   "cached": false
+  },
+  {
+   "item": "registry/window viewport transform",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "f1755922dd60e004661b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 896,
+   "output_tokens": 1080,
+   "latency_s": 56.01,
+   "cached": false
+  },
+  {
+   "item": "registry/point sample render",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "ae6179f01fcbff66afa6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 585,
+   "output_tokens": 1185,
+   "latency_s": 57.47,
+   "cached": false
+  },
+  {
+   "item": "registry/spline represent",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "eebf09c2dbf1df439923",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 516,
+   "output_tokens": 1136,
+   "latency_s": 56.11,
+   "cached": false
+  },
+  {
+   "item": "registry/light stage",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "884d4b6fae269aac32c3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1049,
+   "output_tokens": 1503,
+   "latency_s": 70.1,
+   "cached": false
+  },
+  {
+   "item": "registry/hidden surface removal",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "cffae0da05281097f53a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 683,
+   "output_tokens": 1458,
+   "latency_s": 68.9,
+   "cached": false
+  },
+  {
+   "item": "registry/view coordinate system",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "c3556d7bf6171ecfea5e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1306,
+   "output_tokens": 1510,
+   "latency_s": 73.63,
+   "cached": false
+  },
+  {
+   "item": "registry/oct tree method",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "71bffdf15aa31f3da739",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 699,
+   "output_tokens": 1981,
+   "latency_s": 99.71,
+   "cached": false
+  },
+  {
+   "item": "registry/view transform",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "203289faa4a0579a200b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1467,
+   "output_tokens": 2864,
+   "latency_s": 132.36,
+   "cached": false
+  },
+  {
+   "item": "registry/device coordinate system",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "da069e2e5e6cdb2f7102",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1006,
+   "output_tokens": 4349,
+   "latency_s": 201.21,
+   "cached": false
+  },
+  {
+   "item": "registry/local coordinate system",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "5df31f071f904b50fd62",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1374,
+   "output_tokens": 4424,
+   "latency_s": 206.06,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "66b6cf3f1e94ce567d3a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1277,
+   "output_tokens": 2947,
+   "latency_s": 213.86,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/facets/2",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "69379134d199875df74a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3567,
+   "output_tokens": 1214,
+   "latency_s": 38.85,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "0b7e9fd90f75311f785f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 6630,
+   "output_tokens": 1356,
+   "latency_s": 42.97,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "bc27a6878ae9b9d433c7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 8264,
+   "output_tokens": 2861,
+   "latency_s": 85.52,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "b135cdef717915dff321",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 6424,
+   "output_tokens": 3094,
+   "latency_s": 92.3,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "84c0276fe076e7473280",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 9803,
+   "output_tokens": 3448,
+   "latency_s": 101.66,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "a48c73baf1f78a0c1b59",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 8842,
+   "output_tokens": 4625,
+   "latency_s": 132.78,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "3b7797665e4867f21de8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 17174,
+   "output_tokens": 5310,
+   "latency_s": 150.8,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "520ee77e7f7c2a7963da",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 9115,
+   "output_tokens": 5500,
+   "latency_s": 155.04,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d4b7db33f087d90e2213",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1333,
+   "output_tokens": 1544,
+   "latency_s": 780.39,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "5b29595726babbb66703",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1213,
+   "output_tokens": 2722,
+   "latency_s": 954.99,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2f194e90174bbbfa7f1c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 959,
+   "output_tokens": 4439,
+   "latency_s": 1191.75,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a788e899b64ded96352c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1020,
+   "output_tokens": 4444,
+   "latency_s": 1192.39,
+   "cached": false
+  },
+  {
+   "item": "L55/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fddd656c9a8304906772",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2455,
+   "output_tokens": 4646,
+   "latency_s": 1219.11,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "4e88a669acb778cfdfeb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 5103,
+   "output_tokens": 5710,
+   "latency_s": 1376.05,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "349c0616963a022a4e15",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 921,
+   "output_tokens": 3813,
+   "latency_s": 750.11,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "a1f850c91a60400b7d82",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 975,
+   "output_tokens": 3142,
+   "latency_s": 584.09,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "901829ca8dea572bfe8f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3374,
+   "output_tokens": 2037,
+   "latency_s": 403.92,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "6b5846a286f7f5d90e2d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 838,
+   "output_tokens": 3641,
+   "latency_s": 624.95,
+   "cached": false
+  },
+  {
+   "item": "L55/P01/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3febdcd9d89420712c7c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3118,
+   "output_tokens": 461,
+   "latency_s": 190.54,
+   "cached": false
+  },
+  {
+   "item": "L55/P06/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2c50cf6d0bc575ab3c19",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 758,
+   "output_tokens": 900,
+   "latency_s": 211.91,
+   "cached": false
+  },
+  {
+   "item": "L55/P03/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "456d373832766250c74b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 874,
+   "output_tokens": 2230,
+   "latency_s": 425.78,
+   "cached": false
+  },
+  {
+   "item": "L55/P05/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1568bdfaf7c40b2ad04c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 881,
+   "output_tokens": 2649,
+   "latency_s": 405.34,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "e93cc61a5ea50744c881",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 1,
+   "input_tokens": 2373,
+   "output_tokens": 16485,
+   "latency_s": 1782.83,
+   "cached": false
+  },
+  {
+   "item": "L55/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0dd94249e526d1939f1c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1116,
+   "output_tokens": 556,
+   "latency_s": 15.42,
+   "cached": false
+  },
+  {
+   "item": "L55/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "783dc41d605f3b02f7bb",
+   "thinking": true,
+   "validator": {
+    "passed": false,
+    "errors": [
+     "answer is not valid JSON for the schema: Expecting value: line 561 column 15 (char 8940)"
+    ]
+   },
+   "retries": 2,
+   "input_tokens": 105942,
+   "output_tokens": 35545,
+   "latency_s": 1845.2,
+   "cached": false
+  },
+  {
+   "item": "L55/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "958641ac7e6b7db612f5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 660,
+   "output_tokens": 1117,
+   "latency_s": 30.54,
+   "cached": false
+  },
+  {
+   "item": "L55/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "71e4b584d79cbc33e6f3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 11892,
+   "output_tokens": 2592,
+   "latency_s": 63.25,
+   "cached": false
+  },
+  {
+   "item": "L55/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0ec097cc13b2ca87aa65",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 944,
+   "output_tokens": 1334,
+   "latency_s": 49.23,
+   "cached": false
+  },
+  {
+   "item": "L55/oq/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "11e2a2504fe5855fc5c8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12204,
+   "output_tokens": 941,
+   "latency_s": 22.75,
+   "cached": false
+  }
+ ]
+}

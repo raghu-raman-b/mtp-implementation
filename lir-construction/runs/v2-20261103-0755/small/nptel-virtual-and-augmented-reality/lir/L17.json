@@ -1,0 +1,3500 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L17",
+ "index": 17,
+ "title": "Understanding Tracking - I",
+ "source_file": "lec_17.srt",
+ "timing_source": "srt",
+ "youtube_id": "GAxynQg8exg",
+ "duration_s": 1519.003,
+ "sentences": [
+  {
+   "id": "L17/S0000",
+   "start": 24.196,
+   "end": 32.223,
+   "text": "Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L17/S0001",
+   "start": 33.745,
+   "end": 37.069,
+   "text": "Currently, we are having a discussion on tracking."
+  },
+  {
+   "id": "L17/S0002",
+   "start": 37.629,
+   "end": 42.734,
+   "text": "So, we will continue our discussion, which is part of lecture number 9."
+  },
+  {
+   "id": "L17/S0003",
+   "start": 49.461,
+   "end": 51.59,
+   "text": "Earlier, what have we learned?"
+  },
+  {
+   "id": "L17/S0004",
+   "start": 51.59,
+   "end": 77.61,
+   "text": "We started our discussion on tracking. We learned the basic idea of what are the different things that we can track. Broadly, three things we can track: one is the user's sense organs, the other one is other body parts, the user's other body parts, and the third thing that we talked about which we can track is the external or surrounding environment of the"
+  },
+  {
+   "id": "L17/S0005",
+   "start": 77.61,
+   "end": 84.524,
+   "text": "user's physical environment, that is the objects that are present in the physical environment."
+  },
+  {
+   "id": "L17/S0006",
+   "start": 84.524,
+   "end": 88.749,
+   "text": "Then we briefly covered the tracking process."
+  },
+  {
+   "id": "L17/S0007",
+   "start": 89.069,
+   "end": 89.79,
+   "text": "How do we track?"
+  },
+  {
+   "id": "L17/S0008",
+   "start": 90.951,
+   "end": 93.314,
+   "text": "It has three distinct components."
+  },
+  {
+   "id": "L17/S0009",
+   "start": 93.334,
+   "end": 97.739,
+   "text": "One is trying to understand how the trackers work."
+  },
+  {
+   "id": "L17/S0010",
+   "start": 97.759,
+   "end": 99.04,
+   "text": "So, broadly there are two types."
+  },
+  {
+   "id": "L17/S0011",
+   "start": 99.24,
+   "end": 101.403,
+   "text": "One is two types of trackers."
+  },
+  {
+   "id": "L17/S0012",
+   "start": 101.943,
+   "end": 104.867,
+   "text": "One is inside-out, the other one is outside-in."
+  },
+  {
+   "id": "L17/S0013",
+   "start": 106.408,
+   "end": 114.177,
+   "text": "In inside-out, we have all the sensors placed on the device that the user is using."
+  },
+  {
+   "id": "L17/S0014",
+   "start": 114.832,
+   "end": 120.537,
+   "text": "In outside-in, we have sensors placed in the surrounding environment rather than on the device that the user is using."
+  },
+  {
+   "id": "L17/S0015",
+   "start": 123.52,
+   "end": 130.485,
+   "text": "Both have their pros and cons that we have briefly touched on."
+  },
+  {
+   "id": "L17/S0016",
+   "start": 131.928,
+   "end": 136.091,
+   "text": "Also, we started understanding the process, how it works."
+  },
+  {
+   "id": "L17/S0017",
+   "start": 137.473,
+   "end": 141.376,
+   "text": "There are broadly four stages in the overall process."
+  },
+  {
+   "id": "L17/S0018",
+   "start": 142.397,
+   "end": 143.218,
+   "text": "Calibration."
+  },
+  {
+   "id": "L17/S0019",
+   "start": 143.722,
+   "end": 147.566,
+   "text": "registration, integration and drift correction."
+  },
+  {
+   "id": "L17/S0020",
+   "start": 148.007,
+   "end": 150.59,
+   "text": "So, we got a brief idea of each of these stages."
+  },
+  {
+   "id": "L17/S0021",
+   "start": 150.69,
+   "end": 154.334,
+   "text": "Let us go into a little bit more detail on those stages."
+  },
+  {
+   "id": "L17/S0022",
+   "start": 155.415,
+   "end": 160.06,
+   "text": "So, we are going to continue our discussion on these four stages in this lecture."
+  },
+  {
+   "id": "L17/S0023",
+   "start": 163.684,
+   "end": 171.433,
+   "text": "Now, in order to further understand each of those stages, let us take a use case of a particular type of sensor."
+  },
+  {
+   "id": "L17/S0024",
+   "start": 171.92,
+   "end": 174.583,
+   "text": "That is the IMU sensors."
+  },
+  {
+   "id": "L17/S0025",
+   "start": 174.924,
+   "end": 188.821,
+   "text": "So here what we will do is although we are using IMU sensors as an example to explain the process in a little bit more detail, the idea remains the same for all other types of sensors."
+  },
+  {
+   "id": "L17/S0026",
+   "start": 191.344,
+   "end": 198.973,
+   "text": "So this is purely for simplicity rather than a discussion on specific tracking techniques."
+  },
+  {
+   "id": "L17/S0027",
+   "start": 201.603,
+   "end": 206.313,
+   "text": "So, before we start, let us have a quick understanding of what the IMU sensors are."
+  },
+  {
+   "id": "L17/S0028",
+   "start": 206.313,
+   "end": 244.054,
+   "text": "Now, IMU stands for Inertial Measurement Unit, I, M, and U. This is a broad and quite popular group of sensors, a composite hardware containing three types of sensors mainly, which are nowadays mostly part of many HMDs or head-mounted displays."
+  },
+  {
+   "id": "L17/S0029",
+   "start": 246.077,
+   "end": 252.625,
+   "text": "One of those sensors is the gyroscope, then accelerometer and finally magnetometer."
+  },
+  {
+   "id": "L17/S0030",
+   "start": 252.925,
+   "end": 258.913,
+   "text": "So, we have gyroscope which captures the angular velocity, that is gyroscope."
+  },
+  {
+   "id": "L17/S0031",
+   "start": 259.517,
+   "end": 268.13,
+   "text": "Then, in case of an accelerometer, it captures the linear acceleration along the three axes that is x, y, and z axis."
+  },
+  {
+   "id": "L17/S0032",
+   "start": 269.171,
+   "end": 274.839,
+   "text": "And finally, magnetometer which captures magnetic field strength along the three axes."
+  },
+  {
+   "id": "L17/S0033",
+   "start": 276.301,
+   "end": 286.335,
+   "text": "So, when we are using the term IMU sensor, we are referring to these sensors, these three sensors together in a composite form as a single piece of hardware."
+  },
+  {
+   "id": "L17/S0034",
+   "start": 287.007,
+   "end": 295.417,
+   "text": "which are typically part of many modern-day devices including your mobile phones as well as many of the HMDs."
+  },
+  {
+   "id": "L17/S0035",
+   "start": 301.344,
+   "end": 324.456,
+   "text": "Now, when I say that we are using IMU sensor for tracking, it may be noted that tracking with IMU sensor relies heavily or mainly on the gyroscopic readings that is the values that are coming from the gyroscope which is primarily angular velocity."
+  },
+  {
+   "id": "L17/S0036",
+   "start": 326.959,
+   "end": 347.929,
+   "text": "Other sensors, namely the accelerometer and the magnetometer. These two sensors are not directly contributing to the tracking estimation, but We can use them to detect drift errors and take corrective measures."
+  },
+  {
+   "id": "L17/S0037",
+   "start": 354.258,
+   "end": 358.864,
+   "text": "Now let us try to understand each of those steps assuming IMU sensors."
+  },
+  {
+   "id": "L17/S0038",
+   "start": 359.325,
+   "end": 362.59,
+   "text": "Let us start with the first stage that is calibration."
+  },
+  {
+   "id": "L17/S0039",
+   "start": 362.61,
+   "end": 364.052,
+   "text": "So what happens in calibration?"
+  },
+  {
+   "id": "L17/S0040",
+   "start": 366.395,
+   "end": 370.12,
+   "text": "Now the gyroscope gives us angular velocity."
+  },
+  {
+   "id": "L17/S0041",
+   "start": 372.293,
+   "end": 384.629,
+   "text": "Now, this angular velocity is captured in the form of some numbers, but this is not the exact angular velocity that ideally should be there in a perfect world."
+  },
+  {
+   "id": "L17/S0042",
+   "start": 388.595,
+   "end": 402.89,
+   "text": "So, measured angular velocity of the gyroscope, let us call it omega g, and the actual angular velocity, let us call it omega a, are likely to be different."
+  },
+  {
+   "id": "L17/S0043",
+   "start": 403.451,
+   "end": 406.316,
+   "text": "We are assuming that our sensors are not perfect."
+  },
+  {
+   "id": "L17/S0044",
+   "start": 406.336,
+   "end": 408.098,
+   "text": "So, they are likely to be different."
+  },
+  {
+   "id": "L17/S0045",
+   "start": 408.119,
+   "end": 415.451,
+   "text": "Now, due to imperfect devices and the measurement technique that we are adopting, the difference comes."
+  },
+  {
+   "id": "L17/S0046",
+   "start": 415.972,
+   "end": 427.731,
+   "text": "So, the measurement error in this case is omega g the measured velocity versus omega a the actual velocity."
+  },
+  {
+   "id": "L17/S0047",
+   "start": 428.2,
+   "end": 438.253,
+   "text": "So, omega G minus omega A is the measurement error which is quite obvious."
+  },
+  {
+   "id": "L17/S0048",
+   "start": 438.273,
+   "end": 439.915,
+   "text": "Now, how do we relate the two values?"
+  },
+  {
+   "id": "L17/S0049",
+   "start": 439.975,
+   "end": 448.186,
+   "text": "So, our objective is to basically in the calibration stage, our objective is to make these two values as close to each other as possible."
+  },
+  {
+   "id": "L17/S0050",
+   "start": 450.209,
+   "end": 454.815,
+   "text": "Now, one way to relate both can be a linear relationship."
+  },
+  {
+   "id": "L17/S0051",
+   "start": 455.335,
+   "end": 457.258,
+   "text": "Through a linear relationship."
+  },
+  {
+   "id": "L17/S0052",
+   "start": 457.458,
+   "end": 468.353,
+   "text": "Say, we can propose a relationship like omega g is a plus b into omega a. This is a linear relationship."
+  },
+  {
+   "id": "L17/S0053",
+   "start": 469.214,
+   "end": 477.846,
+   "text": "Now, when omega g is equal to omega a, we can say that a is 0 and b is 1."
+  },
+  {
+   "id": "L17/S0054",
+   "start": 478.147,
+   "end": 485.351,
+   "text": "So, if we replace the value of a with 0 and b with 1, then we can see that both become equal."
+  },
+  {
+   "id": "L17/S0055",
+   "start": 485.752,
+   "end": 493.063,
+   "text": "So, that is the perfect condition, ideal condition that we want to be in, but that never happens in practice."
+  },
+  {
+   "id": "L17/S0056",
+   "start": 493.083,
+   "end": 499.292,
+   "text": "But if we have this type of relationship, note that this is not the only way to relate the two."
+  },
+  {
+   "id": "L17/S0057",
+   "start": 499.412,
+   "end": 512.648,
+   "text": "Here, we are just for the sake of simplicity, we are assuming there is a linear relationship between these two values and we have to estimate the parameters here, a, b, and so on."
+  },
+  {
+   "id": "L17/S0058",
+   "start": 515.712,
+   "end": 554.106,
+   "text": "So, assuming this relationship holds, we can have the measurement error represented as omega g minus omega a equals a plus b omega a minus omega a. So, we are replacing omega g with this expression And we can reformulate it to be A plus B minus 1 times omega A. So, this is the expression for measurement error."
+  },
+  {
+   "id": "L17/S0059",
+   "start": 554.126,
+   "end": 566.983,
+   "text": "Next, what we can do to calibrate, that means to reduce or make this measurement error as minimal as possible, what can we do?"
+  },
+  {
+   "id": "L17/S0060",
+   "start": 568.027,
+   "end": 580.559,
+   "text": "That involves taking many samples, sometimes thousands, from cheap and inaccurate sensors, which we are calling omega g, that is the measurement."
+  },
+  {
+   "id": "L17/S0061",
+   "start": 580.579,
+   "end": 592.511,
+   "text": "We are assuming that our sensor that we have at our disposal is cheap and inaccurate, and also expensive and highly accurate sensors WA."
+  },
+  {
+   "id": "L17/S0062",
+   "start": 593.072,
+   "end": 604.213,
+   "text": "Note here that when I say expensive or highly accurate, that can still be not the exact or ideal scenario, but it may be very close."
+  },
+  {
+   "id": "L17/S0063",
+   "start": 604.774,
+   "end": 620.697,
+   "text": "So, the sensor that we are using to represent the real value is supposed to be highly accurate as compared to the inexpensive or cheap ones or inaccurate ones that we are assuming we have."
+  },
+  {
+   "id": "L17/S0064",
+   "start": 623.478,
+   "end": 631.449,
+   "text": "So, we are assuming for calibration that we have access to thousands of samples of data from two types of sensors."
+  },
+  {
+   "id": "L17/S0065",
+   "start": 631.469,
+   "end": 656.429,
+   "text": "One is the IMU sensors which is assumed to be cheap or inaccurate, vis-a-vis a highly accurate one, benchmark data set which we are calling omega A, and then we can compare these values. Then one way to compare is A very simple approach is to compute the sum of squared errors."
+  },
+  {
+   "id": "L17/S0066",
+   "start": 657.77,
+   "end": 662.355,
+   "text": "So this is the expression; this is the difference."
+  },
+  {
+   "id": "L17/S0067",
+   "start": 662.375,
+   "end": 677.811,
+   "text": "We are squaring it and then taking the sum of all such squared values, that is for all samples, for all pairs of samples."
+  },
+  {
+   "id": "L17/S0068",
+   "start": 677.831,
+   "end": 692.237,
+   "text": "So we have n values for omega A and n values for omega G. For each pair, we are computing the difference, then taking the square, and then summing up all those values."
+  },
+  {
+   "id": "L17/S0069",
+   "start": 696.622,
+   "end": 715.659,
+   "text": "This is a simple or straightforward optimization problem where we are trying to find out constraints, constants C1 and C2, which optimize the expression C1 plus C2 WG minus WA."
+  },
+  {
+   "id": "L17/S0070",
+   "start": 720.004,
+   "end": 722.547,
+   "text": "This is a classical regression problem."
+  },
+  {
+   "id": "L17/S0071",
+   "start": 727.494,
+   "end": 733.121,
+   "text": "So, the square term of C1 plus C2 WG minus WA, this we are trying to optimize."
+  },
+  {
+   "id": "L17/S0072",
+   "start": 734.583,
+   "end": 739.975,
+   "text": "This is a classical regression problem, which is referred to as linear least squares."
+  },
+  {
+   "id": "L17/S0073",
+   "start": 740.356,
+   "end": 743.28,
+   "text": "This is only one of the many techniques that are there."
+  },
+  {
+   "id": "L17/S0074",
+   "start": 745.844,
+   "end": 758.082,
+   "text": "Again, we are referring to these simple techniques for simplicity, for the sake of simplicity."
+  },
+  {
+   "id": "L17/S0075",
+   "start": 758.102,
+   "end": 776.635,
+   "text": "Now, once we are able to determine C1 and C2, then we can transform the cheap sensor reading in the following way: calibrated value omega cal can be C1 plus C2 omega g."
+  },
+  {
+   "id": "L17/S0076",
+   "start": 776.635,
+   "end": 788.977,
+   "text": "So, this essentially maps the cheap sensor output to the expensive sensor output, or in other words, to the closest match possible with the real value."
+  },
+  {
+   "id": "L17/S0077",
+   "start": 790.459,
+   "end": 797.394,
+   "text": "But here we are doing it mathematically rather than using an actually very expensive or very accurate sensor."
+  },
+  {
+   "id": "L17/S0078",
+   "start": 798.335,
+   "end": 807.945,
+   "text": "So, this stage where we are mathematically correcting what we are getting to what ideally we should get is called calibration."
+  },
+  {
+   "id": "L17/S0079",
+   "start": 808.326,
+   "end": 813.011,
+   "text": "So, I hope this is a better way of understanding things rather than going through the definition."
+  },
+  {
+   "id": "L17/S0080",
+   "start": 814.673,
+   "end": 824.023,
+   "text": "To summarize calibration, what we are doing based on our datasets is finding out the C1 and C2 constants in this case."
+  },
+  {
+   "id": "L17/S0081",
+   "start": 824.948,
+   "end": 832.716,
+   "text": "In a simple case, if we are using any other relationship, the constants may be different in number and form."
+  },
+  {
+   "id": "L17/S0082",
+   "start": 833.917,
+   "end": 854.719,
+   "text": "However, the idea is to find out those constants and then use those constants to formulate an expression to transform or to map the actual sensor value that we are getting to a value that is close to the ideal ones through equations such as this, that is calibration."
+  },
+  {
+   "id": "L17/S0083",
+   "start": 858.091,
+   "end": 861.535,
+   "text": "Next, let us try to understand registration."
+  },
+  {
+   "id": "L17/S0084",
+   "start": 863.237,
+   "end": 873.428,
+   "text": "Now this is basically finding out the initial pose, initial orientation of the sensor or in other words the user who is using the sensor."
+  },
+  {
+   "id": "L17/S0085",
+   "start": 874.93,
+   "end": 881.938,
+   "text": "So through this step we are setting initial alignment between the real and virtual worlds."
+  },
+  {
+   "id": "L17/S0086",
+   "start": 883.454,
+   "end": 890.744,
+   "text": "Symbolically, it is referred to as the alignment represented by the symbol theta at the instance t equal to 0."
+  },
+  {
+   "id": "L17/S0087",
+   "start": 894.97,
+   "end": 908.649,
+   "text": "We can think of it as whichever direction the headset is facing when the tracking system is turned on that will be the initial orientation and setting initial alignment to be the forward direction."
+  },
+  {
+   "id": "L17/S0088",
+   "start": 908.769,
+   "end": 913.275,
+   "text": "These are some of the simplifying assumptions that we can make to understand the process."
+  },
+  {
+   "id": "L17/S0089",
+   "start": 916.192,
+   "end": 928.365,
+   "text": "In order to do that, in order to do the registration stage, what we need are fiducial markers or reflectors or tags which can aid in the registration significantly."
+  },
+  {
+   "id": "L17/S0090",
+   "start": 929.066,
+   "end": 932.309,
+   "text": "Even if they are not present, through computer vision techniques, it can be done."
+  },
+  {
+   "id": "L17/S0091",
+   "start": 932.73,
+   "end": 935.973,
+   "text": "But if they are present, then the process becomes simpler."
+  },
+  {
+   "id": "L17/S0092",
+   "start": 937.795,
+   "end": 940.258,
+   "text": "Then the third stage is integration."
+  },
+  {
+   "id": "L17/S0093",
+   "start": 943.782,
+   "end": 954.335,
+   "text": "The sensory output, the sensor that we are using, the output of that sensor, the data stream usually arrives at a regular sampling rate, regular interval, discrete interval."
+  },
+  {
+   "id": "L17/S0094",
+   "start": 957.699,
+   "end": 972.557,
+   "text": "Now, orientation of the sensor at the time instance t is represented as theta t, which can be expressed as k into delta t."
+  },
+  {
+   "id": "L17/S0095",
+   "start": 972.655,
+   "end": 977.842,
+   "text": "where delta t is the sampling interval that can be computed."
+  },
+  {
+   "id": "L17/S0096",
+   "start": 978.242,
+   "end": 989.156,
+   "text": "So, our objective is to compute the orientation or pose after some time from the initial orientation and pose that we have estimated in the registration phase."
+  },
+  {
+   "id": "L17/S0097",
+   "start": 990.397,
+   "end": 998.848,
+   "text": "Now, the time lapse is k delta t where delta t is the sampling interval and k is an integer number."
+  },
+  {
+   "id": "L17/S0098",
+   "start": 1001.191,
+   "end": 1007.661,
+   "text": "Now, this orientation can be computed by integrating the samples."
+  },
+  {
+   "id": "L17/S0099",
+   "start": 1009.343,
+   "end": 1011.847,
+   "text": "Equation wise, we can represent it in this way."
+  },
+  {
+   "id": "L17/S0100",
+   "start": 1011.887,
+   "end": 1032.973,
+   "text": "Theta t or the orientation at time t equals the initial orientation theta 0 plus i equal to 1 to t. We are basically integrating this part W cal i dot delta t. So, what does this part mean?"
+  },
+  {
+   "id": "L17/S0101",
+   "start": 1034.236,
+   "end": 1047.108,
+   "text": "The idea is that the calibrated angular velocity sample at the ith instant which is W cal i is the angular velocity sample that we are getting from the gyroscopic sensor."
+  },
+  {
+   "id": "L17/S0102",
+   "start": 1047.91,
+   "end": 1056.679,
+   "text": "This indicates rotation or in other words change in orientation by an amount W i cal delta t."
+  },
+  {
+   "id": "L17/S0103",
+   "start": 1061.215,
+   "end": 1086.187,
+   "text": "And all such changes are summed up from the beginning to that time interval and then added to the initial orientation to get the current orientation at time instance t. That is the idea of integration."
+  },
+  {
+   "id": "L17/S0104",
+   "start": 1086.748,
+   "end": 1090.092,
+   "text": "Next and the final part is drift correction."
+  },
+  {
+   "id": "L17/S0105",
+   "start": 1092.434,
+   "end": 1093.155,
+   "text": "What happens here?"
+  },
+  {
+   "id": "L17/S0106",
+   "start": 1094.617,
+   "end": 1107.972,
+   "text": "Now, drift correction if you may recollect is basically compensating for the errors in estimation between the real and actual value."
+  },
+  {
+   "id": "L17/S0107",
+   "start": 1108.753,
+   "end": 1116.342,
+   "text": "So, in order to understand that, note that this drift correction is usually done with the help of extra sensors."
+  },
+  {
+   "id": "L17/S0108",
+   "start": 1117.143,
+   "end": 1121.428,
+   "text": "So, so far we are talking only about the gyroscope."
+  },
+  {
+   "id": "L17/S0109",
+   "start": 1122.269,
+   "end": 1127.055,
+   "text": "But then in this case, we may be using other sensors such as cameras."
+  },
+  {
+   "id": "L17/S0110",
+   "start": 1129.018,
+   "end": 1137.429,
+   "text": "In the case of IMU, we can use accelerometer and magnetometer readings for drift correction in addition to the gyroscope values."
+  },
+  {
+   "id": "L17/S0111",
+   "start": 1138.671,
+   "end": 1143.838,
+   "text": "But in general, drift correction requires the use of other sensors."
+  },
+  {
+   "id": "L17/S0112",
+   "start": 1150.518,
+   "end": 1160.69,
+   "text": "So, we have at least two sensors and we need to blend their values to estimate the drift and correct it."
+  },
+  {
+   "id": "L17/S0113",
+   "start": 1160.711,
+   "end": 1176.35,
+   "text": "A classic approach to blend the two sensors, say in our IMU sensor example gyroscope and there may be a camera present separately or maybe a magnetometer or maybe an accelerometer."
+  },
+  {
+   "id": "L17/S0114",
+   "start": 1178.092,
+   "end": 1196.739,
+   "text": "We can say that theta dk equals alpha times theta gk plus 1 minus alpha times theta ck, where theta dk this term is the drift-corrected orientation at time instant t."
+  },
+  {
+   "id": "L17/S0115",
+   "start": 1196.739,
+   "end": 1209.938,
+   "text": "Then theta gk this term is the orientation obtained by integrating gyroscope values at the kth instant."
+  },
+  {
+   "id": "L17/S0116",
+   "start": 1210.846,
+   "end": 1222.638,
+   "text": "through that integration phase, theta ck, this term, is the orientation obtained with camera at kth instant."
+  },
+  {
+   "id": "L17/S0117",
+   "start": 1222.698,
+   "end": 1225.041,
+   "text": "So, we are having two different sensors."
+  },
+  {
+   "id": "L17/S0118",
+   "start": 1226.262,
+   "end": 1234.571,
+   "text": "We are applying integration to each of those sensors and we are obtaining the corresponding orientations for the two sensors separately."
+  },
+  {
+   "id": "L17/S0119",
+   "start": 1235.332,
+   "end": 1240.397,
+   "text": "And then we are combining them through this expression as shown here."
+  },
+  {
+   "id": "L17/S0120",
+   "start": 1242.115,
+   "end": 1255.692,
+   "text": "Now, alpha in this particular expression classical approach the term alpha is a normalized value between 0 to 1 it is called the gain parameter."
+  },
+  {
+   "id": "L17/S0121",
+   "start": 1257.655,
+   "end": 1277.558,
+   "text": "So, using the gain parameter we can combine the two individually computed orientations at time interval at the time instance t and then we can get the drift corrected orientation at the same instant by combining them using the gain parameter alpha."
+  },
+  {
+   "id": "L17/S0122",
+   "start": 1283.184,
+   "end": 1286.807,
+   "text": "So, that is in summary how the process works."
+  },
+  {
+   "id": "L17/S0123",
+   "start": 1289.63,
+   "end": 1301.009,
+   "text": "Just to recollect, we have gone a little bit deeper into the four stages namely calibration, registration, integration and drift correction."
+  },
+  {
+   "id": "L17/S0124",
+   "start": 1301.73,
+   "end": 1313.848,
+   "text": "So, in calibration we have seen how we can estimate or how we can get the sensory values as close as possible."
+  },
+  {
+   "id": "L17/S0125",
+   "start": 1313.888,
+   "end": 1320.638,
+   "text": "The idea of calibration is we do not want to use highly accurate sensors which are generally costly."
+  },
+  {
+   "id": "L17/S0126",
+   "start": 1321.867,
+   "end": 1336.927,
+   "text": "Instead, we will be using cheap sensors, but through the calibration stage, we will be transforming the values of those cheap sensors to the values of highly accurate sensors through some mathematical manipulation."
+  },
+  {
+   "id": "L17/S0127",
+   "start": 1337.748,
+   "end": 1357.812,
+   "text": "And to determine that mathematical expression to transform, we need to have access to a set of datasets, to a set of data samples, from both the sensors with which we are calibrating or what is our underlying assumption about accurate sensors."
+  },
+  {
+   "id": "L17/S0128",
+   "start": 1359.814,
+   "end": 1388.185,
+   "text": "Once the calibration is done, then our sensor is ready to collect data. Then the next thing we should do is basically assuming the current position of the sensor and the orientation of the user, we can set the initial position and orientation of the tracked body parts or objects as per the need that is the registration phase."
+  },
+  {
+   "id": "L17/S0129",
+   "start": 1388.886,
+   "end": 1403.722,
+   "text": "After that, what we can do is we can keep on estimating the orientation at any time instant t."
+  },
+  {
+   "id": "L17/S0130",
+   "start": 1403.722,
+   "end": 1425.346,
+   "text": "So, for that we require the initial orientation estimated in the registration phase and we sum up the sensory values to determine orientation at any arbitrary instant of time."
+  },
+  {
+   "id": "L17/S0131",
+   "start": 1427.168,
+   "end": 1433.665,
+   "text": "In the drift correction phase, what we assume is that we have access to at least two sensors."
+  },
+  {
+   "id": "L17/S0132",
+   "start": 1435.287,
+   "end": 1453.522,
+   "text": "The more the better and in this stage what we do is combine the orientation computed at the same time instant separately by the two sensors and then combine them together in various forms."
+  },
+  {
+   "id": "L17/S0133",
+   "start": 1454.183,
+   "end": 1456.266,
+   "text": "There can be various forms of combinations."
+  },
+  {
+   "id": "L17/S0134",
+   "start": 1456.486,
+   "end": 1470.709,
+   "text": "We have talked about one classical approach where we used a gain parameter, a normalized value between 0 to 1, to combine the separately estimated orientation at time instant t to get the drift-corrected orientation."
+  },
+  {
+   "id": "L17/S0135",
+   "start": 1473.894,
+   "end": 1476.438,
+   "text": "So, with that, we have come to the end of this part of the lecture."
+  },
+  {
+   "id": "L17/S0136",
+   "start": 1476.719,
+   "end": 1488.646,
+   "text": "We have covered a basic understanding of sensor types, sensor categories, and the sensor sensing process."
+  },
+  {
+   "id": "L17/S0137",
+   "start": 1489.687,
+   "end": 1496.337,
+   "text": "What is left is the exact technology being used to sense; what are the different technologies that are there in the market."
+  },
+  {
+   "id": "L17/S0138",
+   "start": 1498.6,
+   "end": 1503.588,
+   "text": "So, we will continue our discussion on sensing technologies in the next part of the lecture."
+  },
+  {
+   "id": "L17/S0139",
+   "start": 1504.89,
+   "end": 1511.162,
+   "text": "I hope you understood the concepts clearly and enjoyed the discussion."
+  },
+  {
+   "id": "L17/S0140",
+   "start": 1511.884,
+   "end": 1514.009,
+   "text": "Looking forward to meeting you in the next part."
+  },
+  {
+   "id": "L17/S0141",
+   "start": 1514.751,
+   "end": 1519.003,
+   "text": "Till then, thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L17/P01",
+   "first": "L17/S0000",
+   "last": "L17/S0022",
+   "start": 24.196,
+   "end": 160.06,
+   "objective": "Identify the three types of tracked objects and the four stages of operation",
+   "objective_id": "L17/O1",
+   "key_points": [
+    {
+     "id": "L17/P01/K1",
+     "text": "Broadly, three things can be tracked: the user's sense organs, the user's other body parts, and the external environment.",
+     "sources": [
+      "L17/S0004"
+     ],
+     "concept_ids": [
+      "C0116",
+      "C0152",
+      "C0252",
+      "C0255"
+     ]
+    },
+    {
+     "id": "L17/P01/K2",
+     "text": "Trackers are categorized into two types: inside-out and outside-in.",
+     "sources": [
+      "L17/S0010",
+      "L17/S0012"
+     ],
+     "concept_ids": [
+      "C0116",
+      "C0152",
+      "C0319",
+      "C0320"
+     ]
+    },
+    {
+     "id": "L17/P01/K3",
+     "text": "Inside-out trackers place all sensors on the device used by the user, while outside-in trackers place sensors in the surrounding environment.",
+     "sources": [
+      "L17/S0013",
+      "L17/S0014"
+     ],
+     "concept_ids": [
+      "C0116",
+      "C0134",
+      "C0152",
+      "C0252",
+      "C0255",
+      "C0257",
+      "C0318",
+      "C0319",
+      "C0320"
+     ]
+    },
+    {
+     "id": "L17/P01/K4",
+     "text": "Key point: The overall tracking process involves four stages: calibration, registration, integration, and drift correction. (cited sentences)",
+     "sources": [
+      "L17/S0017",
+      "L17/S0018",
+      "L17/S0019"
+     ],
+     "concept_ids": [
+      "C0116",
+      "C0151",
+      "C0152",
+      "C0321",
+      "C0322",
+      "C0323",
+      "C0324"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L17/P01/T1",
+     "surface": "tracking",
+     "name": "Tracking",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Tracking is a process that involves understanding how trackers work through four distinct stages: calibration, registration, integration, and drift correction.",
+     "sources": [
+      "L17/S0001",
+      "L17/S0004",
+      "L17/S0009",
+      "L17/S0010",
+      "L17/S0011"
+     ],
+     "concept_id": "C0116",
+     "concept_name": "Tracking"
+    },
+    {
+     "id": "L17/P01/T2",
+     "surface": "tracking process",
+     "name": "Tracking process",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The tracking process describes how tracking is performed and consists of three distinct components, including understanding how the trackers work.",
+     "sources": [
+      "L17/S0006",
+      "L17/S0016"
+     ],
+     "concept_id": "C0324",
+     "concept_name": "Tracking process"
+    },
+    {
+     "id": "L17/P01/T3",
+     "surface": "inside-out",
+     "name": "Inside-out",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Inside-out is a type of tracker where all the necessary sensors are placed on the device that the user is using.",
+     "sources": [
+      "L17/S0012",
+      "L17/S0013"
+     ],
+     "concept_id": "C0319",
+     "concept_name": "Inside-out tracking"
+    },
+    {
+     "id": "L17/P01/T4",
+     "surface": "outside-in",
+     "name": "Outside-in",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Outside-in is a type of tracker that utilizes sensors placed in the surrounding environment rather than on the device being used by the user.",
+     "sources": [
+      "L17/S0012",
+      "L17/S0014"
+     ],
+     "concept_id": "C0320",
+     "concept_name": "Outside-in tracking"
+    },
+    {
+     "id": "L17/P01/T5",
+     "surface": "calibration",
+     "name": "Calibration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Calibration is one of the four primary stages in the overall tracking process.",
+     "sources": [
+      "L17/S0018"
+     ],
+     "concept_id": "C0321",
+     "concept_name": "Calibration"
+    },
+    {
+     "id": "L17/P01/T6",
+     "surface": "registration",
+     "name": "Registration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Registration is one of the four primary stages in the overall tracking process.",
+     "sources": [
+      "L17/S0019"
+     ],
+     "concept_id": "C0151",
+     "concept_name": "Registration"
+    },
+    {
+     "id": "L17/P01/T7",
+     "surface": "integration",
+     "name": "Integration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Integration is one of the four primary stages in the overall tracking process.",
+     "sources": [
+      "L17/S0019"
+     ],
+     "concept_id": "C0322",
+     "concept_name": "Integration"
+    },
+    {
+     "id": "L17/P01/T8",
+     "surface": "drift correction",
+     "name": "Drift correction",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Drift correction is one of the four primary stages in the overall tracking process.",
+     "sources": [
+      "L17/S0019"
+     ],
+     "concept_id": "C0323",
+     "concept_name": "Drift correction"
+    }
+   ]
+  },
+  {
+   "id": "L17/P02",
+   "first": "L17/S0023",
+   "last": "L17/S0037",
+   "start": 163.684,
+   "end": 358.864,
+   "objective": "Identify and describe the components and function of Inertial Measurement Units (IMUs) in tracking systems",
+   "objective_id": "L17/O1",
+   "key_points": [
+    {
+     "id": "L17/P02/K1",
+     "text": "IMU stands for Inertial Measurement Unit, which is a composite hardware containing three main sensor types.",
+     "sources": [
+      "L17/S0028"
+     ],
+     "concept_ids": [
+      "C0257",
+      "C0318",
+      "C0325"
+     ]
+    },
+    {
+     "id": "L17/P02/K2",
+     "text": "An IMU typically comprises a gyroscope, accelerometer, and magnetometer.",
+     "sources": [
+      "L17/S0029"
+     ],
+     "concept_ids": [
+      "C0325",
+      "C0326",
+      "C0327",
+      "C0328"
+     ]
+    },
+    {
+     "id": "L17/P02/K3",
+     "text": "The gyroscope captures angular velocity, while the accelerometer captures linear acceleration along the three axes.",
+     "sources": [
+      "L17/S0030",
+      "L17/S0031"
+     ],
+     "concept_ids": [
+      "C0326",
+      "C0327",
+      "C0329"
+     ]
+    },
+    {
+     "id": "L17/P02/K4",
+     "text": "Tracking with an IMU sensor primarily relies on gyroscopic readings (angular velocity), while accelerometer and magnetometer readings help detect drift.",
+     "sources": [
+      "L17/S0035",
+      "L17/S0036"
+     ],
+     "concept_ids": [
+      "C0116",
+      "C0152",
+      "C0257",
+      "C0318",
+      "C0325",
+      "C0327",
+      "C0328",
+      "C0329"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L17/P02/T1",
+     "surface": "IMU sensors",
+     "name": "Inertial measurement unit",
+     "abbreviation": "IMU",
+     "abbreviation_at": "L17/S0028",
+     "definition": "The Inertial Measurement Unit is a composite piece of hardware that includes a gyroscope, an accelerometer, and a magnetometer. It is commonly found in modern devices like mobile phones and head-mounted displays.",
+     "sources": [
+      "L17/S0028",
+      "L17/S0033",
+      "L17/S0034"
+     ],
+     "concept_id": "C0325",
+     "concept_name": "Inertial measurement unit"
+    },
+    {
+     "id": "L17/P02/T2",
+     "surface": "gyroscope",
+     "name": "Gyroscope",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A gyroscope is a sensor that specifically captures angular velocity. When used in IMU tracking, it relies heavily on its readings to estimate position and movement.",
+     "sources": [
+      "L17/S0028",
+      "L17/S0030",
+      "L17/S0035"
+     ],
+     "concept_id": "C0326",
+     "concept_name": "Gyroscope"
+    },
+    {
+     "id": "L17/P02/T3",
+     "surface": "accelerometer",
+     "name": "Accelerometer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Accelerometer is a sensor that captures linear acceleration along the three axes (x, y, and z). While it does not directly contribute to tracking estimation, it is used to detect drift errors and take corrective measures.",
+     "sources": [
+      "L17/S0028",
+      "L17/S0031",
+      "L17/S0036"
+     ],
+     "concept_id": "C0327",
+     "concept_name": "Accelerometer"
+    },
+    {
+     "id": "L17/P02/T4",
+     "surface": "magnetometer",
+     "name": "Magnetometer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Magnetometer is a sensor that captures magnetic field strength along the three axes. While it does not directly contribute to tracking estimation, it is used to detect drift errors and take corrective measures.",
+     "sources": [
+      "L17/S0028",
+      "L17/S0032",
+      "L17/S0036"
+     ],
+     "concept_id": "C0328",
+     "concept_name": "Magnetometer"
+    }
+   ]
+  },
+  {
+   "id": "L17/P03",
+   "first": "L17/S0038",
+   "last": "L17/S0082",
+   "start": 359.325,
+   "end": 854.719,
+   "objective": "Explain the process of calibrating imperfect sensor data by mathematically modeling and correcting measurement errors",
+   "objective_id": "L17/O2",
+   "key_points": [
+    {
+     "id": "L17/P03/K1",
+     "text": "Imperfect sensors lead to measurement error, defined as the difference between the measured angular velocity (omega g) and the actual angular velocity (omega a) (S46, S47).",
+     "sources": [
+      "L17/S0046",
+      "L17/S0047"
+     ],
+     "concept_ids": [
+      "C0257",
+      "C0318",
+      "C0329",
+      "C0330"
+     ]
+    },
+    {
+     "id": "L17/P03/K2",
+     "text": "Calibration often proposes a linear relationship between the measured and actual velocities, such as omega g = a + b * omega a (S52).",
+     "sources": [
+      "L17/S0052"
+     ],
+     "concept_ids": [
+      "C0321",
+      "C0331"
+     ]
+    },
+    {
+     "id": "L17/P03/K3",
+     "text": "Calibration requires collecting many samples from inexpensive, inaccurate sensors and highly accurate benchmark sensors (S60, S64).",
+     "sources": [
+      "L17/S0060",
+      "L17/S0064"
+     ],
+     "concept_ids": [
+      "C0257",
+      "C0318",
+      "C0321"
+     ]
+    },
+    {
+     "id": "L17/P03/K4",
+     "text": "The parameters used for calibration are determined by optimizing the expression, which is a classical regression problem called linear least squares (S70, S72).",
+     "sources": [
+      "L17/S0070",
+      "L17/S0072"
+     ],
+     "concept_ids": [
+      "C0321",
+      "C0334",
+      "C0335"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L17/P03/T1",
+     "surface": "calibration",
+     "name": "Calibration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Calibration is the stage where mathematical corrections are applied to imperfect sensor readings to make them as close as possible to the ideal or actual values.",
+     "sources": [
+      "L17/S0038",
+      "L17/S0049",
+      "L17/S0078",
+      "L17/S0082"
+     ],
+     "concept_id": "C0321",
+     "concept_name": "Calibration"
+    },
+    {
+     "id": "L17/P03/T2",
+     "surface": "gyroscope",
+     "name": "Gyroscope",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A gyroscope is a device that provides a measurement of angular velocity.",
+     "sources": [
+      "L17/S0040",
+      "L17/S0042",
+      "L17/S0047",
+      "L17/S0065"
+     ],
+     "concept_id": "C0326",
+     "concept_name": "Gyroscope"
+    },
+    {
+     "id": "L17/P03/T3",
+     "surface": "angular velocity",
+     "name": "Angular velocity",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Angular velocity is a value captured in the form of numbers from a gyroscope that can be represented as either an actual value or a measured value.",
+     "sources": [
+      "L17/S0040",
+      "L17/S0042",
+      "L17/S0046"
+     ],
+     "concept_id": "C0329",
+     "concept_name": "Angular velocity"
+    },
+    {
+     "id": "L17/P03/T4",
+     "surface": "measurement error",
+     "name": "Measurement error",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Measurement error is the difference that occurs between the measured angular velocity from the sensor and the actual angular velocity.",
+     "sources": [
+      "L17/S0046",
+      "L17/S0047"
+     ],
+     "concept_id": "C0330",
+     "concept_name": "Measurement error"
+    },
+    {
+     "id": "L17/P03/T5",
+     "surface": "linear relationship",
+     "name": "Linear relationship",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A linear relationship is a method proposed to relate two values, such as the measured velocity and the actual velocity, using an equation like omega g is a plus b into omega a.",
+     "sources": [
+      "L17/S0050",
+      "L17/S0052"
+     ],
+     "concept_id": "C0331",
+     "concept_name": "Linear relationship"
+    },
+    {
+     "id": "L17/P03/T6",
+     "surface": "imu sensors",
+     "name": "IMU sensor",
+     "abbreviation": "IMU",
+     "abbreviation_at": "L17/S0065",
+     "definition": "IMU sensor is a type of cheap or inaccurate sensor that is assumed to be used during the calibration process.",
+     "sources": [
+      "L17/S0065"
+     ],
+     "concept_id": "C0325",
+     "concept_name": "Inertial measurement unit"
+    },
+    {
+     "id": "L17/P03/T7",
+     "surface": "benchmark data set",
+     "name": "Benchmark data set",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A benchmark data set is a highly accurate reference dataset used during calibration to compare and correct the values obtained from cheaper, inaccurate sensors.",
+     "sources": [
+      "L17/S0065"
+     ],
+     "concept_id": "C0332",
+     "concept_name": "Benchmark data set"
+    },
+    {
+     "id": "L17/P03/T8",
+     "surface": "sum of squared errors",
+     "name": "Sum of squared errors",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The sum of squared errors is a comparison approach where the differences between pairs of samples are computed, squared, and then summed up across all available samples.",
+     "sources": [
+      "L17/S0065",
+      "L17/S0067",
+      "L17/S0068"
+     ],
+     "concept_id": "C0333",
+     "concept_name": "Sum of squared errors"
+    },
+    {
+     "id": "L17/P03/T9",
+     "surface": "regression problem",
+     "name": "Regression problem",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A regression problem is a mathematical method used to find constants, such as C1 and C2, that optimize or minimize a function, such as the square term of the measurement error.",
+     "sources": [
+      "L17/S0070",
+      "L17/S0072"
+     ],
+     "concept_id": "C0334",
+     "concept_name": "Regression problem"
+    },
+    {
+     "id": "L17/P03/T10",
+     "surface": "linear least squares",
+     "name": "Linear least squares",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Linear least squares is a specific type of classical regression problem that is utilized to optimize the expression related to measurement error.",
+     "sources": [
+      "L17/S0072"
+     ],
+     "concept_id": "C0335",
+     "concept_name": "Linear least squares"
+    },
+    {
+     "id": "L17/P03/T11",
+     "surface": "calibrated value",
+     "name": "Calibrated value",
+     "abbreviation": "omega cal",
+     "abbreviation_at": "L17/S0075",
+     "definition": "The calibrated value is the corrected output derived from the cheap sensor reading by applying a mathematical transformation to map it close to the expensive sensor output or the real value.",
+     "sources": [
+      "L17/S0075",
+      "L17/S0076"
+     ],
+     "concept_id": "C0336",
+     "concept_name": "Calibrated value"
+    }
+   ]
+  },
+  {
+   "id": "L17/P04",
+   "first": "L17/S0083",
+   "last": "L17/S0103",
+   "start": 858.091,
+   "end": 1086.187,
+   "objective": "Explain the steps of registration and integration for setting initial alignment and tracking orientation",
+   "objective_id": "L17/O2",
+   "key_points": [
+    {
+     "id": "L17/P04/K1",
+     "text": "Registration establishes the initial pose (orientation) of the sensor or user by setting the initial alignment between the real and virtual worlds (84, 85).",
+     "sources": [
+      "L17/S0084",
+      "L17/S0085"
+     ],
+     "concept_ids": [
+      "C0059",
+      "C0148",
+      "C0150",
+      "C0151",
+      "C0252",
+      "C0257",
+      "C0318",
+      "C0337"
+     ]
+    },
+    {
+     "id": "L17/P04/K2",
+     "text": "Fiducial markers, reflectors, or tags significantly aid the registration process, although computer vision techniques can be used without them (89, 90, 91).",
+     "sources": [
+      "L17/S0089",
+      "L17/S0090",
+      "L17/S0091"
+     ],
+     "concept_ids": [
+      "C0052",
+      "C0053",
+      "C0054",
+      "C0057",
+      "C0151",
+      "C0258",
+      "C0268"
+     ]
+    },
+    {
+     "id": "L17/P04/K3",
+     "text": "The current orientation at time $t$ is computed by integrating the angular velocity samples starting from the initial orientation, represented as the sum of changes over time (98, 103).",
+     "sources": [
+      "L17/S0098",
+      "L17/S0103"
+     ],
+     "concept_ids": [
+      "C0150",
+      "C0258",
+      "C0329"
+     ]
+    },
+    {
+     "id": "L17/P04/K4",
+     "text": "Integration involves summing up changes in orientation (change in orientation = angular velocity sample × sampling interval) from the start time to the current time (101, 102, 103).",
+     "sources": [
+      "L17/S0101",
+      "L17/S0102",
+      "L17/S0103"
+     ],
+     "concept_ids": [
+      "C0150",
+      "C0322",
+      "C0329",
+      "C0338"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L17/P04/T1",
+     "surface": "registration",
+     "name": "Registration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Registration is the process of determining the initial pose or orientation of a sensor. It sets the initial alignment between the real world and the virtual world.",
+     "sources": [
+      "L17/S0083",
+      "L17/S0085"
+     ],
+     "concept_id": "C0151",
+     "concept_name": "Registration"
+    },
+    {
+     "id": "L17/P04/T2",
+     "surface": "initial pose, initial orientation",
+     "name": "Initial pose",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The initial pose is the starting orientation of the sensor or user when the tracking system is turned on. This orientation is used to establish the alignment at the beginning of the tracking process.",
+     "sources": [
+      "L17/S0084",
+      "L17/S0087"
+     ],
+     "concept_id": "C0337",
+     "concept_name": "Initial pose"
+    },
+    {
+     "id": "L17/P04/T3",
+     "surface": "fiducial markers or reflectors or tags",
+     "name": "Fiducial marker",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Fiducial markers, reflectors, or tags are objects that can significantly aid the registration process.",
+     "sources": [
+      "L17/S0089"
+     ],
+     "concept_id": "C0053",
+     "concept_name": "Fiducial marker"
+    },
+    {
+     "id": "L17/P04/T4",
+     "surface": "computer vision techniques",
+     "name": "Computer vision technique",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Computer vision techniques are methods that allow registration to be performed even if physical aids like fiducial markers are not present.",
+     "sources": [
+      "L17/S0090"
+     ],
+     "concept_id": "C0054",
+     "concept_name": "Computer vision technique"
+    },
+    {
+     "id": "L17/P04/T5",
+     "surface": "integration",
+     "name": "Integration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Integration is the process of computing the current orientation or pose by summing up all the changes in orientation (from angular velocity samples) starting from the initial orientation.",
+     "sources": [
+      "L17/S0092",
+      "L17/S0103"
+     ],
+     "concept_id": "C0322",
+     "concept_name": "Integration"
+    },
+    {
+     "id": "L17/P04/T6",
+     "surface": "sampling interval",
+     "name": "Sampling interval",
+     "abbreviation": "delta t",
+     "abbreviation_at": "L17/S0095",
+     "definition": "The sampling interval (delta t) is the regular discrete interval at which the data stream from the sensor arrives.",
+     "sources": [
+      "L17/S0093",
+      "L17/S0095"
+     ],
+     "concept_id": "C0338",
+     "concept_name": "Sampling interval"
+    },
+    {
+     "id": "L17/P04/T7",
+     "surface": "gyroscopic sensor",
+     "name": "Gyroscopic sensor",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A gyroscopic sensor is the sensor that provides the angular velocity samples used to track rotation and change in orientation.",
+     "sources": [
+      "L17/S0101"
+     ],
+     "concept_id": "C0326",
+     "concept_name": "Gyroscope"
+    },
+    {
+     "id": "L17/P04/T8",
+     "surface": "calibrated angular velocity sample",
+     "name": "Calibrated angular velocity sample",
+     "abbreviation": "W cal i",
+     "abbreviation_at": "L17/S0101",
+     "definition": "A calibrated angular velocity sample (W cal i) is the specific angular velocity sample obtained at a given instant from the gyroscopic sensor.",
+     "sources": [
+      "L17/S0101"
+     ],
+     "concept_id": "C0339",
+     "concept_name": "Calibrated angular velocity sample"
+    }
+   ]
+  },
+  {
+   "id": "L17/P05",
+   "first": "L17/S0104",
+   "last": "L17/S0122",
+   "start": 1086.748,
+   "end": 1286.807,
+   "objective": "Apply techniques, such as blending sensor values using a gain parameter, to correct drift errors in orientation estimation",
+   "objective_id": "L17/O3",
+   "key_points": [
+    {
+     "id": "L17/P05/K1",
+     "text": "Drift correction compensates for estimation errors between real and actual values.",
+     "sources": [
+      "L17/S0106"
+     ],
+     "concept_ids": [
+      "C0323"
+     ]
+    },
+    {
+     "id": "L17/P05/K2",
+     "text": "For IMU systems, drift correction can be achieved by blending gyroscope, accelerometer, and magnetometer readings.",
+     "sources": [
+      "L17/S0110"
+     ],
+     "concept_ids": [
+      "C0323",
+      "C0325",
+      "C0326",
+      "C0327",
+      "C0328"
+     ]
+    },
+    {
+     "id": "L17/P05/K3",
+     "text": "Sensor data is blended using an expression that incorporates a gain parameter (alpha), a normalized value between 0 and 1.",
+     "sources": [
+      "L17/S0114",
+      "L17/S0120",
+      "L17/S0121"
+     ],
+     "concept_ids": [
+      "C0257",
+      "C0318",
+      "C0341"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L17/P05/T1",
+     "surface": "drift correction",
+     "name": "Drift correction",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Drift correction is a process that compensates for errors in estimation between the real and actual value, and it is usually achieved by using the help of extra sensors.",
+     "sources": [
+      "L17/S0104",
+      "L17/S0106",
+      "L17/S0107",
+      "L17/S0111"
+     ],
+     "concept_id": "C0323",
+     "concept_name": "Drift correction"
+    },
+    {
+     "id": "L17/P05/T2",
+     "surface": "gyroscope",
+     "name": "Gyroscope",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The gyroscope is a sensor whose values are integrated to obtain orientation at a given instant.",
+     "sources": [
+      "L17/S0108",
+      "L17/S0110",
+      "L17/S0115"
+     ],
+     "concept_id": "C0326",
+     "concept_name": "Gyroscope"
+    },
+    {
+     "id": "L17/P05/T3",
+     "surface": "camera",
+     "name": "Camera",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A camera is an example of an extra sensor that can be utilized in the process of drift correction.",
+     "sources": [
+      "L17/S0109",
+      "L17/S0116"
+     ],
+     "concept_id": "C0340",
+     "concept_name": "Camera"
+    },
+    {
+     "id": "L17/P05/T4",
+     "surface": "IMU",
+     "name": "IMU",
+     "abbreviation": "IMU",
+     "abbreviation_at": "L17/S0110",
+     "definition": "The IMU is a sensor system that can use accelerometer and magnetometer readings, along with gyroscope values, for drift correction.",
+     "sources": [
+      "L17/S0110",
+      "L17/S0113"
+     ],
+     "concept_id": "C0325",
+     "concept_name": "Inertial measurement unit"
+    },
+    {
+     "id": "L17/P05/T5",
+     "surface": "accelerometer",
+     "name": "Accelerometer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The accelerometer is a sensor that can be used in conjunction with other sensors to aid in drift correction.",
+     "sources": [
+      "L17/S0110",
+      "L17/S0113"
+     ],
+     "concept_id": "C0327",
+     "concept_name": "Accelerometer"
+    },
+    {
+     "id": "L17/P05/T6",
+     "surface": "magnetometer",
+     "name": "Magnetometer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The magnetometer is a sensor that can be used in conjunction with other sensors to aid in drift correction.",
+     "sources": [
+      "L17/S0110",
+      "L17/S0113"
+     ],
+     "concept_id": "C0328",
+     "concept_name": "Magnetometer"
+    },
+    {
+     "id": "L17/P05/T7",
+     "surface": "gain parameter",
+     "name": "Gain parameter",
+     "abbreviation": "alpha",
+     "abbreviation_at": "L17/S0120",
+     "definition": "The gain parameter is a normalized value between 0 and 1 used to combine individually computed orientations when correcting for drift.",
+     "sources": [
+      "L17/S0120",
+      "L17/S0121"
+     ],
+     "concept_id": "C0341",
+     "concept_name": "Gain parameter"
+    }
+   ]
+  },
+  {
+   "id": "L17/P06",
+   "first": "L17/S0123",
+   "last": "L17/S0141",
+   "start": 1289.63,
+   "end": 1519.003,
+   "objective": "Describe how virtual reality tracking systems function through the phases of calibration, registration, and drift correction",
+   "objective_id": "L17/O3",
+   "key_points": [
+    {
+     "id": "L17/P06/K1",
+     "text": "Calibration transforms data from inexpensive sensors into values comparable to highly accurate sensors using mathematical manipulation.",
+     "sources": [
+      "L17/S0125",
+      "L17/S0126"
+     ],
+     "concept_ids": [
+      "C0257",
+      "C0318",
+      "C0321"
+     ]
+    },
+    {
+     "id": "L17/P06/K2",
+     "text": "Registration is the phase where the initial position and orientation of tracked bodies or objects are set.",
+     "sources": [
+      "L17/S0128"
+     ],
+     "concept_ids": [
+      "C0116",
+      "C0149",
+      "C0150",
+      "C0151",
+      "C0152"
+     ]
+    },
+    {
+     "id": "L17/P06/K3",
+     "text": "Drift correction requires at least two sensors to combine separately estimated orientations, often using a gain parameter between 0 and 1.",
+     "sources": [
+      "L17/S0131",
+      "L17/S0134"
+     ],
+     "concept_ids": [
+      "C0150",
+      "C0257",
+      "C0318",
+      "C0323",
+      "C0341"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L17/P06/T1",
+     "surface": "calibration",
+     "name": "Calibration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Calibration is the process of obtaining sensory values as close as possible, often by using cheap sensors and then applying mathematical manipulation to transform those values to match those from highly accurate sensors.",
+     "sources": [
+      "L17/S0124",
+      "L17/S0125",
+      "L17/S0126",
+      "L17/S0127"
+     ],
+     "concept_id": "C0321",
+     "concept_name": "Calibration"
+    },
+    {
+     "id": "L17/P06/T2",
+     "surface": "registration",
+     "name": "Registration",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Registration is the phase where the initial position and orientation of tracked body parts or objects are established, based on the assumed current position and orientation of the sensor.",
+     "sources": [
+      "L17/S0128"
+     ],
+     "concept_id": "C0151",
+     "concept_name": "Registration"
+    },
+    {
+     "id": "L17/P06/T3",
+     "surface": "drift correction",
+     "name": "Drift correction",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Drift correction is a stage that assumes access to multiple sensors, where the orientation computed separately by those sensors at the same time instant is combined to get a corrected orientation.",
+     "sources": [
+      "L17/S0131",
+      "L17/S0132"
+     ],
+     "concept_id": "C0323",
+     "concept_name": "Drift correction"
+    },
+    {
+     "id": "L17/P06/T4",
+     "surface": "gain parameter",
+     "name": "Gain parameter",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Gain parameter is a normalized value between 0 to 1 used to combine separately estimated orientations at a specific time instant to get the drift-corrected orientation.",
+     "sources": [
+      "L17/S0134"
+     ],
+     "concept_id": "C0341",
+     "concept_name": "Gain parameter"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L17/O1",
+   "text": "identify the types of tracked objects and the four stages of operation, and describe the components and function of Inertial Measurement Units (IMUs) in tracking systems",
+   "part_ids": [
+    "L17/P01",
+    "L17/P02"
+   ]
+  },
+  {
+   "id": "L17/O2",
+   "text": "explain the process of calibrating imperfect sensor data by mathematically modeling and correcting measurement errors, and detail the steps of registration and integration for setting initial alignment and tracking orientation",
+   "part_ids": [
+    "L17/P03",
+    "L17/P04"
+   ]
+  },
+  {
+   "id": "L17/O3",
+   "text": "apply techniques, such as blending sensor values using a gain parameter, to correct drift errors in orientation estimation, and describe how virtual reality tracking systems function through the phases of calibration, registration, and drift correction",
+   "part_ids": [
+    "L17/P05",
+    "L17/P06"
+   ]
+  }
+ ],
+ "lecture_goal": "comprehend the fundamental components, operational stages, and error correction methods used in modern tracking systems.",
+ "flags": [],
+ "origin": [
+  {
+   "item": "L17/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "6025eb09e253c8fbdc75",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4147,
+   "output_tokens": 1341,
+   "latency_s": 48.53,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "b9ffb39618b4e9d1a274",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 749,
+   "output_tokens": 486,
+   "latency_s": 19.09,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "017b431fdf246d793a15",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 781,
+   "output_tokens": 512,
+   "latency_s": 21.1,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "605f80ddbd0093f8bdc2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 872,
+   "output_tokens": 546,
+   "latency_s": 23.73,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "a89cbdee7d94a961658a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 727,
+   "output_tokens": 580,
+   "latency_s": 25.4,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "2cde25d1f1e427d125c6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1614,
+   "output_tokens": 1081,
+   "latency_s": 61.58,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "6d3825bec3717ddf2416",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 882,
+   "output_tokens": 1101,
+   "latency_s": 63.61,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1148dc5bcb8a0e582daa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1059,
+   "output_tokens": 2184,
+   "latency_s": 211.72,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "8fadc3a5fe6feeb2a5db",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1311,
+   "output_tokens": 1852,
+   "latency_s": 69.64,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "58c98b0bf8ad46a4f0ed",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 846,
+   "output_tokens": 3099,
+   "latency_s": 298.08,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/terms/83-103",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "7225525700e5a0c78bed",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1148,
+   "output_tokens": 2357,
+   "latency_s": 87.62,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6815265dafce8c7363e7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 954,
+   "output_tokens": 1215,
+   "latency_s": 271.23,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "a9e40b22a1409f5bbabf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1220,
+   "output_tokens": 1163,
+   "latency_s": 41.21,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "94c9388bd8b5dbb0d65a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 844,
+   "output_tokens": 3655,
+   "latency_s": 352.02,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/terms/23-37",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "3df3cfcc02cc67af68a5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1030,
+   "output_tokens": 1775,
+   "latency_s": 62.32,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/terms/123-141",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "d996797a282883dfe04b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1162,
+   "output_tokens": 1592,
+   "latency_s": 56.42,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "94f636d87508431d7adc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1114,
+   "output_tokens": 2221,
+   "latency_s": 78.78,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e9f6ad8389824f898bd4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1760,
+   "output_tokens": 2110,
+   "latency_s": 335.4,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "dc2821223fcd45e8cae2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 894,
+   "output_tokens": 4393,
+   "latency_s": 426.72,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "458a936d03db48139030",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2027,
+   "output_tokens": 1834,
+   "latency_s": 65.8,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/terms/38-82",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "78c0cedeceb7b6d44535",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1892,
+   "output_tokens": 3688,
+   "latency_s": 136.77,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/objective/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "864ed23b6afcebd840ea",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 653,
+   "output_tokens": 1583,
+   "latency_s": 322.08,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9d38956247bf1b18c210",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1308,
+   "output_tokens": 4619,
+   "latency_s": 621.0,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7d06595339fd829783f7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 998,
+   "output_tokens": 4345,
+   "latency_s": 595.06,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "313145e7c380ccfbf0ff",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1106,
+   "output_tokens": 4349,
+   "latency_s": 599.53,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d5cdba1a17ba56a1b836",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2236,
+   "output_tokens": 4759,
+   "latency_s": 774.41,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "f9bf7d1e6772038722bf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 854,
+   "output_tokens": 596,
+   "latency_s": 262.0,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d69ad71ffb4569cb72f7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 850,
+   "output_tokens": 1145,
+   "latency_s": 352.32,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "4068922ba93308c83254",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1671,
+   "output_tokens": 1589,
+   "latency_s": 322.2,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1e2d87a0d3484a9fc779",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 905,
+   "output_tokens": 945,
+   "latency_s": 259.12,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "4ec668a9326bd19f8331",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 860,
+   "output_tokens": 2283,
+   "latency_s": 318.88,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1b7d4a691f5d164025d3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1697,
+   "output_tokens": 3875,
+   "latency_s": 347.16,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "cd324bc80c8e2fb39976",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 2,
+   "input_tokens": 2125,
+   "output_tokens": 28376,
+   "latency_s": 2587.78,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "15036df8bd08af4d854f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1592,
+   "output_tokens": 1697,
+   "latency_s": 473.82,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c33670cc3e01c677f548",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 723,
+   "output_tokens": 1435,
+   "latency_s": 69.74,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "f6eca045dc2043469765",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1114,
+   "output_tokens": 1323,
+   "latency_s": 29.22,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/terms/0-22",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "7aadb5de26c303475cc2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1002,
+   "output_tokens": 2478,
+   "latency_s": 53.75,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7a3245a343c0f5609d32",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1316,
+   "output_tokens": 1686,
+   "latency_s": 361.15,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b4ba5f68c7afac1752e5",
+   "thinking": true,
+   "validator": {
+    "passed": false,
+    "errors": [
+     "answer is not valid JSON for the schema: Expecting ',' delimiter: line 5 column 162 (char 199)"
+    ]
+   },
+   "retries": 2,
+   "input_tokens": 2320,
+   "output_tokens": 36864,
+   "latency_s": 3380.09,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b50c18e42f14b813b3be",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1391,
+   "output_tokens": 2003,
+   "latency_s": 329.03,
+   "cached": false
+  },
+  {
+   "item": "L17/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "8739315e4ce313b7e84a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 324,
+   "output_tokens": 849,
+   "latency_s": 18.43,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "162b9fba9592158d2815",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1116,
+   "output_tokens": 1734,
+   "latency_s": 38.87,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/terms/104-122",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "8cd06cd3cc57ad143c01",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1063,
+   "output_tokens": 2455,
+   "latency_s": 54.37,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d8000b581e687d827299",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2361,
+   "output_tokens": 1841,
+   "latency_s": 337.37,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2bd851f370ad93dde0b1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1151,
+   "output_tokens": 4551,
+   "latency_s": 366.48,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ac28f2a8a35957861c97",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1153,
+   "output_tokens": 4405,
+   "latency_s": 397.65,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "f8b2580a793e987ff1a8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 962,
+   "output_tokens": 4325,
+   "latency_s": 427.24,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "efd2028ef530054e5747",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 926,
+   "output_tokens": 4379,
+   "latency_s": 274.46,
+   "cached": false
+  },
+  {
+   "item": "L17/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "dcc514c519bf98dde853",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1186,
+   "output_tokens": 1474,
+   "latency_s": 172.01,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e487f8eeea83f20b6a29",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1425,
+   "output_tokens": 3326,
+   "latency_s": 261.04,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "06b847fbb56a89c5f2d0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 898,
+   "output_tokens": 3632,
+   "latency_s": 259.83,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "05cd92eefd06e21b5777",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1336,
+   "output_tokens": 3429,
+   "latency_s": 257.36,
+   "cached": false
+  },
+  {
+   "item": "registry/gain paramet",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "cb66f9f5f6069985f074",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 521,
+   "output_tokens": 803,
+   "latency_s": 37.05,
+   "cached": false
+  },
+  {
+   "item": "registry/acceleromet",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "fb679c99b9105c453c53",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1227,
+   "output_tokens": 1217,
+   "latency_s": 56.61,
+   "cached": false
+  },
+  {
+   "item": "registry/gyroscope",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "2fc43f7d2ef1ccd0897b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1045,
+   "output_tokens": 1463,
+   "latency_s": 67.9,
+   "cached": false
+  },
+  {
+   "item": "registry/regression problem",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "7d7c08dab7ab744f6975",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 448,
+   "output_tokens": 2436,
+   "latency_s": 110.99,
+   "cached": false
+  },
+  {
+   "item": "registry/inertial measurement unit",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "e5f84487f8d1b51bec7a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 856,
+   "output_tokens": 3373,
+   "latency_s": 153.94,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b97432ad5ab42f220ec6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 717,
+   "output_tokens": 1679,
+   "latency_s": 240.17,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f267bb1c4ca1a7dad6f8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 991,
+   "output_tokens": 3641,
+   "latency_s": 503.68,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "18a99af3398aabcd492c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4656,
+   "output_tokens": 1350,
+   "latency_s": 36.32,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "779319d06a56d8fd28bf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2728,
+   "output_tokens": 3018,
+   "latency_s": 80.62,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "e317d1fedc1515b3e0c8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7376,
+   "output_tokens": 3101,
+   "latency_s": 82.67,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "8537654ff58abaa9134f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 5045,
+   "output_tokens": 3217,
+   "latency_s": 85.49,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "cdd18233fe1f8b9b9b2a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3737,
+   "output_tokens": 3750,
+   "latency_s": 98.34,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "7816c96fc0e160078ebb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7194,
+   "output_tokens": 5053,
+   "latency_s": 127.4,
+   "cached": false
+  },
+  {
+   "item": "L17/P06/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "312013a759b2481ba4a5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 970,
+   "output_tokens": 1396,
+   "latency_s": 143.85,
+   "cached": false
+  },
+  {
+   "item": "L17/P05/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "41369d0fb84a0525f908",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1239,
+   "output_tokens": 2971,
+   "latency_s": 302.94,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a85a7942cadc48ce9468",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1028,
+   "output_tokens": 4694,
+   "latency_s": 480.3,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "45c084cb47e1a769c8e0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1424,
+   "output_tokens": 4777,
+   "latency_s": 489.09,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "310e3e42b1acee585a78",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2325,
+   "output_tokens": 4796,
+   "latency_s": 491.19,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "bf7c6f6fa11af8aa39d5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1585,
+   "output_tokens": 5044,
+   "latency_s": 516.93,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "51627463af01b7f3e126",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 995,
+   "output_tokens": 1750,
+   "latency_s": 186.79,
+   "cached": false
+  },
+  {
+   "item": "L17/P01/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "4edfea7f8f6fb05aa0a5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 805,
+   "output_tokens": 983,
+   "latency_s": 106.62,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "085eaa417b84aec709ea",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1068,
+   "output_tokens": 3095,
+   "latency_s": 335.11,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "aa0ff30eadd78a399986",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1609,
+   "output_tokens": 3640,
+   "latency_s": 394.82,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "2709d13866f3945af63a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1129,
+   "output_tokens": 3705,
+   "latency_s": 402.23,
+   "cached": false
+  },
+  {
+   "item": "L17/P03/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "966168e29ca2f9d4deb8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1569,
+   "output_tokens": 1480,
+   "latency_s": 176.55,
+   "cached": false
+  },
+  {
+   "item": "L17/P04/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a42bd88eb166d52a0460",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 975,
+   "output_tokens": 4378,
+   "latency_s": 516.01,
+   "cached": false
+  },
+  {
+   "item": "L17/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fdc025019fb1e8a73999",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 797,
+   "output_tokens": 4319,
+   "latency_s": 505.0,
+   "cached": false
+  },
+  {
+   "item": "L17/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "d9c229906ec006305cdf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 18692,
+   "output_tokens": 8845,
+   "latency_s": 1193.11,
+   "cached": false
+  },
+  {
+   "item": "L17/links/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "055ef32390028401623e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 20115,
+   "output_tokens": 6033,
+   "latency_s": 1057.76,
+   "cached": false
+  },
+  {
+   "item": "L17/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "bed6908382c3908d76d1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 9586,
+   "output_tokens": 1366,
+   "latency_s": 52.17,
+   "cached": false
+  },
+  {
+   "item": "L17/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "08bba91d63c2ff238847",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 739,
+   "output_tokens": 668,
+   "latency_s": 24.53,
+   "cached": false
+  },
+  {
+   "item": "L17/oq/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b566f5de5939f134e41c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 9795,
+   "output_tokens": 1707,
+   "latency_s": 519.32,
+   "cached": false
+  },
+  {
+   "item": "L17/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "51e40b72b52fb7f74d27",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1059,
+   "output_tokens": 1341,
+   "latency_s": 630.95,
+   "cached": false
+  }
+ ]
+}

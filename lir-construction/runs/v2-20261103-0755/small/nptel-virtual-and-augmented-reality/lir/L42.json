@@ -1,0 +1,5176 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L42",
+ "index": 42,
+ "title": "System Implementation",
+ "source_file": "lec_42.srt",
+ "timing_source": "srt",
+ "youtube_id": "I5ul9A6ohL0",
+ "duration_s": 2448.36,
+ "sentences": [
+  {
+   "id": "L42/S0000",
+   "start": 24.027,
+   "end": 29.376,
+   "text": "Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L42/S0001",
+   "start": 30.378,
+   "end": 37.87,
+   "text": "We are going to start a new lecture topic today that is on implementation: how to implement an XR system."
+  },
+  {
+   "id": "L42/S0002",
+   "start": 40.996,
+   "end": 43.339,
+   "text": "So, earlier what have we learned?"
+  },
+  {
+   "id": "L42/S0003",
+   "start": 44.081,
+   "end": 46.184,
+   "text": "We talked about two things."
+  },
+  {
+   "id": "L42/S0004",
+   "start": 46.425,
+   "end": 49.63,
+   "text": "First, user requirement gathering: how to gather requirements."
+  },
+  {
+   "id": "L42/S0005",
+   "start": 50.588,
+   "end": 55.774,
+   "text": "There are different techniques we have learned about, including data collection and analysis techniques."
+  },
+  {
+   "id": "L42/S0006",
+   "start": 58.077,
+   "end": 71.533,
+   "text": "And also we learned about how those user requirement gathering approaches were used in our case study, which is the Majuli Island virtual tour design."
+  },
+  {
+   "id": "L42/S0007",
+   "start": 74.534,
+   "end": 77.478,
+   "text": "Also, we talked about designing the experience."
+  },
+  {
+   "id": "L42/S0008",
+   "start": 78.079,
+   "end": 86.51,
+   "text": "So, two things were discussed: one is gathering requirements, and secondly, based on the requirements, designing the experience."
+  },
+  {
+   "id": "L42/S0009",
+   "start": 86.53,
+   "end": 95.182,
+   "text": "In the design lecture also we learned about different design stages, approaches, and guidelines."
+  },
+  {
+   "id": "L42/S0010",
+   "start": 98.186,
+   "end": 122.14,
+   "text": "Now, our focus was on the design of interface and interaction, and as we have mentioned, We did not discuss anything about code design or system design as such because those design approaches are standard like any other software development stage, like any other software development lifecycle stage on code design."
+  },
+  {
+   "id": "L42/S0011",
+   "start": 122.801,
+   "end": 128.588,
+   "text": "So, there was nothing special with respect to virtual reality or augmented reality system design."
+  },
+  {
+   "id": "L42/S0012",
+   "start": 129.369,
+   "end": 132.232,
+   "text": "Accordingly, we have skipped that code design part."
+  },
+  {
+   "id": "L42/S0013",
+   "start": 132.252,
+   "end": 137.945,
+   "text": "However, we focused on the design of the interface and interaction part."
+  },
+  {
+   "id": "L42/S0014",
+   "start": 141.572,
+   "end": 145.039,
+   "text": "So, we have talked about requirement gathering, we have talked about designing."
+  },
+  {
+   "id": "L42/S0015",
+   "start": 145.2,
+   "end": 147.865,
+   "text": "What is left is implementation."
+  },
+  {
+   "id": "L42/S0016",
+   "start": 147.885,
+   "end": 154.879,
+   "text": "How do I implement the design ideas that we have formulated based on the requirements?"
+  },
+  {
+   "id": "L42/S0017",
+   "start": 157.255,
+   "end": 160.02,
+   "text": "So that implementation we are going to learn in this lecture."
+  },
+  {
+   "id": "L42/S0018",
+   "start": 160.14,
+   "end": 180.874,
+   "text": "Specifically, here we will be talking about several related concepts including the idea of prototyping, what it is and why it is required, then how to evaluate prototypes quickly, quick prototype evaluation, then system implementation, overall implementation of the system."
+  },
+  {
+   "id": "L42/S0019",
+   "start": 180.934,
+   "end": 184.039,
+   "text": "Of course, this part we will talk about in a very brief manner."
+  },
+  {
+   "id": "L42/S0020",
+   "start": 184.576,
+   "end": 189.822,
+   "text": "because code-related implementations are not the focus of this lecture."
+  },
+  {
+   "id": "L42/S0021",
+   "start": 190.243,
+   "end": 197.231,
+   "text": "And finally, empirical or usability evaluation, evaluation of the whole system from the point of view of usability."
+  },
+  {
+   "id": "L42/S0022",
+   "start": 197.251,
+   "end": 206.442,
+   "text": "Now, when we are talking about evaluation, we also have to keep in mind that there are several evaluations present in the overall development lifecycle."
+  },
+  {
+   "id": "L42/S0023",
+   "start": 206.903,
+   "end": 211.849,
+   "text": "For a quick recollection, let us have a look at the development lifecycle."
+  },
+  {
+   "id": "L42/S0024",
+   "start": 213.348,
+   "end": 220.738,
+   "text": "Interactive system development lifecycle which is equally applicable for extended reality systems as we have discussed earlier."
+  },
+  {
+   "id": "L42/S0025",
+   "start": 221.158,
+   "end": 227.686,
+   "text": "So, the lifecycle starts with the feasibility study stage followed by requirement gathering analysis and specification stage."
+  },
+  {
+   "id": "L42/S0026",
+   "start": 229.649,
+   "end": 240.503,
+   "text": "Then we have this design prototype evaluate cycle where we have the design stage, prototype stage and early evaluation or quick evaluation stage."
+  },
+  {
+   "id": "L42/S0027",
+   "start": 241.377,
+   "end": 244.822,
+   "text": "Now, these three stages are connected through a cycle."
+  },
+  {
+   "id": "L42/S0028",
+   "start": 245.502,
+   "end": 253.814,
+   "text": "So, design followed by prototyping, followed by quick evaluation, which is followed by the design phase again."
+  },
+  {
+   "id": "L42/S0029",
+   "start": 255.396,
+   "end": 261.724,
+   "text": "That is refinement of the design based on the evaluation results and so on till the design stabilizes."
+  },
+  {
+   "id": "L42/S0030",
+   "start": 261.744,
+   "end": 267.672,
+   "text": "Now, once the design prototype evaluate cycle stage gets over, we move to the code design part."
+  },
+  {
+   "id": "L42/S0031",
+   "start": 268.867,
+   "end": 272.933,
+   "text": "then coding and implementation part and finally code testing part."
+  },
+  {
+   "id": "L42/S0032",
+   "start": 272.953,
+   "end": 279.482,
+   "text": "So, these three are standard software development stages."
+  },
+  {
+   "id": "L42/S0033",
+   "start": 279.783,
+   "end": 292.1,
+   "text": "So, there is nothing special or nothing distinct between the code design evaluation and implementation in interactive system as compared to any other software system."
+  },
+  {
+   "id": "L42/S0034",
+   "start": 292.12,
+   "end": 294.604,
+   "text": "So, we are not focusing much on these three stages."
+  },
+  {
+   "id": "L42/S0035",
+   "start": 296.44,
+   "end": 306.272,
+   "text": "Once the code testing is done and we know that the code is bug-free or it runs smoothly, we go for empirical study or usability evaluation stage."
+  },
+  {
+   "id": "L42/S0036",
+   "start": 308.294,
+   "end": 312.159,
+   "text": "Now, there may be other cycles also apart from design prototype evaluate cycle."
+  },
+  {
+   "id": "L42/S0037",
+   "start": 312.259,
+   "end": 318.807,
+   "text": "Say for example, between code design, coding and code testing there can be a cycle."
+  },
+  {
+   "id": "L42/S0038",
+   "start": 318.887,
+   "end": 330.948,
+   "text": "So, code design followed by implementation followed by testing may result in some coding errors which may be rectified in the code design stage or implementation stage."
+  },
+  {
+   "id": "L42/S0039",
+   "start": 331.309,
+   "end": 333.371,
+   "text": "So, this cycle is possible."
+  },
+  {
+   "id": "L42/S0040",
+   "start": 333.431,
+   "end": 340.779,
+   "text": "Similarly, after evaluation study, after empirical study or usability study, we may find out usability problems."
+  },
+  {
+   "id": "L42/S0041",
+   "start": 340.799,
+   "end": 350.629,
+   "text": "So, we may have to go back to the design prototype evaluate cycle stage or interface design stage within this cycle."
+  },
+  {
+   "id": "L42/S0042",
+   "start": 352.853,
+   "end": 353.794,
+   "text": "That is also possible."
+  },
+  {
+   "id": "L42/S0043",
+   "start": 354.515,
+   "end": 362.502,
+   "text": "Similarly, we have another cycle here between design, prototype, evaluate, and requirement gathering stages."
+  },
+  {
+   "id": "L42/S0044",
+   "start": 362.522,
+   "end": 369.089,
+   "text": "Now, of course, these cycles are not frequent, and if they are frequent, then it will lead to cost and time overrun."
+  },
+  {
+   "id": "L42/S0045",
+   "start": 369.77,
+   "end": 375.495,
+   "text": "So, generally, our objective is to have as few instances of these cycles as possible."
+  },
+  {
+   "id": "L42/S0046",
+   "start": 377.337,
+   "end": 380.38,
+   "text": "However, the design, prototype, evaluate cycle may be frequent."
+  },
+  {
+   "id": "L42/S0047",
+   "start": 382.638,
+   "end": 388.404,
+   "text": "And we will see how this frequent cycle may not lead to cost or time overrun."
+  },
+  {
+   "id": "L42/S0048",
+   "start": 391.107,
+   "end": 401.919,
+   "text": "So, in this lecture, what we are going to do is primarily learn about this prototyping and early evaluation."
+  },
+  {
+   "id": "L42/S0049",
+   "start": 403.021,
+   "end": 407.025,
+   "text": "Also, we are going to talk about empirical studies or usability evaluation."
+  },
+  {
+   "id": "L42/S0050",
+   "start": 407.275,
+   "end": 412.381,
+   "text": "Already, we have covered the design stage in the previous lecture."
+  },
+  {
+   "id": "L42/S0051",
+   "start": 412.741,
+   "end": 422.472,
+   "text": "So, we are going to focus on prototyping and early evaluation in this lecture, as well as final usability evaluation in this lecture as well."
+  },
+  {
+   "id": "L42/S0052",
+   "start": 425.376,
+   "end": 430.161,
+   "text": "As you can see, in this lifecycle, there is also a code evaluation stage."
+  },
+  {
+   "id": "L42/S0053",
+   "start": 431.204,
+   "end": 434.068,
+   "text": "The SDLC includes code or system evaluation as well."
+  },
+  {
+   "id": "L42/S0054",
+   "start": 434.128,
+   "end": 440.596,
+   "text": "However, that is not our primary focus here because it is the same as in any other software development lifecycle."
+  },
+  {
+   "id": "L42/S0055",
+   "start": 440.956,
+   "end": 442.838,
+   "text": "So, there is nothing special about it."
+  },
+  {
+   "id": "L42/S0056",
+   "start": 444.02,
+   "end": 447.304,
+   "text": "So, accordingly, we are not going to discuss much about it."
+  },
+  {
+   "id": "L42/S0057",
+   "start": 447.324,
+   "end": 455.334,
+   "text": "Any standard software development lifecycle material will contain this discussion."
+  },
+  {
+   "id": "L42/S0058",
+   "start": 455.434,
+   "end": 458.578,
+   "text": "So at the end, we will provide references for further study."
+  },
+  {
+   "id": "L42/S0059",
+   "start": 460.972,
+   "end": 470.824,
+   "text": "Now, let us start our discussion on the design-prototype-evaluate cycle or the remaining stages of the cycle that we are going to cover in this lecture."
+  },
+  {
+   "id": "L42/S0060",
+   "start": 471.445,
+   "end": 482.078,
+   "text": "Now, we know that experience design, design of the immersive experience, involves the entire design-prototype-evaluate cycle."
+  },
+  {
+   "id": "L42/S0061",
+   "start": 483.44,
+   "end": 488.346,
+   "text": "We design, then quickly prototype the design, then evaluate it."
+  },
+  {
+   "id": "L42/S0062",
+   "start": 488.562,
+   "end": 495.194,
+   "text": "Find out problems, then refine the design, then again make a new prototype, evaluate it, and so on."
+  },
+  {
+   "id": "L42/S0063",
+   "start": 499.342,
+   "end": 505.373,
+   "text": "It may require many cycles before the design is stabilized."
+  },
+  {
+   "id": "L42/S0064",
+   "start": 505.793,
+   "end": 511.684,
+   "text": "Note that here by the term 'design,' I am referring only to interface and interaction design, not the code design."
+  },
+  {
+   "id": "L42/S0065",
+   "start": 512.187,
+   "end": 518.996,
+   "text": "So, multiple cycles may occur in this design-prototype-evaluate cycle stage."
+  },
+  {
+   "id": "L42/S0066",
+   "start": 522.302,
+   "end": 533.959,
+   "text": "In order to be able to accommodate those many cycles within a reasonable timeframe without any cost overrun, what we require is a quick usability evaluation technique."
+  },
+  {
+   "id": "L42/S0067",
+   "start": 534.219,
+   "end": 543.298,
+   "text": "We should be able to quickly evaluate the usability of the design ideas so that later on once implemented, they lead to a usable system."
+  },
+  {
+   "id": "L42/S0068",
+   "start": 544.32,
+   "end": 557.56,
+   "text": "If this usability evaluation at this stage is not done quickly, then what will happen is that the turnaround time will increase, which will lead to cost overrun as well."
+  },
+  {
+   "id": "L42/S0069",
+   "start": 561.346,
+   "end": 566.654,
+   "text": "Now, this quick evaluation of the design ideas requires a couple of things."
+  },
+  {
+   "id": "L42/S0070",
+   "start": 568.056,
+   "end": 569.498,
+   "text": "One is a prototype."
+  },
+  {
+   "id": "L42/S0071",
+   "start": 570.136,
+   "end": 581.592,
+   "text": "That is a model of our idea which we should be able to build quickly."
+  },
+  {
+   "id": "L42/S0072",
+   "start": 583.615,
+   "end": 585.858,
+   "text": "Second is quick evaluation."
+  },
+  {
+   "id": "L42/S0073",
+   "start": 586.218,
+   "end": 587.139,
+   "text": "So both are important."
+  },
+  {
+   "id": "L42/S0074",
+   "start": 587.26,
+   "end": 594.169,
+   "text": "One is to be able to quickly model or demonstrate our idea through a prototype."
+  },
+  {
+   "id": "L42/S0075",
+   "start": 595.482,
+   "end": 603.309,
+   "text": "Which in turn implies that we should be able to build the prototype quickly, and second is evaluation: we should be able to test our prototype quickly."
+  },
+  {
+   "id": "L42/S0076",
+   "start": 603.629,
+   "end": 612.036,
+   "text": "So, both are equally important when we are looking for a quick design prototype evaluate cycle execution."
+  },
+  {
+   "id": "L42/S0077",
+   "start": 616.08,
+   "end": 630.99,
+   "text": "So, let us learn what are the prototyping techniques that we can use for quick prototyping and quick evaluation of the prototype."
+  },
+  {
+   "id": "L42/S0078",
+   "start": 631.01,
+   "end": 637.501,
+   "text": "Now, these prototyping techniques are typically used for collecting feedback on usability of the design ideas."
+  },
+  {
+   "id": "L42/S0079",
+   "start": 641.97,
+   "end": 648.745,
+   "text": "In our previous discussion on design, we said that a starting point is given by design guidelines."
+  },
+  {
+   "id": "L42/S0080",
+   "start": 648.745,
+   "end": 652.532,
+   "text": "However, guidelines offer merely a starting point."
+  },
+  {
+   "id": "L42/S0081",
+   "start": 652.552,
+   "end": 655.517,
+   "text": "Once we have those, we can go for a design."
+  },
+  {
+   "id": "L42/S0082",
+   "start": 656.038,
+   "end": 660.004,
+   "text": "So essentially, with the help of the guidelines, we come up with a design."
+  },
+  {
+   "id": "L42/S0083",
+   "start": 660.044,
+   "end": 664.491,
+   "text": "But the guidelines do not tell us whether the design is good or bad or usable or not usable."
+  },
+  {
+   "id": "L42/S0084",
+   "start": 666.073,
+   "end": 670.76,
+   "text": "For that, we need to somehow implement it and get it tested."
+  },
+  {
+   "id": "L42/S0085",
+   "start": 671.702,
+   "end": 674.005,
+   "text": "That is where the idea of a prototype comes in."
+  },
+  {
+   "id": "L42/S0086",
+   "start": 674.879,
+   "end": 678.403,
+   "text": "to know if the design is going to work in practice."
+  },
+  {
+   "id": "L42/S0087",
+   "start": 678.423,
+   "end": 684.491,
+   "text": "In our case, if the design is going to be usable in practice, we need not fully implement the idea first."
+  },
+  {
+   "id": "L42/S0088",
+   "start": 685.031,
+   "end": 701.511,
+   "text": "Now, full implementation of an idea for software, to be specific, involves engaging skilled, highly skilled manpower that is programmers and involves a lot of cost components."
+  },
+  {
+   "id": "L42/S0089",
+   "start": 702.858,
+   "end": 708.506,
+   "text": "including setting up or procuring resources and engaging the manpower."
+  },
+  {
+   "id": "L42/S0090",
+   "start": 709.848,
+   "end": 718.54,
+   "text": "So, after full implementation of the idea, if we come to know that the idea is not good, then certainly all that money and time is wasted."
+  },
+  {
+   "id": "L42/S0091",
+   "start": 719.001,
+   "end": 740.998,
+   "text": "Instead, we should look for a way where we can, without engaging, without spending too much money or time on testing the idea, we can do it on a very limited scale, but get the desired outcome."
+  },
+  {
+   "id": "L42/S0092",
+   "start": 744.722,
+   "end": 754.513,
+   "text": "So, the moral of the story is that to know if the design is going to work or not, we should not always go for full implementation of the idea."
+  },
+  {
+   "id": "L42/S0093",
+   "start": 755.033,
+   "end": 763.313,
+   "text": "Instead, what we can do is we can go for a prototype or a lightweight implementation in a sense, to test our idea."
+  },
+  {
+   "id": "L42/S0094",
+   "start": 764.494,
+   "end": 793.9,
+   "text": "So, prototypes are implementations but lightweight implementations whose requirements in terms of resources, skilled manpower, cost all these are much much less as compared to a full implementation of the idea and prototypes can be used to test our idea without engaging too much manpower or without spending money and time."
+  },
+  {
+   "id": "L42/S0095",
+   "start": 797.384,
+   "end": 800.188,
+   "text": "Now, these prototypes can be used in multiple ways."
+  },
+  {
+   "id": "L42/S0096",
+   "start": 800.588,
+   "end": 807.777,
+   "text": "Once the purpose of the prototype is served, that is we are able to test our design ideas, we can discard the prototype."
+  },
+  {
+   "id": "L42/S0097",
+   "start": 807.797,
+   "end": 810.5,
+   "text": "That is one way to utilize the prototype."
+  },
+  {
+   "id": "L42/S0098",
+   "start": 810.52,
+   "end": 828.027,
+   "text": "Second thing is, which we can call the best case, is that the prototype can be incrementally refined, and tested as we make progress in the development until the end, at which point it becomes the fully implemented product."
+  },
+  {
+   "id": "L42/S0099",
+   "start": 828.407,
+   "end": 840.72,
+   "text": "So, we do not discard the prototype; instead, we keep on building on the prototype on top of the current prototype version so that at the end it evolves into a fully implemented final product."
+  },
+  {
+   "id": "L42/S0100",
+   "start": 842.322,
+   "end": 848.408,
+   "text": "So, at one extreme, we can simply discard the prototype after its purpose is served."
+  },
+  {
+   "id": "L42/S0101",
+   "start": 849.113,
+   "end": 856.202,
+   "text": "At the other extreme, that is the best case, we can actually evolve the prototype into the full-fledged final product."
+  },
+  {
+   "id": "L42/S0102",
+   "start": 857.644,
+   "end": 877.45,
+   "text": "So, with that basic knowledge of a prototype, that is a lightweight implementation of the system, which we can either discard or evolve into a full-fledged final product or something in between, let us now try to understand different categories of prototypes that are there."
+  },
+  {
+   "id": "L42/S0103",
+   "start": 881.581,
+   "end": 884.085,
+   "text": "So, broadly, there are two categories of prototypes."
+  },
+  {
+   "id": "L42/S0104",
+   "start": 884.345,
+   "end": 885.948,
+   "text": "One is horizontal prototypes."
+  },
+  {
+   "id": "L42/S0105",
+   "start": 887.91,
+   "end": 895.262,
+   "text": "So here the entire interface is depicted at a surface level without any functionality."
+  },
+  {
+   "id": "L42/S0106",
+   "start": 895.282,
+   "end": 912.648,
+   "text": "So essentially it shows how the surface appears or how the interface appears to the user rather than providing any idea about how to interact with the interface."
+  },
+  {
+   "id": "L42/S0107",
+   "start": 913.069,
+   "end": 920.937,
+   "text": "So essentially no functionality is provided, but primarily the look and feel and the appearance of the interface is prototyped."
+  },
+  {
+   "id": "L42/S0108",
+   "start": 923.72,
+   "end": 930.327,
+   "text": "So interaction is not prototyped in case of a horizontal prototype system."
+  },
+  {
+   "id": "L42/S0109",
+   "start": 933.09,
+   "end": 938.436,
+   "text": "Since interaction is not there, that means how to get work done in the system is not implemented."
+  },
+  {
+   "id": "L42/S0110",
+   "start": 939.395,
+   "end": 947.424,
+   "text": "We cannot expect to do any real work with the horizontal prototype."
+  },
+  {
+   "id": "L42/S0111",
+   "start": 947.444,
+   "end": 953.351,
+   "text": "Then why do we go for it unless we are able to demonstrate how the system works?"
+  },
+  {
+   "id": "L42/S0112",
+   "start": 954.492,
+   "end": 961.641,
+   "text": "These are suitable to discuss or brainstorm or elicit feedback on the interface look and feel mostly."
+  },
+  {
+   "id": "L42/S0113",
+   "start": 962.121,
+   "end": 984.984,
+   "text": "So essentially how the interface appears, whether things are understandable, intuitive, usable, these types of characteristics about the appearance of the interface can be elicited from the users based on a horizontal prototype."
+  },
+  {
+   "id": "L42/S0114",
+   "start": 985.004,
+   "end": 989.729,
+   "text": "Then the other category of prototype is the vertical prototype."
+  },
+  {
+   "id": "L42/S0115",
+   "start": 989.749,
+   "end": 995.355,
+   "text": "These are designed to represent interactions in the horizontal prototype."
+  },
+  {
+   "id": "L42/S0116",
+   "start": 996.01,
+   "end": 1000.757,
+   "text": "The primary purpose is to represent interfaces or their appearances."
+  },
+  {
+   "id": "L42/S0117",
+   "start": 1000.777,
+   "end": 1005.103,
+   "text": "In vertical prototype, the primary purpose is to represent interactions or the functionalities."
+  },
+  {
+   "id": "L42/S0118",
+   "start": 1008.788,
+   "end": 1012.394,
+   "text": "But one thing to be noted here is that we are talking about a prototype."
+  },
+  {
+   "id": "L42/S0119",
+   "start": 1012.454,
+   "end": 1017.701,
+   "text": "So not all functionalities or not all possible interactions are prototyped."
+  },
+  {
+   "id": "L42/S0120",
+   "start": 1017.721,
+   "end": 1020.105,
+   "text": "Then that would be as good as having the full system."
+  },
+  {
+   "id": "L42/S0121",
+   "start": 1020.626,
+   "end": 1041.632,
+   "text": "Instead, few selected features which are likely to be most commonly used while put in practice are implemented in depth starting from the first screen to the last screen after the last action is performed."
+  },
+  {
+   "id": "L42/S0122",
+   "start": 1043.093,
+   "end": 1044.935,
+   "text": "Now, here the terms are quite generic."
+  },
+  {
+   "id": "L42/S0123",
+   "start": 1045.095,
+   "end": 1050.22,
+   "text": "So, for example, when I use the term 'implemented', it does not mean that I need to write code always."
+  },
+  {
+   "id": "L42/S0124",
+   "start": 1051.06,
+   "end": 1052.882,
+   "text": "There are other ways to implement that as well."
+  },
+  {
+   "id": "L42/S0125",
+   "start": 1054.702,
+   "end": 1065.948,
+   "text": "Also, when I am using the term 'screen', it may represent a 2D computer screen or a scene in a virtual environment, in an immersive environment."
+  },
+  {
+   "id": "L42/S0126",
+   "start": 1065.988,
+   "end": 1068.173,
+   "text": "So, the terms here are used in a generic sense."
+  },
+  {
+   "id": "L42/S0127",
+   "start": 1068.193,
+   "end": 1072.002,
+   "text": "However, it has to be understood in the specific context."
+  },
+  {
+   "id": "L42/S0128",
+   "start": 1076.15,
+   "end": 1085.163,
+   "text": "Now these prototypes, vertical prototypes are suitable for analysis of interactions and features, as is obvious because here we are implementing interactions."
+  },
+  {
+   "id": "L42/S0129",
+   "start": 1086.444,
+   "end": 1091.552,
+   "text": "So, these are two broad categories in which prototypes can be considered."
+  },
+  {
+   "id": "L42/S0130",
+   "start": 1091.672,
+   "end": 1094.756,
+   "text": "One is horizontal prototype, one is vertical prototype."
+  },
+  {
+   "id": "L42/S0131",
+   "start": 1094.796,
+   "end": 1103.288,
+   "text": "Horizontal, just to summarize, are those that only prototype appearances rather than any real interaction."
+  },
+  {
+   "id": "L42/S0132",
+   "start": 1104.162,
+   "end": 1109.309,
+   "text": "Vertical prototypes are those where we prototype the interactions primarily."
+  },
+  {
+   "id": "L42/S0133",
+   "start": 1112.052,
+   "end": 1117.8,
+   "text": "Now, when we go for building a prototype, what are the different approaches that we can use?"
+  },
+  {
+   "id": "L42/S0134",
+   "start": 1121.304,
+   "end": 1126.091,
+   "text": "There are broadly three ways in which we can create prototypes."
+  },
+  {
+   "id": "L42/S0135",
+   "start": 1126.491,
+   "end": 1134.529,
+   "text": "The first is low-fidelity prototypes or creation of prototypes using a low-fidelity approach."
+  },
+  {
+   "id": "L42/S0136",
+   "start": 1134.929,
+   "end": 1138.192,
+   "text": "So, in this case, there is no technological intervention."
+  },
+  {
+   "id": "L42/S0137",
+   "start": 1138.793,
+   "end": 1146.42,
+   "text": "In other words, we do not need to write any program, code, anything or do not even require any computer."
+  },
+  {
+   "id": "L42/S0138",
+   "start": 1146.44,
+   "end": 1150.323,
+   "text": "These are made with paper, cardboard, wood, and so on."
+  },
+  {
+   "id": "L42/S0139",
+   "start": 1150.783,
+   "end": 1157.409,
+   "text": "So, essentially elements that have nothing to do with digital computers."
+  },
+  {
+   "id": "L42/S0140",
+   "start": 1158.33,
+   "end": 1168.065,
+   "text": "A popular example of such prototypes are the paper mockups for interface look, feel, and even functionality."
+  },
+  {
+   "id": "L42/S0141",
+   "start": 1168.365,
+   "end": 1175.431,
+   "text": "So, although we are using the term low fidelity, it does not mean that we will not be able to implement vertical prototypes."
+  },
+  {
+   "id": "L42/S0142",
+   "start": 1176.712,
+   "end": 1181.136,
+   "text": "Intuitively, low fidelity is primarily associated with horizontal prototyping."
+  },
+  {
+   "id": "L42/S0143",
+   "start": 1181.617,
+   "end": 1188.063,
+   "text": "However, it is also possible to implement vertical prototyping using a low fidelity approach."
+  },
+  {
+   "id": "L42/S0144",
+   "start": 1188.063,
+   "end": 1203.425,
+   "text": "Clearly, this approach provides a very quick and cheap way to make and modify the prototypes as compared to something which requires coding and computers."
+  },
+  {
+   "id": "L42/S0145",
+   "start": 1206.829,
+   "end": 1217.68,
+   "text": "As I said, these are good for horizontal prototypes primarily and used to brainstorm alternative designs and get user responses on the idea, essentially get feedback on usability."
+  },
+  {
+   "id": "L42/S0146",
+   "start": 1218.061,
+   "end": 1226.736,
+   "text": "However, it is not I mean, we should not think of it as only meant for horizontal prototypes."
+  },
+  {
+   "id": "L42/S0147",
+   "start": 1227.457,
+   "end": 1235.024,
+   "text": "Using this low fidelity approach, we can also make vertical prototypes as well."
+  },
+  {
+   "id": "L42/S0148",
+   "start": 1235.044,
+   "end": 1240.469,
+   "text": "So, one low fidelity approach to create prototypes is through interface sketches."
+  },
+  {
+   "id": "L42/S0149",
+   "start": 1241.11,
+   "end": 1252.313,
+   "text": "Now, these are drawings depicting major components of an interface, simple illustration of the interface, and it provides a way to envision the appearance of the interface."
+  },
+  {
+   "id": "L42/S0150",
+   "start": 1252.333,
+   "end": 1259.64,
+   "text": "So, we have some idea in our mind, and we want to express it so that others can comment on it or users can provide feedback."
+  },
+  {
+   "id": "L42/S0151",
+   "start": 1259.66,
+   "end": 1275.634,
+   "text": "So, in order to do that we can have some sketches which are called interface sketches; that is one way. The sketches can be on paper, and that is one way of creating a low-fidelity prototype."
+  },
+  {
+   "id": "L42/S0152",
+   "start": 1275.654,
+   "end": 1277.235,
+   "text": "Let us take one example."
+  },
+  {
+   "id": "L42/S0153",
+   "start": 1277.688,
+   "end": 1283.657,
+   "text": "Let us consider a shop that sells various consumer items such as clothes, bags, and so on."
+  },
+  {
+   "id": "L42/S0154",
+   "start": 1285.219,
+   "end": 1295.394,
+   "text": "Now, the shop owner wants an interactive system to generate bills based on the selection by a customer."
+  },
+  {
+   "id": "L42/S0155",
+   "start": 1296.435,
+   "end": 1303.105,
+   "text": "The customer selection is scanned and identified by the system, and the bill is generated."
+  },
+  {
+   "id": "L42/S0156",
+   "start": 1305.548,
+   "end": 1307.591,
+   "text": "So, we want to prototype this idea."
+  },
+  {
+   "id": "L42/S0157",
+   "start": 1307.972,
+   "end": 1313.24,
+   "text": "So, we have some idea based on this description of the problem, and we want to prototype this idea."
+  },
+  {
+   "id": "L42/S0158",
+   "start": 1314.261,
+   "end": 1329.524,
+   "text": "To express the prototype or to express the idea, a sketch for the proposed interface design can be made, which is shown along with one possible final design in the next slide."
+  },
+  {
+   "id": "L42/S0159",
+   "start": 1330.806,
+   "end": 1335.618,
+   "text": "So, this is the sketch that I talked about in the previous description."
+  },
+  {
+   "id": "L42/S0160",
+   "start": 1336.939,
+   "end": 1339.963,
+   "text": "It can be made on paper, as you can see."
+  },
+  {
+   "id": "L42/S0161",
+   "start": 1341.504,
+   "end": 1343.507,
+   "text": "Of course, this is somewhat crude."
+  },
+  {
+   "id": "L42/S0162",
+   "start": 1345.168,
+   "end": 1371.897,
+   "text": "As you can see, with this sketch, we can actually be able to depict what are the elements on the screen that the user gets to see, including the buttons, including the options for selections and so on, and including the Appearance of the elements, their layout, and many such things we can visualize based on such a sketch."
+  },
+  {
+   "id": "L42/S0163",
+   "start": 1373.338,
+   "end": 1379.045,
+   "text": "And the same sketch need not be exactly replicated in the final design."
+  },
+  {
+   "id": "L42/S0164",
+   "start": 1381.448,
+   "end": 1384.051,
+   "text": "Based on feedback, we may like to change it."
+  },
+  {
+   "id": "L42/S0165",
+   "start": 1384.071,
+   "end": 1388.736,
+   "text": "Say, for example, this same sketch appeared here in this way."
+  },
+  {
+   "id": "L42/S0166",
+   "start": 1390.137,
+   "end": 1396.423,
+   "text": "However, Suppose through this design-prototype-evaluate cycle, we came to know that this is not correct."
+  },
+  {
+   "id": "L42/S0167",
+   "start": 1397.024,
+   "end": 1398.545,
+   "text": "I mean, there are some issues with this."
+  },
+  {
+   "id": "L42/S0168",
+   "start": 1399.566,
+   "end": 1408.995,
+   "text": "So, we can make minor corrections and come up with another final design, which looks somewhat similar, but somewhat dissimilar also to the initial sketch."
+  },
+  {
+   "id": "L42/S0169",
+   "start": 1409.435,
+   "end": 1420.605,
+   "text": "As shown here, where some of the elements or their appearance have changed, their position changed, the layout changed, some things changed."
+  },
+  {
+   "id": "L42/S0170",
+   "start": 1421.294,
+   "end": 1428.948,
+   "text": "Possibly due to feedback received during this prototype evaluation stage."
+  },
+  {
+   "id": "L42/S0171",
+   "start": 1434.499,
+   "end": 1439.889,
+   "text": "Now, sketches are primarily meant for horizontal prototypes."
+  },
+  {
+   "id": "L42/S0172",
+   "start": 1439.909,
+   "end": 1444.838,
+   "text": "In itself, if we have a single sketch, it is not sufficient to prototype interactions."
+  },
+  {
+   "id": "L42/S0173",
+   "start": 1446.607,
+   "end": 1466.088,
+   "text": "From the previous sketch example, we can see that it is not possible to know the sequence of actions and the corresponding changes on the interface to execute a task such as a stroller purchase for which we can use a prototype."
+  },
+  {
+   "id": "L42/S0174",
+   "start": 1466.108,
+   "end": 1471.374,
+   "text": "So therefore, sketches are essentially used to represent horizontal prototypes."
+  },
+  {
+   "id": "L42/S0175",
+   "start": 1473.276,
+   "end": 1481.98,
+   "text": "To represent interaction, we need Not a single sketch, but a series of sketches often called storyboarding."
+  },
+  {
+   "id": "L42/S0176",
+   "start": 1482.0,
+   "end": 1485.986,
+   "text": "Now, this term comes from the film industry, as we know."
+  },
+  {
+   "id": "L42/S0177",
+   "start": 1489.712,
+   "end": 1492.436,
+   "text": "So, with a single sketch, we have a horizontal prototype."
+  },
+  {
+   "id": "L42/S0178",
+   "start": 1492.456,
+   "end": 1498.586,
+   "text": "With a series of sketches, we can have a vertical prototype depicting interaction."
+  },
+  {
+   "id": "L42/S0179",
+   "start": 1499.087,
+   "end": 1503.934,
+   "text": "As I said before, a low-fidelity approach need not always mean horizontal prototyping."
+  },
+  {
+   "id": "L42/S0180",
+   "start": 1504.235,
+   "end": 1511.283,
+   "text": "We can also modify or utilize the approach to create vertical prototypes as well."
+  },
+  {
+   "id": "L42/S0181",
+   "start": 1511.684,
+   "end": 1516.89,
+   "text": "Storyboarding is one such modification of the basic approach."
+  },
+  {
+   "id": "L42/S0182",
+   "start": 1516.91,
+   "end": 1521.516,
+   "text": "The idea originated from the film industry, where it is used to depict a scene."
+  },
+  {
+   "id": "L42/S0183",
+   "start": 1521.656,
+   "end": 1526.682,
+   "text": "Typically, for animated movies, this is more commonly used."
+  },
+  {
+   "id": "L42/S0184",
+   "start": 1527.59,
+   "end": 1539.024,
+   "text": "Now, each sketch in a storyboard represents a keyframe, again a term borrowed from the movie or film industry."
+  },
+  {
+   "id": "L42/S0185",
+   "start": 1539.044,
+   "end": 1545.392,
+   "text": "Now, each keyframe is nothing but a snapshot of the interaction at a particular point in time."
+  },
+  {
+   "id": "L42/S0186",
+   "start": 1548.235,
+   "end": 1557.006,
+   "text": "These keyframes allow us to visualize the nature of interaction in its entirety, but for a specific scene."
+  },
+  {
+   "id": "L42/S0187",
+   "start": 1557.847,
+   "end": 1564.575,
+   "text": "That means a specific task and the corresponding scenes associated with the task."
+  },
+  {
+   "id": "L42/S0188",
+   "start": 1567.158,
+   "end": 1572.545,
+   "text": "For example, let us talk about a mobile app."
+  },
+  {
+   "id": "L42/S0189",
+   "start": 1573.066,
+   "end": 1580.455,
+   "text": "Now, the mobile app is designed to find spicy food in your neighborhood."
+  },
+  {
+   "id": "L42/S0190",
+   "start": 1580.915,
+   "end": 1586.622,
+   "text": "So, then how do we perform the interactions?"
+  },
+  {
+   "id": "L42/S0191",
+   "start": 1587.344,
+   "end": 1596.038,
+   "text": "What are the ideas we can have to provide interactions to the user so that the user is able to find out the spicy food in the neighborhood?"
+  },
+  {
+   "id": "L42/S0192",
+   "start": 1598.021,
+   "end": 1604.411,
+   "text": "This can be one possible instance of the storyboard, that is one possible instance of the design idea."
+  },
+  {
+   "id": "L42/S0193",
+   "start": 1604.852,
+   "end": 1611.883,
+   "text": "So, here the user somehow specifies the requirement that they want to eat something spicy."
+  },
+  {
+   "id": "L42/S0194",
+   "start": 1613.382,
+   "end": 1621.956,
+   "text": "Then it goes to the app and the app lists different menu items."
+  },
+  {
+   "id": "L42/S0195",
+   "start": 1623.959,
+   "end": 1629.328,
+   "text": "Then it further chooses a particular option or particular cuisine."
+  },
+  {
+   "id": "L42/S0196",
+   "start": 1631.491,
+   "end": 1633.855,
+   "text": "There can be subcategories of that cuisine as well."
+  },
+  {
+   "id": "L42/S0197",
+   "start": 1634.307,
+   "end": 1636.27,
+   "text": "North Indian, South Indian as you can see here."
+  },
+  {
+   "id": "L42/S0198",
+   "start": 1636.61,
+   "end": 1640.356,
+   "text": "That is the second stage after selection in the first stage."
+  },
+  {
+   "id": "L42/S0199",
+   "start": 1641.297,
+   "end": 1646.205,
+   "text": "Then North Indian, there can be further subcategories as you can see."
+  },
+  {
+   "id": "L42/S0200",
+   "start": 1651.032,
+   "end": 1657.601,
+   "text": "And from there, the user can choose or get to see the category he or she is looking for."
+  },
+  {
+   "id": "L42/S0201",
+   "start": 1660.666,
+   "end": 1666.471,
+   "text": "Then the user needs to provide details for the food to be delivered."
+  },
+  {
+   "id": "L42/S0202",
+   "start": 1666.491,
+   "end": 1675.764,
+   "text": "So, there are six such sketches: 1, 2, 3, 4, 5 and 6."
+  },
+  {
+   "id": "L42/S0203",
+   "start": 1676.305,
+   "end": 1680.17,
+   "text": "Now, these six sketches together are the storyboard."
+  },
+  {
+   "id": "L42/S0204",
+   "start": 1680.19,
+   "end": 1700.305,
+   "text": "Each sketch is a keyframe and each sketch shows a specific instance of the execution of the task by the user, a specific instance of how the screen appears at that point in time to the user."
+  },
+  {
+   "id": "L42/S0205",
+   "start": 1703.088,
+   "end": 1712.217,
+   "text": "And the storyboard together with all these six sketches captures the sequence of actions required from the user to get the work done."
+  },
+  {
+   "id": "L42/S0206",
+   "start": 1713.439,
+   "end": 1722.415,
+   "text": "We have to remember that this is only one idea which we are converting to a storyboard this need not be the only idea."
+  },
+  {
+   "id": "L42/S0207",
+   "start": 1722.475,
+   "end": 1731.648,
+   "text": "So, the overall purpose of a prototype is to have some idea, convert it to some prototype and then evaluate it."
+  },
+  {
+   "id": "L42/S0208",
+   "start": 1732.028,
+   "end": 1739.438,
+   "text": "If there is some issue, then revise this idea, revise the prototype, get it evaluated again and so on."
+  },
+  {
+   "id": "L42/S0209",
+   "start": 1743.283,
+   "end": 1769.116,
+   "text": "So, in this storyboard, what we can see is that it starts from the very first step that is the desire to have the food and ends to the last step, ends at the last stage that is the food is found, the actual finding of the food and it also shows the intermediate screen."
+  },
+  {
+   "id": "L42/S0210",
+   "start": 1769.156,
+   "end": 1777.343,
+   "text": "So, that is the main idea that from the beginning to the end what are the things that the user does and what are the things that the user gets to see."
+  },
+  {
+   "id": "L42/S0211",
+   "start": 1778.538,
+   "end": 1783.624,
+   "text": "That is what is captured in this storyboarding approach."
+  },
+  {
+   "id": "L42/S0212",
+   "start": 1787.108,
+   "end": 1791.593,
+   "text": "That is about the low fidelity approach where we may not require any computer as well."
+  },
+  {
+   "id": "L42/S0213",
+   "start": 1792.515,
+   "end": 1798.362,
+   "text": "The same storyboard can be done on a simple paper without using any digital medium."
+  },
+  {
+   "id": "L42/S0214",
+   "start": 1798.842,
+   "end": 1807.212,
+   "text": "Now, there is another category that is called medium fidelity, another approach of building a prototype that is the medium fidelity approach."
+  },
+  {
+   "id": "L42/S0215",
+   "start": 1807.664,
+   "end": 1815.172,
+   "text": "Here we use a computer to create simple prototypes which are typically of low fidelity."
+  },
+  {
+   "id": "L42/S0216",
+   "start": 1817.574,
+   "end": 1821.479,
+   "text": "That means earlier we talked about a low-fidelity approach where we are not using computers."
+  },
+  {
+   "id": "L42/S0217",
+   "start": 1821.799,
+   "end": 1852.647,
+   "text": "Now if we want to create the same type of things but using a computer, say for example using a paint system to create the interface sketches, then that prototype is called built using medium fidelity approach if the computer is used to create static sketches only it still remains horizontal prototype since no real functionality is there so essentially,"
+  },
+  {
+   "id": "L42/S0218",
+   "start": 1852.647,
+   "end": 1867.898,
+   "text": "computer is used to just build the prototype rather than adding anything we can also include videos in the medium fidelity prototype as well which is not possible with a low-fidelity approach."
+  },
+  {
+   "id": "L42/S0219",
+   "start": 1869.499,
+   "end": 1876.986,
+   "text": "Low-fidelity approach does not rely on computers, so the addition of any digital medium is not possible."
+  },
+  {
+   "id": "L42/S0220",
+   "start": 1877.066,
+   "end": 1902.354,
+   "text": "However, when we are creating a medium-fidelity approach, we are building prototypes using a medium-fidelity approach; it is possible to utilize different media to build a prototype, which may still which may still be a horizontal prototype or a vertical prototype."
+  },
+  {
+   "id": "L42/S0221",
+   "start": 1902.374,
+   "end": 1926.814,
+   "text": "For example, we can have an animation video created with say Adobe Flash Player flash tool for example, to prototype the food selection app of the previous slide in the video simple controls such as space key pressing or any up-down arrow key pressing can be provided to simulate the interaction."
+  },
+  {
+   "id": "L42/S0222",
+   "start": 1926.834,
+   "end": 1932.484,
+   "text": "So, to change screens we can simply press a key in the video."
+  },
+  {
+   "id": "L42/S0223",
+   "start": 1933.125,
+   "end": 1934.007,
+   "text": "So, that is possible."
+  },
+  {
+   "id": "L42/S0224",
+   "start": 1934.948,
+   "end": 1941.059,
+   "text": "In that way we would be able to implement a vertical prototype."
+  },
+  {
+   "id": "L42/S0225",
+   "start": 1941.079,
+   "end": 1950.133,
+   "text": "So, that is one way of utilizing a computer to build horizontal or vertical prototypes, but still without involving any coding."
+  },
+  {
+   "id": "L42/S0226",
+   "start": 1954.679,
+   "end": 1965.134,
+   "text": "So, interaction can also be simulated with as simple a tool as a Microsoft PowerPoint slideshow that is effectively kind of a video also."
+  },
+  {
+   "id": "L42/S0227",
+   "start": 1965.995,
+   "end": 2001.723,
+   "text": "So, these tools PPT slideshow or Adobe Flash tools can be utilized to create interactive videos to prototype to create a vertical prototype or we can simply use any image or paint type editing tool to create simple sketches, using computers which are called medium fidelity prototypes because we are using computers here."
+  },
+  {
+   "id": "L42/S0228",
+   "start": 2001.743,
+   "end": 2023.013,
+   "text": "So, in case of PPT slideshow, keyframes are converted to slides and simple controls such as timers or key press can be used to transition the slide transition the slide to the next one which depicts interaction."
+  },
+  {
+   "id": "L42/S0229",
+   "start": 2023.033,
+   "end": 2034.395,
+   "text": "So, that is a better way of creating a vertical prototype as compared to a paper based interface sketch or series of sketches as is obvious."
+  },
+  {
+   "id": "L42/S0230",
+   "start": 2038.439,
+   "end": 2040.462,
+   "text": "Finally, we have the high fidelity approach."
+  },
+  {
+   "id": "L42/S0231",
+   "start": 2040.562,
+   "end": 2044.025,
+   "text": "Here the prototypes are created with computer programs."
+  },
+  {
+   "id": "L42/S0232",
+   "start": 2045.146,
+   "end": 2049.451,
+   "text": "So, in the previous case, in the first case low fidelity approach, no computers are involved."
+  },
+  {
+   "id": "L42/S0233",
+   "start": 2049.971,
+   "end": 2056.438,
+   "text": "In the second case, medium fidelity approach, computers are involved but in a different way."
+  },
+  {
+   "id": "L42/S0234",
+   "start": 2058.038,
+   "end": 2063.342,
+   "text": "In the high fidelity approach, we are actually using programming to create a prototype."
+  },
+  {
+   "id": "L42/S0235",
+   "start": 2064.103,
+   "end": 2070.969,
+   "text": "So, it is effectively actual software development, maybe on a reduced scale."
+  },
+  {
+   "id": "L42/S0236",
+   "start": 2074.853,
+   "end": 2078.397,
+   "text": "Clearly, this is more sophisticated and requires much more effort."
+  },
+  {
+   "id": "L42/S0237",
+   "start": 2078.637,
+   "end": 2086.965,
+   "text": "You require skilled manpower programmers to build such a prototype, including expertise in programming than the other two categories."
+  },
+  {
+   "id": "L42/S0238",
+   "start": 2090.489,
+   "end": 2094.875,
+   "text": "Now, these high fidelity prototypes are mainly used to create vertical prototypes."
+  },
+  {
+   "id": "L42/S0239",
+   "start": 2095.676,
+   "end": 2100.323,
+   "text": "Of course, making horizontal prototypes using a high fidelity approach may not make much sense."
+  },
+  {
+   "id": "L42/S0240",
+   "start": 2101.405,
+   "end": 2105.591,
+   "text": "So, primarily they are meant for vertical prototypes."
+  },
+  {
+   "id": "L42/S0241",
+   "start": 2105.611,
+   "end": 2109.757,
+   "text": "So, low fidelity prototypes are primarily meant for horizontal prototypes."
+  },
+  {
+   "id": "L42/S0242",
+   "start": 2110.357,
+   "end": 2119.23,
+   "text": "High fidelity approaches are primarily meant for vertical prototypes and medium fidelity approaches are meant for both horizontal and vertical prototypes."
+  },
+  {
+   "id": "L42/S0243",
+   "start": 2120.105,
+   "end": 2135.164,
+   "text": "Primarily. Apart from these three approaches, there is something interesting way of, there is some interesting way of creating prototype called Wizard of Oz approach."
+  },
+  {
+   "id": "L42/S0244",
+   "start": 2138.228,
+   "end": 2141.813,
+   "text": "It is a very interesting technique and its origin is even more interesting."
+  },
+  {
+   "id": "L42/S0245",
+   "start": 2143.094,
+   "end": 2156.074,
+   "text": "So, in this approach, a human subject is involved who believes that they are interacting with an autonomous computer or a computer in short."
+  },
+  {
+   "id": "L42/S0246",
+   "start": 2157.116,
+   "end": 2166.35,
+   "text": "But in reality, what happens is that the computer is actually operated by another human being who is unseen by the subject."
+  },
+  {
+   "id": "L42/S0247",
+   "start": 2169.915,
+   "end": 2172.759,
+   "text": "That operator can be called the wizard."
+  },
+  {
+   "id": "L42/S0248",
+   "start": 2173.6,
+   "end": 2189.258,
+   "text": "So whatever the human subject wants from the computer, the wizard somehow knows and shows in some manner or returns the result in some manner to the subject."
+  },
+  {
+   "id": "L42/S0249",
+   "start": 2192.102,
+   "end": 2198.272,
+   "text": "The term originated in the early 1980s, although the concept was there beforehand."
+  },
+  {
+   "id": "L42/S0250",
+   "start": 2200.255,
+   "end": 2210.447,
+   "text": "One very interesting example of this approach is the listening typewriter experiment conducted by IBM way back in 1984."
+  },
+  {
+   "id": "L42/S0251",
+   "start": 2212.87,
+   "end": 2224.085,
+   "text": "At that time, IBM was trying to develop a speech recognition system and it wanted to test the acceptability of the idea, which required a working system."
+  },
+  {
+   "id": "L42/S0252",
+   "start": 2225.086,
+   "end": 2230.033,
+   "text": "The problem was that nobody had a speech recognizer at that time."
+  },
+  {
+   "id": "L42/S0253",
+   "start": 2230.113,
+   "end": 2237.102,
+   "text": "It was not yet developed and the company did not want to spend money and effort on building a speech recognizer first."
+  },
+  {
+   "id": "L42/S0254",
+   "start": 2238.28,
+   "end": 2243.349,
+   "text": "Before testing the acceptability of the idea of the listening typewriter."
+  },
+  {
+   "id": "L42/S0255",
+   "start": 2244.01,
+   "end": 2248.298,
+   "text": "So, the technology was not yet available."
+  },
+  {
+   "id": "L42/S0256",
+   "start": 2248.719,
+   "end": 2254.75,
+   "text": "However, the company wanted to test the idea first before committing resources to build the technology."
+  },
+  {
+   "id": "L42/S0257",
+   "start": 2256.493,
+   "end": 2257.175,
+   "text": "So, how to do that?"
+  },
+  {
+   "id": "L42/S0258",
+   "start": 2258.597,
+   "end": 2262.364,
+   "text": "So, they decided to go for a Wizard of Oz experiment."
+  },
+  {
+   "id": "L42/S0259",
+   "start": 2264.487,
+   "end": 2266.048,
+   "text": "And this is the experimental setup."
+  },
+  {
+   "id": "L42/S0260",
+   "start": 2266.689,
+   "end": 2270.633,
+   "text": "There is this human user in front of a microphone."
+  },
+  {
+   "id": "L42/S0261",
+   "start": 2272.034,
+   "end": 2273.676,
+   "text": "He talks about something."
+  },
+  {
+   "id": "L42/S0262",
+   "start": 2274.937,
+   "end": 2275.938,
+   "text": "There is a computer."
+  },
+  {
+   "id": "L42/S0263",
+   "start": 2276.398,
+   "end": 2278.42,
+   "text": "The subject thinks that this is a real computer."
+  },
+  {
+   "id": "L42/S0264",
+   "start": 2279.141,
+   "end": 2286.268,
+   "text": "However, the computer is connected to another computer here through some intermediary."
+  },
+  {
+   "id": "L42/S0265",
+   "start": 2287.189,
+   "end": 2292.874,
+   "text": "And there is this wizard sitting hidden away from the subject."
+  },
+  {
+   "id": "L42/S0266",
+   "start": 2295.267,
+   "end": 2296.048,
+   "text": "This is the subject."
+  },
+  {
+   "id": "L42/S0267",
+   "start": 2296.789,
+   "end": 2297.73,
+   "text": "This is the wizard."
+  },
+  {
+   "id": "L42/S0268",
+   "start": 2298.371,
+   "end": 2299.052,
+   "text": "There is a wall."
+  },
+  {
+   "id": "L42/S0269",
+   "start": 2300.334,
+   "end": 2306.442,
+   "text": "So the subject cannot see the wizard, but the subject is thinking that he is interacting with a computer."
+  },
+  {
+   "id": "L42/S0270",
+   "start": 2306.603,
+   "end": 2314.153,
+   "text": "So whatever he speaks, the computer displays in the form of text."
+  },
+  {
+   "id": "L42/S0271",
+   "start": 2314.173,
+   "end": 2315.335,
+   "text": "So the user says something."
+  },
+  {
+   "id": "L42/S0272",
+   "start": 2315.455,
+   "end": 2316.496,
+   "text": "It appears on the screen."
+  },
+  {
+   "id": "L42/S0273",
+   "start": 2316.516,
+   "end": 2322.945,
+   "text": "However, whatever the user says, this microphone is also connected to the speaker of the computer."
+  },
+  {
+   "id": "L42/S0274",
+   "start": 2324.461,
+   "end": 2337.691,
+   "text": "So, the wizard gets to hear what the subject is speaking, and based on that, the wizard types those characters."
+  },
+  {
+   "id": "L42/S0275",
+   "start": 2337.691,
+   "end": 2344.166,
+   "text": "Then that gets transmitted because these two computers are connected, and it gets displayed on the subject's computer screen."
+  },
+  {
+   "id": "L42/S0276",
+   "start": 2345.527,
+   "end": 2356.254,
+   "text": "Effectively letting the subject believe that whatever he has spoken, has appeared on the screen, so this is a good system or this is a bad system, whatever the perception of the subject is."
+  },
+  {
+   "id": "L42/S0277",
+   "start": 2357.495,
+   "end": 2363.965,
+   "text": "However, in reality, there is no such technology which can automatically convert that."
+  },
+  {
+   "id": "L42/S0278",
+   "start": 2364.005,
+   "end": 2365.968,
+   "text": "So, at that time, there was no such technology."
+  },
+  {
+   "id": "L42/S0279",
+   "start": 2366.749,
+   "end": 2372.718,
+   "text": "So, the human wizard was listening and typing and sending the result back to the subject."
+  },
+  {
+   "id": "L42/S0280",
+   "start": 2372.738,
+   "end": 2376.844,
+   "text": "So, this setup, this idea is what is called the Wizard of Oz approach."
+  },
+  {
+   "id": "L42/S0281",
+   "start": 2378.95,
+   "end": 2383.075,
+   "text": "So with that, we can conclude our discussion here."
+  },
+  {
+   "id": "L42/S0282",
+   "start": 2384.276,
+   "end": 2393.027,
+   "text": "In summary, what we can say is that in this part of the lecture, we started a new topic on implementation."
+  },
+  {
+   "id": "L42/S0283",
+   "start": 2393.067,
+   "end": 2396.23,
+   "text": "However, we covered only a small part of the topic in this lecture."
+  },
+  {
+   "id": "L42/S0284",
+   "start": 2398.813,
+   "end": 2403.038,
+   "text": "In this part of the lecture, we talked about the importance of the design prototype evaluate cycle."
+  },
+  {
+   "id": "L42/S0285",
+   "start": 2403.619,
+   "end": 2404.64,
+   "text": "We re-emphasized it."
+  },
+  {
+   "id": "L42/S0286",
+   "start": 2405.782,
+   "end": 2410.671,
+   "text": "And then we talked about prototypes, how to build prototypes, and why they are important."
+  },
+  {
+   "id": "L42/S0287",
+   "start": 2415.356,
+   "end": 2420.882,
+   "text": "Now we will continue on these prototypes in the next part of the lecture."
+  },
+  {
+   "id": "L42/S0288",
+   "start": 2420.962,
+   "end": 2430.432,
+   "text": "Some more concepts related to prototypes are there, which we will continue in the next part of the lecture."
+  },
+  {
+   "id": "L42/S0289",
+   "start": 2431.373,
+   "end": 2435.417,
+   "text": "So, I hope you could follow the concepts and the topics covered."
+  },
+  {
+   "id": "L42/S0290",
+   "start": 2437.743,
+   "end": 2441.295,
+   "text": "And understood whatever has been covered so far."
+  },
+  {
+   "id": "L42/S0291",
+   "start": 2443.423,
+   "end": 2445.671,
+   "text": "Looking forward to meeting you in the next part."
+  },
+  {
+   "id": "L42/S0292",
+   "start": 2445.691,
+   "end": 2448.36,
+   "text": "Until then, thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L42/P01",
+   "first": "L42/S0000",
+   "last": "L42/S0021",
+   "start": 24.027,
+   "end": 197.231,
+   "objective": "Understand the concepts and processes involved in implementing an XR system, including prototyping and usability evaluation",
+   "objective_id": "L42/O1",
+   "key_points": [
+    {
+     "id": "L42/P01/K1",
+     "text": "Implementation concepts include prototyping (what it is and why it's required), quick prototype evaluation, overall system implementation, and usability evaluation. (18, 21)",
+     "sources": [
+      "L42/S0018",
+      "L42/S0021"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0528",
+      "C0538",
+      "C0718",
+      "C0903",
+      "C0904",
+      "C0919"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P01/T1",
+     "surface": "quick prototype evaluation",
+     "name": "Quick prototype evaluation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Quick prototype evaluation is a method for evaluating prototypes in a rapid manner.",
+     "sources": [
+      "L42/S0018"
+     ],
+     "concept_id": "C0903",
+     "concept_name": "Quick evaluation"
+    },
+    {
+     "id": "L42/P01/T2",
+     "surface": "empirical or usability evaluation",
+     "name": "Usability evaluation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Usability evaluation is the process of assessing the entire system from the perspective of its usability.",
+     "sources": [
+      "L42/S0021"
+     ],
+     "concept_id": "C0904",
+     "concept_name": "Usability evaluation"
+    }
+   ]
+  },
+  {
+   "id": "L42/P02",
+   "first": "L42/S0022",
+   "last": "L42/S0047",
+   "start": 197.251,
+   "end": 388.404,
+   "objective": "Outline the various stages and iterative cycles present in the interactive system development lifecycle",
+   "objective_id": "L42/O1",
+   "key_points": [
+    {
+     "id": "L42/P02/K1",
+     "text": "The overall development lifecycle includes a feasibility study, requirement gathering, design prototype evaluation cycle, coding/implementation, and empirical study stages.",
+     "sources": [
+      "L42/S0025",
+      "L42/S0026",
+      "L42/S0030",
+      "L42/S0035"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0527",
+      "C0707",
+      "C0713",
+      "C0718",
+      "C0737"
+     ]
+    },
+    {
+     "id": "L42/P02/K2",
+     "text": "The core design process involves an iterative cycle of design, prototyping, and quick evaluation until the design stabilizes.",
+     "sources": [
+      "L42/S0028",
+      "L42/S0029"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0772",
+      "C0903",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P02/K3",
+     "text": "Interactive system stages (code design, coding, implementation) are similar to standard software development stages.",
+     "sources": [
+      "L42/S0032",
+      "L42/S0033"
+     ],
+     "concept_ids": [
+      "C0012",
+      "C0508",
+      "C0538",
+      "C0712",
+      "C0718"
+     ]
+    },
+    {
+     "id": "L42/P02/K4",
+     "text": "Feedback can lead to multiple types of cycles, including those between coding/testing and the main design prototype cycle.",
+     "sources": [
+      "L42/S0037",
+      "L42/S0041"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0792"
+     ]
+    },
+    {
+     "id": "L42/P02/K5",
+     "text": "Frequent cycles generally increase cost and time, but the design, prototype, evaluate cycle may be frequent without causing overruns.",
+     "sources": [
+      "L42/S0044",
+      "L42/S0046",
+      "L42/S0047"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0705"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P02/T1",
+     "surface": "Interactive system development lifecycle",
+     "name": "Interactive system development lifecycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Interactive system development lifecycle is a process framework for developing interactive systems that is equally applicable to extended reality systems.",
+     "sources": [
+      "L42/S0024"
+     ],
+     "concept_id": "C0717",
+     "concept_name": "Interactive system development lifecycle"
+    },
+    {
+     "id": "L42/P02/T2",
+     "surface": "Feasibility study stage",
+     "name": "Feasibility study stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Feasibility study stage is the initial stage of the interactive system development lifecycle.",
+     "sources": [
+      "L42/S0025"
+     ],
+     "concept_id": "C0905",
+     "concept_name": "Feasibility study stage"
+    },
+    {
+     "id": "L42/P02/T3",
+     "surface": "Requirement gathering analysis and specification stage",
+     "name": "Requirement gathering analysis and specification stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Requirement gathering analysis and specification stage is the stage that follows the feasibility study in the development lifecycle.",
+     "sources": [
+      "L42/S0025"
+     ],
+     "concept_id": "C0707",
+     "concept_name": "Requirement gathering stage"
+    },
+    {
+     "id": "L42/P02/T4",
+     "surface": "Design prototype evaluate cycle",
+     "name": "Design prototype evaluate cycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Design prototype evaluate cycle is an iterative cycle involving the design, prototype, and early evaluation stages where the design is refined based on evaluation results until it stabilizes.",
+     "sources": [
+      "L42/S0026",
+      "L42/S0027",
+      "L42/S0028",
+      "L42/S0029"
+     ],
+     "concept_id": "C0705",
+     "concept_name": "Design prototype evaluate cycle"
+    },
+    {
+     "id": "L42/P02/T5",
+     "surface": "Early evaluation or quick evaluation stage",
+     "name": "Early evaluation stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Early evaluation stage is one of the three connected stages in the design prototype evaluate cycle that provides input for refining the design.",
+     "sources": [
+      "L42/S0026"
+     ],
+     "concept_id": "C0714",
+     "concept_name": "Early evaluation"
+    },
+    {
+     "id": "L42/P02/T6",
+     "surface": "Empirical study or usability evaluation stage",
+     "name": "Usability evaluation stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Usability evaluation stage is the stage following code testing that involves an empirical study to check for usability problems in the system.",
+     "sources": [
+      "L42/S0035"
+     ],
+     "concept_id": "C0706",
+     "concept_name": "Usability study"
+    }
+   ]
+  },
+  {
+   "id": "L42/P03",
+   "first": "L42/S0048",
+   "last": "L42/S0078",
+   "start": 391.107,
+   "end": 637.501,
+   "objective": "Understand the components and necessity of the quick design-prototype-evaluate cycle for immersive experiences",
+   "objective_id": "L42/O1",
+   "key_points": [
+    {
+     "id": "L42/P03/K1",
+     "text": "The immersive experience design process utilizes an iterative design-prototype-evaluate cycle,.",
+     "sources": [
+      "L42/S0061",
+      "L42/S0062"
+     ],
+     "concept_ids": [
+      "C0039",
+      "C0490",
+      "C0705",
+      "C0772",
+      "C0902",
+      "C0906"
+     ]
+    },
+    {
+     "id": "L42/P03/K2",
+     "text": "The term 'design' in this cycle specifically relates to interface and interaction design, not the underlying code design.",
+     "sources": [
+      "L42/S0064"
+     ],
+     "concept_ids": [
+      "C0064",
+      "C0710",
+      "C0712"
+     ]
+    },
+    {
+     "id": "L42/P03/K3",
+     "text": "Quick usability evaluation is crucial to prevent increased turnaround time and cost overruns during the design process,.",
+     "sources": [
+      "L42/S0066",
+      "L42/S0068"
+     ],
+     "concept_ids": [
+      "C0528",
+      "C0716",
+      "C0772",
+      "C0904"
+     ]
+    },
+    {
+     "id": "L42/P03/K4",
+     "text": "Executing a quick design-prototype-evaluate cycle requires both the ability to quickly build a prototype and the ability to test it quickly,,.",
+     "sources": [
+      "L42/S0069",
+      "L42/S0070",
+      "L42/S0072"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0705"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P03/T1",
+     "surface": "usability evaluation",
+     "name": "Usability evaluation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Usability evaluation is a process used to quickly test the design ideas to ensure that when they are later implemented, they will result in a usable system.",
+     "sources": [
+      "L42/S0049",
+      "L42/S0051",
+      "L42/S0066",
+      "L42/S0078"
+     ],
+     "concept_id": "C0904",
+     "concept_name": "Usability evaluation"
+    },
+    {
+     "id": "L42/P03/T2",
+     "surface": "design-prototype-evaluate cycle",
+     "name": "Design-prototype-evaluate cycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Design-prototype-evaluate cycle is an experience design process that involves designing, quickly prototyping, and evaluating a design to identify problems and refine it. This cycle repeats by creating new prototypes and evaluating them based on those refinements.",
+     "sources": [
+      "L42/S0059",
+      "L42/S0060",
+      "L42/S0061",
+      "L42/S0062"
+     ],
+     "concept_id": "C0705",
+     "concept_name": "Design prototype evaluate cycle"
+    },
+    {
+     "id": "L42/P03/T3",
+     "surface": "experience design",
+     "name": "Experience design",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Experience design is the practice that involves the entire design-prototype-evaluate cycle to create an immersive experience.",
+     "sources": [
+      "L42/S0060"
+     ],
+     "concept_id": "C0906",
+     "concept_name": "Experience design"
+    },
+    {
+     "id": "L42/P03/T4",
+     "surface": "interface design",
+     "name": "Interface design",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Interface design refers to the design element being discussed in the context of immersive experiences, specifically excluding the underlying code design.",
+     "sources": [
+      "L42/S0064"
+     ],
+     "concept_id": "C0711",
+     "concept_name": "Interface design"
+    },
+    {
+     "id": "L42/P03/T5",
+     "surface": "interaction design",
+     "name": "Interaction design",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Interaction design refers to the design element being discussed in the context of immersive experiences, specifically excluding the underlying code design.",
+     "sources": [
+      "L42/S0064"
+     ],
+     "concept_id": "C0710",
+     "concept_name": "Interaction design"
+    },
+    {
+     "id": "L42/P03/T6",
+     "surface": "prototype",
+     "name": "Prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A prototype is a model of an idea that can be built quickly, allowing designers to quickly model or demonstrate their idea for testing.",
+     "sources": [
+      "L42/S0070",
+      "L42/S0071",
+      "L42/S0074",
+      "L42/S0075"
+     ],
+     "concept_id": "C0490",
+     "concept_name": "Prototype"
+    }
+   ]
+  },
+  {
+   "id": "L42/P04",
+   "first": "L42/S0079",
+   "last": "L42/S0101",
+   "start": 641.97,
+   "end": 856.202,
+   "objective": "Differentiate between full implementation and using a lightweight prototype to test a design idea",
+   "objective_id": "L42/O1",
+   "key_points": [
+    {
+     "id": "L42/P04/K1",
+     "text": "Design guidelines provide only a starting point and do not confirm if a design is usable, requiring implementation and testing for verification. (,)",
+     "sources": [
+      "L42/S0083",
+      "L42/S0084"
+     ],
+     "concept_ids": [
+      "C0718",
+      "C0761"
+     ]
+    },
+    {
+     "id": "L42/P04/K2",
+     "text": "Prototypes are lightweight implementations designed to test an idea while minimizing resource demands, skilled manpower, and cost compared to a full implementation. ()",
+     "sources": [
+      "L42/S0094"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0718",
+      "C0758",
+      "C0907",
+      "C0908",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P04/K3",
+     "text": "One utilization method is to discard the prototype after its primary purpose—testing the design ideas—has been achieved. (,)",
+     "sources": [
+      "L42/S0096",
+      "L42/S0097"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0701",
+      "C0758"
+     ]
+    },
+    {
+     "id": "L42/P04/K4",
+     "text": "Alternatively, a prototype can be incrementally refined and built upon until it evolves into the fully implemented final product. (,)",
+     "sources": [
+      "L42/S0098",
+      "L42/S0099"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0718"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P04/T1",
+     "surface": "prototype",
+     "name": "Prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A prototype is an implementation designed to test a design idea; it is a lightweight implementation that requires significantly fewer resources, manpower, and cost compared to a full implementation.",
+     "sources": [
+      "L42/S0085",
+      "L42/S0093",
+      "L42/S0094"
+     ],
+     "concept_id": "C0490",
+     "concept_name": "Prototype"
+    },
+    {
+     "id": "L42/P04/T2",
+     "surface": "full implementation",
+     "name": "Full implementation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Full implementation is the complete process of developing a software idea, which requires engaging highly skilled manpower, programmers, and involves a significant number of cost components and resources.",
+     "sources": [
+      "L42/S0088",
+      "L42/S0089"
+     ],
+     "concept_id": "C0907",
+     "concept_name": "Full implementation"
+    },
+    {
+     "id": "L42/P04/T3",
+     "surface": "lightweight implementation",
+     "name": "Lightweight implementation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A lightweight implementation is a small-scale implementation used to test a design idea, characterized by much lower requirements for resources, skilled manpower, and cost compared to a full implementation.",
+     "sources": [
+      "L42/S0093",
+      "L42/S0094"
+     ],
+     "concept_id": "C0908",
+     "concept_name": "Lightweight implementation"
+    }
+   ]
+  },
+  {
+   "id": "L42/P05",
+   "first": "L42/S0102",
+   "last": "L42/S0129",
+   "start": 857.644,
+   "end": 1091.552,
+   "objective": "Compare and differentiate between the characteristics and purposes of horizontal and vertical prototypes",
+   "objective_id": "L42/O2",
+   "key_points": [
+    {
+     "id": "L42/P05/K1",
+     "text": "Prototypes are categorized into two broad types: horizontal and vertical prototypes.",
+     "sources": [
+      "L42/S0103",
+      "L42/S0114"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0910",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P05/K2",
+     "text": "A horizontal prototype depicts the entire interface at a surface level, focusing primarily on look and feel, but lacks functionality and interaction.",
+     "sources": [
+      "L42/S0105",
+      "L42/S0107",
+      "L42/S0108"
+     ],
+     "concept_ids": [
+      "C0064",
+      "C0490",
+      "C0909"
+     ]
+    },
+    {
+     "id": "L42/P05/K3",
+     "text": "Vertical prototypes are designed to represent interactions or functionalities by implementing selected features in depth.",
+     "sources": [
+      "L42/S0115",
+      "L42/S0117",
+      "L42/S0121"
+     ],
+     "concept_ids": [
+      "C0064",
+      "C0490",
+      "C0718",
+      "C0910",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P05/K4",
+     "text": "Horizontal prototypes are suitable for eliciting feedback on the interface appearance, while vertical prototypes are suitable for analyzing interactions and features.",
+     "sources": [
+      "L42/S0112",
+      "L42/S0113",
+      "L42/S0128"
+     ],
+     "concept_ids": [
+      "C0064",
+      "C0490",
+      "C0792",
+      "C0909",
+      "C0910",
+      "C0919"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P05/T1",
+     "surface": "prototype",
+     "name": "Prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A prototype is a lightweight implementation of a system. It serves as a preliminary model which can either be discarded or further developed into a final product.",
+     "sources": [
+      "L42/S0102"
+     ],
+     "concept_id": "C0490",
+     "concept_name": "Prototype"
+    },
+    {
+     "id": "L42/P05/T2",
+     "surface": "horizontal prototypes",
+     "name": "Horizontal prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A horizontal prototype depicts the entire interface at a surface level without providing any actual functionality. Its primary purpose is to demonstrate the look, feel, and appearance of the interface to elicit feedback from users.",
+     "sources": [
+      "L42/S0104",
+      "L42/S0105",
+      "L42/S0106",
+      "L42/S0107",
+      "L42/S0108",
+      "L42/S0109",
+      "L42/S0110",
+      "L42/S0112",
+      "L42/S0113"
+     ],
+     "concept_id": "C0909",
+     "concept_name": "Horizontal prototype"
+    },
+    {
+     "id": "L42/P05/T3",
+     "surface": "vertical prototypes",
+     "name": "Vertical prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A vertical prototype is designed to represent the interactions or functionalities of a system. It implements a few selected, commonly used features in depth, moving from the first screen to the last after the final action.",
+     "sources": [
+      "L42/S0114",
+      "L42/S0117",
+      "L42/S0119",
+      "L42/S0121",
+      "L42/S0128"
+     ],
+     "concept_id": "C0910",
+     "concept_name": "Vertical prototype"
+    }
+   ]
+  },
+  {
+   "id": "L42/P06",
+   "first": "L42/S0130",
+   "last": "L42/S0212",
+   "start": 1091.672,
+   "end": 1791.593,
+   "objective": "Differentiate prototype types (horizontal/vertical) and utilize low-fidelity methods like interface sketches and storyboarding",
+   "objective_id": "L42/O2",
+   "key_points": [
+    {
+     "id": "L42/P06/K1",
+     "text": "Horizontal prototypes focus on modeling appearances, while vertical prototypes prioritize prototyping interactions.",
+     "sources": [
+      "L42/S0131",
+      "L42/S0132"
+     ],
+     "concept_ids": [
+      "C0064",
+      "C0490",
+      "C0909",
+      "C0910",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P06/K2",
+     "text": "Low-fidelity prototypes are constructed without technological intervention, requiring no programming or computer resources.",
+     "sources": [
+      "L42/S0136",
+      "L42/S0137"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0490",
+      "C0911",
+      "C0918",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P06/K3",
+     "text": "A single sketch represents a horizontal prototype, but a series of sketches, known as storyboarding, is required to represent interaction (a vertical prototype).",
+     "sources": [
+      "L42/S0174",
+      "L42/S0175",
+      "L42/S0178"
+     ],
+     "concept_ids": [
+      "C0064",
+      "C0490",
+      "C0909",
+      "C0910",
+      "C0913",
+      "C0914"
+     ]
+    },
+    {
+     "id": "L42/P06/K4",
+     "text": "The ultimate goal of prototyping is to take an idea, convert it into a prototype, evaluate it, and then revise the idea or prototype as needed.",
+     "sources": [
+      "L42/S0207",
+      "L42/S0208"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0758",
+      "C0919"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P06/T1",
+     "surface": "horizontal prototype",
+     "name": "Horizontal prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A horizontal prototype is a type of prototype that focuses solely on showcasing the appearances of elements and does not implement any functional, real-world interaction.",
+     "sources": [
+      "L42/S0130",
+      "L42/S0131",
+      "L42/S0171",
+      "L42/S0174",
+      "L42/S0177"
+     ],
+     "concept_id": "C0909",
+     "concept_name": "Horizontal prototype"
+    },
+    {
+     "id": "L42/P06/T2",
+     "surface": "vertical prototype",
+     "name": "Vertical prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A vertical prototype is a type of prototype that primarily focuses on building and testing the interactions within a system.",
+     "sources": [
+      "L42/S0132",
+      "L42/S0178",
+      "L42/S0190"
+     ],
+     "concept_id": "C0910",
+     "concept_name": "Vertical prototype"
+    },
+    {
+     "id": "L42/P06/T3",
+     "surface": "low-fidelity prototypes",
+     "name": "Low-fidelity approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A low-fidelity approach is a method of creating prototypes without any technological intervention, meaning no code or computer is needed, and it is typically built using simple, non-digital elements like paper or wood.",
+     "sources": [
+      "L42/S0135",
+      "L42/S0136",
+      "L42/S0137",
+      "L42/S0138",
+      "L42/S0139",
+      "L42/S0144"
+     ],
+     "concept_id": "C0911",
+     "concept_name": "Low fidelity approach"
+    },
+    {
+     "id": "L42/P06/T4",
+     "surface": "paper mockups",
+     "name": "Mockup",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A mockup is a low-fidelity prototype used to visually represent the appearance of an interface, including its look, feel, and how its elements function.",
+     "sources": [
+      "L42/S0140"
+     ],
+     "concept_id": "C0912",
+     "concept_name": "Mockup"
+    },
+    {
+     "id": "L42/P06/T5",
+     "surface": "interface sketches",
+     "name": "Sketch",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A sketch is a simple drawing that depicts the major components and structure of an interface, serving as a way to envision the appearance and provide a basis for feedback.",
+     "sources": [
+      "L42/S0148",
+      "L42/S0149",
+      "L42/S0151"
+     ],
+     "concept_id": "C0913",
+     "concept_name": "Interface sketch"
+    },
+    {
+     "id": "L42/P06/T6",
+     "surface": "storyboarding",
+     "name": "Storyboarding",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Storyboarding is a modification of the basic sketching approach, utilizing a series of sketches to represent and depict the sequence of interactions within a task.",
+     "sources": [
+      "L42/S0175",
+      "L42/S0178",
+      "L42/S0181",
+      "L42/S0192",
+      "L42/S0203",
+      "L42/S0205",
+      "L42/S0209",
+      "L42/S0210",
+      "L42/S0211"
+     ],
+     "concept_id": "C0914",
+     "concept_name": "Storyboarding"
+    },
+    {
+     "id": "L42/P06/T7",
+     "surface": "keyframe",
+     "name": "Keyframe",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A keyframe is a snapshot taken from a storyboard that represents the interaction occurring at a particular point in time during a specific task or scene.",
+     "sources": [
+      "L42/S0184",
+      "L42/S0185",
+      "L42/S0204"
+     ],
+     "concept_id": "C0915",
+     "concept_name": "Keyframe"
+    },
+    {
+     "id": "L42/P06/T8",
+     "surface": "prototype",
+     "name": "Prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A prototype is an artifact created from an initial idea to allow for evaluation; if issues are found during evaluation, the idea and the prototype must be revised.",
+     "sources": [
+      "L42/S0207",
+      "L42/S0208"
+     ],
+     "concept_id": "C0490",
+     "concept_name": "Prototype"
+    },
+    {
+     "id": "L42/P06/T9",
+     "surface": "low fidelity approach",
+     "name": "Low fidelity approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A low fidelity approach is a design method characterized by its simplicity, often allowing the work to be done without requiring a computer.",
+     "sources": [
+      "L42/S0212"
+     ],
+     "concept_id": "C0911",
+     "concept_name": "Low fidelity approach"
+    }
+   ]
+  },
+  {
+   "id": "L42/P07",
+   "first": "L42/S0213",
+   "last": "L42/S0242",
+   "start": 1792.515,
+   "end": 2119.23,
+   "objective": "Compare low, medium, and high fidelity prototyping approaches based on tools and function",
+   "objective_id": "L42/O2",
+   "key_points": [
+    {
+     "id": "L42/P07/K1",
+     "text": "Low-fidelity prototypes are built without computers, relying on non-digital mediums such as paper.",
+     "sources": [
+      "L42/S0216",
+      "L42/S0219"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0490",
+      "C0630",
+      "C0911",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P07/K2",
+     "text": "Medium-fidelity prototypes use computers to create simple sketches or static prototypes, sometimes including videos, but typically without involving complex coding.",
+     "sources": [
+      "L42/S0225",
+      "L42/S0227"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0490",
+      "C0630",
+      "C0913",
+      "C0916",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P07/K3",
+     "text": "High-fidelity prototypes require actual programming and are essentially software development on a reduced scale.",
+     "sources": [
+      "L42/S0231",
+      "L42/S0234"
+     ],
+     "concept_ids": [
+      "C0012",
+      "C0490",
+      "C0917",
+      "C0918",
+      "C0919"
+     ]
+    },
+    {
+     "id": "L42/P07/K4",
+     "text": "Low fidelity prototypes are primarily used for horizontal prototypes, whereas high fidelity prototypes are primarily used for vertical prototypes.",
+     "sources": [
+      "L42/S0241",
+      "L42/S0242"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0909",
+      "C0910",
+      "C0911",
+      "C0917",
+      "C0919"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P07/T1",
+     "surface": "medium-fidelity approach",
+     "name": "Medium fidelity approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The medium fidelity approach uses a computer to create simple prototypes that may include static sketches or videos, but still without real functionality. This approach is suited for both horizontal and vertical prototypes.",
+     "sources": [
+      "L42/S0214",
+      "L42/S0215",
+      "L42/S0217",
+      "L42/S0218",
+      "L42/S0220",
+      "L42/S0233"
+     ],
+     "concept_id": "C0916",
+     "concept_name": "Medium fidelity approach"
+    },
+    {
+     "id": "L42/P07/T2",
+     "surface": "low-fidelity approach",
+     "name": "Low fidelity approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The low fidelity approach builds prototypes without using computers, often using simple tools like paper to create interface sketches. Low fidelity prototypes are primarily suited for developing horizontal prototypes.",
+     "sources": [
+      "L42/S0216",
+      "L42/S0219",
+      "L42/S0232",
+      "L42/S0241"
+     ],
+     "concept_id": "C0911",
+     "concept_name": "Low fidelity approach"
+    },
+    {
+     "id": "L42/P07/T3",
+     "surface": "horizontal prototype",
+     "name": "Horizontal prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A horizontal prototype is a type of prototype that contains no real functionality and can be created using static sketches.",
+     "sources": [
+      "L42/S0217",
+      "L42/S0220",
+      "L42/S0225",
+      "L42/S0241"
+     ],
+     "concept_id": "C0909",
+     "concept_name": "Horizontal prototype"
+    },
+    {
+     "id": "L42/P07/T4",
+     "surface": "interface sketches",
+     "name": "Interface sketch",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "An interface sketch is a type of sketch created using a paint system or paper to help build a prototype.",
+     "sources": [
+      "L42/S0217",
+      "L42/S0229"
+     ],
+     "concept_id": "C0913",
+     "concept_name": "Interface sketch"
+    },
+    {
+     "id": "L42/P07/T5",
+     "surface": "vertical prototype",
+     "name": "Vertical prototype",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A vertical prototype is a type of prototype that can be implemented using animations with simple controls, interactive videos, or high-fidelity programming.",
+     "sources": [
+      "L42/S0220",
+      "L42/S0224",
+      "L42/S0238",
+      "L42/S0240",
+      "L42/S0242"
+     ],
+     "concept_id": "C0910",
+     "concept_name": "Vertical prototype"
+    },
+    {
+     "id": "L42/P07/T6",
+     "surface": "high fidelity approach",
+     "name": "High fidelity approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The high fidelity approach involves creating prototypes using programming, which is effectively actual software development on a reduced scale. This method is highly sophisticated and primarily used for creating vertical prototypes.",
+     "sources": [
+      "L42/S0230",
+      "L42/S0234",
+      "L42/S0235",
+      "L42/S0237",
+      "L42/S0242"
+     ],
+     "concept_id": "C0917",
+     "concept_name": "High fidelity approach"
+    },
+    {
+     "id": "L42/P07/T7",
+     "surface": "programming",
+     "name": "Programming",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Programming is a method used to create high-fidelity prototypes that requires skilled manpower and expertise.",
+     "sources": [
+      "L42/S0234",
+      "L42/S0237"
+     ],
+     "concept_id": "C0918",
+     "concept_name": "Programming"
+    }
+   ]
+  },
+  {
+   "id": "L42/P08",
+   "first": "L42/S0243",
+   "last": "L42/S0292",
+   "start": 2120.105,
+   "end": 2448.36,
+   "objective": "Explain the Wizard of Oz approach, a prototyping technique involving human operators to simulate autonomous systems",
+   "objective_id": "L42/O2",
+   "key_points": [
+    {
+     "id": "L42/P08/K1",
+     "text": "The Wizard of Oz approach involves a human subject believing they are interacting with a computer, but the computer is actually operated by a hidden human 'wizard'.",
+     "sources": [
+      "L42/S0245",
+      "L42/S0246",
+      "L42/S0247",
+      "L42/S0248"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0919",
+      "C0920"
+     ]
+    },
+    {
+     "id": "L42/P08/K2",
+     "text": "The approach is used to test the acceptability of a system idea even before the required technology is developed.",
+     "sources": [
+      "L42/S0251",
+      "L42/S0252",
+      "L42/S0253",
+      "L42/S0256"
+     ],
+     "concept_ids": [
+      "C0538",
+      "C0758"
+     ]
+    },
+    {
+     "id": "L42/P08/K3",
+     "text": "A historical example is the 1984 IBM listening typewriter experiment, used to test speech recognition concepts.",
+     "sources": [
+      "L42/S0250",
+      "L42/S0251"
+     ],
+     "concept_ids": [
+      "C0787",
+      "C0921"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L42/P08/T1",
+     "surface": "Wizard of Oz approach",
+     "name": "Wizard of Oz approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The Wizard of Oz approach is an interesting technique for creating prototypes where a human subject interacts with a system that appears autonomous, but is actually being operated by an unseen human being.",
+     "sources": [
+      "L42/S0243",
+      "L42/S0244",
+      "L42/S0248",
+      "L42/S0280"
+     ],
+     "concept_id": "C0919",
+     "concept_name": "Wizard of Oz approach"
+    },
+    {
+     "id": "L42/P08/T2",
+     "surface": "Wizard",
+     "name": "Wizard",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The wizard is the human operator who operates the system in a Wizard of Oz experiment, remaining hidden from the subject while fulfilling the subject's requests.",
+     "sources": [
+      "L42/S0247",
+      "L42/S0265"
+     ],
+     "concept_id": "C0920",
+     "concept_name": "Wizard"
+    },
+    {
+     "id": "L42/P08/T3",
+     "surface": "Listening typewriter experiment",
+     "name": "Listening typewriter experiment",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The Listening typewriter experiment is an experiment conducted by IBM in 1984 to test the acceptability of a speech recognition system idea before the necessary technology was fully developed.",
+     "sources": [
+      "L42/S0250",
+      "L42/S0251",
+      "L42/S0252",
+      "L42/S0253"
+     ],
+     "concept_id": "C0921",
+     "concept_name": "Listening typewriter experiment"
+    },
+    {
+     "id": "L42/P08/T4",
+     "surface": "Speech recognition system",
+     "name": "Speech recognition system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A speech recognition system is a technology that the company was trying to develop at the time of the experiment, which required a working system to test its acceptability.",
+     "sources": [
+      "L42/S0251"
+     ],
+     "concept_id": "C0922",
+     "concept_name": "Speech recognition system"
+    },
+    {
+     "id": "L42/P08/T5",
+     "surface": "Design prototype evaluate cycle",
+     "name": "Design prototype evaluate cycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The design prototype evaluate cycle is a methodology discussed in the lecture that involves assessing the importance of prototypes.",
+     "sources": [
+      "L42/S0284",
+      "L42/S0285"
+     ],
+     "concept_id": "C0705",
+     "concept_name": "Design prototype evaluate cycle"
+    },
+    {
+     "id": "L42/P08/T6",
+     "surface": "Prototypes",
+     "name": "Wizard of Oz approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The Wizard of Oz approach is a technique for creating a prototype where a human subject believes they are interacting with an autonomous computer, while the system is actually operated by a hidden human being.",
+     "sources": [
+      "L42/S0286"
+     ],
+     "concept_id": "C0919",
+     "concept_name": "Wizard of Oz approach"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L42/O1",
+   "text": "explain the concepts of XR system implementation and outline how the design-prototype-evaluate cycle drives the iterative stages of interactive system development",
+   "part_ids": [
+    "L42/P01",
+    "L42/P02",
+    "L42/P03",
+    "L42/P04"
+   ]
+  },
+  {
+   "id": "L42/O2",
+   "text": "differentiate between various prototyping techniques, comparing characteristics like fidelity (low/medium/high), horizontal versus vertical approaches, and specialized methods such as Wizard of Oz",
+   "part_ids": [
+    "L42/P05",
+    "L42/P06",
+    "L42/P07",
+    "L42/P08"
+   ]
+  }
+ ],
+ "lecture_goal": "Master the essential methodologies for designing, prototyping, and iteratively evaluating interactive XR systems.",
+ "flags": [
+  "links: answer unusable (['answer is not valid JSON for the schema: Expecting value: line 1 column 1 (char 0)'])"
+ ],
+ "origin": [
+  {
+   "item": "L42/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "064b79c4420ffebd60a1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7456,
+   "output_tokens": 1744,
+   "latency_s": 63.73,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "b296c2a0355a721276c4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 785,
+   "output_tokens": 473,
+   "latency_s": 39.7,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "c83a133dd3f27a4159e1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 971,
+   "output_tokens": 514,
+   "latency_s": 42.9,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "fb78147f01c109cd9e98",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 889,
+   "output_tokens": 594,
+   "latency_s": 50.88,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "5beda8b575ef86c7af7c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 939,
+   "output_tokens": 1111,
+   "latency_s": 84.29,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "372fd2110c1571c37091",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1165,
+   "output_tokens": 1131,
+   "latency_s": 85.71,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "1939c55fd4cf3606ee97",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 995,
+   "output_tokens": 1268,
+   "latency_s": 91.92,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "a0dcb8c176bfbf1bcb21",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2388,
+   "output_tokens": 1320,
+   "latency_s": 95.11,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "1a817eae578544e4c27a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1352,
+   "output_tokens": 1347,
+   "latency_s": 95.25,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6b9e9c91363ff71c0bc2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 791,
+   "output_tokens": 1323,
+   "latency_s": 242.19,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "67b7f8e09fda715800a3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1097,
+   "output_tokens": 1417,
+   "latency_s": 279.33,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "765bc87bcf4ef7654057",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1074,
+   "output_tokens": 1255,
+   "latency_s": 44.77,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/terms/0-21",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "876c0a9638032dd57be9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1064,
+   "output_tokens": 1857,
+   "latency_s": 66.09,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/terms/102-129",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "3c320946d364ffaee19c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1246,
+   "output_tokens": 2028,
+   "latency_s": 72.8,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "60c65a135676704e545f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1340,
+   "output_tokens": 2223,
+   "latency_s": 79.34,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ffa1a0c02b357c232818",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1057,
+   "output_tokens": 4463,
+   "latency_s": 593.51,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/terms/22-47",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "a89416f7a610f3e1080f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1165,
+   "output_tokens": 2060,
+   "latency_s": 82.47,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "8034ee9c1050ee622951",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1303,
+   "output_tokens": 2116,
+   "latency_s": 84.59,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3139301da8fa14ab4590",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1062,
+   "output_tokens": 1580,
+   "latency_s": 326.25,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "0f8599352562339c5419",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1329,
+   "output_tokens": 1597,
+   "latency_s": 52.59,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/terms/79-101",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "7abe3c7bea34882e5a2c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1216,
+   "output_tokens": 1688,
+   "latency_s": 55.43,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b859464883070ccf9aca",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1459,
+   "output_tokens": 1131,
+   "latency_s": 273.24,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "795a2518d204cf3fbf1f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2523,
+   "output_tokens": 1357,
+   "latency_s": 299.54,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "ffbe07cee7c385668b5b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1702,
+   "output_tokens": 1122,
+   "latency_s": 37.97,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/terms/243-292",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "1314423f9f530919a3e6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1631,
+   "output_tokens": 2012,
+   "latency_s": 67.23,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/terms/190-212",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "55065003668c77ada40e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1181,
+   "output_tokens": 1657,
+   "latency_s": 55.83,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "d52e6ea70e670e51841c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2768,
+   "output_tokens": 1880,
+   "latency_s": 63.66,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/terms/160-199",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "d9373d4ad6b42ba5d952",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1502,
+   "output_tokens": 2311,
+   "latency_s": 78.89,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/terms/130-169",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "6c379ac363d102b23a6b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1600,
+   "output_tokens": 2364,
+   "latency_s": 80.68,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "94f49c66090791a60310",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1281,
+   "output_tokens": 4419,
+   "latency_s": 611.85,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "b3f56b2883566a39e05c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1537,
+   "output_tokens": 2046,
+   "latency_s": 64.14,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "dfa41a601a1e1b96e04b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1108,
+   "output_tokens": 4412,
+   "latency_s": 619.18,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/terms/213-242",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "d410087ceb18c0e7455a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1442,
+   "output_tokens": 3122,
+   "latency_s": 99.27,
+   "cached": false
+  },
+  {
+   "item": "L42/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "e3a96dddbcda024c1006",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 369,
+   "output_tokens": 1155,
+   "latency_s": 38.81,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "3d86d6182b08fcbcc725",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1369,
+   "output_tokens": 2152,
+   "latency_s": 70.7,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/terms/48-78",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "51a1ccc6c5659b7379ca",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1274,
+   "output_tokens": 2463,
+   "latency_s": 80.21,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "02720e5ac0d856aeb6d3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 899,
+   "output_tokens": 3872,
+   "latency_s": 538.58,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "81c1123dcfaa29afe091",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1245,
+   "output_tokens": 4393,
+   "latency_s": 604.9,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7e664bf7bd98ee20be65",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1179,
+   "output_tokens": 4370,
+   "latency_s": 627.92,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b8b37db727d32b023b72",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1158,
+   "output_tokens": 4429,
+   "latency_s": 424.53,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9350c7f8e8cc4d5d8449",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1704,
+   "output_tokens": 4511,
+   "latency_s": 448.43,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0a025931268d5dd51f29",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2978,
+   "output_tokens": 4724,
+   "latency_s": 457.3,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b1a7e9e63b758bec3066",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1786,
+   "output_tokens": 4638,
+   "latency_s": 544.13,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a30ff94d228cf616da1b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1317,
+   "output_tokens": 4495,
+   "latency_s": 575.71,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "3690957d9bba07885c28",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 944,
+   "output_tokens": 882,
+   "latency_s": 285.87,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "5aedf1cd1c1209ca1c08",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 833,
+   "output_tokens": 4210,
+   "latency_s": 635.74,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "0c6f5d507dabf18bd059",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1203,
+   "output_tokens": 1889,
+   "latency_s": 357.38,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "4b5cf291d1abf062f785",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 924,
+   "output_tokens": 4181,
+   "latency_s": 628.72,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "86a51112a9a6a71224b9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1451,
+   "output_tokens": 4257,
+   "latency_s": 643.68,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c15260bba774ca4685d9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2606,
+   "output_tokens": 4315,
+   "latency_s": 631.98,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d19037961d942e0f6bac",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 990,
+   "output_tokens": 2553,
+   "latency_s": 402.62,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d5fb12886b4bcbcbaf8c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1598,
+   "output_tokens": 4432,
+   "latency_s": 511.17,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a363dd6681824bcf5b55",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 992,
+   "output_tokens": 1767,
+   "latency_s": 286.37,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "db8e71a475d67c57b0cd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 842,
+   "output_tokens": 3301,
+   "latency_s": 323.12,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7cfcf548a7febf40f0d4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1188,
+   "output_tokens": 3565,
+   "latency_s": 344.83,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "eaf22ad513ad337214be",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 961,
+   "output_tokens": 963,
+   "latency_s": 218.28,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "31a483a9326b52dc0732",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1461,
+   "output_tokens": 1066,
+   "latency_s": 308.78,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c6afc0ee342842ab5629",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1050,
+   "output_tokens": 923,
+   "latency_s": 274.57,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "959806a038c5a3eeea92",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2576,
+   "output_tokens": 3570,
+   "latency_s": 435.3,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "96a94a1a87f86d2a9214",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1508,
+   "output_tokens": 4453,
+   "latency_s": 502.85,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "bc1105290f5916d86c67",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1035,
+   "output_tokens": 2166,
+   "latency_s": 501.21,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "147339a9123bce4f260d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1605,
+   "output_tokens": 1957,
+   "latency_s": 337.74,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fed0eb6a838576712218",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1660,
+   "output_tokens": 2974,
+   "latency_s": 482.7,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9b5e560a1491adc7b81f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1430,
+   "output_tokens": 1760,
+   "latency_s": 396.61,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "36cec330b78c1fe04ebe",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1935,
+   "output_tokens": 1673,
+   "latency_s": 381.07,
+   "cached": false
+  },
+  {
+   "item": "L42/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0f591b50d5d2cb81d5c2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1296,
+   "output_tokens": 1584,
+   "latency_s": 347.76,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7853d4d57b8883bd32b1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1849,
+   "output_tokens": 2111,
+   "latency_s": 423.15,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1ecb1adf9ab612ab6218",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2968,
+   "output_tokens": 4406,
+   "latency_s": 639.52,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7e31d2b2b3f354601c87",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1707,
+   "output_tokens": 2123,
+   "latency_s": 371.37,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c26e47da36b51be6246e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 944,
+   "output_tokens": 4384,
+   "latency_s": 292.8,
+   "cached": false
+  },
+  {
+   "item": "registry/wizard oz approach",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "6163d3c3af50b43efae4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 574,
+   "output_tokens": 762,
+   "latency_s": 35.71,
+   "cached": false
+  },
+  {
+   "item": "registry/quick prototype evalu",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "79fd05dc5e391d3c5975",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 636,
+   "output_tokens": 1124,
+   "latency_s": 51.97,
+   "cached": false
+  },
+  {
+   "item": "registry/storyboard",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "2e4da58beaf1ef937795",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 574,
+   "output_tokens": 2885,
+   "latency_s": 131.95,
+   "cached": false
+  },
+  {
+   "item": "registry/full implement",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "51393553aa379bb4086b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 489,
+   "output_tokens": 4308,
+   "latency_s": 198.04,
+   "cached": false
+  },
+  {
+   "item": "registry/sketch",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "0f7ed197396122e507c0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 605,
+   "output_tokens": 4284,
+   "latency_s": 197.38,
+   "cached": false
+  },
+  {
+   "item": "registry/high fidelity approach",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "90916fc5da67a4c5f0fa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1595,
+   "output_tokens": 4569,
+   "latency_s": 210.48,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b0c03742bc7e95ff0a4d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2719,
+   "output_tokens": 3444,
+   "latency_s": 265.34,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/recap/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "2e70e82793aa2185f3e3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 719,
+   "output_tokens": 1019,
+   "latency_s": 181.63,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ac01b2a5b60bf1a40754",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2516,
+   "output_tokens": 1408,
+   "latency_s": 335.75,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1d590ba129396c5bd580",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1052,
+   "output_tokens": 2300,
+   "latency_s": 413.07,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "1b2c94d63fc48fbd1c03",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1053,
+   "output_tokens": 689,
+   "latency_s": 28.69,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "d299d7966b75ea9b30c7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2630,
+   "output_tokens": 996,
+   "latency_s": 38.45,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "1f424e664db7b827823c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1176,
+   "output_tokens": 1148,
+   "latency_s": 43.0,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "53d5ad0d5998ee039454",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 11612,
+   "output_tokens": 1339,
+   "latency_s": 48.83,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "c64c263455d381953341",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12538,
+   "output_tokens": 3353,
+   "latency_s": 109.42,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "687f668fd48380e153f1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4411,
+   "output_tokens": 3370,
+   "latency_s": 109.92,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "ed8c63648399b70a61e1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 11219,
+   "output_tokens": 3901,
+   "latency_s": 126.54,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "4ec0eb677510ef75ce0d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 11783,
+   "output_tokens": 4302,
+   "latency_s": 137.65,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "298e860bd4892bfc2707",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 23050,
+   "output_tokens": 4634,
+   "latency_s": 146.56,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "54857326ebfbb74b2a66",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 8317,
+   "output_tokens": 4858,
+   "latency_s": 152.65,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "768f68211142c0e1778e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 15408,
+   "output_tokens": 6409,
+   "latency_s": 187.98,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c5a433677a93333d8f9a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1147,
+   "output_tokens": 2324,
+   "latency_s": 494.15,
+   "cached": false
+  },
+  {
+   "item": "L42/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "67c6e158bb13aa18f740",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1046,
+   "output_tokens": 4294,
+   "latency_s": 740.96,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "87027f39de2efcef0da5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1307,
+   "output_tokens": 4672,
+   "latency_s": 793.66,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "082d148428a83cf9089c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1321,
+   "output_tokens": 4677,
+   "latency_s": 802.68,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "abd2ed6bd8dc1b3df670",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1697,
+   "output_tokens": 4677,
+   "latency_s": 802.67,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a5d0e307d492715f05a1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2142,
+   "output_tokens": 4879,
+   "latency_s": 831.91,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "332c5e8fe73cced58f25",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1814,
+   "output_tokens": 5183,
+   "latency_s": 869.73,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f00b1d125f9c10e2821e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3520,
+   "output_tokens": 5199,
+   "latency_s": 871.84,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "7c361925160105aa4785",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1260,
+   "output_tokens": 1245,
+   "latency_s": 463.46,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "4e06d2ac42c9ba2103fc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1016,
+   "output_tokens": 2507,
+   "latency_s": 629.46,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "f87a5fa4498c080fa983",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1232,
+   "output_tokens": 2576,
+   "latency_s": 642.48,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "adabf236ed1883f86f09",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1389,
+   "output_tokens": 2982,
+   "latency_s": 783.45,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b1558771a6378615105f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1014,
+   "output_tokens": 3251,
+   "latency_s": 778.4,
+   "cached": false
+  },
+  {
+   "item": "L42/P07/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8f7cc3de261e3b17edd9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1172,
+   "output_tokens": 1125,
+   "latency_s": 561.31,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "0e1a64402a438275c797",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2827,
+   "output_tokens": 4752,
+   "latency_s": 1020.46,
+   "cached": false
+  },
+  {
+   "item": "L42/P04/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fba8a97bde7180c538e4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 915,
+   "output_tokens": 1133,
+   "latency_s": 572.56,
+   "cached": false
+  },
+  {
+   "item": "L42/P05/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "48c8aaa921a3a8054859",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1076,
+   "output_tokens": 2140,
+   "latency_s": 722.22,
+   "cached": false
+  },
+  {
+   "item": "L42/P08/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "002ba4ed9e6409edd7df",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1319,
+   "output_tokens": 1646,
+   "latency_s": 793.04,
+   "cached": false
+  },
+  {
+   "item": "L42/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "286cc5fe34341ff0f810",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 921,
+   "output_tokens": 3553,
+   "latency_s": 1043.69,
+   "cached": false
+  },
+  {
+   "item": "L42/P06/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b1a9368b1ff551598095",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2640,
+   "output_tokens": 3248,
+   "latency_s": 957.92,
+   "cached": false
+  },
+  {
+   "item": "L42/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c748a9e138f48d503bf0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 1,
+   "input_tokens": 1507,
+   "output_tokens": 16461,
+   "latency_s": 3051.49,
+   "cached": false
+  },
+  {
+   "item": "L42/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "5f70811cd0bb2603c8ba",
+   "thinking": true,
+   "validator": {
+    "passed": false,
+    "errors": [
+     "answer is not valid JSON for the schema: Expecting value: line 1 column 1 (char 0)"
+    ]
+   },
+   "retries": 2,
+   "input_tokens": 122385,
+   "output_tokens": 9511,
+   "latency_s": 851.55,
+   "cached": false
+  },
+  {
+   "item": "L42/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "e659c167e6ce62063a8e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 13464,
+   "output_tokens": 1753,
+   "latency_s": 39.15,
+   "cached": false
+  },
+  {
+   "item": "L42/oq/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "84a3aca6741b23595241",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 13741,
+   "output_tokens": 818,
+   "latency_s": 81.1,
+   "cached": false
+  },
+  {
+   "item": "L42/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "e1cf3525c7ad5de99d3b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1134,
+   "output_tokens": 584,
+   "latency_s": 16.8,
+   "cached": false
+  },
+  {
+   "item": "L42/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "13995420a338de16dbdb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1464,
+   "output_tokens": 2242,
+   "latency_s": 73.28,
+   "cached": false
+  }
+ ]
+}
