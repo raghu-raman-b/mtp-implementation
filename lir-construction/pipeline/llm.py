@@ -29,6 +29,7 @@ from pydantic import BaseModel, ValidationError
 from .config import PORTS, BudgetExhausted, Config, Ledger, ModelSpec
 
 HERE = Path(__file__).resolve().parent.parent
+ANSWER_CAP = 8192          # vLLM with a thinking budget: tokens allowed for the answer after the thinking
 LLAMA_SERVER = Path.home() / "Documents/llama.cpp/build/bin/llama-server"   # default; [engine] llama_server overrides
 TOOLBOX = "llm-engine"
 
@@ -54,6 +55,49 @@ def stop_port(port: int):
         time.sleep(1)
 
 
+class RequestRejected(RuntimeError):
+    """The server refused this one request (4xx); other requests are fine."""
+
+
+# ---------------------------------------------------------------------------- priorities
+_PRIO = threading.local()
+
+
+def set_priority(p: int | None):
+    """The priority of the calls this thread sends (lower goes first). Set by the v2.1 flow for each task."""
+    _PRIO.value = p
+
+
+def current_priority() -> int:
+    return getattr(_PRIO, "value", None) or 0
+
+
+class PriorityGate:
+    """At most `cap` requests in flight to one server; waiting requests go in priority order (then first come).
+    With cap = the server's max-num-seqs, vLLM never queues, so the order is decided here."""
+
+    def __init__(self, cap: int):
+        import heapq
+        self._heap, self._push, self._pop = [], heapq.heappush, heapq.heappop
+        self.cap, self.in_flight, self._n = cap, 0, 0
+        self._cv = threading.Condition()
+
+    def acquire(self, prio: int):
+        with self._cv:
+            self._n += 1
+            me = (prio, self._n)
+            self._push(self._heap, me)
+            self._cv.wait_for(lambda: self.in_flight < self.cap and self._heap[0] == me)
+            self._pop(self._heap)
+            self.in_flight += 1
+            self._cv.notify_all()
+
+    def release(self):
+        with self._cv:
+            self.in_flight -= 1
+            self._cv.notify_all()
+
+
 # ---------------------------------------------------------------------------- server
 class Server:
     """One model behind an OpenAI-compatible endpoint: a local llama-server, or the OpenAI API."""
@@ -69,6 +113,7 @@ class Server:
         self.startup_s = 0.0
         self.key = cfg.api_key() if not spec.local else None
         self._start_lock = threading.Lock()
+        self.gate = PriorityGate(spec.slots) if spec.engine == "vllm" else None
         if not spec.local:
             cfg.prices(spec.name)  # fail early if the budget cannot be tracked
 
@@ -108,19 +153,34 @@ class Server:
             "--host", "127.0.0.1", "--port", str(self.port), "--metrics",
         ] + [str(x) for x in self.cfg.engine.get("extra_args", [])]   # e.g. batch sizes for a big GPU
 
+    def opt(self, key: str, default=None):
+        """A server setting: the role's own value, else [engine], else the default."""
+        return self.spec.opts.get(key, self.cfg.engine.get(key, default))
+
+    @property
+    def think_end(self) -> str:
+        return self.opt("think_end", "")
+
     def vllm_command(self) -> list[str]:
-        """vLLM: continuous batching, automatic prefix caching, text only (no vision tower), thinking parsed out."""
+        """vLLM: continuous batching, automatic prefix caching, text only (no vision or audio tower), thinking parsed
+        out and capped per request (thinking_token_budget, ended with `think_end`), priority scheduling."""
         e = self.cfg.engine
         binary = e.get("vllm") or os.environ.get("VLLM") or "vllm"
-        return [str(Path(binary).expanduser()), "serve", self.spec.name, "--served-model-name", self.spec.name,
-                "--host", "127.0.0.1", "--port", str(self.port),
-                "--max-num-seqs", str(self.slots), "--max-model-len", str(self.spec.max_model_len),
-                "--gpu-memory-utilization", str(e.get("gpu_memory_utilization", 0.92)),
-                # prefix caching on a hybrid model (Qwen 3.5+) keeps a linear-attention state every block: much memory
-                "--enable-prefix-caching" if e.get("prefix_caching", True) else "--no-enable-prefix-caching",
-                "--reasoning-parser", str(e.get("reasoning_parser", "qwen3")),
-                "--limit-mm-per-prompt", json.dumps({"image": 0, "video": 0}), "--seed", "0",
-                ] + [str(x) for x in e.get("vllm_args", [])]
+        cmd = [str(Path(binary).expanduser()), "serve", self.spec.name, "--served-model-name", self.spec.name,
+               "--host", "127.0.0.1", "--port", str(self.port),
+               "--max-num-seqs", str(self.slots), "--max-model-len", str(self.spec.max_model_len),
+               "--gpu-memory-utilization", str(self.opt("gpu_memory_utilization", 0.92)),
+               # prefix caching on a hybrid model (Qwen 3.5+) keeps a linear-attention state every block: much memory
+               "--enable-prefix-caching" if self.opt("prefix_caching", True) else "--no-enable-prefix-caching",
+               "--reasoning-parser", str(self.opt("reasoning_parser", "qwen3")),
+               "--language-model-only", "--seed", "0"]
+        if self.think_end:   # the words that close a thinking that reached its budget
+            cmd += ["--reasoning-config", json.dumps({"reasoning_end_str": self.think_end})]
+        if self.opt("priority", False):
+            cmd += ["--scheduling-policy", "priority"]
+        if self.opt("max_num_batched_tokens"):
+            cmd += ["--max-num-batched-tokens", str(self.opt("max_num_batched_tokens"))]
+        return cmd + [str(x) for x in list(e.get("vllm_args", [])) + list(self.spec.opts.get("vllm_args", []))]
 
     def env(self, cmd: list[str]) -> dict:
         env = dict(os.environ)
@@ -227,6 +287,8 @@ class Call:
     ctx: dict = field(default_factory=dict)    # anything the caller wants back
     stage: str = ""                            # overrides the batch's stage name (cache file and cost report)
     group: str = ""                            # calls in one group share a prompt start: run in order on one slot
+    think: Optional[int] = None                # vLLM: thinking budget in tokens (None: uncapped)
+    priority: Optional[int] = None             # lower goes first; None: the sending thread's priority
 
 
 @dataclass
@@ -307,16 +369,18 @@ class LLM:
             with open(self.cache_dir / f"{stage}.jsonl", "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
-    def _hash(self, prompt: str, schema: dict, max_tokens: int) -> str:
+    def _hash(self, prompt: str, schema: dict, max_tokens: int, think: int | None = None) -> str:
         parts = [self.model, prompt, schema, max_tokens, self.temperature]
         spec = self.server.spec
         if spec.sampling or spec.max_tokens is not None:   # only then: older caches keep their keys
             parts.append([spec.sampling, spec.max_tokens])
+        if think is not None:
+            parts.append(["think", think, self.server.think_end])
         blob = json.dumps(parts, sort_keys=True)
         return hashlib.sha256(blob.encode()).hexdigest()[:20]
 
     # -- one HTTP call
-    def _post(self, prompt: str, schema: dict, max_tokens: int, stage: str = "") -> dict:
+    def _post(self, prompt: str, schema: dict, max_tokens: int, stage: str = "", call: Call | None = None) -> dict:
         if self.server.engine == "openai":
             return self._post_api(prompt, schema, max_tokens, stage)
         body = {
@@ -325,17 +389,30 @@ class LLM:
             "response_format": {"type": "json_schema", "json_schema": {"name": "answer", "schema": schema, "strict": True}},
             "chat_template_kwargs": {"enable_thinking": True},
         }
-        if self.server.engine == "vllm":   # vLLM reuses shared prompt starts by itself: no slots, no admission
+        if self.server.engine == "vllm":   # vLLM reuses shared prompt starts by itself: no slots
             spec = self.server.spec
             body["model"] = spec.name
             body.update(spec.sampling)
-            if spec.max_tokens == 0:
+            think = call.think if call is not None else None
+            prio = call.priority if call is not None and call.priority is not None else current_priority()
+            if think is not None:              # thinking capped; the answer gets ANSWER_CAP on top
+                body["thinking_token_budget"] = think
+                # never past the context: vLLM rejects a request whose prompt + max_tokens exceed max_model_len
+                room = spec.max_model_len - len(prompt) // 3 - 256
+                body["max_tokens"] = max(2048, min(think + ANSWER_CAP, room))
+            elif spec.max_tokens == 0:
                 body.pop("max_tokens")         # no cap: up to max_model_len
             elif spec.max_tokens:
                 body["max_tokens"] = spec.max_tokens
+            if self.server.opt("priority", False):
+                body["priority"] = prio
             req = urllib.request.Request(self.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
                                          headers={"Content-Type": "application/json"})
-            return self._post_admitted(req)
+            self.server.gate.acquire(prio)
+            try:
+                return self._post_admitted(req)
+            finally:
+                self.server.gate.release()
         slot = getattr(self._tl, "slot", None)
         if slot is not None:
             body["id_slot"] = slot
@@ -405,7 +482,10 @@ class LLM:
                     d = json.load(r)
                 break
             except urllib.error.HTTPError as e:
-                raise RuntimeError(f"server rejected the request ({e.code}): {e.read().decode(errors='replace')[:500]}")
+                msg = e.read().decode(errors="replace")[:500]
+                if 400 <= e.code < 500:   # this request only (too long, bad schema): the caller gets a failed outcome
+                    raise RequestRejected(f"server rejected the request ({e.code}): {msg}")
+                raise RuntimeError(f"server error ({e.code}): {msg}")
             except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
                 if attempt == 2:
                     raise
@@ -428,7 +508,7 @@ class LLM:
                 f.write(json.dumps(rec) + "\n")
 
     def _attempt(self, stage: str, call: Call, prompt: str, schema: dict, max_tokens: int, attempt: int = 0) -> dict:
-        h = self._hash(prompt, schema, max_tokens)
+        h = self._hash(prompt, schema, max_tokens, call.think)
         hit = self._cache(stage).get(h)
         base = {"stage": stage, "prompt_id": call.prompt_id, "lecture_id": call.lecture_id, "key": call.key,
                 "attempt": attempt}
@@ -436,10 +516,10 @@ class LLM:
             self._log_call({**base, "cached": True, "t_end": time.time()})
             return {**hit, "cached": True, "latency_s": 0.0}
         t_start = time.time()
-        r = self._post(prompt, schema, max_tokens, stage)
-        if r["finish"] == "length" and not r["content"] and self.server.spec.max_tokens != 0:
+        r = self._post(prompt, schema, max_tokens, stage, call)
+        if r["finish"] == "length" and not r["content"] and self.server.spec.max_tokens != 0 and call.think is None:
             # thinking used the whole budget; give it more room once
-            r2 = self._post(prompt, schema, max_tokens * 2, stage)
+            r2 = self._post(prompt, schema, max_tokens * 2, stage, call)
             r2["latency_s"] += r["latency_s"]
             r = r2
         rec = {"hash": h, "key": call.key, **r}
@@ -462,12 +542,15 @@ class LLM:
         lat = 0.0
         cached_all = True
         r = {"content": "", "reasoning": "", "hash": ""}
-        h0 = self._hash(call.prompt, schema, call.max_tokens)
+        h0 = self._hash(call.prompt, schema, call.max_tokens, call.think)
         for attempt in range(max_retries + 1):
             try:
                 r = self._attempt(stage, call, prompt, schema, call.max_tokens, attempt)
             except BudgetExhausted as e:  # not sent: the caller decides what an unjudged item means
                 return Outcome(call, False, None, "", "", [f"budget: {e}"], attempt, tot_in, tot_out, lat, False, h0)
+            except RequestRejected as e:  # one bad request must not stop a long run: the step logs a failed item
+                self.log(f"    ! {call.key}: {e}")
+                return Outcome(call, False, None, "", "", [str(e)], attempt, tot_in, tot_out, lat, False, h0)
             tot_in += r["input_tokens"]
             tot_out += r["output_tokens"]
             lat += r["latency_s"]
@@ -485,6 +568,10 @@ class LLM:
                       + "\n- ".join(errors) + "\nWrite a corrected answer.")
         return Outcome(call, False, parsed, r["content"], r["reasoning"], errors, max_retries, tot_in, tot_out, lat,
                        cached_all, h0)
+
+    def one(self, stage: str, call: Call, max_retries: int = 2) -> Outcome:
+        """One call, sent from the calling thread (the v2.1 flow runs many threads; the server gate orders them)."""
+        return self._run_one(call.stage or stage, call, max_retries)
 
     def run(self, stage: str, calls: list[Call], desc: str, max_retries: int = 2) -> list[Outcome]:
         """Send every call of a stage at once; return outcomes in the same order.

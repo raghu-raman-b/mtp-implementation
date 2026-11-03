@@ -1,4 +1,4 @@
-"""State shared by the steps of one v2 run: lectures and parts, the models, the decision log."""
+"""State shared by the steps of one v2.1 run: lectures and parts, the models, the decision log, the flow."""
 from __future__ import annotations
 
 import json
@@ -8,22 +8,25 @@ from pathlib import Path
 from typing import Any
 
 from pipeline.config import Config, Ledger
-from pipeline.llm import LLM, Outcome, Server
+from pipeline.llm import LLM, Call, Outcome, Server
 from pipeline.transcript import CourseInput, LectureInput, Sentence, numbered
 
 from . import addr as A
 
-# which model runs each step; lir2_config.toml [steps] overrides
+# which model runs each step; lir2_config.toml [steps] overrides. The generator writes, the verifier decides what is
+# the same and what is related, the judge checks every item (and rewrites the ones that fail, once).
 DEFAULT_STEPS = {
-    "parts": "generator", "objective": "generator", "key_points": "generator", "candidates": "generator",
-    "goals": "generator",
-    "keep": "verifier", "name": "verifier", "define": "verifier", "ground": "verifier",
-    "same": "verifier", "refine": "verifier",
-    "facets": "generator",
-    "relation": "verifier", "label": "verifier",
-    "judge": "judge",                                      # knowledge and activity checks, and their rewrites
-    "recall": "generator", "quiz_plan": "generator", "quiz": "generator", "recap": "generator", "review": "generator",
-    "oq_plan": "generator", "oq": "generator", "calibrate": "generator",
+    "parts": "generator", "annotate": "generator", "terms": "generator", "goals": "generator",
+    "facets": "generator", "activities": "generator", "oq": "generator", "recall": "generator",
+    "calibrate": "generator",
+    "registry": "verifier", "links": "verifier",
+    "judge": "judge",
+}
+# thinking budget per step, in tokens (vLLM ends the thinking with the server's think_end and the answer follows);
+# lir2_config.toml [think] overrides
+DEFAULT_THINK = {
+    "parts": 8192, "annotate": 8192, "terms": 8192, "facets": 8192, "links": 8192, "activities": 8192, "oq": 8192,
+    "judge": 4096, "registry": 4096, "goals": 4096, "recall": 4096, "calibrate": 4096,
 }
 
 
@@ -39,6 +42,7 @@ class Part:
     objective_id: str = ""
     key_points: list[dict] = field(default_factory=list)   # {id, text, sentences: [int]}
     terms: list[dict] = field(default_factory=list)        # term occurrences, see s3_terms
+    facets: list[dict] = field(default_factory=list)       # this part's facets (the same dicts as in the concepts)
 
     def contains(self, i: int) -> bool:
         return self.a <= i <= self.b
@@ -51,6 +55,7 @@ class Lecture:
     parts: list[Part] = field(default_factory=list)
     objectives: list[dict] = field(default_factory=list)    # {id, text, part_ids}
     lecture_goal: str = ""
+    links: list[dict] = field(default_factory=list)         # links found in this lecture (after its judge)
     flags: list[str] = field(default_factory=list)
     origin: list[dict] = field(default_factory=list)
 
@@ -102,18 +107,16 @@ class Decisions:
     def write(self, path: Path):
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
-            for r in self.items:
+            for r in sorted(self.items, key=lambda r: (str(r["subject"][:1]), r["step"], r["id"])):
                 f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
 
 class Models:
     """One client per role (generator, verifier, judge). Roles that name the same model share one server, so one
-    model for all three loads once. With [engine] exclusive_gpu, starting a server stops the others. Without a
-    [judge] section, the verifier judges."""
+    model for all three loads once. Without a [judge] section, the verifier judges."""
 
     def __init__(self, cfg: Config, out: Path, ledger: Ledger, log, ui, records: list,
                  slot_range: tuple[int, int] | None = None):
-        """slot_range (first, count): use only these server slots, so two runs (two courses) can share one server."""
         self.cfg, self.log = cfg, log
         if cfg.verifier is None:
             raise SystemExit(f"{cfg.path} has no [verifier] model")
@@ -129,6 +132,11 @@ class Models:
                 by_model[spec.name][1].calls_log = out / "calls.jsonl"
             self.servers[role], self.llms[role] = by_model[spec.name]
         self._lock = threading.Lock()
+
+    def start_all(self):
+        """Start every server one after another (two vLLM servers sharing a GPU must not profile memory at once)."""
+        for srv in {id(s): s for s in self.servers.values()}.values():
+            srv.start(lambda m: self.log(m, "dim"))
 
     def get(self, role: str) -> LLM:
         with self._lock:
@@ -155,19 +163,41 @@ class Run:
     seg_max_prompt_tokens: int = 28000
     decisions: Decisions = field(default_factory=Decisions)
     registry: Any = None                                   # s4_registry.Registry
-    edges: list[dict] = field(default_factory=list)
-    similar_pairs: list[tuple] = field(default_factory=list)  # (concept a, concept b, lecture id): 4b said different
+    mentions: dict = field(default_factory=dict)           # (concept id, part id) -> sentence numbers naming it
+    edges: list[dict] = field(default_factory=list)        # all links, merged across lectures (after the last judge)
     course_goals: list[dict] = field(default_factory=list)
     lecture_map: list[dict] = field(default_factory=list)
     course_origin: list[dict] = field(default_factory=list)
     counts: dict = field(default_factory=dict)
     acts: dict = field(default_factory=dict)               # lecture id -> activities (see pipeline2/act_*.py)
     scoring: dict = field(default_factory=dict)            # calibrated open-answer scorer settings
+    flow: Any = None                                       # pipeline2.flow.Flow
+    lock: Any = field(default_factory=threading.RLock)
+
+    # -------------------------------------------------------------------------------------------- models
+    def role(self, step: str) -> str:
+        return self.cfg.steps.get(step, DEFAULT_STEPS[step])
 
     def llm(self, step: str) -> LLM:
-        role = self.cfg.steps.get(step, DEFAULT_STEPS[step])
-        return self.models.get(role)
+        return self.models.get(self.role(step))
 
+    def think(self, step: str) -> int | None:
+        t = self.cfg.think.get(step, DEFAULT_THINK.get(step))
+        return int(t) if t else None
+
+    def send(self, step: str, call: Call, max_retries: int = 2) -> Outcome:
+        """Send one call with the step's model and thinking budget; its origin is recorded on the lecture."""
+        llm = self.llm(step)
+        if call.think is None:
+            call.think = self.think(step)
+        o = llm.one(f"v2_{step}", call, max_retries)
+        self.record(o, step, llm, call.key)
+        return o
+
+    def model_of(self, step: str) -> str:
+        return self.llm(step).model
+
+    # -------------------------------------------------------------------------------------------- lookups
     def lec(self, lid: str) -> Lecture:
         return next(l for l in self.lectures if l.id == lid)
 
@@ -179,20 +209,28 @@ class Run:
         lid, i = A.parse_sent(address)
         return self.pos(lid), i
 
+    def sentence(self, address: str) -> str:
+        lid, i = A.parse_sent(address)
+        return self.lec(lid).sentences[i].text
+
+    # -------------------------------------------------------------------------------------------- records
     def record(self, o: Outcome, step: str, llm: LLM, item: str | None = None):
         p = o.origin(llm.model, llm.server.engine, step)
         if item:
             p["item"] = item
-        if o.call.lecture_id == "_course":
-            self.course_origin.append(p)
-        else:
-            self.lec(o.call.lecture_id).origin.append(p)
+        with self.lock:
+            if o.call.lecture_id == "_course":
+                self.course_origin.append(p)
+            else:
+                self.lec(o.call.lecture_id).origin.append(p)
 
     def count(self, k: str, n: int = 1):
-        self.counts[k] = self.counts.get(k, 0) + n
+        with self.lock:
+            self.counts[k] = self.counts.get(k, 0) + n
 
     def flag(self, lid: str, msg: str):
-        self.lec(lid).flags.append(msg)
+        with self.lock:
+            self.lec(lid).flags.append(msg)
         self.log(f"  ! {lid}: {msg}", "warn")
 
     def dump(self, name: str, obj):

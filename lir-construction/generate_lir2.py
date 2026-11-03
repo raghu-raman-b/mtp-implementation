@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""Build LIR v2 for a course: the knowledge layer, then the activity layer on top of it.
+"""Build LIR v2.1 for a course: the knowledge layer, then the activity layer on top of it (pipeline2/TASKS.md).
 
     python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --only 1-10
+    python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --config lir2_config_small.toml
 
-    0  sentences          SRT -> sentences with addresses (no SRT: transcript aligned to YouTube captions)
-    generator  1 parts · 2 objective and key points per part · 3a term candidates
-    judge      part objectives and key points · verifier 3b-e key terms (keep, name, define, grounded) · 4 registry
-    generator  7 goals (lecture objectives, lecture goals, course goals) · 5 facets
-    judge      goals and facets · verifier 6 edges (relation, evidence, label)
-    code       8 lecture map
-    generator  9 activities: recall, quiz (plan, items), recap, review questions, open questions (plan, write),
-               calibration answers
-    judge      every activity item (one rewrite, then dropped)
-    code       concept maps, spaced review after each part, scorer calibration; assemble -> lir-v2/<course>/
+Each part and each lecture moves on as soon as its inputs are ready (pipeline2/orchestrate.py):
 
-Steps are grouped so the models swap as few times as possible when only one fits on the GPU
-(lir2_config.toml [engine] exclusive_gpu). Build files (cache, step outputs, report) go to output/<course>/v2/.
+    critical   1 parts -> 2 objective + key points -> judge -> 3 key terms -> judge   (per part)
+               4 registry (the whole course) -> 5 facets, lecture by lecture in course order
+    behind     judge facets -> 6 links -> judge -> open questions -> judge; recall -> judge   (per lecture)
+    filling    part activities -> judge (per part); objectives + goal -> judge (per lecture); course goals -> judge
+    end        calibration answers; code: lecture map, concept maps, spaced review, scorer; assemble -> lir-v2/<course>/
+
+Build files (cache, step outputs, report, calls.jsonl) go to output/<course>/v2/ (or --run-dir).
 """
 import os
 import sys
@@ -43,19 +40,11 @@ from pipeline.context import Timer  # noqa: E402
 from pipeline.media import align_transcript, fetch_auto_captions, write_srt  # noqa: E402
 from pipeline.transcript import discover, load_sentences  # noqa: E402
 from pipeline.ui import UI  # noqa: E402
-from pipeline2 import (activities, assemble, judge_knowledge, report, s1_parts, s2_parts, s3_terms,  # noqa: E402
-                       s4_registry, s5_facets, s6_edges, s7_goals, s8_lecture_map)
+from pipeline2 import assemble, orchestrate, report  # noqa: E402
 from pipeline2.context import Lecture, Models, Run  # noqa: E402
+from pipeline2.flow import Flow  # noqa: E402
 
-STAGES = {  # stage -> (label, share of the run time, for the progress bar)
-    "transcripts": ("0 · sentences", 1), "v2_parts": ("1 · parts", 3), "v2_part_annotate": ("2 · objective, key points", 5),
-    "v2_candidates": ("3a · term candidates", 5), "v2_judge_parts": ("judge · objectives, key points", 6),
-    "v2_terms": ("3b-e · key terms", 14), "v2_registry": ("4 · registry", 10), "v2_goals": ("7 · goals", 2),
-    "v2_facets": ("5 · facets", 9), "v2_judge_goals_facets": ("judge · goals, facets", 7), "v2_edges": ("6 · edges", 11),
-    "v2_lecture_map": ("8 · lecture map", 1), "v2_activities": ("9 · activities", 12),
-    "v2_judge_activities": ("judge · activities", 12), "v2_finish": ("concept maps, review, scorer", 1),
-    "v2_assemble": ("assemble", 1),
-}
+STAGES = {"transcripts": ("0 · sentences", 1), "v2_build": ("build (all steps)", 97), "v2_assemble": ("assemble", 2)}
 
 
 def parse_only(spec):
@@ -147,48 +136,19 @@ def main():
         ui.server(f"  generator: {cfg.generator.name} · verifier: {cfg.verifier.name} · "
                   f"judge: {(cfg.judge or cfg.verifier).name}")
         R = Run(course, lectures, cfg, models, out, timer, log, ui, args.seg_max_tokens)
+        R.flow = Flow(log, ui)
         try:
-            # generator
-            with timer.stage("v2_parts"):
-                s1_parts.run(R)
-            with timer.stage("v2_part_annotate"):
-                s2_parts.run(R)
-            with timer.stage("v2_candidates"):
-                by_window = s3_terms.candidates(R)
-            # verifier
-            with timer.stage("v2_judge_parts"):
-                judge_knowledge.run_parts(R)
-            with timer.stage("v2_terms"):
-                s3_terms.run(R, by_window)
-            with timer.stage("v2_registry"):
-                s4_registry.run(R)
-            # generator
-            with timer.stage("v2_goals"):
-                s7_goals.run_objectives(R)
-                s7_goals.run_lecture_goals(R)
-                s7_goals.run_course_goals(R)
-            with timer.stage("v2_facets"):
-                s5_facets.run(R)
-            # verifier
-            with timer.stage("v2_judge_goals_facets"):
-                judge_knowledge.run_goals_facets(R)
-            with timer.stage("v2_edges"):
-                s6_edges.run(R)
-            with timer.stage("v2_lecture_map"):
-                s8_lecture_map.run(R)
-            # generator, then verifier
-            with timer.stage("v2_activities"):
-                activities.generate(R)
-            with timer.stage("v2_judge_activities"):
-                activities.judge(R)
+            with timer.stage("v2_build"):
+                models.start_all()
+                orchestrate.build(R)
         finally:
+            R.flow.shutdown()
             if not args.keep_server:
                 models.stop_all()
                 ui.server("  servers stopped")
-        with timer.stage("v2_finish"):
-            activities.finish(R)
         with timer.stage("v2_assemble"):
             assemble.run(R, lir_dir)
+        timer.stages = timer.stages + R.flow.spans()      # whole build, assembly, then every step's span
         text = report.write(R, records, time.time() - t_start)
 
     ui.console.print(text.split("## Per lecture")[0].strip())

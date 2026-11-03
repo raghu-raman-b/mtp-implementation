@@ -4,6 +4,9 @@ Status: ✅ done · 🔄 in progress · ⬜ to do · ⏸ on hold · ⚠️ block
 
 ## LIR v2: knowledge layer overhaul (started 2026-11-02)
 
+Superseded on 2026-11-03 by LIR v2.1 (merged calls, per-item scheduling, two model setups): plan, outputs and
+status in `pipeline2/TASKS.md`. The steps below describe the v2 design it replaced.
+
 Why: the v1 concept registry is unreliable. "Extended reality" picked up the aliases "ER", "Error rates", "Empirical
 research", "Entity-Relationship" and "Enhanced realism": the model invented "Extended reality (ER)", a first-letters rule
 matched "Error rates" to "ER", and merges chained through any member of a group. A dropped first occurrence also left

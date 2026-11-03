@@ -17,7 +17,7 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-VLLM_URL = "http://127.0.0.1:8091"          # generator port (pipeline/config.py PORTS); all three roles share it
+VLLM_URLS = ["http://127.0.0.1:8091", "http://127.0.0.1:8097"]   # generator, verifier/judge (pipeline/config.py PORTS)
 EVERY_S = 5.0
 
 GPU_FIELDS = ["utilization.gpu", "memory.used", "memory.total", "power.draw", "temperature.gpu", "clocks.sm"]
@@ -49,9 +49,9 @@ def gpu() -> dict:
         return {}
 
 
-def vllm() -> dict:
+def _metrics(url: str) -> dict:
     try:
-        with urllib.request.urlopen(VLLM_URL + "/metrics", timeout=5) as r:
+        with urllib.request.urlopen(url + "/metrics", timeout=5) as r:
             text = r.read().decode()
     except Exception:
         return {}
@@ -70,6 +70,15 @@ def vllm() -> dict:
             if n in sums:
                 out[k] = sums[n]
                 break
+    return out
+
+
+def vllm() -> dict:
+    """Every running server's metrics, added up (KV cache use: the fuller server)."""
+    out: dict[str, float] = {}
+    for url in VLLM_URLS:
+        for k, v in _metrics(url).items():
+            out[k] = max(out.get(k, 0.0), v) if k == "kv_pct" else out.get(k, 0.0) + v
     return out
 
 

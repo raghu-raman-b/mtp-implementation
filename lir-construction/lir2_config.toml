@@ -1,51 +1,56 @@
-# LIR v2: which model does what. Edit and rerun generate_lir2.py; cached answers are kept per model and prompt.
+# LIR v2.1, large setup: Qwen 3.8 27B FP8 for every role, one vLLM server. Small setup: lir2_config_small.toml.
+# See pipeline2/TASKS.md. Edit and rerun generate_lir2.py; cached answers are kept per model, prompt and settings.
 #
-# A model is either
-#   - a Hugging Face GGUF reference "org/repo:file.gguf"  -> runs locally on llama.cpp, or
-#   - an OpenAI model name, e.g. "gpt-6-luna"              -> runs on the OpenAI API (key from .env, see [api])
+# A role's model is a Hugging Face repo (engine "vllm"), an "org/repo:file.gguf" (engine "llamacpp"), or an OpenAI
+# model name (engine "openai"). Roles that name the same model share one server (the first role's settings apply).
+# The generator writes; the verifier runs the registry and the links; the judge checks every item and rewrites the
+# ones that fail, once (pipeline2/context.py DEFAULT_STEPS).
 
-[generator]                     # parts, objectives, key points, term candidates, goals, facets
-# One model for all three roles: they share one server, whose settings come from this first section.
-engine = "vllm"                 # "vllm" (Hugging Face repo) | "llamacpp" (org/repo:file.gguf) | "openai" (API model name)
+[generator]
+engine = "vllm"
 model = "Qwen/Qwen3.8-27B-FP8"
-slots = 128                     # requests in flight (vLLM --max-num-seqs); two runs split them with --slots
+slots = 128                     # requests in flight (vLLM --max-num-seqs); the client sends no more, in priority order
 max_model_len = 65536           # longest prompt + answer (thinking included)
-max_tokens = 0                  # 0 = no cap on thinking or answer (up to max_model_len)
-sampling = { temperature = 1.0, top_p = 0.95, top_k = 20, min_p = 0.0, presence_penalty = 0.0 }  # Qwen, thinking mode
-kv_tokens = 0                   # llama.cpp only
-think_budget = 0                # llama.cpp only
+max_tokens = 0                  # per-step thinking budgets below cap the thinking; the answer gets 8192 more
+sampling = { temperature = 0.6, top_p = 0.95, top_k = 20, min_p = 0.0, presence_penalty = 0.0 }  # Qwen, precise tasks
+reasoning_parser = "qwen3"
+# the words vLLM writes when a call's thinking reaches its budget; the answer follows
+think_end = "\n\nI have thought enough; now I give the final answer.\n</think>\n\n"
+gpu_memory_utilization = 0.92
 
-[verifier]                      # keep/drop, names, definitions, grounding, same-concept, relations, labels
+[verifier]
 engine = "vllm"
 model = "Qwen/Qwen3.8-27B-FP8"
 
-[judge]                         # checks every item (knowledge and activities) and rewrites failures once
+[judge]
 engine = "vllm"
 model = "Qwen/Qwen3.8-27B-FP8"
-# Roles that name the same model share one server (the first role's settings apply).
-# Leave [judge] out and the verifier judges.
-#
-# llama.cpp instead (338 tok/s at 32 requests on the RTX PRO 6000 for Qwen 27B Q8, against vLLM below):
-#   model = "unsloth/Qwen3.8-27B-GGUF:Qwen3.8-27B-Q8_0.gguf", slots = 96, kv_tokens = 655360, think_budget = 8192
-# Gemma on the 12 GB RTX 5070: generator unsloth/gemma-4-E4B-it-GGUF:gemma-4-E4B-it-UD-Q8_K_XL.gguf (32 slots,
-# kv_tokens 131072, think 8192); verifier/judge unsloth/gemma-4-12B-it-qat-GGUF:gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
-# (8 slots, kv_tokens 32768, think 4096), exclusive_gpu = true.
+
+[think]                         # thinking budget per step, in tokens (defaults: pipeline2/context.py DEFAULT_THINK)
+parts = 8192
+annotate = 8192
+terms = 8192
+facets = 8192
+links = 8192
+activities = 8192
+oq = 8192
+judge = 4096
+registry = 4096
+goals = 4096
+recall = 4096
+calibrate = 4096
 
 [engine]
-vllm = "~/vllm-venv/bin/vllm"                            # built by setup_ec2.sh; or the VLLM environment variable
-gpu_memory_utilization = 0.92
-reasoning_parser = "qwen3"
-prefix_caching = true           # vLLM: reuse shared prompt starts (costs memory on hybrid models such as Qwen 3.8)
-# MTP (Qwen's built-in draft head): 109 vs 45 tok/s for one request; ~62 requests fit at once instead of ~128
-vllm_args = ["--speculative-config", '{"method":"mtp","num_speculative_tokens":3}']
-llama_server = "~/llama.cpp/build/bin/llama-server"     # or the LLAMA_SERVER environment variable
+vllm = "~/vllm-venv/bin/vllm"   # built by setup_ec2.sh; or the VLLM environment variable
+prefix_caching = true           # calls on one part share its transcript as the prompt start
+priority = true                 # vLLM --scheduling-policy priority; the critical path goes first
+vllm_args = []                  # no MTP drafts: total throughput first (MTP: 2.4x one request, half the requests)
+llama_server = "~/llama.cpp/build/bin/llama-server"     # engine "llamacpp" only
 exclusive_gpu = false           # true: one model on the GPU at a time (12 GB card)
 extra_args = []                 # more llama-server flags
 
 [steps]                         # which role runs a step (defaults in pipeline2/context.py DEFAULT_STEPS)
-# keep = "generator"            # e.g. to compare E4B with 12B on keep/drop
-# Steps that share a prompt start must use the same role: objective + key_points; keep + name + define + ground;
-# same + refine.
+# facets = "verifier"
 
 [api]
 env_file = ".env"

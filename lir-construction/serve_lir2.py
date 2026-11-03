@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Start the LIR v2 model server(s) from lir2_config.toml and leave them running, so two runs can share them.
+"""Start the LIR v2.1 model server(s) from a config and leave them running (run_v2.sh does this for each setup).
 
-    python3 serve_lir2.py            # start (waits until ready), then e.g.
-    python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --slots 0-47 &
-    python3 generate_lir2.py --lecture ../dataset/mit_6_7960_deep_learning   --slots 48-95 &
-    python3 serve_lir2.py --stop
+    python3 serve_lir2.py                                  # large setup: one Qwen 27B server (port 8091)
+    python3 serve_lir2.py --config lir2_config_small.toml  # small setup: Gemma E4B (8091), then Gemma 12B (8097)
+    python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --config ... --keep-server
+    python3 serve_lir2.py --config ... --stop
 
-Uses the same command line as the pipeline (pipeline/llm.py Server.command), so cached answers stay valid.
+Servers start one after another (two vLLM servers sharing a GPU must not profile memory at the same time). Uses the
+same command line as the pipeline (pipeline/llm.py Server.command), so cached answers stay valid.
 Logs: logs/<role>_server.log.
 """
 import argparse
@@ -42,7 +43,7 @@ def main():
             continue
         srv.log_path.parent.mkdir(parents=True, exist_ok=True)
         cmd = srv.command()
-        print(f"{spec.role}: {spec.name}, {spec.slots} slots, {spec.kv_tokens:,}-token KV pool, port {srv.port}")
+        print(f"{spec.role}: {spec.name}, {spec.slots} requests at once, port {srv.port}")
         print("  " + " ".join(cmd))
         proc = subprocess.Popen(cmd, stdout=open(srv.log_path, "a"), stderr=subprocess.STDOUT,
                                 start_new_session=True, env=srv.env(cmd))

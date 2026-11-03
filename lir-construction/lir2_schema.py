@@ -1,8 +1,9 @@
-"""LIR v2: the knowledge layer. Pydantic definitions of the output files.
+"""LIR v2.1: the knowledge layer. Pydantic definitions of the output files.
 
-    course.json      lectures, course goals, concept registry (aliases, dated definitions, facets), edges,
-                     lecture map, alias index
-    Lxx.json         one per lecture: sentences, parts (objective, key points, term occurrences), objectives, goal
+    course.json      lectures, course goals, the concept graph (concepts with aliases, a canonical course-wide
+                     definition, facets; links), lecture map, alias index
+    Lxx.json         one per lecture: sentences, parts (objective, key points, term occurrences with the lecture's own
+                     definition and their concept), objectives, goal
     decisions.jsonl  every decision about content, with its reason and the call that made it
     embeddings.json  concept embeddings ("name: latest definition"), for matching learners' words to concepts
     activities/Lxx.json   the activity layer for one lecture (LectureActivities below)
@@ -16,7 +17,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel
 
-LIR_VERSION = "2.0"
+LIR_VERSION = "2.1"
 Relation = Literal["kind_of", "part_of", "depends_on"]
 
 
@@ -41,9 +42,10 @@ class TermOccurrence(BaseModel):
     name: str                         # glossary name
     abbreviation: Optional[str] = None
     abbreviation_at: Optional[str] = None   # the sentence where the lecturer uses it
-    definition: str                   # this occurrence's definition (checked against its sources)
+    definition: str                   # this lecture's definition (what the learner sees here; judged)
     sources: list[str]
     concept_id: str
+    concept_name: str                 # the concept's canonical name (the registry's)
 
 
 class Part(BaseModel):
@@ -89,13 +91,6 @@ class Alias(BaseModel):
     said_at: str                      # a sentence where the lecturer uses it
 
 
-class DefinitionVersion(BaseModel):
-    as_of: str                        # lecture ID: the definition as known after this lecture
-    text: str
-    sources: list[str]
-    from_terms: list[str]
-
-
 class Facet(BaseModel):
     id: str                           # "C0014@L05/P03"
     part: str
@@ -112,7 +107,9 @@ class Concept(BaseModel):
     introduced: str                   # sentence address
     introduced_part: str
     terms: list[str]                  # term occurrences
-    definitions: list[DefinitionVersion]
+    definition: str                   # canonical, course-wide (the registry's, from all its term definitions)
+    reason: str                       # why its terms are one concept
+    sources: list[str]                # the sentences its term definitions rest on
     facets: list[Facet]
 
 
@@ -124,7 +121,8 @@ class Edge(BaseModel):
     label: str                        # link phrase for concept maps: "src label dst"
     evidence: list[str]
     lecture_id: str                   # where the evidence is
-    flags: list[str] = []             # "forward": src was introduced before the concept it depends on
+    flags: list[str] = []             # "forward": src introduced before the concept it depends on; "two_way": the
+                                      # same kind_of / part_of both ways; "flipped": the judge reversed it
 
 
 class LectureLink(BaseModel):

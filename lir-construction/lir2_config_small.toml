@@ -1,0 +1,59 @@
+# LIR v2.1, small setup: Gemma 4 E4B writes, Gemma 4 12B verifies and judges. Two vLLM servers share the GPU (their
+# gpu_memory_utilization adds up to 0.90). Same pipeline as lir2_config.toml, so the two can be compared.
+#   python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --config lir2_config_small.toml
+#   bash run_v2.sh --setups small,large --courses vr
+
+[generator]                     # parts, objective + key points, key terms, goals, facets, activities
+engine = "vllm"
+model = "google/gemma-4-E4B-it"
+slots = 256
+max_model_len = 65536
+max_tokens = 0
+sampling = { temperature = 1.0, top_p = 0.95, top_k = 64 }      # Gemma 4 generation_config.json
+reasoning_parser = "gemma4"
+think_end = "\n\nI have thought enough; now I give the final answer.<channel|>"
+gpu_memory_utilization = 0.34   # 16 GB of weights (text only) + KV cache
+
+[verifier]                      # registry, links; also the judge (same model, same server)
+engine = "vllm"
+model = "google/gemma-4-12B-it"
+slots = 128
+max_model_len = 65536
+max_tokens = 0
+sampling = { temperature = 1.0, top_p = 0.95, top_k = 64 }
+reasoning_parser = "gemma4"
+think_end = "\n\nI have thought enough; now I give the final answer.<channel|>"
+gpu_memory_utilization = 0.56   # 24 GB of weights + KV cache
+
+[judge]
+engine = "vllm"
+model = "google/gemma-4-12B-it"
+
+[think]
+parts = 8192
+annotate = 8192
+terms = 8192
+facets = 8192
+links = 8192
+activities = 8192
+oq = 8192
+judge = 4096
+registry = 4096
+goals = 4096
+recall = 4096
+calibrate = 4096
+
+[engine]
+vllm = "~/vllm-venv/bin/vllm"
+prefix_caching = true
+priority = true
+vllm_args = []
+exclusive_gpu = false
+
+[api]
+env_file = ".env"
+key_var = "OPEN_AI_API"
+budget_usd = 2.28
+
+[videos]
+height = 720

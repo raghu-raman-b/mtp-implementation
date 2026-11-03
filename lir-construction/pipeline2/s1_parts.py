@@ -11,7 +11,6 @@ from .context import Lecture, Part, Run
 
 MIN_PART_S = 120
 WINDOW, OVERLAP = 300, 50          # long lectures: overlapping windows of sentences
-THINK = 12288
 BOUNDARIES = {"type": "array", "items": {"type": "integer"}}
 STEP = "parts"
 
@@ -32,7 +31,7 @@ def _calls(R: Run, llm, lec: Lecture) -> list[Call]:
         R.log(f"  {lec.id}: transcript too long for one call; {len(wins)} overlapping windows")
     return [Call(key=f"{lec.id}/parts/w{w}", lecture_id=lec.id,
                  prompt=P1.SEGMENT[2].format(transcript=numbered(s[a:b + 1], 1)), schema=BOUNDARIES,
-                 prompt_id=P1.SEGMENT[0], prompt_version=P1.SEGMENT[1], max_tokens=THINK,
+                 prompt_id=P1.SEGMENT[0], prompt_version=P1.SEGMENT[1], max_tokens=12288,
                  ctx={"window": (a, b), "w": w, "n": len(wins)},
                  check=lambda xs: [] if all(isinstance(x, int) for x in xs) else ["answer with integers only"])
             for w, (a, b) in enumerate(wins)]
@@ -57,32 +56,28 @@ def _parts(lec: Lecture, starts: list[int]) -> tuple[list[Part], list[str]]:
     return parts, merged
 
 
-def run(R: Run):
+def run_lecture(R: Run, lec: Lecture):
+    """Split one lecture into parts (one call, or one per window for a long transcript, windows in parallel)."""
     llm = R.llm(STEP)
-    calls = [c for lec in R.lectures for c in _calls(R, llm, lec)]
-    by_lec: dict[str, list] = {}
-    for o in llm.run("v2_parts", calls, "split lectures into parts"):
-        by_lec.setdefault(o.call.lecture_id, []).append(o)
-    for lec in R.lectures:
-        starts, notes = [], []
-        for o in by_lec[lec.id]:
-            a, b = o.call.ctx["window"]
-            w, n = o.call.ctx["w"], o.call.ctx["n"]
-            R.record(o, STEP, llm, f"{lec.id}.parts.w{w}")
-            if o.parsed is None:
-                R.flag(lec.id, f"parts: answer unusable ({o.errors}); window {w} left uncut")
-                continue
-            # each window owns its middle; in an overlap the cut comes from the window it is deeper inside
-            own_lo = a if w == 0 else a + OVERLAP // 2
-            own_hi = b if w == n - 1 else b - OVERLAP // 2
-            bad = [k for k in o.parsed if not a + 1 <= k <= b + 1]
-            if bad:
-                notes.append(f"cuts outside the transcript ignored: {bad}")
-            starts += [k - 1 for k in o.parsed if own_lo <= k - 1 <= own_hi and k >= 2]
-        lec.parts, merged = _parts(lec, starts)
-        R.decisions.add(STEP, [lec.id], f"{len(lec.parts)} parts",
-                        reason="; ".join([f"model proposed cuts at {[lec.s(k) for k in sorted(set(starts))]}"] + notes + merged))
-        R.count("parts", len(lec.parts))
-        R.log(f"  {lec.id}: {len(lec.sentences)} sentences -> {len(lec.parts)} parts "
-              f"({', '.join(f'{(p.end - p.start) / 60:.1f}' for p in lec.parts)} min)")
-    R.dump("1_parts", {l.id: [[p.id, l.s(p.a), l.s(p.b)] for p in l.parts] for l in R.lectures})
+    calls = _calls(R, llm, lec)
+    outs = [R.send(STEP, c) for c in calls] if len(calls) == 1 else R.flow.map("parts window", lambda c: R.send(STEP, c), calls)
+    starts, notes = [], []
+    for o in outs:
+        a, b = o.call.ctx["window"]
+        w, n = o.call.ctx["w"], o.call.ctx["n"]
+        if o.parsed is None:
+            R.flag(lec.id, f"parts: answer unusable ({o.errors}); window {w} left uncut")
+            continue
+        # each window owns its middle; in an overlap the cut comes from the window it is deeper inside
+        own_lo = a if w == 0 else a + OVERLAP // 2
+        own_hi = b if w == n - 1 else b - OVERLAP // 2
+        bad = [k for k in o.parsed if not a + 1 <= k <= b + 1]
+        if bad:
+            notes.append(f"cuts outside the transcript ignored: {bad}")
+        starts += [k - 1 for k in o.parsed if own_lo <= k - 1 <= own_hi and k >= 2]
+    lec.parts, merged = _parts(lec, starts)
+    R.decisions.add(STEP, [lec.id], f"{len(lec.parts)} parts",
+                    reason="; ".join([f"model proposed cuts at {[lec.s(k) for k in sorted(set(starts))]}"] + notes + merged))
+    R.count("parts", len(lec.parts))
+    R.log(f"  {lec.id}: {len(lec.sentences)} sentences -> {len(lec.parts)} parts "
+          f"({', '.join(f'{(p.end - p.start) / 60:.1f}' for p in lec.parts)} min)", "dim")

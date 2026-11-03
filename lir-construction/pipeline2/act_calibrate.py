@@ -27,26 +27,22 @@ class Answers(BaseModel):
     wrong: str
 
 
-def calls(R: Run) -> list[tuple[str, Call]]:
+def _call(lec, q) -> Call:
+    task = P.CALIBRATE[2].format(q=q["prompt"], ref=q["reference_answer"],
+                                 kps="\n".join(f"- {k['text']}" for k in q["key_points"]))
+    return Call(key=f"{q['_key']}/calibration", lecture_id=lec.id, prompt=q["_block"] + task, schema=Answers,
+                prompt_id=P.CALIBRATE[0], prompt_version=P.CALIBRATE[1], ctx={"key": q["_key"]})
+
+
+def run(R: Run):
+    """Good / partial / wrong answers for SAMPLE open questions, spread over the question types (in parallel)."""
     by_type: dict[str, list] = {}
     for lec in R.lectures:
         for q in R.acts[lec.id]["open_questions"]:
             by_type.setdefault(q["type"], []).append((lec, q))
     sample = [x for x in itertools.chain.from_iterable(itertools.zip_longest(*by_type.values())) if x][:SAMPLE]
-    out = []
-    for lec, q in sample:
-        task = P.CALIBRATE[2].format(q=q["prompt"], ref=q["reference_answer"],
-                                     kps="\n".join(f"- {k['text']}" for k in q["key_points"]))
-        out.append(("calibrate", Call(key=f"{q['_key']}/calibration", lecture_id=lec.id, prompt=q["_block"] + task,
-                                      schema=Answers, prompt_id=P.CALIBRATE[0], prompt_version=P.CALIBRATE[1],
-                                      ctx={"kind": "calibrate", "key": q["_key"]})))
-    return out
-
-
-def take(R: Run, o):
-    if o.parsed is not None:
-        R.calibration = getattr(R, "calibration", [])
-        R.calibration.append({"key": o.call.ctx["key"], **o.parsed.model_dump()})
+    outs = R.flow.map("calibrate", lambda x: R.send("calibrate", _call(*x)), sample)
+    R.calibration = [{"key": o.call.ctx["key"], **o.parsed.model_dump()} for o in outs if o.parsed is not None]
 
 
 def fit(R: Run) -> dict:

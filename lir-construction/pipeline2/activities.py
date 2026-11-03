@@ -1,11 +1,11 @@
 """Step 9: the activity layer, built on the knowledge layer. Every item is tagged with the key points and concepts it
 tests and cites its sentences.
 
-    generate   (generator) batch 1: recall items, quiz plans, recaps, open-question plans
-                           batch 2: quiz items, review questions, open questions
-                           batch 3: calibration answers for the scorer
-    judge      (verifier)  every item; one rewrite with the reason; then dropped (a recap falls back to key points)
-    finish     (code)      concept maps, spaced review after each part, scorer calibration, key-point embeddings
+    per part      act_part.py: quiz, recap, review questions (one call), judged in one call
+    per lecture   act_open.py: open questions (one call from the lecture's knowledge), judged in one call
+                  act_recall.py: recall items (one call), judged in one call
+    course        act_calibrate.py: good / partial / wrong answers for a sample of open questions
+    finish (code) concept tags, concept maps, spaced review after each part, scorer calibration, key-point embeddings
 
 Activities live in R.acts[lecture id]:
     {recall: [...], parts: {part id: {quiz: [...], recap: {...}, review: [...], spaced_review: [...]}},
@@ -15,67 +15,34 @@ from __future__ import annotations
 
 from pipeline.embed import embed
 
-from . import act_calibrate, act_map, act_open, act_quiz, act_recall, act_spaced, act_summary
-from .context import Run
+from . import act_calibrate, act_map, act_spaced
+from .context import Lecture, Run
 from .match import ConceptMatcher
 
-TAKE = {"recall": act_recall.take, "quiz_plan": act_quiz.take_plan, "quiz": act_quiz.take_item,
-        "recap": act_summary.take_recap, "review": act_summary.take_review, "oq_plan": act_open.take_plan,
-        "oq": act_open.take_write, "calibrate": act_calibrate.take}
+
+def init_lecture(R: Run, lec: Lecture):
+    R.acts[lec.id] = {"recall": [], "parts": {p.id: {"quiz": [], "recap": None, "review": [], "spaced_review": []}
+                                              for p in lec.parts},
+                      "open_questions": [], "concept_map": None}
 
 
-def _run(R: Run, stage: str, pairs: list, desc: str):
-    groups: dict[int, tuple] = {}
-    for step, call in pairs:
-        llm = R.llm(step)
-        groups.setdefault(id(llm), (llm, []))[1].append(call)
-    for llm, calls in groups.values():
-        for o in llm.run(stage, calls, f"{desc} ({len(calls)})"):
-            R.record(o, o.call.ctx["kind"], llm, o.call.key)
-            TAKE[o.call.ctx["kind"]](R, o)
-
-
-def generate(R: Run):
-    R.matcher = ConceptMatcher(R.registry.concepts.values())
+def tag(R: Run):
+    """Concept tags (needs the registry): what each item names, among concepts introduced up to its lecture."""
+    m = ConceptMatcher(R.registry.concepts.values())
     for lec in R.lectures:
-        R.acts[lec.id] = {"recall": [], "parts": {p.id: {"quiz": [], "recap": None, "review": [], "spaced_review": []}
-                                                  for p in lec.parts},
-                          "open_questions": [], "concept_map": None}
-    _run(R, "v2_act_plan", act_recall.calls(R) + act_quiz.plan_calls(R) + act_summary.recap_calls(R)
-         + act_open.plan_calls(R), "recall, quiz plans, recaps, open-question plans")
-    _run(R, "v2_act_write", act_quiz.item_calls(R) + act_summary.review_calls(R) + act_open.write_calls(R),
-         "quiz items, review questions, open questions")
-    _run(R, "v2_act_calibrate", act_calibrate.calls(R), "calibration answers")
-
-
-def _part_job(R: Run, lec, p, llm):
-    def job(send):
-        act_quiz.judge_part(send, R, lec, p, llm)
-        act_summary.judge_part(send, R, lec, p, llm)
-    return job
-
-
-def judge(R: Run):
-    llm = R.llm("judge")
-    jobs, oq_slots = [], []
-    for lec in R.lectures:
-        jobs.append(act_recall.judge_job(R, lec, llm))
-        jobs += [_part_job(R, lec, p, llm) for p in lec.parts]
-        for it in R.acts[lec.id]["open_questions"]:
-            oq_slots.append((len(jobs), lec.id))
-            jobs.append(act_open.judge_job(R, lec, it, llm))
-    results = llm.run_jobs("v2_judge_activities", jobs, f"judge activities ({len(jobs)} groups)")
-    for lec in R.lectures:
-        R.acts[lec.id]["open_questions"] = []
-    for k, lid in oq_slots:
-        if results[k] is not None:
-            R.acts[lid]["open_questions"].append(results[k])
-    for lec in R.lectures:
-        for n, q in enumerate(R.acts[lec.id]["open_questions"], 1):
-            q["id"] = f"{lec.id}/OQ{n}"
+        a = R.acts[lec.id]
+        for pa in a["parts"].values():
+            for q in pa["quiz"]:
+                q["concept_ids"] = m.find(" ".join([q["_point"], q["stem"], q["options"][q["correct_index"]]]), lec.pos)
+            for v in pa["review"]:
+                v["concept_ids"] = m.find(v["_point"] + " " + v["question"], lec.pos)
+        for q in a["open_questions"]:
+            q["concept_ids"] = m.find(q["prompt"] + " " + q["reference_answer"], lec.pos)
+    R.matcher = m
 
 
 def finish(R: Run):
+    tag(R)
     for lec in R.lectures:
         R.acts[lec.id]["concept_map"] = act_map.concept_map(R, lec)
     act_spaced.run(R)

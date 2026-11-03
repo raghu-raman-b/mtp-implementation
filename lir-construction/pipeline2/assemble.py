@@ -1,4 +1,4 @@
-"""Write LIR v2 (knowledge layer and activities) to lir-v2/<course>/ and validate it against lir2_schema.py."""
+"""Write LIR v2.1 (knowledge layer and activities) to lir-v2/<course>/ and validate it against lir2_schema.py."""
 from __future__ import annotations
 
 import json
@@ -22,7 +22,8 @@ def _lecture(R: Run, lec) -> dict:
                            for k in p.key_points],
             "terms": [{"id": t["id"], "surface": t["surface"], "name": t["name"], "abbreviation": t["abbreviation"],
                        "abbreviation_at": t["abbreviation_at"], "definition": t["definition"],
-                       "sources": [s(i) for i in t["sentences"]], "concept_id": t["concept_id"]}
+                       "sources": [s(i) for i in t["sentences"]], "concept_id": t["concept_id"],
+                       "concept_name": t["concept_name"]}
                       for t in p.terms if t["concept_id"]]})
     inp = lec.inp
     return {"course_id": R.course.course_id, "lecture_id": lec.id, "index": inp.index, "title": inp.title,
@@ -46,8 +47,11 @@ def _course(R: Run) -> dict:
                           "youtube_id": l.inp.youtube_id or None} for l in R.lectures],
             "course_goals": R.course_goals,
             "concepts": [{"id": c.id, "name": c.name, "aliases": c.aliases, "introduced": c.introduced,
-                          "introduced_part": c.introduced_part, "terms": c.terms, "definitions": c.definitions,
-                          "facets": c.facets} for c in C.values()],
+                          "introduced_part": c.introduced_part, "terms": c.terms, "definition": c.definition,
+                          "reason": c.reason, "sources": c.sources,
+                          "facets": [{k: v for k, v in f.items() if k not in ("draft", "_cid")}
+                                     for f in sorted(c.facets, key=lambda f: (R.pos(f["part"].split("/")[0]), f["part"]))]}
+                         for c in C.values()],
             "edges": R.edges, "lecture_map": R.lecture_map, "alias_index": dict(sorted(index.items())),
             "embedding_model": EMBED_MODEL, "origin": R.course_origin}
 

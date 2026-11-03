@@ -28,6 +28,7 @@ class ModelSpec:
     sampling: dict = field(default_factory=dict)   # vLLM: temperature, top_p, top_k, ... (default: greedy)
     max_tokens: int | None = None  # vLLM: per-call output cap; 0 = none (up to max_model_len); None = the call's own
     max_model_len: int = 65536     # vLLM: longest prompt + answer
+    opts: dict = field(default_factory=dict)       # the role's whole table (per-server vLLM settings, see Server)
 
     @property
     def engine(self) -> str:
@@ -63,6 +64,7 @@ class Config:
     verifier: ModelSpec | None = None         # v2: keep/drop, naming, definitions, same-concept and relation calls
     engine: dict = field(default_factory=dict)  # v2: llama_server path, exclusive_gpu
     steps: dict = field(default_factory=dict)   # v2: step name -> role
+    think: dict = field(default_factory=dict)   # v2.1: step name -> thinking budget (tokens)
 
     def roles(self) -> list[ModelSpec]:
         return [s for s in (self.generator, self.judge, self.judge_fallback, self.verifier) if s is not None]
@@ -97,13 +99,14 @@ def load(path: Path | None = None) -> Config:
         return ModelSpec(role, r["model"], int(r.get("slots", 8)), int(r.get("kv_tokens", 32768)),
                          int(r.get("think_budget", 4096)), r.get("reasoning_effort", "medium"),
                          r.get("engine", ""), dict(r.get("sampling", {})),
-                         int(r["max_tokens"]) if "max_tokens" in r else None, int(r.get("max_model_len", 65536)))
+                         int(r["max_tokens"]) if "max_tokens" in r else None, int(r.get("max_model_len", 65536)),
+                         dict(r))
     fb = spec("judge_fallback") if "judge_fallback" in d else None
     if fb is not None and not fb.local:
         raise SystemExit(f"[judge_fallback] in {path} must be a local GGUF model (it runs when the API budget is spent).")
     return Config(spec("generator"), spec("judge") if "judge" in d else None, d.get("api", {}),
                   d.get("videos", {"height": 720}), path, fb, spec("verifier") if "verifier" in d else None,
-                  d.get("engine", {}), d.get("steps", {}))
+                  d.get("engine", {}), d.get("steps", {}), d.get("think", {}))
 
 
 class BudgetExhausted(RuntimeError):
