@@ -30,6 +30,9 @@ class Request:
     schema: dict | None = None      # JSON schema: the answer is constrained to it and parsed
     check: Callable[[Any], list[str]] | None = None   # problems with the parsed answer ([] = fine); any -> retry
     feedback: bool = False          # on a retry, show the model its answer and the problems found, and ask again
+    # A conversation to continue: messages after the prompt, e.g. [{"role": "assistant", "content": earlier answer},
+    # {"role": "user", "content": "That has problems: ..."}]. The server keeps no state, so the whole history is sent.
+    followup: list = field(default_factory=list)
     max_tokens: int | None = None   # overrides LLMConfig.max_tokens
     think_budget: int | None = None  # overrides LLMConfig.think_budget (vLLM only; llama.cpp fixes it per server)
     sampling: dict = field(default_factory=dict)   # overrides, e.g. {"temperature": 0}
@@ -282,14 +285,15 @@ class LLM:
     def _run(self, req: Request, cache: Path | None, logf: Path | None) -> Result:
         with self._lock:
             self.totals["requests"] += 1
-        res, followup, history = None, [], []
+        followup, history = list(req.followup), []
         for attempt in range(1 + self.cfg.retries):
             res = self._attempt(req, attempt, cache, logf, followup)
             if res.ok or any(e.startswith("server rejected") for e in res.errors):
                 break
             history.append({"answer": res.content, "errors": res.errors})
             if req.feedback and res.content:   # the next attempt sees this answer and what is wrong with it
-                followup = [{"role": "assistant", "content": res.content},
-                            {"role": "user", "content": FEEDBACK.format(problems="\n".join(f"- {e}" for e in res.errors))}]
+                followup = list(req.followup) + [
+                    {"role": "assistant", "content": res.content},
+                    {"role": "user", "content": FEEDBACK.format(problems="\n".join(f"- {e}" for e in res.errors))}]
         res.history = history
         return res

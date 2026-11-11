@@ -1,40 +1,79 @@
-"""Stage 1b: deterministic checks on the segmentation (code only), and the final segment maps.
+"""Stage 1b: verify each lecture's segmentation, send it back to the model when a check fails, write the segment maps.
 
-    python scripts/s1b_verify_segments.py nptel_vr [--only 1-5]
+    python scripts/s1b_verify_segments.py nptel_vr --llm configs/gemma4_12b_llamacpp.json [--only 1-5]
 
-The model's answer (stage 1a) is a list of segments in order, each {"start": number of its first sentence (from 1),
-"subgoal": what the learner can do after it}.
+Flow for each lecture, starting from stage 1a's answer:
 
-Checks on the answer: a non-empty list; each item has an integer "start" and a non-empty "subgoal"; the first segment
-starts at sentence 1; every start is within the lecture; starts strictly increase.
-Checks on the segments built from it, each segment a set of sentences:
-  1 exhaustive               every sentence belongs to some segment
-  2 mutually exclusive       no sentence belongs to two segments
-  3 contiguous and ordered   each segment is a run of consecutive sentences, following the previous segment
-  4 non-empty                every segment has at least one sentence
+    answer --> structural checks --fail--> structural retry --> new answer --> structural checks ...
+                     | pass
+               logical checks ----flagged--> logical retry ----> new answer --> structural checks ...
+                     | pass, or logical retries used up
+               keep the answer that passes the structural checks with the fewest flagged segments (the later on ties)
 
-Stage 1a runs check() on every answer and sends any problems back to the model to fix (up to its retries); answers that
-pass the answer checks always pass 1-4, which are kept as a guard against bugs. This stage checks the saved answers
-again and writes the segment maps.
+Structural checks (hard: an answer that fails them is never kept), worded for the model, sentence numbers from 1:
+  on the answer       a non-empty list; each item an integer "start" and a non-empty "subgoal"; the first segment
+                      starts at sentence 1; every start within the lecture; starts strictly increase
+  on the segments     1 exhaustive (every sentence in some segment), 2 mutually exclusive, 3 contiguous and ordered,
+  (sets of sentences) 4 non-empty. Answers that pass the answer checks always pass these; kept as a guard.
+Logical checks (soft, a heuristic): a segment under 2 min or over 15 min (MIN_S, MAX_S; durations as in the maps; the last segment may be short:
+  the closing remarks may be a segment of their own). The bounds are not defensible as rules, so the model is told
+  neither them nor the durations: only that a segment "looks too small" or "looks too big", to check it again against
+  the instructions, and to keep it if it is right.
 
-Reads   output/<course>/stage_0a_preprocess/, output/<course>/stage_1a_segmentation/raw/lec_<n>.json
-Writes  output/<course>/stage_1b_verify_segments/segment_maps/lec_<n>.json
-            {"<n>/S0": {"first": "<n>/0", "last": "<n>/41", "start": 24.297, "end": 292.435, "duration_s": 268.138,
-                        "subgoal": "Explain ..."}, ...}
-        output/<course>/stage_1b_verify_segments/report.json   per lecture: ok, errors, attempts, errors fixed on retry
-start is the first sentence's start and end the last sentence's end; null when that boundary is inside a subtitle cue
-(see s0a_preprocess.py), and duration_s is then null too.
+Budgets: up to STRUCTURAL_RETRIES structural retries for each answer that fails the structural checks in a row; up to
+LOGICAL_RETRIES logical retries per lecture. A lecture fails (no segment map) only if no answer passes the structural
+checks.
+
+The retry conversation: [the 1a prompt, the last answer as the model gave it, the retry prompt]. The server keeps no
+state, so 1b sends the whole conversation; the 1a prompt is rebuilt and checked against 1a's prompt_sha. The model's
+thinking is not sent back. Instead, every retry answer is a JSON object {"reasoning": what it changed, or kept and why;
+"segments": [...]}; when the last answer was itself a retry, the next retry prompt repeats the problems it was fixing
+and its reasoning (prompts/segmentation_retry_previous.txt), so the model builds on it instead of starting again.
+
+Prompts  prompts/segmentation_structural_retry.txt, prompts/segmentation_logical_retry.txt ({problems}, {previous}),
+         prompts/segmentation_retry_previous.txt ({previous_problems}, {previous_reasoning})
+Reads    output/<course>/stage_0a_preprocess/, output/<course>/stage_1a_segmentation/raw/lec_<n>.json
+Writes   output/<course>/stage_1b_verify_segments/
+           segment_maps/lec_<n>.json   from the kept answer:
+               {"<n>/S0": {"first": "<n>/0", "last": "<n>/41", "start": 24.297, "end": 292.435,
+                           "duration_s": 268.138, "subgoal": "Explain ..."}, ...}
+           retry/lec_<n>.json          lectures with retries: every attempt (kind, the retry prompt sent, the answer,
+                                       its reasoning, the model's thinking, problems found, segment lengths, tokens)
+           report.json                 per lecture: ok, kept attempt, retries, flagged segments left (with lengths)
+           llm/cache.jsonl, calls.jsonl
+start is the first sentence's start and end the last sentence's end. A boundary inside a subtitle cue (null in stage
+0a) gets an estimated time (Timing: from the edges of the cue it falls in and the words on each side, at the course's
+median speaking rate; stage 0a's times/meta.json and times/cues/) and the segment lists it: "estimated": ["start"].
+
+Without an LLM (llm=None, no --llm) the stage only checks: no retries; a lecture that fails the structural checks fails.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
+if __package__ in (None, ""):
+    sys.path.insert(0, str(ROOT))
+
+from scripts import lectures as lec  # noqa: E402
+from scripts import s1a_segmentation as s1a  # noqa: E402
+from scripts.llm import LLM, LLMConfig, Request  # noqa: E402
+
+PROMPTS = ROOT / "prompts"
+STRUCTURAL_PROMPT = PROMPTS / "segmentation_structural_retry.txt"
+LOGICAL_PROMPT = PROMPTS / "segmentation_logical_retry.txt"
+PREVIOUS_PROMPT = PROMPTS / "segmentation_retry_previous.txt"
+STRUCTURAL_RETRIES, LOGICAL_RETRIES = 2, 2
+MIN_S, MAX_S = 120, 900    # logical checks: under 2 min looks too small, over 15 min too big
+RETRY_SCHEMA = {"type": "object", "additionalProperties": False, "required": ["reasoning", "segments"],
+                "properties": {"reasoning": {"type": "string"}, "segments": s1a.SCHEMA}}
 
 
-# ---------------------------------------------------------------------------- checks
+# ---------------------------------------------------------------------------- structural checks
 def answer_errors(answer, n_sentences: int) -> list[str]:
     """Problems with the model's answer, worded for the model (sentence numbers from 1)."""
     if not isinstance(answer, list) or not answer:
@@ -90,66 +129,301 @@ def segment_errors(segments: list[list[str]], ids: list[str]) -> list[str]:
 
 
 def check(answer, ids: list[str]) -> list[str]:
-    """All checks on one answer; [] when it is fine."""
+    """All structural checks on one answer (a list of segments); [] when it is fine."""
     errors = answer_errors(answer, len(ids))
     return errors or segment_errors(build(answer, ids), ids)
 
 
-# ---------------------------------------------------------------------------- segment maps
-def segment_map(n: int, answer: list, ids: list[str], times: dict) -> dict:
-    out = {}
-    for k, (seg, item) in enumerate(zip(build(answer, ids), answer)):
-        start, end = times[seg[0]]["start"], times[seg[-1]]["end"]
-        out[f"{n}/S{k}"] = {"first": seg[0], "last": seg[-1], "start": start, "end": end,
-                            "duration_s": round(end - start, 3) if start is not None and end is not None else None,
-                            "subgoal": item["subgoal"].strip()}
+def segments_of(parsed):
+    """The list of segments in an answer: 1a answers are the list, retry answers {"reasoning", "segments"}."""
+    return parsed.get("segments") if isinstance(parsed, dict) else parsed
+
+
+# ---------------------------------------------------------------------------- segment times
+class Timing:
+    """Times of a lecture's segment boundaries. A boundary at a subtitle cue's edge has the cue's time (exact). One
+    inside a cue (null in stage 0a) is estimated from the course's speaking rate (stage 0a's times/meta.json,
+    wpm_median) and the cue it falls in (stage 0a's times/cues/): forward from the cue's start by the words spoken
+    before the boundary, backward from the cue's end by the words spoken after it; the mean of the two, kept inside
+    the cue. Without a cue timeline the nearest exact sentence times on each side stand in for the cue's edges
+    (they can be far apart where cues split sentences anywhere).
+    method: "cue" (default; falls back to "sentences" without a timeline), "sentences", or "forward" (from the
+    nearest exact time before the boundary only); the last two are kept to compare (see the preprocessing report)."""
+
+    def __init__(self, ids: list[str], sentences: dict, times: dict, wpm: float, timeline: dict | None = None,
+                 method: str = "cue"):
+        self.ids, self.times, self.wpm = ids, times, wpm
+        self.words = [len(sentences[i].split()) for i in ids]
+        self.method = method if timeline or method != "cue" else "sentences"
+        if timeline:
+            self.cues = timeline["cues"]
+            self.cue_first, w = [], 0                    # each cue's first word, counted over the whole lecture
+            for c in self.cues:
+                self.cue_first.append(w)
+                w += c[2]
+            self.sent_first, w = [], timeline["skip_words"]   # each sentence's first word
+            for n in self.words:
+                self.sent_first.append(w)
+                w += n
+
+    def _rate(self, words: int) -> float:
+        return words / self.wpm * 60
+
+    def before(self, i: int) -> tuple[float, bool]:
+        """(time, estimated) of the boundary just before sentence i (its start)."""
+        t = self.times[self.ids[i]]["start"]
+        if t is not None:
+            return t, False
+        if self.method == "cue":
+            w = self.sent_first[i]
+            c = max(k for k, f in enumerate(self.cue_first) if f <= w)          # the cue the boundary is in
+            t0, t1, n = self.cues[c]
+            into = w - self.cue_first[c]
+            t0, t1, before, after = t0, t1, into, n - into
+        else:   # the nearest exact times on each side: an earlier sentence's start, a later sentence's end
+            j = next((j for j in range(i - 1, -1, -1) if self.times[self.ids[j]]["start"] is not None), 0)
+            k = next((k for k in range(i - 1, len(self.ids)) if self.times[self.ids[k]]["end"] is not None), None)
+            t0 = self.times[self.ids[j]]["start"] or 0.0
+            before = sum(self.words[j:i])
+            if k is None or self.method == "forward":
+                return round(t0 + self._rate(before), 3), True
+            t1, after = self.times[self.ids[k]]["end"], sum(self.words[i:k + 1])
+        forward, backward = t0 + self._rate(before), t1 - self._rate(after)
+        return round(min(max((forward + backward) / 2, t0), t1), 3), True
+
+    def after(self, i: int) -> tuple[float, bool]:
+        """(time, estimated) of the boundary just after sentence i (its end)."""
+        t = self.times[self.ids[i]]["end"]
+        if t is not None or i + 1 == len(self.ids):
+            return t, False
+        return self.before(i + 1)
+
+    def span(self, seg: list[str]) -> tuple[float, float, list[str]]:
+        """(start, end, which of them are estimated) of a segment (a list of sentence IDs)."""
+        (s, se), (e, ee) = self.before(self.ids.index(seg[0])), self.after(self.ids.index(seg[-1]))
+        return s, e, [k for k, est in (("start", se), ("end", ee)) if est]
+
+    def seconds(self, seg: list[str]) -> float:
+        s, e, _ = self.span(seg)
+        return e - s
+
+
+def load_timing(course: str, n, sentences: dict | None = None, method: str = "cue") -> Timing:
+    s0 = ROOT / "output" / course / "stage_0a_preprocess"
+    meta = s0 / "times" / "meta.json"
+    if not meta.exists():
+        raise SystemExit(f"{meta} is missing: run stage 0a again (it writes the speaking rate)")
+    stem = lec.stem_of(n)
+    sentences = sentences or json.loads((s0 / f"{stem}.json").read_text())
+    cues = s0 / "times" / "cues" / f"{stem}.json"
+    return Timing(list(sentences), sentences, json.loads((s0 / "times" / f"{stem}.json").read_text()),
+                  json.loads(meta.read_text())["wpm_median"],
+                  json.loads(cues.read_text()) if cues.exists() else None, method)
+
+
+# ---------------------------------------------------------------------------- logical checks
+def length_problems(answer: list, ids: list[str], timing: Timing, min_s: float | None = MIN_S,
+                    max_s: float | None = MAX_S, exempt_last: bool = True, show_time: bool = False) -> list[str]:
+    """Segments under min_s or over max_s, worded for the model (no bounds, no durations; show_time=True adds the
+    duration, for reports). The last segment is exempt from the minimum by default. None disables a bound."""
+    out = []
+    segs = build(answer, ids)
+    for k, (seg, item) in enumerate(zip(segs, answer), 1):
+        d = timing.seconds(seg)
+        where = (f'Segment {k} (sentences {ids.index(seg[0]) + 1} to {ids.index(seg[-1]) + 1}, '
+                 f'"{item["subgoal"].strip()}")')
+        when = f" [{int(d // 60)} min {int(d % 60)} s]" if show_time else ""
+        if min_s is not None and d < min_s and not (exempt_last and k == len(segs)):
+            out.append(f"{where} looks too small.{when}")
+        elif max_s is not None and d > max_s:
+            out.append(f"{where} looks too big.{when}")
     return out
 
 
-def run(course: str, lectures: list[int] | None = None) -> dict:
+# ---------------------------------------------------------------------------- the verify loop
+def fill(path: Path, **fields: str) -> str:
+    """A prompt file with its {placeholders} replaced (plain replacement: JSON braces in the text stay as they are)."""
+    text = path.read_text()
+    for k, v in fields.items():
+        text = text.replace("{" + k + "}", v)
+    return text
+
+
+def bullets(items: list[str]) -> str:
+    return "\n".join(f"- {x}" for x in items)
+
+
+def verify_lecture(raw: dict, ids: list[str], timing: Timing, ask=None) -> dict:
+    """Run the flow on one lecture. ask(followup) -> llm Result sends a retry (None: checks only). Returns
+    {"attempts": [...], "kept": index or None}."""
+    attempts: list[dict] = []
+
+    def add(kind: str, parsed, content: str, sent: str | None = None, fixing: list | None = None, res=None) -> dict:
+        segs = segments_of(parsed)
+        errs = check(segs, ids)
+        a = {"attempt": len(attempts), "kind": kind, "sent": sent, "fixing": fixing, "content": content,
+             "reasoning": parsed.get("reasoning") if isinstance(parsed, dict) else None,
+             "segments": segs, "structural_errors": errs, "logical_problems": None,
+             "minutes": None if errs else [round(timing.seconds(s) / 60, 2) for s in build(segs, ids)]}
+        if res is not None:
+            a.update(thinking=res.reasoning, input_tokens=res.input_tokens, output_tokens=res.output_tokens,
+                     latency_s=round(res.latency_s, 2), cached=res.cached, finish=res.finish)
+        attempts.append(a)
+        return a
+
+    def retry(kind: str, last: dict, problems: list[str]) -> dict:
+        previous = ""
+        if last["kind"] != "1a" and last.get("reasoning"):
+            previous = fill(PREVIOUS_PROMPT, previous_problems=bullets(last["fixing"] or []),
+                            previous_reasoning=last["reasoning"].strip())
+        sent = fill(STRUCTURAL_PROMPT if kind == "structural" else LOGICAL_PROMPT,
+                    problems=bullets(problems), previous=previous)
+        res = ask([{"role": "assistant", "content": last["content"] or ""}, {"role": "user", "content": sent}],
+                  len(attempts))
+        return add(kind, res.parsed, res.content, sent, problems, res)
+
+    cur = add("1a", raw.get("answer"), raw.get("content", ""))
+    s_used = l_used = 0
+    while True:
+        if cur["structural_errors"]:
+            if ask is None or s_used == STRUCTURAL_RETRIES:
+                break
+            s_used += 1
+            cur = retry("structural", cur, cur["structural_errors"])
+            continue
+        s_used = 0
+        cur["logical_problems"] = length_problems(cur["segments"], ids, timing)
+        if not cur["logical_problems"] or ask is None or l_used == LOGICAL_RETRIES:
+            break
+        l_used += 1
+        cur = retry("logical", cur, cur["logical_problems"])
+    valid = [a for a in attempts if not a["structural_errors"]]
+    kept = min(reversed(valid), key=lambda a: len(a["logical_problems"]))["attempt"] if valid else None
+    return {"attempts": attempts, "kept": kept}
+
+
+# ---------------------------------------------------------------------------- segment maps
+def segment_map(n, answer: list, ids: list[str], timing: Timing) -> dict:
+    """The segments of the kept answer with their times. A boundary inside a subtitle cue gets an estimated time,
+    listed in "estimated" (e.g. ["start"]); the key is there only when something is estimated."""
+    out = {}
+    for k, (seg, item) in enumerate(zip(build(answer, ids), answer)):
+        start, end, est = timing.span(seg)
+        out[f"{n}/S{k}"] = {"first": seg[0], "last": seg[-1], "start": start, "end": end,
+                            "duration_s": round(end - start, 3), "subgoal": item["subgoal"].strip(),
+                            **({"estimated": est} if est else {})}
+    return out
+
+
+def out_dir(course: str) -> Path:
+    return ROOT / "output" / course / "stage_1b_verify_segments"
+
+
+def run(course: str, lectures: list | None = None, llm: LLM | LLMConfig | str | Path | None = None) -> dict:
+    """Verify the lectures (all that stage 1a answered, by default). llm: an LLM (started), or an LLMConfig or config
+    file (the server is started only if some lecture needs a retry, and stopped after); None: checks only."""
     s0 = ROOT / "output" / course / "stage_0a_preprocess"
-    s1a = ROOT / "output" / course / "stage_1a_segmentation" / "raw"
-    out = ROOT / "output" / course / "stage_1b_verify_segments"
-    (out / "segment_maps").mkdir(parents=True, exist_ok=True)
-    raws = sorted(s1a.glob("lec_*.json"), key=lambda p: int(p.stem.split("_")[1]))
+    raws_dir = s1a.out_dir(course) / "raw"
+    out = out_dir(course)
+    for sub in ("segment_maps", "retry", "llm"):
+        (out / sub).mkdir(parents=True, exist_ok=True)
+    paths = lec.files(raws_dir)
     if lectures:
-        raws = [p for p in raws if int(p.stem.split("_")[1]) in lectures]
-    report, n_ok, n_seg = {}, 0, 0
-    for p in raws:
+        keep = lec.normalize(lectures)
+        paths = [p for p in paths if lec.key_of(p.stem) in keep]
+    data = {}
+    for p in paths:
         raw = json.loads(p.read_text())
-        n = raw["lecture"]
-        ids = list(json.loads((s0 / p.name).read_text()))
-        times = json.loads((s0 / "times" / p.name).read_text())
-        errors = check(raw["answer"], ids) if raw["ok"] else raw["errors"]
-        entry = {"ok": not errors, "errors": errors, "attempts": raw["attempts"],
-                 "fixed_on_retry": [h["errors"] for h in raw.get("history", [])]}
-        if not errors:
-            smap = segment_map(n, raw["answer"], ids, times)
-            (out / "segment_maps" / p.name).write_text(json.dumps(smap, indent=1, ensure_ascii=False) + "\n")
-            entry["segments"] = len(smap)
-            n_ok += 1
-            n_seg += len(smap)
+        n = lec.key_of(p.stem)
+        sents = json.loads((s0 / p.name).read_text())
+        data[n] = {"raw": raw, "ids": list(sents), "timing": load_timing(course, n, sents),
+                   "prompt": s1a.build_prompt(sents, course, n)}
+
+    # the retry conversation starts from 1a's prompt: it must be the one 1a sent
+    stale = [n for n, d in data.items()
+             if d["raw"].get("prompt_sha") and d["raw"]["prompt_sha"] != s1a.prompt_sha(d["prompt"])]
+    if stale:
+        raise RuntimeError(f"the segmentation prompt changed since stage 1a for lectures {stale}; run 1a again")
+
+    def needs_model(d):
+        segs = segments_of(d["raw"].get("answer"))
+        return bool(check(segs, d["ids"]) or length_problems(segs, d["ids"], d["timing"]))
+
+    own = None
+    if isinstance(llm, (str, Path)):
+        llm = LLMConfig.load(llm)
+    if isinstance(llm, LLMConfig):
+        own = llm = LLM(llm) if any(needs_model(d) for d in data.values()) else None
+        if own:
+            own.start()
+
+    def verify(n: int) -> tuple[int, dict]:
+        d = data[n]
+
+        def ask(followup: list, k: int):
+            return llm.generate(Request(prompt=d["prompt"], key=f"{lec.stem_of(n)}/attempt_{k}", schema=RETRY_SCHEMA,
+                                        followup=followup, meta={"lecture": n, "attempt": k}),
+                                cache_file=out / "llm" / "cache.jsonl", log_file=out / "llm" / "calls.jsonl")
+        return n, verify_lecture(d["raw"], d["ids"], d["timing"], ask if llm else None)
+
+    try:
+        workers = max(1, (llm.cfg.concurrency or llm.cfg.slots) if llm else 1)
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            results = dict(ex.map(verify, list(data)))
+    finally:
+        if own:
+            own.stop()
+
+    rp = out / "report.json"
+    report = json.loads(rp.read_text()) if lectures and rp.exists() else {}   # --only updates the report
+    for n, v in results.items():
+        d, atts, kept = data[n], v["attempts"], v["kept"]
+        kinds = [a["kind"] for a in atts]
+        entry = {"ok": kept is not None, "kept_attempt": kept, "attempts": len(atts),
+                 "structural_retries": kinds.count("structural"), "logical_retries": kinds.count("logical")}
+        retry_file = out / "retry" / f"{lec.stem_of(n)}.json"
+        smap_file = out / "segment_maps" / f"{lec.stem_of(n)}.json"
+        if len(atts) > 1:
+            retry_file.write_text(json.dumps({"lecture": n, "kept_attempt": kept, "attempts": atts},
+                                             indent=1, ensure_ascii=False) + "\n")
         else:
-            (out / "segment_maps" / p.name).unlink(missing_ok=True)
-        report[f"lec_{n}"] = entry
-    (out / "report.json").write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
-    failed = [k for k, v in report.items() if not v["ok"]]
-    retried = [k for k, v in report.items() if v["fixed_on_retry"]]
-    print(f"{n_ok}/{len(raws)} lectures pass, {n_seg} segments -> {out.relative_to(ROOT)}"
-          + (f"; failed: {failed}" if failed else "") + (f"; fixed on retry: {retried}" if retried else ""))
-    return {"lectures": len(raws), "ok": n_ok, "segments": n_seg, "failed": failed, "retried": retried}
+            retry_file.unlink(missing_ok=True)
+        if kept is not None:
+            segs = atts[kept]["segments"]
+            smap = segment_map(n, segs, d["ids"], d["timing"])
+            smap_file.write_text(json.dumps(smap, indent=1, ensure_ascii=False) + "\n")
+            entry["segments"] = len(smap)
+            entry["flagged_left"] = length_problems(segs, d["ids"], d["timing"], show_time=True)
+        else:
+            smap_file.unlink(missing_ok=True)
+            entry["structural_errors"] = atts[-1]["structural_errors"]
+        report[lec.stem_of(n)] = entry
+    rp.write_text(json.dumps(dict(sorted(report.items(), key=lambda kv: lec.order(lec.key_of(kv[0])))), indent=1,
+                             ensure_ascii=False) + "\n")
+
+    done = {lec.stem_of(n): report[lec.stem_of(n)] for n in results}
+    failed = [k for k, e in done.items() if not e["ok"]]
+    s_retried = [k for k, e in done.items() if e["structural_retries"]]
+    l_retried = [k for k, e in done.items() if e["logical_retries"]]
+    n_seg = sum(e.get("segments", 0) for e in done.values())
+    n_flag = sum(len(e.get("flagged_left", [])) for e in done.values())
+    print(f"{len(done) - len(failed)}/{len(done)} lectures pass, {n_seg} segments -> {out.relative_to(ROOT)}"
+          + (f"; failed: {failed}" if failed else "")
+          + (f"; structural retries: {s_retried}" if s_retried else "")
+          + (f"; logical retries: {l_retried}" if l_retried else "")
+          + f"; flagged segments left: {n_flag}")
+    return {"lectures": len(done), "ok": len(done) - len(failed), "segments": n_seg, "failed": failed,
+            "structural_retried": s_retried, "logical_retried": l_retried, "flagged_left": n_flag}
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("course")
-    ap.add_argument("--only", help="lectures, e.g. 1-5,8")
+    ap.add_argument("--llm", help="LLMConfig file for the retries (without it: checks only)")
+    ap.add_argument("--only", help="lectures, e.g. 1-5,8,24b,tut_1")
     a = ap.parse_args()
-    from scripts.s1a_segmentation import parse_only
-    run(a.course, parse_only(a.only) if a.only else None)
+    run(a.course, s1a.parse_only(a.only) if a.only else None, a.llm)
 
 
 if __name__ == "__main__":
-    import sys
-    sys.path.insert(0, str(ROOT))
     main()

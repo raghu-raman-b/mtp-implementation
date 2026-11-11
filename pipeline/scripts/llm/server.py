@@ -16,6 +16,8 @@ from pathlib import Path
 
 from .config import LLMConfig
 
+LOG_DIR = Path(__file__).resolve().parents[2] / "output" / "logs"   # the pipeline's output/logs
+
 LLAMA_THINK_END = "I have thought enough; now I give the final answer."
 
 
@@ -127,7 +129,7 @@ class Server:
         if c.engine == "vllm" and os.sep in cmd[0]:   # vLLM compiles kernels with tools from its own venv and CUDA
             env["PATH"] = f"{Path(cmd[0]).parent}:/usr/local/cuda/bin:{env.get('PATH', '')}"
         env.update({k: str(v) for k, v in c.env.items()})
-        log_path = Path(c.server_log or f"llm_server_{c.port}.log")
+        log_path = Path(c.server_log) if c.server_log else LOG_DIR / f"llm_server_{c.port}.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
         self.log(f"starting {c.engine}: {' '.join(cmd)}\n  server log: {log_path}")
         t0 = time.time()

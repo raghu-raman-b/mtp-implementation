@@ -1,0 +1,92 @@
+[21/32] So, one way of categorization is based on the skill.
+[21/33] There can be other types of categorizations also.
+[21/34] Sometimes we can categorize based on target application platforms.
+[21/35] So, some tools are meant for desktop AR applications while others are meant for mobile AR applications.
+[21/36] Again, categorization can be based on the technology.
+[21/37] So, some support CV-based tracking, computer vision-based tracking, whereas others use other sensors for tracking such as GPS sensors.
+[21/38] So, such technology-based categorization or platform-based categorization or skill-based categorization is possible with AR tools.
+[21/39] But we should try to understand the tools in terms of some sort of categorization for a structured view.
+[21/40] So let us assume the skill-based categorization and accordingly let us discuss the tools.
+[21/41] So we'll start with the the one which requires the maximum skill from the developer, that is the low-level libraries and frameworks.
+[21/42] So, what is the idea?
+[21/43] Low-level libraries provide access to the core tracking and display functionality to build an AR application.
+[21/44] A popular example is AR Toolkit.
+[21/45] There are many other such examples.
+[21/46] Now, if we talk about AR Toolkit.
+[21/47] It is one of the most widely adopted software libraries for developing AR applications.
+[21/48] It can provide marker-based tracking in its open-source version, or there is a commercial version available for AR toolkit which can be accessed from AR tool works, which also supports tracking natural features on an arbitrary image, that is, it uses computer vision techniques.
+[21/49] The toolkit is written in C, and it supports various platforms such as Windows, Linux, and macOS.
+[21/50] One thing to note here is that the toolkit, ARToolKit, is primarily meant to provide tracking support.
+[21/51] Tracking we have already discussed in one of the previous lectures.
+[21/52] It tracks various things including objects in the environment, and AR and VR systems are supposed to have tracking functions inbuilt.
+[21/53] Now, if we are using ARToolKit to develop an AR application, then the toolkit is a library which provides functions that can enable the developer to perform tracking and accordingly do some activity.
+[21/54] The primary purpose of ARToolKit is to provide tracking support to the developer.
+[21/55] As a consequence, the toolkit provides only low-level OpenGL-based rendering support.
+[21/56] So, very primitive rendering support is provided and no built-in support for interaction techniques or complex realistic graphics.
+[21/57] So, it can be used to render, but at a very low level, very simple level rather than realistic graphics, and also it does not provide support for interaction with the digital content overlaid on the real-world view.
+[21/58] So, if we are going to use it alone, it may still result in some system, but that system will be very rudimentary, and to provide interaction the developer has to write things from scratch, develop things from scratch.
+[21/59] So, it will be difficult and time-consuming to develop a complete AR application which looks realistic.
+[21/60] Now, that is the problem if we are going to use the ARToolKit alone.
+[21/61] So, to overcome this problem, what we can do is.
+[21/62] Now, this problem typically happens with many standard toolkits or low-level libraries.
+[21/63] They primarily provide tracking support and miss certain desired features that are required for realistic rendering of digital content. on real-world view that is typically required in an AR application, and also provide interaction support.
+[21/64] So to overcome that, what we can do is we can combine multiple libraries and create a framework for AR system development.
+[21/65] So we can call the combination of those libraries a framework for the developers.
+[21/66] Let us see an example with AR toolkit, what kind of framework we can use or create.
+[21/67] So, we can overcome the limitations of AR toolkit by combining other libraries.
+[21/68] Typically, we should look for libraries that provide interaction as well as realistic graphic support.
+[21/69] One such type of library can be libraries with support for scene graph management.
+[21/70] Now, why are we emphasizing the term scene graphs?
+[21/71] Scene graphs represent computer graphic scenes as a node-based graph.
+[21/72] So, essentially the entire scene is represented in the form of a tree with nodes and links between nodes, and we can selectively work with nodes to manipulate the scene and also create realistic effects and also allow interaction.
+[21/73] So it is actually a very nice way of trying to represent the complexity of a scene as well as trying to work with the complexity of a scene.
+[21/74] So it provides a way to manage the functionality of a complex graphics application.
+[21/75] So scene graph-based representations generally aid in graphics applications.
+[21/76] Some of the features that typically scene graph-based representations provide have.
+[21/77] So, they allow sorting objects according to visibility: which are visible with respect to viewer position and which should not be visible.
+[21/78] It can allow removing objects out of camera field of view.
+[21/79] So, this one is called visible surface detection, and this one is called clipping.
+[21/80] So, these operations that are typically part of any 3D graphics pipeline are easily managed and supported by this type of representation.
+[21/81] Also, it can allow state management and higher level abstractions of functionalities.
+[21/82] So, many things are possible if we go with scene graph-based representation.
+[21/83] So, in a sense, if we summarize If we take help of a scene graph library, then that can enable the developer to focus on interactions between virtual objects rather than low-level object rendering.
+[21/84] So, earlier with only AR Toolkit, the focus was on tracking.
+[21/85] So, low-level object rendering plus interaction both had to be taken care of by the developer.
+[21/86] Now, if we combine the AR toolkit with scene graph libraries, Any of the scene graph libraries, then these low level rendering challenges can be taken care of by the library and the developer can focus more on the interaction part.
+[21/87] So, one such open source library, one such scene graph library is The Open Scene Graph, it used to be quite popular earlier.
+[21/88] Now, there is a successor of OSG that is Vulkan Scene Graph VSG.
+[21/89] Both are open source and widely used.
+[21/90] There are other such libraries as well.
+[21/91] We are taking these as examples.
+[21/92] Now, it is written in C++ language.
+[21/93] And such libraries are built on top of another library that is called OpenGL, which accesses the lower-level hardware.
+[21/94] The advantage is that with this library is that it supports a large number of plugins for additional functionality such as model loading, shadow rendering, physics which are primarily relevant most of the time for VR and Partly relevant for AR.
+[21/95] Through this example, we can try to understand the concept of a framework based on AR toolkit and OSG.
+[21/96] So, it is, suppose we have this marker on a table; when we point our mobile phone, the phone detects the marker and then a 3D object, that is a cow, pops up on your screen.
+[21/97] So, then it involves two parts: tracking, that is recognizing the marker and its position, and then 3D registration, that is creating and rendering the cow on that position.
+[21/98] So, these operations can be taken care of by combining AR toolkit and OSG or VSG, its successor.
+[21/99] The entire thing can be represented in the form of a node graph.
+[21/100] So, we can have a root node, then the virtual camera can be represented as a node and we can work with parameters of the node.
+[21/101] Projection that is part of rendering can be considered as another node which allows projection on the video layer.
+[21/102] Other related concepts can be considered as nodes.
+[21/103] The 3D object itself, the cow, can be considered as a node.
+[21/104] Then various transformations that are part of 3D graphics can be represented as a single node or individual nodes.
+[21/105] So, once we are able to represent this entire activity in the form of a graph, then it is easier to visualize and manipulate such a graph to create the desired effect that the user is looking for.
+[21/106] So, here the simple scene graph contains video input and tracking.
+[21/107] Both video input primarily comes from the input device.
+[21/108] Tracking again based on sensors present in the input device, in this case camera, combined with nodes for graphics rendering.
+[21/109] So, various nodes like transformation, 3D object representation, orthographic projection; these are related to graphics rendering.
+[21/110] So, when we combine these, the end result is a simple AR scene with a 3D cow model overlaid on a tracking marker.
+[21/111] Now, this part overlaid on a tracking marker that is 3D registration and tracking is taken care of by AR Toolkit whereas the other part, AR scene creation with a 3D cow that is taken care of by the OSG that is Open Scene Graph.
+[21/112] So, there are many such frameworks available, some are still in use, some were being used earlier quite popular for example OSG ART 3 library it links AR Toolkit for tracking support with OSG library for real-time rendering features Goblin XNA combines ART tag tracking library so this ART tag is another tracking library with Microsoft XNA game platform Metaio SDK plus OSG the former provides a comprehensive set of AR tracking technologies Metaio SDK whereas OSG provides rendering support.
+[21/113] So this is one way of looking at the software.
+[21/114] Now there can be mobile-specific frameworks as well.
+[21/115] For example, AR Toolkit for mobile.
+[21/116] It is a version of the AR Toolkit available for mobile platforms including iOS and Android, integrated with OpenSceneGraph but developed for mobile.
+[21/117] Then we have DroidAR.
+[21/118] And also we have Vuforia.
+[21/119] Vuforia is still quite popularly used.
+[21/120] Now, various libraries, as we have mentioned earlier, support tracking, but they can support it in different ways.
+[21/121] For example, computer vision can be used to support tracking, which is there in Vuforia, or other sensors can be used for tracking support.
+[21/122] For example, DroidAR uses other sensors for tracking support.
+[21/123] That is about low-level libraries and frameworks.

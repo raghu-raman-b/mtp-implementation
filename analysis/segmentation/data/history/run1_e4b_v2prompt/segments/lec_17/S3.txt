@@ -1,0 +1,51 @@
+[17/38] Now let us try to understand each of those steps assuming IMU sensors.
+[17/39] Let us start with the first stage that is calibration.
+[17/40] So what happens in calibration?
+[17/41] Now the gyroscope gives us angular velocity.
+[17/42] Now, this angular velocity is captured in the form of some numbers, but this is not the exact angular velocity that ideally should be there in a perfect world.
+[17/43] So, measured angular velocity of the gyroscope, let us call it omega g, and the actual angular velocity, let us call it omega a, are likely to be different.
+[17/44] We are assuming that our sensors are not perfect.
+[17/45] So, they are likely to be different.
+[17/46] Now, due to imperfect devices and the measurement technique that we are adopting, the difference comes.
+[17/47] So, the measurement error in this case is omega g the measured velocity versus omega a the actual velocity.
+[17/48] So, omega G minus omega A is the measurement error which is quite obvious.
+[17/49] Now, how do we relate the two values?
+[17/50] So, our objective is to basically in the calibration stage, our objective is to make these two values as close to each other as possible.
+[17/51] Now, one way to relate both can be a linear relationship.
+[17/52] Through a linear relationship.
+[17/53] Say, we can propose a relationship like omega g is a plus b into omega a.
+[17/54] This is a linear relationship.
+[17/55] Now, when omega g is equal to omega a, we can say that a is 0 and b is 1.
+[17/56] So, if we replace the value of a with 0 and b with 1, then we can see that both become equal.
+[17/57] So, that is the perfect condition, ideal condition that we want to be in, but that never happens in practice.
+[17/58] But if we have this type of relationship, note that this is not the only way to relate the two.
+[17/59] Here, we are just for the sake of simplicity, we are assuming there is a linear relationship between these two values and we have to estimate the parameters here, a, b, and so on.
+[17/60] So, assuming this relationship holds, we can have the measurement error represented as omega g minus omega a equals a plus b omega a minus omega a.
+[17/61] So, we are replacing omega g with this expression And we can reformulate it to be A plus B minus 1 times omega A.
+[17/62] So, this is the expression for measurement error.
+[17/63] Next, what we can do to calibrate, that means to reduce or make this measurement error as minimal as possible, what can we do?
+[17/64] That involves taking many samples, sometimes thousands, from cheap and inaccurate sensors, which we are calling omega g, that is the measurement.
+[17/65] We are assuming that our sensor that we have at our disposal is cheap and inaccurate, and also expensive and highly accurate sensors WA.
+[17/66] Note here that when I say expensive or highly accurate, that can still be not the exact or ideal scenario, but it may be very close.
+[17/67] So, the sensor that we are using to represent the real value is supposed to be highly accurate as compared to the inexpensive or cheap ones or inaccurate ones that we are assuming we have.
+[17/68] So, we are assuming for calibration that we have access to thousands of samples of data from two types of sensors.
+[17/69] One is the IMU sensors which is assumed to be cheap or inaccurate, vis-a-vis a highly accurate one, benchmark data set which we are calling omega A, and then we can compare these values.
+[17/70] Then one way to compare is A very simple approach is to compute the sum of squared errors.
+[17/71] So this is the expression; this is the difference.
+[17/72] We are squaring it and then taking the sum of all such squared values, that is for all samples, for all pairs of samples.
+[17/73] So we have n values for omega A and n values for omega G.
+[17/74] For each pair, we are computing the difference, then taking the square, and then summing up all those values.
+[17/75] This is a simple or straightforward optimization problem where we are trying to find out constraints, constants C1 and C2, which optimize the expression C1 plus C2 WG minus WA.
+[17/76] This is a classical regression problem.
+[17/77] So, the square term of C1 plus C2 WG minus WA, this we are trying to optimize.
+[17/78] This is a classical regression problem, which is referred to as linear least squares.
+[17/79] This is only one of the many techniques that are there.
+[17/80] Again, we are referring to these simple techniques for simplicity, for the sake of simplicity.
+[17/81] Now, once we are able to determine C1 and C2, then we can transform the cheap sensor reading in the following way: calibrated value omega cal can be C1 plus C2 omega g.
+[17/82] So, this essentially maps the cheap sensor output to the expensive sensor output, or in other words, to the closest match possible with the real value.
+[17/83] But here we are doing it mathematically rather than using an actually very expensive or very accurate sensor.
+[17/84] So, this stage where we are mathematically correcting what we are getting to what ideally we should get is called calibration.
+[17/85] So, I hope this is a better way of understanding things rather than going through the definition.
+[17/86] To summarize calibration, what we are doing based on our datasets is finding out the C1 and C2 constants in this case.
+[17/87] In a simple case, if we are using any other relationship, the constants may be different in number and form.
+[17/88] However, the idea is to find out those constants and then use those constants to formulate an expression to transform or to map the actual sensor value that we are getting to a value that is close to the ideal ones through equations such as this, that is calibration.

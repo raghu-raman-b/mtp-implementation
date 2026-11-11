@@ -1,0 +1,41 @@
+[58/59] So, let us try to go through the algorithm for slopes which lie between 0 and 1. or between minus 1 and 0.
+[58/60] So, effectively between minus 1 and plus 1.
+[58/61] So, minor modification may be needed for any other slope.
+[58/62] Now, here the input is the two line endpoints, this one and this one, and the output is the set of pixels p to render the line segment.
+[58/63] That is the set of pixels that approximate the line.
+[58/64] Now, at the beginning of the algorithm, we need to compute a few parameters, namely delta x, that is the difference between the two end point x coordinates, delta y, the difference between the two end point y coordinates, and p, a decision parameter which is twice delta y minus delta x.
+[58/65] Then we start by initializing something, that is, x equal to the first endpoint, y equal to the first endpoint, and add this to the set of pixels p.
+[58/66] Then, if the decision parameter value p is less than 0, that is this value that we have seen, then we increment x by 1 and reset the decision parameter as the older value plus twice delta y.
+[58/67] Otherwise, we increment x by 1 and y by 1 and reset the value as p plus twice delta y minus twice delta x.
+[58/68] And this goes on in a loop until we reach the other endpoint.
+[58/69] So, at every loop instance, we add the computed coordinate value to the set of pixels.
+[58/70] Now, here you can see that the entire operation is done based on integer arithmetic, addition, multiplication, and so on.
+[58/71] So, this actually speeds up the rendering of lines, and this is one instance where we can have an efficient algorithm for faster line rendering.
+[58/72] There are similar algorithms possible for other shapes as well.
+[58/73] So, this algorithm is efficient because it avoids floating point operations such as rounding off and division, and also sometimes floating point multiplication.
+[58/74] And avoiding these operations is very important to speed up the rendering because, at any given instant, we need to render a large number of lines or line segments simultaneously.
+[58/75] So, speeding up certainly makes the system more efficient.
+[58/76] Now, this algorithm we need to invoke for every line segment, and there may be thousands at any instant.
+[58/77] For interactive graphics, where we can change the display based on user input such as in virtual reality, the computational need increases manifold because With every input, we need to change the scene, which means again redrawing hundreds of thousands of lines.
+[58/78] So, such algorithms exist for other geometric shapes.
+[58/79] Of course, those are a little bit more complex as compared to the line rendering shapes, such as circle, ellipse, fill area, or other polygons.
+[58/80] We will skip those.
+[58/81] We will not go into the details of those algorithms, and you may refer to the reference mentioned at the end.
+[58/82] For more details, the basic idea is that we need some algorithm to efficiently render it on the screen.
+[58/83] That means efficiently mapping the original shape to the set of pixels that will represent it on the screen.
+[58/84] And our objective is to do it as fast as possible.
+[58/85] That means reducing the floating point operations as much as possible.
+[58/86] So for a line, we can completely eliminate them.
+[58/87] But for other shapes, we may not be able to completely eliminate them, but we can minimize the number of operations.
+[58/88] Now, there is one more concept we need to keep in mind, which is the aliasing effect.
+[58/89] Remember that we are trying to get a set of pixels, such as in this line, which approximate the original line shown here in this figure.
+[58/90] The original line is shown as a dotted line.
+[58/91] Whereas the approximated line is shown as the thick continuous line.
+[58/92] Now, as you can see, the approximate line does not exactly look like the original line because we are not exactly rendering the points on the line, but rendering pixels that are closer to those points on the line or closest to those points on the line.
+[58/93] So, the shape may get distorted.
+[58/94] So, some distortion may occur in the original shape after scan conversion; this is called aliasing.
+[58/95] Now, what we need are additional operations to remove or reduce such distortion so that the end effect is better.
+[58/96] Now, these operations collectively are known as anti-aliasing operations.
+[58/97] So, there again, some sort of complex algorithms are there to take care of, or rather minimize, the effect of aliasing.
+[58/98] If we do not do anything, then this aliasing may lead to distortion which will be visible with change in resolution, and that will certainly reduce the quality of experience.
+[58/99] So, anti-aliasing is essential, and it introduces even more computations to the overall computation of pixel intensities along with the other stages.

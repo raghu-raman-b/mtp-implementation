@@ -1,0 +1,31 @@
+[58/41] Now, how is it done?
+[58/42] So, let us start with the simple case of point rendering.
+[58/43] Here, it is very simple.
+[58/44] If we have a real number as a coordinate to represent the point, then we can round off the real coordinates to the nearest integer values.
+[58/45] For example, 2.3 and 2.6 can be rounded up to 2 and 3, which will be the mapping from the device space to the discrete space.
+[58/46] However, that is good for points, but not good for other shapes, such as lines, circles, and any other geometric shapes.
+[58/47] Now, line rendering is one of the most common activities that take place in image rendering under the purview of computer graphics.
+[58/48] So, line rendering is the basis of any image rendering.
+[58/49] Now if we want to render a line using a very naive intuitive method, then what happens is that we have to go for lots of calculations which are floating point operations.
+[58/50] Now as we all know, floating point operations slow down a computer.
+[58/51] So, the objective is to have efficient algorithms that can render a line by avoiding floating point operations.
+[58/52] One such algorithm is Bresenham's line drawing algorithm, a quite popular and well-known algorithm.
+[58/53] So, using this algorithm, what we want to do is find out the pixels that approximately represent the line as shown in this figure.
+[58/54] So, we have the dotted line as the actual line.
+[58/55] We need to identify pixels that will represent the line.
+[58/56] And how do we find that without taking recourse to floating point operations?
+[58/57] So, one such popular algorithm is Bresenham's line drawing algorithm.
+[58/58] I am just referring to this algorithm to give you some idea of what kind of computations take place in this fifth stage.
+[58/59] So, let us try to go through the algorithm for slopes which lie between 0 and 1. or between minus 1 and 0.
+[58/60] So, effectively between minus 1 and plus 1.
+[58/61] So, minor modification may be needed for any other slope.
+[58/62] Now, here the input is the two line endpoints, this one and this one, and the output is the set of pixels p to render the line segment.
+[58/63] That is the set of pixels that approximate the line.
+[58/64] Now, at the beginning of the algorithm, we need to compute a few parameters, namely delta x, that is the difference between the two end point x coordinates, delta y, the difference between the two end point y coordinates, and p, a decision parameter which is twice delta y minus delta x.
+[58/65] Then we start by initializing something, that is, x equal to the first endpoint, y equal to the first endpoint, and add this to the set of pixels p.
+[58/66] Then, if the decision parameter value p is less than 0, that is this value that we have seen, then we increment x by 1 and reset the decision parameter as the older value plus twice delta y.
+[58/67] Otherwise, we increment x by 1 and y by 1 and reset the value as p plus twice delta y minus twice delta x.
+[58/68] And this goes on in a loop until we reach the other endpoint.
+[58/69] So, at every loop instance, we add the computed coordinate value to the set of pixels.
+[58/70] Now, here you can see that the entire operation is done based on integer arithmetic, addition, multiplication, and so on.
+[58/71] So, this actually speeds up the rendering of lines, and this is one instance where we can have an efficient algorithm for faster line rendering.

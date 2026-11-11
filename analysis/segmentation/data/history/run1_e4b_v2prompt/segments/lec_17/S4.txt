@@ -1,0 +1,41 @@
+[17/89] Next, let us try to understand registration.
+[17/90] Now this is basically finding out the initial pose, initial orientation of the sensor or in other words the user who is using the sensor.
+[17/91] So through this step we are setting initial alignment between the real and virtual worlds.
+[17/92] Symbolically, it is referred to as the alignment represented by the symbol theta at the instance t equal to 0.
+[17/93] We can think of it as whichever direction the headset is facing when the tracking system is turned on that will be the initial orientation and setting initial alignment to be the forward direction.
+[17/94] These are some of the simplifying assumptions that we can make to understand the process.
+[17/95] In order to do that, in order to do the registration stage, what we need are fiducial markers or reflectors or tags which can aid in the registration significantly.
+[17/96] Even if they are not present, through computer vision techniques, it can be done.
+[17/97] But if they are present, then the process becomes simpler.
+[17/98] Then the third stage is integration.
+[17/99] The sensory output, the sensor that we are using, the output of that sensor, the data stream usually arrives at a regular sampling rate, regular interval, discrete interval.
+[17/100] Now, orientation of the sensor at the time instance t is represented as theta t, which can be expressed as k into delta t. where delta t is the sampling interval that can be computed.
+[17/101] So, our objective is to compute the orientation or pose after some time from the initial orientation and pose that we have estimated in the registration phase.
+[17/102] Now, the time lapse is k delta t where delta t is the sampling interval and k is an integer number.
+[17/103] Now, this orientation can be computed by integrating the samples.
+[17/104] Equation wise, we can represent it in this way.
+[17/105] Theta t or the orientation at time t equals the initial orientation theta 0 plus i equal to 1 to t.
+[17/106] We are basically integrating this part W cal i dot delta t.
+[17/107] So, what does this part mean?
+[17/108] The idea is that the calibrated angular velocity sample at the ith instant which is W cal i is the angular velocity sample that we are getting from the gyroscopic sensor.
+[17/109] This indicates rotation or in other words change in orientation by an amount W i cal delta t.
+[17/110] And all such changes are summed up from the beginning to that time interval and then added to the initial orientation to get the current orientation at time instance t.
+[17/111] That is the idea of integration.
+[17/112] Next and the final part is drift correction.
+[17/113] What happens here?
+[17/114] Now, drift correction if you may recollect is basically compensating for the errors in estimation between the real and actual value.
+[17/115] So, in order to understand that, note that this drift correction is usually done with the help of extra sensors.
+[17/116] So, so far we are talking only about the gyroscope.
+[17/117] But then in this case, we may be using other sensors such as cameras.
+[17/118] In the case of IMU, we can use accelerometer and magnetometer readings for drift correction in addition to the gyroscope values.
+[17/119] But in general, drift correction requires the use of other sensors.
+[17/120] So, we have at least two sensors and we need to blend their values to estimate the drift and correct it.
+[17/121] A classic approach to blend the two sensors, say in our IMU sensor example gyroscope and there may be a camera present separately or maybe a magnetometer or maybe an accelerometer.
+[17/122] We can say that theta dk equals alpha times theta gk plus 1 minus alpha times theta ck, where theta dk this term is the drift-corrected orientation at time instant t.
+[17/123] Then theta gk this term is the orientation obtained by integrating gyroscope values at the kth instant. through that integration phase, theta ck, this term, is the orientation obtained with camera at kth instant.
+[17/124] So, we are having two different sensors.
+[17/125] We are applying integration to each of those sensors and we are obtaining the corresponding orientations for the two sensors separately.
+[17/126] And then we are combining them through this expression as shown here.
+[17/127] Now, alpha in this particular expression classical approach the term alpha is a normalized value between 0 to 1 it is called the gain parameter.
+[17/128] So, using the gain parameter we can combine the two individually computed orientations at time interval at the time instance t and then we can get the drift corrected orientation at the same instant by combining them using the gain parameter alpha.
+[17/129] So, that is in summary how the process works.

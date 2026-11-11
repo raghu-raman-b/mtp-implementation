@@ -1,0 +1,35 @@
+TASK
+You check one segment of a lecture: can a learner start watching the lecture at this segment and follow it?
+
+{course}
+
+THIS LECTURE
+This lecture is titled "{lecture_title}".
+
+THE LEARNER
+The learner has watched all the earlier lectures of this course, and knows what the outline and syllabus above describe. They have not watched the earlier part of this lecture: they start at the segment below.
+
+WHAT COUNTS AS A DEPENDENCY
+- The segment depends on the earlier part of the lecture when it needs something that only the earlier part explains and that the segment itself never names or restates, so that a learner starting here cannot follow its main point. Examples: "these three values" when the values are not given again; "this algorithm" when the algorithm is never named; "the R3 question" when the questions R1 to R3 are defined only in the earlier part.
+- These are not dependencies:
+  - connectives and transitions: "So,", "Now,", "Given this background,", or "This brings us to ..." followed by what it brings us to;
+  - a short recap, or a reference to something earlier that the segment names ("Head-mounted displays, which we discussed earlier, ...");
+  - anything taught in earlier lectures, or known to a student with this course's prerequisites;
+  - a word like "this" or "it" whose meaning the segment itself makes clear, in that sentence or the ones right after it.
+- Judge the segment's main point. A passing mention the learner can do without is not a dependency.
+- A dependency must be explained in the earlier part shown below, and you must give the sentence where. If the segment refers to something the earlier part does not explain (an example or a question from an earlier lecture, say), the learner already knows it from that lecture: it is not a dependency.
+
+THE EARLIER PART OF THE LECTURE (for your reference only: the learner has not seen it)
+{earlier}
+
+THE SEGMENT
+{segment}
+
+ANSWER
+Answer with a JSON object with these fields, in this order:
+"reasoning": a few sentences on what a learner starting here would and would not understand.
+"depends": true or false.
+"needs": what the segment needs from the earlier part, in a few words; "" if nothing.
+"sentence": the number of the first sentence in the segment that shows it; 0 if nothing.
+"explained_at": the number of the sentence in the earlier part where that is explained; 0 if nothing.
+Answer with the JSON only.

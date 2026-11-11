@@ -42,6 +42,13 @@ class Segment:
     duration_s: float | None
     sentences: dict          # {sentence id: text}, in order
     subgoal: str = ""        # what the learner can do after the segment (from the model)
+    estimated: list = None   # "start" / "end" when that time is estimated (a boundary inside a subtitle cue)
+
+    def times(self) -> str:
+        """start – end (duration); an estimated time has a ~ in front."""
+        est = self.estimated or []
+        s, e = ("~" if "start" in est else "") + clock(self.start), ("~" if "end" in est else "") + clock(self.end)
+        return f"{s} – {e} ({'~' if est else ''}{clock(self.duration_s)})"
 
     @property
     def text(self) -> str:
@@ -49,8 +56,7 @@ class Segment:
         return "\n".join(f"[{i}] {s}" for i, s in self.sentences.items())
 
     def markdown(self) -> str:
-        head = (f"#### {self.id} · {self.first} – {self.last} ({len(self.sentences)} sentences) · "
-                f"{clock(self.start)} – {clock(self.end)} ({clock(self.duration_s)})")
+        head = f"#### {self.id} · {self.first} – {self.last} ({len(self.sentences)} sentences) · {self.times()}"
         goal = f"\n\n*Sub-goal: {self.subgoal}*" if self.subgoal else ""
         return head + goal + "\n\n" + "\n".join(f"**`{i}`** {s}  " for i, s in self.sentences.items())
 
@@ -70,26 +76,28 @@ class Course:
         self.course, self.root = course, Path(root)
         s0 = self.root / "output" / course / "stage_0a_preprocess"
         s1 = self.root / "output" / course / "stage_1b_verify_segments" / "segment_maps"
-        keep = (lambda p: int(p.stem.split("_")[1]) in lectures) if lectures else (lambda p: True)
-        order = lambda p: int(p.stem.split("_")[1])  # noqa: E731
+        from scripts import lectures as lec
+        wanted = lec.normalize(lectures)
+        keep = (lambda p: lec.key_of(p.stem) in wanted) if wanted else (lambda p: True)  # noqa: E731
 
         self.sentences: dict[str, str] = {}
         self.times: dict[str, dict] = {}
-        for p in sorted(filter(keep, s0.glob("lec_*.json")), key=order):
+        for p in filter(keep, lec.files(s0)):
             self.sentences.update(json.loads(p.read_text()))
             t = s0 / "times" / p.name
             if t.exists():
                 self.times.update(json.loads(t.read_text()))
-        self.lectures = sorted({int(k.split("/")[0]) for k in self.sentences})
+        self.lectures = [lec.key_of(p.stem) for p in filter(keep, lec.files(s0))]   # keys: "7", "24b", "tut_1"
 
         self.segments: dict[str, Segment] = {}
-        for p in sorted(filter(keep, s1.glob("lec_*.json")) if s1.exists() else [], key=order):
-            n = p.stem.split("_")[1]
+        for p in filter(keep, lec.files(s1)) if s1.exists() else []:
+            n = lec.key_of(p.stem)
             ids = [k for k in self.sentences if k.split("/")[0] == n]
             for sid, s in json.loads(p.read_text()).items():
                 a, b = ids.index(s["first"]), ids.index(s["last"])
                 self.segments[sid] = Segment(sid, s["first"], s["last"], s["start"], s["end"], s["duration_s"],
-                                             {i: self.sentences[i] for i in ids[a:b + 1]}, s.get("subgoal", ""))
+                                             {i: self.sentences[i] for i in ids[a:b + 1]}, s.get("subgoal", ""),
+                                             s.get("estimated"))
 
     def segments_of(self, n: int) -> list[Segment]:
         return [s for k, s in self.segments.items() if k.split("/")[0] == str(n)]
@@ -103,8 +111,9 @@ class Course:
         for s in segs:
             first = s.subgoal or next(iter(s.sentences.values()))
             first = first[:110] + ("…" if len(first) > 110 else "")
-            rows.append(f"| {s.id} | {s.first} – {s.last} ({len(s.sentences)}) | {clock(s.start)} – {clock(s.end)} "
-                        f"| {clock(s.duration_s)} | {first.replace('|', '/')} |")
+            t = s.times()
+            rows.append(f"| {s.id} | {s.first} – {s.last} ({len(s.sentences)}) | {t.rsplit(' (', 1)[0]} "
+                        f"| {t.rsplit(' (', 1)[1].rstrip(')')} | {first.replace('|', '/')} |")
         return Markdown("\n".join(rows))
 
     def __repr__(self):
