@@ -1,0 +1,55 @@
+/* Additions for the v2 viewer (on top of /viewer/style.css): key points, dev-mode decisions and hand-eval marks. */
+
+/* key points on the summary page */
+.keypoints { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.keypoints li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; line-height: 1.55; }
+.keypoints li::before { content: "•"; color: var(--accent); font-weight: 700; text-align: center; }
+.keypoints li > * , .objectives li > * { grid-column: 2; }
+.objectives li > :first-child { grid-row: 1; }
+.term .evalbar, .term details.dev { margin-top: 8px; }
+
+/* dev mode: cited sentences, concept tags, decisions */
+.dev-quote .linklike { font: 500 11.5px var(--font-mono); color: var(--faint); }
+.dev-quote .linklike:hover { color: var(--accent-strong); }
+.ctags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ctag { border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 8px; font-size: 12px; color: var(--text); }
+.ctag .faint { font: 10.5px var(--font-mono); }
+.dev-decisions { margin-top: 8px; display: grid; gap: 2px; }
+.dev-judge .tag { font-size: 11px; padding: 1px 7px; }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.row > .tag, .lead .tag, .keypoints .tag, .dev-mini .tag { font: 500 11px var(--font-mono); padding: 1px 7px; vertical-align: middle; }
+details.dev-group { margin: 4px 0; }
+details.dev-group > summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+details.dev-group > :not(summary) { margin-left: 14px; }
+.dev-link { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.dev-link:last-child { border-bottom: 0; }
+.dev-link.dropped b { color: var(--muted); }
+.dev-facet { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.dev-facet:last-child { border-bottom: 0; }
+.cpanel details.dev { margin: 14px 0 0; max-height: 46vh; overflow: auto; }
+
+/* hand-eval marks: ✓ / ✗ / ? and a note */
+.evalbar { display: flex; align-items: center; gap: 4px; margin: 8px 0 2px; flex-wrap: wrap; }
+.evalbtn { font: 600 13px var(--font-mono); width: 30px; height: 26px; padding: 0; border-radius: 8px; color: var(--faint);
+  border: 1px dashed color-mix(in srgb, var(--warn) 45%, transparent); background: transparent; }
+.evalbtn.ok.on { background: var(--ok); color: var(--on-ok); border: 1px solid var(--ok); }
+.evalbtn.bad.on { background: var(--bad); color: var(--on-bad); border: 1px solid var(--bad); }
+.evalbtn.unsure.on { background: var(--warn); color: #000; border: 1px solid var(--warn); }
+input[type=text].evalnote { flex: 1; min-width: 140px; max-width: 420px; padding: 3px 9px; font-size: 12.5px; height: 26px;
+  border-style: dashed; border-color: color-mix(in srgb, var(--warn) 45%, transparent); background: transparent; }
+.evalbar.bad .evalnote, .evalbar.unsure .evalnote { border-style: solid; }
+.eval-btn { font: 500 12.5px var(--font-mono); color: var(--warn); }
+.eval-table td:not(:first-child), .eval-table th:not(:first-child) { text-align: right; }
+.eval-table { display: table; }
+.eval-row { padding: 12px 16px; margin-bottom: 8px; }
+
+@media (max-width: 600px) {
+  .kv { grid-template-columns: 1fr; gap: 2px; }
+  input[type=text].evalnote { min-width: 0; }
+}
+
+/* an item's dev details: closed, a small link beside its eval marks; open, the usual dev box */
+.evalbar { display: inline-flex; vertical-align: middle; width: min(100%, 520px); }
+details.dev.item:not([open]) { display: inline-block; vertical-align: middle; border: 0; background: none; padding: 0 0 0 6px; margin: 8px 0 2px; }
+details.dev.item > summary { font-size: 11px; }
+details.dev.item[open] { margin-top: 6px; }

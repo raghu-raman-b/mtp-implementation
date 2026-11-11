@@ -96,6 +96,20 @@ runs/<name>/<setup>/server.csv             GPU and vLLM metrics every 5 s (run_m
 By hand: `python3 serve_lir2.py --config <config>` starts the server(s), `generate_lir2.py ... --config <config>
 --keep-server` runs a course against them, `python3 serve_lir2.py --config <config> --stop` stops them.
 
+To read a v2 build and evaluate it by hand (CPU only; videos from `media/`, as for the v1 viewer):
+
+```bash
+python3 view_lir2.py runs/v2-20261103-0755       # every setup and course in the run; no argument: all of runs/
+# http://localhost:8001/?dev=1
+```
+
+`viewer2/` shows the same learner pages as `viewer/`, built from `Lxx.json` and `activities/Lxx.json`. In dev mode
+each item (goal, objectives, key points, terms, recap, review and quiz items, recall, open questions, links, concepts
+and facets) shows its cited sentences, concept tags and judge verdicts, and takes a hand-eval mark (✓ / ✗ / ? and a
+note). Marks are saved in `runs/<name>/<setup>/<course>/hand_eval.json`; `#/eval` counts them by kind. The first page
+of each lecture lists what the build dropped there and why, and the concept-map page lists every link found, kept
+or dropped.
+
 The answer cache (`output/<course>/v2/cache/`, or the run's `build/cache/`) makes a rerun only recompute what changed;
 commit it or copy it back to keep the answers. Captions for lectures without subtitles (VR L04, L05) are kept in
 `output/<course>/v2/subs/`, because YouTube often refuses cloud machines.

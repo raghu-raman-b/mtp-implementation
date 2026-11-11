@@ -1,0 +1,875 @@
+1
+00:00:24,280 --> 00:00:30,349
+Hello and welcome to the NPTEL MOOC's course on Foundations of Virtual and Augmented Reality Systems.
+
+2
+00:00:30,950 --> 00:00:38,562
+We are discussing the optimization of VR navigation experience.
+
+3
+00:00:38,582 --> 00:00:42,909
+So, we will continue our discussion in this part of the lecture as well.
+
+4
+00:00:43,489 --> 00:00:47,776
+So, earlier we talked about the need for a realistic walking experience.
+
+5
+00:00:49,499 --> 00:00:51,722
+In other words, displaying a visual speed
+
+6
+00:00:52,293 --> 00:00:59,142
+which is often called optic flow that matches the user's instantaneous walking speed.
+
+7
+00:01:01,666 --> 00:01:08,915
+In this lecture, we are going to talk about a model of natural walking behavior that can be utilized to address this concern.
+
+8
+00:01:11,118 --> 00:01:16,866
+So, we are going to talk about a realistic walking behavior model for system-controlled VR navigation.
+
+9
+00:01:21,875 --> 00:01:35,811
+One thing we will do here is that we are going to not only talk about the model but also how the model was developed.
+
+10
+00:01:35,831 --> 00:01:43,099
+Now the model development was a long process comprising several stages or steps.
+
+11
+00:01:43,900 --> 00:01:50,548
+First step was empirical research for collection of empirical data which was
+
+12
+00:01:51,153 --> 00:02:04,025
+which were used to build the model, then analysis of the data, then creation of the model and finally the validation of the model.
+
+13
+00:02:04,045 --> 00:02:19,860
+So, these four steps were carried out to build the model and here we are going to talk about all those four steps so that you can get some idea of how to build a model
+
+14
+00:02:22,085 --> 00:02:23,967
+for usable system development.
+
+15
+00:02:26,831 --> 00:02:33,639
+So, it will be useful to understand the research that went into building the model.
+
+16
+00:02:35,060 --> 00:02:46,033
+So, let us first talk about the first stage, that is empirical research or the process to collect empirical data from participants.
+
+17
+00:02:46,655 --> 00:02:53,346
+We have already talked about the process for empirical research in our earlier lectures on system implementation.
+
+18
+00:02:53,867 --> 00:02:59,437
+So, the same stages were followed for collection of empirical data.
+
+19
+00:03:00,899 --> 00:03:07,971
+The purpose of the empirical study was to gather real-life working data
+
+20
+00:03:08,373 --> 00:03:14,721
+when a user moves from one point to another and propose a speed estimation model.
+
+21
+00:03:15,202 --> 00:03:17,264
+That was the overall purpose of the study.
+
+22
+00:03:18,005 --> 00:03:24,393
+In order to do that, research questions were framed, data were collected, and analyzed to build the model.
+
+23
+00:03:28,518 --> 00:03:31,642
+So, like any empirical study, we needed participants.
+
+24
+00:03:33,725 --> 00:03:37,890
+The participants, total 40 participants were involved.
+
+25
+00:03:39,389 --> 00:03:43,994
+26 male, 14 female, age range is 19 to 42 years.
+
+26
+00:03:44,474 --> 00:03:45,795
+These are participant details.
+
+27
+00:03:47,677 --> 00:03:50,620
+Height range, height is important as we shall see later.
+
+28
+00:03:51,241 --> 00:03:55,104
+So, we also kept track of the heights of the participants.
+
+29
+00:03:57,106 --> 00:04:02,372
+The range of heights of the participants varied between 150 and 184 centimeters.
+
+30
+00:04:05,314 --> 00:04:07,877
+The heights varied between 150 and 184 centimeters.
+
+31
+00:04:11,249 --> 00:04:18,017
+Now this height information is important as height affects the walking behavior as per earlier studies.
+
+32
+00:04:21,223 --> 00:04:24,527
+Then we utilized some experimental setup as well.
+
+33
+00:04:25,188 --> 00:04:36,484
+We created a corridor of a building for carrying out the experiment.
+
+34
+00:04:36,504 --> 00:04:39,788
+We basically utilized a corridor of a building, a physical building.
+
+35
+00:04:41,928 --> 00:04:57,830
+Now, there we utilized seven paintings representing the seven wonders of the world images.
+
+36
+00:04:57,850 --> 00:05:06,062
+And the distances were 20, 20, 13, 16, 6.4, 19 and 4 meters from the start.
+
+37
+00:05:11,088 --> 00:05:20,758
+The schematic of the path chosen to measure or record data on walking speed is shown here.
+
+38
+00:05:21,058 --> 00:05:32,810
+As you can see, this is the start point, then there is one painting, another painting, third, fourth, fifth, sixth and seventh.
+
+39
+00:05:32,830 --> 00:05:36,134
+Now of course, this number may look a little odd as compared to other ones.
+
+40
+00:05:36,234 --> 00:05:39,357
+However, this is due to the physical constraint of the corridor.
+
+41
+00:05:41,665 --> 00:05:42,967
+And why did we keep paintings?
+
+42
+00:05:43,888 --> 00:05:55,364
+Because in a system-controlled tour, there may be points of interest where the user needs to stop, pause and then move.
+
+43
+00:05:57,607 --> 00:06:03,235
+Now, these reflected such kind of scenario in the virtual tours.
+
+44
+00:06:04,109 --> 00:06:07,073
+The paintings reflected such kind of things in the virtual tours.
+
+45
+00:06:07,594 --> 00:06:15,626
+So, essentially the idea is that the user will start moving from this point, from the start point to the first painting.
+
+46
+00:06:17,309 --> 00:06:25,381
+Then stop here to explore the painting and to understand the painting.
+
+47
+00:06:25,701 --> 00:06:29,627
+Then again start and stop here to explore the second painting and so on.
+
+48
+00:06:32,392 --> 00:06:45,485
+So, the task for each user that was given was to start walking from the starting place and stop at each painting to click a photo so that we know that the user stopped there.
+
+49
+00:06:46,406 --> 00:06:56,816
+The photograph-clicking task was assigned to ensure the user stops after walking a predefined distance.
+
+50
+00:06:56,836 --> 00:06:59,479
+Then data collection.
+
+51
+00:07:02,260 --> 00:07:03,562
+So how did we collect the data?
+
+52
+00:07:04,243 --> 00:07:22,152
+Video recordings of the user's footsteps were done by fixing a smartphone, Samsung M30 smartphone, camera on the user's back focusing on their legs, as shown here in this figure.
+
+53
+00:07:24,295 --> 00:07:26,158
+It's a simple arrangement.
+
+54
+00:07:26,847 --> 00:07:33,554
+The recording started just before the user started walking and was done at 30 frames per second rate.
+
+55
+00:07:36,737 --> 00:07:42,583
+This was part of the setup used to collect data.
+
+56
+00:07:45,867 --> 00:07:51,673
+So, with all those things we collected data from 40 participants on their walking behavior.
+
+57
+00:07:54,083 --> 00:07:58,389
+Then let us talk about stage 2, that is data analysis.
+
+58
+00:07:58,970 --> 00:08:13,011
+So, here the aim of the analysis was to compute the instantaneous step frequency or the number of steps per second for the participants.
+
+59
+00:08:13,031 --> 00:08:17,879
+It was calculated by observing the number of steps per second recorded in the video.
+
+60
+00:08:19,161 --> 00:08:21,424
+So, the videos were played and analyzed manually.
+
+61
+00:08:24,121 --> 00:08:33,116
+And for the purpose of recording, this data step was defined as one foot strike to another foot strike on the ground.
+
+62
+00:08:36,140 --> 00:08:45,657
+So, whenever we say that there is a step, that means the interval between the striking of the foot on the ground.
+
+63
+00:08:51,188 --> 00:08:56,394
+Now the timestamp for each foot strike was noted from the video.
+
+64
+00:08:57,215 --> 00:09:00,920
+Then data for each distance between paintings was separately noted.
+
+65
+00:09:02,061 --> 00:09:06,807
+From the timestamps, instantaneous step frequencies at each step were calculated.
+
+66
+00:09:10,972 --> 00:09:19,542
+Now we will skip further details here and you may refer to the reference that will be mentioned at the end of this lecture.
+
+67
+00:09:20,905 --> 00:09:23,948
+For more details on the exact calculation process.
+
+68
+00:09:28,273 --> 00:09:33,319
+Then in this data analysis phase, what observations were made?
+
+69
+00:09:35,582 --> 00:09:38,765
+The user did not maintain a constant speed during work.
+
+70
+00:09:38,785 --> 00:09:39,466
+This is well known.
+
+71
+00:09:39,526 --> 00:09:42,389
+So it only got validated with this study.
+
+72
+00:09:43,891 --> 00:09:44,892
+They started slow.
+
+73
+00:09:45,453 --> 00:09:46,454
+Initially they were slow.
+
+74
+00:09:47,515 --> 00:09:50,018
+Then velocity increased gradually.
+
+75
+00:09:50,757 --> 00:10:04,231
+Reached a maximum velocity and plateaued, then slowed down again just before reaching the target, that is the painting where the user needed to stop and click a photo.
+
+76
+00:10:04,251 --> 00:10:07,235
+So, in the mind the user knew that I now have to stop.
+
+77
+00:10:07,335 --> 00:10:19,768
+So, the velocity started slowing down just before the target was reached.
+
+78
+00:10:20,137 --> 00:10:22,579
+These data were plotted.
+
+79
+00:10:26,043 --> 00:10:32,629
+The plot was between step frequency versus distance.
+
+80
+00:10:32,649 --> 00:10:37,894
+Now here a sample plot is shown for three random participants shown in three colors.
+
+81
+00:10:40,296 --> 00:10:41,517
+In this plot you can see it.
+
+82
+00:10:43,659 --> 00:10:47,443
+Each color represents the data for one participant.
+
+83
+00:10:48,318 --> 00:10:53,723
+As you can see, this is the starting point.
+
+84
+00:10:55,865 --> 00:11:08,538
+The velocity grows at first, step frequency grows at first, reaches a maximum here somewhere, remains more or less constant.
+
+85
+00:11:10,880 --> 00:11:16,245
+So, grows at first, reaches maximum and remains almost constant, then decreases near to 0.
+
+86
+00:11:16,305 --> 00:11:19,142
+Here it decreases and then comes to 0.
+
+87
+00:11:19,142 --> 00:11:24,069
+0 where the user stops to click a photo.
+
+88
+00:11:24,089 --> 00:11:34,706
+So, clearly this is a pattern that more or less was followed by all the participants.
+
+89
+00:11:34,726 --> 00:11:44,582
+Now, this pattern may also be called slow in slow out that is one of the common terms used slow in slow out pattern.
+
+90
+00:11:47,077 --> 00:11:58,667
+So, based on these observations, a model proposal was given that is stage 3 of the research carried out to build the model.
+
+91
+00:12:00,128 --> 00:12:13,160
+Now, the CISO pattern, slow in slow out pattern that was observed in the study, was similar to a well-known series that is called the Fourier series.
+
+92
+00:12:14,541 --> 00:12:16,763
+In fact, the Fourier series approximation of
+
+93
+00:12:17,384 --> 00:12:18,786
+a square pulse wave.
+
+94
+00:12:20,468 --> 00:12:30,867
+So, this is the CISO pattern shown on the right-hand side, and the left-hand side is the Fourier series approximation of a square pulse wave where
+
+95
+00:12:30,867 --> 00:12:37,451
+it started, then more or less remained constant, and then came to 0.
+
+96
+00:12:38,512 --> 00:12:40,731
+The pattern is quite similar.
+
+97
+00:12:40,731 --> 00:12:54,878
+The Fourier series can be approximated by taking the first few terms of the corresponding Fourier expansion.
+
+98
+00:12:57,642 --> 00:13:06,414
+Here the idea is that the Fourier series with proper weights can approximate any continuous periodic function to arbitrary precision.
+
+99
+00:13:08,357 --> 00:13:16,348
+So, in order to model the CISO pattern, we can take recourse to this idea and we can utilize the Fourier series
+
+100
+00:13:17,324 --> 00:13:20,309
+expansion to model the SISO pattern.
+
+101
+00:13:22,573 --> 00:13:28,723
+Now, the weights of harmonically related sinusoids can be calculated from the empirical data.
+
+102
+00:13:35,575 --> 00:13:39,822
+There is one problem though: we can model the SISO pattern and then
+
+103
+00:13:40,375 --> 00:13:45,282
+exactly replicate it in the virtual tour when the user is walking from one point to another.
+
+104
+00:13:45,802 --> 00:13:58,700
+That is, we can change the speed at which the scenes change by initially changing very fast so that the velocity grows.
+
+105
+00:13:59,581 --> 00:14:08,053
+Then we can keep it more or less constant and then change very slowly, which indicates that the user is slowing down.
+
+106
+00:14:08,506 --> 00:14:14,936
+Now, the problem is that there is a difference between the actual and the perceived speed.
+
+107
+00:14:14,976 --> 00:14:15,797
+So, there are two things.
+
+108
+00:14:15,878 --> 00:14:21,807
+One is actually how the user is moving, and the second thing is how the user is perceiving the movement.
+
+109
+00:14:21,827 --> 00:14:28,150
+These two need not be the same.
+
+110
+00:14:30,801 --> 00:14:36,690
+Generally, an individual perceives the visual or optic flow slower than the real.
+
+111
+00:14:39,218 --> 00:14:44,884
+If a user is moving fast, the perception of that movement may not be that fast.
+
+112
+00:14:45,545 --> 00:14:49,409
+It may be slower than the actual movement that the user is performing.
+
+113
+00:14:50,390 --> 00:14:53,053
+And we need to replicate this in the virtual world.
+
+114
+00:14:53,674 --> 00:14:59,861
+So, virtual tours should not exactly replicate the actual walking behavior.
+
+115
+00:15:00,061 --> 00:15:06,728
+Instead, there should be some difference between how the user is moving and how it is being perceived.
+
+116
+00:15:10,994 --> 00:15:19,764
+So, showing the visuals—I mean the change in speed of the scene—with the user's actual walking velocity is not a good idea.
+
+117
+00:15:20,725 --> 00:15:29,095
+It gives an unrealistic feeling because generally that is not how we perceive the change in surroundings while we are moving.
+
+118
+00:15:33,040 --> 00:15:40,208
+In order to solve this issue—that is, how to show the change in scene, how to
+
+119
+00:15:40,593 --> 00:15:51,349
+implement the speed of scene change so that the user perceives natural walking behavior.
+
+120
+00:15:53,973 --> 00:16:05,711
+One way to solve this is to multiply a factor called visual gain with the actual speed to compute the desired visual speed.
+
+121
+00:16:07,113 --> 00:16:09,476
+Note that we are doing several things.
+
+122
+00:16:09,596 --> 00:16:10,077
+One is we are
+
+123
+00:16:11,052 --> 00:16:12,887
+modeling the actual walking behavior,
+
+124
+00:16:12,887 --> 00:16:26,774
+but then we are not utilizing that model to directly implement a speed at which the visual scenes should change because that actual behavior may not be the perceived behavior.
+
+125
+00:16:27,455 --> 00:16:39,912
+In order to do that, what we are doing is multiplying the instantaneous speed with a factor called visual gain so that a different speed is obtained which is
+
+126
+00:16:40,651 --> 00:16:47,539
+perceived as natural. That is called the actual visual speed which we are obtaining.
+
+127
+00:16:47,819 --> 00:17:01,475
+We can represent it as v_visual, then visual gain is g. So, if we put these considerations together then what we can say is that we have
+
+128
+00:17:01,475 --> 00:17:07,722
+this form of an equation where we have v_perceived that is the speed at which the scene should change.
+
+129
+00:17:08,005 --> 00:17:17,032
+It is the visual gain g into v_actual, that is the speed at which the user is moving or the instantaneous step frequency.
+
+130
+00:17:17,053 --> 00:17:23,659
+The speed is similar or related to the instantaneous step frequency.
+
+131
+00:17:23,679 --> 00:17:28,864
+Here v_visual is the perceived speed which we want, g is the visual gain.
+
+132
+00:17:29,324 --> 00:17:37,692
+Typically it is considered to be 2.10. Prior studies have identified that 2.10
+
+133
+00:17:38,161 --> 00:17:53,439
+provides a good visual gain for natural walking behavior and V_act is the actual speed with which the user is expected to move.
+
+134
+00:17:57,764 --> 00:18:03,291
+Now V_actual, that is the walking speed, can be represented in this form.
+
+135
+00:18:03,777 --> 00:18:12,685
+It is equal to f(x) by 0.157 into h by 1.72 square of this whole term.
+
+136
+00:18:16,288 --> 00:18:24,355
+Now, again please go through the reference mentioned at the end of this lecture to get more details.
+
+137
+00:18:24,736 --> 00:18:33,143
+This expression is a slightly modified form from the model proposed in this reference based on the study results.
+
+138
+00:18:34,118 --> 00:18:50,084
+Now, here f(x) is the instantaneous step frequency as a function of x or the distance, h is user height. With height you can see that with height the speed changes and we can
+
+139
+00:18:50,084 --> 00:19:00,987
+express f(x) because we are equating the CISO pattern with this Fourier transform, we can compute f(x).
+
+140
+00:19:01,625 --> 00:19:13,167
+With this expression, 4 by pi into 1.8 into summation of 1 by 2k plus 1 sin 2k plus 1 omega x,
+
+141
+00:19:13,167 --> 00:19:28,543
+where the summation varies from k equal to 0 to d by 2 minus 1, where omega is 2 pi f0, f0 is the initial frequency, can be expressed as 1 by 2d.
+
+142
+00:19:30,211 --> 00:19:33,334
+And d is the distance between the source and destination.
+
+143
+00:19:40,342 --> 00:19:47,964
+So, this formulation is obtained by modifying the model proposed in 5 and also utilizing the fact that
+
+144
+00:19:47,964 --> 00:19:58,142
+our studies have revealed the CISO pattern which is similar to the Fourier transform of the sinusoidal waveforms.
+
+145
+00:19:59,860 --> 00:20:06,148
+Based on these facts, we can compute V-act as shown here.
+
+146
+00:20:08,732 --> 00:20:11,656
+So, that is the formulation.
+
+147
+00:20:12,296 --> 00:20:18,264
+Now, we need to validate whether the formulation actually reflects what we set out to do.
+
+148
+00:20:18,384 --> 00:20:23,211
+That is, give the user a perception of natural walking behavior.
+
+149
+00:20:24,533 --> 00:20:29,479
+Note that we have computed natural walking behavior, multiplied it,
+
+150
+00:20:29,948 --> 00:20:35,354
+with a visual gain factor to let the user perceive natural walking.
+
+151
+00:20:37,296 --> 00:20:43,564
+Now we carried out an empirical study that is stage 4 of the model evaluation process.
+
+152
+00:20:45,466 --> 00:20:46,888
+An empirical study was carried out.
+
+153
+00:20:47,909 --> 00:20:58,521
+The purpose was to confirm whether the usage of the model enhances perceived realism vis-a-vis a constant average speed.
+
+154
+00:20:58,805 --> 00:21:08,757
+One solution earlier we have seen is to provide a constant speed or optic flow, which means the scenes are changing with a constant speed.
+
+155
+00:21:10,839 --> 00:21:26,938
+As opposed to that, we opted for one natural walking speed model and we wanted to confirm whether this model gives a better result as compared to constant walking speed.
+
+156
+00:21:27,391 --> 00:21:44,028
+An empirical study was conducted with 34 participants: 20 male, 14 female, age range 15 to 47 years, mean 29.3 years, height range 159 to 170 centimeters, mean 167.97 centimeters.
+
+157
+00:21:47,212 --> 00:21:55,120
+The setup used was a virtual art exhibition environment, which could be experienced with Oculus Rift.
+
+158
+00:21:57,057 --> 00:22:00,941
+A system-controlled navigation was utilized for the experiment.
+
+159
+00:22:02,163 --> 00:22:08,590
+Both constant and instantaneous speed experiences were implemented.
+
+160
+00:22:10,633 --> 00:22:25,950
+And like in the model building study, here also it contained pictures and a 10-second forced pause was given at each picture.
+
+161
+00:22:28,647 --> 00:22:31,671
+The environment looked something like this shown on the right-hand side.
+
+162
+00:22:32,332 --> 00:22:34,035
+Here you can see there are these pictures.
+
+163
+00:22:37,220 --> 00:22:43,589
+The user will be moving with constant speed and instantaneous speed, which is the natural walking speed.
+
+164
+00:22:44,430 --> 00:22:55,887
+They will be forced to stop at each picture for 10 seconds as if they are taking a photograph or inspecting the picture and then move again.
+
+165
+00:22:58,803 --> 00:23:07,172
+The procedure adopted was that the user had to experience both constant and instantaneous speeds.
+
+166
+00:23:07,192 --> 00:23:11,798
+Now the order of the experience was randomized to avoid practice effect.
+
+167
+00:23:12,558 --> 00:23:16,303
+Recollect our earlier discussion on practice effect.
+
+168
+00:23:16,323 --> 00:23:17,664
+This is a confounding variable.
+
+169
+00:23:17,704 --> 00:23:21,028
+It may affect the result.
+
+170
+00:23:21,368 --> 00:23:23,391
+So, we had to take care of it.
+
+171
+00:23:23,411 --> 00:23:27,375
+So, one way to do this is randomizing the sequence of tasks.
+
+172
+00:23:27,608 --> 00:23:31,311
+so that this effect does not have any statistical significance.
+
+173
+00:23:33,493 --> 00:23:38,258
+Other ways are Latin square methods which we had discussed earlier.
+
+174
+00:23:38,278 --> 00:23:45,184
+However, in the experiments, the randomized method was used.
+
+175
+00:23:45,204 --> 00:23:49,828
+Then we utilized two rating scales between 1 to 10.
+
+176
+00:23:49,848 --> 00:23:57,295
+1 represented worst and 10 represented the best value and rating scales were on level of
+
+177
+00:23:57,494 --> 00:24:00,798
+realism and the user preference.
+
+178
+00:24:04,663 --> 00:24:14,335
+Breaks between two experiences were given to each participant so that the subsequent data collection was not biased.
+
+179
+00:24:16,838 --> 00:24:20,262
+Then we come to the data analysis part.
+
+180
+00:24:21,912 --> 00:24:27,079
+So, we had two independent variables, constant speed, instantaneous speed.
+
+181
+00:24:27,099 --> 00:24:32,767
+So, speed was the factor and the levels were constant and instantaneous.
+
+182
+00:24:35,150 --> 00:24:50,350
+Then we had dependent variables, two dependent variables, one each for the rating scales used, level of realism and preference.
+
+183
+00:24:53,114 --> 00:25:01,867
+The data collected, the ratings collected were visualized using box plot to show the pattern in the data.
+
+184
+00:25:02,448 --> 00:25:15,709
+The box plot showed that higher realism was perceived by the users and users were preferring instantaneous speed as shown here in the box plot.
+
+185
+00:25:15,729 --> 00:25:19,915
+First one is realism rating.
+
+186
+00:25:21,295 --> 00:25:34,311
+The box plot shows that with instantaneous speed, the realism rating is higher indicating that the instantaneous
+
+187
+00:25:34,311 --> 00:25:49,429
+speed model that was proposed can induce higher realism in the user as compared to the constant speed model.
+
+188
+00:25:50,422 --> 00:26:00,433
+Preference rating results show that the instantaneous speed model was more preferred as compared to the constant speed model.
+
+189
+00:26:00,613 --> 00:26:03,356
+The box plots are showing these preferences.
+
+190
+00:26:08,321 --> 00:26:19,973
+Statistical significance tests were also carried out on the data collected, where a paired sample t-test was used with a p-value of 0.05.
+
+191
+00:26:20,662 --> 00:26:23,825
+which showed results were statistically significant.
+
+192
+00:26:23,865 --> 00:26:28,990
+What had been observed here and here was statistically significant.
+
+193
+00:26:33,254 --> 00:26:45,226
+So, in conclusion, we can say that the instantaneous speed model, the walking speed model, is suitable for a realistic walking experience in controlled VR tools.
+
+194
+00:26:46,207 --> 00:26:48,289
+So, it is likely to increase presence.
+
+195
+00:26:49,282 --> 00:26:55,032
+However, our main concern was to optimize cyber sickness prevalence.
+
+196
+00:26:55,052 --> 00:26:58,978
+So, with this model, can we say that it addresses the cyber sickness concern?
+
+197
+00:27:02,504 --> 00:27:03,105
+Clearly not.
+
+198
+00:27:03,746 --> 00:27:11,319
+So, our objective was to have a realistic walking experience without compromising on presence.
+
+199
+00:27:11,339 --> 00:27:14,985
+That could be achieved.
+
+200
+00:27:16,366 --> 00:27:27,824
+We are yet to address the key concern in optimizing the experience, that is, how to minimize cyber sickness with only the realistic walking speed model. That cannot be answered.
+
+201
+00:27:29,186 --> 00:27:30,387
+We require something more.
+
+202
+00:27:31,289 --> 00:27:37,498
+So, in the next part of the lecture, we are going to discuss what we can do to minimize cyber sickness while maximizing presence.
+
+203
+00:27:38,620 --> 00:27:43,808
+Of course, to maximize presence, we need to have this realistic walking model built into the system.
+
+204
+00:27:44,227 --> 00:27:48,692
+Along with that, what we need to do, we are going to discuss in the next part of the lecture.
+
+205
+00:27:50,935 --> 00:27:53,638
+So, let us summarize what we have covered so far.
+
+206
+00:27:55,821 --> 00:28:03,029
+In this part of the lecture, we talked about a model for realistic walking speed in system-controlled virtual reality tools.
+
+207
+00:28:05,412 --> 00:28:13,221
+The model, the genesis of the model is our need for a realistic walking speed
+
+208
+00:28:13,859 --> 00:28:18,284
+model which can maximize presence.
+
+209
+00:28:19,546 --> 00:28:20,908
+So, we needed to have such a model.
+
+210
+00:28:21,789 --> 00:28:35,766
+We explained how to build a model and also how our model meets all the requirements based on level of realism as perceived by the user and the preference for such a model.
+
+211
+00:28:37,163 --> 00:28:45,214
+In the next part of the lecture, we are going to talk about the CS minimization approach which rests on usage of this model.
+
+212
+00:28:46,295 --> 00:28:48,959
+So, looking forward to meeting you in the next part of the lecture.
+
+213
+00:28:49,700 --> 00:28:52,283
+Hope you could follow the derivation of the model.
+
+214
+00:28:54,827 --> 00:28:56,289
+Several references are mentioned.
+
+215
+00:28:57,010 --> 00:29:06,242
+I strongly request you to go through the references mentioned so that you can get more details on how the models were developed, from where the models came.
+
+216
+00:29:07,505 --> 00:29:10,172
+to gain a better understanding of the model.
+
+217
+00:29:11,175 --> 00:29:14,805
+So, with that, I would like to conclude this part of the lecture.
+
+218
+00:29:15,006 --> 00:29:17,814
+Looking forward to meeting you all in the next part.
+
+219
+00:29:18,275 --> 00:29:22,527
+Till then, thank you, goodbye, and happy learning.

@@ -1,0 +1,479 @@
+1
+00:00:24,010 --> 00:00:29,617
+Hello and welcome to the NPTEL MOOCs course on Foundation for Virtual and Augmented Reality Systems.
+
+2
+00:00:30,798 --> 00:00:39,689
+We are going to conclude our discussion on resource optimization, particularly VR resource optimization, with this part of the lecture.
+
+3
+00:00:40,470 --> 00:00:52,785
+So, we have talked about the basic idea of computer graphics, then the 3D pipeline, the computer graphics pipeline that we can
+
+4
+00:00:53,221 --> 00:01:03,278
+envision to render a static image on a screen, just to demonstrate the computational complexities involved in the rendering process and
+
+5
+00:01:03,278 --> 00:01:14,301
+the stages of the pipeline, also how the pipeline can be implemented in software through software libraries and in hardware using GPU and graphics card.
+
+6
+00:01:16,475 --> 00:01:23,183
+So, in this lecture, let us try to see how this knowledge can help us make decisions while building practical systems.
+
+7
+00:01:26,587 --> 00:01:34,977
+So, in order to understand how we can use this idea in practice, let us revisit our Majuli case study, which we have discussed earlier.
+
+8
+00:01:36,099 --> 00:01:46,431
+Just to recap, this is a river island on the river Brahmaputra, which is in the eastern part of India, as shown here
+
+9
+00:01:47,002 --> 00:01:47,483
+on the map.
+
+10
+00:01:49,024 --> 00:02:03,299
+The island is here in India and is surrounded by the Brahmaputra and its tributary. It is the world's largest inhabited river island.
+
+11
+00:02:04,320 --> 00:02:13,330
+Our objective is to create a virtual tour of the river island so that the visitor in the virtual tour can
+
+12
+00:02:14,018 --> 00:02:25,034
+perceive or can experience the ecological and cultural, both tangible and intangible, cultural heritage of the island.
+
+13
+00:02:26,016 --> 00:02:32,585
+Now, earlier we talked about the different points of interest on the island.
+
+14
+00:02:32,605 --> 00:02:34,648
+These are the information points on the island.
+
+15
+00:02:35,549 --> 00:02:42,760
+So, a large number of points are there, which include Shatras or Vaishnavite monasteries, villages,
+
+16
+00:02:43,448 --> 00:02:48,135
+Tribal villages, and there are towns and other places of interest.
+
+17
+00:02:50,419 --> 00:02:55,606
+So, a large number of points, each point is having a geographical spread.
+
+18
+00:02:56,107 --> 00:03:00,714
+So, there are a large number of points of interest in each point as well.
+
+19
+00:03:01,235 --> 00:03:12,612
+So, two levels of vast information: one is the whole island; the other one is each information point in the island also contains a large amount of
+
+20
+00:03:13,469 --> 00:03:15,312
+data of interest.
+
+21
+00:03:16,694 --> 00:03:26,469
+So, we want an interactive virtual tour, a virtual reality tour of the island, an immersive experience, which is a combination of exploration techniques.
+
+22
+00:03:28,833 --> 00:03:39,008
+Because the geographical spread is large, single techniques such as walking may not be good, or only teleportation may not be good to give a good feeling.
+
+23
+00:03:39,028 --> 00:03:42,193
+So, we require a combination of exploration techniques.
+
+24
+00:03:43,473 --> 00:03:48,763
+Now, what we did was to use a walking-based technique,
+
+25
+00:03:48,763 --> 00:04:01,560
+a navigation technique at each information point, and a teleportation technique or vehicular movement technique, a navigation technique across points on the island.
+
+26
+00:04:01,920 --> 00:04:11,134
+So, within a point we use walking for navigation; between points we use teleportation or travel through a vehicle metaphor.
+
+27
+00:04:14,337 --> 00:04:18,942
+So, these are the combination of navigation techniques we use to explore the whole island.
+
+28
+00:04:22,107 --> 00:04:29,370
+And at each spot, the objective is that it should reveal all related information, including the
+
+29
+00:04:29,370 --> 00:04:41,391
+heritage information, and let the user use such information interactively, and the user can interactively explore the place.
+
+30
+00:04:44,172 --> 00:04:56,937
+So, in order to achieve the objective, we have collected a multimodal archive of information, which included regular and 360-degree images plus videos to
+
+31
+00:04:56,937 --> 00:05:04,957
+capture indigenous architectural heritage of Satras and village life, 3D models for landscape and architecture,
+
+32
+00:05:04,957 --> 00:05:13,639
+2D drone shots to showcase landscape including flora and fauna because ecological heritage also we wanted to capture.
+
+33
+00:05:14,648 --> 00:05:21,839
+then 2D videos to depict cultural or intangible heritage plus textual description.
+
+34
+00:05:22,500 --> 00:05:31,113
+So, all this information together constituted the whole application because the amount of information is vast.
+
+35
+00:05:31,593 --> 00:05:36,340
+So, the application size also became quite large, almost 10 gigabytes.
+
+36
+00:05:37,482 --> 00:05:42,790
+Now, the challenge was to render the content and allow the users to interact.
+
+37
+00:05:42,810 --> 00:05:44,132
+Now, as we have already seen,
+
+38
+00:05:44,483 --> 00:06:00,153
+Rendering such vast content involves lots of computation because if you note here, we have multimodal content rich in details, and the implication of such content is that
+
+39
+00:06:00,153 --> 00:06:09,883
+we require significant computational support to render it efficiently in real time so that the immersive experience is realistic.
+
+40
+00:06:11,382 --> 00:06:20,310
+So, we require fast storage and retrieval support as well as high computational support because the rendering process will be complex.
+
+41
+00:06:21,171 --> 00:06:27,670
+Earlier we talked about rendering simple static images, which itself was computationally intensive, and here
+
+42
+00:06:27,670 --> 00:06:34,603
+we are having rich multimodal content which can be interactively changed and includes videos and animations.
+
+43
+00:06:35,804 --> 00:06:38,807
+So, the computational requirement is many times higher.
+
+44
+00:06:42,382 --> 00:06:53,576
+Our regular systems cannot support such an application having almost 10 GB of content, rich multimodal realistic content.
+
+45
+00:06:53,596 --> 00:06:56,379
+So, we had to go for some optimization technique.
+
+46
+00:06:56,399 --> 00:06:58,602
+So, let us talk about two such techniques.
+
+47
+00:06:58,622 --> 00:07:06,432
+Optimization 1: here we wanted to implement our system for the Oculus Quest 2 application.
+
+48
+00:07:07,475 --> 00:07:14,466
+The device, as shown here, comprises a headset and handheld controllers.
+
+49
+00:07:15,948 --> 00:07:20,956
+Now, the Oculus Quest 2 is a standalone computing device having its own processor and memory.
+
+50
+00:07:21,437 --> 00:07:24,381
+We do not need to tether it with any computer.
+
+51
+00:07:26,144 --> 00:07:28,648
+No need to tether the headset to a fixed computer.
+
+52
+00:07:29,369 --> 00:07:34,056
+But the limitation is that its computing power is
+
+53
+00:07:34,458 --> 00:07:38,883
+less as compared to a workstation.
+
+54
+00:07:38,903 --> 00:07:47,573
+And storage is also relatively less compared to a workstation, a high-end graphics workstation.
+
+55
+00:07:47,593 --> 00:07:58,927
+So, then we had to go for some optimization strategy to reduce the size of the application and also associated computations, including memory access.
+
+56
+00:07:58,967 --> 00:08:04,313
+So, if we reduce the size, then the requirement for rendering
+
+57
+00:08:04,867 --> 00:08:14,322
+will be reduced, which also involves the requirement for accessing data from memory for rendering.
+
+58
+00:08:14,342 --> 00:08:15,584
+Now, what strategy did we use?
+
+59
+00:08:16,465 --> 00:08:19,189
+We used a cloud computing-based approach.
+
+60
+00:08:19,850 --> 00:08:32,089
+So, we use the cloud to store all the videos, not the images, but the videos, because videos take up more space.
+
+61
+00:08:33,823 --> 00:08:42,755
+When the user selects a video thumbnail from the video player in the Quest, that is the video player interface provided within the immersive environment,
+
+62
+00:08:42,755 --> 00:08:53,113
+as we have discussed earlier in the implementation part of the lecture, the corresponding video is loaded from the cloud.
+
+63
+00:08:53,173 --> 00:08:59,663
+So, the video is not stored locally, so the storage requirement is less, and the accessing requirement is
+
+64
+00:09:00,082 --> 00:09:03,726
+less. Accessing operations are also computationally intensive.
+
+65
+00:09:04,287 --> 00:09:06,089
+So, the fewer the operations, the better.
+
+66
+00:09:07,832 --> 00:09:12,037
+So, this led to a reduced application size of 5.1 GB.
+
+67
+00:09:12,077 --> 00:09:16,662
+So, because some parts, the videos, are stored in the cloud.
+
+68
+00:09:16,682 --> 00:09:28,637
+So, the application deployed on the client device, that is the Oculus Quest 2, is reduced to 5.1 GB, and a corresponding computational
+
+69
+00:09:29,393 --> 00:09:30,735
+reduction happened.
+
+70
+00:09:31,416 --> 00:09:45,613
+However, because we are relying on a cloud server, cloud services, there were additional concerns apart from rendering, that is particularly related to network connectivity.
+
+71
+00:09:47,436 --> 00:09:56,667
+In order to load the high-quality videos on a real-time basis, we required high bandwidth support and also network coverage.
+
+72
+00:09:58,165 --> 00:09:59,446
+Latency should be minimal.
+
+73
+00:09:59,787 --> 00:10:06,334
+So, if these issues are not resolved, then cloud-based optimization would not be of much help.
+
+74
+00:10:06,815 --> 00:10:20,950
+However, this is just to show that to take care of optimization concerns in rendering, we can recourse to different technologies so that rendering optimization can take place.
+
+75
+00:10:22,792 --> 00:10:26,316
+That may lead to other concerns which we also need to address.
+
+76
+00:10:28,912 --> 00:10:31,856
+Now, let us talk about another optimization.
+
+77
+00:10:33,078 --> 00:10:46,678
+We also wanted to implement for everyday smartphones; that is, we wanted to deploy it on a smartphone and put it in a cardboard for an immersive experience, as illustrated in this figure.
+
+78
+00:10:46,738 --> 00:10:55,932
+So, we have this cardboard type of system within which we can put our smartphone and
+
+79
+00:10:56,755 --> 00:11:10,730
+if we create stereoscopic views, then when we wear it as a headset, we get to see an immersive environment without using any expensive headsets.
+
+80
+00:11:11,951 --> 00:11:21,642
+Cardboards are very cheap, only about 500 to 1000 rupees, Indian rupees.
+
+81
+00:11:21,662 --> 00:11:25,446
+And everybody has smartphones, so if we deploy, then we can have
+
+82
+00:11:26,624 --> 00:11:35,132
+a ready-made immersive experience without spending too much money on the appropriate device.
+
+83
+00:11:36,334 --> 00:11:47,018
+However, in order to do that, we had to go for some optimization strategy because the size is more than what typically smartphones support and the
+
+84
+00:11:47,018 --> 00:11:55,112
+associated computation also; typically, smartphones do not support such a high amount of computation, average smartphones.
+
+85
+00:11:57,404 --> 00:12:00,228
+So, we had to go for some other optimization strategy.
+
+86
+00:12:02,731 --> 00:12:07,537
+In this case, what we did is we did compression.
+
+87
+00:12:07,918 --> 00:12:18,151
+We compressed the images that we have to reduce the storage requirements, and we could not utilize the videos, most of the videos.
+
+88
+00:12:18,231 --> 00:12:21,756
+So, video playback support was removed.
+
+89
+00:12:24,219 --> 00:12:27,023
+So, together what they resulted in is
+
+90
+00:12:27,998 --> 00:12:35,486
+a kind of less realistic experience as compared to a full version implementation.
+
+91
+00:12:35,506 --> 00:12:42,653
+But with these optimizations, we could reduce the overall size to 0.7 GB from roughly 10 GB.
+
+92
+00:12:43,233 --> 00:12:44,755
+As you can see, it is much less.
+
+93
+00:12:48,018 --> 00:12:52,843
+We could have also explored cloud-based support as well, cloud-based solutions as well.
+
+94
+00:12:54,465 --> 00:12:56,807
+So, in that case, video playback we could have kept.
+
+95
+00:12:58,508 --> 00:13:04,595
+However, you can try it at your end for large applications.
+
+96
+00:13:05,316 --> 00:13:14,187
+So, the idea here is just to show that in order to take care of computational issues associated with rendering immersive experiences,
+
+97
+00:13:14,187 --> 00:13:23,757
+we can take recourse to different approaches such as taking cloud-based services or going for compression techniques.
+
+98
+00:13:24,901 --> 00:13:30,006
+And in extreme cases, we may have to remove some features.
+
+99
+00:13:31,988 --> 00:13:43,499
+So that is what we can do in practice because we know that if we try to deploy the whole system for any platform, then it is not possible.
+
+100
+00:13:44,180 --> 00:13:45,281
+It will lead to problems.
+
+101
+00:13:45,441 --> 00:13:47,043
+And why will the problems come?
+
+102
+00:13:47,123 --> 00:13:50,146
+Now we have a foundation to understand that.
+
+103
+00:13:50,166 --> 00:13:53,389
+That is because rendering will not be possible.
+
+104
+00:13:53,723 --> 00:13:54,805
+with any device.
+
+105
+00:13:56,989 --> 00:13:58,852
+So, let us summarize what we have learned.
+
+106
+00:13:59,694 --> 00:14:03,541
+So, we have talked about the idea of resource optimization in virtual reality.
+
+107
+00:14:05,224 --> 00:14:18,347
+In order to understand that, we introduced computer graphics, basically the pipeline stages, the 3D graphics pipeline, its stages and its implementation in software as well as in hardware.
+
+108
+00:14:19,913 --> 00:14:25,300
+where we explained what a GPU is, how it is organized, and how it is used to implement the stages.
+
+109
+00:14:27,422 --> 00:14:30,787
+And also we talked about how such knowledge is useful in practice.
+
+110
+00:14:32,689 --> 00:14:38,196
+So, in this entire lecture on immersive experience, we referred to several concepts.
+
+111
+00:14:38,416 --> 00:14:45,685
+We did not go into the details of those, particularly related to computer graphics, as the objective was to keep it simple.
+
+112
+00:14:46,441 --> 00:14:48,844
+bare minimum things for your understanding.
+
+113
+00:14:49,325 --> 00:14:59,137
+However, you can refer to this book, Computer Graphics by Oxford University Press, written by myself to know more details about the topics covered.
+
+114
+00:14:59,717 --> 00:15:01,780
+All the topics I have taken from that book only.
+
+115
+00:15:02,000 --> 00:15:13,475
+Also, there is one NPTEL MOOC course offered by me on Computer Graphics, which again covers all the topics mentioned here.
+
+116
+00:15:13,855 --> 00:15:14,676
+So, you can also
+
+117
+00:15:15,398 --> 00:15:23,266
+go through the modules of that course to know in more detail about the stages.
+
+118
+00:15:26,249 --> 00:15:37,001
+So, I hope you could follow the overall idea of the resource optimization concept and why computer graphics is relevant and how
+
+119
+00:15:37,001 --> 00:15:43,127
+we can understand the rendering process complexities and how that knowledge can help us take decisions.
+
+120
+00:15:43,833 --> 00:15:54,332
+in deploying systems. So, looking forward to meeting you in the next lecture. Thank you, goodbye, and happy learning.
