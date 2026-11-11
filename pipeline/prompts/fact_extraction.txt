@@ -1,0 +1,69 @@
+You extract atomic facts from one segment of a university lecture transcript.
+A fact is a single teachable proposition about the course subject that the
+lecturer establishes in this segment.
+
+Requirements:
+1. Established. The lecturer asserts it as true. Not a hypothesis, a
+   question, an opinion or view, or something the lecturer only asks about.
+2. Grounded. Cite the smallest set of segment sentence numbers that state
+   the fact.
+3. Atomic. One proposition per fact: it can be tested on its own and cannot
+   be split into smaller facts. Keep the conditions, qualifiers, quantities
+   and scope that make it true. Do not split one definition or one list of
+   members across several facts.
+4. Self-contained. A reader who has not seen the lecture must understand it.
+   Replace pronouns and pointing words (this, it, here, that method, the
+   slide) with the specific term. Do not write "the lecturer says".
+5. Canonical. Write every term in full words, never as an acronym or
+   abbreviation, even where the lecturer uses one: "extended reality", not
+   "XR" or "extended reality (XR)".
+6. On-subject only. The fact is about the segment goal and the course
+   subject. Skip greetings, logistics, anecdotes, jokes, rhetorical
+   questions, and promises of later coverage ("we will see this next week").
+7. Faithful. Add nothing the lecturer did not say, even if it is true. Keep
+   hedges ("usually", "in most cases"). If the lecturer corrects themselves,
+   keep only the corrected version.
+8. No repeats. If a point is made twice, output one fact citing all its
+   sentences.
+9. If the segment establishes nothing, return an empty list.
+
+Where it fits, write each fact as one declarative sentence in the order
+subject, relation, predicate: what the fact is about, then the verb that
+relates it ("is", "covers", "consists of", "causes"), then the rest.
+
+Write the evidence before the text. Output JSON only:
+{"facts": [{"evidence": [int, ...], "text": "..."}]}
+
+### Example
+COURSE TITLE: Virtual Reality
+THE COURSE
+Use this to understand what the course covers as a whole: its goals and the order of its topics.
+Outline: The course explains the foundations of virtual and augmented reality systems: their concepts, hardware and design.
+Syllabus (the planned topics in order; a lecture may cover part of a topic or several topics):
+- Introduction: Immersive technologies; History
+- Hardware: Displays; Tracking
+LECTURE: Introduction to immersive technologies
+SEGMENT GOAL: Distinguish XR and AR from VR
+SEGMENT:
+[1] Okay, so now there is this other term you will keep hearing, XR, extended reality.
+[2] It is basically an umbrella term.
+[3] It covers VR, AR, MR, and honestly whatever comes next in this space.
+[4] I remember when I first tried a headset in 2014, I felt sick in five minutes, anyway.
+[5] So AR, augmented reality, here you still see the real world and the virtual content is overlaid on top of it.
+[6] We will do the tracking part of this in week five.
+OUTPUT:
+{"facts": [
+{"evidence": [1, 2, 3],
+"text": "Extended reality is an umbrella term that covers virtual reality, augmented reality, mixed reality and future technologies of the same kind."},
+{"evidence": [5],
+"text": "Augmented reality lets the user still see the real world, with virtual content overlaid on top of it."}
+]}
+
+### Your segment
+COURSE TITLE: {course_title}
+{course}
+LECTURE: {lecture_title}
+SEGMENT GOAL: {subgoal}
+SEGMENT:
+{segment}
+OUTPUT:

@@ -146,6 +146,12 @@ class LLM:
             sys.stdout.write("\n")
         return out
 
+    def lookup(self, request: Request, cache_file: str | Path | None = None) -> dict | None:
+        """The cached first-attempt answer to this request ({"content", "reasoning", ...}), or None. Never calls the
+        server: a later stage uses it to rebuild an earlier stage's conversation exactly as the model answered."""
+        cache = self._cache_path(cache_file)
+        return self._cache(cache).get(self._hash(self._body(request, 0, request.followup))) if cache else None
+
     def count_tokens(self, text: str) -> int:
         """Tokens in text, counted by the server's own tokenizer."""
         body = ({"model": self.model, "prompt": text, "add_special_tokens": False} if self.cfg.engine == "vllm"
