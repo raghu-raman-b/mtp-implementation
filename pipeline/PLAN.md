@@ -65,8 +65,9 @@ Everything traces down to sentences, so every answer and activity can cite a lec
   (`tests/fake_run.py`: 22 checks pass on lectures 1, 4, 16; the real caches still answer through the new configs.)
 - [x] **O** Write the missing 2026-11-12 run notes into the notebook from the logs and caches (segmentation on the 27B;
   2a with the new fact definition: 65 to 20 facts on lecture 1, 62 on lectures 1, 4, 16; judge round: 8 failed).
-- [ ] **O** (EC2) Finish the interrupted 2b round (segment 4/S1), so `stage_2b_verify_facts/` holds the 62-fact run.
-  This is the baseline for block 1.
+- [x] **O** (EC2) Finish the interrupted 2b round (segment 4/S1), so `stage_2b_verify_facts/` holds the 62-fact run.
+  This is the baseline for block 1. (Run fresh instead, at the user's request: 62 in, 54 kept, 7 rewritten, 1 removed,
+  62 out; the old folder is in `analysis/fact_extraction/data/history/2b_2026-11-12_ec2/`.)
 
 ### Block 1: the fact judge (2b)
 What the last round showed: 8 of 62 facts failed. 3 of them were passed by the judge and failed only by the code check

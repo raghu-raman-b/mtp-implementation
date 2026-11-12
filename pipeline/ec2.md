@@ -48,12 +48,15 @@ Qwen loads in about 1 minute once its weights are in the page cache (5 minutes c
 ## Forward the ports
 
 ```bash
-ssh -f -N -o ExitOnForwardFailure=yes -L 8094:127.0.0.1:8094 -L 8095:127.0.0.1:8095 mtp
-curl -s localhost:8094/v1/models            # answers once the server is up
+ssh -f -N -L 8094:127.0.0.1:8094 -L 8095:127.0.0.1:8095 mtp
+ss -ltn | grep -E ":(8094|8095) "           # both listening
+curl -s localhost:8095/v1/models            # answers once the server is up
 ```
 
-Both ports are forwarded at once; only the one with a running server answers. Stop the forward with
-`pkill -f "ssh -f -N .*8094:127.0.0.1:8094"`.
+Both ports are forwarded at once; only the one with a running server answers. The `mtp` entry in `~/.ssh/config`
+also forwards port 8000: when another SSH session already holds it, ssh warns and still opens 8094 and 8095 (so no
+`ExitOnForwardFailure`). Do not add `-o ClearAllForwardings=yes` here: it clears the `-L` forwards as well. Stop the
+forward with `pkill -f "ssh -f -N -L 8094"`.
 
 ## Swap models
 
