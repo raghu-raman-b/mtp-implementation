@@ -159,7 +159,7 @@ list in, triples out (subject, label, object, facts). Facts are numbered `[1]..[
   lecture 1. "What is needed before lecture 23" is then: its direct prerequisite lectures, all earlier ones behind
   them, the concepts it uses with their definitions and defining facts, and the concepts it uses that the course never
   defines.
-- [ ] **O** `scripts/s4d_assemble.py` (code), writing `knowledge/`, checked against a schema. Derived from the layer:
+- [x] **O** `scripts/s4d_assemble.py` (code), writing `knowledge/`, checked against a schema. Derived from the layer:
   - the name index: every name, alias and acronym to its concept (what `check_concept` looks up);
   - a card per concept: definition, where it is defined (lecture, segment, time), its facts with the defining ones
     first, its relationships in both directions, the lectures that use it;

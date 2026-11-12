@@ -28,6 +28,12 @@ What it looks for (each line is what a broken stage would show):
       a hub concept making every lecture depend on lecture 1 (and, as a control, the same check failing with the
       weighting off); the rule checks missing a seeded backward or transitive link; graph.json not the graph of
       the registry; a lecture without its needed-before file, or one without the 4a definition and defining facts
+  4d  the layer failing its own check; a concept missing from the name index, an acronym not indexed as one; a
+      card without its facts (defining first), relationships or where it is defined; a fact without its vector,
+      concepts or time; a lecture without its concepts by kind, concept map or goals; the goal tree missing a goal,
+      objective or segment; a concept without its path; a broken reference not caught (seeded: a card pointing to
+      a missing concept, a fact removed from the store); a malformed file passing the schema check (seeded: a
+      missing field, a wrong type, a bad ID)
   rerun  any output file different when rerun from the caches, or the model called again
   output  any file under the real output/ created or changed
 """
@@ -48,6 +54,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts import lectures as lec  # noqa: E402
 from scripts import s4a_definitions as s4a, s4b_goals as s4b, s4c_lecture_graph as s4c  # noqa: E402
+from scripts import s4d_assemble as s4d  # noqa: E402
 from scripts.llm import LLMConfig  # noqa: E402
 from scripts.llm.fake_server import FakeServer  # noqa: E402
 
@@ -225,7 +232,7 @@ runpy.run_path(script, run_name="__main__")
 
 def test_rerun(work: Path, log: Path):
     print("rerun from the caches", flush=True)
-    outs = [work / "output" / COURSE / o for _, _, o in RUNS if o]
+    outs = [work / "output" / COURSE / o for _, _, os_ in RUNS for o in os_.split(",") if o]
     before = {str(o): tree_bytes(o) for o in outs}
     n0 = len(lines(log))
     ok = all(stage(work, s, a, work / f"rerun_{Path(s).stem}.log", record=False) == 0 for s, a, _ in list(RUNS))
@@ -429,6 +436,98 @@ def test_4c(work: Path, syn: dict):
     check(json.loads((od / "checks.json").read_text())["problems"] == {}, "checks.json reports no problem")
 
 
+# ---------------------------------------------------------------- 4d
+def test_4d(work: Path, syn: dict):
+    print("4d knowledge layer", flush=True)
+    check(stage(work, "s4d_assemble.py", ["--embed-model", "fake"], work / "4d.log",
+                "knowledge,stage_4d_assemble") == 0, "4d exits cleanly, and its own check finds nothing")
+    out = work / "output" / COURSE
+    kd = out / "knowledge"
+    load = lambda name: json.loads((kd / name).read_text())  # noqa: E731
+    concepts = syn["concepts"]
+    cid = {c["name"]: k for k, c in concepts.items()}
+    report = json.loads((out / "stage_4d_assemble" / "checks.json").read_text())
+    check(report["ok"] and report["files"] == 9 + len(KEYS) and report["references"] > 0,
+          f"checks.json: {report['files']} files, {report['references']} references, nothing wrong")
+    names = load("names.json")
+    check(names.get("hmd") == [{"concept": cid["head-mounted display"], "as": "acronym", "text": "HMD"}]
+          and names.get("head mounted display", [{}])[0].get("concept") == cid["head-mounted display"]
+          and all(any(e["concept"] == c for es in names.values() for e in es) for c in concepts),
+          "name index: every concept; 'HMD' as an acronym; 'head-mounted display' keyed without the hyphen")
+    cards = load("concepts.json")
+    ok_cards = set(cards) == set(concepts)
+    for c, card in cards.items():
+        d = syn["defining"][c]
+        ok_cards &= card["facts"][:len(d)] == d and sorted(card["facts"]) == sorted(concepts[c]["facts"])
+    check(ok_cards, "a card per concept, its facts with the defining ones first")
+    vr, hmd = cards[cid["virtual reality"]], cards[cid["head-mounted display"]]
+    check([r["relation"] for r in vr["relations"]["in"]] == ["R0001", "R0002"]
+          and [r["relation"] for r in hmd["relations"]["out"]] == ["R0001"],
+          "relationships on the cards in both directions")
+    times = {}
+    for k in KEYS:
+        times.update(json.loads((out / "stage_0a_preprocess/times" / f"{lec.stem_of(k)}.json").read_text()))
+    s0 = vr["defined_in"][0]
+    check(s0["segment"] == "1/S0" and s0["start"] == times["1/0"]["start"] and s0["end"] == times["1/1"]["end"],
+          "where a concept is defined: segment and the time of its defining facts' sentences")
+    facts, emb = load("facts.json"), load("fact_embeddings.json")
+    check(set(facts) == set(syn["facts"]) and set(emb["vectors"]) == set(facts)
+          and all(len(v) == emb["dim"] for v in emb["vectors"].values()),
+          f"every fact in the store with a vector of length {emb['dim']}")
+    f0 = facts["4/S0/F3"]                                   # rendering's second fact, evidence 4/1
+    check(f0["concepts"] == [cid["rendering"]] and (f0["start"], f0["end"]) == (times["4/1"]["start"], times["4/1"]["end"]),
+          "a fact's concepts and time")
+    l4, l2 = load("lectures/lec_4.json"), load("lectures/lec_2.json")
+    k4 = {kind: sorted(concepts[c]["name"] for c in cs) for kind, cs in l4["concepts"].items()}
+    check(k4["introduced"] == ["rendering"] and k4["assumed"] == ["presence"] and l2["concept_map"]["relations"] == ["R0001"]
+          and l4["goal"]["id"] == "4/G" and l4["objectives"][0]["id"] == "4/O1",
+          "per lecture: concepts by kind, its own concept map, its goals")
+    goals = load("goals.json")
+    segs = {sid for k in KEYS for sid in json.loads((out / "stage_1b_verify_segments/segment_maps"
+                                                     / f"{lec.stem_of(k)}.json").read_text())}
+    check(set(goals["segments"]) == segs and set(goals["lecture_goals"]) == {f"{k}/G" for k in KEYS}
+          and all(o in goals["objectives"] for g in goals["lecture_goals"].values() for o in g["objectives"]),
+          "goal tree: every lecture goal, its objectives, every segment")
+    graph = load("lecture_graph.json")
+    check(graph["concept_paths"][cid["display resolution"]]["path"] == ["2", "3", "5"],
+          "lecture graph with the path of lectures to each concept")
+    check([a["concept"] for a in load("assumed.json")["concepts"]] == [cid["presence"]], "assumed knowledge: presence")
+
+    # seeded damage, in a copy of the layer
+    seeded = work / "seeded_knowledge"
+    shutil.copytree(kd, seeded)
+    good = s4d.check_layer(seeded)
+    check(good["ok"], "the untouched copy passes")
+    p = seeded / "concepts.json"
+    d = json.loads(p.read_text())
+    d[cid["head-mounted display"]]["relations"]["out"][0]["concept"] = "C9999"
+    p.write_text(json.dumps(d))
+    r = s4d.check_layer(seeded)
+    check([b["id"] for b in r["broken_references"]] == ["C9999"] and not r["schema"],
+          "seeded: a card pointing to a concept that does not exist is caught (and only that)")
+    p = seeded / "facts.json"
+    d = json.loads(p.read_text())
+    del d["2/S0/F0"]
+    p.write_text(json.dumps(d))
+    r = s4d.check_layer(seeded)
+    check({b["id"] for b in r["broken_references"]} == {"C9999", "2/S0/F0"}
+          and any(b["at"].startswith("goals.json") for b in r["broken_references"]),
+          "seeded: a fact removed from the store: every reference to it is caught (cards, goals, vectors)")
+    shutil.rmtree(seeded)
+    shutil.copytree(kd, seeded)
+    p = seeded / "lectures" / "lec_3.json"
+    d = json.loads(p.read_text())
+    del d["title"]
+    d["segments"]["3/S0"]["start"] = "zero"
+    d["objectives"][0]["id"] = "3/X1"
+    p.write_text(json.dumps(d))
+    r = s4d.check_layer(seeded)
+    errs = " | ".join(r["schema"])
+    check(len(r["schema"]) == 3 and "missing 'title'" in errs and "expected number" in errs and "3/X1" in errs,
+          f"seeded: a malformed lecture file fails the schema check ({len(r['schema'])} errors)")
+    shutil.rmtree(seeded)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--work", help="folder for the copy (default: a new temporary folder)")
@@ -447,6 +546,7 @@ def main():
         test_4a(work, cfg, syn, log)
         test_4b(work, cfg, log)
         test_4c(work, syn)
+        test_4d(work, syn)
         test_rerun(work, log)
     finally:
         server.stop()
