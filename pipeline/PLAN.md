@@ -80,8 +80,10 @@ what people associate with XR). Rewrites are not judged again. Nothing yet measu
   `analysis/fact_judge/seeded.json` (34 entries, one per judge call).
 - [x] **F** Missed facts: for 4 segments, list what the segment teaches that no fact holds (the judge cannot see these;
   this measures 2a): `analysis/fact_judge/missed.json` (all 15 segments read; 5 points, 1 major).
-- [ ] **O** `analysis/fact_judge/compare.py`: judge against gold and against the seeded errors, per property: caught,
-  missed, false alarms; the list of disagreements with both reasons.
+- [x] **O** `analysis/fact_judge/compare.py`: judge against gold and against the seeded errors, per property: caught,
+  missed, false alarms; the list of disagreements with both reasons. (Baseline from the caches in
+  `report_compare.md`: gold failures caught 2/7, false alarms 3/55; the seeded runs need the EC2, plumbing checked with
+  the fake model.)
 - [ ] **O** (EC2) Run the judge three times on the same facts: how many verdicts flip.
 - [ ] **O** The code checks against gold: false alarms and misses of `pointing` and `acronym`.
 - [ ] **O** (EC2) Judge the rewritten facts once more (test only): how many rewrites still fail.
