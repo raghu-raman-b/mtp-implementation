@@ -61,7 +61,8 @@ Everything traces down to sentences, so every answer and activity can cite a lec
 - [x] **O** Move the EC2 setup to `pipeline/setup_ec2.sh` (from `lir-construction/setup_ec2.sh`): vLLM, the two models,
   the embedding model download, a smoke test. Add `pipeline/ec2.md`: start a server, forward the port, swap models.
   (Servers start from the same config files with `scripts/llm/serve.py`; the old script stays for `lir-construction`.)
-- [ ] **O** Attach-only configs for the forwarded ports; fake-model run of 2a and 2b from the local PC.
+- [x] **O** Attach-only configs for the forwarded ports; fake-model run of 2a and 2b from the local PC.
+  (`tests/fake_run.py`: 22 checks pass on lectures 1, 4, 16; the real caches still answer through the new configs.)
 - [ ] **O** Write the missing 2026-11-12 run notes into the notebook from the logs and caches (segmentation on the 27B;
   2a with the new fact definition: 65 to 20 facts on lecture 1, 62 on lectures 1, 4, 16; judge round: 8 failed).
 - [ ] **O** (EC2) Finish the interrupted 2b round (segment 4/S1), so `stage_2b_verify_facts/` holds the 62-fact run.

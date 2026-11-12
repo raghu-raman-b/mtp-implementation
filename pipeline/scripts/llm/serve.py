@@ -31,7 +31,7 @@ def main():
     ap.add_argument("config", help="LLMConfig file (.json or .toml)")
     ap.add_argument("--smoke", action="store_true", help="start the server, send one request, stop it")
     a = ap.parse_args()
-    cfg = LLMConfig.load(a.config).with_(launch=True, url="")
+    cfg = LLMConfig.load(a.config).with_(launch=True, url="", attach_wait_s=0)
     llm = LLM(cfg)
     llm.start()
     if not llm.server.launched:

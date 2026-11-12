@@ -110,16 +110,39 @@ class Server:
         """Attach to a server that answers at the URL, or start one (when cfg.launch). Waits until it is ready."""
         if self.healthy():
             self.log(f"attached to the server at {self.url}")
-        elif not self.cfg.launch or self.cfg.url:
-            raise RuntimeError(f"no server answers at {self.url} (launch is off or url points elsewhere)")
-        else:
+        elif self.cfg.launch and not self.cfg.url:
             self._launch()
+        elif self.cfg.attach_wait_s > 0:
+            self._wait_for_server()
+        else:
+            raise RuntimeError(f"no server answers at {self.url} (launch is off or url points elsewhere)")
         if not self.model_name:
             models = self.served_models()
             if not models:
                 raise RuntimeError(f"the server at {self.url} serves no model")
             self.model_name = models[0]
+        elif not self.launched and not self.cfg.launch:
+            # attach only: the port must serve this config's model, or its answers would be cached under this
+            # config's hash (a forwarded port can reach whichever server runs on the EC2)
+            models = self.served_models()
+            if self.model_name not in models:
+                raise RuntimeError(f"the server at {self.url} serves {models}, not {self.model_name!r}: "
+                                   f"another model is running on this port")
         return self
+
+    def _wait_for_server(self):
+        """Attach only: wait until a server answers (someone starts or swaps it), up to cfg.attach_wait_s."""
+        t0, next_note = time.time(), 0.0
+        while not self.healthy():
+            waited = time.time() - t0
+            if waited > self.cfg.attach_wait_s:
+                raise TimeoutError(f"no server answered at {self.url} within {self.cfg.attach_wait_s} s")
+            if waited >= next_note:
+                self.log(f"  {time.strftime('%H:%M:%S')}  waiting for {self.model_name or 'a server'} at {self.url} "
+                         f"({waited:.0f} of {self.cfg.attach_wait_s} s; start it on the EC2, see pipeline/ec2.md)")
+                next_note += 60
+            time.sleep(3)
+        self.log(f"attached to the server at {self.url} after waiting {time.time() - t0:.0f} s")
 
     def _launch(self):
         c = self.cfg

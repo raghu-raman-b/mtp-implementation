@@ -67,6 +67,23 @@ ssh mtp "tmux new -d -s sage 'cd ~/pipeline && python3 -m scripts.llm.serve conf
 
 `tmux kill-session -t qwen` works as well (`serve.py` stops vLLM on the hang-up signal).
 
+## Run a stage from the local PC
+
+The two configs attach only (`"launch": false`): a stage never starts a model here. When no server answers, it waits
+up to `attach_wait_s` (30 min) and says so every minute; when the port serves another model, it stops at once
+(otherwise that model's answers would be cached under this config's hash).
+
+```bash
+cd pipeline
+python3 scripts/s2a_fact_extraction.py nptel_vr --llm configs/qwen38_27b_vllm.json --only 1,4,16
+python3 scripts/s2b_verify_facts.py nptel_vr --llm configs/qwen38_27b_vllm.json --judge configs/sage_a15_vllm.json --only 1,4,16
+```
+
+2b judges with Sage first, then rewrites with Qwen: start Sage, and when the log says
+`waiting for qwen3.8-27b-fp8`, swap to Qwen (above). Answers already in a cache are never sent, so a rerun only calls
+the model for what is missing. The plumbing of all this is tested without a model by `python3 tests/fake_run.py`
+(fake servers on the same ports: stop the forward first).
+
 ## Server logs
 
 The server logs stay on the EC2 (`~/pipeline/output/logs/llm_server_<port>.log`). Copy them back into their own folder,

@@ -20,6 +20,8 @@ class LLMConfig:
 
     # ---------------------------------------------------------------- server
     launch: bool = True             # True: start a server when none answers at the URL; False: attach only
+    attach_wait_s: int = 0          # attach only: wait this long for a server to answer (e.g. while models are
+                                    # swapped on the EC2); 0: fail at once
     host: str = "127.0.0.1"
     port: int = 8000
     url: str = ""                   # a server elsewhere, e.g. "http://10.0.0.5:8000" (overrides host and port)
