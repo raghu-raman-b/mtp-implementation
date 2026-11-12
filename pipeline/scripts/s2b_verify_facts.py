@@ -289,14 +289,45 @@ def run(course: str, llm: LLM | LLMConfig, lectures: list | None = None,
     return summary
 
 
+def run_unjudged(course: str, lectures: list | None = None) -> dict:
+    """MVP pass-through (2026-11-13, the user skipped the judge after block 1's review found it did more harm than
+    good): the 2a facts become the stage's facts unchanged, with their 2a IDs (no renumbering), so the later stages
+    read them from here as usual. judgements/ records every fact as kept, not judged."""
+    keys = lec.normalize(lectures) or lec.keys(s2a.out_dir(course) / "fact_maps")
+    od, src = out_dir(course), s2a.out_dir(course)
+    for sub in ("fact_maps", "fact_text", "judgements", "checks"):
+        (od / sub).mkdir(parents=True, exist_ok=True)
+    n = 0
+    for k in keys:
+        stem = lec.stem_of(k)
+        facts = json.loads((src / "fact_maps" / f"{stem}.json").read_text())
+        (od / "fact_maps" / f"{stem}.json").write_text(json.dumps(facts, indent=1, ensure_ascii=False) + "\n")
+        (od / "fact_text" / f"{stem}.txt").write_text((src / "fact_text" / f"{stem}.txt").read_text())
+        (od / "checks" / f"{stem}.json").write_text((src / "checks" / f"{stem}.json").read_text())
+        by_seg: dict[str, list] = {}
+        for fid in facts:
+            by_seg.setdefault(fid.rsplit("/", 1)[0], []).append(fid)
+        recs = [{"segment": sid, "judged": False, "facts_2a": len(ids),
+                 "outcome": {fid: {"result": "kept", "judged": False} for fid in ids}} for sid, ids in by_seg.items()]
+        (od / "judgements" / f"{stem}.json").write_text(json.dumps(recs, indent=1, ensure_ascii=False) + "\n")
+        n += len(facts)
+    print(f"2b without the judge (pass-through): {len(keys)} lectures, {n} facts taken from 2a unchanged")
+    return {"lectures": len(keys), "facts": n, "judged": False}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("course", help="course folder name, e.g. nptel_vr")
     ap.add_argument("--llm", required=True, help="LLMConfig file of 2a's model: it rewrites (and judges without --judge)")
     ap.add_argument("--judge", help="LLMConfig file of the judge (default: --llm)")
     ap.add_argument("--only", help="lectures, e.g. 1-5,8,24b,tut_1")
+    ap.add_argument("--no-judge", action="store_true",
+                    help="no model: the 2a facts pass through unchanged (MVP; --llm is then not used)")
     a = ap.parse_args()
     only = lec.parse_only(a.only) if a.only else None
+    if a.no_judge:
+        run_unjudged(a.course, only)
+        return
     if a.judge:     # two models: each server runs only for its phase
         run(a.course, LLMConfig.load(a.llm), only, judge=LLMConfig.load(a.judge))
     else:
