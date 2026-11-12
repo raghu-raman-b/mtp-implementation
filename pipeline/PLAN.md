@@ -241,6 +241,23 @@ Starts while block 5 runs, on the test lectures. Generated per lecture after the
 | D5 | `defined` is true or false per segment. A list of the defining facts instead would let the definition and the answers start from them. | True or false, as you specified |
 | D6 | Labels are free text, as you chose. The same relationship may then appear under several wordings and cannot be queried by kind. | Free text; block 3 counts the duplicates |
 | D7 | The gate targets above are proposals. | Used as written |
+| D8 | Block 3: an acronym name ("VR") never merges by name, so a frequent acronym forms a large shared-name cluster that the size cap (12) splits: one acronym can end up as two concepts. Allow an exact merge of identical acronyms, exempt same-name pairs from the cap, or repeat steps 2–4 until nothing changes? | Cap applies; split pairs listed under `cut` |
+| D9 | Block 3: an entry with no defining facts is embedded by its names only, which embed poorly. Use its other facts instead? | Names only, as specified |
+| D10 | Block 4c: hub weighting. A concept used by more than max(3, 25% of lectures) weighs less, down to 0.1; a link needs weight 1. Formula and defaults acceptable? | As described in the notebook (stage 4c) |
+| D11 | Block 4c: a link K→L also counts concepts that L defines again itself (marked `redefined`). Leave them out of links? | Counted, marked |
+| D12 | Blocks 4a, 4b (as 2c): bad answers (an empty definition, an objective with a segment out of range) are reported, not retried. Retry them? | Reported only |
+| D13 | Block 1: the judge catches 0–1 of the 7 real failures in gold while meeting the seeded target; add a gate target on gold failures caught? One judge call flips 15% of verdicts: a majority of three calls (a design change) or a lower judge temperature? | See `analysis/fact_judge/report.md` |
+
+Choices made in the block 3 and 4 scripts, yours to overrule: the entry name in step 1 is the wording most segment
+concepts use; triples are identical up to case and spacing; a cluster without a valid answer keeps its entries apart;
+step 2 threshold 0.70 (provisional until the pair gold), cap 12, 5 defining facts in the embedding text, 8 facts per
+entry in the prompt; 4a fact cap 40 (defining facts first); objectives numbered from 1 (`4/O1`); a fourth concept kind
+per lecture, `defined_later`; `knowledge/` keeps cards in one `concepts.json` and the embeddings in their own file.
+
+Prompt gaps found while building (for F): `course_goals.txt` calls lecture keys "numbers" (keys such as "24b" exist)
+and shows no "achieves" lines; `concept_definition.txt` does not say the fact list may be capped; `concept_same.txt`
+does not say whether a group may be named by an alias (an acronym entry needs its full name), says nothing of capped
+facts, and has no field to flag an entry that mixes two meanings.
 
 Choices made in the prompt drafts, yours to overrule:
 - A concept is a term of the subject, taken even when a segment only mentions it; ordinary words and sources are not.
