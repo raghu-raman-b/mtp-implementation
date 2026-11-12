@@ -54,6 +54,7 @@ if __package__ in (None, ""):
 
 from scripts import course_meta, lectures as lec, s2a_fact_extraction as s2a  # noqa: E402
 from scripts import s4a_definitions as s4a, s4b_goals as s4b, s4c_lecture_graph as s4c  # noqa: E402
+from scripts import fact_checks  # noqa: E402
 from scripts.schema_check import Checker  # noqa: E402
 
 SCHEMA = ROOT / "schemas" / "knowledge.schema.json"
@@ -77,11 +78,9 @@ def name_key(name: str) -> str:
 
 
 def is_acronym(s: str) -> bool:
-    """"XR", "HMD", "3D", "HMDs": no spaces, at least two capitals or digits, at most a plural "s" in lower case."""
-    s = s.strip()
-    body = s[:-1] if s.endswith("s") else s
-    return (0 < len(s) <= 12 and " " not in s and not any(c.islower() for c in body)
-            and sum(c.isupper() or c.isdigit() for c in body) >= 2 and any(c.isupper() for c in body))
+    """"XR", "HMD", "3D", "HMDs", "FoV": the one shared test, is_acronym of scripts/fact_checks.py (decision D8: a
+    product name such as "HoloLens" is not an acronym)."""
+    return fact_checks.is_acronym(s.strip())
 
 
 def split_acronym(s: str) -> tuple[str, str | None]:

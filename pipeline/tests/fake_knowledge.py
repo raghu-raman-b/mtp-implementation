@@ -5,8 +5,9 @@
 No stage 3 output exists yet, so the test writes synthetic inputs: a registry (concepts, segment concepts,
 relations), the 2c concept maps and the 2b facts it is built from, over the real segment maps and sentence times of
 lectures 1 to 8 (copied). Everything runs in a copy of the pipeline folder in a new temporary folder; the fake model
-server (scripts/llm/fake_server.py) listens on a free port (never 8094 or 8095, the SSH forward to the EC2) through a
-copy of the Qwen config with that port, model_path "fake/qwen" (so no cache hash can match a real one) and no wait.
+server (KnowledgeFake below, over scripts/llm/fake_server.py) listens on a free port (never 8094 or 8095, the SSH
+forward to the EC2) through a copy of the Qwen config with that port, model_path "fake/qwen" (so no cache hash can
+match a real one), no wait, and the config's retries (2: three attempts).
 The embedder is a stand-in (put into sys.modules["scripts.embed"]) when scripts/embed.py is not there.
 
 The synthetic course (N = 8 lectures). "virtual reality" (lecture 1, used in all 8) and "extended reality" (lecture
@@ -15,11 +16,20 @@ The synthetic course (N = 8 lectures). "virtual reality" (lecture 1, used in all
 "latency" defined in 6 and used in 4 (no link backwards); "presence" never defined; "immersion" used in lectures 1 to
 6 with 3 facts each and defined only in 7/S3 (2 defining facts), for the cap (the test runs 4a with --cap 6).
 
+The fake model's 4a answers (by the concept's name) seed every retry kind of decision D12 in the first attempt and
+answer well after it: rendering ("as the lecturer explains") and head-mounted display ("In this lecture") a lecture
+reference, latency a fact in both lists, tracking no fact cited, stereoscopy an empty definition, display resolution
+a number outside the list. presence never writes its name (unresolved: the best answer kept), extended reality never
+answers JSON (no answer), field of view lists a misplaced fact; the others answer well at once.
+
 What it looks for (each line is what a broken stage would show):
   4a  a concept without its request or definition; a definition citing a fact outside its list (seeded, and the
       numbers mapped through anything but the shown list); the cap not putting defining facts first, the shown
-      facts not in lecture order, or * on the wrong facts; defined_mismatch not raised where defined_in is empty
-      (seeded both ways); misplaced facts not reported
+      facts not in lecture order, * on the wrong facts, or no "(n more facts not shown)" line when capped;
+      defined_mismatch not raised where defined_in is empty (seeded both ways); misplaced facts not reported; a
+      retry problem (outside the list, empty definition, no fact cited, a fact in both lists, the name absent, "the
+      lecturer"/"this lecture") not caught, not retried, or retried without its problem shown; a failed answer
+      thrown away instead of kept as unresolved, or an unparseable one kept; the retry log or its counts wrong
   4b  a lecture without its call, or the course call missing or not built from the lecture goals; a segment not
       listed, or listed without its registry concepts; objective or goal IDs wrong (<n>/O1.., <n>/G, G1..); an
       objective naming another lecture's segment; the segment checks (seeded: out of range, twice, a gap, left
@@ -57,6 +67,7 @@ from scripts import s4a_definitions as s4a, s4b_goals as s4b, s4c_lecture_graph 
 from scripts import s4d_assemble as s4d  # noqa: E402
 from scripts.llm import LLMConfig  # noqa: E402
 from scripts.llm.fake_server import FakeServer  # noqa: E402
+from scripts.llm.client import FEEDBACK  # noqa: E402
 
 COURSE = "nptel_vr"
 KEYS = [str(k) for k in range(1, 9)]
@@ -81,6 +92,59 @@ SPEC = [
 # subject, label, object (concept names), segment
 RELS = [("head-mounted display", "is used to view", "virtual reality", "2/S0"),
         ("tracking", "is needed for", "virtual reality", "3/S0")]
+
+
+FACT_LINE = re.compile(r"\[(\d+)\](\*?) \((?:lecture|tutorial) [^)]*\) (.*)")
+NOT_JSON = "I would rather explain this in prose."
+
+
+class KnowledgeFake(FakeServer):
+    """The plain fake, except for the seeded answers of the module docstring (4a by the concept's name)."""
+    base_seed = 0                  # the config's seed: the client sends seed + attempt (0, 1, 2)
+
+    def answer(self, body: dict) -> dict:
+        msgs = body["messages"]
+        prompt = msgs[0]["content"]
+        attempt = body.get("seed", 0) - self.base_seed
+        content = None
+        m = re.search(r"\nName: (.*)\n", prompt)
+        if "THE CONCEPT" in prompt and m:
+            content = self.definition(m[1], sum(1 for x in prompt.splitlines() if FACT_LINE.fullmatch(x)), attempt)
+        if content is None:
+            return super().answer(body)
+        with self.lock:
+            self.requests += 1
+            if self.log:
+                with open(self.log, "a") as f:
+                    f.write(json.dumps({"model": body.get("model"), "messages": msgs,
+                                        "schema": body["response_format"]["json_schema"]["schema"]}) + "\n")
+        return {"choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": len(prompt) // 4, "completion_tokens": len(content) // 4}}
+
+    @staticmethod
+    def definition(name: str, n: int, attempt: int) -> str:
+        a = {"facts": [1, 2] if n >= 2 else [1], "definition": f"{name.capitalize()} is a fake concept of the course.",
+             "defined": True, "misplaced": []}
+        if name == "extended reality":
+            return NOT_JSON
+        if name == "presence":
+            a["definition"] = f"A feeling of being there (attempt {attempt + 1})."
+        elif name == "field of view":
+            a["misplaced"] = [n]
+        elif attempt == 0:
+            if name == "rendering":
+                a["definition"] = "Rendering, as the lecturer explains, makes images."
+            elif name == "head-mounted display":
+                a["definition"] = "In this lecture, a head-mounted display is a display worn on the head."
+            elif name == "latency":
+                a["misplaced"] = [2]
+            elif name == "tracking":
+                a["facts"] = []
+            elif name == "stereoscopy":
+                a["definition"] = ""
+            elif name == "display resolution":
+                a["facts"] = [1, 99]
+        return json.dumps(a)
 
 
 def check(ok: bool, what: str):
@@ -245,9 +309,6 @@ def test_rerun(work: Path, log: Path):
 
 
 # ---------------------------------------------------------------- 4a
-FACT_LINE = re.compile(r"\[(\d+)\](\*?) \((?:lecture|tutorial) [^)]*\) (.*)")
-
-
 def shown_facts(prompt: str, text_to_id: dict) -> list[tuple[str, bool]]:
     """The facts a 4a prompt shows, in order: (fact ID, marked *)."""
     out = []
@@ -269,16 +330,32 @@ def test_4a(work: Path, cfg: Path, syn: dict, log: Path) -> int:
     check("defined_mismatch" in fl and fl.get("misplaced") == ["F2"], "seeded: not defined despite defined_in; misplaced mapped")
     sel = s4a.select_facts(["1/S0/F0", "1/S0/F1", "2/S0/F0", "10/S0/F0", "3/S1/F0"], ["10/S0/F0", "3/S1/F0"], 3)
     check(sel == ["1/S0/F0", "3/S1/F0", "10/S0/F0"], "cap: defining facts kept first, shown in lecture order (10 after 3)")
+    good = {"facts": [1, 2], "definition": "Head-mounted displays (HMDs) are worn on the head.", "defined": True,
+            "misplaced": []}
+    seeded = {"outside_list": {**good, "misplaced": [5]}, "empty_definition": {**good, "definition": " "},
+              "empty_facts": {**good, "facts": []}, "in_both": {**good, "misplaced": [2]},
+              "name_absent": {**good, "definition": "A display worn on the head."},
+              "lecture_reference": {**good, "definition": "A head-mounted display, says the lecturer, is worn."}}
+    got = {k: [kind for kind, _ in s4a.problems(a, 3, "head-mounted display")] for k, a in seeded.items()}
+    check(s4a.problems(good, 3, "head-mounted display") == [] and all(got[k] == [k] for k in seeded)
+          and [k for k, _ in s4a.problems({**good, "definition": "In this lecture: head mounted display."}, 3,
+                                          "head-mounted display")] == ["lecture_reference"],
+          f"seeded: each retry problem found alone; the name matched across case, hyphen and plural ({got})")
+    _, fl = s4a.check_answer({**good, "misplaced": [2]}, ["F1", "F2", "F3"], ["1/S0"], "head-mounted display")
+    check("in_both" in fl and fl.get("misplaced") == ["F2"], "check_answer with the name reports the retry problems too")
 
     n0 = len(lines(log))
     check(stage(work, "s4a_definitions.py", ["--llm", "configs/fake_qwen.json", "--cap", str(CAP)],
                 work / "4a.log", "stage_4a_definitions") == 0, "4a exits cleanly")
-    sent = lines(log)[n0:]
+    every = lines(log)[n0:]
+    sent = [r for r in every if len(r["messages"]) == 1]          # first attempts
     od = work / "output" / COURSE / "stage_4a_definitions"
     defs = json.loads((od / "definitions.json").read_text())
     concepts = syn["concepts"]
-    check(len(sent) == len(concepts), f"one request per concept ({len(sent)} for {len(concepts)})")
-    check(set(defs) == set(concepts) and all(d["definition"] for d in defs.values()), "every concept has a definition")
+    cn = {v["name"]: k for k, v in concepts.items()}
+    check(len(sent) == len(concepts), f"one first request per concept ({len(sent)} for {len(concepts)})")
+    check(set(defs) == set(concepts) and all(d["definition"] for c, d in defs.items() if c != cn["extended reality"]),
+          "every concept that got an answer has a definition")
     text_to_id = {v: k for k, v in syn["facts"].items()}
     ok_sub = ok_order = ok_mark = ok_cap = ok_map = True
     for r in sent:
@@ -295,21 +372,71 @@ def test_4a(work: Path, cfg: Path, syn: dict, log: Path) -> int:
         others = sorted((f for f in concepts[cid]["facts"] if f not in dset), key=s4a.fact_order)
         ok_cap &= [f for f in ids if f not in dset] == others[:len(ids) - len(dset & set(ids))]
         n = len(ids)
-        ok_map &= defs[cid]["facts"] == list(dict.fromkeys(ids[min(i, n) - 1] for i in (1, 2)))  # the fake cites [1, 2]
+        if not defs[cid]["errors"]:                                   # the fake's final answers cite [1, 2]
+            ok_map &= defs[cid]["facts"] == list(dict.fromkeys(ids[min(i, n) - 1] for i in (1, 2)))
     check(ok_sub, "each prompt shows only the concept's own facts (and definitions.json records them)")
     check(ok_order, "the shown facts are in lecture order")
     check(ok_mark, "* marks exactly the defining facts")
     check(ok_cap, f"cap {CAP}: defining facts first, then the others in lecture order")
-    imm = next(c for c, v in concepts.items() if v["name"] == "immersion")
+    imm = cn["immersion"]
     check(defs[imm]["capped"] and set(syn["defining"][imm]) <= set(defs[imm]["shown"]),
           "immersion (20 facts, defined only in lecture 7) is capped and keeps both defining facts")
+    prompt_of = {c: next(r["messages"][0]["content"] for r in sent if f"Name: {v['name']}\n" in r["messages"][0]["content"])
+                 for c, v in concepts.items()}
+    tail = lambda c: prompt_of[c].split("\nTHE DEFINITION\n")[0].rstrip().splitlines()[-1]  # noqa: E731
+    check(tail(imm) == f"({20 - CAP} more facts not shown)" and FACT_LINE.fullmatch(tail(cn["rendering"]))
+          and "Begin with the name exactly as given above" in prompt_of[imm]
+          and "a last line says how many are left out" in prompt_of[imm],
+          f"capped: the last line says how many facts are not shown ({tail(imm)!r}); none when all are shown; the "
+          f"prompt's new THE FACTS paragraph and first bullet")
     check(ok_map, "cited numbers mapped to fact IDs through the shown list")
     chk = json.loads((od / "checks.json").read_text())
     want = {c for c, v in concepts.items() if not v["defined_in"]}
     got = {c for c, f in chk["concepts"].items() if "defined_mismatch" in f}
     check(got == want, f"defined_mismatch where the fake says defined and defined_in is empty ({sorted(got)})")
-    check(set(chk["totals"]["misplaced"]) == set(concepts), "misplaced facts reported for every concept (the fake lists some)")
-    return len(sent)
+    check(chk["totals"]["misplaced"] == [cn["field of view"]], "misplaced facts reported (field of view, seeded)")
+
+    # retries (decision D12)
+    attempts = {c: sum(1 for r in every if f"Name: {v['name']}\n" in r["messages"][0]["content"])
+                for c, v in concepts.items()}
+    retried = {"rendering": "the lecturer", "head-mounted display": "this lecture", "latency": "in both",
+               "tracking": '"facts" is empty', "stereoscopy": "The definition is empty",
+               "display resolution": "[99] are not in the list"}
+    want_n = {c: 3 if v["name"] in ("presence", "extended reality") else 2 if v["name"] in retried else 1
+              for c, v in concepts.items()}
+    check(attempts == want_n, f"each seeded problem retried until it is fixed, the others asked once ({attempts})")
+    ok_fb = True
+    for name, phrase in retried.items():
+        second = next(r for r in every if f"Name: {name}\n" in r["messages"][0]["content"] and len(r["messages"]) == 3)
+        ok_fb &= second["messages"][1]["role"] == "assistant" and phrase in second["messages"][2]["content"] \
+            and second["messages"][2]["content"].startswith(FEEDBACK.split("{")[0])
+    check(ok_fb, "each retry shows the model its answer and the problem found")
+    ok_fixed = all(not defs[cn[n]]["unresolved"] and not defs[cn[n]]["errors"]
+                   and defs[cn[n]]["definition"] == f"{n.capitalize()} is a fake concept of the course." for n in retried)
+    check(ok_fixed, "the retried answers are the fixed ones, nothing left unresolved")
+    pres, er = defs[cn["presence"]], defs[cn["extended reality"]]
+    check(pres["definition"] == "A feeling of being there (attempt 3)." and pres["unresolved"]
+          and "does not contain the name" in pres["unresolved"][0] and "name_absent" in chk["concepts"][cn["presence"]]
+          and pres["facts"],
+          "presence never writes its name: the best answer (the latest of equals) kept, its problem listed as unresolved")
+    check(er["definition"] == "" and er["errors"] and not er["unresolved"] and cn["extended reality"] in
+          chk["totals"]["no_answer"], "extended reality never answers JSON: no answer, nothing kept")
+    rlog = chk["retries"]
+    r0 = rlog.get(cn["rendering"], {})
+    lat = rlog.get(cn["latency"], {})
+    check(r0.get("lost") == ["definition: Rendering, as the lecturer explains, makes images."]
+          and r0.get("added") == ["definition: Rendering is a fake concept of the course."]
+          and lat.get("lost") == [f"misplaced {defs[cn['latency']]['shown'][1]}"] and lat.get("added") == [],
+          "the retry log: what was lost and added between the first and the final attempt")
+    t = chk["totals"]
+    check((t["retried"], t["changed_by_retry"], t["unresolved"], t["no_answer"]) ==
+          (8, 7, [cn["presence"]], [cn["extended reality"]]) and (t["lost"], t["added"]) == (5, 7)
+          and set(rlog) == {c for c, k in want_n.items() if k > 1},
+          f"the counts: 8 retried, 7 changed (extended reality: nothing parsed), 5 lost and 7 added (two retries "
+          f"only add facts); presence "
+          f"unresolved; extended reality no answer ({t['retried']}, {t['changed_by_retry']}, {t['lost']}, "
+          f"{t['added']})")
+    return len(every)
 
 
 # ---------------------------------------------------------------- 4b
@@ -541,7 +668,9 @@ def main():
     print(f"copy in {work}; fake model on port {json.loads(cfg.read_text())['port']}", flush=True)
     log = work / "fake_qwen.jsonl"
     c = json.loads(cfg.read_text())
-    server = FakeServer(c["port"], c["model"], str(log)).start()
+    server = KnowledgeFake(c["port"], c["model"], str(log))
+    server.base_seed = c.get("seed", 0)
+    server.start()
     try:
         test_4a(work, cfg, syn, log)
         test_4b(work, cfg, log)
