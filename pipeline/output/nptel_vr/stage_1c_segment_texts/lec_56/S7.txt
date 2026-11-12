@@ -1,20 +1,24 @@
-[56/218] The other part is intensity mapping.
-[56/219] So, the lighting model computes an intensity value for a pixel, but then that value can be anything between 0 and 1.
-[56/220] An infinite range.
-[56/221] However, devices do not support arbitrary ranges; they have a finite range of values.
-[56/222] Say, for example, an 8-bit display will support 2 to the power 8 or 256 colors for each of the pixels.
-[56/223] So, we have 256 values supported by the device.
-[56/224] But then, the range 0 to 1 is infinite; any value can be generated.
-[56/225] So, what we need to do is we find the nearest value to IP from the device-supported intensity values, say I k, then the frame buffer stores the bit pattern for I k at the pixel location.
-[56/226] So, how to do that?
-[56/227] Essentially, what we need to know, what we need to do, is determine the n number of device-supported levels.
-[56/228] Then we need to determine the minimum device-supported intensity value I naught using a photometer, and we know that the maximum value can be 1.
-[56/229] So, we have I naught and 1 known, and n, the number of levels supported.
-[56/230] Then there is a factor r which we need to compute using the equation I n equal to I r to the power n I naught.
-[56/231] Now, this equation is formed based on one of our psychophysiological properties, that is, we can perceive relative change between two intensity values rather than absolute change in the intensity values.
-[56/232] Based on that, we can formulate this equation as successive intensity values to be represented by this. i1 equal to r to the power n i0, r to the power 1 i0, i2 equal to r square i0, i3 equal to r cube i0 and so on up to the nth value.
-[56/233] Now, once R is determined, we need to calculate these values I0, I1, I2, I3, store that in a table, and for each such value we assign a bit pattern and also store that along with those values.
-[56/234] Then we determine the device intensities and bit patterns and store them in a table, and finally, when we compute using a lighting model pixel intensity, we map the computed intensity to the nearest device intensity.
-[56/235] So, we have a table storing I0, I1, I2, IN and corresponding bit patterns, bit pattern 1, bit pattern 2, bit pattern 3, n.
-[56/236] So, once we have the computed value, we map it to the table; that means we map it to the nearest intensity, and the corresponding bit pattern is obtained and stored in the frame buffer.
-[56/237] That is how we map a computed value to the device-supported value.
+[56/158] Now, the reflected light intensity is a fraction of the incident light intensity.
+[56/159] Whatever falls, a fraction of it gets reflected and comes to the viewer's eye.
+[56/160] Now, this fraction is determined by a surface property known as reflection coefficient or reflectivity.
+[56/161] We define three coefficients for the simple lighting model corresponding to three types of incident lights that is diffuse reflection coefficient for ambient light Ka, diffuse reflection coefficient for direct light Kd and specular reflection coefficient for direct light Ks.
+[56/162] Now, the values of each of these reflectivity or reflection coefficients vary between 0.0 to 1.0; that is, if the value is close to 0 or 0, then it represents a dull surface with no reflection, as most of the light gets absorbed by the surface.
+[56/163] And if it is close to 1 or 1, that means a shiny, mirror-like surface where all light gets reflected.
+[56/164] So, if we want to generate different effects between dull and shiny surfaces, we can vary these coefficients accordingly.
+[56/165] Now, to compute the intensity contribution due to the ambient light, what we need to do is simply multiply the ambient light intensity falling on the surface point with the reflectivity for the ambient light, that is Ka, to get the fraction of the ambient light that comes to the viewer's eye.
+[56/166] So, this is I_a equal to K_a I_a.
+[56/167] For the diffuse reflection component, it is slightly more complicated.
+[56/168] Here, we need to take into account the surface normal at the surface point from where the light gets reflected and the light source direction.
+[56/169] So, let the surface normal be n, a vector, and the light source direction be L, another vector.
+[56/170] Then we can compute the diffuse reflection component coming to the user's or viewer's eye as Kd Is, where Is is the source light intensity and the dot product of these two vectors, N dot L, if N dot L is greater than 0; otherwise, it is 0, which means there is no reflection.
+[56/171] Now, specular component calculation is even more complex.
+[56/172] Here we are going to talk about one approximate model. named after its inventor Phong.
+[56/173] So, the component is I spec equal to KDIS cos NS phi.
+[56/174] Phi is, as you can see in this figure, the angle between the viewer direction and the ideal specular reflection direction; that is, if it is a mirror, then the direction of the reflected light.
+[56/175] Now, we can see from here that cos phi equal to V dot r, another dot product of the two vectors.
+[56/176] V is the viewer direction vector, r is the ideal specular reflection direction vector.
+[56/177] So, we can say I specular is Ks Is, where Is is the source light intensity and Ks is the reflectivity for the specular component.
+[56/178] V dot r Ns if V dot r is greater than 0, otherwise it is 0.
+[56/179] Now, this r, the ideal specular reflection direction, we can represent with the surface normal at that point, the normal vector at that point that is N, and the light source light direction vector L as r equal to twice L dot N multiplied by N minus L.
+[56/180] So, we can replace R here with this expression to finally come up with the component as a dot product of the vectors L, N, and V.
+[56/181] So, we need to know these vectors in order to be able to compute the specular component.

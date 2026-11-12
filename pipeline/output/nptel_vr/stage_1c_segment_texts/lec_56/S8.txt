@@ -1,17 +1,20 @@
-[56/238] So, let us summarize what we have covered so far.
-[56/239] In this part of the lecture, we have covered two more stages of the pipeline: modeling transformation and intensity calculation lighting.
-[56/240] In modeling transformation, we have seen that to transform a point from its local coordinate system to the world coordinate system, we first need to obtain the transformation matrix, which can be an individual basic matrix or a composite matrix.
-[56/241] A composite matrix is more common, and then we multiply the point vector with the composite matrix to determine the transformed point.
-[56/242] That is one set of computations.
-[56/243] Once the point is transformed in the world coordinate scene, then for that point, we assign some color; that is, we compute the intensity of the light which gets reflected from that point and comes to the user's eye.
-[56/244] Note that here we are not actually computing color at the pixel level, but color in the 3D scene at the point level.
-[56/245] And in order to do that, we need a lighting model.
-[56/246] We have quickly gone through a simple lighting model to get some idea, and we have also talked about how to map the color computed with the lighting model to a color supported by the device.
-[56/247] The mapping table is device-specific.
-[56/248] For a given display, the table is fixed, and we need to map it to the supported value.
-[56/249] In the next part of the lecture, we are going to cover the remaining stages of the pipeline.
-[56/250] I hope you could follow the topics and understand the concepts covered here.
-[56/251] For more detail, of course, we are keeping things at a very broad, simple level.
-[56/252] For more details, you can always refer to the material referenced at the end of this lecture.
-[56/253] So, looking forward to meeting you in the next part of the lecture.
-[56/254] Thank you, goodbye, and happy learning.
+[56/182] Now, whatever we have discussed so far assumes that no matter where the light source is, if its emission intensity, if the intensity of the emitted light at the source is IS, then the same intensity will come to the surface point irrespective of the distance between the source and the surface point.
+[56/183] But in practice, that typically never happens.
+[56/184] Typically, light intensity diminishes. over distance.
+[56/185] So, we need to take care of this factor that is intensity attenuation over distance.
+[56/186] So, there are two ways to take care of it: one is radial intensity attenuation, that is, the radial factor accounts for the effect of diminishing light intensity over distance.
+[56/187] Typically, an inverse quadratic function is used to compute this factor in the form f, that is, attenuation factor for radial attenuation, as given by this expression inverse quadratic function where d is the distance between the source and the surface point; a0, a1, a2 these are coefficients varied to produce a better realistic effect.
+[56/188] So, we can control these values.
+[56/189] Also, angular intensity attenuation can be taken care of, can be considered primarily if we are interested in generating spotlight effects such as shown here.
+[56/190] If we want to have an effect like this, where within a region only those elements will be visible or brightly visible and outside that spotlight zone things will be darker.
+[56/191] If we want to generate such type of effect, then we can make use of intensity attenuation factor.
+[56/192] A commonly used function to determine the factor is this given here: attenuation factor angular.
+[56/193] It is 0 if the surface point is outside the angular limit theta, that is, the range of the spotlight cone.
+[56/194] And if it is within that angular limit, then it varies in the form cos A1 phi where A1 is the angular attenuation exponent, having a positive value, and we can vary this value to achieve different effects.
+[56/195] So, this is for angular attenuation.
+[56/196] So, if we take into account this attenuation factor, that is, the light source intensity changes based on the distance of the surface point from the light source.
+[56/197] Then, taking into account this attenuation, we can modify the simple lighting model.
+[56/198] Earlier it was simply IM plus ID plus ISPEC.
+[56/199] Now we can say IM; here we are not taking into account the intensity attenuation, but for diffuse and specular reflection, we are doing that by multiplying these two factors with the sum of these two components.
+[56/200] Now, if these are one, that means the factor is uniform, meaning we are not taking them into account; then it boils down to the earlier formulation.
+[56/201] If it is not one, then the effect is taken care of.

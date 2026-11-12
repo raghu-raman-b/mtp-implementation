@@ -10,10 +10,14 @@ Prompt  prompts/fact_extraction.txt; {course_title}, {course} (the course block,
 Writes  output/<course>/stage_2a_fact_extraction/
           fact_maps/lec_<n>.json        {"1/S0/F0": {"text": "...", "evidence": ["1/3", "1/4"]}, ...}
           fact_text/lec_<n>.txt         one line per fact: "[1/S0/F0] text"
+          checks/lec_<n>.json           per segment: coverage, exact repeats collapsed, flags per fact (fact_checks.py)
           llm/cache.jsonl, calls.jsonl  answer cache and one line per call
 
 One request per segment. The model cites sentence numbers local to the segment ([1]..[n], fewer tokens than IDs);
 code maps them back to sentence IDs. Fact IDs are "<segment ID>/F<j>", j from 0 in the model's order.
+Code checks (scripts/fact_checks.py, no LLM): an exact repeat of an earlier fact is merged into it (its ID is then
+missing from the map, so the other IDs still give the fact's place in the model's answer); coverage and flags
+(pointing words, acronyms the segment never uses, facts that share evidence or read alike) go to checks/.
 """
 from __future__ import annotations
 
@@ -28,7 +32,7 @@ ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
-from scripts import course_meta, lectures as lec  # noqa: E402
+from scripts import course_meta, fact_checks, lectures as lec  # noqa: E402
 from scripts.llm import LLM, LLMConfig, Request  # noqa: E402
 
 PROMPT = ROOT / "prompts" / "fact_extraction.txt"
@@ -82,7 +86,7 @@ def run(course: str, llm: LLM, lectures: list | None = None, parallel: bool = Tr
     """Extract the facts of every segment of the lectures (all with a segment map by default)."""
     keys = lec.normalize(lectures) or lec.keys(maps_dir(course))
     od = out_dir(course)
-    for sub in ("fact_maps", "fact_text", "llm"):
+    for sub in ("fact_maps", "fact_text", "checks", "llm"):
         (od / sub).mkdir(parents=True, exist_ok=True)
     segs = []                                          # (lecture key, segment ID, sub-goal, sentences)
     for key in keys:
@@ -91,27 +95,48 @@ def run(course: str, llm: LLM, lectures: list | None = None, parallel: bool = Tr
     reqs = [Request(prompt=build_prompt(course, key, sg, sents), key=seg_id, schema=schema(len(sents)),
                     meta={"lecture": key}) for key, seg_id, sg, sents in segs]
     t0 = time.time()
+    print(f"2a: extracting facts from {len(reqs)} segments with {llm.model}", flush=True)
     results = llm.generate_many(reqs, parallel=parallel, cache_file=od / "llm" / "cache.jsonl",
                                 log_file=od / "llm" / "calls.jsonl")
     facts: dict[str, dict] = {k: {} for k in keys}
+    checks: dict[str, dict] = {k: {} for k in keys}
     no_answer = []
     for (key, seg_id, _, sents), res in zip(segs, results):
         if not res.ok:
             no_answer.append(seg_id)
             continue
-        for j, f in enumerate(res.parsed["facts"]):
-            facts[key][f"{seg_id}/F{j}"] = {"text": f["text"],
-                                            "evidence": [sents[i - 1][0] for i in sorted(set(f["evidence"]))]}
+        kept, dropped = fact_checks.collapse([{"evidence": sorted(set(f["evidence"])), "text": f["text"]}
+                                              for f in res.parsed["facts"]])
+        ids = [f"{seg_id}/F{f['index']}" for f in kept]     # the place in the model's answer, so repeats leave gaps
+        for fid, f in zip(ids, kept):
+            facts[key][fid] = {"text": f["text"], "evidence": [sents[i - 1][0] for i in f["evidence"]]}
+        checks[key][seg_id] = fact_checks.report(kept, [t for _, t in sents], ids,
+                                                 [[f"{seg_id}/F{a}", f"{seg_id}/F{b}"] for a, b in dropped])
     for key in keys:
         stem = lec.stem_of(key)
         (od / "fact_maps" / f"{stem}.json").write_text(json.dumps(facts[key], indent=1, ensure_ascii=False) + "\n")
         (od / "fact_text" / f"{stem}.txt").write_text("".join(f"[{i}] {f['text']}\n" for i, f in facts[key].items()))
+        (od / "checks" / f"{stem}.json").write_text(json.dumps(checks[key], indent=1, ensure_ascii=False) + "\n")
     n_facts = sum(map(len, facts.values()))
     summary = {"lectures": len(keys), "segments": len(segs), "facts": n_facts, "no_answer": no_answer,
-               "wall_s": round(time.time() - t0, 1), "out": str(od)}
+               **check_totals(checks), "wall_s": round(time.time() - t0, 1), "out": str(od)}
     print(f"{len(segs)} segments, {n_facts} facts, {summary['wall_s']} s"
           + (f"; no JSON answer: {no_answer}" if no_answer else ""))
+    print(f"checks: coverage {summary['coverage']:.0%} of sentences, {summary['collapsed']} exact repeats collapsed, "
+          f"flags {summary['flags'] or 'none'}")
     return summary
+
+
+def check_totals(checks: dict[str, dict]) -> dict:
+    """Totals over the per-segment check reports: overall coverage, repeats collapsed, flags by kind."""
+    reports = [r for by_seg in checks.values() for r in by_seg.values()]
+    sentences = sum(r["sentences"] for r in reports)
+    flags: dict[str, int] = {}
+    for r in reports:
+        for kind, n in r["flag_counts"].items():
+            flags[kind] = flags.get(kind, 0) + n
+    return {"coverage": round(sum(r["coverage"] * r["sentences"] for r in reports) / sentences, 3) if sentences else 0.0,
+            "collapsed": sum(len(r["collapsed"]) for r in reports), "flags": flags}
 
 
 def main():

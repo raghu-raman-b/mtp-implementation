@@ -1,22 +1,14 @@
-[52/76] So let us quickly go through the algorithm.
-[52/77] So the input is the graph.
-[52/78] Remember that during our earlier discussion, we talked about converting the virtual environment to a graph, which is not necessarily a complete graph, but a fully connected graph.
-[52/79] So, we have this original graph G having the vertex set V and edge set E epsilon, along with the importance f and waiting time w specified for each of the nodes, and the output that we want is this optimal path P where F is maximized and the total traveling time plus wait time is less than the threshold.
-[52/80] So, earlier we talked about only traveling time, but now we also have to take into account the wait time.
-[52/81] So, traveling time plus wait time, which together represent the total exposure time, must be less than the time threshold.
-[52/82] So, the first thing is, as before, what we need to do is compute the complete graph G dash, where we will be replacing the edges that are not directly connected with the shortest path between those vertices.
-[52/83] This is what we did before also.
-[52/84] So, the same thing we will be doing here.
-[52/85] Convert the graph to a complete graph.
-[52/86] Then again, the second stage is also the same: replace the edge weights, which are originally the Euclidean distance between the two nodes in the modified graph, with the travel time t as we did before, where travel time we compute using the natural walking model.
-[52/87] Then, once this is given, Also, we have separately specified the importance and the wait time.
-[52/88] So, we then need to use the VRPP solver with input the final graph, that is G double dash, which contains vertices and edges where the edges are weighted with the duration of travel between the vertices which define the edges.
-[52/89] So, essentially, we will be using a solver on this modified graph G double dash, and also we will be providing the input values for f, the waiting the importance of each node, and w, that is the waiting time for each node, to get the optimal path P opt.
-[52/90] So, here we will be using the solvers solve VRPP where the input is G double dash, F, and W, then we get the output as P opt.
-[52/91] Now, like before, what we need to do is basically modify the output to reflect the original graph.
-[52/92] So, what we need to do is there will be edges that were not originally connected in the Virtual graph virtual world representation, but we introduced hypothetical edges in the form of shortest paths.
-[52/93] So, we need to replace those edges to reflect the original nature of the graph.
-[52/94] So, replace hypothetical edges joining VI, VJ with the shortest path VI, VJ.
-[52/95] Then we need to return the optimal path which is modified after replacing the edges with the shortest path.
-[52/96] So, this is the algorithm: we are first creating the graph, then converting it to a complete graph, then converting it to a graph with edge weights equal to the travel duration, where travel is the duration computed using the natural walking model to give a realistic experience.
-[52/97] Then this graph, along with the importance and wait time at each node, is provided as input to the VRPP solver, and then the output is further modified to replace the hypothetical edges with the shortest path to finally get the optimum path. that can be covered with the maximum number of most important POIs within the given time threshold, taking into account waiting time at each node.
+[52/62] Now, how do we solve this?
+[52/63] This is a well-known problem in operations research.
+[52/64] It is called a generalization of a well-known problem, that is, the vehicle routing problem or VRP.
+[52/65] This is called VRP with profit, or VRPP.
+[52/66] For more details on this problem, you can refer to the material cited at the end of this lecture.
+[52/67] So, the idea here is that we do not need to visit all the nodes; instead, we want to maximize profit within the given time constraints.
+[52/68] So, here the profit is in terms of the importance of the nodes.
+[52/69] So, we want to maximize the importance within the given time constraint without necessarily requiring us to visit all the nodes.
+[52/70] Like in the previous approach where we talked about TRP solvers, so existing tools available to solve the traveling salesman problem, here also we can make use of existing VRPP solvers, so vehicle routing problem with profit solvers. to get the optimum path that maximizes profit within the given time constraint, that is, the threshold time.
+[52/71] And maximizing profit essentially maximizes importance, the total importance.
+[52/72] So, in other words, we want to get a path that lets the user visit the maximum number of the most important POIs.
+[52/73] This is a rephrasing of the overall problem that we are trying to solve.
+[52/74] And if you look at this statement, you can see that this will serve our purpose: given a threshold, a time threshold beyond which cybersickness may occur, we want to restrict the user's exposure below that threshold time and within that time, we want to ensure that the user is able to visit the most important POIs, as many as possible.
+[52/75] So essentially, we are trying to figure out a path that will achieve these objectives.

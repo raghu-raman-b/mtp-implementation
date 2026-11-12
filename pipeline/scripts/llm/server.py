@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -133,10 +134,16 @@ class Server:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         self.log(f"starting {c.engine}: {' '.join(cmd)}\n  server log: {log_path}")
         t0 = time.time()
+        log_start = log_path.stat().st_size if log_path.exists() else 0
         self.proc = subprocess.Popen(cmd, stdout=open(log_path, "ab"), stderr=subprocess.STDOUT, env=env,
                                      start_new_session=True)
         self.launched = True
+        next_note = t0 + 30
         while not self.healthy():
+            if time.time() >= next_note:     # every 30 s: how long, and what the server is doing (its last log line)
+                next_note += 30
+                self.log(f"  {time.strftime('%H:%M:%S')}  … starting {c.engine} ({time.time() - t0:.0f} s): "
+                         f"{self._last_log_line(log_path, log_start)}")
             if self.proc.poll() is not None:
                 tail = "\n".join(log_path.read_text(errors="replace").splitlines()[-30:])
                 self.launched = False
@@ -147,6 +154,22 @@ class Server:
             time.sleep(2)
         self.startup_s = time.time() - t0
         self.log(f"server ready in {self.startup_s:.0f} s at {self.url}")
+
+    @staticmethod
+    def _last_log_line(path: Path, start: int = 0, width: int = 110) -> str:
+        """The last line this launch wrote to the server log (from byte `start`; the log is appended to), without
+        vLLM's process prefix; progress bars keep their latest state."""
+        try:
+            with open(path, "rb") as f:
+                f.seek(max(start, f.seek(0, 2) - 4096))
+                tail = f.read().decode(errors="replace")
+        except OSError:
+            return ""
+        lines = [x for x in tail.replace("\r", "\n").splitlines() if x.strip()]
+        last = lines[-1] if lines else ""
+        last = re.sub(r"^\((?:APIServer|EngineCore)[^)]*\)\s*", "", last)
+        last = re.sub(r"^(?:INFO|WARNING|DEBUG)\s+\S+\s+\S+\s+\[[^\]]*\]\s*", "", last)
+        return last[:width]
 
     def stop(self):
         """Stop the server if this object started it (an attached server is left running)."""

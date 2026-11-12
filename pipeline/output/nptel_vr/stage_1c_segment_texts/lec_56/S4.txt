@@ -1,48 +1,48 @@
-[56/134] In order to understand the lighting model, let us first try to quickly understand the idea of color.
-[56/135] Now, a source emits light.
-[56/136] Say, for example, this is a scenario: here there is a direct light source; it emits light.
-[56/137] The emitted light energy falls upon a point on the surface, say here.
-[56/138] Sometimes, emitted light falls on the point after getting reflected from surrounding surfaces.
-[56/139] So, this light, after getting reflected from here, comes and falls on the same point.
-[56/140] The incident light then reflects.
-[56/141] So, whatever light is incident at this point gets reflected and comes to our, or the viewer's, eye.
-[56/142] The intensity of light reaching the viewer's eye results in color perception.
-[56/143] Whatever the intensity of this reflected light is determines what color the viewer is going to perceive.
-[56/144] Now, in computer graphics, we are interested in simulating this process through a lighting model.
-[56/145] So, to compute the intensity of this reflected light, essentially the color of the surface point from where the light is coming, we simulate the process using a lighting model in computer graphics.
-[56/146] Now, there are many such models.
-[56/147] Let us understand the process.
-[56/148] Let us go through one simple lighting model.
-[56/149] In this model, the light intensity reaching the viewer from a surface point can be modeled as the sum of three intensities.
-[56/150] Ambient light intensity. which you can represent with I amb, then diffuse reflection intensity of direct light I diffuse, I diff and specular reflection intensity of direct light that is I spec.
-[56/151] The idea is illustrated here.
-[56/152] So, whatever light falls on the surface of this object after getting reflected from surrounding surfaces that is called ambient light.
-[56/153] If light is coming directly from the source and getting reflected in a diffuse manner then that is the diffuse light component.
-[56/154] If the light comes from the source and gets reflected with a specular effect that is a shiny bright spot effect then that is the specular reflection component.
-[56/155] So, each type of light will have its own intensity and these three intensities together after combining these three intensities they come to the viewer's eye.
-[56/156] And correspondingly we can have the simple lighting model which says that the intensity of the incident light on the viewer's eye is the sum of the incident light due to ambient component, due to diffuse component and due to specular component.
-[56/157] This is the simplistic way of looking at the lighting model.
-[56/158] Now, the reflected light intensity is a fraction of the incident light intensity.
-[56/159] Whatever falls, a fraction of it gets reflected and comes to the viewer's eye.
-[56/160] Now, this fraction is determined by a surface property known as reflection coefficient or reflectivity.
-[56/161] We define three coefficients for the simple lighting model corresponding to three types of incident lights that is diffuse reflection coefficient for ambient light Ka, diffuse reflection coefficient for direct light Kd and specular reflection coefficient for direct light Ks.
-[56/162] Now, the values of each of these reflectivity or reflection coefficients vary between 0.0 to 1.0; that is, if the value is close to 0 or 0, then it represents a dull surface with no reflection, as most of the light gets absorbed by the surface.
-[56/163] And if it is close to 1 or 1, that means a shiny, mirror-like surface where all light gets reflected.
-[56/164] So, if we want to generate different effects between dull and shiny surfaces, we can vary these coefficients accordingly.
-[56/165] Now, to compute the intensity contribution due to the ambient light, what we need to do is simply multiply the ambient light intensity falling on the surface point with the reflectivity for the ambient light, that is Ka, to get the fraction of the ambient light that comes to the viewer's eye.
-[56/166] So, this is I_a equal to K_a I_a.
-[56/167] For the diffuse reflection component, it is slightly more complicated.
-[56/168] Here, we need to take into account the surface normal at the surface point from where the light gets reflected and the light source direction.
-[56/169] So, let the surface normal be n, a vector, and the light source direction be L, another vector.
-[56/170] Then we can compute the diffuse reflection component coming to the user's or viewer's eye as Kd Is, where Is is the source light intensity and the dot product of these two vectors, N dot L, if N dot L is greater than 0; otherwise, it is 0, which means there is no reflection.
-[56/171] Now, specular component calculation is even more complex.
-[56/172] Here we are going to talk about one approximate model. named after its inventor Phong.
-[56/173] So, the component is I spec equal to KDIS cos NS phi.
-[56/174] Phi is, as you can see in this figure, the angle between the viewer direction and the ideal specular reflection direction; that is, if it is a mirror, then the direction of the reflected light.
-[56/175] Now, we can see from here that cos phi equal to V dot r, another dot product of the two vectors.
-[56/176] V is the viewer direction vector, r is the ideal specular reflection direction vector.
-[56/177] So, we can say I specular is Ks Is, where Is is the source light intensity and Ks is the reflectivity for the specular component.
-[56/178] V dot r Ns if V dot r is greater than 0, otherwise it is 0.
-[56/179] Now, this r, the ideal specular reflection direction, we can represent with the surface normal at that point, the normal vector at that point that is N, and the light source light direction vector L as r equal to twice L dot N multiplied by N minus L.
-[56/180] So, we can replace R here with this expression to finally come up with the component as a dot product of the vectors L, N, and V.
-[56/181] So, we need to know these vectors in order to be able to compute the specular component.
+[56/67] There is one issue, though: sometimes to construct a world coordinate scene, we need to perform multiple geometric or modeling transformations on an object.
+[56/68] That is, not only the basic operations, but multiple operations may be required, and there we need to go for a composite transformation matrix rather than basic transformation matrices like translation, rotation, scaling, or shearing.
+[56/69] Just to illustrate the idea, or rather the issue, let us consider one example: an object, which is a rectangle shown here, ABCD, is defined in the local coordinate system which is used to define a chimney of the house in the world coordinate system.
+[56/70] So, this rectangle is used to define a chimney-like shape in this house shown in the world coordinate scene.
+[56/71] So, in order to do that, in order to construct this scene with the chimney in its place, What do we need to do?
+[56/72] What we need to do is basically transform ABCD, the original rectangle in its local coordinate scene, to A dash, B dash, C dash, D dash, that is this chimney-like shape.
+[56/73] Now, that is not possible with only a single basic transformation.
+[56/74] So, using either translation only, rotation only, scaling only, or shearing only, we will not be able to do this.
+[56/75] We will not be able to transfer or transform ABCD to A dash, B dash, C dash, and D dash.
+[56/76] We actually require two basic transformations together.
+[56/77] One is scaling and one is translation.
+[56/78] So, in order to perform the transformation, we need to go through stages.
+[56/79] The first stage is to determine the basic matrices for individual transformations, that is, scaling and translation.
+[56/80] As we can see, from here to this shape in the world coordinate scene, the object is halved in length while the height remains the same.
+[56/81] That means the scaling factor along the x direction must be half, and the scaling factor along the y direction should be 1.
+[56/82] So, the scaling matrix should be of this form 0.5 0 0 1 0 0 0 0 1 where Sx equals 0.5, the scaling factor along the x direction, and Sy equals 1 since there is no change.
+[56/83] Also, we need to translate.
+[56/84] So, vertex-wise, if we look, we can see that vertex D(0, 0), that is the origin, has been translated to D dash, that is 55 in the world coordinate scene.
+[56/85] So, the translation matrix should be this one: 1 0 5, 0 1 5, 0 0 1, that is Tx equals 5, Ty equals 5.
+[56/86] Translation along the x-axis should be 5, translation along the y-axis should be 5.
+[56/87] So, now we have identified the two basic matrices.
+[56/88] So, the second step is to obtain the composite matrix, the composite transformation matrix where both are used.
+[56/89] So, the first transformation applied to the object is the rightmost in the sequence.
+[56/90] The next transformation is placed on the left.
+[56/91] This is how we can obtain the composite matrix.
+[56/92] And we continue in this way until the last transformation.
+[56/93] Since we have only two, after the first two steps, we can stop.
+[56/94] That is, the first transformation, whatever it is, we put it on the right-hand side.
+[56/95] That is T1.
+[56/96] Then the next transformation is placed on the left of this transformation.
+[56/97] So if the next one is T2, then we put it in this way.
+[56/98] So right-to-left arrangement of transformations that are applied.
+[56/99] And then we perform a matrix multiplication of those transformations.
+[56/100] So if we do the same for our example, We can obtain the composite matrix by multiplying these two: translation followed by scaling.
+[56/101] So, right to left, then we multiply these two.
+[56/102] So, if we follow the same, then we can see that scaling is the first transformation applied, followed by translation, and we arrange them from right to left as mentioned previously.
+[56/103] And then we take a multiplication, we perform a multiplication of the matrices to get a composite transformation matrix in this form; that is the composite transformation matrix.
+[56/104] In the third step, what we do is obtain the new coordinate positions by multiplying the current vertices with the composite matrix.
+[56/105] Current vertices are given here: A, B, C, D.
+[56/106] The composite matrix is this one.
+[56/107] Current vertex, if it is A, then A dash would be given by multiplying M with A.
+[56/108] Similarly, multiplying M with B we get B dashed as shown here; C dashed in a similar fashion we can get, and D dashed similarly we will get like this, by multiplying M with current vertex D.
+[56/109] So, this is how we can obtain the transformed points. in the world coordinate scene.
+[56/110] One thing we should note here is that matrix multiplication is not commutative, and the sequence is very important.
+[56/111] So, if we are unable to formulate the sequence in the proper order, like right to left as we have discussed previously, then if the sequence is wrong, it may lead to an incorrect result.
+[56/112] So, the order in which we put the transformations before multiplying them is very important.
+[56/113] Nevertheless, without going into further details of all the complexities involved in modeling or geometric transformation, we can say that modeling transformation involves multiplication of a transformation matrix, whether it is a basic matrix or a composite matrix, with the vertices to get a transformed vertex in the world coordinate scene.
+[56/114] That is about stage 2.

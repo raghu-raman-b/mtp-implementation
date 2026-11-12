@@ -24,14 +24,15 @@ Budgets: up to STRUCTURAL_RETRIES structural retries for each answer that fails 
 LOGICAL_RETRIES logical retries per lecture. A lecture fails (no segment map) only if no answer passes the structural
 checks.
 
-The retry conversation: [the 1a prompt, the last answer as the model gave it, the retry prompt]. The server keeps no
-state, so 1b sends the whole conversation; the 1a prompt is rebuilt and checked against 1a's prompt_sha. The model's
-thinking is not sent back. Instead, every retry answer is a JSON object {"reasoning": what it changed, or kept and why;
-"segments": [...]}; when the last answer was itself a retry, the next retry prompt repeats the problems it was fixing
-and its reasoning (prompts/segmentation_retry_previous.txt), so the model builds on it instead of starting again.
+The retry conversation is the full history: [the 1a prompt, 1a's answer, retry prompt 1, answer 1, retry prompt 2, ...],
+every answer as the model gave it. The server keeps no state, so 1b sends the whole conversation each time; the 1a
+prompt is rebuilt and checked against 1a's prompt_sha. The model's thinking is not sent back. Instead, every answer is a
+JSON object {"reasoning": ..., "segments": [...]}: in 1a's answer the reasoning says why it chose the segmentation; in a
+retry answer, what the model changed, or kept and why. So each retry sees why the cuts were first made and every fix
+since, and builds on them instead of starting again. (At most STRUCTURAL_RETRIES + LOGICAL_RETRIES rounds of a few
+hundred tokens each: far inside the context.)
 
-Prompts  prompts/segmentation_structural_retry.txt, prompts/segmentation_logical_retry.txt ({problems}, {previous}),
-         prompts/segmentation_retry_previous.txt ({previous_problems}, {previous_reasoning})
+Prompts  prompts/segmentation_structural_retry.txt, prompts/segmentation_logical_retry.txt ({problems})
 Reads    output/<course>/stage_0a_preprocess/, output/<course>/stage_1a_segmentation/raw/lec_<n>.json
 Writes   output/<course>/stage_1b_verify_segments/
            segment_maps/lec_<n>.json   from the kept answer:
@@ -52,6 +53,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -66,11 +68,9 @@ from scripts.llm import LLM, LLMConfig, Request  # noqa: E402
 PROMPTS = ROOT / "prompts"
 STRUCTURAL_PROMPT = PROMPTS / "segmentation_structural_retry.txt"
 LOGICAL_PROMPT = PROMPTS / "segmentation_logical_retry.txt"
-PREVIOUS_PROMPT = PROMPTS / "segmentation_retry_previous.txt"
 STRUCTURAL_RETRIES, LOGICAL_RETRIES = 2, 2
 MIN_S, MAX_S = 120, 900    # logical checks: under 2 min looks too small, over 15 min too big
-RETRY_SCHEMA = {"type": "object", "additionalProperties": False, "required": ["reasoning", "segments"],
-                "properties": {"reasoning": {"type": "string"}, "segments": s1a.SCHEMA}}
+RETRY_SCHEMA = s1a.SCHEMA   # {"reasoning", "segments"}, the same as 1a's answer
 
 
 # ---------------------------------------------------------------------------- structural checks
@@ -135,7 +135,8 @@ def check(answer, ids: list[str]) -> list[str]:
 
 
 def segments_of(parsed):
-    """The list of segments in an answer: 1a answers are the list, retry answers {"reasoning", "segments"}."""
+    """The list of segments in an answer: {"reasoning", "segments"} (1a and retries); a bare list (1a answers from
+    before 1a asked for reasoning) is taken as the segments."""
     return parsed.get("segments") if isinstance(parsed, dict) else parsed
 
 
@@ -271,15 +272,14 @@ def verify_lecture(raw: dict, ids: list[str], timing: Timing, ask=None) -> dict:
         attempts.append(a)
         return a
 
+    history: list[dict] = []   # the conversation after the 1a prompt: answer, retry prompt, answer, retry prompt, ...
+
     def retry(kind: str, last: dict, problems: list[str]) -> dict:
-        previous = ""
-        if last["kind"] != "1a" and last.get("reasoning"):
-            previous = fill(PREVIOUS_PROMPT, previous_problems=bullets(last["fixing"] or []),
-                            previous_reasoning=last["reasoning"].strip())
-        sent = fill(STRUCTURAL_PROMPT if kind == "structural" else LOGICAL_PROMPT,
-                    problems=bullets(problems), previous=previous)
-        res = ask([{"role": "assistant", "content": last["content"] or ""}, {"role": "user", "content": sent}],
-                  len(attempts))
+        print(f"  {time.strftime('%H:%M:%S')}  → {lec.stem_of(raw.get('lecture', '?'))}: {kind} retry "
+              f"(attempt {len(attempts)}), {len(problems)} problem(s): {problems[0][:90]}", flush=True)
+        sent = fill(STRUCTURAL_PROMPT if kind == "structural" else LOGICAL_PROMPT, problems=bullets(problems))
+        history.extend([{"role": "assistant", "content": last["content"] or ""}, {"role": "user", "content": sent}])
+        res = ask(list(history), len(attempts))
         return add(kind, res.parsed, res.content, sent, problems, res)
 
     cur = add("1a", raw.get("answer"), raw.get("content", ""))
@@ -368,6 +368,9 @@ def run(course: str, lectures: list | None = None, llm: LLM | LLMConfig | str | 
 
     try:
         workers = max(1, (llm.cfg.concurrency or llm.cfg.slots) if llm else 1)
+        need = [lec.stem_of(n) for n, d in data.items() if needs_model(d)]
+        print(f"1b: checking {len(data)} lectures; {len(need)} fail a check and go back to "
+              f"{llm.model if llm else 'no model (checks only)'}: {', '.join(need) or 'none'}", flush=True)
         with ThreadPoolExecutor(max_workers=workers) as ex:
             results = dict(ex.map(verify, list(data)))
     finally:

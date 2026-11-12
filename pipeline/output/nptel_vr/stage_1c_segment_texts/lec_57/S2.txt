@@ -1,36 +1,83 @@
-[57/61] Now, let us try to understand these transformations in brief.
-[57/62] So, let us start with the first one, which is the 3D viewing transformation, where we transform from a 3D world coordinate description to a 3D view coordinate description.
-[57/63] This is to simulate the camera photo-taking analogy, looking at the same scene, not with our bare eyes, but with the camera viewing mechanism.
-[57/64] So, first, we need to define the view coordinate system, and then we perform the transformation.
-[57/65] And this definition of the view coordinate system depends on the parameters, the camera parameters.
-[57/66] So, the setup is something like this.
-[57/67] So, this is the point in the world coordinate scene.
-[57/68] This is the world coordinate system reference frame within which all the scene points are defined.
-[57/69] Now, we have to define a view coordinate system having its own axes u, n, and v.
-[57/70] So, essentially what we are trying to do is transfer this point in the world coordinate to this view coordinate scene, the 3D view coordinate scene.
-[57/71] So, we are given the camera parameters.
-[57/72] What are those parameters?
-[57/73] The camera position serves as the origin, which can be represented by this origin vector with respect to the world coordinate scene.
-[57/74] So, this is the vector.
-[57/75] Then, Second is the view of point, again, can be another vector, the view of point, and the view direction we can define with respect to the vector.
-[57/76] And third is the center of interest or the look-at point P.
-[57/77] This is the center of interest or the look-at point.
-[57/78] So, before taking a photo, we typically focus on a look-at point. or center of interest, and then capture the photo.
-[57/79] So, that idea is taken here.
-[57/80] Now, from these parameters, we can set up the view coordinate system.
-[57/81] We will skip the details.
-[57/82] For those details, you can refer to the material cited at the end of the lecture.
-[57/83] So, we can simply say that to determine the parameters, to determine the view coordinate system, we need to determine the three orthogonal axes N, V, and U.
-[57/84] N can be obtained; N is the unit basis vector opposite to the looking direction and can be obtained with respect to the origin vector and the look-up direction, that is the N vector, and then the unit vector we can obtain by its value.
-[57/85] Then, that is the first axis N.
-[57/86] Then, the second one we can determine is the V unit basis vector along the V up direction, that is, we can first get the V up direction, that is V up minus O, and then we get the unit basis vector as this ratio.
-[57/87] Once these two, n and v, are obtained—remember n is obtained using the origin vector and the look-at point, v is obtained using the view up point and the origin point—and once these two are determined, we can determine u, the third axis and the third unit basis vector, as u simply is the cross product of v and n.
-[57/88] So, that is how we can determine the three mutually orthogonal axes, and these three axes together define the view coordinate system.
-[57/89] Now, once we have the view coordinate system, that is the three axes, we can transform the world coordinate description to the view coordinate description by two basic transformation operations: translation and rotation.
-[57/90] So, the composite transformation matrix is the dot product of these two transformation matrices. r and t, and then any point in the view coordinate system is obtained from the corresponding point in the void coordinate system after the point vector is multiplied with this composite transformation matrix comprising r and t.
-[57/91] So, if a point P is here and if we want to transform it to a point in the view coordinate system, then we can do so using this formulation.
-[57/92] Again here, how to, what is the matrix for M that is the composite matrix, or rather what are the individual matrices for R and T?
-[57/93] These details we are skipping.
-[57/94] You can refer to the material cited at the end for those details.
-[57/95] So, that is about view transformation.
-[57/96] So, we define a view coordinate system with respect to three camera parameters, and then we use that information to transform a point from the void coordinate system to the view coordinate system, and those matrices are formed on the basis of those axis vectors and their scalar components.
+[57/97] Next is projection transformation.
+[57/98] After view transformation, we project 3D objects in the view coordinate system, the 3D view coordinate system, onto a 2D view plane.
+[57/99] So, this is our world coordinate description; it gets transformed to a 2D view plane description.
+[57/100] So, in between, we first transform it to a 3D view coordinate description, and from there we project it to a 2D view plane description.
+[57/101] So, this is the view plane.
+[57/102] So, such view planes are usually defined as a rectangular area. which is often called a clipping window.
+[57/103] So, there are different terminologies used to refer to more or less the same concept.
+[57/104] Now, in order to perform projection, apart from the clipping window, we also define a 3D volume, a 3D region in the scene that is basically what portion of the scene we are going to project.
+[57/105] This is known as the view volume.
+[57/106] So, the view volume defines the portion of the scene that we are going to project on the view plane.
+[57/107] Objects that are inside this view volume are projected on the view plane, and objects that are outside are discarded.
+[57/108] Now, when we say that we are discarding objects that are outside of this view volume but part of the scene, we call that a clipping process.
+[57/109] So, clipping takes place, as per our description of the pipeline, before we perform the projection.
+[57/110] Now, when we say we want to perform projection, projection can be of different types, and we also have to determine the computation based on the type of projection that we want to have.
+[57/111] So, one type is perspective projection.
+[57/112] Here, the projectors, which are lines emanating from the object in the 3D view coordinate system and intersecting the view plane, these projectors are not parallel to each other; they tend to converge to a center of projection.
+[57/113] Something like this.
+[57/114] So, this is the object, suppose.
+[57/115] Now, if we extend some lines from these vertices of the object, and this is the view plane.
+[57/116] So, they intersect the view plane; the points where they intersect define the projection of that 3D object on the 2D view plane.
+[57/117] In the case of perspective projection, those lines tend to meet at a distance or converge at a distance.
+[57/118] That is called the center of projection or point of projection.
+[57/119] So, this perspective projection gives us realistic rendering, a realistic feeling.
+[57/120] So, if we want to generate a realistic scene, then we should stick to perspective projection.
+[57/121] Now, there is another type of projection that is called parallel projection.
+[57/122] Here, the projectors are parallel to each other; that is, the center of projection or the point of projection is at infinity, which means they never meet.
+[57/123] This is something like that, as illustrated here.
+[57/124] The idea is something as illustrated in this figure, where we have an object; projectors are shown here.
+[57/125] They intersect the view plane and give us this projection.
+[57/126] However, the projectors are parallel to each other, so they do not meet.
+[57/127] And we say that in such cases, we call that parallel projection, where we say that the projectors meet at infinity.
+[57/128] So, for parallel projection, the view volume, if we want to generate an effect resulting from parallel projection, then we wish to have a view volume that is a rectangular parallelepiped-shaped region as shown here.
+[57/129] And this volume defines the objects that are to be projected on the clipping window.
+[57/130] So, typically such volumes have one face as the clipping window, as shown here, and then we have other faces.
+[57/131] For perspective projection, such a view volume takes the shape of a frustum, as shown here.
+[57/132] Again, one side of the frustum is the clipping window.
+[57/133] Our objective is that whatever objects are within this frustum are to be projected on this clipping window.
+[57/134] Now, there is a concept called a canonical view volume.
+[57/135] So, remember we talked about the clipping operation.
+[57/136] That is, discarding objects that are outside the view volume.
+[57/137] Now, to discard the objects, if we go by the naive method, the simplest most intuitive method, then we have to compute the intersection of the view volume boundaries with the object boundaries.
+[57/138] Now, if we are dealing with arbitrarily shaped view volumes such as the frustums, then typically calculation of those surfaces and of view volume boundary intersection points turns out to be quite computation intensive.
+[57/139] In order to simplify that, we take recourse to a concept called canonical view volume, which is used to simplify the pipeline computations.
+[57/140] The idea is that we use a normalized cube to define the view volume.
+[57/141] That means whatever view volume is defined, whether for parallel or perspective projection of arbitrary shape and size, we convert those to a normalized cube.
+[57/142] Now, for parallel projection, such a canonical view volume can be obtained by scaling the arbitrarily defined view volume for the parallel projection.
+[57/143] The idea is shown here.
+[57/144] This is a view volume defined for parallel projection arbitrarily, and this is a transformed view volume which is called the canonical view volume for parallel projection, which is a unit cube.
+[57/145] For perspective projection, the computation is a little bit higher.
+[57/146] So, here we need to convert the frustum to a parallel canonical view volume, that is, a normalized unit cube.
+[57/147] So, to convert a frustum to a normalized unit cube such as this requires scaling as well as shearing operations to change the shape along with the change in size.
+[57/148] So, here the amount of computation involved in such a transformation is a bit more as compared to parallel projection.
+[57/149] Now, let us quickly talk about the two projections: how to perform the projections.
+[57/150] Like before, here also we take recourse to matrices projection transformation matrices.
+[57/151] So, we multiply the point vectors with the transformation matrix to get the requisite projection.
+[57/152] So, for parallel projection we have a matrix like this.
+[57/153] This is a very simplified representation of the matrix where D is the distance of the clipping window from the origin of the 3D view coordinate system.
+[57/154] So, then we have such a representation in a 4 by 4 matrix and to get a projected point on this clipping window, what we need to do is, we need to have this point vector defined in the 3D view coordinate system, we multiply it with the projection matrix to get this transformed point in the form of a point vector.
+[57/155] However, here we have this homogeneous factor w which is typically not equal to 1.
+[57/156] So, to get to the Cartesian points what we need to do is basically to divide the obtained coordinate values by this homogeneous factor.
+[57/157] So, to get Cartesian value along the x direction, we need to divide this corresponding vector value by the homogeneous coordinate, similarly for y and z.
+[57/158] We need to do this additional computation here.
+[57/159] What about perspective projection transformation?
+[57/160] So, we have a point here, we want to project it on the clipping window here. and D is, as usual, the distance of the window from the view coordinate origin.
+[57/161] Here, D is the distance of the window from the center of projection.
+[57/162] Now, the center of projection may typically be assumed to be at the origin.
+[57/163] So, accordingly, the setup can be made.
+[57/164] However, that is not necessarily the case always.
+[57/165] But let us assume that D is the distance from the clipping window to the center of projection.
+[57/166] So, in that case, we have a perspective projection matrix in this form shown here, which is a bit more complex as compared to the parallel projection matrix.
+[57/167] And then we follow the same procedure.
+[57/168] We have this point vector in the 3D view coordinate system.
+[57/169] We multiply it with the projection matrix, here the perspective projection matrix, to get the projected point in the homogeneous coordinate form, and then to get to the Cartesian coordinate form we need to divide by the homogeneous factor, as we have done before for parallel projection.
+[57/170] This is for perspective projection.
+[57/171] So, here again, we are skipping many different types of projections under each of these categories, that is, parallel and perspective.
+[57/172] Here, we are just trying to give you a very broad idea of projection and how it can be done.
+[57/173] So, then, let us try to enumerate the sequence of transformations that are involved to project a point P in the world coordinate system to a point on the 2D view plane.
+[57/174] So, first it gets transformed to the view coordinate system, the 3D view coordinate system.
+[57/175] Then the view volume in which the point lies is transformed to a canonical view volume, which is typically the case before we perform the clipping operation.
+[57/176] And finally, the point in the canonical view volume is projected onto the view plane. through the projection transformation.
+[57/177] So, if P' is the final point that we obtain on the view plane, the 2D view plane, then we can compute P' in terms of the original point P in the world coordinate scene and multiplying P with the transformation matrices for view coordinate, world coordinate to 3D view coordinate transformation matrix, then a matrix to transform to the canonical view volume, and finally the projection transformation matrix.
+[57/178] So, these are the matrices we need to multiply together to get a composite matrix representing the overall projection from the world coordinate scene to the 2D view plane.
+[57/179] That is up to projection to the view plane.

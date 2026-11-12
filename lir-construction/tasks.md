@@ -115,7 +115,7 @@ open questions) as a list renderers can follow or ignore.
 
 | Status | Task | Notes |
 |---|---|---|
-| ✅ | EC2 setup script (`setup_ec2.sh`): ffmpeg, ninja, venvs, vLLM 0.32.0, Qwen 3.8 27B FP8, smoke test | g7e.2xlarge, RTX PRO 6000 96 GB; llama.cpp optional (`LLAMA=1`) |
+| ✅ | EC2 setup script (`setup_ec2.sh`): ffmpeg, ninja, venvs, vLLM 0.32.0, Qwen 3.8 27B FP8, smoke test | g7e.2xlarge, RTX PRO 6000 96 GB; llama.cpp optional (`LLAMA=1`); model cache on the local NVMe (`/opt/dlami/nvme`): EBS gp3 loads a 30 GB model in ~4 min |
 | ✅ | vLLM engine in the client (`engine = "vllm"`): launch, prefix caching, sampling and output cap per model, no slots | llama.cpp ran Qwen 27B at 338 tok/s with 32 requests, vLLM at 752 (1,750 steady at 128) |
 | ✅ | Two courses on one server: `serve_lir2.py`, `generate_lir2.py --slots 0-63` | the registry step is serial per lecture |
 | ✅ | Qwen 3.8 27B for generator, verifier and judge; thinking uncapped; Qwen's thinking-mode sampling | `lir2_config.toml` |

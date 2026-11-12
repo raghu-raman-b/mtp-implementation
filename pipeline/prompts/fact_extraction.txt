@@ -1,40 +1,78 @@
-You extract atomic facts from one segment of a university lecture transcript.
-A fact is a single teachable proposition about the course subject that the
-lecturer establishes in this segment.
+You extract the facts taught in one segment of a university lecture transcript.
+
+A fact is one complete point of subject knowledge that the lecturer teaches in
+this segment: something a student should know after the segment and could be
+asked about in an exam on the course subject. The facts are used to answer
+students' questions and to write quiz questions, so each fact must be worth
+looking up on its own. Typical facts say what something is, what kinds, parts
+or members it has, how it works, what causes it or follows from it, what it is
+used for, what limits it, how it differs from or relates to something else, or
+give a rule, formula, quantity or result of the subject.
 
 Requirements:
-1. Established. The lecturer asserts it as true. Not a hypothesis, a
-   question, an opinion or view, or something the lecturer only asks about.
-2. Grounded. Cite the smallest set of segment sentence numbers that state
-   the fact.
-3. Atomic. One proposition per fact: it can be tested on its own and cannot
-   be split into smaller facts. Keep the conditions, qualifiers, quantities
-   and scope that make it true. Do not split one definition or one list of
-   members across several facts.
-4. Self-contained. A reader who has not seen the lecture must understand it.
+1. Significant. Keep what the segment is there to teach. Leave out passing
+   remarks and trivia: who made a word popular, what the lecturer once saw or
+   did, how impressive or important something is. If a student who missed
+   the point would lose nothing about the subject, it is not a fact.
+2. Whole. One fact per point, not per detail. Everything the lecturer says
+   about one point goes into one fact:
+   - a definition with what the thing is and what it is not;
+   - a list with all its members, and their figures if they have any;
+   - a quantity with what it measures, its unit, year and source;
+   - a source (a paper, a person, a standard) with what it is and why it
+     matters to the subject.
+   Never write a fact that only says something in passing about a thing
+   another fact is about.
+   A fact is still one point, not a summary of the segment. Different points
+   about the same thing (what it is, how it works, what it costs, where it
+   comes from) are different facts, because each could be asked about
+   separately. Give a list by naming its members; do not describe each
+   member unless the description is the point. A fact that needs more than
+   about 50 words is usually several points, unless it carries a list of
+   members or figures.
+3. Established. The lecturer asserts it as true. Not a hypothesis, a
+   question, or something the lecturer only asks about. A view the lecturer
+   reports ("some people think", "many assume") is a fact only if the
+   lecturer is teaching that view, and then the fact says whose view it is;
+   a view raised only to question it is not a fact.
+4. Grounded. Cite every segment sentence needed to state the fact, and no
+   others. If the fact names something that an earlier sentence introduces,
+   cite that sentence too.
+5. Self-contained. A reader who has not seen the lecture must understand it.
    Replace pronouns and pointing words (this, it, here, that method, the
    slide) with the specific term. Do not write "the lecturer says".
-5. Canonical. Write every term in full words, never as an acronym or
-   abbreviation, even where the lecturer uses one: "extended reality", not
-   "XR" or "extended reality (XR)".
-6. On-subject only. The fact is about the segment goal and the course
-   subject. Skip greetings, logistics, anecdotes, jokes, rhetorical
-   questions, and promises of later coverage ("we will see this next week").
-7. Faithful. Add nothing the lecturer did not say, even if it is true. Keep
-   hedges ("usually", "in most cases"). If the lecturer corrects themselves,
-   keep only the corrected version.
-8. No repeats. If a point is made twice, output one fact citing all its
+6. Terms in full. Write every term in full words. When the lecturer uses an
+   acronym or abbreviation for the term in this segment, add it in brackets
+   after the term's first mention in the fact: "extended reality (XR)".
+   Never write the acronym alone, and never add one the lecturer does not use.
+7. On the subject, not on the course. Skip greetings, logistics, what the
+   course or the lecture will cover, its objectives and how it is organised,
+   anecdotes, jokes, rhetorical questions, and promises of later coverage
+   ("we will see this next week"). Skip a recap of what was taught earlier
+   ("as we saw", "to sum up"). When a recap adds something new (a source, a
+   figure, another way of putting a definition), the fact holds what is new
+   and only names the thing recapped; it does not restate it. A recap
+   sentence may be cited as more evidence for a fact of this segment.
+8. Faithful. Add nothing the lecturer did not say, even if it is true. Keep
+   hedges ("usually", "in most cases") and who or what a statement is limited
+   to ("for some people", "in this design"). When the lecturer says "this
+   field" or "these technologies", name what they mean in the lecture, not
+   the nearest noun. If the lecturer corrects themselves, keep only the
+   corrected version.
+9. No repeats. If a point is made twice, output one fact citing all its
    sentences.
-9. If the segment establishes nothing, return an empty list.
+10. Few good facts are better than many thin ones. If the segment
+   establishes nothing, return an empty list.
 
-Where it fits, write each fact as one declarative sentence in the order
-subject, relation, predicate: what the fact is about, then the verb that
-relates it ("is", "covers", "consists of", "causes"), then the rest.
+Write each fact as one declarative sentence in the order subject, relation,
+predicate: what the fact is about, then the verb that relates it ("is",
+"covers", "consists of", "causes"), then the rest. A fact that carries a list
+or several figures may be a long sentence.
 
 Write the evidence before the text. Output JSON only:
 {"facts": [{"evidence": [int, ...], "text": "..."}]}
 
-### Example
+### Example 1
 COURSE TITLE: Virtual Reality
 THE COURSE
 Use this to understand what the course covers as a whole: its goals and the order of its topics.
@@ -48,16 +86,45 @@ SEGMENT:
 [1] Okay, so now there is this other term you will keep hearing, XR, extended reality.
 [2] It is basically an umbrella term.
 [3] It covers VR, AR, MR, and honestly whatever comes next in this space.
-[4] I remember when I first tried a headset in 2014, I felt sick in five minutes, anyway.
-[5] So AR, augmented reality, here you still see the real world and the virtual content is overlaid on top of it.
-[6] We will do the tracking part of this in week five.
+[4] So it is not one device or one product, remember that.
+[5] I remember when I first tried a headset in 2014, I felt sick in five minutes, anyway.
+[6] So AR, augmented reality, here you still see the real world and the virtual content is overlaid on top of it.
+[7] We will do the tracking part of this in week five.
 OUTPUT:
 {"facts": [
-{"evidence": [1, 2, 3],
-"text": "Extended reality is an umbrella term that covers virtual reality, augmented reality, mixed reality and future technologies of the same kind."},
-{"evidence": [5],
-"text": "Augmented reality lets the user still see the real world, with virtual content overlaid on top of it."}
+{"evidence": [1, 2, 3, 4],
+"text": "Extended reality (XR) is an umbrella term, not one device or product, that covers virtual reality (VR), augmented reality (AR), mixed reality (MR) and future technologies of the same kind."},
+{"evidence": [6],
+"text": "Augmented reality (AR) lets the user still see the real world, with virtual content overlaid on top of it."}
 ]}
+Sentence 4 belongs to the definition, so it is not a fact of its own. Sentence 5 is an anecdote and sentence 7 a promise of later coverage.
+
+### Example 2
+COURSE TITLE: Data Structures
+LECTURE: Hashing
+SEGMENT GOAL: Explain what a hash table is and what its operations cost
+SEGMENT:
+[1] As I said last class, an array gives you constant-time access by index.
+[2] Now a hash table, it stores key-value pairs.
+[3] It finds the slot for a key by running the key through a hash function.
+[4] It is not ordered, mind you, you cannot walk it in key order.
+[5] On average, lookup is constant time.
+[6] Insertion, constant.
+[7] Deletion, constant.
+[8] In the worst case, when every key lands in the same slot, all three become linear in the number of keys.
+[9] By the way, the word hash comes from chopping and mixing, somebody told me that at a conference once.
+[10] Two keys landing in the same slot, that is what we call a collision.
+[11] So that is the outline for today, after this we do trees.
+OUTPUT:
+{"facts": [
+{"evidence": [2, 3, 4],
+"text": "A hash table stores key-value pairs, finds the slot for a key by applying a hash function to the key, and is not ordered, so its keys cannot be traversed in key order."},
+{"evidence": [2, 5, 6, 7, 8],
+"text": "Lookup, insertion and deletion in a hash table each take constant time on average and time linear in the number of keys in the worst case, when every key lands in the same slot."},
+{"evidence": [2, 10],
+"text": "A collision in a hash table is two keys landing in the same slot."}
+]}
+The three operations and their costs are one list, so they are one fact, not six. What a hash table is, what its operations cost and what a collision is are three points, so they are three facts, not one. Sentence 1 is a recap, sentence 9 is trivia about a word, and sentence 11 is about the lecture.
 
 ### Your segment
 COURSE TITLE: {course_title}

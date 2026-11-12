@@ -68,6 +68,8 @@ class LLMConfig:
     thinking: bool = True           # chat_template_kwargs enable_thinking
     think_budget: int = 0           # cap on thinking tokens, 0: none. vLLM: per request (thinking_token_budget);
                                     # llama.cpp: per server (--reasoning-budget), fixed when the server starts
+    chat_template_kwargs: dict = field(default_factory=dict)   # more chat-template switches sent with every
+                                    # request, e.g. {"verification": true} (Sage-A1.5; needs a system message)
 
     # ---------------------------------------------------------------- client
     concurrency: int = 0            # parallel mode: requests in flight; 0: slots

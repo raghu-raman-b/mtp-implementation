@@ -1,39 +1,45 @@
-[55/113] So, let us quickly have a look at the individual pipeline stages.
-[55/114] We will be restricting ourselves to a very broad understanding. overview of the stages rather than going into the intricate details of each of these stages.
-[55/115] For further details, you may refer to the references mentioned at the end of these lectures.
-[55/116] So, let us start with the object representation.
-[55/117] So, when we are talking of computer generated scenes or synthetic scenes, we are dealing with objects of different shapes and sizes.
-[55/118] A variety of objects may be there.
-[55/119] It can range from tiny snowflakes, for example, to complex animated characters.
-[55/120] Now, if we are talking of a snowflake, it is a quite elegant structure.
-[55/121] An elegant shape is there, and ideally it should not be represented with a simple sphere.
-[55/122] Then the elegancy, the intricate details of the shape will be lost.
-[55/123] It will be a very crude approximation of the shape, and then the realism will be affected.
-[55/124] Similarly, when we are talking of an animated character, a complex character, it needs to be depicted with its associated complexity so that it looks realistic.
-[55/125] Again, we should not go for a very simplistic approximation, then the whole purpose of having a realistic viewing experience will be lost.
-[55/126] So, what these examples illustrate is that we have a variety of objects; we need to render a variety of objects with their intricate details, elegant shapes, sizes, and characteristics.
-[55/127] Now, to generate scenes with all these disparate objects, we need some way to first represent them.
-[55/128] And any representation will not work.
-[55/129] So, if we are using simplistic geometric shapes to represent all the objects, certainly that will lead to a loss of reality.
-[55/130] It will not be able to approximate all intricate characteristics of the shapes.
-[55/131] So, any representation will not work.
-[55/132] So, there are two fundamental questions.
-[55/133] One is how we can represent different objects with their characteristic complexities so that these can be rendered realistically in a synthesized environment.
-[55/134] So, essentially we wish to capture all the intricate details of the object so that we can realistically render them.
-[55/135] That is the first question.
-[55/136] So, how to do that?
-[55/137] The second one is, how can we have a representation that makes the process of rendering efficient?
-[55/138] In other words, can we perform the operations of the different stages of the pipeline that we have just discussed, the 3D graphics pipeline, in ways that optimize space and time complexities.
-[55/139] So, when we say that through the 3D graphics pipeline stages we compute the intensities at pixel levels, these computations depend on the representation.
-[55/140] So, the more complex the representation is, the more complex the calculations will be.
-[55/141] So, essentially our objective is to have a balance.
-[55/142] So, the second fundamental question is how we can maintain that balance.
-[55/143] We have, on one hand, a representation that is able to represent all intricate details.
-[55/144] On the other hand, we want to perform the subsequent stages efficiently so that the overall computation is efficient.
-[55/145] Otherwise, realistic rendering will be again an issue.
-[55/146] There will be lags and other things, or we will be requiring expensive hardware. for doing the calculation.
-[55/147] So, one question is to be able to capture all characteristics; the second question is to be able to capture them so that subsequent computations are efficiently done by balancing some trade-off.
-[55/148] So, these two fundamental questions are there when we talk of representing objects.
-[55/149] Now, the solution lies in the fact that we cannot rely on a single representation technique.
-[55/150] We have to rely on different object representation techniques.
-[55/151] In fact, there is a plethora of such techniques available, and we have to choose the right technique to represent an object given a particular problem.
+[55/159] However, let us get some quick idea on each of these broader categories: that is, point sample rendering, boundary representation, and space partitioning-based representation.
+[55/160] So, point sample rendering is the simplest of all.
+[55/161] Here, the information captured is in the form of points on the scene, with each point having the information as attributes.
+[55/162] Now, the capturing of such information happens with input sensors such as 3D range scanner, range finder, or computer vision techniques.
+[55/163] So, essentially, what we do here is to generate a scene; we first capture the scene from the real world by some input sensors.
+[55/164] The capturing essentially takes place in the form of capturing information related to points on the scene, and those points are subsequently mapped to the pixels.
+[55/165] So, these points can subsequently be processed or mapped to the pixels to generate the scene.
+[55/166] So, here we are relying on the real-world information to generate a synthetic image.
+[55/167] We are not synthetically defining objects here.
+[55/168] So, in this case, the representation is nothing but a set of raw data points.
+[55/169] That is the point sample-based rendering.
+[55/170] Next is the boundary representation, the second broad category of representation.
+[55/171] Here, the objects are represented by the surfaces that define the boundary of the object.
+[55/172] Now, these surfaces can be polygonal or curved surfaces.
+[55/173] For example, a cube represented as a collection of internally linked rectangles is shown here.
+[55/174] So, the rectangles are numbered or identified with letters between A to F.
+[55/175] So, this is one rectangle, second rectangle, third rectangle, fourth, fifth, sixth.
+[55/176] So, six rectangles each representing the bounding surface of a cube.
+[55/177] Now, when we are representing this whole cube in the form of its bounding surfaces, then we are saying that we are following a boundary representation.
+[55/178] Now, one very popular boundary representation technique is called mesh representation.
+[55/179] In this mesh representation, we use polygons to represent the surfaces, such as the one shown in the previous example.
+[55/180] Now, in order to represent each polygon, what we use is basically a vertex or edge list.
+[55/181] That stores information about all the vertices or edges on the surface and their relationships, how the vertices are connected to each other or edges are connected to each other.
+[55/182] For example, this cube we can represent in the form of a vertex list as shown here.
+[55/183] Say V0 is the origin; then it says that it is connected to V1.
+[55/184] V3 and V5.
+[55/185] So, this entry indicates the coordinate of the vertex and which other vertices it is connected to.
+[55/186] Similarly, V1, V2, all 8 vertices are mentioned in the list along with their connections to other vertices.
+[55/187] From here, we can reconstruct the cube if the information is captured in this way.
+[55/188] So, here what we see is that essentially it refers to a list of vertices, and these vertices are related to the bounding surfaces which define the overall object.
+[55/189] So, this is a kind of boundary representation; this is known as the mesh representation because here we are assuming that the bounding surfaces are polygons, and polygons are connected together to create a mesh which represents the whole object.
+[55/190] So, if there are objects with non-polygonal surfaces, then can we represent them using the mesh representation?
+[55/191] The answer is yes.
+[55/192] We can approximate the surfaces to polygonal meshes.
+[55/193] Now, typically, meshes are constructed using triangles.
+[55/194] However, other simple convex polygons may also be used, and the meshes are represented using vertex or edge lists as shown before.
+[55/195] So, for example, for this hand here, there is no intuitive way to create a polygonal mesh to represent the hand because the surfaces are curved surfaces.
+[55/196] However, as shown in this figure, we can use a triangular mesh with all these triangles, as you can see, to represent this hand and then subsequently process this mesh to represent or reconstruct the hand here or render it on the screen.
+[55/197] Clearly, as you can see or as is evident from this image, the greater the number of polygons in the mesh, the better the approximation it will lead to.
+[55/198] However, the greater the number of polygons in the mesh, the more complex the vertex list which represents the mesh will be.
+[55/199] So, constructing that vertex list will be even more difficult with the increase in the number of polygons.
+[55/200] So, again here, there is a balance we have to maintain; there is a trade-off we have to address.
+[55/201] Now, this mesh is the most basic form of representation for any object in a rendered scene used in computer graphics.
+[55/202] So, no matter what kind of representation we are following, eventually all of them are mapped to a mesh representation.
+[55/203] So, all other representations are converted to a mesh representation at the end of the pipeline before the objects are rendered.

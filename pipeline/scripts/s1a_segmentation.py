@@ -12,8 +12,10 @@ Writes  output/<course>/stage_1a_segmentation/
                                        prompt_sha (1b checks that it rebuilds the same prompt), tokens, time, thinking
           llm/cache.jsonl, calls.jsonl  answer cache and one line per call
 
-The whole lecture goes into one prompt, numbered from [1]. The model answers with its segments in order, each
-{"start": number of its first sentence, "subgoal": what the learner can do after it}, constrained by a JSON schema.
+The whole lecture goes into one prompt, numbered from [1]. The model answers with a JSON object (constrained by a
+JSON schema): {"reasoning": why it chose this segmentation, in a few sentences; "segments": [{"start": number of the
+segment's first sentence, "subgoal": what the learner can do after it}, ...] in order}. The reasoning is part of the
+answer 1b sends back in its retry conversation, so a retry starts from why the cuts were made.
 The only retry here is the LLM API's own when an answer is not JSON at all (e.g. cut off at max_tokens).
 """
 from __future__ import annotations
@@ -33,9 +35,12 @@ from scripts import course_meta, lectures as lec  # noqa: E402
 from scripts.llm import LLM, LLMConfig, Request  # noqa: E402
 
 PROMPT = ROOT / "prompts" / "segmentation.txt"
-SCHEMA = {"type": "array", "minItems": 1,
-          "items": {"type": "object", "additionalProperties": False, "required": ["start", "subgoal"],
-                    "properties": {"start": {"type": "integer"}, "subgoal": {"type": "string"}}}}
+SEGMENTS = {"type": "array", "minItems": 1,
+            "items": {"type": "object", "additionalProperties": False, "required": ["start", "subgoal"],
+                      "properties": {"start": {"type": "integer"}, "subgoal": {"type": "string"}}}}
+# reasoning first, so the segments follow from it; 1b sends the answer back as it is, reasoning included
+SCHEMA = {"type": "object", "additionalProperties": False, "required": ["reasoning", "segments"],
+          "properties": {"reasoning": {"type": "string"}, "segments": SEGMENTS}}
 
 
 def stage0_dir(course: str) -> Path:
@@ -82,6 +87,8 @@ def run(course: str, llm: LLM, lectures: list | None = None, parallel: bool = Tr
     reqs = [Request(prompt=prompts[n], key=lec.stem_of(n), schema=SCHEMA, max_tokens=max_tokens,
                     think_budget=think_budget, meta={"lecture": n}) for n in lectures]
     t0 = time.time()
+    print(f"1a: segmenting {len(reqs)} lectures with {llm.model} (all at once)" if parallel else
+          f"1a: segmenting {len(reqs)} lectures with {llm.model} (one at a time)", flush=True)
     results = llm.generate_many(reqs, parallel=parallel, cache_file=od / "llm" / "cache.jsonl",
                                 log_file=od / "llm" / "calls.jsonl")
     no_answer = []

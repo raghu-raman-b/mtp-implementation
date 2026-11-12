@@ -1,19 +1,50 @@
-[53/17] Now, in this lecture, we will try to understand how this theory can be put into practice.
-[53/18] Of course, we will not go into all the details of the theory, but the initial part, that is, how a practical problem can be modeled in this graph theoretic form so that these optimization approaches can be applied.
-[53/19] That we will do in terms of the case study that we introduced earlier.
-[53/20] So let us try to understand how we can use the idea in practice with respect to the Majuli case study.
-[53/21] Just to recap, Majuli is the river island on the Brahmaputra River, which is in the eastern part of the country in the state of Assam, and this is how the river island looks, surrounded by rivers on all sides by the Brahmaputra River and its tributaries.
-[53/22] It is also the world's largest inhabited river island and a contender for UNESCO World Heritage Site status.
-[53/23] So, there are these Satras, or the monasteries of the Vaisnavite faith, which contain several cultural aspects, both tangible and intangible.
-[53/24] And there is a total of 22 Satras.
-[53/25] Each Satra has several parts, including a Naamghar, the prayer hall, which is the central part, then the Monikut, the place of the idol, Haatis, the hostel of the disciples, and residences of the satradhikar or the master of the Satra.
-[53/26] On that island, there is one Auniati Satra, which is one of the largest, most prominent, and most visited Satras on the island.
-[53/27] Now, the campus of that Satra covers approximately 1200 square meters, a pretty large area.
-[53/28] And we have estimated that there are at least 25 points of interest in that Satra, at least.
-[53/29] Now, what we want is to make a system-controlled VR tour to cover the Satra to get the experience of that Satra.
-[53/30] Here we are assuming that we will be having a walking-based exploration, and in the walking-based exploration, to have a realistic Experience will be using the natural walking speed model that we had discussed earlier.
-[53/31] Now, in a practical scenario, if somebody wants to explore the whole Satra by walking, it may take up to a day to explore the whole site, including stoppage at the points of interest.
-[53/32] Clearly, the whole day exposure to a virtual world, if we are trying to do the same in the virtual tour, is not recommended for a VR tour because that is surely going to induce cyber sickness.
-[53/33] So, we should not do it, but then how can we come up with an optimum path that minimizes this duration?
-[53/34] And if the minimum duration is still not at an acceptable level, still not below the time threshold, then how can we come up with a path that allows the user to explore the most important POIs in the virtual world within the given time threshold?
-[53/35] So, using either of the approaches, we can actually propose a path to maximize the user experience in the virtual world.
+[53/37] In order to do that, first we need to map the site to a graph.
+[53/38] So, essentially we need to convert the Satra, the campus of the Satra with all its POIs, into a graph where the points of interest will be the nodes.
+[53/39] So, as I said before, at least 25 points of interest are there.
+[53/40] So, at least 25 nodes should be there.
+[53/41] Also, we need to calculate the distance between them, the Euclidean distance, so that we can use it as the edge weights, edges that are connecting, edges that are connecting pairs of nodes.
+[53/42] Also, if we want to implement the second approach, assuming the first approach yields a minimum time which is still more than the time threshold, then we need to have some idea of the relative importance of each of the points of interest or each of the nodes.
+[53/43] Along with that, in order to be able to find out an optimal path following the second approach, we also need to estimate the maximum wait time at each POI, which is required for a user to stop at the POI, inspect it, interact with it if possible, and then resume the navigation.
+[53/44] So there are several challenges, several things to figure out.
+[53/45] The first thing is converting the site to a graph representation.
+[53/46] How do we do the mapping?
+[53/47] Clearly, this is not an easy task to do, and it requires detailed field study and, of course, patience because it cannot be done in one shot.
+[53/48] So initially, you can come up with a plan of converting it to a graph, but then that graph may not look proper; you need to revise it.
+[53/49] It is an iterative process.
+[53/50] It requires patience.
+[53/51] Now, in our case, what did we do?
+[53/52] A team visited the site.
+[53/53] So, one field trip was made during the Kati Bihu festival, which gives a better idea about the places of importance, the POIs, the observation and interaction time, or the waiting time at each POI.
+[53/54] Any festival time could have been picked, but due to several logistical issues, we had chosen one of those important festival times.
+[53/55] Now, observed during that field visit, the team observed the people's travel behavior.
+[53/56] Throughout the whole day, how the people travel within this Satra, where they stop, what they do, it is a kind of field study.
+[53/57] Or, in other words, you can say it is a kind of contextual inquiry.
+[53/58] Similar to a contextual inquiry, so you can refer to earlier lectures on contextual inquiry to understand this concept.
+[53/59] Now, the team also talked to local people, mostly campus residents and the Satra committee members, for further clarity on certain aspects of the observations.
+[53/60] Now, the team members asked two questions to the people.
+[53/61] What are typically the places people visit when they come to this place?
+[53/62] And what are the places you, that means the person being interviewed, suggest a tourist must visit when they come to the Satra.
+[53/63] Now, based on observations, manual recording of the behavior, and interactions with the committee members or people who are residents of the campus, the team could accumulate the desired information in terms of the points of interest and then could formulate a graph.
+[53/64] So, they could accumulate information on points of interest.
+[53/65] Once the points of interest are known, then the distance between them can be measured, which they did.
+[53/66] And then that can be used as weight between the nodes.
+[53/67] Also, by talking to the people, some idea was gained about the relative importance of each node, and accordingly the importance was assigned to the nodes.
+[53/68] And also, based on the observation of people's behavior when they visit the places, an estimate of the maximum wait time was done at each POI.
+[53/69] So, all these information was obtained through observations, manual recording, and interactions with the people there.
+[53/70] So, based on that analysis of data and the information, the campus can be modeled in this form, having the points of interest having some locations, places, objects, and the points of interest.
+[53/71] So, as you can see here, the nodes in circles indicate the points of interest.
+[53/72] Note that the points of interest need not always refer to the actual physical object; such as a lake is not considered a point of interest.
+[53/73] However, the corners of the lake are considered points of interest.
+[53/74] So, starting from the entry point number 1, then the gate is another point of interest, then different paths, and along the paths, different points of interest are marked.
+[53/75] So, in this graph, you can see the points of interest denoted by these filled circles, whereas the artifacts and places in the campus are shown in rectangular forms.
+[53/76] So, this is what was obtained based on contextual inquiry or the field study.
+[53/77] And once we know the points of interest and have formulated a graph, say for example, between node 12 and 13, the distance was measured as 58 meters.
+[53/78] So, this will serve as the weight between these nodes or the weight for this edge.
+[53/79] Similarly, everywhere the weight was obtained, and also the relative importance was given plus wait time.
+[53/80] So, that relative importance and wait time is not shown here.
+[53/81] To keep things simple, only the graph form is shown along with the distance between the nodes.
+[53/82] Now, once this is there, we can readily use our algorithms to either come up with an optimal path covering all the nodes, 25 nodes which can be navigated, which can be traversed in minimum time, or we can come up with an optimal path which can be traversed within a time threshold.
+[53/83] But during that period, the maximum number of most important POIs can be covered, taking into account the wait time at each POI.
+[53/84] So, that can be done straightforwardly from here based on the algorithms and the available tools.
+[53/85] So, this is how we can put the idea into practice.
+[53/86] Thus, once this graph is obtained, we can now apply the algorithms to get an optimal path using a TSP solver, the whole path covering all the nodes, or an optimal path within the given time constant set by us, that is the time threshold, using the VRPP solver.

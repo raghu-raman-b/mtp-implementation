@@ -1,22 +1,36 @@
-[57/39] It has its own sub-stages that simulate the process of capturing a photo.
-[57/40] So first, we do a viewing transformation, a 3D viewing transformation, where the 3D world coordinate description of the scene gets transformed to a 3D view coordinate description.
-[57/41] So we define a view coordinate system.
-[57/42] So, this is a 3D view coordinate.
-[57/43] So, we define a view coordinate system, then perform a transformation operation that transforms the 3D world coordinates into the view coordinate system.
-[57/44] Now, this is akin to saying that we are looking at the scene through the camera lens.
-[57/45] When we capture a photo, before that, we see the scene using the camera mechanism, the camera viewing mechanism provided.
-[57/46] So, looking at the scene through the camera viewing mechanism and looking at the scene through our naked eyes, these two are different things.
-[57/47] And when we are looking at the scene through the camera viewing mechanism, essentially the scene gets transformed from the world coordinate system to a view coordinate system that is defined by the camera or, in other words, the camera parameters.
-[57/48] So, that is what happens here.
-[57/49] The second thing is a projection transformation that projects the 3D view coordinate scene to a view plane, which is a 2D plane.
-[57/50] So, this is the projection transformation from the 3D view coordinate system to the 2D view coordinate system or 2D view plane.
-[57/51] And then finally, there is another transformation, which is the window-to-viewport transformation, that happens here.
-[57/52] Here, we transform from a 2D view plane description of the scene, or the projected scene, to a 2D device coordinate space.
-[57/53] Now, here, there are two more operations that take place: one is clipping, and one is hidden surface removal.
-[57/54] Clipping takes place in the 3D view coordinate system, as per our way of understanding the pipeline, and hidden surface removal again takes place in the 3D view coordinate system.
-[57/55] Just to emphasize here is that the way we are explaining the pipeline, it is not necessary that this sequence should be followed in implementation.
-[57/56] So, different implementations can alter the sequence of the stages or sub-stages.
-[57/57] So, this sequence of stages or sub-stages is not sacrosanct; it may be changed depending on the implementation.
-[57/58] So, we have three transformations: viewing transformation, projection transformation, and window-to-viewport transformation; and two operations: clipping and hidden surface removal.
-[57/59] Together, they constitute the viewing pipeline.
-[57/60] That is the fourth stage of the 3D graphics pipeline.
+[57/61] Now, let us try to understand these transformations in brief.
+[57/62] So, let us start with the first one, which is the 3D viewing transformation, where we transform from a 3D world coordinate description to a 3D view coordinate description.
+[57/63] This is to simulate the camera photo-taking analogy, looking at the same scene, not with our bare eyes, but with the camera viewing mechanism.
+[57/64] So, first, we need to define the view coordinate system, and then we perform the transformation.
+[57/65] And this definition of the view coordinate system depends on the parameters, the camera parameters.
+[57/66] So, the setup is something like this.
+[57/67] So, this is the point in the world coordinate scene.
+[57/68] This is the world coordinate system reference frame within which all the scene points are defined.
+[57/69] Now, we have to define a view coordinate system having its own axes u, n, and v.
+[57/70] So, essentially what we are trying to do is transfer this point in the world coordinate to this view coordinate scene, the 3D view coordinate scene.
+[57/71] So, we are given the camera parameters.
+[57/72] What are those parameters?
+[57/73] The camera position serves as the origin, which can be represented by this origin vector with respect to the world coordinate scene.
+[57/74] So, this is the vector.
+[57/75] Then, Second is the view of point, again, can be another vector, the view of point, and the view direction we can define with respect to the vector.
+[57/76] And third is the center of interest or the look-at point P.
+[57/77] This is the center of interest or the look-at point.
+[57/78] So, before taking a photo, we typically focus on a look-at point. or center of interest, and then capture the photo.
+[57/79] So, that idea is taken here.
+[57/80] Now, from these parameters, we can set up the view coordinate system.
+[57/81] We will skip the details.
+[57/82] For those details, you can refer to the material cited at the end of the lecture.
+[57/83] So, we can simply say that to determine the parameters, to determine the view coordinate system, we need to determine the three orthogonal axes N, V, and U.
+[57/84] N can be obtained; N is the unit basis vector opposite to the looking direction and can be obtained with respect to the origin vector and the look-up direction, that is the N vector, and then the unit vector we can obtain by its value.
+[57/85] Then, that is the first axis N.
+[57/86] Then, the second one we can determine is the V unit basis vector along the V up direction, that is, we can first get the V up direction, that is V up minus O, and then we get the unit basis vector as this ratio.
+[57/87] Once these two, n and v, are obtained—remember n is obtained using the origin vector and the look-at point, v is obtained using the view up point and the origin point—and once these two are determined, we can determine u, the third axis and the third unit basis vector, as u simply is the cross product of v and n.
+[57/88] So, that is how we can determine the three mutually orthogonal axes, and these three axes together define the view coordinate system.
+[57/89] Now, once we have the view coordinate system, that is the three axes, we can transform the world coordinate description to the view coordinate description by two basic transformation operations: translation and rotation.
+[57/90] So, the composite transformation matrix is the dot product of these two transformation matrices. r and t, and then any point in the view coordinate system is obtained from the corresponding point in the void coordinate system after the point vector is multiplied with this composite transformation matrix comprising r and t.
+[57/91] So, if a point P is here and if we want to transform it to a point in the view coordinate system, then we can do so using this formulation.
+[57/92] Again here, how to, what is the matrix for M that is the composite matrix, or rather what are the individual matrices for R and T?
+[57/93] These details we are skipping.
+[57/94] You can refer to the material cited at the end for those details.
+[57/95] So, that is about view transformation.
+[57/96] So, we define a view coordinate system with respect to three camera parameters, and then we use that information to transform a point from the void coordinate system to the view coordinate system, and those matrices are formed on the basis of those axis vectors and their scalar components.

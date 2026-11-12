@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .config import LLMConfig
+from .progress import Progress
 from .server import Server
 
 
@@ -91,19 +92,29 @@ class LLM:
         self.cfg, self.log = cfg, log
         self.server = Server(cfg, log)
         self._lock = threading.Lock()
+        self._start_lock = threading.Lock()
+        self._started = False
         self._caches: dict[str, dict] = {}
         self.totals = {"requests": 0, "attempts": 0, "cached": 0, "input_tokens": 0, "output_tokens": 0}
+        self.progress = Progress(self)     # a line per finished request, a heartbeat while requests are in flight
 
     # ------------------------------------------------------------------ lifecycle
     def start(self) -> "LLM":
-        self.server.start()
+        """Attach to the server, or start it. Called by `with LLM(cfg)` only when the model name is unknown without a
+        server; otherwise the server is started by the first request that is not in the cache, so a re-run answered
+        wholly from the cache never loads the model."""
+        with self._start_lock:
+            if not self._started:
+                self.server.start()
+                self._started = True
         return self
 
     def stop(self):
         self.server.stop()
+        self._started = False
 
     def __enter__(self):
-        return self.start()
+        return self if self.server.model_name else self.start()
 
     def __exit__(self, *exc):
         self.stop()
@@ -117,7 +128,7 @@ class LLM:
                  log_file: str | Path | None = None, **overrides) -> Result:
         """One request. A plain string is a prompt; keyword overrides are Request fields (schema=..., max_tokens=...)."""
         req = request if isinstance(request, Request) else Request(prompt=request, **overrides)
-        return self._run(req, self._cache_path(cache_file), self._log_path(log_file))
+        return self._run(req, self._cache_path(cache_file), self._log_path(log_file), show=True)
 
     def generate_many(self, requests: list[Request | str], parallel: bool = True, *, progress: bool = True,
                       cache_file: str | Path | None = None, log_file: str | Path | None = None) -> list[Result]:
@@ -126,15 +137,11 @@ class LLM:
         reqs = [r if isinstance(r, Request) else Request(prompt=r, key=str(i)) for i, r in enumerate(requests)]
         cache, logf = self._cache_path(cache_file), self._log_path(log_file)
         out: list[Result | None] = [None] * len(reqs)
-        done, t0 = [0], time.time()
+        if progress:
+            self.progress.batch_start(len(reqs))
 
         def one(i: int):
-            out[i] = self._run(reqs[i], cache, logf)
-            with self._lock:
-                done[0] += 1
-                if progress:
-                    sys.stdout.write(f"\r  {done[0]}/{len(reqs)} done, {time.time() - t0:.0f} s")
-                    sys.stdout.flush()
+            out[i] = self._run(reqs[i], cache, logf, show=progress)
 
         if parallel:
             with ThreadPoolExecutor(max_workers=max(1, self.cfg.concurrency or self.cfg.slots)) as ex:
@@ -143,7 +150,7 @@ class LLM:
             for i in range(len(reqs)):
                 one(i)
         if progress:
-            sys.stdout.write("\n")
+            self.progress.batch_end()
         return out
 
     def lookup(self, request: Request, cache_file: str | Path | None = None) -> dict | None:
@@ -154,6 +161,7 @@ class LLM:
 
     def count_tokens(self, text: str) -> int:
         """Tokens in text, counted by the server's own tokenizer."""
+        self.start()
         body = ({"model": self.model, "prompt": text, "add_special_tokens": False} if self.cfg.engine == "vllm"
                 else {"content": text})
         d = self._post("/tokenize", body, timeout=60)
@@ -173,7 +181,8 @@ class LLM:
         messages = ([{"role": "system", "content": req.system}] if req.system else []) + \
                    [{"role": "user", "content": req.prompt}] + (followup or [])
         body = {"model": self.model, "messages": messages, "seed": c.seed + attempt,
-                "chat_template_kwargs": {"enable_thinking": c.thinking}, **c.sampling(), **req.sampling}
+                "chat_template_kwargs": {"enable_thinking": c.thinking, **c.chat_template_kwargs},
+                **c.sampling(), **req.sampling}
         if c.engine == "llamacpp":     # llama.cpp names it repeat_penalty
             body["repeat_penalty"] = body.pop("repetition_penalty")
         max_tokens = req.max_tokens if req.max_tokens is not None else c.max_tokens
@@ -226,7 +235,7 @@ class LLM:
             except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
                 if attempt == 3:
                     raise
-                self.log(f"  ! request failed ({e}); retrying")
+                self.progress.line(f"! request failed ({e}); retrying")
             time.sleep(5 * (attempt + 1))
 
     def _attempt(self, req: Request, attempt: int, cache: Path | None, logf: Path | None,
@@ -239,6 +248,7 @@ class LLM:
             res.content, res.reasoning, res.finish = hit["content"], hit["reasoning"], hit["finish"]
             res.input_tokens, res.output_tokens, res.cached = hit["input_tokens"], hit["output_tokens"], True
         else:
+            self.start()                      # a no-op once started; the first cache miss starts the server
             t0 = time.time()
             try:
                 d = self._post("/v1/chat/completions", body, self.cfg.timeout_s)
@@ -288,14 +298,30 @@ class LLM:
                                 "reasoning_chars": len(res.reasoning), "answer_chars": len(res.content),
                                 "latency_s": round(res.latency_s, 2)})
 
-    def _run(self, req: Request, cache: Path | None, logf: Path | None) -> Result:
+    def _run(self, req: Request, cache: Path | None, logf: Path | None, show: bool = True) -> Result:
         with self._lock:
             self.totals["requests"] += 1
+        if show:
+            self.progress.start()
+        try:
+            res = self._run_attempts(req, cache, logf, show)
+        except BaseException:
+            if show:
+                self.progress.finish(req.key, Result(key=req.key, errors=["exception (see the traceback)"]))
+            raise
+        if show:
+            self.progress.finish(req.key, res)
+        return res
+
+    def _run_attempts(self, req: Request, cache: Path | None, logf: Path | None, show: bool) -> Result:
         followup, history = list(req.followup), []
-        for attempt in range(1 + self.cfg.retries):
+        attempts = 1 + self.cfg.retries
+        for attempt in range(attempts):
             res = self._attempt(req, attempt, cache, logf, followup)
             if res.ok or any(e.startswith("server rejected") for e in res.errors):
                 break
+            if show and attempt + 1 < attempts:
+                self.progress.retry(req.key, res.errors, attempt + 2, attempts)
             history.append({"answer": res.content, "errors": res.errors})
             if req.feedback and res.content:   # the next attempt sees this answer and what is wrong with it
                 followup = list(req.followup) + [

@@ -6,10 +6,13 @@
 #   LLAMA=1 bash setup_ec2.sh       # also llama.cpp + the Q8 GGUF (slower on this model; ~20 min more to build)
 #   SKIP_MODEL=1 bash setup_ec2.sh  # no model downloads
 #   HF_TOKEN=... bash setup_ec2.sh  # Hugging Face token; without it the script reads .hf_token next to it (gitignored)
+#   NO_NVME=1 bash setup_ec2.sh     # keep the model cache on the EBS root volume (survives a stop; loads ~10x slower)
 #
 # What it does:
-#   1. checks the GPU, saves the Hugging Face token (if any) to ~/.cache/huggingface/token for the downloads and vLLM
-#   2. starts the model downloads in the background (Hugging Face cache, ~/.cache/huggingface; survives a stop)
+#   1. checks the GPU; puts the Hugging Face cache (~/.cache/huggingface) on the local NVMe (/opt/dlami/nvme) when the
+#      instance has one (wiped on a stop: rerun the script after a start); saves the Hugging Face token (if any)
+#      to ~/.cache/huggingface/token for the downloads and vLLM
+#   2. starts the model downloads in the background (into the Hugging Face cache)
 #   3. system tools: ffmpeg (videos), ninja-build (vLLM compiles kernels on its first start), tmux (run_v2.sh)
 #   4. pipeline venv (.venv): torch (CUDA 13) + requirements.txt
 #   5. vLLM in its own venv (~/vllm-venv; it pins its own torch)
@@ -26,14 +29,35 @@ LLAMA_REF="${LLAMA_REF:-master}"                 # a tag or commit to pin llama.
 GGUF_REPO="${GGUF_REPO:-unsloth/Qwen3.8-27B-GGUF}"
 GGUF_FILE="${GGUF_FILE:-Qwen3.8-27B-Q8_0.gguf}"
 TORCH_INDEX="${TORCH_INDEX:-https://download.pytorch.org/whl/cu130}"
+NVME="${NVME:-/opt/dlami/nvme}"                   # the instance's local NVMe (instance store), for the model cache
 export PATH="/usr/local/cuda/bin:$PATH"
 LOG="$HERE/logs"; mkdir -p "$LOG"
 
 step() { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
 
-step "1/7 GPU"
+step "1/7 GPU and model cache"
 nvidia-smi --query-gpu=name,memory.total,compute_cap,driver_version --format=csv,noheader
 ARCH="$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -1 | tr -d '.')"   # e.g. 120 for Blackwell
+# The Hugging Face cache goes on the instance's local NVMe when it has one (the Deep Learning AMI mounts it at
+# /opt/dlami/nvme): the EBS root volume reads at ~125 MB/s (gp3 default), so vLLM spends ~4 min loading a 30 GB model
+# from it, every time, since two models do not fit in the page cache together; the NVMe reads at GB/s.
+# ~/.cache/huggingface becomes a link to it, so every tool finds the models where it always does. Instance store is
+# wiped when the instance stops: fine for a one-time instance; after a stop and start, rerun this script (it downloads
+# the models again). NO_NVME=1 keeps the cache on EBS.
+HF_DIR="$HOME/.cache/huggingface"
+if [ -z "${NO_NVME:-}" ] && mountpoint -q "$NVME" 2>/dev/null && [ -w "$NVME" ]; then
+  if [ "$(readlink -f "$HF_DIR")" != "$NVME/huggingface" ]; then
+    mkdir -p "$NVME/huggingface"
+    if [ -d "$HF_DIR" ] && [ ! -L "$HF_DIR" ]; then         # an existing cache on EBS: move it over first
+      rsync -a "$HF_DIR/" "$NVME/huggingface/" && rm -rf "$HF_DIR"
+    fi
+    rm -f "$HF_DIR"; mkdir -p "$(dirname "$HF_DIR")"; ln -s "$NVME/huggingface" "$HF_DIR"
+  fi
+  mkdir -p "$NVME/huggingface"                              # a link left from before a stop: the folder is gone
+  echo "  Hugging Face cache: $HF_DIR -> $NVME/huggingface (local NVMe, $(df -h --output=avail "$NVME" | tail -1 | tr -d ' ') free)"
+else
+  echo "  Hugging Face cache: $HF_DIR (EBS; no local NVMe at $NVME)"
+fi
 [ -z "${HF_TOKEN:-}" ] && [ -f "$HERE/.hf_token" ] && HF_TOKEN="$(tr -d '[:space:]' < "$HERE/.hf_token")"
 if [ -n "${HF_TOKEN:-}" ]; then
   export HF_TOKEN

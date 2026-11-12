@@ -1,11 +1,22 @@
-[52/98] So, let us summarize what we have learned so far.
-[52/99] So, we are talking about experience optimization.
-[52/100] So, there we talked about a couple of approaches to take care of the CS issues. cyber sickness issues.
-[52/101] First, we talked about identifying an optimal path in a given graph representation of a virtual environment which can be covered in The minimum time now for a given large environment, this minimum time may not be addressing the cyber sickness concern because this time may still be large enough to induce cyber sickness.
-[52/102] So, in order to address that, we are going for another optimal path formulation where we talked about node weights, where we talked about the node importance and waiting times.
-[52/103] Then we talked about a time threshold, and then we are trying to find out an optimal path that can be covered by the user within the time threshold, taking into account the importance of each node and the waiting time at each node.
-[52/104] In other words, this optimal path will allow the user to cover the maximum number of the most important POIs within a given time threshold, taking into account the time required to spend at each point of interest to inspect or interact with the object present there.
-[52/105] So, in the next part of the lecture, we will have a quick look at how this idea has been put into practice in the context of our case study.
-[52/106] So, looking forward to meeting you again in the next part of this lecture, which will be the final part of this particular topic of experience optimization.
-[52/107] So, I hope you could follow the discussion.
-[52/108] Thank you, goodbye, and happy learning.
+[52/76] So let us quickly go through the algorithm.
+[52/77] So the input is the graph.
+[52/78] Remember that during our earlier discussion, we talked about converting the virtual environment to a graph, which is not necessarily a complete graph, but a fully connected graph.
+[52/79] So, we have this original graph G having the vertex set V and edge set E epsilon, along with the importance f and waiting time w specified for each of the nodes, and the output that we want is this optimal path P where F is maximized and the total traveling time plus wait time is less than the threshold.
+[52/80] So, earlier we talked about only traveling time, but now we also have to take into account the wait time.
+[52/81] So, traveling time plus wait time, which together represent the total exposure time, must be less than the time threshold.
+[52/82] So, the first thing is, as before, what we need to do is compute the complete graph G dash, where we will be replacing the edges that are not directly connected with the shortest path between those vertices.
+[52/83] This is what we did before also.
+[52/84] So, the same thing we will be doing here.
+[52/85] Convert the graph to a complete graph.
+[52/86] Then again, the second stage is also the same: replace the edge weights, which are originally the Euclidean distance between the two nodes in the modified graph, with the travel time t as we did before, where travel time we compute using the natural walking model.
+[52/87] Then, once this is given, Also, we have separately specified the importance and the wait time.
+[52/88] So, we then need to use the VRPP solver with input the final graph, that is G double dash, which contains vertices and edges where the edges are weighted with the duration of travel between the vertices which define the edges.
+[52/89] So, essentially, we will be using a solver on this modified graph G double dash, and also we will be providing the input values for f, the waiting the importance of each node, and w, that is the waiting time for each node, to get the optimal path P opt.
+[52/90] So, here we will be using the solvers solve VRPP where the input is G double dash, F, and W, then we get the output as P opt.
+[52/91] Now, like before, what we need to do is basically modify the output to reflect the original graph.
+[52/92] So, what we need to do is there will be edges that were not originally connected in the Virtual graph virtual world representation, but we introduced hypothetical edges in the form of shortest paths.
+[52/93] So, we need to replace those edges to reflect the original nature of the graph.
+[52/94] So, replace hypothetical edges joining VI, VJ with the shortest path VI, VJ.
+[52/95] Then we need to return the optimal path which is modified after replacing the edges with the shortest path.
+[52/96] So, this is the algorithm: we are first creating the graph, then converting it to a complete graph, then converting it to a graph with edge weights equal to the travel duration, where travel is the duration computed using the natural walking model to give a realistic experience.
+[52/97] Then this graph, along with the importance and wait time at each node, is provided as input to the VRPP solver, and then the output is further modified to replace the hypothetical edges with the shortest path to finally get the optimum path. that can be covered with the maximum number of most important POIs within the given time threshold, taking into account waiting time at each node.

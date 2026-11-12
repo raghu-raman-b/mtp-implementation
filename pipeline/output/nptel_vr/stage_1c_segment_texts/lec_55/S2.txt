@@ -1,24 +1,46 @@
-[55/89] Now, the coordinate system on which these processes work, or the transformation that takes place, is also shown on the right-hand side.
-[55/90] So, object representation happens in the local coordinate system, local to the objects.
-[55/91] Then modeling transformation is essentially transformation from local to world coordinate system.
-[55/92] Lighting happens in the world coordinate system.
-[55/93] Then viewing transformation essentially transforms from world to view coordinate system.
-[55/94] This is a new coordinate system which we will be talking about later.
-[55/95] Clipping happens in the view coordinate system.
-[55/96] Hidden surface removal and other processes happen in the same view coordinate system.
-[55/97] Then projection transformation essentially projects or transforms 3D view coordinate system description of the scene to a 2D view coordinate system description of the scene.
-[55/98] Then window to viewport transformation essentially maps the 2D view coordinate or view coordinate system to the device coordinate system.
-[55/99] So, this one is 2D view coordinate system to the device coordinate system.
-[55/100] And finally, scan conversion or the fifth stage essentially transforms from the device coordinate system to the screen or pixel screen coordinate system or the pixel grid.
-[55/101] So, if you notice, in order to perform these five stages, we deal with several coordinate systems.
-[55/102] So, essentially one is the local coordinate system, then the world coordinate system, then the 3D view coordinate system.
-[55/103] These are all 3D view coordinate systems.
-[55/104] Then, the 3D view to 2D view coordinate transformation means another view coordinate system that is the 2D view coordinate system.
-[55/105] Then, the device coordinate system and, finally, the screen coordinate system.
-[55/106] So, essentially, seven coordinate systems are involved in this overall process.
-[55/107] Again, just to recap: one is the local, then world, then 3D view.
-[55/108] Then, the 2D view coordinate system, then the device coordinate, and finally, the pixel grid or screen coordinate system, so not seven.
-[55/109] So, there are six coordinate systems that are used for transforming from the object definition to the pixel-level description of the scene.
-[55/110] Now, when I say pixel-level description, essentially this means that through all these stages, the intensity values for the pixels are calculated.
-[55/111] So, essentially, these stages represent the computation involved in calculating the intensities for each pixel, which will be stored in the frame buffer and which will be used to drive the video controller mechanism.
-[55/112] Now, that is the overall 3D graphics pipeline.
+[55/113] So, let us quickly have a look at the individual pipeline stages.
+[55/114] We will be restricting ourselves to a very broad understanding. overview of the stages rather than going into the intricate details of each of these stages.
+[55/115] For further details, you may refer to the references mentioned at the end of these lectures.
+[55/116] So, let us start with the object representation.
+[55/117] So, when we are talking of computer generated scenes or synthetic scenes, we are dealing with objects of different shapes and sizes.
+[55/118] A variety of objects may be there.
+[55/119] It can range from tiny snowflakes, for example, to complex animated characters.
+[55/120] Now, if we are talking of a snowflake, it is a quite elegant structure.
+[55/121] An elegant shape is there, and ideally it should not be represented with a simple sphere.
+[55/122] Then the elegancy, the intricate details of the shape will be lost.
+[55/123] It will be a very crude approximation of the shape, and then the realism will be affected.
+[55/124] Similarly, when we are talking of an animated character, a complex character, it needs to be depicted with its associated complexity so that it looks realistic.
+[55/125] Again, we should not go for a very simplistic approximation, then the whole purpose of having a realistic viewing experience will be lost.
+[55/126] So, what these examples illustrate is that we have a variety of objects; we need to render a variety of objects with their intricate details, elegant shapes, sizes, and characteristics.
+[55/127] Now, to generate scenes with all these disparate objects, we need some way to first represent them.
+[55/128] And any representation will not work.
+[55/129] So, if we are using simplistic geometric shapes to represent all the objects, certainly that will lead to a loss of reality.
+[55/130] It will not be able to approximate all intricate characteristics of the shapes.
+[55/131] So, any representation will not work.
+[55/132] So, there are two fundamental questions.
+[55/133] One is how we can represent different objects with their characteristic complexities so that these can be rendered realistically in a synthesized environment.
+[55/134] So, essentially we wish to capture all the intricate details of the object so that we can realistically render them.
+[55/135] That is the first question.
+[55/136] So, how to do that?
+[55/137] The second one is, how can we have a representation that makes the process of rendering efficient?
+[55/138] In other words, can we perform the operations of the different stages of the pipeline that we have just discussed, the 3D graphics pipeline, in ways that optimize space and time complexities.
+[55/139] So, when we say that through the 3D graphics pipeline stages we compute the intensities at pixel levels, these computations depend on the representation.
+[55/140] So, the more complex the representation is, the more complex the calculations will be.
+[55/141] So, essentially our objective is to have a balance.
+[55/142] So, the second fundamental question is how we can maintain that balance.
+[55/143] We have, on one hand, a representation that is able to represent all intricate details.
+[55/144] On the other hand, we want to perform the subsequent stages efficiently so that the overall computation is efficient.
+[55/145] Otherwise, realistic rendering will be again an issue.
+[55/146] There will be lags and other things, or we will be requiring expensive hardware. for doing the calculation.
+[55/147] So, one question is to be able to capture all characteristics; the second question is to be able to capture them so that subsequent computations are efficiently done by balancing some trade-off.
+[55/148] So, these two fundamental questions are there when we talk of representing objects.
+[55/149] Now, the solution lies in the fact that we cannot rely on a single representation technique.
+[55/150] We have to rely on different object representation techniques.
+[55/151] In fact, there is a plethora of such techniques available, and we have to choose the right technique to represent an object given a particular problem.
+[55/152] Now, let us quickly focus on the broad categories of such representation techniques.
+[55/153] So, if we are talking of 3D object representation techniques, the broad categories are three: point sample rendering, boundary representation, and space partitioning based representation.
+[55/154] Under boundary representation, we have mesh representation, parametric representation, and implicit representation.
+[55/155] Under space partitioning, we have the octree method.
+[55/156] Octree method of representation, binary space partitioning or BSP method of representation, and constructive solid geometry or CSG method of representation.
+[55/157] Note that we will not go into the details of individual techniques that are mentioned here.
+[55/158] Again, please refer to the reference mentioned at the end.

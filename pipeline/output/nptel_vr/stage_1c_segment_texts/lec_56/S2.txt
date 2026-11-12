@@ -1,48 +1,25 @@
-[56/67] There is one issue, though: sometimes to construct a world coordinate scene, we need to perform multiple geometric or modeling transformations on an object.
-[56/68] That is, not only the basic operations, but multiple operations may be required, and there we need to go for a composite transformation matrix rather than basic transformation matrices like translation, rotation, scaling, or shearing.
-[56/69] Just to illustrate the idea, or rather the issue, let us consider one example: an object, which is a rectangle shown here, ABCD, is defined in the local coordinate system which is used to define a chimney of the house in the world coordinate system.
-[56/70] So, this rectangle is used to define a chimney-like shape in this house shown in the world coordinate scene.
-[56/71] So, in order to do that, in order to construct this scene with the chimney in its place, What do we need to do?
-[56/72] What we need to do is basically transform ABCD, the original rectangle in its local coordinate scene, to A dash, B dash, C dash, D dash, that is this chimney-like shape.
-[56/73] Now, that is not possible with only a single basic transformation.
-[56/74] So, using either translation only, rotation only, scaling only, or shearing only, we will not be able to do this.
-[56/75] We will not be able to transfer or transform ABCD to A dash, B dash, C dash, and D dash.
-[56/76] We actually require two basic transformations together.
-[56/77] One is scaling and one is translation.
-[56/78] So, in order to perform the transformation, we need to go through stages.
-[56/79] The first stage is to determine the basic matrices for individual transformations, that is, scaling and translation.
-[56/80] As we can see, from here to this shape in the world coordinate scene, the object is halved in length while the height remains the same.
-[56/81] That means the scaling factor along the x direction must be half, and the scaling factor along the y direction should be 1.
-[56/82] So, the scaling matrix should be of this form 0.5 0 0 1 0 0 0 0 1 where Sx equals 0.5, the scaling factor along the x direction, and Sy equals 1 since there is no change.
-[56/83] Also, we need to translate.
-[56/84] So, vertex-wise, if we look, we can see that vertex D(0, 0), that is the origin, has been translated to D dash, that is 55 in the world coordinate scene.
-[56/85] So, the translation matrix should be this one: 1 0 5, 0 1 5, 0 0 1, that is Tx equals 5, Ty equals 5.
-[56/86] Translation along the x-axis should be 5, translation along the y-axis should be 5.
-[56/87] So, now we have identified the two basic matrices.
-[56/88] So, the second step is to obtain the composite matrix, the composite transformation matrix where both are used.
-[56/89] So, the first transformation applied to the object is the rightmost in the sequence.
-[56/90] The next transformation is placed on the left.
-[56/91] This is how we can obtain the composite matrix.
-[56/92] And we continue in this way until the last transformation.
-[56/93] Since we have only two, after the first two steps, we can stop.
-[56/94] That is, the first transformation, whatever it is, we put it on the right-hand side.
-[56/95] That is T1.
-[56/96] Then the next transformation is placed on the left of this transformation.
-[56/97] So if the next one is T2, then we put it in this way.
-[56/98] So right-to-left arrangement of transformations that are applied.
-[56/99] And then we perform a matrix multiplication of those transformations.
-[56/100] So if we do the same for our example, We can obtain the composite matrix by multiplying these two: translation followed by scaling.
-[56/101] So, right to left, then we multiply these two.
-[56/102] So, if we follow the same, then we can see that scaling is the first transformation applied, followed by translation, and we arrange them from right to left as mentioned previously.
-[56/103] And then we take a multiplication, we perform a multiplication of the matrices to get a composite transformation matrix in this form; that is the composite transformation matrix.
-[56/104] In the third step, what we do is obtain the new coordinate positions by multiplying the current vertices with the composite matrix.
-[56/105] Current vertices are given here: A, B, C, D.
-[56/106] The composite matrix is this one.
-[56/107] Current vertex, if it is A, then A dash would be given by multiplying M with A.
-[56/108] Similarly, multiplying M with B we get B dashed as shown here; C dashed in a similar fashion we can get, and D dashed similarly we will get like this, by multiplying M with current vertex D.
-[56/109] So, this is how we can obtain the transformed points. in the world coordinate scene.
-[56/110] One thing we should note here is that matrix multiplication is not commutative, and the sequence is very important.
-[56/111] So, if we are unable to formulate the sequence in the proper order, like right to left as we have discussed previously, then if the sequence is wrong, it may lead to an incorrect result.
-[56/112] So, the order in which we put the transformations before multiplying them is very important.
-[56/113] Nevertheless, without going into further details of all the complexities involved in modeling or geometric transformation, we can say that modeling transformation involves multiplication of a transformation matrix, whether it is a basic matrix or a composite matrix, with the vertices to get a transformed vertex in the world coordinate scene.
-[56/114] That is about stage 2.
+[56/25] So, let us start with stage 2, that is modeling or geometric transformation.
+[56/26] So, both terms are used; either modeling transformation can be used, or we can use the term geometric transformation.
+[56/27] Now, what is the basic idea behind this stage?
+[56/28] Earlier, we talked about object representation.
+[56/29] Now, these object representation techniques allow us to represent objects individually.
+[56/30] So, for each object, we can have an individual definition of the object, and that definition is often called the local or object coordinate system description of the object.
+[56/31] So, essentially, we can think of each object as having its own coordinate reference frame in which the object is defined; that is, its position, dimension, and so on are defined.
+[56/32] Now, in order to construct a scene, what we need to do is put multiple objects together.
+[56/33] Now, each individual object is defined in its own coordinate system, or its local coordinate system.
+[56/34] We need to redefine the object in a common coordinate system where all the objects can be put together and defined.
+[56/35] So, objects need to be assembled together in a different setting, which we can call the scene or world coordinate system.
+[56/36] So, essentially, what we do is basically taking the object from its local coordinate description to a scene or world coordinate description.
+[56/37] The idea is illustrated here.
+[56/38] So, suppose we have object 1 and object 2, each having its own coordinate system as shown here.
+[56/39] Now, using these two objects, we are constructing a scene which comprises this shape resembling the English letter H.
+[56/40] So, as you can see, in order to construct this H, we have used multiple instances of object 1 and object 2 and that too in different shapes, sizes, orientations, and so on.
+[56/41] Say, for example, this is one instance of object 1, a second instance of object 1, a third instance of object 1, a fourth instance of object 1.
+[56/42] So, these are all object 1 and these are all object 2.
+[56/43] So, there are four instances of object 1 and three instances of object 2 used to create this particular shape, and if you compare the definition to the final position or shape or orientation of the objects, you can see a lot of changes.
+[56/44] So, this is what we are calling transformation from local coordinate definition to world coordinate definition or scene coordinate definition.
+[56/45] So, this modeling transformation, the second stage, implies applying some operations on the object definition in local coordinates to transform to the world or scene coordinate system.
+[56/46] All these operations can be derived from a set of basic operations. which are the basic transformations.
+[56/47] What are those basic transformations?
+[56/48] We are all familiar with those transformations, such as translation, rotation by some angle either in a clockwise or anticlockwise direction around an axis, scaling, that is reduction or increase in the size of the object, and shearing, that is changing the shape of the object.
+[56/49] So, These four constitute the basic transformations, and we can use combinations of these four to create any sort of transformation required to construct a scene.

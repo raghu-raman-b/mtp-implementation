@@ -1,66 +1,14 @@
-[58/145] On the hardware side, let us try to understand in a little more detail how GPUs are useful on the hardware side to make this process more efficient, to make this process faster.
-[58/146] So, let us have a look at the role of the GPU in computer graphics in general and how that helps in virtual reality immersive experience in particular.
-[58/147] So, the first thing that we should notice is the need for parallelism.
-[58/148] Now, graphics operations are highly parallel.
-[58/149] For example, modeling transformation: here what happens is that we apply transformations, such as rotation, to vertices; transformations in the form of matrices to the vertices.
-[58/150] Now, a transformation is essentially a multiplication of a transformation matrix with the vertex vector.
-[58/151] And this same vector-matrix multiplication is done for all vertices together.
-[58/152] And ideally, we want to do it simultaneously.
-[58/153] So, there is a parallelism involved here.
-[58/154] So, we can have a significant gain in performance if we perform such multiplications on all vectors at the same time.
-[58/155] If it is not done at the same time, then it will be much, much slower, and that significant gain is important in real-time rendering because millions of vertices need to be processed per second.
-[58/156] The number may be even more when we are talking of a realistic immersive experience.
-[58/157] Now, CPUs generally cannot take advantage of this inherent parallelism.
-[58/158] Traditionally, the way CPUs used to be made, because they are not designed to do that.
-[58/159] Of course, modern CPUs come with some such features, but they are traditionally not very good at taking care of large-scale parallel activities.
-[58/160] So, modern graphics systems come with a separate graphics card, as we have already discussed earlier, containing their own processing unit and memory elements.
-[58/161] And this processing unit is called a graphics processing unit or GPU, which is designed to deal with the inherent parallelism in graphics operations.
-[58/162] Now, GPUs are typically multicore systems; that means they contain a large number of cores or unit processing elements, as shown here.
-[58/163] You can see multiple cores are there in a GPU; they work on Single instructions: all the cores work simultaneously on an instruction and produce data simultaneously.
-[58/164] So, each core is capable of performing simple integer and floating-point arithmetic operations only, and multiple cores group together to form what are called streaming multiprocessor units.
-[58/165] So, we can have Broadly, we can view a GPU as organized in this way, as shown in this figure.
-[58/166] We have the host, then input assemblers and a thread execution manager; then this manager allocates to different streaming multiprocessors.
-[58/167] There can be a large number of such multiprocessors. which has a parallel data cache where the multiprocessor can produce its data.
-[58/168] There is an element called texture storage, which essentially stores some information about predefined colors, surface colors, or predetermined surface colors.
-[58/169] Then, these elements are accessed through the load and store information.
-[58/170] The elements can access whatever data is produced; it can be sent to the global memory through the load information or store information, or the global memory content may be sent to this or accessed by these units through the load information.
-[58/171] And each streaming multiprocessor has multiple cores, as shown here.
-[58/172] So, a streaming multiprocessor contains several streaming processors or cores.
-[58/173] So, how does it work?
-[58/174] Now, most graphic systems assume a scene is made of triangles.
-[58/175] The scene that we are trying to render is made of triangles.
-[58/176] That means surfaces are converted to meshes, triangular meshes.
-[58/177] Remember our discussion on object representation, where we said that eventually everything gets converted to meshes, irrespective of how a developer defines an object.
-[58/178] So, the graphics processing unit assumes that the mesh is available as input.
-[58/179] Now, through the APIs supported in the graphics library, triangles are sent to the GPU one vertex at a time.
-[58/180] So, graphics libraries come with APIs using which such triangles in the mesh can be sent to the GPU one vertex at a time, and the GPU assembles vertices into triangles.
-[58/181] Then the GPU performs modeling transformations on the vertices.
-[58/182] So, multiple vertices are simultaneously transformed by multiplying the same matrix, the same transformation matrix, to all the set of vertices.
-[58/183] The output is a stream of triangles, which are the transformed triangles from local coordinate to world coordinate.
-[58/184] Next, the GPU computes the vertex color.
-[58/185] Now, the color can be computed by vector dot products, as we have demonstrated during our discussion on the simple lighting model.
-[58/186] So, the GPU performs such dot products for multiple vertices together simultaneously.
-[58/187] After that, each colored vertex is projected onto the view plane; that is the projection transformation, which involves the viewing transformation and projection transformation together.
-[58/188] So, the output is the stream of triangles in the screen or device coordinates ready to be converted to pixels.
-[58/189] So, this projection includes all three transformations: view transformation, projection transformation, and viewport transformation.
-[58/190] And the composite matrix is multiplied with vertices to get this final stream of triangles in the screen or device coordinates, which is a continuous coordinate space.
-[58/191] Now, each device space triangle overlaps some pixels on the screen.
-[58/192] In this rasterization stage, these pixels are determined, as we have discussed in stage 5.
-[58/193] Now, there are many rasterization algorithms.
-[58/194] All exploit one crucial observation: that is, each pixel can be treated independently from all other pixels.
-[58/195] Again, that is inherent parallelism.
-[58/196] So, this leads to handling all pixels in parallel.
-[58/197] So, given the device space triangles, we can determine the color of all the pixels simultaneously.
-[58/198] Now, during the pixel processing stage, two more activities take place: surface texturing and hidden surface removal.
-[58/199] The simplest texturing method is to texture images that are already captured and stored, and apply the texture images to the geometry that we are trying to render.
-[58/200] That means we simply replace the computed color with the color of the texture at the corresponding texture point.
-[58/201] So, the pixel color is replaced by the texture color; that is the simplest method.
-[58/202] In order to do that, GPUs store textures in high-speed memory.
-[58/203] So, each pixel calculation must access it.
-[58/204] Now, access is very regular; that means nearby pixels tend to access nearby texture image locations, and specialized memory caches are there to reduce the access time.
-[58/205] Note that here we have this texture storage as part of the graphics card.
-[58/206] Also, for hidden surface removal, GPUs implement a special algorithm called the depth buffer algorithm, which requires another storage that is called the depth buffer.
-[58/207] So, GPUs contain such a depth buffer as a dedicated memory, which stores the depth information for each point in a 3D scene before they are projected onto a 2D plane.
-[58/208] Depth is with respect to the pixel.
-[58/209] Now, this memory, the depth buffer memory, stores distances of the viewer from each pixel.
-[58/210] So, that is how GPUs work, and as you can see, GPUs are designed to take care of inherent parallelism; all the components that are there in the GPU are designed in that way, so that parallelly, the operations can be applied on all the vertices or a large number of vertices simultaneously to speed up things.
+[58/131] Now, let us try to put it in the perspective of the overall virtual reality system.
+[58/132] Now, if we try to understand the system in a layered architecture form, then we have, at the top, the VR application layer.
+[58/133] Below that is the software development kit or SDK layer.
+[58/134] Below it will be the VR engine or the game engines.
+[58/135] So, when I say this layer, that means the application layer calls the SDK layer, and the SDK layer calls the VR engine layer.
+[58/136] Now, below the VR engine layer lie the native rendering libraries, such as OpenGL or Vulkan or Direct3D, such libraries.
+[58/137] The VR engine, in turn, calls the library APIs to perform the rendering activities, and below it is the operating system layer and finally the hardware layer, including the GPU.
+[58/138] So, essentially, if a VR system developer wants to Do something with the graphic system, then the developer does not need to bother much if he has access to such a layered system where he can take recourse to software development kits which access the VR engine.
+[58/139] So the developer has to install the engine and import the development kit within the engine.
+[58/140] Then whatever graphical operation is done, those are done through the APIs provided in the native rendering library.
+[58/141] The job of the VR engine is to let the developer deal with graphics through those APIs without letting the developer directly access the native rendering libraries.
+[58/142] And, of course, the native libraries sit on top of the operating system, which sits on top of the hardware layer.
+[58/143] So, this is how we can visualize the implementation and use of graphics libraries in the context of VR system development, VR system deployment, or, in other words, immersive experience.
+[58/144] This is the software side; that is how we can implement the graphic functions or graphic operations.
