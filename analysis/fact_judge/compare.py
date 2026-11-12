@@ -317,7 +317,8 @@ def flips(runs: list[dict]) -> dict:
         keys = set.intersection(*(set(r["gold"]) for r in rs))
         changed = sorted((k for k in keys if len({r["gold"][k]["pass"] for r in rs}) > 1), key=_order)
         sk = set.intersection(*(set(r["seeded"]) for r in rs))
-        seeded_changed = sorted(e for e in sk if len({tuple(f["pass"] for f in r["seeded"][e]) for r in rs}) > 1)
+        seeded_changed = sorted(e for e in sk if len({tuple(f["pass"] for f in r["seeded"][e]
+                                                            if f["origin"].startswith(e + "#")) for r in rs}) > 1)
         out[sha] = {"runs": [r["run"] for r in rs], "gold_facts": len(keys), "flipped": changed,
                     "seeded_entries": len(sk), "seeded_flipped": seeded_changed}
     return out

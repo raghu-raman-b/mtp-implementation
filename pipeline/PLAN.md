@@ -91,7 +91,8 @@ what people associate with XR). Rewrites are not judged again. Nothing yet measu
 - [x] **O** The code checks against gold: false alarms and misses of `pointing` and `acronym`. (`report_compare.md`:
   `pointing` flagged 3, all false alarms by gold, the 3 code-only failures of the last round; `acronym` flagged none and
   missed 1/S0/F1, whose "3D", "4D" start with a digit; the 4 seeded entries marked `code` are all flagged.)
-- [ ] **O** (EC2) Judge the rewritten facts once more (test only): how many rewrites still fail.
+- [x] **O** (EC2) Judge the rewritten facts once more (test only): how many rewrites still fail. (`rejudge.md`: 2 of 8
+  still fail, 4/S1/F0 and 1/S3/F6, a half of the split 1/S3/F5 that now overlaps 1/S3/F7.)
 - [ ] **O** Report with proposed changes; **F** revises `fact_judge.txt` (and `fact_rewrite.txt` if needed); rerun; the
   report shows before and after.
 - [ ] **Gate.** Proposed targets: seeded errors caught ≥ 90%; false alarms on gold-pass facts ≤ 10%; flips ≤ 5%; no

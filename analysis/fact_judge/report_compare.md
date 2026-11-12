@@ -198,7 +198,7 @@ Seeded entries and the code checks (expected: marked `code` in seeded.json):
 
 ## Flips between runs of the same judge and prompt
 
-- sage-a1.5-fp8, prompt 09a26b62f66a, runs base, seed1, seed2: 9/62 (15%) gold facts flipped (1/S0/F1, 1/S3/F4, 1/S3/F5, 1/S3/F8, 16/S0/F3, 16/S0/F4, 16/S1/F5, 16/S2/F6, 16/S3/F1); seeded entries with a changed verdict: 14/34 (41%)
+- sage-a1.5-fp8, prompt 09a26b62f66a, runs base, seed1, seed2: 9/62 (15%) gold facts flipped (1/S0/F1, 1/S3/F4, 1/S3/F5, 1/S3/F8, 16/S0/F3, 16/S0/F4, 16/S1/F5, 16/S2/F6, 16/S3/F1); seeded entries with a changed verdict: 4/34 (12%)
 
 ## Gate (block 1, PLAN.md)
 
