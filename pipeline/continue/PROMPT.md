@@ -80,27 +80,30 @@ Done and pushed (see `git log`):
 - **2c decisions merged** (D8, D12; `tests/fake_2c.py`, 44 checks; 2c removed from `fake_run.py`). Its problem lines
   other than F's two are O's wording, for F to review.
 
-**FOCUS NOW (user, 2026-11-13): an MVP, the application working end to end; details later.** Plan proposed to the
-user (waiting for answers on: first slice of lectures (1-5?), Gemma 4 E4B or 12B for answers, quiz in or out, who
-drafts the answering/quiz prompts (a Fable agent quickly, or O for the MVP), the EC2's new IP):
-1. EC2 queue: 2b -> 2c -> 3 -> 4a-4d on the first slice with the prompts as they are (~1.5 h), then the same on all 63
-   lectures behind it (~4-5 h; 2a done).
-2. QA (local): tools over `knowledge/` (`check_concept`, `fact_lookup` with Qwen3-Embedding-0.6B, `lecture_dependencies`),
-   the answering prompt, the tool loop with Gemma 4 on llama.cpp (`configs/gemma4_*_llamacpp.json`); an Opus agent.
-3. Viewer (local): small server + one page: lecture list, video (`pipeline/input/nptel_vr/media/L01.mp4`...) with
-   segments and sub-goals (click to seek), concept cards (definition, facts with times), glossary, question box;
-   reuse what helps from `lir-construction/viewer2`; learner-facing (no stats outside a dev mode); an Opus agent.
-4. Optional quiz per segment (one call per segment from its facts).
-5. Switch the app to the full course when step 1's second part lands; check a few questions by hand.
-Deferred: block gates, gold sets, judge tuning (review 1 CHANGES 8-13), embedding model choice (0.6B, threshold 0.70),
-more activities, the QA test set.
+**FOCUS NOW: THE MVP (user, 2026-11-13, ~02:00 IST).** The user's definition: (1) the current pipeline run on the
+FULL course; (2) ALL activities built and run, including games (O may write the prompts); (3) the viewer updated, showing
+everything; (4) EC2 ready; (5) use Qwen only (the instance is an L40S, 46 GB); (6) everything built and working by the
+end of the day (the vision); tests and gates come after.
 
-In progress at the time of writing (Opus agents in worktrees; cherry-pick their commits when they report):
-- Agent "3/4ab": s3b name rule (D8), s3a `--embed-facts` (D9) + embed_compare metrics, 4a/4b checks and retries (D12),
-  `concept_definition.txt`, `course_goals.txt`, `lecture_goals.txt`, `concept_same.txt` (without `mixed`), 4c list of
-  all-`redefined` links.
-- EC2: the user said they are starting it; `ssh mtp` still timed out at 01:10 (if the public IP changed, the HostName
-  in `~/.ssh/config` must be updated). After it is up: rsync + `setup_ec2.sh` + queue (see "How things run").
+State of the MVP (2026-11-13 02:05 IST):
+- `configs/qwen38_27b_vllm.json`: server flags for the 46 GB GPU (context 32768, 32 slots, fp8 KV, 0.93); request
+  hashes unchanged (2a cache still answers). Qwen judges in 2b too (no `--judge`; Sage not downloaded).
+- The lectures 1, 4, 16 2b run (Sage judge) moved to `analysis/fact_extraction/data/history/2b_2026-11-12_fresh_sage/`
+  (block 1's analysis refers to it; `compare.py`'s STAGE_CACHE path now points at a missing folder: fix when block 1
+  resumes).
+- Stage 3/4 decision agent merged (D8, D9, D11, D12; tests: fake_registry 59, fake_knowledge 88 checks). Its notebook
+  markdown is NOT inserted yet (in the agent's report; redo from the code's docstrings if lost).
+- **EC2 queue running** (started 20:33 UTC): jobs in `pipeline/queue/jobs.txt` on the EC2: pip sentence-transformers
+  (done) -> 2b all -> 2c all -> 3a (CPU embeddings, vllm-venv python) -> 3b -> 3c -> 4a -> 4b -> 4c -> 4d (CPU).
+  Next to append: `qwen python3 -u scripts/s5_activities.py nptel_vr --llm configs/qwen38_27b_vllm.json` once the
+  activities agent's script is merged and rsynced. Local tmux `mtp` (window `sync`) copies results into `ec2_sync/`;
+  merge them into `pipeline/output/` (caches append-only), commit, push.
+- **Three Opus agents in worktrees** (cherry-pick when they report): (a) activities stage `scripts/s5_activities.py` +
+  prompts `prompts/activity_*.txt` + `tests/fake_activities.py`, per the contract `pipeline/schemas/activities.md`;
+  (b) question answering `pipeline/qa/` (`qa.answer(question, course, lecture)`, tools over `knowledge/`, Gemma 4 12B
+  locally, `tests/fake_qa.py`); (c) viewer `pipeline/viewer/` + `viewer/serve.py` (Range video, `/api/ask`),
+  `tests/viewer_smoke.py`.
+- Then: run the viewer on the real `knowledge/` + `activities/`, check every page and activity kind, a few questions.
 
 ## Open questions for the user (also in the decisions file)
 
