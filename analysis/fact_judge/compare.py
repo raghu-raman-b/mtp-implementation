@@ -4,6 +4,7 @@
     python3 ../analysis/fact_judge/compare.py judge  --run base                      # from the caches, no model
     python3 ../analysis/fact_judge/compare.py judge  --run seed1 --seed 1 --seeded   # (EC2) a new judge run
     python3 ../analysis/fact_judge/compare.py report --runs base,seed1,seed2         # the comparison
+    python3 ../analysis/fact_judge/compare.py rejudge                                # (EC2) the rewrites judged again
 
 A judge run is the judge's verdicts, made exactly as stage 2b makes them (scripts/s2b_verify_facts.judge_request:
 one call per segment, the segment's facts, the current prompts/fact_judge.txt):
@@ -31,12 +32,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-PIPE = HERE.parents[1] / "pipeline"
+PIPE = Path(os.environ.get("PIPELINE_ROOT") or HERE.parents[1] / "pipeline")   # another copy: for tests only
 sys.path.insert(0, str(PIPE))
 
 from scripts import fact_checks, s2b_verify_facts as s2b  # noqa: E402
@@ -159,6 +161,58 @@ def run_judge(label: str, seed: int | None, with_seeded: bool, cache_only: bool,
     (RUNS / f"{label}.json").write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
     print(f"run {label}: {len(run['gold'])} gold facts, {len(run['seeded'])} seeded entries judged; "
           f"no answer: {run['no_answer'] or 'none'}")
+
+
+def rejudge(cfg_path: Path, cache_only: bool):
+    """Test only (2b never does this): judge again every segment of the 2b run that has a rewritten fact, with its
+    final facts, as 2b's judge sees a segment; count the rewrites that still fail (judge, or the code checks as 2b
+    applies them). Written to runs/rejudge.json and rejudge.md."""
+    od = s2b.out_dir(COURSE)
+    segs, rows, reqs, items = segments(), [], [], []
+    for k in LECTURES:
+        for rec in json.loads((od / "judgements" / f"lec_{k}.json").read_text()):
+            if not any(o["result"] == "rewritten" for o in rec["outcome"].values()):
+                continue
+            seg = segs[rec["segment"]]
+            facts = [{"id": f"{seg['id']}/F{j}", "text": f["text"], "evidence": f["evidence"]}
+                     for j, f in enumerate(rec["final"])]
+            rewritten = {f"{seg['id']}/F{j}": f["from"] for j, f in enumerate(rec["final"])
+                         if rec["outcome"][f["from"]]["result"] == "rewritten"}
+            s = dict(seg, facts=facts)
+            r = s2b.judge_request(COURSE, s)
+            r.key = f"rejudge/{seg['id']}"
+            reqs.append(r)
+            items.append((s, rewritten))
+    res = judge(reqs, LLMConfig.load(cfg_path), cache_only)
+    for (s, rewritten), v in zip(items, res):
+        code = {f["id"]: fact_checks.rewrite_notes(fl) for f, fl in
+                zip(s["facts"], fact_checks.flags(s["facts"], [t for _, t in s["sentences"]]))}
+        for f in s["facts"]:
+            if v is None:
+                continue
+            rows.append({"fact": f["id"], "rewrite_of": rewritten.get(f["id"]), "text": f["text"],
+                         "pass": v[f["id"]]["pass"], "reason": v[f["id"]]["reason"], "code": code[f["id"]]})
+    rw = [x for x in rows if x["rewrite_of"]]
+    still = [x for x in rw if not x["pass"] or x["code"]]
+    kept_failed = [x for x in rows if not x["rewrite_of"] and (not x["pass"] or x["code"])]
+    RUNS.mkdir(exist_ok=True)
+    (RUNS / "rejudge.json").write_text(json.dumps({"prompt_sha": prompt_sha(), "judge": LLMConfig.load(cfg_path).model,
+                                                   "facts": rows, "no_answer": [r.key for r, v in zip(reqs, res)
+                                                                                if v is None]},
+                                                  indent=1, ensure_ascii=False) + "\n")
+    md = ["# The rewritten facts judged again (block 1, test only)", "",
+          f"Segments with a rewrite: {len(items)}; facts judged: {len(rows)}; rewrites: {len(rw)}; rewrites that "
+          f"still fail: {pct(len(still), len(rw))} (judge or code checks). Facts that were kept in 2b and fail now: "
+          f"{len(kept_failed)}.", ""]
+    md += [f"- **{x['fact']}** (rewrite of {x['rewrite_of']}): {'fails' if x in still else 'passes'}. {x['text']}"
+           + (f" Judge: {x['reason']}" if not x["pass"] else "") + (f" Code: {' '.join(x['code'])}" if x["code"] else "")
+           for x in rw]
+    if kept_failed:
+        md += ["", "Kept facts that fail in this call (the noise of one more judge call):", ""]
+        md += [f"- **{x['fact']}**: {x['reason']}" + (f" Code: {' '.join(x['code'])}" if x["code"] else "")
+               for x in kept_failed]
+    (OUT / "rejudge.md").write_text("\n".join(md) + "\n")
+    print("\n".join(md[:3]))
 
 
 # ------------------------------------------------------------------------------------------------ measuring
@@ -358,11 +412,22 @@ def report(labels: list[str]):
 
 
 def gate(out: dict, runs: list[dict]) -> list[str]:
-    last = runs[-1]
+    """The gate on the first run (the baseline), with the other runs of the report alongside."""
+    last = runs[0]
     res = out["runs"][last["run"]]
     c = res["gold"]["judge_all"]
     n_pass = len(c["false_alarm"]) + len(c["agree_pass"])
-    lines = [f"For run `{last['run']}`:", "",
+    others = []
+    for r in runs[1:]:
+        o = out["runs"][r["run"]]
+        oc = o["gold"]["judge_all"]
+        seeded_part = ""
+        if o["seeded"]:
+            rows = o["seeded"]["entries"]
+            seeded_part = f", seeded caught {pct(sum(x['caught'] for x in rows), len(rows))}"
+        others.append(f"`{r['run']}`: false alarms {pct(len(oc['false_alarm']), len(oc['false_alarm']) + len(oc['agree_pass']))}"
+                      + seeded_part)
+    lines = [f"For run `{last['run']}` (the baseline)" + (f"; the other runs: {'; '.join(others)}" if others else "") + ":", "",
              f"- False alarms on gold-pass facts <= 10%: {pct(len(c['false_alarm']), n_pass)}"]
     if res["seeded"]:
         rows = res["seeded"]["entries"]
@@ -387,7 +452,10 @@ def main():
     j.add_argument("--judge", default=str(JUDGE_CONFIG), help="judge LLMConfig")
     r = sub.add_parser("report", help="compare runs (the first is the baseline)")
     r.add_argument("--runs", required=True, help="labels, e.g. base,seed1,seed2")
-    for x in (j, r):
+    rj = sub.add_parser("rejudge", help="judge the 2b run's rewritten facts once more (test only)")
+    rj.add_argument("--cache-only", action="store_true", help="never call the model")
+    rj.add_argument("--judge", default=str(JUDGE_CONFIG), help="judge LLMConfig")
+    for x in (j, r, rj):
         x.add_argument("--out", help="folder for runs/, llm/ and the report (default: this folder; tests use another)")
     a = ap.parse_args()
     if a.out:
@@ -396,6 +464,8 @@ def main():
         CACHE, CALLS, RUNS = OUT / "llm" / "cache.jsonl", OUT / "llm" / "calls.jsonl", OUT / "runs"
     if a.cmd == "judge":
         run_judge(a.run, a.seed, a.seeded, a.cache_only, Path(a.judge))
+    elif a.cmd == "rejudge":
+        rejudge(Path(a.judge), a.cache_only)
     else:
         report(a.runs.split(","))
 
