@@ -121,7 +121,12 @@ State of the MVP (2026-11-13 02:05 IST):
   First real run is the queue's job 11: read `activities/activities.txt` and `checks.json` (clue masking, unresolved).
 - **4a skipped** (user, 02:30 IST): `s4a_definitions.py --from-facts` writes `definitions.json` from each concept's first
   defining fact (`"source": "facts"`), no model; 4d and the viewer work from it. Run real 4a later (`run()`).
-- **EC2 queue now**: 2 2b (running) / 3 2c / 4 3a / 5 3b / 6 3c / 7 4a --from-facts / 8 4b / 9 4c / 10 4d / 11 activities
+- **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
+  through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
+  in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **Schedule (IST, set 02:25)**: 2c ~04:50 -> 3a ~05:05 -> 3b ~05:45 -> 3c, 4a (from facts) ~05:50 -> 4b ~06:10 -> 4c, 4d
+  ~06:20 -> activities: ~09:10 at 6k thinking, ~07:00 without thinking. Then merge, viewer check (~30 min).
+- (Superseded) **EC2 queue now**: 2 2b (running) / 3 2c / 4 3a / 5 3b / 6 3c / 7 4a --from-facts / 8 4b / 9 4c / 10 4d / 11 activities
   (6k). Estimated end ~10:45 IST at 6k; ~08:30 if the activities run without thinking (the user has not answered yet;
   to switch, edit line 11 on the EC2 before it starts: a config copy with `"thinking": false`).
 - (Superseded) Pending the user's answer (asked 02:25 IST): skip 4a's model calls (a code-only `definitions.json` from each
