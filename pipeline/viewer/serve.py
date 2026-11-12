@@ -208,7 +208,16 @@ def load_qa():
     qa_paths()
     with _qa_lock:
         try:
-            mod = sys.modules.get("qa") or importlib.import_module("qa")
+            mod = sys.modules.get("qa")
+            if mod is None:                                 # exactly <qa-path>/qa, never another `qa` on sys.path
+                init = QA_PATH / "qa" / "__init__.py"
+                if not init.exists():
+                    raise ImportError(f"no qa package in {QA_PATH}")
+                spec = importlib.util.spec_from_file_location("qa", init,
+                                                              submodule_search_locations=[str(init.parent)])
+                mod = importlib.util.module_from_spec(spec)
+                sys.modules["qa"] = mod
+                spec.loader.exec_module(mod)
         except Exception:                                   # noqa: BLE001  any import failure means "not available"
             sys.modules.pop("qa", None)
             return None, traceback.format_exc().strip().splitlines()[-1]
@@ -217,11 +226,7 @@ def load_qa():
 
 
 def qa_status() -> bool:
-    qa_paths()
-    try:
-        return importlib.util.find_spec("qa") is not None
-    except (ImportError, ValueError):
-        return False
+    return (QA_PATH / "qa" / "__init__.py").exists()
 
 
 def ask(course: str, req: dict) -> dict:
