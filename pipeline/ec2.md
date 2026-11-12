@@ -87,6 +87,27 @@ python3 scripts/s2b_verify_facts.py nptel_vr --llm configs/qwen38_27b_vllm.json 
 the model for what is missing. The plumbing of all this is tested without a model by `python3 tests/fake_run.py`
 (fake servers on the same ports: stop the forward first).
 
+## Run the stages on the EC2 (the queue)
+
+Since 2026-11-12 the long runs go through a queue on the EC2, so they go on when the local session stops. The whole
+pipeline folder is copied over (code, prompts, configs, course inputs without the videos, outputs and caches):
+
+```bash
+rsync -a --exclude __pycache__ --exclude 'input/*/media' --exclude 'output/logs' --exclude '.hf_token' pipeline/ mtp:pipeline/
+ssh mtp "cd pipeline && tmux new -d -s queue 'bash ~/pipeline/ec2_queue.sh'"     # once; it keeps running
+ssh mtp "echo 'qwen python3 -u scripts/s2c_concepts.py nptel_vr --llm configs/qwen38_27b_vllm.json --only 1,4,16' >> pipeline/queue/jobs.txt"
+ssh mtp tail -f pipeline/queue/queue.log
+```
+
+`ec2_queue.sh` runs `queue/jobs.txt` line by line (`<qwen|sage|none> <command>`), starting the server each job needs
+and stopping the other; done jobs go to `queue/done.txt`, logs to `queue/logs/<line>.log`. A failed job stops the queue
+until `touch queue/resume` (skip it) or `touch queue/retry`. Copy the code again before queueing a job that needs a
+change (the first `rsync` line; it never touches the EC2's logs).
+
+The local tmux session `mtp` has a window `sync` that copies the EC2's `output/` and `queue/` into `ec2_sync/` (in the
+repository, gitignored) every 5 minutes, so nothing is lost if the instance goes. Results are merged into
+`pipeline/output/` and committed from there.
+
 ## Server logs
 
 The server logs stay on the EC2 (`~/pipeline/output/logs/llm_server_<port>.log`). Copy them back into their own folder,
