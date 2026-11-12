@@ -1,0 +1,93 @@
+You list the concepts in the facts of one segment of a university lecture.
+
+The facts below were extracted from one segment of a lecture transcript and
+checked against it. A concept is a term of the course subject: a thing the
+subject has a name for, such as a technology, device, component, method,
+process, quantity, property, principle, or a named system, standard or model.
+It is what a student would look up in the glossary or the index of a textbook
+on the subject, and what would be a node in a concept map of the course. The
+concepts are used to find the facts about a term when a student asks about
+it, to link the lectures that teach or use the same term, and to build
+concept maps and exercises.
+
+Requirements:
+1. From the facts only. Take every concept the facts name. Do not add a
+   concept the facts do not name, even if it belongs to the topic.
+2. Terms of the subject, not ordinary words. Take a term of the subject even
+   when the facts only mention it while teaching something else. Leave out
+   ordinary words and descriptions that the facts only use to say something
+   ("the real world", "the user", "a problem"). Leave out a source that is
+   only named as where a statement comes from (a dictionary, a report, a
+   survey). A named product, system, person or organisation is a concept
+   only when a fact says something about it that belongs to the subject.
+3. One concept per thing. If the facts use several names or wordings for the
+   same thing ("headset", "head-mounted display", "HMD"), that is one
+   concept. A thing and a kind of it, a thing and a part of it, and a thing
+   and a property of it are different concepts ("display" and "head-mounted
+   display"; "tracking" and "tracking accuracy").
+4. Name. Give the concept the name a textbook glossary would use: full
+   words, singular, lower case except for proper names, no article and no
+   acronym ("head-mounted display", not "HMDs" or "the headset").
+5. Aliases. List every other name the facts use for the concept, written as
+   in the facts: its acronym or abbreviation ("XR") and other wordings
+   ("headset"). Do not add an alias the facts do not use. Most concepts have
+   one or none.
+6. Facts. Give the numbers of all the facts that name the concept: the facts
+   that say something about it, and the facts that use it to say something
+   about another concept. Every concept has at least one fact, and every
+   fact should belong to at least one concept.
+7. Defined. true when the facts of this segment teach what the concept is:
+   one of them defines it, or says what it consists of or how it works, so
+   that a student who read these facts could answer "what is it?". false
+   when the facts only mention it: they use it to teach something else, or
+   say something about it without saying what it is.
+
+List the concepts in the order the facts first name them. Output JSON only:
+{"concepts": [{"name": "...", "aliases": ["..."], "facts": [int, ...], "defined": true}]}
+
+### Example 1
+COURSE TITLE: Virtual Reality
+LECTURE: Introduction to immersive technologies
+SEGMENT GOAL: Distinguish XR and AR from VR
+FACTS:
+[1] Extended reality (XR) is an umbrella term, not one device or product, that covers virtual reality (VR), augmented reality (AR), mixed reality (MR) and future technologies of the same kind.
+[2] Augmented reality (AR) lets the user still see the real world, with virtual content overlaid on top of it.
+OUTPUT:
+{"concepts": [
+{"name": "extended reality", "aliases": ["XR"], "facts": [1], "defined": true},
+{"name": "virtual reality", "aliases": ["VR"], "facts": [1], "defined": false},
+{"name": "augmented reality", "aliases": ["AR"], "facts": [1, 2], "defined": true},
+{"name": "mixed reality", "aliases": ["MR"], "facts": [1], "defined": false}
+]}
+Virtual reality and mixed reality are only named as members of extended reality, so they are not defined here. "Umbrella term", "the real world" and "virtual content" are ordinary words that the facts use to describe the concepts.
+
+### Example 2
+COURSE TITLE: Data Structures
+LECTURE: Hashing
+SEGMENT GOAL: Explain what a hash table is and what its operations cost
+FACTS:
+[1] A hash table stores key-value pairs, finds the slot for a key by applying a hash function to the key, and is not ordered, so its keys cannot be traversed in key order.
+[2] Lookup and insertion in a hash table each take constant time on average and linear time in the worst case, when every key lands in the same slot.
+[3] A collision in a hash table is two keys landing in the same slot.
+OUTPUT:
+{"concepts": [
+{"name": "hash table", "aliases": [], "facts": [1, 2, 3], "defined": true},
+{"name": "key-value pair", "aliases": [], "facts": [1], "defined": false},
+{"name": "slot", "aliases": [], "facts": [1, 2, 3], "defined": false},
+{"name": "hash function", "aliases": [], "facts": [1], "defined": false},
+{"name": "lookup", "aliases": [], "facts": [2], "defined": false},
+{"name": "insertion", "aliases": [], "facts": [2], "defined": false},
+{"name": "constant time", "aliases": [], "facts": [2], "defined": false},
+{"name": "linear time", "aliases": [], "facts": [2], "defined": false},
+{"name": "collision", "aliases": [], "facts": [3], "defined": true}
+]}
+The hash function is used to say how a hash table works; the two operations and the two costs are named without being explained; a slot is named in all three facts but never explained. None of them is defined here. "Key order" is a description, not a term.
+
+### Your segment
+COURSE TITLE: {course_title}
+{course}
+LECTURE: {lecture_title}
+SEGMENT GOAL: {subgoal}
+FACTS:
+{facts}
+OUTPUT:

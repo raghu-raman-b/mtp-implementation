@@ -1,0 +1,43 @@
+Now give the relationships between the concepts of your segment that its facts state.
+
+These are the concepts after checking. Use these names exactly:
+{concepts}
+
+A relationship is a triple: a subject concept, a label, and an object concept. The label is written so that subject, label and object read as one sentence that the facts state: "extended reality | is an umbrella term that covers | virtual reality". The relationships become the links of the course's concept map and are used to answer how two concepts relate.
+
+Requirements:
+1. Stated by the facts. Write a relationship only when one or more facts of the segment state it, and cite those facts. Add nothing from your own knowledge, even if it is true.
+2. Reads as a sentence. Subject, label and object, read in that order, make a true sentence. The direction matters: the subject is what the sentence is about.
+3. The label says what the relationship is. Write it as a verb phrase in the present tense, as specific as the fact: "is a kind of", "consists of", "is measured by", "causes", "is used for", "requires", "differs from ... in that ...". Never "is related to", "is associated with" or "involves". If the fact limits the relationship ("on average", "in the worst case", "usually", "in this design"), the label carries the limit. The label does not repeat the name of the subject or the object.
+4. Exhaustive. Go through the facts one by one. For every two concepts that a fact names, ask whether the fact states how one relates to the other; if it does, write the triple. A fact with a list gives one triple per member. A relationship that takes two facts to state cites both.
+5. Once. Do not write a relationship and its reverse ("A consists of B" and "B is part of A"): keep the direction the fact uses. Two concepts may have more than one triple when the facts state different relationships between them.
+6. Two different concepts from the list above. A fact about one concept alone gives no relationship.
+
+If the facts state no relationship, return an empty list. Write the facts before the triple. Output JSON only:
+{"relations": [{"facts": [int, ...], "subject": "...", "label": "...", "object": "..."}]}
+
+For Example 1 above the answer is:
+{"relations": [
+{"facts": [1], "subject": "extended reality", "label": "is an umbrella term that covers", "object": "virtual reality"},
+{"facts": [1], "subject": "extended reality", "label": "is an umbrella term that covers", "object": "augmented reality"},
+{"facts": [1], "subject": "extended reality", "label": "is an umbrella term that covers", "object": "mixed reality"}
+]}
+Fact 2 is about augmented reality alone. No fact says how virtual, augmented and mixed reality relate to each other, so there is no triple between them.
+
+For Example 2 above the answer is:
+{"relations": [
+{"facts": [1], "subject": "hash table", "label": "stores", "object": "key-value pair"},
+{"facts": [1], "subject": "hash table", "label": "finds the slot for a key by applying a", "object": "hash function"},
+{"facts": [1], "subject": "hash function", "label": "is applied to a key to find its", "object": "slot"},
+{"facts": [2], "subject": "lookup", "label": "is an operation on a", "object": "hash table"},
+{"facts": [2], "subject": "insertion", "label": "is an operation on a", "object": "hash table"},
+{"facts": [2], "subject": "lookup", "label": "in a hash table takes on average", "object": "constant time"},
+{"facts": [2], "subject": "lookup", "label": "in a hash table takes in the worst case", "object": "linear time"},
+{"facts": [2], "subject": "insertion", "label": "in a hash table takes on average", "object": "constant time"},
+{"facts": [2], "subject": "insertion", "label": "in a hash table takes in the worst case", "object": "linear time"},
+{"facts": [3], "subject": "collision", "label": "happens in a", "object": "hash table"},
+{"facts": [3], "subject": "collision", "label": "is two keys landing in the same", "object": "slot"}
+]}
+The costs hold only under a condition, so each label carries it.
+
+OUTPUT:
