@@ -63,7 +63,7 @@ class Result:
 
 
 FEEDBACK = ("Your answer has these problems:\n{problems}\n\n"
-            "Answer again, fixing them, in the same format and with nothing else.")
+            "Answer again in the same format, fixing these problems and changing nothing else.")
 
 
 class RequestRejected(RuntimeError):
@@ -314,10 +314,14 @@ class LLM:
         return res
 
     def _run_attempts(self, req: Request, cache: Path | None, logf: Path | None, show: bool) -> Result:
-        followup, history = list(req.followup), []
+        """Up to 1 + retries attempts. When none passes its check, the result is the attempt with the fewest problems
+        among those that parsed (ties: the latest), still with ok False and its errors, so a stage can keep the answer
+        and mark what is unresolved instead of losing it; history holds every failed attempt."""
+        followup, history, tried = list(req.followup), [], []
         attempts = 1 + self.cfg.retries
         for attempt in range(attempts):
             res = self._attempt(req, attempt, cache, logf, followup)
+            tried.append(res)
             if res.ok or any(e.startswith("server rejected") for e in res.errors):
                 break
             if show and attempt + 1 < attempts:
@@ -327,5 +331,10 @@ class LLM:
                 followup = list(req.followup) + [
                     {"role": "assistant", "content": res.content},
                     {"role": "user", "content": FEEDBACK.format(problems="\n".join(f"- {e}" for e in res.errors))}]
+        if not res.ok:
+            parsed = [r for r in tried if r.parsed is not None and r.finish != "length"
+                      and not any(e == "the answer is not JSON" for e in r.errors)]
+            if parsed:
+                res = min(reversed(parsed), key=lambda r: len(r.errors))   # fewest problems, the latest on a tie
         res.history = history
         return res

@@ -32,7 +32,7 @@ LEADING = re.compile(r"(It|This|That|These|Those|They|Here)\b")
 POINTING = re.compile(r"\bthis\b|\bas shown\b|\bthe (?:slide|figure|picture|above|lecturer|instructor|professor)\b|"
                       r"\b(?:mentioned|shown|seen|discussed) (?:earlier|above|before|previously)\b", re.I)
 BRACKETED = re.compile(r"\(([A-Za-z0-9][A-Za-z0-9./&-]{0,9})\)")
-CAPS = re.compile(r"\b[A-Z][A-Z0-9]{1,5}s?\b")
+TOKEN = re.compile(r"(?<![\w-])[A-Za-z0-9]+(?![\w-])")   # a word that is not part of a hyphenated word
 
 
 def content_tokens(text: str) -> list[str]:
@@ -62,8 +62,23 @@ def _evidence_order(e):
     return int(str(e).rsplit("/", 1)[-1])
 
 
-def _is_acronym(s: str) -> bool:
-    return sum(c.isupper() for c in s) >= 2 and " " not in s
+def is_acronym(token: str) -> bool:
+    """An acronym or abbreviation: one token with at least two capitals, or a digit and a capital, and no run of two
+    lower-case letters. VR, HMD, FoV, DoF, LiDAR, IMUs, 3D, 6DoF are acronyms; HoloLens, OpenGL, PlayStation, McGurk,
+    a single "A" are not. Shared by 2b (these checks), 2c (concept names), 3a and 4d."""
+    if not token or not token.isalnum():
+        return False
+    caps = sum(c.isupper() for c in token)
+    digit = any(c.isdigit() for c in token)
+    return (caps >= 2 or (digit and caps >= 1)) and re.search(r"[a-z]{2}", token) is None
+
+
+def acronyms_in(text: str) -> list[str]:
+    """The acronym tokens of a text, in order."""
+    return [t for t in TOKEN.findall(text) if is_acronym(t)]
+
+
+_is_acronym = is_acronym
 
 
 def _used(acronym: str, segment_text: str) -> bool:
@@ -90,7 +105,7 @@ def flags(facts: list[dict], sentences: list[str]) -> list[list[dict]]:
         if absent:
             fl.append({"kind": "acronym", "note": "The lecturer does not use " + ", ".join(f'"{a}"' for a in absent)
                        + " in the segment. Write the term in full without it."})
-        bare = sorted({a for a in CAPS.findall(BRACKETED.sub("", text)) if _used(a, segment_text)
+        bare = sorted({a for a in acronyms_in(BRACKETED.sub("", text)) if _used(a, segment_text)
                        and a not in bracketed})
         if bare:
             fl.append({"kind": "bare_acronym", "note": "Written without the full term: " + ", ".join(bare)})
