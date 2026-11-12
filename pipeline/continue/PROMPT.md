@@ -107,6 +107,11 @@ State of the MVP (2026-11-13 02:05 IST):
   (b) question answering `pipeline/qa/` (`qa.answer(question, course, lecture)`, tools over `knowledge/`, Gemma 4 12B
   locally, `tests/fake_qa.py`); (c) viewer `pipeline/viewer/` + `viewer/serve.py` (Range video, `/api/ask`),
   `tests/viewer_smoke.py`.
+- **Viewer merged** (commit 609e434; `python pipeline/viewer/serve.py nptel_vr [--port 8765]`, `/?dev=1` for dev mode;
+  `tests/viewer_smoke.py` 40 checks). It already shows segments and videos from 1b/0a for lectures without
+  `knowledge/`; reload picks up new layers. Its data wishes went to the activities agent (complete_map must not show a
+  hidden concept elsewhere; per-item `facts` in match_pairs, crossword, concept_map). Other data notes: 0a sentences
+  with `start: null` (filled from the previous end), long prerequisite lists from hub concepts, dense course map.
 - Then: run the viewer on the real `knowledge/` + `activities/`, check every page and activity kind, a few questions.
 
 ## Open questions for the user (also in the decisions file)
