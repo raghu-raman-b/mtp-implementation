@@ -53,46 +53,38 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
-## State (updated 2026-11-13 00:55 IST)
+## State (updated 2026-11-13 01:30 IST)
 
 Done and pushed (see `git log`):
 - **Block 0** complete. Fresh 2b on lectures 1, 4, 16: 62 facts in, 54 kept, 7 rewritten, 1 removed, 62 out.
-- **Block 1**: `analysis/fact_judge/compare.py` (judge vs gold, seeded, flips, rejudge, code checks), runs `base`,
-  `seed1`, `seed2`, `old_1112`, `rejudge` (all in `analysis/fact_judge/runs/`); report draft
-  `analysis/fact_judge/report.md`. Gate as proposed: seeded 94% (met), false alarms 7% judge / 13% with code checks,
-  flips 15% (not met); the judge catches 0-1 of 7 real gold failures; 2 of 8 rewrites still fail when rejudged.
-  Open box: "Report with proposed changes; F revises fact_judge.txt; rerun; before and after", and the gate.
-- **Block 2**: `s2c_concepts.py` + checks (fake-tested). A trial on real facts: `analysis/concepts/data/trial_fresh_2b/`.
-- **Block 3**: `embed.py`, `s3a/s3b/s3c` (fake-tested, 42 checks), `analysis/registry/embed_compare.py` (waits for
-  F's `analysis/registry/pairs.json`).
-- **Block 4**: `s4a`, `s4b`, `s4c`, `s4d` + `schemas/knowledge.schema.json` (fake-tested, 66 checks).
-- **2a on all 63 lectures** (EC2 queue, ahead of block 5): 2006 facts in `stage_2a_fact_extraction/`.
-- Decisions D8-D13 added to PLAN.md; the user answered D8, D9, D11, D12, D13 (see
-  `analysis/decisions/fable_review_2026-11-13.md`, Fable's review with exact prompt fixes and implementation notes).
+- **Block 1**: `analysis/fact_judge/compare.py`; runs `base`, `seed1`, `seed2`, `old_1112`, `rejudge` in
+  `analysis/fact_judge/runs/` (old prompt 09a26b62f66a); report draft `analysis/fact_judge/report.md`.
+  **Review 1 = "change"**: `analysis/fact_judge/reviews/review_1_2026-11-13.md` (keep it: its findings go into the
+  next report). Done from it: CHANGES 1-7 (judge and rewrite prompts revised, exact text; new prompt hash
+  e86d22b6a041); CHANGE 11 (`compare.py`: thinking-budget calls, pooled verdicts per gold fact, 2b outcome vs gold,
+  majority/any of three, flips without borderline, prompt hashes; runs now record their calls).
+  Open from it: CHANGES 8-9 (F: gold edits, label the 8 rewrites in `gold_rewrites.json`, ~12 subtle seeded entries in
+  `seeded_subtle.json`) - **a Fable agent for this was blocked by the permission check** (it would edit `gold.json` and
+  push); the user decides how (allow / write to new files only / do it themselves). CHANGE 10 (25+ real failures)
+  needs the user's word on the source. CHANGE 12 (rerun on the EC2) and 13 (report additions) after 8-9.
+  Note: the rerun must also cover `seeded_subtle.json` once it exists (compare.py reads only `seeded.json` today: add it).
+- **Block 2**: `s2c_concepts.py` + checks; trial on real facts `analysis/concepts/data/trial_fresh_2b/`.
+- **Block 3**: `embed.py`, `s3a/s3b/s3c`, `analysis/registry/embed_compare.py` (waits for F's pair gold).
+- **Block 4**: `s4a`-`s4d` + `schemas/knowledge.schema.json`.
+- **2a on all 63 lectures** (EC2 queue): 2006 facts in `stage_2a_fact_extraction/` (must not be used for tuning; rerun
+  if the extraction prompt changes).
+- **Decisions** (user answered D8, D9, D11, D12, D13; Fable's review with exact texts:
+  `analysis/decisions/fable_review_2026-11-13.md`). Shared code done: `llm/client.py` keeps the attempt with the
+  fewest problems when retries run out (`res.ok` False, `res.parsed` set) + new FEEDBACK text; `fact_checks.is_acronym`.
 
-In progress at the time of writing:
-- `block-reviewer` on block 1 (report `analysis/fact_judge/report.md`), resumed after a usage-limit stop. Its CHANGES
-  (judge prompt revision) are to be applied exactly; reconcile with Fable's `fact_judge.txt` fixes in the decisions
-  file (the reviewer's CHANGES win for the gate; the judge answer-format change waits for the user, question 4).
-- Implementing the shared pieces of the user's decisions (O): in `scripts/llm/client.py` keep the attempt with the
-  fewest problems when all retries fail (`res.parsed` set, `res.ok` false) and the new FEEDBACK text; one
-  `is_acronym` helper in `scripts/fact_checks.py`; the `appears` fix in `s2c_concepts.py` (apostrophes, "X (Y) Z").
-- EC2: stopped; the user is starting it (2026-11-13 ~00:50 IST). Nothing queued yet.
-
-## Next (in order)
-
-1. Finish the shared pieces above; run `tests/fake_run.py`, `fake_registry.py`, `fake_knowledge.py`; commit, push.
-2. Spawn Opus agents for the rest of the decisions (worktrees): (a) 2c: D8 checks (`name_is_acronym` retry,
-   `acronym_in_name` report), D12 retries and "lost/added" logging, prompt fixes for `concept_extraction.txt` rule 4/5
-   and `concept_relations.txt` rule 5; (b) stage 3: D8 name rule in s3b, D9 `--embed-facts` options + embed_compare
-   metrics; 4a/4b: D12 checks and retries, prompt fixes for `concept_definition.txt`, `course_goals.txt`,
-   `lecture_goals.txt` and their O notes. Items needing the user's answer (questions 1-5 in the decisions file) keep
-   the current behaviour until answered.
-3. When the EC2 is up: setup, queue. Block 1 rerun after the reviewer's prompt revision: the judge `base`, `seed1`,
-   `seed2` with `--seeded` (queue with `sage`, run `compare.py` on the EC2 or locally from synced caches), then 2b on
-   lectures 1, 4, 16 with the revised judge (copy the current `stage_2b_verify_facts/` to
-   `analysis/fact_extraction/data/history/` first), the report before/after, `block-reviewer` again, gate.
-4. Block 2 on the new 2b facts: 2c twice (`--seed 1 --out` for the second), report; F's gold for 4 segments.
+In progress at the time of writing (Opus agents in worktrees; cherry-pick their commits when they report):
+- Agent "2c": D8 checks, D12 retries/best answer/lost-added log, `appears` fix, prompt rules for
+  `concept_extraction.txt` (4, 5) and `concept_relations.txt` (5).
+- Agent "3/4ab": s3b name rule (D8), s3a `--embed-facts` (D9) + embed_compare metrics, 4a/4b checks and retries (D12),
+  `concept_definition.txt`, `course_goals.txt`, `lecture_goals.txt`, `concept_same.txt` (without `mixed`), 4c list of
+  all-`redefined` links.
+- EC2: the user said they are starting it; `ssh mtp` still timed out at 01:10 (if the public IP changed, the HostName
+  in `~/.ssh/config` must be updated). After it is up: rsync + `setup_ec2.sh` + queue (see "How things run").
 
 ## Open questions for the user (also in the decisions file)
 

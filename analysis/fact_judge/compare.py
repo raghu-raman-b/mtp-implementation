@@ -101,16 +101,27 @@ def prompt_sha() -> str:
 
 
 # ------------------------------------------------------------------------------------------------ judging
-def judge(requests: list[Request], cfg: LLMConfig, cache_only: bool) -> list[dict | None]:
+THINK_END = "I have thought enough"     # what vLLM writes when the thinking budget runs out (the configs' think_end)
+
+
+def call_meta(key: str, n_facts: int, reasoning: str, output_tokens: int) -> dict:
+    return {"key": key, "facts": n_facts, "output_tokens": output_tokens, "capped": THINK_END in (reasoning or "")}
+
+
+def judge(requests: list[Request], cfg: LLMConfig, cache_only: bool) -> tuple[list[dict | None], list[dict | None]]:
     """The verdicts of each request ({fact ID: {"pass", "reason"}}), from stage 2b's cache, this folder's cache, or
-    the model (unless cache_only). None where there is no usable answer."""
+    the model (unless cache_only), and per request its call (output tokens, whether the thinking hit its budget).
+    None where there is no usable answer."""
     llm = LLM(cfg)
     out: list[dict | None] = [None] * len(requests)
+    meta: list[dict | None] = [None] * len(requests)
+    nfacts = [len(r.schema["properties"]["verdicts"]["items"]["properties"]["fact"]["enum"]) for r in requests]
     todo = []
     for i, r in enumerate(requests):
         hit = llm.lookup(r, STAGE_CACHE) or llm.lookup(r, CACHE)
         if hit is not None:
             out[i] = _verdicts(hit["content"], r)
+            meta[i] = call_meta(r.key, nfacts[i], hit["reasoning"], hit["output_tokens"])
         else:
             todo.append(i)
     if todo and cache_only:
@@ -120,7 +131,8 @@ def judge(requests: list[Request], cfg: LLMConfig, cache_only: bool) -> list[dic
             for i, res in zip(todo, llm.generate_many([requests[i] for i in todo], cache_file=CACHE, log_file=CALLS)):
                 out[i] = {v["fact"]: {"pass": v["pass"], "reason": v["reason"]}
                           for v in res.parsed["verdicts"]} if res.ok else None
-    return out
+                meta[i] = call_meta(requests[i].key, nfacts[i], res.reasoning, res.output_tokens)
+    return out, meta
 
 
 def _verdicts(content: str, r: Request) -> dict | None:
@@ -146,9 +158,9 @@ def run_judge(label: str, seed: int | None, with_seeded: bool, cache_only: bool,
             r.key = f"seeded/{e['id']}"
             reqs.append(r)
             entries.append((e, seg, origin))
-    res = judge(reqs, cfg, cache_only)
+    res, meta = judge(reqs, cfg, cache_only)
     run = {"run": label, "judge": cfg.model, "seed": seed, "prompt_sha": prompt_sha(), "gold": {}, "seeded": {},
-           "no_answer": [r.key for r, v in zip(reqs, res) if v is None]}
+           "no_answer": [r.key for r, v in zip(reqs, res) if v is None], "calls": [m for m in meta if m]}
     for s, v in zip(judged, res[:len(judged)]):
         for f in s["facts"]:
             if v is not None:
@@ -183,7 +195,7 @@ def rejudge(cfg_path: Path, cache_only: bool):
             r.key = f"rejudge/{seg['id']}"
             reqs.append(r)
             items.append((s, rewritten))
-    res = judge(reqs, LLMConfig.load(cfg_path), cache_only)
+    res, meta = judge(reqs, LLMConfig.load(cfg_path), cache_only)
     for (s, rewritten), v in zip(items, res):
         code = {f["id"]: fact_checks.rewrite_notes(fl) for f, fl in
                 zip(s["facts"], fact_checks.flags(s["facts"], [t for _, t in s["sentences"]]))}
@@ -197,7 +209,7 @@ def rejudge(cfg_path: Path, cache_only: bool):
     kept_failed = [x for x in rows if not x["rewrite_of"] and (not x["pass"] or x["code"])]
     RUNS.mkdir(exist_ok=True)
     (RUNS / "rejudge.json").write_text(json.dumps({"prompt_sha": prompt_sha(), "judge": LLMConfig.load(cfg_path).model,
-                                                   "facts": rows, "no_answer": [r.key for r, v in zip(reqs, res)
+                                                   "calls": [m for m in meta if m], "facts": rows, "no_answer": [r.key for r, v in zip(reqs, res)
                                                                                 if v is None]},
                                                   indent=1, ensure_ascii=False) + "\n")
     md = ["# The rewritten facts judged again (block 1, test only)", "",
@@ -319,9 +331,147 @@ def flips(runs: list[dict]) -> dict:
         sk = set.intersection(*(set(r["seeded"]) for r in rs))
         seeded_changed = sorted(e for e in sk if len({tuple(f["pass"] for f in r["seeded"][e]
                                                             if f["origin"].startswith(e + "#")) for r in rs}) > 1)
+        g = gold()
+        clear = [k for k in keys if not g[k]["borderline"]]
         out[sha] = {"runs": [r["run"] for r in rs], "gold_facts": len(keys), "flipped": changed,
+                    "clear_facts": len(clear), "flipped_clear": [k for k in changed if not g[k]["borderline"]],
                     "seeded_entries": len(sk), "seeded_flipped": seeded_changed}
     return out
+
+
+# ------------------------------------------------------------------------------------------------ review 1, CHANGE 11
+HISTORY_CACHE = HERE.parent / "fact_extraction" / "data" / "history" / "2b_2026-11-12_ec2" / "llm" / "cache.jsonl"
+
+
+def _cache_index() -> dict:
+    """(first fact ID, its reason) of every judge answer in the caches -> (capped, output tokens, facts)."""
+    idx = {}
+    for path in dict.fromkeys((STAGE_CACHE, CACHE, HERE / "llm" / "cache.jsonl", HISTORY_CACHE)):
+        if not path.exists():
+            continue
+        for line in path.read_text().splitlines():
+            rec = json.loads(line)
+            try:
+                vs = json.loads(rec["content"])["verdicts"]
+            except (json.JSONDecodeError, KeyError, TypeError):
+                continue
+            if vs:
+                idx[(vs[0]["fact"], vs[0]["reason"])] = (THINK_END in rec["reasoning"], rec["output_tokens"], len(vs))
+    return idx
+
+
+def calls_of(run: dict, idx: dict) -> list[dict]:
+    """The run's calls (recorded, or found in the caches by the first verdict of each call)."""
+    if run.get("calls"):
+        return run["calls"]
+    out, by_seg = [], {}
+    for fid, v in run["gold"].items():
+        by_seg.setdefault(fid.rsplit("/", 1)[0], []).append((fid, v))
+    for seg, vs in by_seg.items():
+        fid, v = min(vs, key=lambda x: _order(x[0]))
+        hit = idx.get((fid, v["reason"]))
+        out.append({"key": seg, "facts": len(vs), "output_tokens": hit[1] if hit else None,
+                    "capped": hit[0] if hit else None})
+    for eid, facts in run["seeded"].items():
+        f = facts[0]
+        hit = idx.get((f["id"], f["reason"]))
+        out.append({"key": f"seeded/{eid}", "facts": len(facts), "output_tokens": hit[1] if hit else None,
+                    "capped": hit[0] if hit else None})
+    return out
+
+
+def pooled(runs: list[dict], g: dict) -> dict:
+    """Per gold fact, its verdicts over every call of the runs: the gold calls and the seeded calls where the fact is
+    unchanged. For gold failures also how many fail it for a property gold names."""
+    out = {fid: {"verdicts": 0, "fails": 0, "right": 0} for fid in g}
+    for r in runs:
+        seen = [(fid, v) for fid, v in r["gold"].items()]
+        seen += [(f["origin"], f) for facts in r["seeded"].values() for f in facts if f["origin"] in g]
+        for fid, v in seen:
+            o = out[fid]
+            o["verdicts"] += 1
+            if not v["pass"]:
+                o["fails"] += 1
+                o["right"] += bool(named(v["reason"]) & set(g[fid]["fails"]))
+    return out
+
+
+def outcome_2b(g: dict) -> dict:
+    """2b's outcome per 2a fact (the current stage_2b_verify_facts) against gold."""
+    od = s2b.out_dir(COURSE)
+    rows = {}
+    for k in LECTURES:
+        p = od / "judgements" / f"lec_{k}.json"
+        if p.exists():
+            for rec in json.loads(p.read_text()):
+                rows.update({fid: o["result"] for fid, o in rec["outcome"].items()})
+    table = {}
+    for fid, res in rows.items():
+        lab = "pass" if g.get(fid, {}).get("pass", True) else "fail"
+        table.setdefault(res, {"pass": [], "fail": []})[lab].append(fid)
+    return table
+
+
+def votes(runs: list[dict], g: dict) -> dict | None:
+    """Majority of three and any of three over the first three runs of the first run's judge and prompt."""
+    same = [r for r in runs if r["judge"] == runs[0]["judge"] and r["prompt_sha"] == runs[0]["prompt_sha"]][:3]
+    if len(same) < 3:
+        return None
+    keys = set.intersection(*(set(r["gold"]) for r in same))
+    out = {}
+    for rule, need in (("majority of three", 2), ("any of three", 1)):
+        fails = {k for k in keys if sum(not r["gold"][k]["pass"] for r in same) >= need}
+        gf = {k for k in keys if not g[k]["pass"]}
+        out[rule] = {"runs": [r["run"] for r in same], "caught": len(fails & gf), "gold_fails": len(gf),
+                     "false_alarms": len(fails - gf), "gold_pass": len(keys - gf)}
+    return out
+
+
+def derived_md(runs: list[dict], g: dict) -> tuple[list[str], dict]:
+    idx = _cache_index()
+    md = ["## Pooled and derived numbers (review 1, CHANGE 11)", "",
+          f"Current prompt hash: {prompt_sha()}. Runs: " + ", ".join(f"`{r['run']}` {r['prompt_sha']}" for r in runs) + ".", ""]
+    data = {"current_prompt_sha": prompt_sha(), "calls": {}}
+    md += ["Calls whose thinking reached the budget (the config's `think_end` in the thinking):", "",
+           "| Run | Calls | At the budget | Of them with 10+ facts | Facts in the capped calls |", "|---|--:|--:|--:|---|"]
+    for r in runs:
+        cs = calls_of(r, idx)
+        known = [c for c in cs if c["capped"] is not None]
+        capped = [c for c in known if c["capped"]]
+        data["calls"][r["run"]] = cs
+        md.append(f"| `{r['run']}` | {len(known)} of {len(cs)} found | {len(capped)} | "
+                  f"{sum(c['facts'] >= 10 for c in capped)} of {sum(c['facts'] >= 10 for c in known)} | "
+                  f"{', '.join(str(c['facts']) for c in capped) or '-'} |")
+    po = pooled(runs, g)
+    data["pooled"] = po
+    gf = [fid for fid in g if not g[fid]["pass"]]
+    md += ["", "Gold failures over every call of these runs (gold calls and seeded calls where the fact is unchanged):", "",
+           "| Fact | Gold fails | Borderline | Verdicts | Failed | For a gold property |", "|---|---|---|--:|--:|--:|"]
+    for fid in sorted(gf, key=_order):
+        o = po[fid]
+        md.append(f"| {fid} | {g[fid]['fails']} | {'yes' if g[fid]['borderline'] else ''} | {o['verdicts']} | "
+                  f"{o['fails']} | {o['right']} |")
+    tot = sum(po[f]["verdicts"] for f in gf)
+    md.append(f"| all | | | {tot} | {sum(po[f]['fails'] for f in gf)} | {sum(po[f]['right'] for f in gf)} |")
+    gp = [fid for fid in g if g[fid]["pass"]]
+    md += ["", f"Gold-pass facts failed in some call: {sum(po[f]['fails'] > 0 for f in gp)} of {len(gp)}; "
+           f"verdicts failing a gold-pass fact: {sum(po[f]['fails'] for f in gp)} of {sum(po[f]['verdicts'] for f in gp)}.", ""]
+    oc = outcome_2b(g)
+    data["outcome_2b"] = oc
+    md += ["2b's outcome (the current `stage_2b_verify_facts/`) against gold:", "",
+           "| Outcome | Gold pass | Gold fail |", "|---|---|---|"]
+    for res, t in sorted(oc.items()):
+        fmt = lambda xs: (f"{len(xs)}" + (f" ({', '.join(sorted(xs, key=_order))})" if xs and res != "kept" else ""))
+        md.append(f"| {res} | {fmt(t['pass'])} | {fmt(t['fail'])} |")
+    md.append(f"\nGold-pass facts removed: {', '.join(oc.get('removed', {}).get('pass', [])) or 'none'}.")
+    vo = votes(runs, g)
+    data["votes"] = vo
+    if vo:
+        md += ["", "Verdicts combined over three runs (no new calls):", "",
+               "| Rule | Runs | Gold failures caught | False alarms on gold-pass facts |", "|---|---|--:|--:|"]
+        md += [f"| {rule} | {', '.join(v['runs'])} | {v['caught']}/{v['gold_fails']} | "
+               f"{pct(v['false_alarms'], v['gold_pass'])} |" for rule, v in vo.items()]
+    return md, data
 
 
 def _order(fid: str):
@@ -404,8 +554,11 @@ def report(labels: list[str]):
         md += ["", "## Flips between runs of the same judge and prompt", ""]
         for sha, f in out["flips"].items():
             md.append(f"- {sha}, runs {', '.join(f['runs'])}: {pct(len(f['flipped']), f['gold_facts'])} gold "
-                      f"facts flipped ({', '.join(f['flipped']) or 'none'}); seeded entries with a changed verdict: "
+                      f"facts flipped ({', '.join(f['flipped']) or 'none'}); without borderline facts "
+                      f"{pct(len(f['flipped_clear']), f['clear_facts'])}; seeded entries with a changed verdict: "
                       f"{pct(len(f['seeded_flipped']), f['seeded_entries'])}")
+    dmd, out["derived"] = derived_md(runs, gold())
+    md += [""] + dmd
     md += ["", "## Gate (block 1, PLAN.md)", ""] + gate(out, runs)
     (OUT / "compare.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
     (OUT / "report_compare.md").write_text("\n".join(md) + "\n")
