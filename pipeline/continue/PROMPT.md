@@ -77,9 +77,25 @@ Done and pushed (see `git log`):
   `analysis/decisions/fable_review_2026-11-13.md`). Shared code done: `llm/client.py` keeps the attempt with the
   fewest problems when retries run out (`res.ok` False, `res.parsed` set) + new FEEDBACK text; `fact_checks.is_acronym`.
 
+- **2c decisions merged** (D8, D12; `tests/fake_2c.py`, 44 checks; 2c removed from `fake_run.py`). Its problem lines
+  other than F's two are O's wording, for F to review.
+
+**FOCUS NOW (user, 2026-11-13): an MVP, the application working end to end; details later.** Plan proposed to the
+user (waiting for answers on: first slice of lectures (1-5?), Gemma 4 E4B or 12B for answers, quiz in or out, who
+drafts the answering/quiz prompts (a Fable agent quickly, or O for the MVP), the EC2's new IP):
+1. EC2 queue: 2b -> 2c -> 3 -> 4a-4d on the first slice with the prompts as they are (~1.5 h), then the same on all 63
+   lectures behind it (~4-5 h; 2a done).
+2. QA (local): tools over `knowledge/` (`check_concept`, `fact_lookup` with Qwen3-Embedding-0.6B, `lecture_dependencies`),
+   the answering prompt, the tool loop with Gemma 4 on llama.cpp (`configs/gemma4_*_llamacpp.json`); an Opus agent.
+3. Viewer (local): small server + one page: lecture list, video (`pipeline/input/nptel_vr/media/L01.mp4`...) with
+   segments and sub-goals (click to seek), concept cards (definition, facts with times), glossary, question box;
+   reuse what helps from `lir-construction/viewer2`; learner-facing (no stats outside a dev mode); an Opus agent.
+4. Optional quiz per segment (one call per segment from its facts).
+5. Switch the app to the full course when step 1's second part lands; check a few questions by hand.
+Deferred: block gates, gold sets, judge tuning (review 1 CHANGES 8-13), embedding model choice (0.6B, threshold 0.70),
+more activities, the QA test set.
+
 In progress at the time of writing (Opus agents in worktrees; cherry-pick their commits when they report):
-- Agent "2c": D8 checks, D12 retries/best answer/lost-added log, `appears` fix, prompt rules for
-  `concept_extraction.txt` (4, 5) and `concept_relations.txt` (5).
 - Agent "3/4ab": s3b name rule (D8), s3a `--embed-facts` (D9) + embed_compare metrics, 4a/4b checks and retries (D12),
   `concept_definition.txt`, `course_goals.txt`, `lecture_goals.txt`, `concept_same.txt` (without `mixed`), 4c list of
   all-`redefined` links.
