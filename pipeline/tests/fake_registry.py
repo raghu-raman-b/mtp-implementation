@@ -7,36 +7,53 @@ with synthetic 2c concept maps, relationships and 2b facts for lectures 1, 4 and
 output/ is written, and the test checks that at the end. The fake model listens on a free port (never 8094 or 8095,
 where the SSH forward to the EC2 may be) through a copy of the Qwen config with that port, model_path "fake/qwen" (so
 its cache hashes never match a real run's) and attach_wait_s 0. The fake model answers a concept_same prompt with a
-grouping read from the entries' names and facts (TRUTH below), as a careful model would, except for the cluster
-holding "refresh rate", which gets the plain schema-built answer of scripts/llm/fake_server.py (invalid: entries in
-several groups), so the retries and the fallback run.
+grouping read from the entries' names and facts (truth() below), as a careful model would, with seeded failures:
+  - the head-mounted display group is named "HMD" in every attempt (an acronym while a full name exists): the
+    answer stays unresolved, its merge is kept and code renames the group;
+  - in its first attempt every group is named after its first entry, so the lecture 16 "AR" (alias "aspect ratio")
+    is named "AR": retried with the problem shown, the second attempt names it "aspect ratio" (the alias fallback);
+  - the cluster holding "refresh rate" gets no JSON first, then the plain schema-built answer of
+    scripts/llm/fake_server.py (entries in several groups): unresolved, the entries repaired apart;
+  - the cluster holding "tracker" never gets JSON: no answer, kept apart.
 
 The synthetic data seeds: one concept under three spellings (case, hyphen, plural) and "lens"/"lenses"/"Lenses"
 (exact merges); "HMD" as a segment concept's name in two segments (an acronym alone: not exact) and as an alias of
-the head-mounted display; "AR" meaning augmented reality in lecture 1 and aspect ratio in lecture 16 (a trap that
-shares a name); "field of view" and "visual field extent" (a split: different names, same facts, no shared name);
-"display resolution" and "tracking resolution" (a trap with close names); a relationship that becomes a self-loop
-once HMD is merged; the same triple in lectures 1 and 16 with the label in another case.
+the head-mounted display; "AR" meaning augmented reality in lecture 1 (no other name) and aspect ratio in lecture 16
+(alias "aspect ratio"), a trap that shares a name; "field of view" and "visual field extent" (a split: different
+names, same facts, no shared name); "display resolution" and "tracking resolution" (a trap with close names);
+"tracker" citing only the fact of "tracking resolution" in the same segment (a twin: names only under
+--embed-facts defining, near-identical texts under any-if-none); a relationship that becomes a self-loop once HMD is
+merged; the same triple in lectures 1 and 16 with the label in another case.
 
 What it looks for (each line is what a broken stage would show):
   embed     vectors not unit length or not deterministic; a rerun that embeds again instead of reading the cache;
             the Qwen instruction format wrong, or an instruction given to a model without the convention
   units     same-term rule: a missed case/hyphen/plural/space variant, or a merge of a part word ("display" in
-            "head-mounted display", "displayed"); acronyms not recognised; the cap not respected, the wrong link
-            cut, or the cap changing clusters below it; the answer check passing a missing, repeated or out-of-range
-            entry or a name from another entry; the fact cap or the defining-first order not kept in the prompt
+            "head-mounted display", "displayed"); acronyms not recognised as the shared helper does (a product
+            name such as HoloLens taken for one); the cap not respected, the wrong link cut, or the cap changing
+            clusters below it; the answer check passing a missing, repeated or out-of-range entry, a name from
+            another entry, an acronym name while a full name exists, or an alias while an entry's own name exists;
+            the alias and acronym fallbacks of the name rule wrong; the repair of an unresolved answer merging an
+            entry the answer put in two groups, losing an entry, or keeping a name that is not allowed; the fact cap
+            or the defining-first order not kept in the prompt; the three --embed-facts options choosing the wrong
+            facts, or the instruction not saying "names and facts" when other facts are used
   3a        exact variants left in separate entries; an acronym merged by name alone; the acronym entries not
             reaching the head-mounted display's cluster (shared-alias rule broken); the split not reaching one
-            cluster (embedding text or similarity broken); a cluster over the cap; cut pairs not listed
+            cluster (embedding text or similarity broken); a cluster over the cap; cut pairs not listed; the option
+            not recorded in the settings; the twin pair a candidate under defining or not one under any-if-none
   3b        a cluster without its request, or a request for an entry outside every cluster; entries missing from
-            or misnumbered in the prompt; the name enum not the cluster's names; an invalid answer accepted, or
-            not retried, or its cluster not kept apart
+            or misnumbered in the prompt; the name enum not the names the rule allows; an invalid answer accepted,
+            not retried, or retried without its problems shown; an unresolved answer thrown away (its merge lost)
+            or kept unrepaired; an unparseable answer not kept apart; the retry log or the counts in same_checks
+            wrong
   3c        a segment concept without a concept, or in two; "merged" not matching segment_concepts.json; IDs not
             contiguous or not in course order; facts, lectures, segments or defined_in not the union of the merged
             segment concepts; the model's name not used, or a losing name not kept as an alias; a merge without a
-            decisions line; traps merged; a relationship end that is not a concept; a segment relationship lost
-            without a log line (counts do not add up); the self-loop kept or not logged; the identical triple not
-            joined, or its facts not joined
+            decisions line; traps merged; the unresolved clusters not logged; a relationship end that is not a
+            concept; a segment relationship lost without a log line (counts do not add up); the self-loop kept or
+            not logged; the identical triple not joined, or its facts not joined
+  compare   analysis/registry/embed_compare.py (fake embedder, a few pairs): not all three options reported, the
+            twin pair not counted, or its candidacy not following the option
   rerun     s3a, s3b, s3c run again with the fake model stopped: any call to the model, any text embedded again,
             any output not byte-identical
   output    any file under the real output/ created or changed
@@ -102,7 +119,7 @@ DATA = {
     "16/S1": {"facts": ["AR is the ratio of the width of a display image to its height.",
                         "Tracking resolution is the smallest head movement that the tracker can detect.",
                         "Refresh rate is the number of images a display shows each second."],
-              "concepts": [("AR", [], [0], True), ("tracking resolution", [], [1], True),
+              "concepts": [("AR", ["aspect ratio"], [0], True), ("tracking resolution", [], [1], True),
                            ("refresh rate", [], [2], True), ("tracker", [], [1], False)],
               "relations": [(1, "is a property of", 3, [1])]},
 }
@@ -121,13 +138,26 @@ def truth(name: str, facts: str) -> str:
     return n
 
 
+ACRONYM = re.compile(r"[A-Z0-9]{2,}s?|[A-Z][a-z]?[A-Z][A-Za-z]*")   # the test's own idea of an acronym name
+
+
+def rule_name(group: list[tuple[int, str, list[str]]]) -> str:
+    """The name the D8 rule allows, worked out apart from s3b: an entry's own non-acronym name, else a non-acronym
+    other name, else the own name."""
+    own = [n for _, n, _ in group if not ACRONYM.fullmatch(n)]
+    other = [o for _, _, others in group for o in others if not ACRONYM.fullmatch(o)]
+    return (own or other or [group[0][1]])[0]
+
+
 class GroupingFake(FakeServer):
-    """Answers a concept_same prompt with the TRUTH grouping; anything else as the plain fake."""
+    """Answers a concept_same prompt with the truth() grouping and the seeded failures of the module docstring;
+    anything else as the plain fake."""
 
     def answer(self, body: dict) -> dict:
         prompt = body["messages"][0]["content"]
         fmt = (body.get("response_format") or {}).get("json_schema", {})
-        if "THE ENTRIES" not in prompt or "refresh rate" in prompt:
+        attempt = sum(m["role"] == "assistant" for m in body["messages"])      # 0 for the first attempt
+        if "THE ENTRIES" not in prompt or ("] refresh rate\n" in prompt and attempt > 0):
             return super().answer(body)
         with self.lock:
             self.requests += 1
@@ -137,12 +167,17 @@ class GroupingFake(FakeServer):
         blocks = re.split(r"\n(?=\[\d+\] )", part)
         groups: dict[str, list] = {}
         for b in blocks:
-            m = re.match(r"\[(\d+)\] (.*)", b)
+            m = re.match(r"\[(\d+)\] (.*)\nother names: (.*)", b)
             if m:
-                groups.setdefault(truth(m[2], b), []).append((int(m[1]), m[2]))
-        answer = {"groups": [{"entries": [k for k, _ in g], "reason": f"fake: both are {label}",
-                              "name": g[0][1]} for label, g in groups.items()]}
-        return {"choices": [{"message": {"content": json.dumps(answer)}, "finish_reason": "stop"}],
+                others = [] if m[3] == "none" else m[3].split(", ")
+                groups.setdefault(truth(m[2], b), []).append((int(m[1]), m[2], others))
+        answer = {"groups": [{"entries": [k for k, _, _ in g], "reason": f"fake: both are {label}",
+                              "name": "HMD" if label == "hmd" else rule_name(g) if attempt else g[0][1]}
+                             for label, g in groups.items()]}
+        content = json.dumps(answer)
+        if "] refresh rate\n" in prompt or "] tracker\n" in prompt:
+            content = "These entries are the same, I think."               # not JSON
+        return {"choices": [{"message": {"content": content}, "finish_reason": "stop"}],
                 "usage": {"prompt_tokens": len(prompt) // 4, "completion_tokens": 50}}
 
 
@@ -239,23 +274,59 @@ def test_units():
             "tracking resolution"), ("tracker", "tracking")]
     check(all(s3a.same_term(a, b) for a, b in same) and not any(s3a.same_term(a, b) for a, b in diff),
           "same term: case, hyphen, plural, space variants match; part words and other words do not")
-    check([s3a.is_acronym(x) for x in ("HMD", "FoV", "3D", "Head-mounted display", "lens", "Unity")]
-          == [True, True, True, False, False, False], "acronyms recognised")
+    check([s3a.is_acronym(x) for x in ("HMD", "FoV", "3D", "6DoF", "IMUs", "Head-mounted display", "lens", "Unity",
+                                       "HoloLens", "OpenGL")]
+          == [True] * 5 + [False] * 5, "acronyms recognised by the shared helper (HoloLens, OpenGL are not)")
     chain = [(0.9, 0, 1), (0.8, 1, 2), (0.5, 2, 3), (0.7, 3, 4), (0.95, 5, 6)]
     cl, cut = s3a.make_clusters(7, chain, 3)
     check(cl == [[0, 1, 2], [3, 4], [5, 6]] and cut == [2], "the cap splits a chain at its weakest link")
     cl, cut = s3a.make_clusters(7, chain, 10)
     check(cl == [[0, 1, 2, 3, 4], [5, 6]] and cut == [], "below the cap, clusters are the connected candidates")
-    ents = [{"names": ["head-mounted display", "HMD"]}, {"names": ["HMD"]}, {"names": ["lens"]}]
-    ok = {"groups": [{"entries": [1, 2], "reason": "r", "name": "HMD"}, {"entries": [3], "reason": "r", "name": "lens"}]}
-    bad = [{"groups": [{"entries": [1, 2], "reason": "r", "name": "HMD"}]},
-           {"groups": [{"entries": [1, 2], "reason": "r", "name": "HMD"}, {"entries": [2, 3], "reason": "r",
-                                                                            "name": "lens"}]},
-           {"groups": [{"entries": [1, 2, 3, 4], "reason": "r", "name": "HMD"}]},
-           {"groups": [{"entries": [1, 2], "reason": "r", "name": "lens"}, {"entries": [3], "reason": "r",
-                                                                             "name": "lens"}]}]
+    ent = lambda *names: {"name": names[0], "names": list(names)}  # noqa: E731
+    ents = [ent("head-mounted display", "HMD", "headset"), ent("HMD"), ent("lens"), ent("AR", "aspect ratio"),
+            ent("AR"), ent("XR")]
+    g = lambda nums, name: {"entries": nums, "reason": "r", "name": name}  # noqa: E731
+    ok = {"groups": [g([1, 2], "head-mounted display"), g([3], "lens"), g([4], "aspect ratio"), g([5, 6], "AR")]}
+    bad = [{"groups": [g([1, 2], "head-mounted display")]},                          # entries 3..6 in no group
+           {"groups": [g([1, 2], "head-mounted display"), g([2, 3], "lens"), g([4], "aspect ratio"), g([5, 6], "AR")]},
+           {"groups": [g([1, 2, 3, 4, 5, 6, 7], "head-mounted display")]},
+           {"groups": [g([1, 2], "lens"), g([3], "lens"), g([4], "aspect ratio"), g([5, 6], "AR")]},
+           {"groups": [g([1, 2], "HMD"), g([3], "lens"), g([4], "aspect ratio"), g([5, 6], "AR")]},
+           {"groups": [g([1, 2], "headset"), g([3], "lens"), g([4], "aspect ratio"), g([5, 6], "AR")]},
+           {"groups": [g([1, 2], "head-mounted display"), g([3], "lens"), g([4], "AR"), g([5, 6], "AR")]}]
     check(s3b.problems(ok, ents) == [] and all(s3b.problems(b, ents) for b in bad),
-          "the answer check: a missing, repeated or out-of-range entry, or another entry's name, is a problem")
+          "the answer check: a missing, repeated or out-of-range entry, another entry's name, an acronym name while "
+          "a full name exists, an alias while an own name exists, are problems")
+    acr = s3b.problems(bad[4], ents)
+    check(len(acr) == 1 and "acronym" in acr[0] and '"head-mounted display"' in acr[0],
+          "the acronym problem says so and names the allowed full name")
+    check(s3b.allowed_names(ents[:2]) == ["head-mounted display"] and s3b.allowed_names(ents[3:5]) == ["aspect ratio"]
+          and s3b.allowed_names(ents[4:6]) == ["AR", "XR"]
+          and s3b.name_enum(ents) == ["head-mounted display", "HMD", "lens", "aspect ratio", "AR", "XR"],
+          "name rule: own non-acronym names; else the non-acronym other names; else the own names; the enum is "
+          "their union over the cluster")
+    rep = s3b.repair({"groups": [g([1, 2], "HMD"), g([3, 4], "lens"), g([4, 9], "AR")]}, ents)
+    check(rep == [g([1, 2], "head-mounted display"), g([3], "lens"),
+                  {"entries": [4], "name": "aspect ratio", "reason": "kept apart: in several groups of the answer "
+                                                                     "(unresolved answer)"},
+                  {"entries": [5], "name": "AR", "reason": "kept apart: in no group of the answer (unresolved answer)"},
+                  {"entries": [6], "name": "XR", "reason": "kept apart: in no group of the answer (unresolved answer)"}],
+          "repair of an unresolved answer: its merge kept and renamed by the rule, an entry in two groups and the "
+          "entries in none kept apart, a number out of range dropped")
+    facts = {"9/S0/F0": "def zero", "9/S0/F1": "use one", "9/S0/F2": "use two", "9/S0/F3": "def three"}
+    with_def = {"name": "x", "names": ["x"], "facts": list(facts), "defining_facts": ["9/S0/F0", "9/S0/F3"]}
+    no_def = {"name": "y", "names": ["y"], "facts": ["9/S0/F1", "9/S0/F2"], "defining_facts": []}
+    texts = {o: (s3a.entry_text(with_def, facts, 3, o), s3a.entry_text(no_def, facts, 3, o)) for o in s3a.EMBED_OPTIONS}
+    check(texts == {"defining": ("x. def zero def three", "y"),
+                    "any-if-none": ("x. def zero def three", "y. use one use two"),
+                    "any": ("x. def zero def three use one", "y. use one use two")}
+          and s3a.EMBED_OPTION == "any-if-none",
+          "--embed-facts: defining only; other facts only when there is no defining fact (the default); filled up "
+          "to the number, defining first")
+    check(s3a.instruction("defining") == s3a.INSTRUCTION and "names and defining facts" in s3a.INSTRUCTION
+          and all(s3a.instruction(o) == s3a.INSTRUCTION_FACTS for o in ("any-if-none", "any"))
+          and "names and facts" in s3a.INSTRUCTION_FACTS, "the instruction says \"names and facts\" when other facts "
+                                                           "are used")
     facts = {f"9/S0/F{i}": f"fact {i}" for i in range(12)}
     entry = {"name": "x", "names": ["x"], "lectures": ["9"], "facts": list(facts),
              "defining_facts": ["9/S0/F10", "9/S0/F11"]}
@@ -292,6 +363,24 @@ def test_3a(work: Path, od: Path) -> dict:
           and sorted(entry_of) == sorted(m for sid, s in DATA.items() for m in
                                          (f"{sid}/C{j}" for j in range(len(s["concepts"])))),
           "every segment concept in exactly one entry")
+    check(data["settings"]["embed_facts"] == "any-if-none" and data["settings"]["embed_fact_count"] == s3a.EMBED_FACTS,
+          "the default option any-if-none and the fact count recorded in the settings")
+    twin = tuple(sorted((entry_of["16/S1/C1"], entry_of["16/S1/C3"])))
+    check(any((c["a"], c["b"]) == twin for c in data["candidates"]),
+          "any-if-none: the twin pair (tracking resolution, tracker: one fact) is a candidate")
+    rc = stage(work, "s3a_candidates.py", ["--embed-model", "fake", "--threshold", str(THRESHOLD), "--embed-facts",
+                                           "defining", "--out", str(work / "defining")], "3a_defining.log")
+    d2 = json.loads((work / "defining" / "clusters.json").read_text())
+    check(rc == 0 and d2["settings"]["embed_facts"] == "defining" and d2["entries"][twin[1]]["text"] == "tracker"
+          and not any((c["a"], c["b"]) == twin for c in d2["candidates"]),
+          "--embed-facts defining: an entry without defining facts is its names only; the twin pair is no candidate")
+    rc = stage(work, "s3a_candidates.py", ["--embed-model", "fake", "--threshold", str(THRESHOLD), "--embed-facts",
+                                           "any", "--out", str(work / "any")], "3a_any.log")
+    d3 = json.loads((work / "any" / "clusters.json").read_text())
+    hmd = entry_of["1/S0/C0"]
+    check(rc == 0 and d3["settings"]["embed_facts"] == "any" and "two screens" in d3["entries"][hmd]["text"]
+          and "two screens" not in E[hmd]["text"],
+          "--embed-facts any: an entry with defining facts is filled up with its other facts (not so by default)")
     rc = stage(work, "s3a_candidates.py", ["--embed-model", "fake", "--threshold", str(THRESHOLD), "--cap", "2",
                                            "--out", str(work / "capped")], "3a_cap.log")
     capped = json.loads((work / "capped" / "clusters.json").read_text())
@@ -317,6 +406,9 @@ def test_3b(work: Path, od: Path, data: dict, log: Path, port: int):
     n_clusters = len(data["clusters"])
     check(len({r["messages"][0]["content"] for r in sent}) == n_clusters,
           f"one prompt per cluster ({len({r['messages'][0]['content'] for r in sent})} for {n_clusters})")
+    p0 = sent[0]["messages"][0]["content"]
+    check("judge it by the facts shown" in p0 and "Never an acronym or abbreviation" in p0 and '"mixed"' not in p0,
+          "the prompt has the new THE ENTRIES paragraph and name bullet, and no \"mixed\" field")
     by_prompt = {}
     for r in sent:
         by_prompt.setdefault(r["messages"][0]["content"], r)
@@ -331,16 +423,44 @@ def test_3b(work: Path, od: Path, data: dict, log: Path, port: int):
         p = r["messages"][0]["content"]
         ok_prompt &= all(f"[{i}] {e['name']}\n" in p for i, e in enumerate(es, 1)) and "{entries}" not in p \
             and "{course}" not in p
+        want = [n for e in es for n in ([e["name"]] if not ACRONYM.fullmatch(e["name"])
+                                        else [o for o in e["names"][1:] if not ACRONYM.fullmatch(o)] or [e["name"]])]
         ok_enum &= r["schema"]["properties"]["groups"]["items"]["properties"]["name"]["enum"] \
-            == list(dict.fromkeys(n for e in es for n in e["names"]))
+            == list(dict.fromkeys(want))
     check(ok_prompt, "each cluster's prompt lists exactly its entries, numbered [1]..[n] in course order")
-    check(ok_enum, "the name enum is the cluster's names")
+    check(ok_enum, "the name enum is the names the D8 rule can allow (own non-acronym names; for an acronym entry "
+                   "its non-acronym other names, else its own name)")
     new = json.loads((od / "clusters.json").read_text())
-    bad = [kid for kid, k in new["clusters"].items() if any("refresh rate" == E[e]["name"] for e in k["entries"])]
-    check(bad and n_refresh == 2 and all(not new["clusters"][b]["ok"] and new["clusters"][b]["errors"]
-                                         and all(len(g["entries"]) == 1 for g in new["clusters"][b]["groups"])
-                                         for b in bad),
-          f"an invalid answer is retried ({n_refresh} attempts) and its cluster kept apart")
+    K = new["clusters"]
+    kid_of = lambda name: next(kid for kid, k in K.items() if any(E[e]["name"] == name for e in k["entries"]))  # noqa
+    k_hmd, k_ar, k_rr, k_tr = (kid_of(x) for x in ("Head-mounted display", "AR", "refresh rate", "tracker"))
+    hmd_group = next(g for g in K[k_hmd]["groups"] if len(g["entries"]) == 3)
+    check(not K[k_hmd]["ok"] and K[k_hmd]["unresolved"] and "acronym" in K[k_hmd]["unresolved"][0]
+          and hmd_group["name"] == "Head-mounted display" and K[k_hmd]["attempts"] == 2,
+          "an answer still naming a group 'HMD' after the retry is kept (unresolved), its merge kept, renamed in code")
+    ar = [r for r in sent if "\n[2] AR\n" in r["messages"][0]["content"]]
+    feedback = ar[1]["messages"][-1]["content"] if len(ar) == 2 else ""
+    check(len(ar) == 2 and ar[1]["messages"][1]["role"] == "assistant" and '"aspect ratio"' in feedback
+          and "acronym" in feedback and K[k_ar]["ok"]
+          and [g["name"] for g in K[k_ar]["groups"]] == ["AR", "aspect ratio"]
+          and K[k_ar]["retry"]["lost"] == [f"{K[k_ar]['entries'][1]}: AR"]
+          and K[k_ar]["retry"]["added"] == [f"{K[k_ar]['entries'][1]}: aspect ratio"],
+          "the AR cluster: retried with the problem shown; aspect ratio named by its alias, the other AR by its "
+          "own name (no full term); the retry log has the lost and the added name")
+    check(n_refresh == 2 and not K[k_rr]["ok"] and K[k_rr]["unresolved"] and not K[k_rr]["no_answer"]
+          and all(len(g["entries"]) == 1 for g in K[k_rr]["groups"]) and K[k_rr]["retry"]["lost"] == []
+          and len(K[k_rr]["retry"]["added"]) >= 2,
+          f"no JSON, then entries in several groups: the parsed attempt kept (unresolved), repaired apart; the retry "
+          f"log adds its groups ({n_refresh} attempts)")
+    check(K[k_tr]["no_answer"] and not K[k_tr]["unresolved"] and all(len(g["entries"]) == 1 for g in K[k_tr]["groups"])
+          and K[k_tr]["retry"] == {"lost": [], "added": []},
+          "never JSON: no answer, the cluster kept apart")
+    sc = new["same_checks"]
+    check(sc["clusters"] == len(K) and sc["valid"] == len(K) - 3 and sorted(sc["unresolved"]) == sorted([k_hmd, k_rr])
+          and sc["no_answer"] == [k_tr] and sc["retried"] == 4 and sc["changed_by_retry"] == 2
+          and sc["lost"] == 1 and sc["added"] == 1 + len(K[k_rr]["retry"]["added"])
+          and f"{k_ar}: AR" in sc["acronym_names"],
+          f"same_checks counts: valid, unresolved, no answer, retried, changed by the retry, lost and added ({sc})")
     check(all(sorted(e for g in k["groups"] for e in g["entries"]) == sorted(k["entries"])
               for k in new["clusters"].values()), "every entry of every cluster in exactly one group")
 
@@ -389,8 +509,14 @@ def test_3c(work: Path, od: Path):
           and {d["segment_concept"] for d in logged} == {m["segment_concept"] for c in C.values()
                                                          for m in c["merged"] if m["how"] != "first"},
           f"every merge has a decisions line with a reason ({len(logged)})")
-    check(any(d["kind"] == "no_answer" for d in D) and any(d["kind"] == "separate" for d in D),
-          "clusters kept apart (no answer) and groups of one (model) are logged")
+    check(any(d["kind"] == "no_answer" for d in D) and any(d["kind"] == "separate" for d in D)
+          and len([d for d in D if d["kind"] == "unresolved"]) == 2
+          and all(d.get("unresolved") for d in D if d["kind"] == "model" and d["segment_concept"] in ("4/S0/C0", "4/S1/C1")),
+          "clusters kept apart (no answer), groups of one (model), and the unresolved clusters (with the merges "
+          "they kept) are logged")
+    check(C[S["16/S1/C0"]]["name"] == "aspect ratio" and C[S["16/S1/C0"]]["aliases"] == ["AR"]
+          and C[S["1/S1/C0"]]["name"] == "AR" and S["16/S1/C1"] != S["16/S1/C3"],
+          "aspect ratio named by its alias, AR kept as its alias; the twin (tracker) kept apart without an answer")
     check(all(r["subject"] in C and r["object"] in C and r["subject"] != r["object"] for r in R.values()),
           "every relationship joins two different existing concepts")
     from_ids = [x for r in R.values() for x in r["from"]]
@@ -412,6 +538,33 @@ def test_3c(work: Path, od: Path):
     firsts = [s3a.sc_order(r["from"][0]) for r in R.values()]
     check(ok and list(R) == [f"R{i:04d}" for i in range(1, len(R) + 1)] and firsts == sorted(firsts),
           "relationship ends renamed through the map, facts and segments joined, IDs in order of first appearance")
+
+
+def test_compare(work: Path):
+    print("embed_compare (fake embedder)", flush=True)
+    pairs = {"pairs": [{"a": "1/S0/C2", "b": "16/S0/C2", "same": True, "kind": "synonym"},
+                       {"a": "1/S0/C0", "b": "4/S0/C0", "same": True, "kind": "acronym"},
+                       {"a": "1/S1/C0", "b": "16/S1/C0", "same": False, "kind": "same name other meaning"},
+                       {"a": "16/S1/C1", "b": "16/S1/C3", "same": False, "kind": "related"}]}
+    (work / "pairs.json").write_text(json.dumps(pairs))
+    script = ROOT.parent / "analysis" / "registry" / "embed_compare.py"
+    with (work / "compare.log").open("w") as f:
+        rc = subprocess.run([sys.executable, str(script), COURSE, "--pairs", str(work / "pairs.json"), "--models",
+                             "fake", "--json", str(work / "compare.json"), "--report", str(work / "compare.md"),
+                             "--cache", str(work / "compare_cache.jsonl"), "--pipeline", str(work), "--recall", "0.5"],
+                            cwd=work, stdout=f, stderr=subprocess.STDOUT).returncode
+    res = json.loads((work / "compare.json").read_text())["results"] if rc == 0 else []
+    by = {r["option"]: r for r in res}
+    grid = {o: {g["threshold"]: g for g in r["grid"]} for o, r in by.items()}
+    check(rc == 0 and sorted(by) == sorted(s3a.EMBED_OPTIONS) and len(res) == 3
+          and all(r["twin_pairs"] == 3 for r in res)
+          and all({"largest_cluster", "different_candidates", "same_cut_pairs", "twin_candidate_pairs"}
+                  <= set(r["at_target"] or {}) for r in res),
+          "all three options reported, each with the twin pairs, the different pairs as candidates, the largest "
+          "cluster and the same pairs cut")
+    check(rc == 0 and grid["defining"][0.6]["twin_candidates"] == 0 and grid["any-if-none"][0.6]["twin_candidates"] == 2,
+          "at 0.6 two of the three twin pairs (tracker; 16/S0 head-mounted display, lenses) are candidates under "
+          "any-if-none, none under defining")
 
 
 def test_rerun(work: Path, od: Path, log: Path):
@@ -444,6 +597,7 @@ def main():
     data = test_3a(work, od)
     test_3b(work, od, data, log, port)
     test_3c(work, od)
+    test_compare(work)
     test_rerun(work, od, log)
     print("output", flush=True)
     check(snapshot(ROOT / "output") == before, "nothing under the real output/ created or changed")

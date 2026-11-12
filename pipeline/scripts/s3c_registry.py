@@ -15,8 +15,9 @@ Writes  output/<course>/stage_3_registry/ (or --out)
 
 No model, no randomness: the same clusters.json and 2c outputs always give the same files.
 
-Concepts. Each group of the model (s3b) is one concept; an entry outside every cluster, or in a cluster without a
-valid answer, is one concept by itself. Concepts are numbered C0001... in course order: by their first segment
+Concepts. Each group of the model (s3b) is one concept; an entry outside every cluster, or in a cluster without an
+answer, is one concept by itself. A cluster whose answer is unresolved (every attempt failed its check) has the groups
+of its best answer as s3b repaired them. Concepts are numbered C0001... in course order: by their first segment
 concept (lecture order, then segment, then concept index). A concept's
   name      the group's name (the model's choice) or the entry's name (the wording most of its segment concepts use)
   aliases   every other name and alias of its segment concepts, in course order (a repeat that differs only in
@@ -32,8 +33,10 @@ dropped (neither should happen silently: both are logged). Relationships with th
 spacing ignored; the first wording is kept) and object are one relationship, numbered R0001... in order of first
 appearance, with the facts, segments and segment relationship IDs of all of them.
 decisions.jsonl kinds: exact, model (a segment concept joined, with "into": the concept's first segment concept),
-separate (a group of one in a cluster: the model's reason), no_answer (a cluster kept apart), self_loop, missing_end
-(a segment relationship dropped), joined (a segment relationship joined into an earlier one).
+separate (a group of one in a cluster: the model's reason), no_answer (an entry of a cluster without an answer, kept
+apart), unresolved (one line per cluster whose answer was kept with problems: the problems; its model and separate
+lines carry "unresolved": true), self_loop, missing_end (a segment relationship dropped), joined (a segment
+relationship joined into an earlier one).
 Every segment relationship is either in exactly one relationship's "from" or in one self_loop/missing_end line.
 """
 from __future__ import annotations
@@ -76,11 +79,13 @@ def groups_of(data: dict) -> list[dict]:
             sys.exit(f"cluster {kid} has no groups: run s3b first")
         for g in k["groups"]:
             out.append({"entries": g["entries"], "name": g["name"], "reason": g["reason"], "cluster": kid,
-                        "ok": k["ok"], "errors": k.get("errors", [])})
+                        "no_answer": k.get("no_answer", False), "unresolved": bool(k.get("unresolved")),
+                        "errors": k.get("errors", [])})
             covered |= set(g["entries"])
     for eid, e in data["entries"].items():
         if eid not in covered:
-            out.append({"entries": [eid], "name": e["name"], "reason": "", "cluster": None, "ok": True, "errors": []})
+            out.append({"entries": [eid], "name": e["name"], "reason": "", "cluster": None, "no_answer": False,
+                        "unresolved": False, "errors": []})
     return out
 
 
@@ -93,6 +98,10 @@ def build_concepts(data: dict, concepts2c: dict) -> tuple[dict, dict, list[dict]
     groups.sort(key=lambda g: order(g["members"][0]))
     entry_of = {m: eid for eid, e in E.items() for m in e["members"]}
     concepts, sc_map, decisions = {}, {}, []
+    for kid, k in data["clusters"].items():
+        if k.get("unresolved"):
+            decisions.append({"kind": "unresolved", "cluster": kid, "entries": k["entries"],
+                              "reason": "; ".join(k["unresolved"])})
     for i, g in enumerate(groups, 1):
         cid = f"C{i:04d}"
         first = g["members"][0]
@@ -110,13 +119,14 @@ def build_concepts(data: dict, concepts2c: dict) -> tuple[dict, dict, list[dict]
                 how, reason = "model", g["reason"]
                 decisions.append({"kind": "model", "concept": cid, "segment_concept": m, "name": c["name"],
                                   "into": first, "cluster": g["cluster"], "entries": g["entries"],
-                                  "reason": reason})
+                                  "reason": reason, **({"unresolved": True} if g["unresolved"] else {})})
             merged.append({"segment_concept": m, "name": c["name"], "how": how, "reason": reason})
             sc_map[m] = cid
         if g["cluster"] and len(g["entries"]) == 1:
-            decisions.append({"kind": "separate" if g["ok"] else "no_answer", "concept": cid,
+            decisions.append({"kind": "no_answer" if g["no_answer"] else "separate", "concept": cid,
                               "cluster": g["cluster"], "entries": g["entries"], "segment_concepts": g["members"],
-                              "reason": g["reason"] if g["ok"] else "; ".join(g["errors"])})
+                              "reason": "; ".join(g["errors"]) if g["no_answer"] else g["reason"],
+                              **({"unresolved": True} if g["unresolved"] else {})})
         aliases, seen = [], {g["name"].lower()}
         for m in g["members"]:                     # course order of the segment concepts' names
             for x in [concepts2c[m]["name"]] + concepts2c[m]["aliases"]:
@@ -190,9 +200,13 @@ def write_text(od: Path, concepts: dict, relations: dict, decisions: list[dict],
     if dropped:
         lines += ["", "Dropped segment relationships"]
         lines += [f"{d['relation']}  {d['label']}: {d['kind']}: {d['reason']}" for d in dropped]
+    unresolved = [d for d in decisions if d["kind"] == "unresolved"]
+    if unresolved:
+        lines += ["", "Clusters with an unresolved answer (the best answer kept, repaired in code)"]
+        lines += [f"{d['cluster']}  {', '.join(d['entries'])}: {d['reason']}" for d in unresolved]
     apart = [d for d in decisions if d["kind"] == "no_answer"]
     if apart:
-        lines += ["", "Clusters without a valid answer (kept apart)"]
+        lines += ["", "Clusters without an answer (kept apart)"]
         lines += [f"{d['cluster']}  {d['concept']} {name[d['concept']]}: {d['reason']}" for d in apart]
     (od / "text").mkdir(parents=True, exist_ok=True)
     (od / "text" / "registry.txt").write_text("\n".join(lines) + "\n")
@@ -209,7 +223,7 @@ def run(course: str, out: Path | None = None) -> dict:
     relations, dec_r = build_relations(rel2c, sc_map, concepts2c)
     decisions = dec_c + dec_r
     kinds = {k: sum(d["kind"] == k for d in decisions)
-             for k in ("exact", "model", "separate", "no_answer", "self_loop", "missing_end", "joined")}
+             for k in ("exact", "model", "separate", "no_answer", "unresolved", "self_loop", "missing_end", "joined")}
     pairs: dict[tuple, set] = {}
     for r in relations.values():
         pairs.setdefault(tuple(sorted((r["subject"], r["object"]))), set()).add(label_key(r["label"]))
@@ -224,7 +238,8 @@ def run(course: str, out: Path | None = None) -> dict:
     write_text(od, concepts, relations, decisions, totals)
     totals["wall_s"] = round(time.time() - t0, 1)
     print(f"3c: {totals['segment_concepts']} segment concepts -> {totals['concepts']} concepts ({kinds['exact']} exact, "
-          f"{kinds['model']} model merges; {kinds['no_answer']} entries kept apart without an answer); "
+          f"{kinds['model']} model merges; {kinds['unresolved']} clusters with an unresolved answer; "
+          f"{kinds['no_answer']} entries kept apart without an answer); "
           f"{totals['segment_relations']} segment relationships -> {totals['relations']} ({kinds['joined']} joined, "
           f"{kinds['self_loop']} self-loops, {kinds['missing_end']} missing ends dropped); "
           f"{totals['pairs_several_labels']} concept pairs with several labels")

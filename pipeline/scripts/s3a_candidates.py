@@ -1,7 +1,8 @@
 """Stage 3a: the concept registry, steps 1 and 2: exact merges by name, then candidate pairs and clusters.
 
     python scripts/s3a_candidates.py nptel_vr [--only 1,4,16] [--embed-model Qwen/Qwen3-Embedding-0.6B]
-                                              [--threshold 0.75] [--cap 12] [--device cuda] [--out DIR]
+                                              [--embed-facts defining|any-if-none|any] [--threshold 0.75]
+                                              [--cap 12] [--device cuda] [--out DIR]
 
 Reads   output/<course>/stage_2c_concepts/concept_maps/lec_<n>.json   {"4/S1/C0": {"name", "aliases", "facts", "defined"}}
         output/<course>/stage_2b_verify_facts/fact_maps/lec_<n>.json  the fact texts (for the embedding text)
@@ -15,17 +16,25 @@ Step 1, exact merge. Segment concepts whose names are the same term become one e
   the same term = the same words ignoring case, hyphens, slashes, apostrophes and other punctuation, where each word
   may differ by a plural ending (s, es, y/ies: "lens" and "lenses", "degree of freedom" and "degrees of freedom"),
   or the same letters once the spaces are removed, up to a plural ending ("head set" and "headsets").
-  A name that is an acronym ("HMD", "VR", "FoV", "3D": one word whose letters are all capitals, or with two capitals
-  or more) is never merged here, even with the same acronym: a shared acronym alone goes to step 3. Its entry
-  reaches the model through the shared-alias rule below.
+  A name that is an acronym (is_acronym of scripts/fact_checks.py, the one shared test: one token with at least two
+  capitals, or a digit and a capital, and no run of two lower-case letters: "HMD", "VR", "FoV", "3D", "6DoF"; not
+  "HoloLens", "OpenGL") is never merged here, even with the same acronym: a shared acronym alone goes to step 3. Its
+  entry reaches the model through the shared-alias rule below.
   An entry's name is the wording most of its segment concepts use (ties: the first in course order); its names are
   that name, then the other names and aliases of its segment concepts in course order (case ignored for repeats).
 Step 2, candidates and clusters.
-  Each entry is embedded (scripts/embed.py) as "<name>; also called: <other names>. <defining facts>", with up to
-  EMBED_FACTS facts of its segment concepts that have defined=true, in course order (an entry with none: names only).
-  Both sides of a pair get the same instruction (INSTRUCTION; applied only for models that take one, e.g.
-  Qwen3-Embedding). A pair of entries is a candidate when its cosine similarity is at least --threshold, or when the
-  two share a term among their names (the same-term rule above, acronyms included).
+  Each entry is embedded (scripts/embed.py) as "<name>; also called: <other names>. <facts>", with up to
+  EMBED_FACTS facts, chosen by --embed-facts (decision D9):
+    defining      the facts of its segment concepts that have defined=true, in course order (an entry with none:
+                  names only)
+    any-if-none   (default) as defining; an entry with no defining fact gets its other facts instead, in course
+                  order, up to the same number
+    any           every entry filled up to the number: its defining facts first, then its other facts
+  Both sides of a pair get the same instruction (applied only for models that take one, e.g. Qwen3-Embedding):
+  INSTRUCTION ("... with its names and defining facts ...") for defining, INSTRUCTION_FACTS ("... with its names and
+  facts ...") for the two options that use other facts. A pair of entries is a candidate when its cosine similarity
+  is at least --threshold, or when the two share a term among their names (the same-term rule above, acronyms
+  included).
   Clusters are the connected candidates, at most --cap entries each. They are built by adding the candidate pairs
   strongest first (a shared-alias pair counts 1 more than its similarity, so those come first; ties in entry order),
   joining two parts only while the joined part stays within the cap. Below the cap this is exactly the connected
@@ -34,14 +43,16 @@ Step 2, candidates and clusters.
   each becomes a concept of its own.
 
 clusters.json:
-  {"settings": {"lectures", "embed_model", "instruction", "threshold", "cap", "embed_facts", "inputs": hash of the
-                concept maps (s3b and s3c refuse stale clusters)},
+  {"settings": {"lectures", "embed_model", "instruction" (the prefix the model got; "" for a model without the
+                convention), "threshold", "cap", "embed_facts" (the option), "embed_fact_count" (EMBED_FACTS),
+                "inputs": hash of the concept maps (s3b and s3c refuse stale clusters)},
    "entries":  {"E0001": {"name", "names", "members": [segment concepts], "lectures", "segments", "facts",
                           "defining_facts": the facts of its members with defined=true, "defined_in",
                           "text": the embedding text}},
    "candidates": [{"a": "E0001", "b": "E0007", "sim": 0.81, "alias": [shared terms]}],
    "clusters": {"K0001": {"entries": [...], "pairs": n candidate pairs inside}},
    "cut": [candidate pairs split by the cap]}
+s3b adds each cluster's groups, and "same_checks" (scripts/s3b_same.py).
 """
 from __future__ import annotations
 
@@ -58,12 +69,21 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
 from scripts import lectures as lec, s2b_verify_facts as s2b, s2c_concepts as s2c  # noqa: E402
+from scripts.fact_checks import is_acronym  # noqa: E402  (the one shared acronym test; s3b takes it from here)
 
 EMBED_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 THRESHOLD = 0.70     # provisional: analysis/registry/embed_compare.py chooses it on the pair gold
 CAP = 12             # entries per cluster (one model call)
-EMBED_FACTS = 5      # defining facts in an entry's embedding text
+EMBED_FACTS = 5      # facts in an entry's embedding text
+EMBED_OPTIONS = ("defining", "any-if-none", "any")
+EMBED_OPTION = "any-if-none"   # decision D9 (2026-11-13); "defining" kept for the comparison
 INSTRUCTION = "Given a concept from a lecture course, with its names and defining facts, find the same concept"
+INSTRUCTION_FACTS = "Given a concept from a lecture course, with its names and facts, find the same concept"
+
+
+def instruction(option: str) -> str:
+    """The embedding instruction for an --embed-facts option: "names and facts" when other facts are used."""
+    return INSTRUCTION if option == "defining" else INSTRUCTION_FACTS
 
 
 def out_dir(course: str) -> Path:
@@ -149,16 +169,6 @@ def same_term(a: str, b: str) -> bool:
     return plural_pair("".join(wa), "".join(wb))
 
 
-def is_acronym(name: str) -> bool:
-    """One word (no space) whose letters are all capitals, or with two capitals or more: HMD, VR, FoV, 3D, LiDAR."""
-    s = name.strip()
-    letters = [c for c in s if c.isalpha()]
-    if not letters or re.search(r"\s", s):
-        return False
-    caps = sum(c.isupper() for c in letters)
-    return caps == len(letters) or caps >= 2
-
-
 def term_classes(terms: list[str]) -> dict[str, int]:
     """Union-find over the terms by same_term: term -> class number (the index of its class's first term). Only terms
     whose joined words start with the same two letters are compared (a plural ending never changes those)."""
@@ -200,11 +210,11 @@ def _dedupe(names: list[str]) -> list[str]:
 def exact_entries(concepts: dict) -> dict:
     """Step 1: entries E0001... in course order; each joins the segment concepts whose (non-acronym) names are the
     same term."""
-    names = [c["name"] for c in concepts.values() if not is_acronym(c["name"])]
+    names = [c["name"] for c in concepts.values() if not is_acronym(c["name"].strip())]
     cls = term_classes(names)
     groups: dict = {}
     for scid, c in concepts.items():                 # concepts are in course order, so groups are too
-        k = ("term", cls[c["name"]]) if not is_acronym(c["name"]) else ("acronym", scid)
+        k = ("term", cls[c["name"]]) if not is_acronym(c["name"].strip()) else ("acronym", scid)
         groups.setdefault(k, []).append(scid)
     entries = {}
     for i, members in enumerate(groups.values(), 1):
@@ -228,12 +238,25 @@ def exact_entries(concepts: dict) -> dict:
 
 
 # ---------------------------------------------------------------- step 2: candidates and clusters
-def entry_text(entry: dict, facts: dict, n_facts: int = EMBED_FACTS) -> str:
+def embed_facts(entry: dict, facts: dict, option: str = EMBED_OPTION, n_facts: int = EMBED_FACTS) -> list[str]:
+    """The fact IDs of an entry's embedding text under an --embed-facts option (module docstring), in order."""
+    if option not in EMBED_OPTIONS:
+        raise ValueError(f"unknown --embed-facts option {option!r} (one of {', '.join(EMBED_OPTIONS)})")
+    defining = [f for f in entry["defining_facts"] if f in facts]
+    others = [f for f in entry["facts"] if f in facts and f not in set(defining)]
+    if option == "defining" or (option == "any-if-none" and defining):
+        return defining[:n_facts]
+    if option == "any-if-none":
+        return others[:n_facts]
+    return (defining + others)[:n_facts]
+
+
+def entry_text(entry: dict, facts: dict, n_facts: int = EMBED_FACTS, option: str = EMBED_OPTION) -> str:
     text = entry["name"]
     if len(entry["names"]) > 1:
         text += "; also called: " + ", ".join(entry["names"][1:])
-    defining = [facts[f] for f in entry["defining_facts"] if f in facts][:n_facts]
-    return text + (". " + " ".join(defining) if defining else "")
+    shown = [facts[f] for f in embed_facts(entry, facts, option, n_facts)]
+    return text + (". " + " ".join(shown) if shown else "")
 
 
 def shared_terms(entries: dict) -> dict[tuple[str, str], list[str]]:
@@ -311,8 +334,8 @@ def write_text(od: Path, data: dict):
     E, lines = data["entries"], []
     s = data["settings"]
     lines.append(f"{len(E)} entries, {len(data['candidates'])} candidate pairs, {len(data['clusters'])} clusters, "
-                 f"{len(data['cut'])} pairs cut by the cap ({s['embed_model']}, threshold {s['threshold']}, "
-                 f"cap {s['cap']})\n")
+                 f"{len(data['cut'])} pairs cut by the cap ({s['embed_model']}, embed facts {s['embed_facts']}, "
+                 f"threshold {s['threshold']}, cap {s['cap']})\n")
     sims = {(p["a"], p["b"]): p for p in data["candidates"]}
     for kid, k in data["clusters"].items():
         lines.append(f"{kid}  {len(k['entries'])} entries, {k['pairs']} candidate pairs")
@@ -324,10 +347,18 @@ def write_text(od: Path, data: dict):
         lines.append("  pairs: " + "; ".join(f"{a}-{b} {sims[(a, b)]['sim']:.3f}"
                                              + (" alias" if sims[(a, b)]["alias"] else "") for a, b in pairs))
         if "groups" in k:
-            lines.append("  model:" + ("" if k.get("ok") else f" NO VALID ANSWER ({'; '.join(k.get('errors', []))}),"
-                                                                 f" kept apart"))
+            if k.get("ok"):
+                lines.append("  model:")
+            elif k.get("unresolved"):
+                lines.append(f"  model: UNRESOLVED ({'; '.join(k['unresolved'])}): its best answer kept, repaired")
+            else:
+                lines.append(f"  model: NO ANSWER ({'; '.join(k.get('errors', []))}), kept apart")
             for g in k["groups"]:
                 lines.append(f"    {' + '.join(g['entries'])} -> {g['name']}: {g['reason']}")
+            if k.get("retry"):
+                r = k["retry"]
+                lines.append(f"  retried ({k['attempts']} attempts): lost {'; '.join(r['lost']) or 'nothing'}; "
+                             f"added {'; '.join(r['added']) or 'nothing'}")
         lines.append("")
     if data["cut"]:
         lines.append("Cut by the cap:")
@@ -352,7 +383,7 @@ def load(od: Path, course: str) -> dict:
 
 # ---------------------------------------------------------------- run
 def run(course: str, lectures: list | None = None, embed_model: str = EMBED_MODEL, threshold: float = THRESHOLD,
-        cap: int = CAP, device: str | None = None, out: Path | None = None) -> dict:
+        cap: int = CAP, device: str | None = None, out: Path | None = None, embed_option: str = EMBED_OPTION) -> dict:
     """Steps 1 and 2 over the lectures (all with concept maps by default)."""
     from scripts.embed import Embedder
     t0 = time.time()
@@ -363,9 +394,9 @@ def run(course: str, lectures: list | None = None, embed_model: str = EMBED_MODE
     entries = exact_entries(concepts)
     ids = list(entries)
     for e in entries.values():
-        e["text"] = entry_text(e, facts)
+        e["text"] = entry_text(e, facts, option=embed_option)
     emb = Embedder(embed_model, cache=od / "embed" / "cache.jsonl", device=device)
-    vecs = emb.embed([entries[i]["text"] for i in ids], instruction=INSTRUCTION)
+    vecs = emb.embed([entries[i]["text"] for i in ids], instruction=instruction(embed_option))
     sims = similarities(vecs, threshold)
     alias = shared_terms(entries)
     pos = {eid: i for i, eid in enumerate(ids)}
@@ -383,8 +414,9 @@ def run(course: str, lectures: list | None = None, embed_model: str = EMBED_MODE
         es = [ids[i] for i in members]
         inside = sum(1 for c in cands if c["a"] in es and c["b"] in es)
         kmap[f"K{k:04d}"] = {"entries": es, "pairs": inside}
-    data = {"settings": {"lectures": keys, "embed_model": embed_model, "instruction": emb.prefix(INSTRUCTION),
-                         "threshold": threshold, "cap": cap, "embed_facts": EMBED_FACTS,
+    data = {"settings": {"lectures": keys, "embed_model": embed_model,
+                         "instruction": emb.prefix(instruction(embed_option)), "threshold": threshold, "cap": cap,
+                         "embed_facts": embed_option, "embed_fact_count": EMBED_FACTS,
                          "inputs": inputs_hash(course, keys)},
             "entries": entries, "candidates": cands, "clusters": kmap, "cut": [cands[k] for k in cut]}
     save(od, data)
@@ -396,7 +428,7 @@ def run(course: str, lectures: list | None = None, embed_model: str = EMBED_MODE
     print(f"3a: {totals['segment_concepts']} segment concepts -> {totals['entries']} entries "
           f"({n_exact} exact merges); {totals['candidates']} candidate pairs ({totals['alias_pairs']} share a name); "
           f"{totals['clusters']} clusters holding {totals['in_clusters']} entries; {totals['cut']} pairs cut by the "
-          f"cap; {emb.computed} texts embedded ({embed_model}), {totals['wall_s']} s")
+          f"cap; {emb.computed} texts embedded ({embed_model}, embed facts {embed_option}), {totals['wall_s']} s")
     return totals
 
 
@@ -406,13 +438,15 @@ def main():
     ap.add_argument("--only", help="lectures, e.g. 1,4,16 (default: all with concept maps)")
     ap.add_argument("--embed-model", default=EMBED_MODEL, help=f"embedding model (default {EMBED_MODEL}; 'fake' "
                                                                f"for tests)")
+    ap.add_argument("--embed-facts", default=EMBED_OPTION, choices=EMBED_OPTIONS,
+                    help=f"the facts in an entry's embedding text (default {EMBED_OPTION}; see above)")
     ap.add_argument("--threshold", type=float, default=THRESHOLD, help=f"similarity for a candidate (default {THRESHOLD})")
     ap.add_argument("--cap", type=int, default=CAP, help=f"entries per cluster (default {CAP})")
     ap.add_argument("--device", help="embedding device, e.g. cuda or cpu (default: CUDA when there is one)")
     ap.add_argument("--out", help="output folder (default: output/<course>/stage_3_registry)")
     a = ap.parse_args()
     run(a.course, lec.parse_only(a.only) if a.only else None, a.embed_model, a.threshold, a.cap, a.device,
-        Path(a.out) if a.out else None)
+        Path(a.out) if a.out else None, a.embed_facts)
 
 
 if __name__ == "__main__":
