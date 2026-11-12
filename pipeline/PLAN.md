@@ -133,7 +133,8 @@ list in, triples out (subject, label, object, facts). Facts are numbered `[1]..[
 
 - [ ] **O** Choose the embedding model on a labelled pair set: start with `Qwen/Qwen3-Embedding-0.6B` (must also run on
   the local PC for the site), against a larger one and the old pipeline's `all-mpnet-base-v2`. Check the IDs and for a
-  newer model before fixing it; add the download to `setup_ec2.sh`.
+  newer model before fixing it; add the download to `setup_ec2.sh`. (Script ready: `analysis/registry/embed_compare.py`;
+  IDs checked; waits for the pair gold and real 2c output. Not ticked.)
 - [x] **O** `scripts/s3a_candidates.py` (steps 1, 2), `s3b_same.py` (step 3), `s3c_registry.py` (step 4), writing
   `stage_3_registry/`: `concepts.json`, `relations.json`, `clusters.json`, `decisions.jsonl`, a text view.
 - [ ] **F** Pair gold: about 80 pairs from the test lectures labelled same or different, including the hard kinds (a
