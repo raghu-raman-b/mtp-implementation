@@ -20,6 +20,10 @@ What it looks for (each line is what a broken stage would show):
       numbers mapped through anything but the shown list); the cap not putting defining facts first, the shown
       facts not in lecture order, or * on the wrong facts; defined_mismatch not raised where defined_in is empty
       (seeded both ways); misplaced facts not reported
+  4b  a lecture without its call, or the course call missing or not built from the lecture goals; a segment not
+      listed, or listed without its registry concepts; objective or goal IDs wrong (<n>/O1.., <n>/G, G1..); an
+      objective naming another lecture's segment; the segment checks (seeded: out of range, twice, a gap, left
+      out, out of order) or the course checks (a lecture in no goal, out of order) not firing
   rerun  any output file different when rerun from the caches, or the model called again
   output  any file under the real output/ created or changed
 """
@@ -39,7 +43,7 @@ ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
 sys.path.insert(0, str(ROOT))
 
 from scripts import lectures as lec  # noqa: E402
-from scripts import s4a_definitions as s4a  # noqa: E402
+from scripts import s4a_definitions as s4a, s4b_goals as s4b  # noqa: E402
 from scripts.llm import LLMConfig  # noqa: E402
 from scripts.llm.fake_server import FakeServer  # noqa: E402
 
@@ -297,6 +301,71 @@ def test_4a(work: Path, cfg: Path, syn: dict, log: Path) -> int:
     return len(sent)
 
 
+# ---------------------------------------------------------------- 4b
+SEG_LINE = re.compile(r"\[(\d+)\] Sub-goal: (.*)\n    Defines: (.*)\n    Uses: (.*)")
+
+
+def test_4b(work: Path, cfg: Path, log: Path):
+    print("4b goals", flush=True)
+    segs = [{"id": f"9/S{i}", "subgoal": f"sub {i}"} for i in range(4)]
+    _, fl = s4b.check_lecture({"objectives": [{"segments": [1, 3], "goal": "g", "achieves": "a"},
+                                              {"segments": [3, 9], "goal": "g", "achieves": "a"}],
+                               "goal": "g", "achieves": "a"}, segs, "9")
+    check(fl.get("out_of_range") and fl.get("segment_twice") == ["9/S2"] and fl.get("not_consecutive") == ["9/O1"]
+          and [x["segment"] for x in fl.get("in_no_objective", [])] == ["9/S1", "9/S3"] and "out_of_order" not in fl,
+          "seeded: segment out of range, in two objectives, a gap, left out")
+    _, fl = s4b.check_lecture({"objectives": [{"segments": [3, 4], "goal": "g", "achieves": "a"},
+                                              {"segments": [1, 2], "goal": "g", "achieves": "a"}],
+                               "goal": "g", "achieves": "a"}, segs, "9")
+    check(fl == {"out_of_order": True}, "seeded: objectives out of lecture order, nothing else")
+    _, fl = s4b.check_course({"reasoning": "r", "goals": [{"lectures": ["4", "1"], "goal": "g", "achieves": "a"}]},
+                             ["1", "4", "16"])
+    check(fl == {"not_in_course_order": ["G1"], "lecture_in_no_goal": ["16"]},
+          "seeded: a goal's lectures out of order; a lecture in no course goal")
+
+    n0 = len(lines(log))
+    check(stage(work, "s4b_goals.py", ["--llm", "configs/fake_qwen.json"], work / "4b.log", "stage_4b_goals") == 0,
+          "4b exits cleanly")
+    sent = lines(log)[n0:]
+    od = work / "output" / COURSE / "stage_4b_goals"
+    segmaps = {k: json.loads((work / "output" / COURSE / "stage_1b_verify_segments/segment_maps"
+                              / f"{lec.stem_of(k)}.json").read_text()) for k in KEYS}
+    lecture_reqs = [r for r in sent if "THE SEGMENTS" in r["messages"][0]["content"]]
+    course_reqs = [r for r in sent if "THE LECTURES" in r["messages"][0]["content"]]
+    check(len(lecture_reqs) == len(KEYS) and len(course_reqs) == 1,
+          f"one call per lecture and one for the course ({len(lecture_reqs)} + {len(course_reqs)} for {len(KEYS)})")
+    ok_segs = True
+    for r in lecture_reqs:
+        p = r["messages"][0]["content"]
+        got = SEG_LINE.findall(p)
+        k = next(k for k in KEYS if [g[1] for g in got] == [s["subgoal"] for s in segmaps[k].values()])
+        ok_segs &= [int(g[0]) for g in got] == list(range(1, len(segmaps[k]) + 1))
+        if k == "2":
+            ok_segs &= got[0][2:] == ("head-mounted display", "virtual reality, extended reality")
+    check(ok_segs, "every segment of each lecture listed, numbered from 1, with registry names (defines / uses)")
+    ok_ids = ok_seg_ids = True
+    goals = {}
+    for k in KEYS:
+        g = json.loads((od / "lecture_goals" / f"{lec.stem_of(k)}.json").read_text())
+        goals[k] = g
+        objs = [i for i in g if i != f"{k}/G"]
+        ok_ids &= f"{k}/G" in g and objs == [f"{k}/O{j}" for j in range(1, len(objs) + 1)] \
+            and g[f"{k}/G"]["objectives"] == objs
+        ok_seg_ids &= all(s in segmaps[k] for o in objs for s in g[o]["segments"])
+    check(ok_ids, "lecture goal <n>/G and objectives <n>/O1.. in order, for every lecture")
+    check(ok_seg_ids, "every objective names segments of its own lecture")
+    cg = json.loads((od / "course_goals.json").read_text())
+    ids = list(cg["goals"])
+    check(ids and ids == [f"G{j}" for j in range(1, len(ids) + 1)]
+          and all(set(g["lectures"]) <= set(KEYS) for g in cg["goals"].values()), "course goals G1.. with real lectures")
+    cp = course_reqs[0]["messages"][0]["content"]
+    check(all(goals[k][f"{k}/G"]["goal"] in cp for k in KEYS), "the course call is built from every lecture's goal")
+    chk = json.loads((od / "checks.json").read_text())
+    check(set(chk["lectures"]) == set(KEYS) and all("segment_twice" in chk["lectures"][k] for k in KEYS),
+          "a check report for each lecture (the fake puts segments 1, 2 in both objectives)")
+    check(chk["course"].get("lecture_in_no_goal") == KEYS[2:], "lectures in no course goal reported (the fake uses two)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--work", help="folder for the copy (default: a new temporary folder)")
@@ -313,6 +382,7 @@ def main():
     server = FakeServer(c["port"], c["model"], str(log)).start()
     try:
         test_4a(work, cfg, syn, log)
+        test_4b(work, cfg, log)
         test_rerun(work, log)
     finally:
         server.stop()
