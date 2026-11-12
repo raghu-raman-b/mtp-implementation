@@ -153,7 +153,7 @@ list in, triples out (subject, label, object, facts). Facts are numbered `[1]..[
   with `misplaced` facts is reported, not split.
 - [x] **O** `scripts/s4b_goals.py`: one call per lecture (`lecture_goals.txt`: objectives and the lecture goal from the
   segment sub-goals and each segment's concepts), then one call for the course (`course_goals.txt`).
-- [ ] **O** `scripts/s4c_lecture_graph.py` (code): lecture K is needed for lecture L when L uses a concept that K
+- [x] **O** `scripts/s4c_lecture_graph.py` (code): lecture K is needed for lecture L when L uses a concept that K
   defines and K comes first. The link carries those concepts. Direct prerequisites are the links not already implied
   through another lecture; a concept used in most lectures counts for less, so that not every lecture depends on
   lecture 1. "What is needed before lecture 23" is then: its direct prerequisite lectures, all earlier ones behind

@@ -24,6 +24,10 @@ What it looks for (each line is what a broken stage would show):
       listed, or listed without its registry concepts; objective or goal IDs wrong (<n>/O1.., <n>/G, G1..); an
       objective naming another lecture's segment; the segment checks (seeded: out of range, twice, a gap, left
       out, out of order) or the course checks (a lecture in no goal, out of order) not firing
+  4c  links other than those worked out by hand; a link to an earlier lecture; a transitive link counted as direct;
+      a hub concept making every lecture depend on lecture 1 (and, as a control, the same check failing with the
+      weighting off); the rule checks missing a seeded backward or transitive link; graph.json not the graph of
+      the registry; a lecture without its needed-before file, or one without the 4a definition and defining facts
   rerun  any output file different when rerun from the caches, or the model called again
   output  any file under the real output/ created or changed
 """
@@ -43,7 +47,7 @@ ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
 sys.path.insert(0, str(ROOT))
 
 from scripts import lectures as lec  # noqa: E402
-from scripts import s4a_definitions as s4a, s4b_goals as s4b  # noqa: E402
+from scripts import s4a_definitions as s4a, s4b_goals as s4b, s4c_lecture_graph as s4c  # noqa: E402
 from scripts.llm import LLMConfig  # noqa: E402
 from scripts.llm.fake_server import FakeServer  # noqa: E402
 
@@ -366,6 +370,65 @@ def test_4b(work: Path, cfg: Path, log: Path):
     check(chk["course"].get("lecture_in_no_goal") == KEYS[2:], "lectures in no course goal reported (the fake uses two)")
 
 
+# ---------------------------------------------------------------- 4c
+def links_of(graph: dict, kind: str) -> set:
+    return {f"{ln['from']}->{ln['to']}" for ln in graph["links"] if ln["kind"] == kind}
+
+
+def first_lecture_needed_by(graph: dict) -> list[str]:
+    """The lectures that have lecture 1 among their prerequisites."""
+    return [L for L in graph["lectures"] if "1" in graph["prerequisites"][L]["all"]]
+
+
+def test_4c(work: Path, syn: dict):
+    print("4c lecture graph", flush=True)
+    concepts = syn["concepts"]
+    cid = {c["name"]: k for k, c in concepts.items()}
+    g = s4c.build(concepts, KEYS)
+    direct, indirect, weak = links_of(g, "direct"), links_of(g, "indirect"), links_of(g, "weak")
+    check(direct == {"2->3", "2->6", "3->5", "4->8", "5->8", "6->8"}, f"direct links as worked out by hand ({sorted(direct)})")
+    check(indirect == {"2->5", "2->8"}, f"2->5 (via 3) and 2->8 (via 6) are indirect, not direct ({sorted(indirect)})")
+    check(weak == {f"1->{k}" for k in KEYS[1:]}, "lecture 1's links carry only the two hub concepts: all weak")
+    check(all(int(ln["from"]) < int(ln["to"]) for ln in g["links"]) and "6->4" not in direct | indirect | weak,
+          "no link to an earlier lecture (latency: defined in 6, used in 4)")
+    check(g["prerequisites"]["8"] == {"direct": ["4", "5", "6"], "all": ["2", "3", "4", "5", "6"]},
+          "lecture 8: direct 4, 5, 6; all 2 to 6")
+    k4 = {kind: sorted(concepts[c]["name"] for c in cs) for kind, cs in g["concept_kinds"]["4"].items()}
+    check(k4 == {"introduced": ["rendering"], "met_again": ["extended reality", "virtual reality"],
+                 "defined_later": ["immersion", "latency"], "assumed": ["presence"]}, f"lecture 4's concepts by kind ({k4})")
+    check(g["concept_paths"][cid["display resolution"]]["path"] == ["2", "3", "5"]
+          and g["concept_paths"][cid["presence"]]["path"] == [], "concept paths (display resolution 2, 3, 5; presence none)")
+    check(s4c.verify(g, concepts) == {}, "the graph passes its own rules")
+    check(first_lecture_needed_by(g) == [], "hub weighting on: no lecture needs lecture 1")
+    off = s4c.build(concepts, KEYS, {"hub_floor": 1.0})
+    check(first_lecture_needed_by(off) == KEYS[1:], "control, hub weighting off: every lecture needs lecture 1 (the check can fail)")
+    bad = json.loads(json.dumps(g))
+    bad["links"].append({"from": "6", "to": "4", "concepts": [cid["latency"]], "redefined": [], "weight": 0.5,
+                         "kind": "weak"})                    # weak, so it makes no path 6 -> 4 -> 8
+    bad["links"].append({"from": "3", "to": "4", "concepts": [cid["tracking"]], "redefined": [], "weight": 0.5,
+                         "kind": "weak"})
+    next(ln for ln in bad["links"] if ln["from"] == "2" and ln["to"] == "5")["kind"] = "direct"
+    p = s4c.verify(bad, concepts)
+    check(p == {"backward_link": ["6 -> 4"], "direct_implied": ["2 -> 5"], "wrong_concepts": ["3 -> 4"]},
+          f"seeded: a backward link, a transitive link marked direct, a concept lecture 4 never uses ({p})")
+
+    check(stage(work, "s4c_lecture_graph.py", [], work / "4c.log", "stage_4c_lecture_graph") == 0, "4c exits cleanly")
+    od = work / "output" / COURSE / "stage_4c_lecture_graph"
+    written = json.loads((od / "graph.json").read_text())
+    check(written == json.loads(json.dumps(g)), "graph.json is the graph built from the registry")
+    check(all((od / "needed" / f"{lec.stem_of(k)}.json").exists() for k in KEYS), "a needed-before file for every lecture")
+    n8 = json.loads((od / "needed" / "lec_8.json").read_text())
+    defs = json.loads((work / "output" / COURSE / "stage_4a_definitions" / "definitions.json").read_text())
+    rend = next(c for c in n8["concepts"] if c["name"] == "rendering")
+    check([d["lecture"] for d in n8["direct"]] == ["4", "5", "6"]
+          and rend["definition"] == defs[cid["rendering"]]["definition"]
+          and [f["fact"] for f in rend["defining_facts"]] == syn["defining"][cid["rendering"]],
+          "before lecture 8: lectures 4, 5, 6; rendering with its 4a definition and defining facts")
+    n7 = json.loads((od / "needed" / "lec_7.json").read_text())
+    check([c["name"] for c in n7["never_defined"]] == ["presence"], "before lecture 7: presence is never defined")
+    check(json.loads((od / "checks.json").read_text())["problems"] == {}, "checks.json reports no problem")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--work", help="folder for the copy (default: a new temporary folder)")
@@ -383,6 +446,7 @@ def main():
     try:
         test_4a(work, cfg, syn, log)
         test_4b(work, cfg, log)
+        test_4c(work, syn)
         test_rerun(work, log)
     finally:
         server.stop()
