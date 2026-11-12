@@ -93,7 +93,11 @@ State of the MVP (2026-11-13 02:05 IST):
   resumes).
 - Stage 3/4 decision agent merged (D8, D9, D11, D12; tests: fake_registry 59, fake_knowledge 88 checks). Its notebook
   markdown is NOT inserted yet (in the agent's report; redo from the code's docstrings if lost).
-- **EC2 queue running** (started 20:33 UTC): jobs in `pipeline/queue/jobs.txt` on the EC2: pip sentence-transformers
+- **Thinking budget 6k** (user, 2026-11-13: "6k is optimal for speed and quality"): `configs/qwen38_27b_vllm_6k.json`
+  (think_budget 6144, max_tokens 12288) for every stage from 2b's judge on; 2b's rewriter keeps
+  `qwen38_27b_vllm.json` (it must find 2a's answers in 2a's cache, whose hashes include the 16k budget). The activities
+  job: `qwen python3 -u scripts/s5_activities.py nptel_vr --llm configs/qwen38_27b_vllm_6k.json`.
+- **EC2 queue running** (restarted 20:39 UTC with the 6k config): jobs in `pipeline/queue/jobs.txt` on the EC2: pip sentence-transformers
   (done) -> 2b all -> 2c all -> 3a (CPU embeddings, vllm-venv python) -> 3b -> 3c -> 4a -> 4b -> 4c -> 4d (CPU).
   Next to append: `qwen python3 -u scripts/s5_activities.py nptel_vr --llm configs/qwen38_27b_vllm.json` once the
   activities agent's script is merged and rsynced. Local tmux `mtp` (window `sync`) copies results into `ec2_sync/`;
