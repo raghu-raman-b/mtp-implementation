@@ -63,7 +63,7 @@ Everything traces down to sentences, so every answer and activity can cite a lec
   (Servers start from the same config files with `scripts/llm/serve.py`; the old script stays for `lir-construction`.)
 - [x] **O** Attach-only configs for the forwarded ports; fake-model run of 2a and 2b from the local PC.
   (`tests/fake_run.py`: 22 checks pass on lectures 1, 4, 16; the real caches still answer through the new configs.)
-- [ ] **O** Write the missing 2026-11-12 run notes into the notebook from the logs and caches (segmentation on the 27B;
+- [x] **O** Write the missing 2026-11-12 run notes into the notebook from the logs and caches (segmentation on the 27B;
   2a with the new fact definition: 65 to 20 facts on lecture 1, 62 on lectures 1, 4, 16; judge round: 8 failed).
 - [ ] **O** (EC2) Finish the interrupted 2b round (segment 4/S1), so `stage_2b_verify_facts/` holds the 62-fact run.
   This is the baseline for block 1.
