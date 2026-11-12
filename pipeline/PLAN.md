@@ -56,7 +56,8 @@ Everything traces down to sentences, so every answer and activity can cite a lec
 - [x] **F** Prompts drafted: `concept_extraction.txt`, `concept_relations.txt`, `concept_same.txt`,
   `concept_definition.txt`, `lecture_goals.txt`, `course_goals.txt` (untested).
 - [x] **F** Reviewer agent written: `.claude/agents/block-reviewer.md`.
-- [ ] **O** Check that the reviewer agent loads and runs on Fable; if it does not, stop and tell the user.
+- [x] **O** Check that the reviewer agent loads and runs on Fable; if it does not, stop and tell the user. (Ran as
+  `claude-fable-5-2` with Read and Bash working, 2026-11-12.)
 - [ ] **O** Move the EC2 setup to `pipeline/setup_ec2.sh` (from `lir-construction/setup_ec2.sh`): vLLM, the two models,
   the embedding model download, a smoke test. Add `pipeline/ec2.md`: start a server, forward the port, swap models.
 - [ ] **O** Attach-only configs for the forwarded ports; fake-model run of 2a and 2b from the local PC.
