@@ -1,4 +1,4 @@
-"""Plumbing test of stages 2a and 2b with fake models, through the attach-only EC2 configs, on the local PC.
+"""Plumbing test of stages 2a, 2b and 2c with fake models, through the attach-only EC2 configs, on the local PC.
 
     python3 tests/fake_run.py [--lectures 1,4,16] [--work DIR] [--keep]
 
@@ -16,6 +16,11 @@ What it looks for (each line is what a broken stage would show):
             its server while the models are swapped; a judged fact with no verdict or no outcome; a failed fact kept;
             the rewrite conversation not rebuilt from 2a's cached answer; fact IDs not renumbered from F0;
             evidence outside the segment; outcome counts that do not add up (a fact dropped without a log line)
+  2c        a segment with facts and no turn 1, or a turn 2 that does not continue turn 1's conversation; the triple
+            schema not limited to the checked concept names; a concept citing a fact of another segment; a triple
+            end that is not a concept of its segment; same-name concepts not merged; the word matching of the
+            checks wrong (plural, hyphen, acronym in brackets); a segment without its check report; a rerun that
+            calls the model again
   output    any file under the real output/ created or changed
 """
 from __future__ import annotations
@@ -33,7 +38,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
 sys.path.insert(0, str(ROOT))
 
-from scripts import lectures as lec  # noqa: E402
+from scripts import lectures as lec, s2c_concepts as s2c  # noqa: E402
 from scripts.llm import LLM, LLMConfig  # noqa: E402
 from scripts.llm.fake_server import FakeServer  # noqa: E402
 
@@ -188,6 +193,79 @@ def test_2b(work: Path, keys: list[str], facts_2a: dict, qwen_log: Path, sage_lo
     check(evidence_ok(final, segs), "evidence within each final fact's segment")
 
 
+def test_2c(work: Path, keys: list[str], qwen_log: Path):
+    print("2c (fake Qwen on 8094)", flush=True)
+    merged, fl = s2c.check_concepts([{"name": "Head-mounted display", "aliases": ["HMD"], "facts": [1], "defined": False},
+                                     {"name": "head-mounted  display", "aliases": ["headset"], "facts": [2, 9],
+                                      "defined": True}], 3)
+    check(len(merged) == 1 and merged[0]["aliases"] == ["HMD", "headset"] and merged[0]["facts"] == [1, 2]
+          and merged[0]["defined"] and fl["merged"] and fl["out_of_range"], "same names merged, numbers out of range dropped")
+    check(s2c.appears("head-mounted display", "Head mounted displays block vision.")
+          and s2c.appears("XR", "Extended reality (XR) is ...") and not s2c.appears("AR", "Art is not a term.")
+          and not s2c.appears("display", "displayed"), "word matching: plural, hyphen, acronym, no part words")
+    flags = s2c.check_all([{"name": "a", "aliases": [], "facts": [1], "defined": True},
+                           {"name": "b", "aliases": ["B1"], "facts": [2], "defined": False},
+                           {"name": "c", "aliases": [], "facts": [1], "defined": False}],
+                          [{"facts": [1], "subject": "a", "label": "is related to", "object": "b"},
+                           {"facts": [1], "subject": "b", "label": "contains", "object": "a"}],
+                          ["a and c", "b", "nothing"], {"out_of_range": [], "merged": []})
+    check(flags["no_shared_fact"] == [0, 1] and flags["reverse"] == [0, 1] and flags["vague_label"] == [0]
+          and flags["no_triple"] == ["c"] and flags["fact_without_concept"] == [3]
+          and flags["alias_not_written"] == [{"concept": "b", "alias": "B1"}], "each code check fires on its case")
+    n_before = len(lines(qwen_log))
+    qwen = FakeServer(8094, LLMConfig.load(ROOT / QWEN).model, str(qwen_log)).start()
+    p = stage(work, "s2c_concepts.py", ["--llm", QWEN, "--only", ",".join(keys)], work / "2c.log")
+    check(p.wait() == 0, "2c exits cleanly")
+    sent = lines(qwen_log)[n_before:]
+    od2b = work / "output" / COURSE / "stage_2b_verify_facts" / "fact_maps"
+    facts = {}
+    for k in keys:
+        facts.update(json.loads((od2b / f"{lec.stem_of(k)}.json").read_text()))
+    with_facts = sorted({fid.rsplit("/", 1)[0] for fid in facts})
+    first = [r for r in sent if len(r["messages"]) == 1]
+    second = [r for r in sent if len(r["messages"]) == 3]
+    check(len(first) == len(with_facts) and len(second) == len(with_facts),
+          f"turn 1 and turn 2 for each segment with facts ({len(first)}, {len(second)} for {len(with_facts)})")
+    by_prompt = {r["messages"][0]["content"]: r for r in first}
+    ok_conv = all(r["messages"][0]["content"] in by_prompt and r["messages"][1]["role"] == "assistant" for r in second)
+    check(ok_conv, "turn 2 continues turn 1's conversation")
+    od = work / "output" / COURSE / "stage_2c_concepts"
+    cmap, rmap, checks = {}, {}, {}
+    for k in keys:
+        stem = lec.stem_of(k)
+        cmap.update(json.loads((od / "concept_maps" / f"{stem}.json").read_text()))
+        rmap.update(json.loads((od / "relations" / f"{stem}.json").read_text()))
+        checks.update(json.loads((od / "checks" / f"{stem}.json").read_text()))
+    names_by_seg = {}
+    for cid, c in cmap.items():
+        names_by_seg.setdefault(cid.rsplit("/", 1)[0], []).append(c["name"])
+    check(all(r["schema"]["properties"]["relations"]["items"]["properties"]["subject"]["enum"]
+              == names_by_seg[_seg2c(r)] for r in second), "the triple schema allows only the segment's concept names")
+    check(all(f in facts and f.rsplit("/", 1)[0] == cid.rsplit("/", 1)[0] for cid, c in cmap.items() for f in c["facts"]),
+          "every concept cites verified facts of its own segment")
+    check(all(r[e] in cmap and r[e].rsplit("/", 1)[0] == rid.rsplit("/", 1)[0] for rid, r in rmap.items()
+              for e in ("subject", "object")), "every triple joins concepts of its own segment")
+    check(set(checks) == set(with_facts), "a check report for each segment with facts")
+    p = stage(work, "s2c_concepts.py", ["--llm", QWEN, "--only", ",".join(keys)], work / "2c_rerun.log")
+    check(p.wait() == 0 and len(lines(qwen_log)) == n_before + len(sent), "a rerun is answered from the cache")
+    qwen.stop()
+
+
+def _seg2c(turn2: dict) -> str:
+    """The segment of a 2c turn-2 request: the fact IDs are not in the prompt, so match its lecture and goal."""
+    prompt = turn2["messages"][0]["content"]
+    tail = prompt[prompt.rindex("### Your segment"):]
+    for k in tail.split("SEGMENT GOAL: ", 1)[1:]:
+        goal = k.split("\n", 1)[0]
+        for seg in _SEGS:
+            if seg["subgoal"] == goal and f"LECTURE: {seg['title']}" in tail:
+                return seg["id"]
+    raise KeyError("segment not found")
+
+
+_SEGS: list[dict] = []
+
+
 def _seg_of(rewrite_request: dict) -> str:
     """The segment ID a rewrite request is for: the failed fact IDs in its last message start with it."""
     text = rewrite_request["messages"][2]["content"]
@@ -214,6 +292,13 @@ def main():
     qwen_log, sage_log = work / "fake_qwen.jsonl", work / "fake_sage.jsonl"
     facts = test_2a(work, keys, qwen_log)
     test_2b(work, keys, facts, qwen_log, sage_log)
+    from scripts import course_meta
+    for k in keys:
+        maps = json.loads((ROOT / "output" / COURSE / "stage_1b_verify_segments" / "segment_maps"
+                           / f"{lec.stem_of(k)}.json").read_text())
+        _SEGS.extend({"id": sid, "subgoal": m["subgoal"], "title": course_meta.lecture_title(COURSE, k)}
+                     for sid, m in maps.items())
+    test_2c(work, keys, qwen_log)
     print("output", flush=True)
     check(snapshot(ROOT / "output") == before, "nothing under the real output/ created or changed")
     if not a.keep and not FAILURES:

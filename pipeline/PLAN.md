@@ -99,9 +99,10 @@ One conversation per segment with the extractor (Qwen). Turn 1 (`concept_extract
 in, concepts out (name, aliases, facts, defined). Code checks. Turn 2 (`concept_relations.txt`): the checked concept
 list in, triples out (subject, label, object, facts). Facts are numbered `[1]..[n]` in the prompt and mapped back in code.
 
-- [ ] **O** `scripts/s2c_concepts.py`, writing `stage_2c_concepts/`: `concept_maps/lec_<n>.json`,
+- [x] **O** `scripts/s2c_concepts.py`, writing `stage_2c_concepts/`: `concept_maps/lec_<n>.json`,
   `relations/lec_<n>.json`, a text view of both, `checks/lec_<n>.json`, `llm/`. The answer schema limits subject and
-  object to the concept names of the segment.
+  object to the concept names of the segment. (Plumbing checked with the fake model in `tests/fake_run.py`; built
+  before the block 1 gate, as it needs no model; nothing run on real facts yet.)
 - [ ] **O** Code checks, reported per segment: a fact number out of range; the same name twice (merged); a name or alias
   that appears in none of its facts; an alias not written in any fact; a fact with no concept; a triple whose two
   concepts never share a cited fact; a triple and its reverse; a vague label ("is related to"); a concept with no
