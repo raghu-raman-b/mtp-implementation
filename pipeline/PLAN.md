@@ -148,7 +148,7 @@ list in, triples out (subject, label, object, facts). Facts are numbered `[1]..[
   to the same result from the caches.
 
 ### Block 4: definitions, goals, the lecture graph, the assembled layer
-- [ ] **O** `scripts/s4a_definitions.py` (one call per concept, `concept_definition.txt`): definition, the facts it is
+- [x] **O** `scripts/s4a_definitions.py` (one call per concept, `concept_definition.txt`): definition, the facts it is
   built from, `defined`, `misplaced`. The fact list is capped (defining facts first, then by lecture order). A concept
   with `misplaced` facts is reported, not split.
 - [ ] **O** `scripts/s4b_goals.py`: one call per lecture (`lecture_goals.txt`: objectives and the lecture goal from the
