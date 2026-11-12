@@ -2,13 +2,13 @@
 # Get a fresh GPU instance (e.g. EC2 g7e, Ubuntu + NVIDIA driver + CUDA toolkit) ready to run generate_lir2.py.
 # Safe to rerun: every step skips what is already done.
 #
-#   bash setup_ec2.sh               # vLLM + Qwen 27B FP8 (lir2_config.toml) + Gemma 4 E4B and 12B (lir2_config_small.toml)
+#   bash setup_ec2.sh               # vLLM + Qwen 27B FP8 (lir2_config.toml) + Sage-A1.5 FP8 (35B MoE)
 #   LLAMA=1 bash setup_ec2.sh       # also llama.cpp + the Q8 GGUF (slower on this model; ~20 min more to build)
 #   SKIP_MODEL=1 bash setup_ec2.sh  # no model downloads
-#   HF_TOKEN=... bash setup_ec2.sh  # faster Hugging Face downloads
+#   HF_TOKEN=... bash setup_ec2.sh  # Hugging Face token; without it the script reads .hf_token next to it (gitignored)
 #
 # What it does:
-#   1. checks the GPU
+#   1. checks the GPU, saves the Hugging Face token (if any) to ~/.cache/huggingface/token for the downloads and vLLM
 #   2. starts the model downloads in the background (Hugging Face cache, ~/.cache/huggingface; survives a stop)
 #   3. system tools: ffmpeg (videos), ninja-build (vLLM compiles kernels on its first start), tmux (run_v2.sh)
 #   4. pipeline venv (.venv): torch (CUDA 13) + requirements.txt
@@ -18,7 +18,7 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-VLLM_MODELS="${VLLM_MODELS:-Qwen/Qwen3.8-27B-FP8 google/gemma-4-E4B-it google/gemma-4-12B-it}"   # large + small setups
+VLLM_MODELS="${VLLM_MODELS:-Qwen/Qwen3.8-27B-FP8 InternScience/Sage-A1.5-FP8}"
 VLLM_DIR="${VLLM_DIR:-$HOME/vllm-venv}"
 VLLM_VERSION="${VLLM_VERSION:-0.32.0}"
 LLAMA_DIR="${LLAMA_DIR:-$HOME/llama.cpp}"
@@ -34,6 +34,14 @@ step() { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
 step "1/7 GPU"
 nvidia-smi --query-gpu=name,memory.total,compute_cap,driver_version --format=csv,noheader
 ARCH="$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -1 | tr -d '.')"   # e.g. 120 for Blackwell
+[ -z "${HF_TOKEN:-}" ] && [ -f "$HERE/.hf_token" ] && HF_TOKEN="$(tr -d '[:space:]' < "$HERE/.hf_token")"
+if [ -n "${HF_TOKEN:-}" ]; then
+  export HF_TOKEN
+  mkdir -p "$HOME/.cache/huggingface" && (umask 077; printf '%s' "$HF_TOKEN" > "$HOME/.cache/huggingface/token")
+  echo "  Hugging Face token: set"
+else
+  echo "  Hugging Face token: none (slower downloads)"
+fi
 
 step "2/7 model downloads (background, log: logs/setup_download.log)"
 [ -d "$HERE/.venv" ] || python3 -m venv "$HERE/.venv"
