@@ -112,6 +112,13 @@ State of the MVP (2026-11-13 02:05 IST):
   `knowledge/`; reload picks up new layers. Its data wishes went to the activities agent (complete_map must not show a
   hidden concept elsewhere; per-item `facts` in match_pairs, crossword, concept_map). Other data notes: 0a sentences
   with `start: null` (filled from the previous end), long prerequisite lists from hub concepts, dense course map.
+- **Question answering merged** (`pipeline/qa/`; `python -m qa "question" --lecture 4` from `pipeline/`; Gemma 4 12B
+  on local port 8092, started on demand, `python -m qa --stop`; `tests/fake_qa.py` 31 checks; client gained
+  `Request.tools`/`tool_choice`, `Result.tool_calls`, hashes unchanged; runtime logs `output/<course>/qa/` gitignored).
+  The viewer's `/api/ask` loads `qa` from `--qa-path` (default `pipeline/`). The "no close match" cut-off 0.4 is a guess.
+- Pending the user's answer (asked 02:25 IST): skip 4a's model calls (a code-only `definitions.json` from each
+  concept's first defining fact, so 4d and the viewer still work) and run the activities without thinking, to finish
+  ~08:30; the user asked whether all can finish by 07:00 (no: ~10:45 without 4a at 6k everywhere).
 - Then: run the viewer on the real `knowledge/` + `activities/`, check every page and activity kind, a few questions.
 
 ## Open questions for the user (also in the decisions file)
