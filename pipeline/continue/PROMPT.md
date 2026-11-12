@@ -124,7 +124,10 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
-- **mvp_run.sh drives the rest** (user, 02:28 IST: embeddings on the local 14900K CPU, local GPU for Gemma 4 12B
+- **04:50: now `mvp_run2.sh`** (tmux `mvp`): 2c turn 2 ran slow (2c lands ~06:20), so the activities run in two waves:
+  demo lectures 1-8, 16 first (EC2 job 6 + local Gemma), then the rest (EC2 job 7 + local). Est.: 3b ~07:00, 4b ~07:20,
+  4d ~07:25, demo activities ~07:50, the rest after 08:30 (the user: whatever exists at 08:30 is final).
+- (older) **mvp_run.sh drives the rest** (user, 02:28 IST: embeddings on the local 14900K CPU, local GPU for Gemma 4 12B
   (simple activities), Qwen on the EC2 for complex ones, thinking on everywhere, save each stage at once). Local tmux
   session `mvp` runs `pipeline/mvp_run.sh`: waits for EC2 job 3 (2c) -> pulls -> 3a local CPU -> EC2 job 4 (3b) -> 3c,
   4a --from-facts local -> EC2 job 5 (4b) -> 4c, 4d local CPU -> activities: EC2 job 6 (quiz, open_question,
