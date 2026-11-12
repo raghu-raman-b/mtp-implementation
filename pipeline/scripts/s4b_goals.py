@@ -11,10 +11,12 @@ Prompts prompts/lecture_goals.txt: {course}, {lecture_title}, {segments}
 Writes  output/<course>/stage_4b_goals/ (or --out)
           lecture_goals/lec_<n>.json  {"4/G": {"goal", "achieves", "objectives": ["4/O1", ...]},
                                        "4/O1": {"goal", "achieves", "segments": ["4/S0", "4/S1"]}, ...}
+                                      ({} for a lecture whose call gave no answer)
           course_goals.json           {"lectures": [keys], "reasoning", "goals": {"G1": {"goal", "achieves",
                                        "lectures": [keys]}, ...}}
           goals.txt                   the course goals, then per lecture its goal, objectives and their segments
-          checks.json                 totals and the code checks per lecture and for the course (below)
+          checks.json                 totals, the code checks per lecture and for the course (below), and per
+                                      retried answer what the retry changed
           llm/cache.jsonl, calls.jsonl
 
 1. One call per lecture (the lectures with 2c concept maps, or --only). Its segments are numbered [1]..[n] in
@@ -23,15 +25,34 @@ Writes  output/<course>/stage_4b_goals/ (or --out)
    concepts are listed too ("none"). The answer's segment numbers are mapped back to segment IDs in code.
    IDs: objectives "<lecture>/O1", "<lecture>/O2", ... in the model's order (from 1, like the course goals); the
    lecture goal "<lecture>/G".
-2. One call for the course: every lecture of the run with its number, title, goal and objectives (goals only; the
-   "achieves" lines are not shown, as the prompt lists only goal and objectives). The answer's lectures are limited
-   by the schema to the lecture keys ("4", "24b", "tut_1"). Course goal IDs "G1", "G2", ... in the model's order.
+2. One call for the course: every lecture of the run as
+       [4] Lecture 4: <title>            ("[tut_1] Tutorial 1: <title>" for a tutorial)
+       Goal: <the lecture goal>
+       Achieves: <what the lecture goal achieves>
+       Objectives:
+       - <objective goal>
+   (a lecture whose call gave no answer: "Goal: (none: the lecture call gave no answer)"). The answer's lectures are
+   limited by the schema to the lecture keys ("4", "24b", "tut_1"). Course goal IDs "G1", "G2", ... in the model's
+   order.
 
-Code checks (reported; code only drops numbers out of range and repeats):
-  lecture: out_of_range (a segment number outside 1..n), segment_twice (a segment in two objectives),
-           not_consecutive (an objective whose segments are not one run), out_of_order (objectives not in lecture
-           order), in_no_objective (a segment in no objective, with its sub-goal: allowed for a closing summary)
-  course:  lecture_in_no_goal (every lecture should serve one), not_in_course_order (a goal's lectures out of order)
+Code checks (decision D12). An answer with a problem below is retried with the problems shown to the model (LLM API,
+feedback; the config's retries); one that still fails keeps its best attempt (fewest problems, ties: the latest),
+flagged "unresolved" with its remaining problems; only an answer that never parses is "no answer".
+  lecture, retried: out_of_range (a segment number outside 1..n; dropped), segment_twice (a segment in two
+           objectives), out_of_order (objectives not in lecture order), empty_goal (an empty goal or achieves, of an
+           objective or the lecture), not_consecutive (an objective whose segments are not one run, ignoring the
+           segments in no objective: [1, 3] with segment 2 in none is one run)
+  lecture, reported: in_no_objective (a segment in no objective, with its sub-goal and the concepts it defines:
+           allowed for a recap, an outline or a closing summary; one that defines concepts is worth a look)
+  course, retried: lecture_in_no_goal (a lecture that serves no course goal; a lecture whose own call gave no answer
+           is not counted)
+  course, fixed in code: a goal's lectures put in course order and repeats dropped (reported: reordered,
+           repeats_removed)
+  course, reported: goal_over_half (a goal that lists more than half the lectures)
+Per retried answer, checks.json "retries" holds the items lost and added between the first and the final attempt
+(lecture: "objective [4/S0, 4/S1]: <goal>", "... achieves: <text>", "lecture goal: <text>", "lecture achieves:
+<text>"; course: "[1, 4] <goal>", "[1, 4] achieves: <text>"); totals count the retried answers, those the retry
+changed, and the items lost and added.
 """
 from __future__ import annotations
 
@@ -51,6 +72,7 @@ from scripts.llm import LLM, LLMConfig, Request  # noqa: E402
 
 LECTURE = ROOT / "prompts" / "lecture_goals.txt"
 COURSE = ROOT / "prompts" / "course_goals.txt"
+RETRY_LECTURE = ("out_of_range", "segment_twice", "out_of_order", "empty_goal", "not_consecutive")
 
 
 def out_dir(course: str) -> Path:
@@ -107,48 +129,93 @@ def lecture_schema(n: int) -> dict:
                 **goal}}
 
 
-def check_lecture(answer: dict, segs: list[dict], key: str) -> tuple[dict, dict]:
-    """The lecture's goal records (IDs, segment numbers mapped to IDs) and the flags of the code checks."""
+def _text(x) -> str:
+    return x.strip() if isinstance(x, str) else ""
+
+
+def _objectives(answer) -> list[dict]:
+    objs = answer.get("objectives") if isinstance(answer, dict) else None
+    return [o for o in objs if isinstance(o, dict)] if isinstance(objs, list) else []
+
+
+def check_lecture(answer: dict, segs: list[dict], key: str) -> tuple[dict, dict, list[str]]:
+    """The lecture's goal records (IDs, segment numbers mapped to IDs), the flags of the code checks, and the
+    problems that send the answer back (the RETRY_LECTURE kinds, as messages in the prompt's numbering)."""
     n = len(segs)
     flags: dict = {}
-    seen: dict[int, int] = {}
-    recs, firsts = {}, []
-    oids = []
-    for k, o in enumerate(answer["objectives"], 1):
-        bad = [i for i in o["segments"] if not 1 <= i <= n]
-        if bad:
-            flags.setdefault("out_of_range", []).append({"objective": objective_id(key, k), "segments": bad})
-        nums = sorted(dict.fromkeys(i for i in o["segments"] if 1 <= i <= n))
-        for i in nums:
-            if i in seen:
-                flags.setdefault("segment_twice", []).append(segs[i - 1]["id"])
-            seen.setdefault(i, k)
-        if nums and nums != list(range(nums[0], nums[-1] + 1)):
-            flags.setdefault("not_consecutive", []).append(objective_id(key, k))
-        if nums:
-            firsts.append(nums[0])
+    problems: list[str] = []
+    objs = _objectives(answer)
+    nums_of = []
+    for o in objs:
+        raw = [i for i in o.get("segments", []) if isinstance(i, int)]
+        nums_of.append(sorted(dict.fromkeys(i for i in raw if 1 <= i <= n)))
+    placed = {i for nums in nums_of for i in nums}
+    owner: dict[int, list[int]] = {}
+    recs, firsts, oids = {}, [], []
+    for k, (o, nums) in enumerate(zip(objs, nums_of), 1):
         oid = objective_id(key, k)
         oids.append(oid)
-        recs[oid] = {"goal": o["goal"].strip(), "achieves": o["achieves"].strip(),
+        bad = [i for i in o.get("segments", []) if not (isinstance(i, int) and 1 <= i <= n)]
+        if bad:
+            flags.setdefault("out_of_range", []).append({"objective": oid, "segments": bad})
+            problems.append(f"Objective {k} lists segment numbers that do not exist: {bad}. The segments are "
+                            f"numbered 1 to {n}.")
+        for i in nums:
+            owner.setdefault(i, []).append(k)
+        gaps = [i for i in range(nums[0], nums[-1] + 1) if i not in nums and i in placed] if nums else []
+        if gaps:
+            flags.setdefault("not_consecutive", []).append(oid)
+            problems.append(f"Objective {k} covers segments {nums}, but segment{'s' if len(gaps) > 1 else ''} "
+                            f"{', '.join(map(str, gaps))} between them belong{'' if len(gaps) > 1 else 's'} to "
+                            f"another objective. An objective covers one run of consecutive segments.")
+        if nums:
+            firsts.append(nums[0])
+        for field in ("goal", "achieves"):
+            if not _text(o.get(field)):
+                flags.setdefault("empty_goal", []).append(f"{oid} {field}")
+                problems.append(f'Objective {k} has an empty "{field}". Write it.')
+        recs[oid] = {"goal": _text(o.get("goal")), "achieves": _text(o.get("achieves")),
                      "segments": [segs[i - 1]["id"] for i in nums]}
+    for i, ks in sorted(owner.items()):
+        if len(ks) > 1:
+            flags.setdefault("segment_twice", []).append(segs[i - 1]["id"])
+            problems.append(f"Segment {i} is in more than one objective (objectives {', '.join(map(str, ks))}). "
+                            f"Every segment belongs to exactly one objective.")
     if firsts != sorted(firsts):
         flags["out_of_order"] = True
-    left = [{"segment": s["id"], "subgoal": s["subgoal"]} for i, s in enumerate(segs, 1) if i not in seen]
+        problems.append("The objectives are not in lecture order. List them in the order of their first segments.")
+    for field in ("goal", "achieves"):
+        if not _text(answer.get(field)):
+            flags.setdefault("empty_goal", []).append(f"{goal_id(key)} {field}")
+            problems.append(f'The lecture "{field}" is empty. Write it.')
+    left = [{"segment": s["id"], "subgoal": s["subgoal"], "defines": s.get("defines", [])}
+            for i, s in enumerate(segs, 1) if i not in placed]
     if left:
         flags["in_no_objective"] = left
-    out = {goal_id(key): {"goal": answer["goal"].strip(), "achieves": answer["achieves"].strip(), "objectives": oids}}
+    out = {goal_id(key): {"goal": _text(answer.get("goal")), "achieves": _text(answer.get("achieves")),
+                          "objectives": oids}}
     out.update(recs)
-    return out, flags
+    return out, flags, problems
+
+
+def lecture_items(answer: dict, segs: list[dict]) -> list[str]:
+    """A lecture answer as readable items for the retry log."""
+    n, out = len(segs), []
+    for o in _objectives(answer):
+        ids = ", ".join(segs[i - 1]["id"] for i in sorted(dict.fromkeys(
+            i for i in o.get("segments", []) if isinstance(i, int) and 1 <= i <= n)))
+        out += [f"objective [{ids}]: {_text(o.get('goal'))}", f"objective [{ids}] achieves: {_text(o.get('achieves'))}"]
+    return out + [f"lecture goal: {_text(answer.get('goal'))}", f"lecture achieves: {_text(answer.get('achieves'))}"]
 
 
 # ---------------------------------------------------------------- course call
 def lecture_block(course: str, key: str, goals: dict | None) -> str:
-    head = f"{s4a.lecture_label(key).capitalize()}: {course_meta.lecture_title(course, key)}"
+    head = f"[{key}] {s4a.lecture_label(key).capitalize()}: {course_meta.lecture_title(course, key)}"
     if not goals:
         return head + "\nGoal: (none: the lecture call gave no answer)"
     g = goals[goal_id(key)]
     objs = "\n".join(f"- {goals[o]['goal']}" for o in g["objectives"])
-    return f"{head}\nGoal: {g['goal']}\nObjectives:\n{objs}"
+    return f"{head}\nGoal: {g['goal']}\nAchieves: {g['achieves']}\nObjectives:\n{objs}"
 
 
 def course_prompt(course: str, keys: list[str], goals: dict) -> str:
@@ -164,19 +231,45 @@ def course_schema(keys: list[str]) -> dict:
                                "goal": {"type": "string"}, "achieves": {"type": "string"}}}}}}
 
 
-def check_course(answer: dict, keys: list[str]) -> tuple[dict, dict]:
+def _goals(answer) -> list[dict]:
+    gs = answer.get("goals") if isinstance(answer, dict) else None
+    return [g for g in gs if isinstance(g, dict)] if isinstance(gs, list) else []
+
+
+def check_course(answer: dict, keys: list[str], no_answer: list[str] = ()) -> tuple[dict, dict, list[str]]:
+    """The course goals (each goal's lectures put in course order, repeats dropped), the flags, and the problems that
+    send the answer back: lectures in no goal, except those whose own call gave no answer (no_answer)."""
     flags: dict = {}
     goals = {}
-    for k, g in enumerate(answer["goals"], 1):
-        ls = list(dict.fromkeys(x for x in g["lectures"] if x in keys))
-        if ls != sorted(ls, key=lec.order):
-            flags.setdefault("not_in_course_order", []).append(f"G{k}")
-        goals[f"G{k}"] = {"goal": g["goal"].strip(), "achieves": g["achieves"].strip(), "lectures": ls}
+    for k, g in enumerate(_goals(answer), 1):
+        raw = [x for x in g.get("lectures", []) if x in keys]
+        ls = sorted(dict.fromkeys(raw), key=lec.order)
+        if len(ls) < len(raw):
+            flags.setdefault("repeats_removed", []).append(f"G{k}")
+        if list(dict.fromkeys(raw)) != ls:
+            flags.setdefault("reordered", []).append(f"G{k}")
+        if len(ls) > len(keys) / 2:
+            flags.setdefault("goal_over_half", []).append({"goal": f"G{k}", "lectures": len(ls), "of": len(keys)})
+        goals[f"G{k}"] = {"goal": _text(g.get("goal")), "achieves": _text(g.get("achieves")), "lectures": ls}
     served = {x for g in goals.values() for x in g["lectures"]}
-    left = [k for k in keys if k not in served]
+    left = [k for k in keys if k not in served and k not in no_answer]
+    problems = []
     if left:
         flags["lecture_in_no_goal"] = left
-    return {"lectures": keys, "reasoning": answer["reasoning"].strip(), "goals": goals}, flags
+        problems.append(f"The lecture{'s' if len(left) > 1 else ''} {', '.join(f'[{k}]' for k in left)} "
+                        f"serve{'' if len(left) > 1 else 's'} no course goal. Every lecture serves at least one "
+                        f"course goal: add each to the goals its objectives work toward.")
+    return ({"lectures": keys, "reasoning": _text(answer.get("reasoning") if isinstance(answer, dict) else ""),
+             "goals": goals}, flags, problems)
+
+
+def course_items(answer: dict, keys: list[str]) -> list[str]:
+    """A course answer as readable items for the retry log."""
+    out = []
+    for g in _goals(answer):
+        ls = ", ".join(sorted(dict.fromkeys(x for x in g.get("lectures", []) if x in keys), key=lec.order))
+        out += [f"[{ls}] {_text(g.get('goal'))}", f"[{ls}] achieves: {_text(g.get('achieves'))}"]
+    return out
 
 
 # ---------------------------------------------------------------- run
@@ -197,30 +290,53 @@ def run(course: str, llm: LLM, lectures: list | None = None, seed: int | None = 
         if um:
             unmapped[k] = um
     reqs = [Request(prompt=lecture_prompt(course, k, segs[k]), key=f"lecture {k}", schema=lecture_schema(len(segs[k])),
+                    check=lambda a, s=segs[k], k=k: check_lecture(a, s, k)[2], feedback=True,
                     sampling=sampling, meta={"lecture": k}) for k in keys]
     print(f"4b: goals of {len(keys)} lectures with {llm.model}", flush=True)
-    goals, checks = {}, {"lectures": {}, "course": {}}
-    totals = {"lectures": len(keys), "objectives": 0, "course_goals": 0, "no_answer": [], "unmapped": unmapped,
-              "flags": {}}
+    goals, checks, retries = {}, {"lectures": {}, "course": {}}, {"lectures": {}, "course": None}
+    totals = {"lectures": len(keys), "objectives": 0, "course_goals": 0, "no_answer": [], "unresolved": [],
+              "unmapped": unmapped, "flags": {}, "in_no_objective_defining": 0,
+              "retried": 0, "changed_by_retry": 0, "lost": 0, "added": 0}
+
+    def count(flags: dict):
+        for kind in flags:
+            totals["flags"][kind] = totals["flags"].get(kind, 0) + 1
+
     for k, res in zip(keys, llm.generate_many(reqs, cache_file=cache, log_file=log)):
-        if not res.ok:
+        rlog = s4a.retry_log(res, lambda a, s=segs[k]: lecture_items(a, s))
+        s4a.count_retries(totals, rlog)
+        if rlog is not None:
+            retries["lectures"][k] = rlog
+        if not s4a.answered(res):
             totals["no_answer"].append(f"lecture {k}")
             checks["lectures"][k] = {"errors": res.errors}
             continue
-        goals[k], flags = check_lecture(res.parsed, segs[k], k)
+        goals[k], flags, problems = check_lecture(res.parsed, segs[k], k)
+        if not res.ok:
+            flags["unresolved"] = problems or res.errors
+            totals["unresolved"].append(f"lecture {k}")
         totals["objectives"] += len(goals[k][goal_id(k)]["objectives"])
+        totals["in_no_objective_defining"] += sum(bool(x["defines"]) for x in flags.get("in_no_objective", []))
         if flags:
             checks["lectures"][k] = flags
-        for kind in flags:
-            totals["flags"][kind] = totals["flags"].get(kind, 0) + 1
+        count(flags)
     print("4b: the course goals", flush=True)
+    no_answer = [k for k in keys if k not in goals]
     res = llm.generate_many([Request(prompt=course_prompt(course, keys, goals), key="course", schema=course_schema(keys),
+                                     check=lambda a: check_course(a, keys, no_answer)[2], feedback=True,
                                      sampling=sampling)], cache_file=cache, log_file=log)[0]
-    if res.ok:
-        cgoals, flags = check_course(res.parsed, keys)
+    rlog = s4a.retry_log(res, lambda a: course_items(a, keys))
+    s4a.count_retries(totals, rlog)
+    retries["course"] = rlog
+    if s4a.answered(res):
+        cgoals, flags, problems = check_course(res.parsed, keys, no_answer)
+        if not res.ok:
+            flags["unresolved"] = problems or res.errors
+            totals["unresolved"].append("course")
+        if no_answer:
+            flags["not_counted"] = no_answer          # lectures without an answer: not checked for a course goal
         checks["course"] = flags
-        for kind in flags:
-            totals["flags"][kind] = totals["flags"].get(kind, 0) + 1
+        count(flags)
     else:
         cgoals = {"lectures": keys, "reasoning": "", "goals": {}}
         checks["course"] = {"errors": res.errors}
@@ -230,22 +346,38 @@ def run(course: str, llm: LLM, lectures: list | None = None, seed: int | None = 
         (od / "lecture_goals" / f"{lec.stem_of(k)}.json").write_text(
             json.dumps(goals.get(k, {}), indent=1, ensure_ascii=False) + "\n")
     (od / "course_goals.json").write_text(json.dumps(cgoals, indent=1, ensure_ascii=False) + "\n")
-    (od / "checks.json").write_text(json.dumps({"totals": totals, **checks}, indent=1, ensure_ascii=False) + "\n")
-    (od / "goals.txt").write_text(goals_text(course, keys, goals, cgoals, segs, checks))
+    retries["lectures"] = dict(sorted(retries["lectures"].items(), key=lambda kv: lec.order(kv[0])))
+    (od / "checks.json").write_text(json.dumps({"totals": totals, **checks, "retries": retries}, indent=1,
+                                               ensure_ascii=False) + "\n")
+    (od / "goals.txt").write_text(goals_text(course, keys, goals, cgoals, segs, checks, retries))
     print(f"{len(keys)} lectures, {totals['objectives']} objectives, {totals['course_goals']} course goals, "
-          f"{round(time.time() - t0, 1)} s" + (f"; no answer: {totals['no_answer']}" if totals["no_answer"] else ""))
+          f"{round(time.time() - t0, 1)} s; {totals['retried']} retried ({totals['changed_by_retry']} changed)"
+          + (f"; unresolved (best answer kept): {totals['unresolved']}" if totals["unresolved"] else "")
+          + (f"; no answer: {totals['no_answer']}" if totals["no_answer"] else ""))
     print(f"checks: {totals['flags'] or 'none'}")
     return totals
 
 
-def goals_text(course: str, keys: list[str], goals: dict, cgoals: dict, segs: dict, checks: dict) -> str:
+def _retry_line(rlog: dict | None, indent: str) -> list[str]:
+    if not rlog:
+        return []
+    return [f"{indent}retried ({rlog['attempts']} attempts): lost {' | '.join(rlog['lost']) or 'nothing'}; "
+            f"added {' | '.join(rlog['added']) or 'nothing'}"]
+
+
+def goals_text(course: str, keys: list[str], goals: dict, cgoals: dict, segs: dict, checks: dict,
+               retries: dict) -> str:
     out = ["COURSE GOALS"]
     for gid, g in cgoals["goals"].items():
         out += [f"{gid}  {g['goal']}", f"     achieves: {g['achieves']}", f"     lectures: {', '.join(g['lectures'])}"]
     if checks["course"]:
         out.append("checks: " + "; ".join(checks["course"]))
+    if checks["course"].get("unresolved"):
+        out.append("UNRESOLVED (best answer kept): " + " | ".join(checks["course"]["unresolved"]))
+    out += _retry_line(retries["course"], "")
     for k in keys:
         out += ["", f"LECTURE {k}: {course_meta.lecture_title(course, k)}"]
+        out += _retry_line(retries["lectures"].get(k), "  ")
         if k not in goals:
             out.append("  (no answer)")
             continue
@@ -256,8 +388,14 @@ def goals_text(course: str, keys: list[str], goals: dict, cgoals: dict, segs: di
             o = goals[k][oid]
             out += [f"  {oid}  {o['goal']}", f"        achieves: {o['achieves']}"]
             out += [f"        {sid}  {sub[sid]}" for sid in o["segments"]]
-        if checks["lectures"].get(k):
-            out.append("  checks: " + "; ".join(checks["lectures"][k]))
+        fl = checks["lectures"].get(k, {})
+        for x in fl.get("in_no_objective", []):
+            out.append(f"  in no objective: {x['segment']}  {x['subgoal']}"
+                       + (f"  (defines {', '.join(x['defines'])})" if x["defines"] else ""))
+        if fl:
+            out.append("  checks: " + "; ".join(fl))
+        if fl.get("unresolved"):
+            out.append("  UNRESOLVED (best answer kept): " + " | ".join(fl["unresolved"]))
     return "\n".join(out) + "\n"
 
 

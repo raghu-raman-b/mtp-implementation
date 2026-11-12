@@ -21,6 +21,13 @@ answer well after it: rendering ("as the lecturer explains") and head-mounted di
 reference, latency a fact in both lists, tracking no fact cited, stereoscopy an empty definition, display resolution
 a number outside the list. presence never writes its name (unresolved: the best answer kept), extended reality never
 answers JSON (no answer), field of view lists a misplaced fact; the others answer well at once.
+The 4b lecture answers (by the lecture's title) leave the last segment in no objective (allowed; in lecture 2 it
+defines stereoscopy) and seed in the first attempt: lecture 2 a segment in two objectives, 3 the objectives out of
+order, 4 an empty "achieves", 5 a segment number out of range; lecture 6 has an objective [1, 3] with segment 2 in
+another one in every attempt (unresolved); lecture 7 an objective [1, 3] with segment 2 in none (not a gap: asked
+once); lecture 8 never answers JSON (no answer). The course answer first leaves lecture 7 in no goal (lecture 8, with
+no answer, is not counted) and lists lectures out of order, repeated, and in one goal more than half of them; the
+retry adds lecture 7.
 
 What it looks for (each line is what a broken stage would show):
   4a  a concept without its request or definition; a definition citing a fact outside its list (seeded, and the
@@ -30,10 +37,15 @@ What it looks for (each line is what a broken stage would show):
       retry problem (outside the list, empty definition, no fact cited, a fact in both lists, the name absent, "the
       lecturer"/"this lecture") not caught, not retried, or retried without its problem shown; a failed answer
       thrown away instead of kept as unresolved, or an unparseable one kept; the retry log or its counts wrong
-  4b  a lecture without its call, or the course call missing or not built from the lecture goals; a segment not
-      listed, or listed without its registry concepts; objective or goal IDs wrong (<n>/O1.., <n>/G, G1..); an
-      objective naming another lecture's segment; the segment checks (seeded: out of range, twice, a gap, left
-      out, out of order) or the course checks (a lecture in no goal, out of order) not firing
+  4b  a lecture without its call, or the course call missing or not built from the lecture goals (with their
+      keys in brackets and "Achieves:" lines); a segment not listed, or listed without its registry concepts;
+      objective or goal IDs wrong (<n>/O1.., <n>/G, G1..); an objective naming another lecture's segment; a retry
+      check (out of range, twice, out of order, an empty goal or achieves, a gap that another objective fills) not
+      firing, not retried, or retried without its problem shown; a gap of segments in no objective taken for one;
+      in_no_objective without the concepts the segment defines; a failed lecture answer thrown away instead of kept
+      as unresolved; the course retry missing a lecture in no goal or counting one whose call gave no answer; a
+      goal's lectures not put in course order, repeats not dropped, a goal over half the lectures not reported;
+      the retry log or its counts wrong
   4c  links other than those worked out by hand; a link to an earlier lecture; a transitive link counted as direct;
       a hub concept making every lecture depend on lecture 1 (and, as a control, the same check failing with the
       weighting off); the rule checks missing a seeded backward or transitive link; graph.json not the graph of
@@ -62,7 +74,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
 sys.path.insert(0, str(ROOT))
 
-from scripts import lectures as lec  # noqa: E402
+from scripts import course_meta, lectures as lec  # noqa: E402
 from scripts import s4a_definitions as s4a, s4b_goals as s4b, s4c_lecture_graph as s4c  # noqa: E402
 from scripts import s4d_assemble as s4d  # noqa: E402
 from scripts.llm import LLMConfig  # noqa: E402
@@ -101,6 +113,7 @@ NOT_JSON = "I would rather explain this in prose."
 class KnowledgeFake(FakeServer):
     """The plain fake, except for the seeded answers of the module docstring (4a by the concept's name)."""
     base_seed = 0                  # the config's seed: the client sends seed + attempt (0, 1, 2)
+    lectures: dict = {}            # a lecture's first segment sub-goal -> its key (titles repeat in titles.tsv)
 
     def answer(self, body: dict) -> dict:
         msgs = body["messages"]
@@ -108,8 +121,13 @@ class KnowledgeFake(FakeServer):
         attempt = body.get("seed", 0) - self.base_seed
         content = None
         m = re.search(r"\nName: (.*)\n", prompt)
+        t = SEG_LINE.search(prompt)
         if "THE CONCEPT" in prompt and m:
             content = self.definition(m[1], sum(1 for x in prompt.splitlines() if FACT_LINE.fullmatch(x)), attempt)
+        elif "THE SEGMENTS" in prompt and t:
+            content = self.lecture(self.lectures[t[2]], len(SEG_LINE.findall(prompt)), attempt)
+        elif "THE LECTURES" in prompt:
+            content = self.course(attempt)
         if content is None:
             return super().answer(body)
         with self.lock:
@@ -145,6 +163,36 @@ class KnowledgeFake(FakeServer):
             elif name == "display resolution":
                 a["facts"] = [1, 99]
         return json.dumps(a)
+
+    @staticmethod
+    def lecture(key: str, n: int, attempt: int) -> str:
+        obj = lambda nums, ach="It prepares the next step.": {  # noqa: E731
+            "segments": nums, "goal": f"Explain topic {nums[0]} of lecture {key}.", "achieves": ach}
+        h = n // 2
+        objs = [obj(list(range(1, h + 1))), obj(list(range(h + 1, n)))]       # segment n in no objective
+        if key == "8":
+            return NOT_JSON
+        if key == "6":
+            objs = [obj([1, 3]), obj([2]), obj([4, 5])]
+        elif key == "7":
+            objs = [obj([1, 3]), obj([4, 5])]
+        elif attempt == 0:
+            if key == "2":
+                objs = [obj([1, 2]), obj([2])]
+            elif key == "3":
+                objs = objs[::-1]
+            elif key == "4":
+                objs[1] = obj(objs[1]["segments"], ach="")
+            elif key == "5":
+                objs[1] = obj(objs[1]["segments"] + [n + 1])
+        return json.dumps({"objectives": objs, "goal": f"Explain what lecture {key} teaches.",
+                           "achieves": "It serves the course."})
+
+    @staticmethod
+    def course(attempt: int) -> str:
+        goals = [{"lectures": ["2", "1", "1", "3", "4", "5"], "goal": "Explain the basics.", "achieves": "A start."},
+                 {"lectures": ["5", "6"] + (["7"] if attempt else []), "goal": "Apply them.", "achieves": "Use."}]
+        return json.dumps({"reasoning": "fake", "goals": goals})
 
 
 def check(ok: bool, what: str):
@@ -446,29 +494,45 @@ SEG_LINE = re.compile(r"\[(\d+)\] Sub-goal: (.*)\n    Defines: (.*)\n    Uses: (
 def test_4b(work: Path, cfg: Path, log: Path):
     print("4b goals", flush=True)
     segs = [{"id": f"9/S{i}", "subgoal": f"sub {i}"} for i in range(4)]
-    _, fl = s4b.check_lecture({"objectives": [{"segments": [1, 3], "goal": "g", "achieves": "a"},
-                                              {"segments": [3, 9], "goal": "g", "achieves": "a"}],
-                               "goal": "g", "achieves": "a"}, segs, "9")
-    check(fl.get("out_of_range") and fl.get("segment_twice") == ["9/S2"] and fl.get("not_consecutive") == ["9/O1"]
-          and [x["segment"] for x in fl.get("in_no_objective", [])] == ["9/S1", "9/S3"] and "out_of_order" not in fl,
-          "seeded: segment out of range, in two objectives, a gap, left out")
-    _, fl = s4b.check_lecture({"objectives": [{"segments": [3, 4], "goal": "g", "achieves": "a"},
-                                              {"segments": [1, 2], "goal": "g", "achieves": "a"}],
-                               "goal": "g", "achieves": "a"}, segs, "9")
-    check(fl == {"out_of_order": True}, "seeded: objectives out of lecture order, nothing else")
-    _, fl = s4b.check_course({"reasoning": "r", "goals": [{"lectures": ["4", "1"], "goal": "g", "achieves": "a"}]},
-                             ["1", "4", "16"])
-    check(fl == {"not_in_course_order": ["G1"], "lecture_in_no_goal": ["16"]},
-          "seeded: a goal's lectures out of order; a lecture in no course goal")
+    segs[3]["defines"] = ["latency"]
+    o = lambda nums, g="g", a="a": {"segments": nums, "goal": g, "achieves": a}  # noqa: E731
+    _, fl, pr = s4b.check_lecture({"objectives": [o([1, 3]), o([3, 9])], "goal": "g", "achieves": "a"}, segs, "9")
+    check(fl.get("out_of_range") == [{"objective": "9/O2", "segments": [9]}] and fl.get("segment_twice") == ["9/S2"]
+          and "not_consecutive" not in fl and "out_of_order" not in fl
+          and fl.get("in_no_objective") == [{"segment": "9/S1", "subgoal": "sub 1", "defines": []},
+                                            {"segment": "9/S3", "subgoal": "sub 3", "defines": ["latency"]}]
+          and len(pr) == 2 and "do not exist: [9]" in pr[0] and "Segment 3 is in more than one" in pr[1],
+          "seeded: out of range, in two objectives, left out (with what it defines); [1, 3] with segment 2 in no "
+          "objective is not a gap")
+    _, fl, pr = s4b.check_lecture({"objectives": [o([1, 3]), o([2])], "goal": "g", "achieves": "a"}, segs, "9")
+    check(fl.get("not_consecutive") == ["9/O1"] and len(pr) == 1 and "segment 2 between them belongs to another" in pr[0],
+          "seeded: a gap that another objective fills is not consecutive")
+    _, fl, pr = s4b.check_lecture({"objectives": [o([3, 4]), o([1, 2])], "goal": "g", "achieves": "a"}, segs, "9")
+    check(fl == {"out_of_order": True} and len(pr) == 1, "seeded: objectives out of lecture order, nothing else")
+    _, fl, pr = s4b.check_lecture({"objectives": [o([1, 2, 3, 4], a=" ")], "goal": "", "achieves": "a"}, segs, "9")
+    check(fl == {"empty_goal": ["9/O1 achieves", "9/G goal"]} and len(pr) == 2,
+          "seeded: an empty achieves of an objective and an empty lecture goal")
+    cgoal = lambda ls: {"lectures": ls, "goal": "g", "achieves": "a"}  # noqa: E731
+    cg, fl, pr = s4b.check_course({"reasoning": "r", "goals": [cgoal(["4", "1", "4"])]}, ["1", "4", "16"])
+    check(cg["goals"]["G1"]["lectures"] == ["1", "4"] and fl == {"repeats_removed": ["G1"], "reordered": ["G1"],
+          "goal_over_half": [{"goal": "G1", "lectures": 2, "of": 3}], "lecture_in_no_goal": ["16"]}
+          and len(pr) == 1 and "[16]" in pr[0],
+          "seeded course: order and repeats fixed in code and reported, a goal over half the lectures, a lecture in "
+          "no goal (a problem)")
+    _, fl, pr = s4b.check_course({"reasoning": "r", "goals": [cgoal(["1", "4"])]}, ["1", "4", "16"],
+                                 no_answer=["16"])
+    check("lecture_in_no_goal" not in fl and pr == [], "a lecture whose call gave no answer is not counted")
 
     n0 = len(lines(log))
     check(stage(work, "s4b_goals.py", ["--llm", "configs/fake_qwen.json"], work / "4b.log", "stage_4b_goals") == 0,
           "4b exits cleanly")
-    sent = lines(log)[n0:]
+    every = lines(log)[n0:]
+    sent = [r for r in every if len(r["messages"]) == 1]          # first attempts
     od = work / "output" / COURSE / "stage_4b_goals"
     segmaps = {k: json.loads((work / "output" / COURSE / "stage_1b_verify_segments/segment_maps"
                               / f"{lec.stem_of(k)}.json").read_text()) for k in KEYS}
     lecture_reqs = [r for r in sent if "THE SEGMENTS" in r["messages"][0]["content"]]
+    cg = json.loads((od / "course_goals.json").read_text())
     course_reqs = [r for r in sent if "THE LECTURES" in r["messages"][0]["content"]]
     check(len(lecture_reqs) == len(KEYS) and len(course_reqs) == 1,
           f"one call per lecture and one for the course ({len(lecture_reqs)} + {len(course_reqs)} for {len(KEYS)})")
@@ -481,9 +545,12 @@ def test_4b(work: Path, cfg: Path, log: Path):
         if k == "2":
             ok_segs &= got[0][2:] == ("head-mounted display", "virtual reality, extended reality")
     check(ok_segs, "every segment of each lecture listed, numbered from 1, with registry names (defines / uses)")
+    p0 = lecture_reqs[0]["messages"][0]["content"]
+    check("teaches nothing of the subject" in p0, "the lecture prompt has the new OBJECTIVES bullet")
     ok_ids = ok_seg_ids = True
     goals = {}
-    for k in KEYS:
+    check(json.loads((od / "lecture_goals" / "lec_8.json").read_text()) == {}, "lecture 8 (no answer): no goals")
+    for k in KEYS[:-1]:
         g = json.loads((od / "lecture_goals" / f"{lec.stem_of(k)}.json").read_text())
         goals[k] = g
         objs = [i for i in g if i != f"{k}/G"]
@@ -497,11 +564,64 @@ def test_4b(work: Path, cfg: Path, log: Path):
     check(ids and ids == [f"G{j}" for j in range(1, len(ids) + 1)]
           and all(set(g["lectures"]) <= set(KEYS) for g in cg["goals"].values()), "course goals G1.. with real lectures")
     cp = course_reqs[0]["messages"][0]["content"]
-    check(all(goals[k][f"{k}/G"]["goal"] in cp for k in KEYS), "the course call is built from every lecture's goal")
+    g4 = goals["4"]
+    block4 = (f"[4] Lecture 4: {course_meta.lecture_title(COURSE, '4')}\nGoal: {g4['4/G']['goal']}\n"
+              f"Achieves: {g4['4/G']['achieves']}\nObjectives:\n- {g4['4/O1']['goal']}\n")
+    check(all(goals[k][f"{k}/G"]["goal"] in cp for k in KEYS[:-1]) and block4 in cp
+          and f"[8] Lecture 8: {course_meta.lecture_title(COURSE, '8')}\nGoal: (none: the lecture call gave no answer)"
+          in cp and "its key in square brackets" in cp and "written exactly as in the square brackets" in cp,
+          "the course call: every lecture as [key] Lecture n: title, its goal, achieves and objectives (lecture 8: "
+          "none); the prompt's new THE LECTURES paragraph and lectures bullet")
     chk = json.loads((od / "checks.json").read_text())
-    check(set(chk["lectures"]) == set(KEYS) and all("segment_twice" in chk["lectures"][k] for k in KEYS),
-          "a check report for each lecture (the fake puts segments 1, 2 in both objectives)")
-    check(chk["course"].get("lecture_in_no_goal") == KEYS[2:], "lectures in no course goal reported (the fake uses two)")
+    L = chk["lectures"]
+
+    # retries (decision D12)
+    of = lambda r, k: ("THE SEGMENTS" in r["messages"][0]["content"]  # noqa: E731
+                       and f"[1] Sub-goal: {next(iter(segmaps[k].values()))['subgoal']}\n" in r["messages"][0]["content"])
+    attempts = {k: sum(1 for r in every if of(r, k)) for k in KEYS}
+    check(attempts == {"1": 1, "2": 2, "3": 2, "4": 2, "5": 2, "6": 3, "7": 1, "8": 3}
+          and len(course_reqs) == 1 and len([r for r in every if "THE LECTURES" in r["messages"][0]["content"]]) == 2,
+          f"lecture retries as seeded (a gap of segments in no objective asked once), the course retried once "
+          f"({attempts})")
+    phrase = {"2": "Segment 2 is in more than one objective", "3": "not in lecture order", "4": 'empty "achieves"',
+              "5": "do not exist: [5]"}
+    ok_fb = True
+    for k, ph in phrase.items():
+        second = next(r for r in every if of(r, k) and len(r["messages"]) == 3)
+        ok_fb &= second["messages"][1]["role"] == "assistant" and ph in second["messages"][2]["content"]
+    cr = next(r for r in every if "THE LECTURES" in r["messages"][0]["content"] and len(r["messages"]) == 3)
+    check(ok_fb and "[7]" in cr["messages"][2]["content"] and "[8]" not in cr["messages"][2]["content"],
+          "each retry shows its problem; the course retry names lecture 7 and not lecture 8 (no answer)")
+    check(not any("unresolved" in L.get(k, {}) for k in ("2", "3", "4", "5")) and goals["2"]["2/O1"]["segments"] == ["2/S0"]
+          and [goals["3"][o]["segments"][0] for o in ("3/O1", "3/O2")] == ["3/S0", "3/S2"],
+          "the retried lectures keep their fixed answers")
+    check(L["6"].get("not_consecutive") == ["6/O1"] and L["6"].get("unresolved")
+          and "segment 2 between them belongs to another" in L["6"]["unresolved"][0]
+          and goals["6"]["6/O1"]["segments"] == ["6/S0", "6/S2"],
+          "lecture 6: the gap filled by another objective stays: unresolved, the best answer kept")
+    check(set(L["7"]) == {"in_no_objective"} and [x["segment"] for x in L["7"]["in_no_objective"]] == ["7/S1", "7/S5"]
+          and L["2"]["in_no_objective"] == [{"segment": "2/S2", "subgoal": segmaps["2"]["2/S2"]["subgoal"],
+                                             "defines": ["stereoscopy"]}]
+          and chk["totals"]["in_no_objective_defining"] == 1,
+          "in_no_objective reported with what the segment defines (2/S2: stereoscopy); [1, 3] with 2 in none passes")
+    check(L["8"].get("errors") and chk["totals"]["no_answer"] == ["lecture 8"], "lecture 8: no answer")
+    C = chk["course"]
+    check(cg["goals"]["G1"]["lectures"] == ["1", "2", "3", "4", "5"] and cg["goals"]["G2"]["lectures"] == ["5", "6", "7"]
+          and C.get("reordered") == ["G1"] and C.get("repeats_removed") == ["G1"]
+          and C.get("goal_over_half") == [{"goal": "G1", "lectures": 5, "of": 8}] and "lecture_in_no_goal" not in C
+          and C.get("not_counted") == ["8"] and "unresolved" not in C,
+          "course: order and repeats fixed, a goal over half the lectures reported, lecture 8 not counted")
+    t, rl = chk["totals"], chk["retries"]
+    check(rl["course"]["lost"] == ["[5, 6] Apply them.", "[5, 6] achieves: Use."]
+          and rl["course"]["added"] == ["[5, 6, 7] Apply them.", "[5, 6, 7] achieves: Use."]
+          and rl["lectures"]["2"]["lost"][0].startswith("objective [2/S0, 2/S1]:")
+          and rl["lectures"]["4"]["lost"] == ["objective [4/S2] achieves: "]
+          and set(rl["lectures"]) == {"2", "3", "4", "5", "6", "8"},
+          "the retry log: what each retried answer lost and added")
+    check((t["retried"], t["changed_by_retry"], t["unresolved"], t["lost"], t["added"]) == (7, 3, ["lecture 6"], 5, 5),
+          f"the counts: 7 retried (6 lectures, the course), 3 changed (reordering or a dropped number changes no "
+          f"item), lecture 6 unresolved ({t['retried']}, {t['changed_by_retry']}, {t['unresolved']}, {t['lost']}, "
+          f"{t['added']})")
 
 
 # ---------------------------------------------------------------- 4c
@@ -612,7 +732,7 @@ def test_4d(work: Path, syn: dict):
     goals = load("goals.json")
     segs = {sid for k in KEYS for sid in json.loads((out / "stage_1b_verify_segments/segment_maps"
                                                      / f"{lec.stem_of(k)}.json").read_text())}
-    check(set(goals["segments"]) == segs and set(goals["lecture_goals"]) == {f"{k}/G" for k in KEYS}
+    check(set(goals["segments"]) == segs and set(goals["lecture_goals"]) == {f"{k}/G" for k in KEYS[:-1]}
           and all(o in goals["objectives"] for g in goals["lecture_goals"].values() for o in g["objectives"]),
           "goal tree: every lecture goal, its objectives, every segment")
     graph = load("lecture_graph.json")
@@ -670,6 +790,10 @@ def main():
     c = json.loads(cfg.read_text())
     server = KnowledgeFake(c["port"], c["model"], str(log))
     server.base_seed = c.get("seed", 0)
+    server.lectures = {next(iter(json.loads((work / "output" / COURSE / "stage_1b_verify_segments/segment_maps"
+                                             / f"{lec.stem_of(k)}.json").read_text()).values()))["subgoal"]: k
+                       for k in KEYS}
+    check(len(server.lectures) == len(KEYS), "the fake tells the lectures apart by their first sub-goal")
     server.start()
     try:
         test_4a(work, cfg, syn, log)
