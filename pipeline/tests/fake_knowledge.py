@@ -49,7 +49,9 @@ What it looks for (each line is what a broken stage would show):
   4c  links other than those worked out by hand; a link to an earlier lecture; a transitive link counted as direct;
       a hub concept making every lecture depend on lecture 1 (and, as a control, the same check failing with the
       weighting off); the rule checks missing a seeded backward or transitive link; graph.json not the graph of
-      the registry; a lecture without its needed-before file, or one without the 4a definition and defining facts
+      the registry; a lecture without its needed-before file, or one without the 4a definition and defining facts;
+      a link whose concepts are all redefined (2 -> 6: stereoscopy) missing from graph.txt and checks.json, or one
+      with another concept listed there
   4d  the layer failing its own check; a concept missing from the name index, an acronym not indexed as one; a
       card without its facts (defining first), relationships or where it is defined; a fact without its vector,
       concepts or time; a lecture without its concepts by kind, concept map or goals; the goal tree missing a goal,
@@ -680,7 +682,15 @@ def test_4c(work: Path, syn: dict):
           "before lecture 8: lectures 4, 5, 6; rendering with its 4a definition and defining facts")
     n7 = json.loads((od / "needed" / "lec_7.json").read_text())
     check([c["name"] for c in n7["never_defined"]] == ["presence"], "before lecture 7: presence is never defined")
-    check(json.loads((od / "checks.json").read_text())["problems"] == {}, "checks.json reports no problem")
+    chk = json.loads((od / "checks.json").read_text())
+    check(chk["problems"] == {}, "checks.json reports no problem")
+    gt = (od / "graph.txt").read_text()
+    section = gt.split("links whose concepts are all redefined", 1)[-1].split("\n\nLECTURE", 1)[0]
+    check(chk["totals"]["all_redefined"] == ["2 -> 6"] and "  2 -> 6 (direct): stereoscopy" in section
+          and section.count(" -> ") == 1 and [ln["redefined"] for ln in g["links"] if ln["from"] == "2"
+                                              and ln["to"] == "6"] == [[cid["stereoscopy"]]],
+          "the link whose concepts are all redefined (2 -> 6, stereoscopy) is still counted and listed in graph.txt "
+          "and checks.json, and no other")
 
 
 # ---------------------------------------------------------------- 4d

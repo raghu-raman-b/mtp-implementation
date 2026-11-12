@@ -11,13 +11,16 @@ Writes  output/<course>/stage_4c_lecture_graph/
           graph.json         params, lectures, per concept its lectures, defining lectures and weight, the links,
                              the prerequisites of each lecture, its concepts by kind, and each concept's path
           needed/lec_<n>.json  what is needed before the lecture, with names, definitions and defining facts
-          graph.txt          per lecture: direct and all prerequisites, indirect and weak links, its concepts by kind
+          graph.txt          the hub concepts; the links whose concepts are all redefined; per lecture: direct and all
+                             prerequisites, indirect and weak links, its concepts by kind
           checks.json        totals and the checks of the graph against its own rules (below)
 
 Definitions. A lecture uses a concept when the concept's registry "lectures" names it; a lecture defines it when one
 of its segments is in the concept's "defined_in".
 - Link K -> L: K comes before L and L uses a concept that K defines. The link carries those concepts. (A concept L
-  also defines itself still counts, as the plan states the rule; the link lists such concepts under "redefined".)
+  also defines itself still counts, as the plan states the rule; the link lists such concepts under "redefined".
+  Decision D11, 2026-11-13: links are directed, earlier to later; the rule is kept, and graph.txt and checks.json
+  list the links whose concepts are all redefined, the links that leaving such concepts out would remove.)
 - Weight. A concept used in many lectures counts for less, so that not every lecture depends on the lecture that
   defines a concept everyone uses. With N lectures in the run and n the lectures that use the concept:
       free = max(hub_min_lectures, hub_share * N)
@@ -42,7 +45,8 @@ of its segments is in the concept's "defined_in".
 Checks (the graph against its own rules; any entry here is a bug): backward_link (a link not forward in course
 order), direct_implied (a direct link that another path implies), indirect_not_implied (an indirect link no path
 implies), weight_mismatch (a link's kind against its weight), wrong_concepts (a link carrying a concept the later
-lecture does not use or the earlier one does not define). Reported: the hub concepts, lectures with no prerequisite.
+lecture does not use or the earlier one does not define). Reported: the hub concepts, lectures with no prerequisite,
+the links whose concepts are all redefined (all_redefined).
 """
 from __future__ import annotations
 
@@ -201,6 +205,11 @@ def needed_before(course: str, L: str, graph: dict, concepts: dict, defs: dict, 
             "introduced": [{"concept": c, "name": name(c)} for c in kinds["introduced"]]}
 
 
+def all_redefined(graph: dict) -> list[dict]:
+    """The links every concept of which the later lecture defines again itself (decision D11: reported)."""
+    return [ln for ln in graph["links"] if ln["concepts"] and set(ln["redefined"]) == set(ln["concepts"])]
+
+
 def graph_text(course: str, graph: dict, concepts: dict) -> str:
     name = lambda c: concepts[c]["name"]  # noqa: E731
     p = graph["params"]
@@ -209,6 +218,10 @@ def graph_text(course: str, graph: dict, concepts: dict) -> str:
     hubs = sorted((c for c, v in graph["concepts"].items() if v["weight"] < 1), key=lambda c: graph["concepts"][c]["weight"])
     out += [f"  {c} {name(c)}: {graph['concepts'][c]['lectures']} lectures, weight {graph['concepts'][c]['weight']}"
             for c in hubs] or ["  none"]
+    out.append("links whose concepts are all redefined by the later lecture (counted; leaving such concepts out would "
+               "remove them):")
+    out += [f"  {ln['from']} -> {ln['to']} ({ln['kind']}): {', '.join(map(name, ln['concepts']))}"
+            for ln in all_redefined(graph)] or ["  none"]
     for L in graph["lectures"]:
         out += ["", f"LECTURE {L}: {course_meta.lecture_title(course, L)}"]
         for kind, label in (("direct", "direct"), ("indirect", "indirect"), ("weak", "weak")):
@@ -247,6 +260,7 @@ def run(course: str, params: dict | None = None) -> dict:
               "no_prerequisite": [L for L in keys if not graph["prerequisites"][L]["all"]],
               "needs_first_lecture": [L for L in keys if keys and keys[0] in graph["prerequisites"][L]["direct"]],
               "assumed_concepts": sorted({c for k in graph["concept_kinds"].values() for c in k["assumed"]}),
+              "all_redefined": [f"{ln['from']} -> {ln['to']}" for ln in all_redefined(graph)],
               "definitions": "4a definitions.json found" if defs else "no 4a definitions.json: definitions are null"}
     (od / "checks.json").write_text(json.dumps({"totals": totals, "problems": problems}, indent=1,
                                                ensure_ascii=False) + "\n")
