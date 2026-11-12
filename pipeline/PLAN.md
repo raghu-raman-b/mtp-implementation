@@ -70,12 +70,13 @@ What the last round showed: 8 of 62 facts failed. 3 of them were passed by the j
 for "this" (at least one is a false alarm). The judge passed two thin facts in 1/S0 (full forms of the abbreviations;
 what people associate with XR). Rewrites are not judged again. Nothing yet measures the judge against a reference.
 
-- [ ] **F** Gold labels for the 62 facts: pass or fail per property, with a note, in `analysis/fact_judge/gold.json`.
-- [ ] **F** Seeded errors: about 30 facts made wrong on purpose, a few per kind (trivia, one detail of a point, two points
+- [x] **F** Gold labels for the 62 facts: pass or fail per property, with a note, in `analysis/fact_judge/gold.json` (55 pass, 7 fail).
+- [x] **F** Seeded errors: about 30 facts made wrong on purpose, a few per kind (trivia, one detail of a point, two points
   in one, a summary of the segment, a question stated as fact, a missing evidence sentence, a pronoun, a bare acronym,
-  course logistics, a dropped hedge, added outside knowledge), each with the property it breaks.
-- [ ] **F** Missed facts: for 4 segments, list what the segment teaches that no fact holds (the judge cannot see these;
-  this measures 2a).
+  course logistics, a dropped hedge, added outside knowledge), each with the property it breaks:
+  `analysis/fact_judge/seeded.json` (34 entries, one per judge call).
+- [x] **F** Missed facts: for 4 segments, list what the segment teaches that no fact holds (the judge cannot see these;
+  this measures 2a): `analysis/fact_judge/missed.json` (all 15 segments read; 5 points, 1 major).
 - [ ] **O** `analysis/fact_judge/compare.py`: judge against gold and against the seeded errors, per property: caught,
   missed, false alarms; the list of disagreements with both reasons.
 - [ ] **O** (EC2) Run the judge three times on the same facts: how many verdicts flip.
