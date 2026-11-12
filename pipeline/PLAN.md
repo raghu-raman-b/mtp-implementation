@@ -103,7 +103,7 @@ list in, triples out (subject, label, object, facts). Facts are numbered `[1]..[
   `relations/lec_<n>.json`, a text view of both, `checks/lec_<n>.json`, `llm/`. The answer schema limits subject and
   object to the concept names of the segment. (Plumbing checked with the fake model in `tests/fake_run.py`; built
   before the block 1 gate, as it needs no model; nothing run on real facts yet.)
-- [ ] **O** Code checks, reported per segment: a fact number out of range; the same name twice (merged); a name or alias
+- [x] **O** Code checks, reported per segment: a fact number out of range; the same name twice (merged); a name or alias
   that appears in none of its facts; an alias not written in any fact; a fact with no concept; a triple whose two
   concepts never share a cited fact; a triple and its reverse; a vague label ("is related to"); a concept with no
   triple.
