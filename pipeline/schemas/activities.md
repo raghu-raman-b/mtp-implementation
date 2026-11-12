@@ -30,3 +30,10 @@ from (every activity must be answerable from its facts). `data` by `kind`:
 "lectures": ["1", "4"]}]}}` (the viewer schedules the cards per learner in the browser).
 
 A kind may be missing for a lecture or segment when its material does not allow it (no steps: no `put_in_order`).
+
+Additions (2026-11-13, requested by the viewer; everything above unchanged):
+- Optional per-item `"facts": [fact IDs]` (for time links): on each `concept_map` and `complete_map` edge (the
+  relationship's facts), each `crossword` entry and each `match_pairs` pair (the concept's definition facts). Present
+  whenever the material gives them; always a subset of the activity's `facts`.
+- `complete_map`: a blank that hides `from` or `to` hides a concept that appears on no other edge of the map, so the
+  answer is not visible elsewhere (blanks on shared concepts hide the `label` instead).
