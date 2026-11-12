@@ -38,6 +38,11 @@ class Request:
     think_budget: int | None = None  # overrides LLMConfig.think_budget (vLLM only; llama.cpp fixes it per server)
     sampling: dict = field(default_factory=dict)   # overrides, e.g. {"temperature": 0}
     meta: dict = field(default_factory=dict)       # anything you want back on the result
+    # Tool calling (OpenAI tools API; llama.cpp needs --jinja). Sent only when set, so the request hash of a request
+    # without tools is what it always was. A conversation with tool calls goes in followup: {"role": "assistant",
+    # "content": ..., "tool_calls": [...]} then {"role": "tool", "tool_call_id": ..., "content": ...} per call.
+    tools: list | None = None       # [{"type": "function", "function": {"name", "description", "parameters"}}]
+    tool_choice: str | dict | None = None   # "auto", "none", "required", or a named function
 
 
 @dataclass
@@ -45,6 +50,7 @@ class Result:
     key: str
     content: str = ""               # the answer (thinking removed)
     reasoning: str = ""             # the thinking, when the server returns it apart
+    tool_calls: list = field(default_factory=list)   # the calls the model asked for, as the server sent them
     parsed: Any = None              # the answer as JSON, when the request had a schema
     ok: bool = False
     errors: list = field(default_factory=list)
@@ -194,6 +200,10 @@ class LLM:
         if req.schema is not None:
             body["response_format"] = {"type": "json_schema",
                                        "json_schema": {"name": "answer", "schema": req.schema, "strict": True}}
+        if req.tools:
+            body["tools"] = req.tools
+        if req.tool_choice is not None:
+            body["tool_choice"] = req.tool_choice
         return body
 
     def _hash(self, body: dict) -> str:
@@ -247,6 +257,7 @@ class LLM:
         if hit:
             res.content, res.reasoning, res.finish = hit["content"], hit["reasoning"], hit["finish"]
             res.input_tokens, res.output_tokens, res.cached = hit["input_tokens"], hit["output_tokens"], True
+            res.tool_calls = hit.get("tool_calls") or []
         else:
             self.start()                      # a no-op once started; the first cache miss starts the server
             t0 = time.time()
@@ -261,11 +272,14 @@ class LLM:
             res.content = (msg.get("content") or "").strip()
             res.reasoning = msg.get("reasoning_content") or msg.get("reasoning") or ""
             res.finish = choice.get("finish_reason") or ""
+            res.tool_calls = msg.get("tool_calls") or []
             res.input_tokens, res.output_tokens = usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
             res.latency_s = time.time() - t0
             if cache:
                 rec = {"hash": h, "key": req.key, "content": res.content, "reasoning": res.reasoning,
                        "finish": res.finish, "input_tokens": res.input_tokens, "output_tokens": res.output_tokens}
+                if res.tool_calls:            # only then, so cache lines of requests without tools are unchanged
+                    rec["tool_calls"] = res.tool_calls
                 self._cache(cache)[h] = rec
                 self._append(cache, rec)
         # parse and check

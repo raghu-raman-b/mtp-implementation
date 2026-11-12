@@ -1,0 +1,68 @@
+[
+ {
+  "type": "function",
+  "function": {
+   "name": "check_concept",
+   "description": "Look up one term of the course by its name, an alias or an acronym (a plural or a small misspelling is found too). Returns the concept's card: its definition, the lecture and time where it is defined, its facts with IDs, and how it relates to other concepts, and the lectures that lead up to it. Use it for 'what is X', 'how does X work', 'what kinds or parts of X are there', 'where is X taught', 'what do I need before X', and once per term for 'how do X and Y differ'. If the term is unknown, it says so: then use fact_lookup.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "name": {"type": "string", "description": "The term only, as the learner wrote it, e.g. \"HMD\" or \"field of view\"; not a whole question."}
+    },
+    "required": ["name"]
+   }
+  }
+ },
+ {
+  "type": "function",
+  "function": {
+   "name": "fact_lookup",
+   "description": "Search all the facts taught in the course by meaning. Returns the closest facts with IDs, lecture, time and a score, and says when nothing matches closely. Use it when check_concept says a term is unknown, when a card does not answer the question, and for questions that are not about one term: how or why something happens, comparisons, examples, steps, questions that span several lectures.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "query": {"type": "string", "description": "The question as a short plain statement of what to find, e.g. \"how the headset tracks head rotation\"."},
+     "rephrasings": {"type": "array", "items": {"type": "string"}, "description": "Two or three other wordings of the same query (other terms, the full name of an acronym, simpler words). They widen the search."},
+     "lecture": {"type": "string", "description": "Optional: search only this lecture, e.g. \"4\". Leave it out to search the whole course."}
+    },
+    "required": ["query"]
+   }
+  }
+ },
+ {
+  "type": "function",
+  "function": {
+   "name": "lecture_dependencies",
+   "description": "What a learner needs before a lecture: the earlier lectures it builds on and which concepts it takes from each, the concepts it uses from earlier lectures with their definitions and facts, and the concepts the course never defines. Use it for 'what do I need before lecture N', 'what should I revise first', 'which lectures come before N'.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "lecture": {"type": "string", "description": "The lecture number, e.g. \"8\"."}
+    },
+    "required": ["lecture"]
+   }
+  }
+ },
+ {
+  "type": "function",
+  "function": {
+   "name": "lecture_overview",
+   "description": "One lecture at a glance: its goal, objectives, its segments with times and what each teaches, the concepts it introduces, uses again or assumes, and the course goals it serves. Use it for 'what is lecture N about', 'what is lecture N for', 'what will I learn in lecture N', 'where in lecture N is ...'.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "lecture": {"type": "string", "description": "The lecture number, e.g. \"4\"."}
+    },
+    "required": ["lecture"]
+   }
+  }
+ },
+ {
+  "type": "function",
+  "function": {
+   "name": "course_goals",
+   "description": "The goals of the whole course and which lectures serve each one. Use it for 'what is this course about', 'what will I be able to do after the course', 'which lectures are about ...' at the level of the course.",
+   "parameters": {"type": "object", "properties": {}}
+  }
+ }
+]
