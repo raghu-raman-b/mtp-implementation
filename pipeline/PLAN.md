@@ -85,7 +85,9 @@ what people associate with XR). Rewrites are not judged again. Nothing yet measu
   `report_compare.md`: gold failures caught 2/7, false alarms 3/55; the seeded runs need the EC2, plumbing checked with
   the fake model.)
 - [ ] **O** (EC2) Run the judge three times on the same facts: how many verdicts flip.
-- [ ] **O** The code checks against gold: false alarms and misses of `pointing` and `acronym`.
+- [x] **O** The code checks against gold: false alarms and misses of `pointing` and `acronym`. (`report_compare.md`:
+  `pointing` flagged 3, all false alarms by gold, the 3 code-only failures of the last round; `acronym` flagged none and
+  missed 1/S0/F1, whose "3D", "4D" start with a digit; the 4 seeded entries marked `code` are all flagged.)
 - [ ] **O** (EC2) Judge the rewritten facts once more (test only): how many rewrites still fail.
 - [ ] **O** Report with proposed changes; **F** revises `fact_judge.txt` (and `fact_rewrite.txt` if needed); rerun; the
   report shows before and after.
