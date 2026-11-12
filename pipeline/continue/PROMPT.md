@@ -124,7 +124,18 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
-- **Schedule (IST, set 02:25)**: 2c ~04:50 -> 3a ~05:05 -> 3b ~05:45 -> 3c, 4a (from facts) ~05:50 -> 4b ~06:10 -> 4c, 4d
+- **mvp_run.sh drives the rest** (user, 02:28 IST: embeddings on the local 14900K CPU, local GPU for Gemma 4 12B
+  (simple activities), Qwen on the EC2 for complex ones, thinking on everywhere, save each stage at once). Local tmux
+  session `mvp` runs `pipeline/mvp_run.sh`: waits for EC2 job 3 (2c) -> pulls -> 3a local CPU -> EC2 job 4 (3b) -> 3c,
+  4a --from-facts local -> EC2 job 5 (4b) -> 4c, 4d local CPU -> activities: EC2 job 6 (quiz, open_question,
+  odd_one_out, put_in_order on Qwen) while recap, crossword run locally on Gemma 4 12B (`--out activities_local`) ->
+  merge (local cache joined, local run adds simple + code kinds) -> `--check`. Commits and pushes after each stage.
+  Log `pipeline/output/logs/mvp_run.log`; done steps marked in `output/logs/mvp/` (rerun skips them). On a failure it
+  stops: fix, rerun `tmux new -d -s mvp 'bash pipeline/mvp_run.sh'`. The EC2 queue was cut to lines 1-3; the script
+  appends 4-6. The activities mapping awaits the user's confirmation (asked 02:30).
+  New schedule: 2c ~04:50, 3a ~04:55, 3b ~05:40, 3c/4a ~05:45, 4b ~06:00, 4c/4d ~06:05, activities ~08:00 (EC2 kinds
+  ~07:35, local Gemma kinds ~07:55), merged ~08:00.
+- (Superseded) **Schedule (IST, set 02:25)**: 2c ~04:50 -> 3a ~05:05 -> 3b ~05:45 -> 3c, 4a (from facts) ~05:50 -> 4b ~06:10 -> 4c, 4d
   ~06:20 -> activities: ~09:10 at 6k thinking, ~07:00 without thinking. Then merge, viewer check (~30 min).
 - (Superseded) **EC2 queue now**: 2 2b (running) / 3 2c / 4 3a / 5 3b / 6 3c / 7 4a --from-facts / 8 4b / 9 4c / 10 4d / 11 activities
   (6k). Estimated end ~10:45 IST at 6k; ~08:30 if the activities run without thinking (the user has not answered yet;

@@ -1,13 +1,14 @@
-PIPELINE v3 STATUS - MVP DAY  (updated 02:25 IST, 13 Nov; full state: pipeline/continue/PROMPT.md)
+PIPELINE v3 STATUS - MVP DAY  (updated 02:32 IST, 13 Nov; full state: pipeline/continue/PROMPT.md)
 
-ALL MVP CODE MERGED. Judge skipped (2a facts pass through; partial judge answers saved).
-SCHEDULE (EC2 queue, Qwen 6k)            ends about
-  2c  concepts + relationships           04:50   <- running
-  3a  candidates (CPU embeddings)        05:05
-  3b  same-concept groups                05:45
-  3c  registry, 4a (from facts)          05:50
-  4b  goals                              06:10
-  4c  lecture graph, 4d knowledge/       06:20
-  activities                             09:10 (6k)  or  07:00 (no thinking)
-  merge + viewer check                   +30 min
+ALL MVP CODE MERGED. Judge skipped. mvp_run.sh (tmux `mvp`) drives the rest; log pipeline/output/logs/mvp_run.log
+SCHEDULE                                               ends about
+  2c  concepts + relationships      EC2 Qwen 6k        04:50   <- running
+  3a  candidates                    local CPU          04:55
+  3b  same-concept groups           EC2 Qwen 6k        05:40
+  3c, 4a (from facts)               local              05:45
+  4b  goals                         EC2 Qwen 6k        06:00
+  4c, 4d knowledge/                 local CPU          06:05
+  activities: quiz, open questions, odd one out, put in order   EC2 Qwen     07:35
+              recap, crossword clues                            local Gemma 12B  07:55
+              maps, match pairs, recall, review cards           code         08:00
 VIEWER:  python pipeline/viewer/serve.py nptel_vr  -> http://localhost:8765
