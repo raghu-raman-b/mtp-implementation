@@ -401,14 +401,58 @@ def run(course: str, llm: LLM, cap: int = CAP, seed: int | None = None, out: Pat
     return totals
 
 
+def run_from_facts(course: str, out: Path | None = None) -> dict:
+    """MVP stand-in for the model (2026-11-13, the user skipped 4a's calls to finish the full course in a day): each
+    concept's definition is the text of its first defining fact in course order, or of its first fact when no segment
+    defines it. Same files and fields as run(), each record marked "source": "facts"; `defined` is whether the
+    registry has a defining segment. Replace with a model run later (run())."""
+    reg = load_registry(course)
+    keys = registry_lectures(reg)
+    texts, cmaps = load_facts(course, keys), load_concept_maps(course, keys)
+    od = Path(out) if out else out_dir(course)
+    od.mkdir(parents=True, exist_ok=True)
+    defs, text = {}, []
+    totals = {"concepts": 0, "defined": 0, "capped": 0, "no_answer": [], "unresolved": [], "no_facts": [],
+              "facts_missing": {}, "flags": {}, "retried": 0, "changed_by_retry": 0, "lost": 0, "added": 0,
+              "source": "facts"}
+    for cid, c in reg["concepts"].items():
+        facts = sorted((f for f in c["facts"] if f in texts), key=fact_order)
+        defining = sorted(defining_facts(c, cmaps), key=fact_order)
+        pick = [f for f in defining if f in texts][:1] or facts[:1]
+        rec = {"name": c["name"], "definition": (lambda t: t["text"] if isinstance(t, dict) else t)(texts[pick[0]]) if pick else "", "defined": bool(c.get("defined_in")),
+               "facts": pick, "misplaced": [], "shown": pick, "defining": defining, "total_facts": len(facts),
+               "capped": False, "unresolved": [], "errors": [] if pick else ["no facts"], "source": "facts"}
+        defs[cid] = rec
+        totals["concepts"] += 1
+        totals["defined"] += rec["defined"]
+        if not pick:
+            totals["no_facts"].append(cid)
+        text.append(f"{cid}  {c['name']}  [{'defined' if rec['defined'] else 'not defined'}; from fact "
+                    f"{pick[0] if pick else 'none'}]\n  {rec['definition']}\n")
+    (od / "definitions.json").write_text(json.dumps(defs, indent=1, ensure_ascii=False) + "\n")
+    (od / "definitions.txt").write_text("\n".join(text) + "\n")
+    (od / "checks.json").write_text(json.dumps({"cap": None, "totals": totals, "concepts": {}, "retries": {}},
+                                               indent=1, ensure_ascii=False) + "\n")
+    print(f"4a from facts (no model): {totals['concepts']} concepts, {totals['defined']} defined, "
+          f"no facts: {len(totals['no_facts'])}")
+    return totals
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("course", help="course folder name, e.g. nptel_vr")
-    ap.add_argument("--llm", required=True, help="LLMConfig file (.json or .toml)")
+    ap.add_argument("--llm", help="LLMConfig file (.json or .toml); not needed with --from-facts")
+    ap.add_argument("--from-facts", action="store_true",
+                    help="no model: each definition is the concept's first defining fact (MVP stand-in)")
     ap.add_argument("--cap", type=int, default=CAP, help=f"most facts given per concept (default {CAP})")
     ap.add_argument("--seed", type=int, help="sampling seed (default: the config's); for repeat runs")
     ap.add_argument("--out", help="output folder (default: output/<course>/stage_4a_definitions); for repeat runs")
     a = ap.parse_args()
+    if a.from_facts:
+        run_from_facts(a.course, Path(a.out) if a.out else None)
+        return
+    if not a.llm:
+        ap.error("--llm is required (or --from-facts)")
     with LLM(LLMConfig.load(a.llm)) as llm:
         run(a.course, llm, a.cap, a.seed, Path(a.out) if a.out else None)
 
