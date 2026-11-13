@@ -124,6 +124,37 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **WEAK POINTS TO WORK ON NEXT (user, 10:15: "record them, we work on them later")**, in rough priority:
+  1. **Definitions (4a ran `--from-facts`)**: each concept's "definition" is its first defining fact; only ~26% of the
+     1,107 review cards read like a definition. Hurts match pairs (~70% of pairs problematic), recall (10 of 22 sampled
+     not a definition), crossword clues, concept cards, QA's "what is X". Fix: run real 4a (Qwen) - one call per concept,
+     ~3,400 calls (fewer after 3b), cap 40 facts, checks with retry already built.
+  2. **Synonym merge (3b skipped; `s3c --no-model`)**: duplicates on screen (headset / head-mounted display / virtual
+     reality headset / VR headset on 11 lecture maps; AR Toolkit / augmented reality toolkit; 3D model / three-dimensional
+     model; xr engine / extended reality engine; ios / iPhone operating system). Plan in the "Deferred" bullet below
+     (425 clusters ~1.5 h; 9 answers cached in `stage_3_registry/llm/`; remap activity concept IDs after the rebuild).
+     Also "VR headset" (C0077) breaks D8: `acronym_in_name` is report-only in 2c.
+  3. **The fact judge (2b skipped)**: block 1 is open (review 1 CHANGES 8-13; F's gold edits blocked by the permission
+     check; `compare.py` STAGE_CACHE points at the moved 2b folder; the revised prompt's first 27 Qwen verdicts are in
+     `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`).
+  4. **Activities**: quiz correct option is the longest in 52% of questions (bias; add a check or shuffle-length rule);
+     odd one out 4/20 contestable; put in order 3/7 weak (59/A5 not a sequence); crosswords: 5 unresolved (13/A19,
+     21/A11, 29/A11, 51/A21 wrong SHORTESTPATH clue, 58/A20), 60/A13, 16/A13, 2/A8, over-masking ("graphics" for
+     SCENEGRAPH); match pairs: masked blanks read oddly, truncated, twin rows; complete_map 5/A10 blanks one edge twice;
+     no activity judges yet; prompts written by O, never reviewed by F.
+  5. **Concept maps**: 42 of 63 lectures have > 60 nodes (up to 170): unreadable at "fit"; needs clustering, a
+     core-concepts filter or a limit (introduced + top-degree).
+  6. **QA**: "not covered" answers take ~20 s; multi-concept comparisons up to ~19 s; prerequisite lists include odd
+     items (lecture 16: "HMDs: displays from the 1950s", augmented virtuality; lecture 40); "where is X taught" shows two
+     times (fact vs segment); a citation repeated 5x (Q09); the no-match cut-off 0.4 is a guess; raw LaTeX now shown
+     plain; no scored question set yet (block 6).
+  7. **2c noise**: borderline concepts ("earliest computer", "connected computer", "real time", "mouse"), `defined` set
+     on mere mentions, model-coined names ("body-part tracking"); 437 `reverse`, 322 `name_not_in_facts` flags reported.
+  8. **Pipeline/infra**: `checks.json` in activities only describes the last run (see `checks_demo.json`,
+     `activities_ec2/`); notebook lacks the agents' updated stage 3/4 texts (D8/D9/D12 changes); embeddings on CPU are
+     too slow (use GPU); 0a leaves null times at cuts inside a cue (4d now tolerates them); `pkill -f` matches own shell.
+  9. **Demo setup** never run on a real instance (llama.cpp build with the instance's CUDA is the risk; `LLAMA_REF=master`).
+  Test evidence: `analysis/mvp/test_report.md`, `analysis/mvp/showcase.md`.
 - **10:05 MVP wrapped up**: testing agent's report `analysis/mvp/test_report.md` (integrity clean; quizzes and open
   questions strong; match pairs, recall and review cards weak because 4a is from facts; duplicates from skipped 3b; QA
   median 6.1 s, no wrong citation in 56 answers) and `analysis/mvp/showcase.md`; viewer answers now rendered as
