@@ -70,12 +70,17 @@ def label_key(label: str) -> str:
 
 
 # ---------------------------------------------------------------- concepts
+NO_MODEL = False   # --no-model (MVP, 2026-11-13): build the registry from the exact merges of 3a only, without 3b
+
+
 def groups_of(data: dict) -> list[dict]:
     """Every group: {"entries", "name", "how": "model" | None, "reason", "cluster"}; entries outside the clusters
     are groups of one."""
     out, covered = [], set()
     for kid, k in data["clusters"].items():
         if "groups" not in k:
+            if NO_MODEL:                  # MVP: no 3b answers; the cluster's entries stay apart (groups of one below)
+                continue
             sys.exit(f"cluster {kid} has no groups: run s3b first")
         for g in k["groups"]:
             out.append({"entries": g["entries"], "name": g["name"], "reason": g["reason"], "cluster": kid,
@@ -250,7 +255,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("course", help="course folder name, e.g. nptel_vr")
     ap.add_argument("--out", help="the stage folder (default: output/<course>/stage_3_registry)")
+    ap.add_argument("--no-model", action="store_true",
+                    help="clusters without 3b answers keep their entries apart (MVP: the registry from exact merges)")
     a = ap.parse_args()
+    global NO_MODEL
+    NO_MODEL = a.no_model
     run(a.course, Path(a.out) if a.out else None)
 
 

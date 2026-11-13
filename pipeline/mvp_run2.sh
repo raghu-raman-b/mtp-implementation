@@ -67,8 +67,8 @@ fi
 
 # 2. 3a here (CPU embeddings), 3b on the EC2 (job 4), back
 if ! done_step 3a; then
-  log "3a: candidates, embeddings on the local CPU"
-  CUDA_VISIBLE_DEVICES= "$PY" -u scripts/s3a_candidates.py nptel_vr --device cpu >> "$LOG" 2>&1 || die "3a"
+  log "3a: candidates, embeddings on the local GPU"
+  "$PY" -u scripts/s3a_candidates.py nptel_vr --device cuda >> "$LOG" 2>&1 || die "3a"
   commit "MVP: 3a candidates (local CPU embeddings)"
   mark 3a
 fi
@@ -83,7 +83,7 @@ fi
 
 # 3. 3c and 4a (from facts) here, 4b on the EC2 (job 5), back
 if ! done_step 3c4a; then
-  python3 -u scripts/s3c_registry.py nptel_vr >> "$LOG" 2>&1 || die "3c"
+  python3 -u scripts/s3c_registry.py nptel_vr --no-model >> "$LOG" 2>&1 || die "3c"
   python3 -u scripts/s4a_definitions.py nptel_vr --from-facts >> "$LOG" 2>&1 || die "4a"
   commit "MVP: 3c registry, 4a definitions from facts"
   mark 3c4a
@@ -100,7 +100,7 @@ fi
 # 4. 4c and 4d here (4d embeds the facts on the local CPU)
 if ! done_step 4cd; then
   python3 -u scripts/s4c_lecture_graph.py nptel_vr >> "$LOG" 2>&1 || die "4c"
-  CUDA_VISIBLE_DEVICES= "$PY" -u scripts/s4d_assemble.py nptel_vr >> "$LOG" 2>&1 || die "4d (see its checks)"
+  "$PY" -u scripts/s4d_assemble.py nptel_vr >> "$LOG" 2>&1 || die "4d (see its checks)"
   commit "MVP: 4c lecture graph, 4d knowledge layer"
   mark 4cd
 fi

@@ -124,6 +124,11 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **06:23: 3b skipped** (425 clusters = ~1.5 h of Qwen): `s3c_registry.py --no-model` builds the registry from 3a's exact
+  merges (3,384 concepts, 7,479 relations; HMD/headset-type synonyms stay apart; run 3b later, its partial answers are in
+  the EC2's stage_3_registry/llm). EC2 queue line 4 is a no-op. 3a and 4d now embed on the local GPU (the CPU took 90 s
+  per batch). 2c: 5,805 segment concepts, 7,502 relations, no unresolved. New est.: 4b ~06:45, 4d ~06:50, demo activities
+  ~07:30, the rest after.
 - **04:50: now `mvp_run2.sh`** (tmux `mvp`): 2c turn 2 ran slow (2c lands ~06:20), so the activities run in two waves:
   demo lectures 1-8, 16 first (EC2 job 6 + local Gemma), then the rest (EC2 job 7 + local). Est.: 3b ~07:00, 4b ~07:20,
   4d ~07:25, demo activities ~07:50, the rest after 08:30 (the user: whatever exists at 08:30 is final).
