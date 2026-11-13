@@ -142,8 +142,11 @@ State of the MVP (2026-11-13 02:05 IST):
      21/A11, 29/A11, 51/A21 wrong SHORTESTPATH clue, 58/A20), 60/A13, 16/A13, 2/A8, over-masking ("graphics" for
      SCENEGRAPH); match pairs: masked blanks read oddly, truncated, twin rows; complete_map 5/A10 blanks one edge twice;
      no activity judges yet; prompts written by O, never reviewed by F.
-  5. **Concept maps**: 42 of 63 lectures have > 60 nodes (up to 170): unreadable at "fit"; needs clustering, a
-     core-concepts filter or a limit (introduced + top-degree).
+  5. **Concept maps**: DONE 2026-11-13 (agent, commit 0965ba9): key-concepts view (~20) by default, "all N, by part"
+     view, focus mode, course map as a lecture overview by week/topic with prerequisite arcs, concept explorer
+     (screenshots `analysis/mvp/maps/`). Left: hub concepts (~40 links) crowded when selected in the full view; long
+     by-part pages for the biggest lectures; the card can overlap the question drawer; overview arcs cross topic titles
+     in row 1; touch and keyboard-only use untested.
   6. **QA**: "not covered" answers take ~20 s; multi-concept comparisons up to ~19 s; prerequisite lists include odd
      items (lecture 16: "HMDs: displays from the 1950s", augmented virtuality; lecture 40); "where is X taught" shows two
      times (fact vs segment); a citation repeated 5x (Q09); the no-match cut-off 0.4 is a guess; raw LaTeX now shown

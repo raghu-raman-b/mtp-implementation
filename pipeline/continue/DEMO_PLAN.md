@@ -25,10 +25,11 @@ Every item below was checked on the real layer (`analysis/mvp/showcase.md`, `ana
 
 | # | Where | Do | Say |
 |---|---|---|---|
-| 1 | **Course home** | Scroll the course goals and the lectures by week | "Seven course goals, and which lectures serve each, worked out from the transcripts." |
+| 1 | **Course home**, then **Concept map** in the top bar | Scroll the course goals; on the course map (lectures grouped by week and topic, arrows = prerequisites) click lecture 30: its prerequisites light up and its card opens; click a goal chip | "Seven course goals, and which lectures build on which, worked out from the transcripts." |
 | 2 | **Lecture 4 "Definitions"** | Click a segment in the list; let it play; the current segment and the transcript follow | "Each lecture is cut into the steps it teaches, each with its goal. You navigate by meaning." |
 | 3 | Lecture 4 -> **Concepts** -> "virtual reality system" | Click "where it is defined": the video jumps to 6:01; show its facts and relationships | "Every concept is traced to the sentence where it is taught." |
-| 4 | Lecture 4 -> **Concept map** (4/A7, 19 nodes) | Click a node: its card opens | "How the ideas connect: CAD, video conferencing and 3D movies against the three VR characteristics." |
+| 4 | Lecture 4 -> **Concept map** (19 nodes) | Click a node: its neighbours light up and its card opens; double-click to zoom | "How the ideas connect: CAD, video conferencing and 3D movies against the three VR characteristics." |
+| 4b | **Lecture 62 -> Concept map** (166 concepts) | The key view (about 20 concepts) reads at once; toggle "All 166 concepts, by part": grouped by the part of the lecture that teaches them, a part's title plays the video there | "Even the densest lecture stays readable; every concept sits where it is taught." |
 | 5 | **Lecture 23 -> Concept map** (23/A12) | Point at "disappearing technology" linked to "presence" | "Across the course: the lecturer's idea that the best technology disappears is the same as presence." |
 | 6 | **Lecture 30 "Auditory Sense"** -> Activities | **Crossword 30/A15**: fill AZIMUTH and ELEVATION live; **quiz 30/A9** (ILD/ITD/HRTF): answer one wrong on purpose, the explanation links to the moment in the video | "Every question has a right answer stated in the lecture; the wrong options are real neighbouring concepts." |
 | 7 | **Lecture 36 "Usability requirements"** -> Activities | **Put in order 36/A5** (the five contextual-inquiry stages), **complete the map 36/A12**, **odd one out 36/A15** | "Different games from the same knowledge, consistent with each other." |
@@ -64,7 +65,7 @@ Click the "(lecture N, m:ss)" links inside an answer: they open the lecture at t
 - **Match pairs** (all lectures) and most **recall / review cards**: their "definitions" are each concept's first fact
   (model-written definitions are still to come), so many read oddly. Show only recall **5/A0** or **3/A0**.
 - **Crosswords** 13/A19, 21/A11, 29/A11, 51/A21 (a wrong clue), 58/A20, 60/A13, 16/A13, 2/A8.
-- **Big concept maps at "fit"**: 42 lectures have more than 60 concepts. Use lectures 4 and 23, or zoom on one node first.
+- **Selecting a hub concept** in a full ("All N concepts") view (e.g. "game engine" in lecture 20): a crowded fan of labels. Select hubs in the key view.
 - **Duplicate concepts** (the synonym merge is still to come): headset / head-mounted display / virtual reality headset
   appear together on several maps (lectures 2, 6, 10, 11, 13, 15, 16, 17, 20, 28, 44); AR Toolkit / augmented reality
   toolkit; 3D model / three-dimensional model. Do not open those cards or search them in the glossary.
