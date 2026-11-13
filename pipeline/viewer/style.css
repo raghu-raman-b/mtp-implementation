@@ -6,7 +6,7 @@
   --ok: #157f4f; --ok-soft: rgba(21, 127, 79, .1); --bad: #c73434; --bad-soft: rgba(199, 52, 52, .09);
   --warn: #9a6300; --warn-soft: rgba(154, 99, 0, .09);
   --k-intro: #2c5fd9; --k-again: #157f4f; --k-assumed: #9a6300; --k-later: #7d8592;
-  --node: #ffffff; --edge: #a9b1be; --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 16px rgba(16, 24, 40, .05);
+  --node: #ffffff; --edge: #b3bac6; --map-bg: #fbfcfd; --accent-soft-solid: #eaf0fc; --warn-soft-solid: #f8f0e1; --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 16px rgba(16, 24, 40, .05);
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --xw-blk: #2a2f38;
@@ -20,7 +20,7 @@
     --ok: #5cd49a; --ok-soft: rgba(92, 212, 154, .12); --bad: #ff8080; --bad-soft: rgba(255, 128, 128, .1);
     --warn: #f0b860; --warn-soft: rgba(240, 184, 96, .1);
     --k-intro: #84a9ff; --k-again: #5cd49a; --k-assumed: #f0b860; --k-later: #737d8b;
-    --node: #1d222b; --edge: #4d5766; --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    --node: #1d222b; --edge: #4d5766; --map-bg: #12161c; --accent-soft-solid: #1f2a42; --warn-soft-solid: #2e2719; --shadow: 0 1px 2px rgba(0, 0, 0, .4);
     --xw-blk: #050608;
     color-scheme: dark;
   }
@@ -32,7 +32,7 @@
   --ok: #5cd49a; --ok-soft: rgba(92, 212, 154, .12); --bad: #ff8080; --bad-soft: rgba(255, 128, 128, .1);
   --warn: #f0b860; --warn-soft: rgba(240, 184, 96, .1);
   --k-intro: #84a9ff; --k-again: #5cd49a; --k-assumed: #f0b860; --k-later: #737d8b;
-  --node: #1d222b; --edge: #4d5766; --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+  --node: #1d222b; --edge: #4d5766; --map-bg: #12161c; --accent-soft-solid: #1f2a42; --warn-soft-solid: #2e2719; --shadow: 0 1px 2px rgba(0, 0, 0, .4);
   --xw-blk: #050608;
   color-scheme: dark;
 }
@@ -172,29 +172,104 @@ body:not(.devmode) .dev { display: none !important; }
 .gl-item .nm { font-weight: 600; }
 .gl-letter { font-weight: 700; color: var(--faint); margin-top: 10px; break-after: avoid; }
 
-/* concept maps */
-.cmap-wrap { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; position: relative; }
-.cmap { width: 100%; display: block; cursor: grab; touch-action: none; }
-.cmap .edge { fill: none; stroke: var(--edge); stroke-width: 1.4; }
-.cmap .arrowhead { fill: var(--edge); }
-.cmap .elabel rect { fill: var(--panel); }
-.cmap .elabel text { fill: var(--muted); font-size: 11.5px; font-style: italic; }
-.cmap .elabel.blank rect { fill: var(--warn-soft); stroke: var(--warn); stroke-dasharray: 3 2; }
-.cmap .elabel.blank text { fill: var(--warn); font-weight: 700; font-style: normal; }
-.cmap .node rect { fill: var(--node); stroke: var(--line-2); stroke-width: 1.3; }
+/* concept maps: one accent (new concepts, selection), everything else in greys */
+.cmap-wrap { border: 1px solid var(--line); border-radius: 14px; background: var(--map-bg); overflow: hidden; position: relative; }
+.cmap { width: 100%; display: block; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.cmap-wrap.tall .cmap { touch-action: pan-y; }
+.cmap.dragging { cursor: grabbing; }
+.cmap text { font-family: var(--font); }
+.cmap .panel rect { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+.cmap .panel.band rect { fill: var(--panel); stroke: none; }
+.cmap .panel.link { cursor: pointer; }
+.cmap .panel.link:hover rect { stroke: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.cmap .panel .ptitle { fill: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.cmap .panel.band .ptitle { fill: var(--muted); }
+.cmap .panel .ptime { fill: var(--faint); font-weight: 500; letter-spacing: 0; font-family: var(--mono); font-size: 11.5px; }
+.cmap .panel .psub { fill: var(--muted); font-size: 12.5px; }
+.cmap .edge { fill: none; stroke: var(--edge); stroke-width: 1.3; transition: opacity .15s, stroke .15s; }
+.cmap .edge.cross:not(.always) { display: none; }
+.cmap .edge.cross.near, .cmap .edge.cross.hov { display: inline; }
+.cmap .ehit { fill: none; stroke: transparent; stroke-width: 10; pointer-events: stroke; }
+.cmap .edge.near, .cmap .edge.hov { stroke: var(--accent); stroke-width: 1.8; }
+.cmap .arrowhead path { fill: var(--edge); }
+.cmap .arrowhead.hi path { fill: var(--accent); }
+.cmap .elabel { pointer-events: none; transition: opacity .15s; }
+.cmap .elabel rect { fill: var(--map-bg); fill-opacity: .92; }
+.cmap .elabel text { fill: var(--muted); font-size: 11px; font-style: italic; }
+.cmap .elabel.lazy { display: none; }
+.cmap .elabel.lazy.near, .cmap .elabel.lazy.hov { display: inline; }
+.cmap .elabel.near text, .cmap .elabel.hov text { fill: var(--text); }
+.cmap .elabel.near rect, .cmap .elabel.hov rect { stroke: color-mix(in srgb, var(--accent) 35%, transparent); stroke-width: 1; }
+.cmap .elabel.blank rect { fill: var(--warn-soft-solid); fill-opacity: 1; stroke: var(--warn); stroke-dasharray: 3 2; }
+.cmap .elabel.blank text { fill: var(--warn); font-weight: 700; font-style: normal; font-size: 12px; }
+.cmap .edge.blank { stroke: var(--warn); stroke-dasharray: 4 3; }
+.cmap .node { cursor: pointer; transition: opacity .15s; outline: none; }
+.cmap .node rect { fill: var(--node); stroke: var(--line-2); stroke-width: 1.2; transition: stroke .15s; }
 .cmap .node text { fill: var(--text); font-size: 13px; font-weight: 550; }
-.cmap .node { cursor: pointer; }
-.cmap .node:hover rect { stroke: var(--accent); stroke-width: 2; }
-.cmap .node.k-introduced rect { stroke: var(--k-intro); }
-.cmap .node.k-met_again rect { stroke: var(--k-again); }
-.cmap .node.k-assumed rect { stroke: var(--k-assumed); stroke-dasharray: 4 3; }
-.cmap .node.blank rect { fill: var(--warn-soft); stroke: var(--warn); stroke-dasharray: 3 2; }
+.cmap .node:hover rect, .cmap .node:focus-visible rect { stroke: var(--accent); stroke-width: 1.8; }
+.cmap .node.k-introduced rect { fill: var(--accent-soft-solid); stroke: color-mix(in srgb, var(--accent) 70%, transparent); stroke-width: 1.4; }
+.cmap .node.k-introduced text { font-weight: 650; }
+.cmap .node.k-defined_later rect { stroke: var(--faint); stroke-dasharray: 1.5 2.5; stroke-width: 1.4; }
+.cmap .node.k-assumed rect { stroke: var(--faint); stroke-dasharray: 5 3; }
+.cmap .node.k-assumed text { fill: var(--muted); }
+.cmap .node.centre rect { fill: var(--accent); stroke: var(--accent); }
+.cmap .node.centre text { fill: var(--on-accent); }
+.cmap .node.blank rect { fill: var(--warn-soft-solid); stroke: var(--warn); stroke-dasharray: 3 2; }
 .cmap .node.blank text { fill: var(--warn); font-weight: 700; }
-.cmap .node.hit rect { stroke: var(--accent); stroke-width: 3; }
-.cmap .node.dim, .cmap .edge.dim, .cmap .elabel.dim { opacity: .2; }
-.map-tools { position: absolute; right: 8px; top: 8px; display: flex; gap: 4px; }
-.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin: 6px 0 10px; }
-.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 2px solid; margin-right: 5px; vertical-align: -2px; }
+.cmap .node.lec text { font-size: 12.5px; font-weight: 600; }
+.cmap .node .badge { fill: var(--accent-soft-solid); stroke: color-mix(in srgb, var(--accent) 55%, transparent); stroke-width: 1.2; }
+.cmap .node .badge-t { fill: var(--accent); font-size: 11.5px; font-weight: 700; font-family: var(--mono); }
+.cmap .node.hit rect { stroke: var(--accent); stroke-width: 2.6; }
+.focusing .cmap .node:not(.near):not(.chain) { opacity: .16; }
+.focusing .cmap .node.chain:not(.near) { opacity: .55; }
+.focusing .cmap .edge:not(.near) { opacity: .07; }
+.focusing .cmap .elabel:not(.near) { opacity: .1; }
+.focusing .cmap .panel { opacity: .7; }
+.cmap .node.circ circle { fill: var(--accent-soft-solid); stroke: color-mix(in srgb, var(--accent) 65%, transparent); stroke-width: 1.4; transition: stroke .15s; }
+.cmap .node.circ text { fill: var(--accent); font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.cmap .node.circ:hover circle, .cmap .node.circ:focus-visible circle { stroke: var(--accent); stroke-width: 2.2; }
+.cmap .node.circ.hit circle { fill: var(--accent); stroke: var(--accent); }
+.cmap .node.circ.hit text { fill: var(--on-accent); }
+.cmap .panel.topic rect { fill: var(--map-bg); stroke: var(--line); }
+.cmap .panel.topic .ptitle { fill: var(--text); font-size: 13px; font-weight: 650; letter-spacing: 0; text-transform: none; }
+.cmap .panel.band .ptitle { fill: var(--accent); }
+.overview .cmap .edge { stroke-opacity: .75; }
+.map-tools { position: absolute; right: 10px; top: 10px; display: flex; gap: 4px; z-index: 2; }
+.map-tools button { background: color-mix(in srgb, var(--panel) 92%, transparent); min-width: 30px; }
+.map-card {
+  position: absolute; right: 10px; top: 48px; width: min(330px, calc(100% - 20px)); max-height: calc(100% - 58px); overflow: auto; z-index: 3;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 28px rgba(16, 24, 40, .16);
+  font-size: 14px;
+}
+.map-card.left { right: auto; left: 10px; }
+.cmap-wrap.tall .map-card { position: fixed; top: auto; bottom: 18px; right: 18px; max-height: 50vh; z-index: 25; }
+.map-card .close { position: absolute; right: 6px; top: 6px; padding: 2px 7px; }
+.mc-kicker { font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); font-weight: 700; }
+.mc-name { font-weight: 650; font-size: 16px; padding-right: 26px; }
+.mc-def { color: var(--muted); font-size: 13.5px; margin-top: 4px; line-height: 1.45; }
+.map-head { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; margin-bottom: 10px; }
+.map-hint { margin-top: 6px; color: var(--faint); }
+.seg-ctl { display: inline-flex; border: 1px solid var(--line-2); border-radius: 9px; padding: 2px; background: var(--panel-2); gap: 2px; flex-wrap: wrap; }
+.seg-ctl button, .seg-ctl a { border: 0; background: transparent; color: var(--muted); font-size: 13.5px; padding: 4px 12px; border-radius: 7px; cursor: pointer; text-decoration: none; }
+.seg-ctl button:hover, .seg-ctl a:hover { color: var(--text); background: transparent; text-decoration: none; }
+.seg-ctl .on, .seg-ctl .on:hover { background: var(--panel); color: var(--text); box-shadow: 0 1px 2px rgba(16, 24, 40, .12); font-weight: 600; }
+.legend { display: flex; gap: 6px 16px; flex-wrap: wrap; align-items: center; font-size: 12.5px; color: var(--muted); }
+.legend .sw { display: inline-block; width: 18px; height: 12px; border-radius: 3px; border: 1.5px solid var(--line-2); background: var(--node); margin-right: 6px; vertical-align: -2px; }
+.legend .sw.k-introduced { background: var(--accent-soft-solid); border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+.legend .sw.k-defined_later { border-style: dotted; border-color: var(--faint); }
+.legend .sw.k-assumed { border-style: dashed; border-color: var(--faint); }
+.goal-row { margin-bottom: 10px; gap: 6px; }
+.goal-line { flex-basis: 100%; min-height: 1.2em; }
+.chip-btn { font-size: 12.5px; padding: 2px 10px; border-radius: 99px; background: var(--panel-2); border-color: var(--line); color: var(--muted); }
+.chip-btn.on, .chip-btn.on:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn { display: inline-block; font-size: 14px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--panel); color: var(--text); }
+.btn.small { font-size: 12.5px; padding: 3px 10px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn:hover { text-decoration: none; filter: brightness(1.05); }
+.map-find { width: min(340px, 100%); }
+.trail { color: var(--muted); }
+.explore-head { margin: 4px 0 12px; max-width: 900px; }
+.explore-head .muted { font-size: 14px; }
 
 /* activities */
 .act { margin-top: 14px; }
