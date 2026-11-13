@@ -340,9 +340,10 @@ async function pageLecture(key, rest) {
   const root = h("div", {});
   const view = { lecture: key, root, tab: rest[0] && rest[0] !== "t" ? rest[0] : "overview" };
   S.view = view;
-  // player
+  // player: the video file when the server has it, else the lecture on YouTube (by its youtube_id), else a note
   const video = L.video ? h("video", { controls: true, preload: "metadata", src: `/media/${key}` }) : null;
-  const player = h("div", { class: "player" }, video || h("div", { class: "novideo" }, "The video for this lecture is not available on this computer.", h("br"), "The segments and transcript still work."));
+  const yt = !video && L.youtube_id ? youtubePlayer(L.youtube_id, (t) => tick(t)) : null;
+  const player = h("div", { class: "player" }, video || (yt && yt.el) || h("div", { class: "novideo" }, "The video for this lecture is not available on this computer.", h("br"), "The segments and transcript still work."));
   const segEls = L.segments.map((sg, i) => h("div", { class: "seg", onclick: () => view.seek(sg.start, true) },
     h("span", { class: "num" }, i + 1),
     h("div", {}, h("div", { class: "sg" }, sg.subgoal || "(no sub-goal)"), h("div", { class: "row small" }, h("span", { class: "time" }, clock(sg.start) + " – " + clock(sg.end)), dev(sg.id)))));
@@ -382,11 +383,13 @@ async function pageLecture(key, rest) {
     if (video) {
       const go = () => { try { video.currentTime = t; } catch (e) { /* not seekable yet */ } if (play) video.play().catch(() => {}); };
       if (video.readyState >= 1) go(); else video.addEventListener("loadedmetadata", go, { once: true });
-    }
+    } else if (yt) yt.seek(t, play);
     tick(t);
     player.scrollIntoView({ block: "nearest", behavior: "smooth" });
   };
-  view.stop = () => { if (video) video.pause(); };
+  view.stop = () => { if (video) video.pause(); if (yt) yt.stop(); };
+  view.player = video ? "file" : yt ? "youtube" : "none";
+  view.yt = yt;
 
   // tabs
   const hasActs = !!(L.activities && (L.activities.activities || []).length);
@@ -420,6 +423,63 @@ async function pageLecture(key, rest) {
   showSeg(L.segments.length ? 0 : -1);
   if (rest[0] === "t") setTimeout(() => view.seek(parseFloat(rest[1])), 0);
   return root;
+}
+
+// ------------------------------------------------------------------ YouTube player (a lecture whose video file is not here)
+// The embed is shown at once; the IFrame API (loaded on first use) then drives it: seek, play, pause, and the current
+// time every half second for the segment and transcript highlight. Without the API (blocked, offline), a seek reloads
+// the embed at that second (?start=), so segment clicks and citation links still jump.
+let ytApi = null;
+function loadYouTubeApi() {
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (!ytApi) {
+    ytApi = new Promise((resolve, reject) => {
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => { if (prev) prev(); resolve(window.YT); };
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      s.async = true;
+      s.onerror = () => reject(new Error("the YouTube player API did not load"));
+      document.head.append(s);
+      setTimeout(() => reject(new Error("the YouTube player API timed out")), 15000);
+    }).catch((e) => { ytApi = null; throw e; });
+  }
+  return ytApi;
+}
+function youtubePlayer(id, onTime) {
+  const base = `https://www.youtube.com/embed/${encodeURIComponent(id)}?enablejsapi=1&rel=0&playsinline=1&origin=${encodeURIComponent(location.origin)}`;
+  const el = h("iframe", { src: base, title: "Lecture video", allow: "autoplay; encrypted-media; picture-in-picture; fullscreen", allowfullscreen: "", referrerpolicy: "strict-origin-when-cross-origin" });
+  const P = { el, id, player: null, ready: false, failed: false, pending: null, timer: null };
+  const apply = (t, play) => {
+    const p = P.player, st = p.getPlayerState ? p.getPlayerState() : -1;
+    if (!play && (st === -1 || st === 5)) p.cueVideoById({ videoId: id, startSeconds: t });   // not started: stay paused there
+    else { p.seekTo(t, true); if (play) p.playVideo(); }
+  };
+  P.seek = (t, play) => {
+    if (P.ready) return apply(t, play);
+    if (P.failed) { el.src = `${base}&start=${Math.floor(t)}${play ? "&autoplay=1" : ""}`; return; }
+    P.pending = { t, play };
+  };
+  P.time = () => (P.ready && P.player.getCurrentTime ? P.player.getCurrentTime() : null);
+  P.stop = () => {
+    if (P.timer) clearInterval(P.timer);
+    P.timer = null;
+    try { if (P.ready) P.player.pauseVideo(); } catch (e) { /* the frame is gone */ }
+  };
+  loadYouTubeApi().then((YT) => new Promise((resolve) => {
+    P.player = new YT.Player(el, { events: { onReady: resolve } });
+  })).then(() => {
+    P.ready = true;
+    if (P.pending) { apply(P.pending.t, P.pending.play); P.pending = null; }
+    P.timer = setInterval(() => {
+      if (!document.body.contains(el)) return P.stop();
+      try { if (P.player.getPlayerState() === 1) onTime(P.player.getCurrentTime()); } catch (e) { /* not ready */ }
+    }, 500);
+  }).catch(() => {
+    P.failed = true;
+    if (P.pending) { P.seek(P.pending.t, P.pending.play); P.pending = null; }
+  });
+  return P;
 }
 
 function lectureOverview(L) {

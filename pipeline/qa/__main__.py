@@ -21,7 +21,7 @@ def main():
     ap.add_argument("question", nargs="?", help="the learner's question")
     ap.add_argument("--lecture", help="the lecture the learner is watching (e.g. 4)")
     ap.add_argument("--course", default="nptel_vr")
-    ap.add_argument("--config", default=str(DEFAULT_CONFIG), help="LLM config (default: Gemma 4 12B, llama.cpp)")
+    ap.add_argument("--config", default=str(DEFAULT_CONFIG), help="LLM config (default: $QA_CONFIG, else Gemma 4 12B on llama.cpp)")
     th = ap.add_mutually_exclusive_group()
     th.add_argument("--think", dest="think", action="store_true", default=None, help="thinking on (config default)")
     th.add_argument("--no-think", dest="think", action="store_false", help="thinking off for these requests")

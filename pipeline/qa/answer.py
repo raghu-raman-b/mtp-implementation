@@ -5,7 +5,8 @@
     r["answer"], r["citations"], r["steps"], r["covered"]
 
 The model (default: Gemma 4 12B, configs/gemma4_12b_llamacpp.json, on this PC; launched by the client when no server
-answers on its port, and left running after the question so the next one does not wait) gets the system prompt
+answers on its port, and left running after the question so the next one does not wait; $QA_CONFIG names another
+config, e.g. configs/gemma4_12b_demo.json on a cloud instance, see demo/README.md) gets the system prompt
 (prompts/qa_system.txt with the course's lectures), the question, and the tools (prompts/qa_tools.json, run by
 qa/tools.py). It calls tools for up to MAX_ROUNDS rounds; then it must answer (tool_choice "none").
 
@@ -20,6 +21,7 @@ and final answer, the dropped IDs, tokens, time) and every model call to <output
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import threading
@@ -32,7 +34,19 @@ from .knowledge import Knowledge, fmt_time, lecture_key, qa_dir
 from .tools import run_tool, tool_specs
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_CONFIG = ROOT / "configs" / "gemma4_12b_llamacpp.json"
+LOCAL_CONFIG = ROOT / "configs" / "gemma4_12b_llamacpp.json"
+
+
+def default_config() -> Path:
+    """$QA_CONFIG when set (a path as given, else relative to the pipeline folder), else the local Gemma config."""
+    env = os.environ.get("QA_CONFIG", "").strip()
+    if not env:
+        return LOCAL_CONFIG
+    p = Path(env).expanduser()
+    return p if p.is_absolute() or p.exists() else ROOT / p
+
+
+DEFAULT_CONFIG = default_config()
 SYSTEM_FILE = ROOT / "prompts" / "qa_system.txt"
 MAX_ROUNDS = 5                  # rounds of tool calls before the model must answer
 FINAL_NUDGE = ("Answer the learner now, from the tool results above only, following the rules: IDs in square "

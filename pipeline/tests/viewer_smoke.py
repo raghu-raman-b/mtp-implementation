@@ -20,7 +20,8 @@ What it looks for (each line is what a broken viewer server would show):
   data       a knowledge/ or activities/ file not served or not equal to the file; fact_embeddings.json served;
              a missing file answered with anything but 404
   range      a Range request answered with the whole file, wrong bytes, a wrong Content-Range or length; an open
-             or suffix range wrong; an unsatisfiable range not 416; a lecture without a video not 404
+             or suffix range wrong; an unsatisfiable range not 416; a lecture without a video not 404, or without
+             the youtube_id of titles.tsv (the page's fallback player)
   ask        no qa package: anything but a clear "not available" answer; a qa package: the answer and citations
              not passed through, the lecture not passed in; a qa that raises: a server error instead of a message
   degrade    a copy without knowledge/ and activities/: the course or a lecture failing, the layers reported as
@@ -31,6 +32,7 @@ What it looks for (each line is what a broken viewer server would show):
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import shutil
 import socket
@@ -323,6 +325,12 @@ def test_full(srv: Server, root: Path):
     code, hd, body = srv.get("/media/1", {"Range": "bytes=0-9"}, method="HEAD")
     check(code == 206 and body == b"" and hd.get("Content-Length") == "10", f"HEAD with a Range ({code})")
     check(srv.get("/media/2")[0] == 404, "a lecture without a video is 404")
+    yt = {r["id"].rsplit("_", 1)[-1]: r["youtube_id"] for r in
+          csv.DictReader(open(root / "input" / COURSE / "input" / "titles.tsv", encoding="utf-8"), delimiter="\t")}
+    _, L2 = srv.json("/api/lecture/2")
+    check(L2["video"] is False and L2["youtube_id"] == yt["2"] and L1["youtube_id"] == yt["1"]
+          and all(l["has"]["youtube"] for l in C["lectures"]),
+          f"the YouTube ID of titles.tsv in the lecture route (for the fallback player) ({L2['youtube_id']})")
 
     print("ask", flush=True)
     code, r = srv.ask("What is VR?", "1")

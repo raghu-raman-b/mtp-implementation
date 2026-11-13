@@ -2,7 +2,7 @@
 """The v3 viewer: a standard-library HTTP server for the static viewer, the course's JSON layers and the videos.
 
     python pipeline/viewer/serve.py nptel_vr [--port 8765] [--host 127.0.0.1] [--root PIPELINE_DIR] [--media DIR]
-                                             [--qa-path DIR]
+                                             [--qa-path DIR] [--warm]
 
 Then open http://localhost:8765 (add ?dev=1, or use the toggle, for developer mode).
 
@@ -13,20 +13,25 @@ Reads (never writes) under <root> (default: the pipeline folder this file sits i
     output/<course>/stage_0a_preprocess/lec_<n>.json, times/ sentences and their times (the transcript)
     output/<course>/knowledge/                              stage 4d's layer (optional, per lecture)
     output/<course>/activities/                             the activities (optional, per lecture; schemas/activities.md)
-    input/<course>/media/L01.mp4 ...                        the videos (optional; or --media DIR)
+    input/<course>/media/L01.mp4 ...                        the videos (optional; or --media DIR). A lecture
+                                                            without its file plays from YouTube in the page, by
+                                                            the youtube_id of titles.tsv (when it has one)
 
 Routes
     GET  /                          the viewer (index.html); /static/... its files
     GET  /api/course                the course: title, syllabus, goals, lectures (title, week, goal, which layers
                                     exist), the layers present
     GET  /api/lecture/<key>         one lecture: segments (from knowledge/, else 1b), sentences (0a), the knowledge
-                                    lecture file or null, the activities file or null, where the segments came from
+                                    lecture file or null, the activities file or null, where the segments came from,
+                                    whether the video file is here ("video") and the YouTube ID ("youtube_id")
     GET  /data/knowledge/<file>     a knowledge/ file (concepts.json, facts.json, ..., lectures/lec_<n>.json);
                                     fact_embeddings.json is not served
     GET  /data/activities/<file>    an activities/ file (lec_<n>.json, course.json)
     GET  /media/<key>               a lecture's video, with HTTP Range (so seeking works)
     POST /api/ask                   {"question", "lecture"} -> qa.answer(question, course, lecture) from pipeline/qa/
                                     when importable, else {"available": false, "answer": "...not available..."}
+--warm loads qa at start, in the background, and calls qa.warm(course) (the layer, the query embedder, the model
+server; the config is qa's default: $QA_CONFIG or the local Gemma), so the first question does not wait for them.
 A missing layer is never an error for the course or lecture routes: it comes back as null (or the segments fall back
 to 1b), and the raw /data/ routes answer 404 for a file that does not exist.
 """
@@ -41,6 +46,7 @@ import mimetypes
 import re
 import sys
 import threading
+import time
 import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -151,7 +157,7 @@ class Course:
                         "transcript": (self.out / "stage_0a_preprocess" / f"{stem_of(k)}.json").is_file(),
                         "knowledge": (self.kd / "lectures" / f"{stem_of(k)}.json").is_file(),
                         "activities": (self.ad / f"{stem_of(k)}.json").is_file(),
-                        "video": self.video(k) is not None}})
+                        "video": self.video(k) is not None, "youtube": bool(t.get("youtube_id"))}})
         return {"course": self.course, "title": meta.get("title") or (index or {}).get("title") or self.course,
                 "meta": {f: meta.get(f) for f in ("platform", "institution", "instructor", "prerequisites",
                                                   "intended_audience", "outline", "syllabus")},
@@ -185,7 +191,8 @@ class Course:
         t = self.titles().get(key, {})
         return {"key": key, "title": (kl or {}).get("title") or t.get("title") or f"Lecture {key}",
                 "week": t.get("week", ""), "source": source, "segments": segments, "sentences": sentences,
-                "knowledge": kl, "activities": acts, "video": self.video(key) is not None}
+                "knowledge": kl, "activities": acts, "video": self.video(key) is not None,
+                "youtube_id": t.get("youtube_id") or None}
 
 
 # ---------------------------------------------------------------- question answering
@@ -223,6 +230,21 @@ def load_qa():
             return None, traceback.format_exc().strip().splitlines()[-1]
     fn = getattr(mod, "answer", None)
     return (fn, None) if callable(fn) else (None, "pipeline/qa has no answer(question, course, lecture)")
+
+
+def warm_qa(course: str):
+    """--warm: import qa and call qa.warm(course) (in a background thread; a failure is printed, not raised)."""
+    t0 = time.time()
+    fn, err = load_qa()
+    mod = sys.modules.get("qa")
+    if fn is None or not callable(getattr(mod, "warm", None)):
+        print(f"question answering not warmed: {err or 'qa has no warm()'}", file=sys.stderr, flush=True)
+        return
+    try:
+        mod.warm(course)
+        print(f"question answering warm ({time.time() - t0:.0f} s)", file=sys.stderr, flush=True)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"question answering not warmed: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
 
 
 def qa_status() -> bool:
@@ -396,6 +418,7 @@ def main():
     ap.add_argument("--root", type=Path, default=PIPELINE, help="the pipeline folder to read (default: this one)")
     ap.add_argument("--media", type=Path, help="folder of the videos (default: <root>/input/<course>/media)")
     ap.add_argument("--qa-path", type=Path, help="folder holding the qa package (default: the pipeline folder)")
+    ap.add_argument("--warm", action="store_true", help="load qa and call qa.warm(course) at start (background)")
     a = ap.parse_args()
     global QA_PATH
     if a.qa_path:
@@ -409,9 +432,12 @@ def main():
     n = len(info["lectures"])
     has = lambda k: sum(1 for x in info["lectures"] if x["has"][k])  # noqa: E731
     print(f"viewer for {a.course} ({n} lectures): http://{a.host}:{a.port}/   (dev mode: /?dev=1; Ctrl+C to stop)")
+    yt = sum(1 for x in info["lectures"] if x["has"]["youtube"] and not x["has"]["video"])
     print(f"  segments {has('segments')}, knowledge {has('knowledge')}, activities {has('activities')}, "
-          f"videos {has('video')} (from {C.media}); question answering "
+          f"videos {has('video')} (from {C.media}; {yt} more from YouTube); question answering "
           f"{'importable' if info['qa'] else 'not available (no pipeline/qa)'}", flush=True)
+    if a.warm and info["qa"]:
+        threading.Thread(target=warm_qa, args=(a.course,), daemon=True).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

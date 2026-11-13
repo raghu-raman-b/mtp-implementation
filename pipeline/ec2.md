@@ -14,6 +14,9 @@ model runs.
 
 The commands below run from the repository root on the local PC. The SSH host is `mtp` (in `~/.ssh/config`).
 
+The learner demo (the viewer with Gemma 4 12B answering questions) runs on an instance of its own: see
+`demo/README.md` (`demo/setup_demo.sh`).
+
 ## Once per instance (and after every stop and start)
 
 Copy the server side (the setup script, the LLM package, the configs, and the Hugging Face token if there is one),
