@@ -124,6 +124,12 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **10:05 MVP wrapped up**: testing agent's report `analysis/mvp/test_report.md` (integrity clean; quizzes and open
+  questions strong; match pairs, recall and review cards weak because 4a is from facts; duplicates from skipped 3b; QA
+  median 6.1 s, no wrong citation in 56 answers) and `analysis/mvp/showcase.md`; viewer answers now rendered as
+  markdown with clickable "(lecture N, m:ss)"; `DEMO_PLAN.md` rewritten from the showcase (lectures 4, 23, 30, 36).
+  Next when the user returns: the demo instance setup (they start it; `pipeline/demo/README.md`), then 3b + model 4a
+  on a faster instance, then the blocks' tests.
 - **09:20 MVP RUN COMPLETE**: 1,208 activities, all kinds in all 63 lectures (37 retried, 5 unresolved); everything
   copied home from the EC2 (partial 3b answers in `stage_3_registry/llm/`, queue and logs in `output/logs/ec2/`); the
   user released the instance. **Demo setup merged**: `pipeline/demo/setup_demo.sh` (llama.cpp Gemma 4 12B, embedder,
