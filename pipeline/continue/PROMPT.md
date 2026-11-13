@@ -124,6 +124,11 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **08:50 plan (user: "once all is done, test and update demo; it should be more impressive"):** wave 2 merges ~09:20
+  -> test all 63 lectures (contract, read later lectures' quizzes/recaps/crosswords/open questions), viewer pages, QA
+  re-test with the GPU free (latency, cross-lecture, learning paths, misspellings) -> rewrite DEMO_PLAN.md around the best
+  real items across the course. 3b queued as EC2 job 8 (runs after job 7, ~09:00-10:30; writes only on the EC2); the
+  rebuild into the MVP waits for the user's OK.
 - **Deferred by the user (08:35): the synonym merge (3b).** Cost now: e.g. "headset" C0005, "head-mounted display"
   C0040, "virtual reality headset" C0222, "VR headset" C0077 (also breaks D8; `acronym_in_name` is report-only) are
   separate concepts. Plan when asked: 3b on the EC2 (425 clusters, ~1.5 h, partial answers cached) -> 3c (without
