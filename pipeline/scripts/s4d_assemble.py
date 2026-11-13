@@ -122,7 +122,13 @@ def load_json(path: Path, what: str):
 
 def span(sentences: list[str], times: dict, fallback: tuple[float, float]) -> tuple[float, float]:
     ts = [times[s] for s in sentences if s in times]
-    return (min(t["start"] for t in ts), max(t["end"] for t in ts)) if ts else fallback
+    starts = [t["start"] for t in ts if t.get("start") is not None]   # 0a leaves null at a cut inside a cue
+    ends = [t["end"] for t in ts if t.get("end") is not None]
+    if not starts and not ends:
+        return fallback
+    start = min(starts) if starts else (fallback[0] if fallback[0] is not None else min(ends))
+    end = max(ends) if ends else (fallback[1] if fallback[1] is not None else max(starts))
+    return start, end
 
 
 def assemble(course: str, embed_model: str = EMBED_MODEL) -> Path:
