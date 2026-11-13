@@ -91,6 +91,47 @@ const fact = (fid) => (S.K && S.K.facts[fid]) || null;
 
 // ------------------------------------------------------------------ links
 function timeHref(lec, t) { return `#/lecture/${lec}/t/${Math.round((t || 0) * 10) / 10}`; }
+
+// ---- answers: a small, safe markdown renderer (DOM nodes only, never innerHTML) ----
+// paragraphs, "* "/"- " and "1. " lists, **bold**, *italic*, `code`, $math$ shown plain; "(lecture 4, 6:01)" and
+// "(lecture 4, 6:01; lecture 5, 9:21)" become links that open the lecture at that time.
+function mdInline(text) {
+  const out = [];
+  const re = /\*\*([^*]+)\*\*|\*([^*\s][^*]*)\*|`([^`]+)`|\$([^$]+)\$|lecture (\d+[a-z]?), (\d{1,2}(?::\d{2}){1,2})/g;
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    if (m[1] != null) out.push(h("b", {}, m[1]));
+    else if (m[2] != null) out.push(h("i", {}, m[2]));
+    else if (m[3] != null) out.push(h("code", {}, m[3]));
+    else if (m[4] != null) out.push(m[4].replace(/\\(text|mathrm)\{([^}]*)\}/g, "$2").replace(/\\/g, ""));
+    else {
+      const parts = m[6].split(":").map(Number), secs = parts.reduce((a, b) => a * 60 + b, 0);
+      out.push(h("a", { class: "time", href: timeHref(m[5], secs) }, `lecture ${m[5]}, ${m[6]}`));
+    }
+    last = re.lastIndex;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+function mdBlock(text) {
+  const box = h("div", { class: "qa-a" });
+  let list = null, para = [];
+  const flush = () => { if (para.length) { box.append(h("p", {}, ...mdInline(para.join(" ")))); para = []; } };
+  for (const raw of String(text || "").split("\n")) {
+    const line = raw.trim();
+    const bullet = line.match(/^(?:[*\-•]|\d+[.)])\s+(.*)$/);
+    if (bullet) {
+      flush();
+      const ordered = /^\d/.test(line);
+      if (!list || list.ordered !== ordered) { list = { ordered, el: h(ordered ? "ol" : "ul", {}) }; box.append(list.el); }
+      list.el.append(h("li", {}, ...mdInline(bullet[1])));
+    } else if (!line) { flush(); list = null; }
+    else { list = null; para.push(line.replace(/^#+\s*/, "")); }
+  }
+  flush();
+  return box;
+}
 function timeLink(lec, t, here) {
   const label = here === lec ? clock(t) : `Lecture ${lec} · ${clock(t)}`;
   return h("a", { class: "time", href: timeHref(lec, t), title: "Watch from here" }, "▶ " + label);
@@ -896,7 +937,7 @@ async function ask(q) {
     const res = await r.json();
     if (res.available === false) { ans.replaceChildren(h("p", { class: "muted" }, res.answer || "Question answering is not available."), dev(res.error || "")); return; }
     const cites = res.citations || [];
-    ans.replaceChildren(h("div", { class: "qa-a" }, res.answer || "(no answer)"),
+    ans.replaceChildren(mdBlock(res.answer || "(no answer)"),
       cites.length ? h("ul", { class: "cites" }, cites.map((c) => h("li", {},
         c.lecture != null ? h("a", { class: "time", href: timeHref(c.lecture, c.start) }, `▶ Lecture ${c.lecture} · ${clock(c.start)}`) : null, " ", c.text || "", dev(" " + (c.fact || ""))))) : null,
       res.covered === false ? h("div", { class: "small muted", style: "margin-top:6px" }, "The course may not cover this.") : null,
