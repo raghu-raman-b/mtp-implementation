@@ -1,0 +1,448 @@
+56/S0  Explain why computer graphics is needed to understand rendering and resource optimization in VR.
+  C0   rendering [defined]  facts F0
+  C1   immersive experience  facts F0
+  C2   scene  facts F0
+  C3   display device  facts F0
+  C4   computer graphics  facts F0
+  C5   object representation  facts F1
+  C6   three-dimensional graphics pipeline (3D graphics pipeline)  facts F1
+  C7   intensity calculation (determination of the pixel intensities)  facts F1
+  C8   pixel intensity (pixel intensities)  facts F1
+  R0   rendering | is the key component of any | immersive experience  (F0)
+  R1   scene | is rendered in an | immersive experience  (F0)
+  R2   scene | is rendered on | display device  (F0)
+  R3   rendering | is covered by | computer graphics  (F0)
+  R4   rendering | has complexities that require knowledge of | computer graphics  (F0)
+  R5   object representation | is called the first stage of, for simplicity, | three-dimensional graphics pipeline  (F1)
+  R6   object representation | has no computation related to | intensity calculation  (F1)
+  R7   object representation | has no computation related to the determination of | pixel intensity  (F1)
+  checks: name_not_in_facts 1
+
+56/S1  Describe the five stages of the 3D graphics pipeline and identify the stages covered in this lecture.
+  C0   three-dimensional graphics pipeline (3D graphics pipeline) [defined]  facts F0
+  C1   object representation  facts F0
+  C2   local coordinate system  facts F0
+  C3   modeling transformation [defined]  facts F0
+  C4   world coordinate system (world coordinate reference frame)  facts F0
+  C5   lighting  facts F0
+  C6   viewing pipeline [defined]  facts F0
+  C7   viewing transformation [defined]  facts F0
+  C8   three-dimensional view coordinate system  facts F0
+  C9   clipping  facts F0
+  C10  hidden surface removal  facts F0
+  C11  projection transformation [defined]  facts F0
+  C12  two-dimensional view coordinate system (2D view coordinate system)  facts F0
+  C13  window-to-viewport transformation [defined]  facts F0
+  C14  device coordinate system  facts F0
+  C15  scan conversion [defined]  facts F0
+  C16  screen coordinate  facts F0
+  C17  pixel grid  facts F0
+  R0   three-dimensional graphics pipeline | has as its first stage in order | object representation  (F0)
+  R1   three-dimensional graphics pipeline | has as its second stage in order | modeling transformation  (F0)
+  R2   three-dimensional graphics pipeline | has as its third stage in order | lighting  (F0)
+  R3   three-dimensional graphics pipeline | has as its fourth stage in order | viewing pipeline  (F0)
+  R4   three-dimensional graphics pipeline | has as its fifth stage in order | scan conversion  (F0)
+  R5   object representation | is described in the | local coordinate system  (F0)
+  R6   object representation | precedes in the stated stage order | modeling transformation  (F0)
+  R7   modeling transformation | maps a description from | local coordinate system  (F0)
+  R8   modeling transformation | maps that description to | world coordinate system  (F0)
+  R9   modeling transformation | precedes in the stated stage order | lighting  (F0)
+  R10  lighting | takes place in the | world coordinate system  (F0)
+  R11  lighting | precedes in the stated stage order | viewing pipeline  (F0)
+  R12  viewing pipeline | contains | viewing transformation  (F0)
+  R13  viewing pipeline | contains | clipping  (F0)
+  R14  viewing pipeline | contains | hidden surface removal  (F0)
+  R15  viewing pipeline | contains | projection transformation  (F0)
+  R16  viewing pipeline | contains | window-to-viewport transformation  (F0)
+  R17  viewing pipeline | precedes in the stated stage order | scan conversion  (F0)
+  R18  viewing transformation | maps from | world coordinate system  (F0)
+  R19  viewing transformation | maps to | three-dimensional view coordinate system  (F0)
+  R20  clipping | is performed in the | three-dimensional view coordinate system  (F0)
+  R21  hidden surface removal | is performed in the | three-dimensional view coordinate system  (F0)
+  R22  projection transformation | maps from | three-dimensional view coordinate system  (F0)
+  R23  projection transformation | maps to | two-dimensional view coordinate system  (F0)
+  R24  window-to-viewport transformation | maps from | two-dimensional view coordinate system  (F0)
+  R25  window-to-viewport transformation | maps to | device coordinate system  (F0)
+  R26  scan conversion | maps a scene description from | device coordinate system  (F0)
+  R27  scan conversion | maps that scene description to | screen coordinate  (F0)
+  R28  scan conversion | maps that scene description to | pixel grid  (F0)
+
+56/S2  Explain the purpose of modeling transformation and identify the basic transformations used to place local-coordinate objects into a world scene.
+  C0   modeling transformation (geometric transformation, stage 2) [defined]  facts F0, F2
+  C1   object coordinate system (coordinate reference frame) [defined]  facts F0, F1
+  C2   world coordinate system  facts F0
+  C3   scene  facts F0, F2
+  C4   position  facts F1
+  C5   dimension  facts F1
+  C6   translation  facts F2
+  C7   rotation [defined]  facts F2
+  C8   angle  facts F2
+  C9   axis  facts F2
+  C10  scaling [defined]  facts F2
+  C11  size  facts F2
+  C12  shearing [defined]  facts F2
+  C13  shape  facts F2
+  R0   modeling transformation | applies operations to an | object coordinate system  (F0)
+  R1   modeling transformation | places an object in a common | scene  (F0)
+  R2   modeling transformation | places an object in a common | world coordinate system  (F0)
+  R3   position | is defined in an | object coordinate system  (F1)
+  R4   dimension | is defined in an | object coordinate system  (F1)
+  R5   modeling transformation | has as a basic transformation | translation  (F2)
+  R6   modeling transformation | has as a basic transformation | rotation  (F2)
+  R7   modeling transformation | has as a basic transformation | scaling  (F2)
+  R8   modeling transformation | has as a basic transformation | shearing  (F2)
+  R9   rotation | is specified by an | angle  (F2)
+  R10  rotation | is around an | axis  (F2)
+  R11  scaling | is by increasing or reducing an object's | size  (F2)
+  R12  shearing | is by changing an object's | shape  (F2)
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+56/S3  Describe how transformations are represented by homogeneous-coordinate matrices and how a local point is transformed to a world point.
+  C0   transformation  facts F0, F2
+  C1   matrix  facts F0
+  C2   homogeneous coordinate system [defined]  facts F0, F1
+  C3   two-dimensional transformation (2D transformation)  facts F0
+  C4   three-dimensional transformation (3D transformation)  facts F0
+  C5   translation  facts F1
+  C6   rotation  facts F1
+  C7   scaling  facts F1
+  C8   shearing  facts F1
+  C9   translation amount (Tx, Ty)  facts F1
+  C10  rotation angle (phi)  facts F1
+  C11  scaling factor (Sx, Sy)  facts F1
+  C12  shearing factor (Sx, Shx, Shy)  facts F1
+  C13  point (P, P dash)  facts F2
+  C14  local coordinate system  facts F2
+  C15  world coordinate system  facts F2
+  C16  column vector  facts F2
+  C17  transformation matrix (S)  facts F2
+  C18  matrix multiplication  facts F2
+  R0   transformation | is typically represented by | matrix  (F0)
+  R1   transformation | is typically represented in | homogeneous coordinate system  (F0)
+  R2   two-dimensional transformation | can be represented by a 3 by 3 | matrix  (F0)
+  R3   three-dimensional transformation | can be represented by a 4 by 4 | matrix  (F0)
+  R4   translation | in the homogeneous coordinate system can be represented by a 3 by 3 | matrix  (F1)
+  R5   rotation | in the homogeneous coordinate system can be represented by a 3 by 3 | matrix  (F1)
+  R6   scaling | in the homogeneous coordinate system can be represented by a 3 by 3 | matrix  (F1)
+  R7   shearing | in the homogeneous coordinate system can be represented by a 3 by 3 | matrix  (F1)
+  R8   translation | in the homogeneous coordinate system is represented by a 3 by 3 matrix using | translation amount  (F1)
+  R9   rotation | in the homogeneous coordinate system is represented by a 3 by 3 matrix using | rotation angle  (F1)
+  R10  scaling | in the homogeneous coordinate system is represented by a 3 by 3 matrix using | scaling factor  (F1)
+  R11  shearing | in the homogeneous coordinate system is represented by a 3 by 3 matrix using | shearing factor  (F1)
+  R12  point | is in an object's | local coordinate system  (F2)
+  R13  point | can be transformed to | world coordinate system  (F2)
+  R14  point | is represented as | column vector  (F2)
+  R15  column vector | is multiplied by | transformation matrix  (F2)
+  R16  point | is obtained by multiplying the column vector by the | transformation matrix  (F2)
+  R17  matrix multiplication | performs on points in the local coordinate system to obtain new points that ideally should be in the | world coordinate system  (F2)
+  checks: no_shared_fact 4
+
+56/S4  Explain how composite transformation matrices are formed and applied in a worked example to obtain transformed vertices.
+  C0   composite transformation matrix [defined]  facts F0, F3, F4, F5
+  C1   world coordinate scene  facts F0, F1, F5
+  C2   basic transformation (basic geometric or modeling transformations)  facts F0, F1
+  C3   translation [defined]  facts F0, F1, F2, F4
+  C4   rotation  facts F0
+  C5   scaling [defined]  facts F0, F1, F2, F4
+  C6   shearing  facts F0
+  C7   local coordinate system  facts F1
+  C8   scaling matrix [defined]  facts F2, F4
+  C9   x-direction scaling factor (Sx) [defined]  facts F2
+  C10  y-direction scaling factor (Sy) [defined]  facts F2
+  C11  translation matrix [defined]  facts F2, F4
+  C12  translation along the x-axis (Tx) [defined]  facts F2
+  C13  translation along the y-axis (Ty) [defined]  facts F2
+  C14  vertex  facts F2, F5
+  C15  transformation matrix (individual transformation matrices)  facts F3, F4, F5
+  C16  order of application (right-to-left sequence of transformations) [defined]  facts F3, F6
+  C17  transformed vertex (transformed vertices) [defined]  facts F5
+  C18  matrix multiplication  facts F6
+  R0   composite transformation matrix | is used when constructing a | world coordinate scene  (F0)
+  R1   world coordinate scene | requires multiple when constructed | basic transformation  (F0)
+  R2   basic transformation | includes | translation  (F0)
+  R3   basic transformation | includes | rotation  (F0)
+  R4   basic transformation | includes | scaling  (F0)
+  R5   basic transformation | includes | shearing  (F0)
+  R6   local coordinate system | in the worked example is the source of transformation to the | world coordinate scene  (F1)
+  R7   world coordinate scene | in the worked example requires two | basic transformation  (F1)
+  R8   basic transformation | in the worked example includes | scaling  (F1)
+  R9   basic transformation | in the worked example includes | translation  (F1)
+  R10  scaling matrix | has | x-direction scaling factor  (F2)
+  R11  scaling matrix | has | y-direction scaling factor  (F2)
+  R12  translation matrix | has | translation along the x-axis  (F2)
+  R13  translation matrix | has | translation along the y-axis  (F2)
+  R14  vertex | in the worked example moves to | transformed vertex  (F2)
+  R15  composite transformation matrix | is formed by arranging | transformation matrix  (F3)
+  R16  transformation matrix | are arranged from right to left according to the | order of application  (F3)
+  R17  transformation matrix | are multiplied to form | composite transformation matrix  (F3)
+  R18  scaling | in the worked example is applied before | translation  (F4)
+  R19  translation matrix | in the worked example is placed to the left of | scaling matrix  (F4)
+  R20  composite transformation matrix | in the worked example is obtained by multiplying | transformation matrix  (F4)
+  R21  transformed vertex | is obtained in | world coordinate scene  (F5)
+  R22  vertex | is multiplied by a transformation matrix to produce | transformed vertex  (F5)
+  R23  transformation matrix | in the worked example is | composite transformation matrix  (F5)
+  R24  matrix multiplication | being not commutative requires the | order of application  (F6)
+  checks: name_not_in_facts 3; no_shared_fact 1; reverse 4
+
+56/S5  Explain the role of color computation in the pipeline, including the distinction between lighting and shading models and the continuous intensity values used by lighting models.
+  C0   computer graphics pipeline  facts F0
+  C1   color computation [defined]  facts F0
+  C2   lighting model [defined]  facts F0, F1, F2, F3
+  C3   shading model [defined]  facts F0, F1, F2
+  C4   scene  facts F0
+  C5   depth  facts F0
+  C6   quality of experience  facts F0, F1
+  C7   continuous intensity value [defined]  facts F3
+  C8   discrete value  facts F3
+  R0   color computation | is the third stage in the | computer graphics pipeline  (F0)
+  R1   color computation | uses to assign colors to objects in the scene | lighting model  (F0)
+  R2   color computation | uses to assign colors to objects in the scene | shading model  (F0)
+  R3   lighting model | is used to assign colors to objects in the | scene  (F0)
+  R4   shading model | is used to assign colors to objects in the | scene  (F0)
+  R5   depth | cannot be perceived if a color is not assigned in the | color computation  (F0)
+  R6   quality of experience | is reduced if a color is not assigned in the | color computation  (F0)
+  R7   lighting model | involves more computation than | shading model  (F1)
+  R8   shading model | is used to reduce computation without compromising | quality of experience  (F1)
+  R9   shading model | is an approximation of the color-assignment methods used by | lighting model  (F2)
+  R10  shading model | relies on | lighting model  (F2)
+  R11  lighting model | computes colors in terms of | continuous intensity value  (F3)
+  R12  continuous intensity value | is mapped to computer-supported | discrete value  (F3)
+  checks: reverse 3
+
+56/S6  Describe how light is emitted, reflected, and perceived as color, and introduce the simple lighting model as the sum of ambient, diffuse, and specular components.
+  C0   light source [defined]  facts F0, F4, F5
+  C1   light  facts F0, F1, F2, F3, F4, F5
+  C2   surface point  facts F0, F1, F2
+  C3   reflected light  facts F0, F1
+  C4   intensity (light intensity) [defined]  facts F0, F1, F2
+  C5   color  facts F0, F1
+  C6   computer graphics  facts F1
+  C7   lighting model [defined]  facts F1
+  C8   simple lighting model [defined]  facts F2, F3, F4, F5
+  C9   ambient light intensity (I amb)  facts F2
+  C10  diffuse reflection intensity (I diff)  facts F2
+  C11  specular reflection intensity (I spec)  facts F2
+  C12  direct light  facts F2
+  C13  ambient light component [defined]  facts F3
+  C14  diffuse light component [defined]  facts F4
+  C15  specular reflection component [defined]  facts F5
+  R0   light source | emits | light  (F0)
+  R1   light | falls on a | surface point  (F0)
+  R2   light | is reflected from a | surface point  (F0)
+  R3   reflected light | has | intensity  (F0)
+  R4   intensity | of reflected light reaching the viewer's eye determines | color  (F0)
+  R5   lighting model | is used in | computer graphics  (F1)
+  R6   lighting model | is used to simulate the reflection of incident | light  (F1)
+  R7   lighting model | is used to simulate the reflection of incident light from a | surface point  (F1)
+  R8   lighting model | is used to compute the intensity of | reflected light  (F1)
+  R9   intensity | of reflected light is essentially | color  (F1)
+  R10  simple lighting model | models the light intensity reaching the viewer from a surface point as the sum of | ambient light intensity  (F2)
+  R11  simple lighting model | models the light intensity reaching the viewer from a surface point as the sum of | diffuse reflection intensity  (F2)
+  R12  simple lighting model | models the light intensity reaching the viewer from a surface point as the sum of | specular reflection intensity  (F2)
+  R13  ambient light intensity | is one of the intensities summed in the | simple lighting model  (F2)
+  R14  diffuse reflection intensity | is one of the intensities summed in the | simple lighting model  (F2)
+  R15  specular reflection intensity | is one of the intensities summed in the | simple lighting model  (F2)
+  R16  diffuse reflection intensity | is the intensity of | direct light  (F2)
+  R17  specular reflection intensity | is the intensity of | direct light  (F2)
+  R18  ambient light component | is | light  (F3)
+  R19  diffuse light component | is | light  (F4)
+  R20  diffuse light component | comes directly from a | light source  (F4)
+  R21  specular reflection component | is | light  (F5)
+  R22  specular reflection component | comes from a | light source  (F5)
+  checks: reverse 6
+
+56/S7  Explain how the ambient, diffuse, and specular components are computed using reflection coefficients and vector dot products.
+  C0   reflected light intensity (intensity of light reflected) [defined]  facts F0, F3
+  C1   incident light intensity  facts F0
+  C2   reflection coefficient (reflectivity) [defined]  facts F0, F1, F2
+  C3   simple lighting model [defined]  facts F1, F2, F3, F4, F5, F7
+  C4   ambient light  facts F1, F3
+  C5   diffuse reflection  facts F1, F4
+  C6   specular reflection  facts F1
+  C7   direct light  facts F1
+  C8   ambient reflection coefficient (Ka) [defined]  facts F1, F3
+  C9   diffuse reflection coefficient (Kd) [defined]  facts F1, F4
+  C10  specular reflection coefficient (Ks) [defined]  facts F1, F7
+  C11  ambient component [defined]  facts F3
+  C12  ambient light intensity  facts F3
+  C13  diffuse reflection component [defined]  facts F4
+  C14  source light intensity (Is)  facts F4, F7
+  C15  dot product  facts F4, F6, F7, F8
+  C16  surface normal vector (N)  facts F4, F8
+  C17  light source direction vector (L)  facts F4, F8
+  C18  specular component [defined]  facts F5, F7
+  C19  Phong model (Phong) [defined]  facts F5
+  C20  specular angle (angle phi, phi) [defined]  facts F6
+  C21  viewer direction vector (V)  facts F6, F7
+  C22  ideal specular reflection direction vector (r) [defined]  facts F6, F7, F8
+  R0   reflected light intensity | is a fraction of | incident light intensity  (F0)
+  R1   reflected light intensity | has its fraction of incident light intensity determined by | reflection coefficient  (F0)
+  R2   simple lighting model | defines | ambient reflection coefficient  (F1)
+  R3   simple lighting model | defines | diffuse reflection coefficient  (F1)
+  R4   simple lighting model | defines | specular reflection coefficient  (F1)
+  R5   ambient reflection coefficient | is the coefficient for | ambient light  (F1)
+  R6   diffuse reflection coefficient | is the coefficient for | diffuse reflection  (F1)
+  R7   diffuse reflection | is the reflection of | direct light  (F1)
+  R8   specular reflection coefficient | is the coefficient for | specular reflection  (F1)
+  R9   specular reflection | is the reflection of | direct light  (F1)
+  R10  reflection coefficient | in the simple lighting model has a value from 0.0 to 1.0 representing | simple lighting model  (F2)
+  R11  ambient component | is a component of | reflected light intensity  (F3)
+  R12  ambient component | is computed by multiplying | ambient light intensity  (F3)
+  R13  ambient component | is computed by multiplying by | ambient reflection coefficient  (F3)
+  R14  diffuse reflection component | is computed by multiplying | diffuse reflection coefficient  (F4)
+  R15  diffuse reflection component | is computed by multiplying | source light intensity  (F4)
+  R16  diffuse reflection component | is computed by multiplying | dot product  (F4)
+  R17  diffuse reflection coefficient | is the coefficient for the diffuse reflection of | direct light  (F4)
+  R18  dot product | is of the surface normal vector and | light source direction vector  (F4)
+  R19  diffuse reflection component | uses the product of its factors only when the dot product of the surface normal vector and light source direction vector is greater than 0, otherwise it is 0 because there is no | diffuse reflection  (F4)
+  R20  specular component | is computed using | Phong model  (F5)
+  R21  specular angle | is the angle between | viewer direction vector  (F6)
+  R22  specular angle | is the angle between | ideal specular reflection direction vector  (F6)
+  R23  dot product | of the viewer direction vector and ideal specular reflection direction vector is the cosine of | specular angle  (F6)
+  R24  specular component | is computed as the product of | specular reflection coefficient  (F7)
+  R25  specular component | is computed as the product of | source light intensity  (F7)
+  R26  specular component | is computed as the product of | dot product  (F7)
+  R27  specular reflection coefficient | is the coefficient for | direct light  (F7)
+  R28  dot product | of the viewer direction vector and ideal specular reflection direction vector, when not greater than 0, makes the | specular component  (F7)
+  R29  ideal specular reflection direction vector | is represented by twice | dot product  (F8)
+  R30  ideal specular reflection direction vector | is represented by twice the dot product of the light source direction vector and | surface normal vector  (F8)
+  R31  ideal specular reflection direction vector | is represented by the above product multiplied by | surface normal vector  (F8)
+  R32  ideal specular reflection direction vector | is represented by the above product minus | light source direction vector  (F8)
+  checks: name_not_in_facts 3; no_shared_fact 2; reverse 2
+
+56/S8  Explain how radial and angular intensity attenuation modify the simple lighting model.
+  C0   lighting  facts F0
+  C1   light intensity (intensity of light)  facts F0, F1
+  C2   light source (source)  facts F0, F1
+  C3   distance (d)  facts F0, F1
+  C4   surface point  facts F0, F1, F3
+  C5   radial intensity attenuation factor (intensity attenuation factor over distance) [defined]  facts F0, F1, F4
+  C6   inverse quadratic function  facts F1
+  C7   coefficient (coefficients, a0, a1, a2)  facts F1
+  C8   angular intensity attenuation [defined]  facts F2, F4
+  C9   spotlight effect (spotlight effects) [defined]  facts F2
+  C10  spotlight region (spotlight zone, spotlight cone) [defined]  facts F2, F3
+  C11  angular intensity attenuation factor (angular attenuation factor) [defined]  facts F3, F4
+  C12  angular limit (theta) [defined]  facts F3
+  C13  angular attenuation exponent (A1) [defined]  facts F3
+  C14  simple lighting model [defined]  facts F4
+  C15  intensity component  facts F4
+  C16  diffuse reflection component  facts F4
+  C17  specular reflection component  facts F4
+  R0   light intensity | in lighting, from a light source to a surface point, typically diminishes with | distance  (F0)
+  R1   distance | in lighting, is the distance from a light source to a | surface point  (F0)
+  R2   radial intensity attenuation factor | is needed in lighting because light intensity from a light source to a surface point diminishes with | distance  (F0)
+  R3   radial intensity attenuation factor | accounts for the diminishing of light intensity with | distance  (F1)
+  R4   radial intensity attenuation factor | is typically computed as an | inverse quadratic function  (F1)
+  R5   inverse quadratic function | is a function of the distance between the light source and the surface point | distance  (F1)
+  R6   radial intensity attenuation factor | uses | coefficient  (F1)
+  R7   distance | is the distance between the light source and the | surface point  (F1)
+  R8   angular intensity attenuation | is considered primarily for generating | spotlight effect  (F2)
+  R9   spotlight region | in a spotlight effect, is the area inside which elements are visible or brightly visible and outside which elements are darker in a | spotlight effect  (F2)
+  R10  angular limit | is the range of the | spotlight region  (F3)
+  R11  angular intensity attenuation factor | is 0 when the surface point is outside the | angular limit  (F3)
+  R12  angular intensity attenuation factor | when the surface point is within the angular limit, varies as the cosine of phi raised to the power | angular attenuation exponent  (F3)
+  R13  simple lighting model | is modified to include | radial intensity attenuation factor  (F4)
+  R14  simple lighting model | is modified to include | angular intensity attenuation  (F4)
+  R15  intensity component | in the modified | simple lighting model  (F4)
+  R16  diffuse reflection component | in the modified simple lighting model, is summed with the | specular reflection component  (F4)
+  R17  diffuse reflection component | in the modified simple lighting model, as part of its sum with the specular reflection component, is multiplied by the | radial intensity attenuation factor  (F4)
+  R18  diffuse reflection component | in the modified simple lighting model, as part of its sum with the specular reflection component, is multiplied by the | angular intensity attenuation factor  (F4)
+  R19  specular reflection component | in the modified simple lighting model, as part of its sum with the diffuse reflection component, is multiplied by the | radial intensity attenuation factor  (F4)
+  R20  specular reflection component | in the modified simple lighting model, as part of its sum with the diffuse reflection component, is multiplied by the | angular intensity attenuation factor  (F4)
+  R21  simple lighting model | if the radial and angular attenuation factors are 1, reduces to the sum that includes the | intensity component  (F4)
+  R22  simple lighting model | if the radial and angular attenuation factors are 1, reduces to the sum that includes the | diffuse reflection component  (F4)
+  R23  simple lighting model | if the radial and angular attenuation factors are 1, reduces to the sum that includes the | specular reflection component  (F4)
+  checks: reverse 2; no_triple 2
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+56/S9  Describe how colored light sources and multiple light sources extend the lighting model.
+  C0   colored light source model [defined]  facts F0, F1, F2
+  C1   source intensity (emitted light intensity) [defined]  facts F0, F1
+  C2   vector (three-element vector)  facts F0, F2
+  C3   red component (red)  facts F0, F1, F2, F3
+  C4   green component (green)  facts F0, F1, F2, F3
+  C5   blue component (blue)  facts F0, F1, F2, F3
+  C6   primary color [defined]  facts F0, F1
+  C7   reflection coefficient (k, kd, ks)  facts F2
+  C8   light source (light sources)  facts F3
+  C9   single-light-source lighting model  facts F3
+  C10  colored light source (colored light sources)  facts F3
+  R0   colored light source model | defines | source intensity  (F0)
+  R1   source intensity | in a colored light source model has as components | red component  (F0)
+  R2   source intensity | in a colored light source model has as components | green component  (F0)
+  R3   source intensity | in a colored light source model has as components | blue component  (F0)
+  R4   source intensity | in a colored light source model is a three-element | vector  (F0)
+  R5   red component | corresponds to a | primary color  (F0)
+  R6   green component | corresponds to a | primary color  (F0)
+  R7   blue component | corresponds to a | primary color  (F0)
+  R8   source intensity | in a colored light source model is computed through its | red component  (F1)
+  R9   source intensity | in a colored light source model is computed through its | green component  (F1)
+  R10  source intensity | in a colored light source model is computed through its | blue component  (F1)
+  R11  colored light source model | specifies | reflection coefficient  (F2)
+  R12  reflection coefficient | in a colored light source model is specified as a three-element | vector  (F2)
+  R13  reflection coefficient | in a colored light source model has the value one in the | red component  (F2)
+  R14  reflection coefficient | in a colored light source model has the value one in the | green component  (F2)
+  R15  reflection coefficient | in a colored light source model has the value one in the | blue component  (F2)
+  R16  single-light-source lighting model | for n light sources is revised to sum contributions from | light source  (F3)
+  R17  light source | in the revised n-light-source form of the single-light-source lighting model contributes to | single-light-source lighting model  (F3)
+  R18  colored light source | in the revised lighting model has each contribution computed separately for | red component  (F3)
+  R19  colored light source | in the revised lighting model has each contribution computed separately for | green component  (F3)
+  R20  colored light source | in the revised lighting model has each contribution computed separately for | blue component  (F3)
+  checks: name_not_in_facts 2; reverse 2
+
+56/S10  Explain how continuous lighting-model intensities are mapped to finite device-supported intensity values and bit patterns.
+  C0   intensity mapping [defined]  facts F0, F4
+  C1   lighting model  facts F0, F4
+  C2   pixel intensity [defined]  facts F0, F4
+  C3   display  facts F0
+  C4   8-bit display  facts F0
+  C5   intensity value  facts F0, F1, F2, F4
+  C6   device-supported intensity value (device-supported intensity level) [defined]  facts F1, F2, F3, F4
+  C7   intensity level  facts F1, F2, F3
+  C8   minimum device-supported intensity value (I0) [defined]  facts F1, F2
+  C9   photometer  facts F1
+  C10  maximum intensity value  facts F1
+  C11  multiplicative factor (r) [defined]  facts F2, F3
+  C12  psychophysiological property [defined]  facts F3
+  C13  relative change  facts F3
+  C14  absolute change  facts F3
+  C15  table [defined]  facts F4
+  C16  bit pattern  facts F4
+  C17  frame buffer  facts F4
+  C18  pixel  facts F0, F4
+  R0   lighting model | computes in intensity mapping | pixel intensity  (F0)
+  R1   pixel intensity | can be any value in an infinite range between 0 and 1 | intensity value  (F0)
+  R2   display | supports only a finite set of | intensity value  (F0)
+  R3   8-bit display | supports 256 | intensity value  (F0)
+  R4   8-bit display | supports 256 intensity values per | pixel  (F0)
+  R5   device-supported intensity value | is determined using the number n of | intensity level  (F1)
+  R6   device-supported intensity value | is determined using | minimum device-supported intensity value  (F1)
+  R7   device-supported intensity value | is determined using | maximum intensity value  (F1)
+  R8   minimum device-supported intensity value | is measured with a | photometer  (F1)
+  R9   minimum device-supported intensity value | is a kind of | device-supported intensity value  (F1)
+  R10  maximum intensity value | is a kind of | intensity value  (F1)
+  R11  device-supported intensity value | is represented by powers of | multiplicative factor  (F2)
+  R12  device-supported intensity value | is represented as a multiple of | minimum device-supported intensity value  (F2)
+  R13  multiplicative factor | is computed using the relation In = r^n I0 involving | device-supported intensity value  (F2)
+  R14  multiplicative factor | is computed using the relation In = r^n I0 involving | minimum device-supported intensity value  (F2)
+  R15  device-supported intensity value | is a kind of | intensity level  (F3)
+  R16  multiplicative factor | is used in successive | device-supported intensity value  (F3)
+  R17  multiplicative factor | is used in successive | intensity level  (F3)
+  R18  multiplicative factor | is used based on | psychophysiological property  (F3)
+  R19  psychophysiological property | states that humans perceive | relative change  (F3)
+  R20  psychophysiological property | states that humans perceive relative changes rather than | absolute change  (F3)
+  R21  relative change | is perceived by humans rather than | absolute change  (F3)
+  R22  relative change | is a change between two | intensity value  (F3)
+  R23  absolute change | is a change in | intensity value  (F3)
+  R24  table | stores the calculated | device-supported intensity value  (F4)
+  R25  table | stores the calculated | bit pattern  (F4)
+  R26  bit pattern | is assigned to | device-supported intensity value  (F4)
+  R27  pixel intensity | is mapped in intensity mapping to the nearest | device-supported intensity value  (F4)
+  R28  bit pattern | is stored in | frame buffer  (F4)
+  R29  bit pattern | is stored at the | pixel  (F4)
+  checks: no_shared_fact 2; reverse 6; no_triple 1
+
+56/S11  Summarize the main points of the lecture.
+  (no facts)
+

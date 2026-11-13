@@ -1,0 +1,404 @@
+58/S0  Describe the 3D graphics pipeline and identify the fifth stage as scan conversion or rendering.
+  C0   scan conversion (rendering) [defined]  facts F0, F3
+  C1   three-dimensional graphics pipeline (3D graphics pipeline) [defined]  facts F1, F2, F3
+  C2   object representation  facts F1
+  C3   local coordinate system  facts F1
+  C4   geometric transformation (modeling) [defined]  facts F1
+  C5   world coordinate system  facts F1
+  C6   lighting  facts F1
+  C7   viewing transformation [defined]  facts F1
+  C8   three-dimensional view coordinate system (3D view coordinate system)  facts F1, F2
+  C9   view pipeline [defined]  facts F2
+  C10  clipping  facts F2
+  C11  hidden surface removal  facts F2
+  C12  projection transformation [defined]  facts F2
+  C13  two-dimensional view coordinate system (2D view coordinate system)  facts F2
+  C14  window-to-viewport transformation [defined]  facts F2
+  C15  device coordinate system  facts F2
+  C16  pixel grid  facts F3
+  R0   three-dimensional graphics pipeline | has as one of its first four stages | object representation  (F1)
+  R1   three-dimensional graphics pipeline | has as one of its first four stages | geometric transformation  (F1)
+  R2   three-dimensional graphics pipeline | has as one of its first four stages | lighting  (F1)
+  R3   three-dimensional graphics pipeline | has as one of its first four stages | viewing transformation  (F1)
+  R4   object representation | is in | local coordinate system  (F1)
+  R5   geometric transformation | transforms from | local coordinate system  (F1)
+  R6   geometric transformation | transforms to | world coordinate system  (F1)
+  R7   lighting | is in | world coordinate system  (F1)
+  R8   viewing transformation | transforms from | world coordinate system  (F1)
+  R9   viewing transformation | transforms to | three-dimensional view coordinate system  (F1)
+  R10  view pipeline | occurs in | three-dimensional graphics pipeline  (F2)
+  R11  view pipeline | comes after | viewing transformation  (F2)
+  R12  view pipeline | includes | clipping  (F2)
+  R13  view pipeline | includes | hidden surface removal  (F2)
+  R14  view pipeline | includes | projection transformation  (F2)
+  R15  view pipeline | includes | window-to-viewport transformation  (F2)
+  R16  clipping | is in | three-dimensional view coordinate system  (F2)
+  R17  hidden surface removal | is in | three-dimensional view coordinate system  (F2)
+  R18  projection transformation | transforms from | three-dimensional view coordinate system  (F2)
+  R19  projection transformation | transforms to | two-dimensional view coordinate system  (F2)
+  R20  window-to-viewport transformation | transforms from | two-dimensional view coordinate system  (F2)
+  R21  window-to-viewport transformation | transforms to | device coordinate system  (F2)
+  R22  scan conversion | is the fifth stage of | three-dimensional graphics pipeline  (F3)
+  R23  scan conversion | produces a screen coordinate description on the | pixel grid  (F3)
+  checks: no_shared_fact 1
+
+58/S1  Explain the scan-conversion problem of mapping continuous viewport coordinates to a discrete pixel grid.
+  C0   device coordinate system [defined]  facts F0
+  C1   continuous coordinate system [defined]  facts F0
+  C2   viewport (2D viewport)  facts F0, F2
+  C3   display device  facts F1
+  C4   pixel grid [defined]  facts F1, F2
+  C5   image  facts F1
+  C6   point  facts F1
+  C7   scan conversion (rendering, rasterization) [defined]  facts F2
+  C8   mapping algorithm [defined]  facts F2
+  C9   viewport coordinates (2D viewport coordinates) [defined]  facts F0, F2
+  C10  pixel-grid coordinate system  facts F2
+  C11  line  facts F2
+  C12  pixel  facts F2
+  R0   device coordinate system | is used to define | viewport  (F0)
+  R1   device coordinate system | is a | continuous coordinate system  (F0)
+  R2   display device | uses | pixel grid  (F1)
+  R3   display device | uses a pixel grid to render | image  (F1)
+  R4   pixel grid | is used to render | image  (F1)
+  R5   point | is on | pixel grid  (F1)
+  R6   mapping algorithm | transforms | viewport coordinates  (F2)
+  R7   mapping algorithm | transforms viewport coordinates into | pixel-grid coordinate system  (F2)
+  R8   mapping algorithm | chooses | pixel  (F2)
+  R9   line | is rendered by coloring | pixel  (F2)
+  checks: no_triple 1
+
+58/S2  Describe how points and lines are mapped to pixels, including Bresenham's integer line-drawing algorithm and why it improves rendering speed.
+  C0   point rendering [defined]  facts F0
+  C1   point  facts F0
+  C2   real-number coordinate  facts F0
+  C3   integer coordinate value  facts F0
+  C4   device space  facts F0
+  C5   discrete space  facts F0
+  C6   rounding  facts F0, F5
+  C7   line  facts F0, F2, F6
+  C8   circle  facts F0, F7
+  C9   line rendering (line-rendering, line-rendering method)  facts F1, F2, F5, F6, F7
+  C10  floating-point operation  facts F1, F2, F5, F8, F9
+  C11  line-rendering algorithm (efficient line-rendering algorithm)  facts F1, F2
+  C12  Bresenham's line-drawing algorithm (Bresenham line-drawing algorithm) [defined]  facts F2, F3, F4, F5
+  C13  pixel  facts F2, F3, F4
+  C14  line slope  facts F3, F4
+  C15  line endpoint  facts F3, F4
+  C16  line segment  facts F3, F6
+  C17  x coordinate  facts F4
+  C18  y coordinate  facts F4
+  C19  delta x [defined]  facts F4
+  C20  delta y [defined]  facts F4
+  C21  decision parameter (p) [defined]  facts F4
+  C22  integer arithmetic  facts F5
+  C23  division  facts F5
+  C24  floating-point multiplication  facts F5
+  C25  interactive graphics  facts F6
+  C26  virtual reality  facts F6
+  C27  ellipse  facts F7
+  C28  filled area  facts F7
+  C29  polygon  facts F7
+  C30  screen  facts F8
+  R0   point | is represented by | real-number coordinate  (F0)
+  R1   point | is mapped to nearest | integer coordinate value  (F0)
+  R2   point rendering | maps a point's real-number coordinates to nearest | integer coordinate value  (F0)
+  R3   device space | is mapped to | discrete space  (F0)
+  R4   point rendering | uses | rounding  (F0)
+  R5   rounding | is suitable for | point  (F0)
+  R6   rounding | is not suitable for | line  (F0)
+  R7   rounding | is not suitable for | circle  (F0)
+  R8   line rendering | in a naive method requires many | floating-point operation  (F1)
+  R9   line-rendering algorithm | in efficient forms has as objective to avoid | floating-point operation  (F1)
+  R10  Bresenham's line-drawing algorithm | is a popular | line-rendering algorithm  (F2)
+  R11  Bresenham's line-drawing algorithm | identifies | pixel  (F2)
+  R12  pixel | approximately represents | line  (F2)
+  R13  Bresenham's line-drawing algorithm | uses no | floating-point operation  (F2)
+  R14  Bresenham's line-drawing algorithm | is described for line slopes between -1 and +1 | line slope  (F3)
+  R15  Bresenham's line-drawing algorithm | takes as input the two | line endpoint  (F3)
+  R16  Bresenham's line-drawing algorithm | outputs the set of | pixel  (F3)
+  R17  pixel | approximates | line segment  (F3)
+  R18  Bresenham's line-drawing algorithm | computes | delta x  (F4)
+  R19  Bresenham's line-drawing algorithm | computes | delta y  (F4)
+  R20  Bresenham's line-drawing algorithm | computes | decision parameter  (F4)
+  R21  delta x | is the difference between the endpoints' | x coordinate  (F4)
+  R22  delta y | is the difference between the endpoints' | y coordinate  (F4)
+  R23  delta y | is doubled in the definition of | decision parameter  (F4)
+  R24  delta x | is subtracted in the definition of | decision parameter  (F4)
+  R25  line endpoint | has an | x coordinate  (F4)
+  R26  line endpoint | has a | y coordinate  (F4)
+  R27  Bresenham's line-drawing algorithm | initializes | x coordinate  (F4)
+  R28  Bresenham's line-drawing algorithm | initializes | y coordinate  (F4)
+  R29  Bresenham's line-drawing algorithm | adds | pixel  (F4)
+  R30  Bresenham's line-drawing algorithm | increments x by 1 when p is less than 0 | x coordinate  (F4)
+  R31  Bresenham's line-drawing algorithm | increments x and y by 1 when p is not less than 0 | x coordinate  (F4)
+  R32  Bresenham's line-drawing algorithm | increments y by 1 when p is not less than 0 | y coordinate  (F4)
+  R33  Bresenham's line-drawing algorithm | uses | integer arithmetic  (F5)
+  R34  Bresenham's line-drawing algorithm | speeds up | line rendering  (F5)
+  R35  Bresenham's line-drawing algorithm | avoids | floating-point operation  (F5)
+  R36  Bresenham's line-drawing algorithm | avoids | rounding  (F5)
+  R37  Bresenham's line-drawing algorithm | avoids | division  (F5)
+  R38  Bresenham's line-drawing algorithm | sometimes avoids | floating-point multiplication  (F5)
+  R39  line rendering | when sped up makes the system more efficient because it may render a large number of | line segment  (F6)
+  R40  virtual reality | is an example of | interactive graphics  (F6)
+  R41  interactive graphics | may require redrawing hundreds of thousands of | line  (F6)
+  R42  line rendering | is less complex than similar efficient rendering algorithms for | circle  (F7)
+  R43  line rendering | is less complex than similar efficient rendering algorithms for | ellipse  (F7)
+  R44  line rendering | is less complex than similar efficient rendering algorithms for | filled area  (F7)
+  R45  line rendering | is less complex than similar efficient rendering algorithms for | polygon  (F7)
+  R46  screen | is rendered on by mapping a shape to | pixel  (F8)
+  R47  pixel | represents a shape on a screen by being mapped from the shape as fast as possible by reducing | floating-point operation  (F8)
+  R48  line | can have floating-point operations completely eliminated for | floating-point operation  (F9)
+  R49  circle | may not have floating-point operations completely eliminated for but can be minimized for | floating-point operation  (F9)
+  R50  ellipse | may not have floating-point operations completely eliminated for but can be minimized for | floating-point operation  (F9)
+  R51  filled area | may not have floating-point operations completely eliminated for but can be minimized for | floating-point operation  (F9)
+  R52  polygon | may not have floating-point operations completely eliminated for but can be minimized for | floating-point operation  (F9)
+  checks: no_shared_fact 7
+
+58/S3  Explain why aliasing, anti-aliasing, and VR-specific realistic and dynamic content increase rendering computational complexity.
+  C0   aliasing [defined]  facts F0, F1, F2
+  C1   distortion  facts F0, F1, F2, F5
+  C2   scan conversion  facts F0
+  C3   pixel  facts F0
+  C4   line  facts F0
+  C5   resolution  facts F1
+  C6   quality of experience  facts F1
+  C7   anti-aliasing (anti-aliasing operations) [defined]  facts F2, F3
+  C8   pixel intensity (pixel intensities)  facts F3
+  C9   rendering stage (rendering stages)  facts F3
+  C10  virtual reality (VR)  facts F4, F5
+  C11  dynamic scene  facts F4
+  C12  user input  facts F4
+  C13  interaction  facts F4
+  C14  motion  facts F4
+  C15  animation  facts F4
+  C16  video  facts F4
+  C17  lighting model  facts F4
+  C18  computational complexity  facts F4
+  C19  rendering  facts F4, F5
+  C20  lag  facts F5
+  R0   aliasing | is a kind of | distortion  (F0)
+  R1   aliasing | may occur after | scan conversion  (F0)
+  R2   scan conversion | renders | pixel  (F0)
+  R3   aliasing | may cause | distortion  (F0, F1, F2)
+  R4   aliasing | if left unaddressed, may lead to | distortion  (F1)
+  R5   distortion | is visible with a change in | resolution  (F1)
+  R6   distortion | reduces | quality of experience  (F1)
+  R7   anti-aliasing | removes or reduces | distortion  (F2)
+  R8   distortion | is caused by | aliasing  (F2)
+  R9   anti-aliasing | adds further computation to the overall computation of | pixel intensity  (F3)
+  R10  anti-aliasing | adds further computation along with the other | rendering stage  (F3)
+  R11  dynamic scene | changes with | user input  (F4)
+  R12  dynamic scene | increases | computational complexity  (F4)
+  R13  interaction | in a high degree, increases | computational complexity  (F4)
+  R14  motion | is achieved through | animation  (F4)
+  R15  motion | is achieved through | video  (F4)
+  R16  motion | increases | computational complexity  (F4)
+  R17  lighting model | when simple, may not be a good option in | virtual reality  (F4)
+  R18  computational complexity | is a property of | rendering  (F4)
+  R19  virtual reality | has a rendering challenge in which | rendering  (F5)
+  R20  rendering | must be handled without the user perceiving | lag  (F5)
+  R21  rendering | must be handled without the user perceiving | distortion  (F5)
+  checks: name_not_in_facts 1; reverse 4; no_triple 1
+
+58/S4  Describe how graphics libraries and APIs let programmers implement pipeline stages without handling low-level system details.
+  C0   computer graphics (CG)  facts F0
+  C1   graphics pipeline  facts F0
+  C2   graphics library (library)  facts F0, F1, F2, F3
+  C3   application programming interface (APIs) [defined]  facts F0, F2, F3
+  C4   OpenGL (Open Graphics Library)  facts F1
+  C5   Vulkan  facts F1
+  C6   Direct3D  facts F1
+  C7   function  facts F2
+  C8   argument (parameter)  facts F2
+  C9   processor  facts F3
+  C10  memory  facts F3
+  C11  operating system  facts F3
+  C12  graphics application  facts F3
+  R0   computer graphics | is the field in which a programmer may implement stages of | graphics pipeline  (F0)
+  R1   graphics library | is imported by a programmer in | computer graphics  (F0)
+  R2   application programming interface | is provided by | graphics library  (F0, F2, F3)
+  R3   application programming interface | can be used to deal with lower-level tasks of | graphics pipeline  (F0)
+  R4   graphics library | is chosen by the suitability of its | application programming interface  (F0)
+  R5   OpenGL | is an example of | graphics library  (F1)
+  R6   Vulkan | is an example of | graphics library  (F1)
+  R7   Direct3D | is an example of | graphics library  (F1)
+  R8   application programming interface | is a predefined set of | function  (F2)
+  R9   function | is invoked with appropriate | argument  (F2)
+  R10  application programming interface | eliminates the need to know every detail of in order to build a graphics application | processor  (F3)
+  R11  application programming interface | eliminates the need to know every detail of in order to build a graphics application | memory  (F3)
+  R12  application programming interface | eliminates the need to know every detail of in order to build a graphics application | operating system  (F3)
+  R13  application programming interface | is used in order to build | graphics application  (F3)
+  checks: reverse 2
+
+58/S5  Describe the layered VR software architecture connecting applications, SDKs, engines, native rendering libraries, the operating system, and hardware.
+  C0   layered virtual reality software architecture [defined]  facts F0
+  C1   virtual reality (VR)  facts F0, F1
+  C2   virtual reality application layer (application layer)  facts F0
+  C3   software development kit (SDK)  facts F0, F1
+  C4   virtual reality engine (VR engine) [defined]  facts F0, F1
+  C5   game engine  facts F0
+  C6   native rendering library (native rendering libraries) [defined]  facts F0, F1
+  C7   OpenGL  facts F0
+  C8   Vulkan  facts F0
+  C9   Direct3D  facts F0
+  C10  operating system layer (operating system)  facts F0
+  C11  hardware layer (hardware)  facts F0
+  C12  graphics processing unit (GPU)  facts F0
+  C13  application programming interface (API, APIs)  facts F0, F1
+  C14  rendering  facts F0
+  C15  layered virtual reality system  facts F1
+  R0   layered virtual reality software architecture | consists from top to bottom of | virtual reality application layer  (F0)
+  R1   layered virtual reality software architecture | consists from top to bottom of | software development kit  (F0)
+  R2   layered virtual reality software architecture | consists from top to bottom of a layer that is either | virtual reality engine  (F0)
+  R3   layered virtual reality software architecture | consists from top to bottom of a layer that is either | game engine  (F0)
+  R4   layered virtual reality software architecture | consists from top to bottom of | native rendering library  (F0)
+  R5   layered virtual reality software architecture | consists from top to bottom of | operating system layer  (F0)
+  R6   layered virtual reality software architecture | consists from top to bottom of | hardware layer  (F0)
+  R7   native rendering library | includes as libraries such as | OpenGL  (F0)
+  R8   native rendering library | includes as libraries such as | Vulkan  (F0)
+  R9   native rendering library | includes as libraries such as | Direct3D  (F0)
+  R10  hardware layer | includes | graphics processing unit  (F0)
+  R11  virtual reality application layer | calls | software development kit  (F0)
+  R12  software development kit | calls | virtual reality engine  (F0)
+  R13  virtual reality engine | calls the application programming interfaces of | native rendering library  (F0)
+  R14  virtual reality engine | calls the application programming interfaces to perform | rendering  (F0)
+  R15  application programming interface | is called by the virtual reality engine to perform | rendering  (F0)
+  R16  application programming interface | is provided by | native rendering library  (F0, F1)
+  R17  native rendering library | sits on top of | operating system layer  (F0)
+  R18  operating system layer | sits on top of | hardware layer  (F0)
+  R19  software development kit | in a layered virtual reality system is used to access | virtual reality engine  (F1)
+  R20  software development kit | is imported within | virtual reality engine  (F1)
+  R21  virtual reality engine | lets a developer deal with graphics through the application programming interfaces of | native rendering library  (F1)
+  R22  virtual reality engine | lets a developer avoid directly accessing | native rendering library  (F1)
+  checks: name_not_in_facts 2; no_triple 2
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+58/S6  Explain how GPUs exploit parallelism to execute transformation, lighting, projection, rasterization, texturing, and hidden-surface removal efficiently.
+  C0   graphics processing unit (GPU) [defined]  facts F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10
+  C1   graphics card  facts F0, F10
+  C2   memory element (memory elements)  facts F0
+  C3   computer graphics  facts F0
+  C4   virtual reality  facts F0
+  C5   graphics operation (graphics operations)  facts F0
+  C6   parallelism  facts F0
+  C7   central processing unit (CPU, CPUs)  facts F0
+  C8   multicore system  facts F1
+  C9   core (cores) [defined]  facts F1
+  C10  integer arithmetic  facts F1
+  C11  floating-point arithmetic  facts F1
+  C12  instruction (single instruction)  facts F1
+  C13  streaming multiprocessor (streaming multiprocessor units, streaming multiprocessors) [defined]  facts F1, F2
+  C14  host  facts F2
+  C15  input assembler (input assemblers)  facts F2
+  C16  thread execution manager [defined]  facts F2
+  C17  parallel data cache  facts F2
+  C18  texture storage [defined]  facts F2, F10
+  C19  global memory  facts F2
+  C20  modeling transformation [defined]  facts F3
+  C21  rotation  facts F3
+  C22  transformation matrix  facts F3
+  C23  vertex (vertices)  facts F3, F4, F5, F6
+  C24  vertex vector  facts F3
+  C25  triangle (triangles)  facts F3, F4, F5, F8
+  C26  local coordinates  facts F3
+  C27  world coordinates  facts F3
+  C28  real-time rendering  facts F3
+  C29  immersive experience  facts F3
+  C30  scene  facts F4, F11
+  C31  triangular mesh (mesh, triangular meshes) [defined]  facts F4, F5
+  C32  graphics library (graphics libraries)  facts F5
+  C33  application programming interface (API, APIs)  facts F5
+  C34  vertex color  facts F6
+  C35  dot product (vector dot products)  facts F6
+  C36  lighting model (simple lighting model)  facts F6
+  C37  projection stage [defined]  facts F7
+  C38  viewing transformation  facts F7
+  C39  projection transformation  facts F7
+  C40  viewport transformation  facts F7
+  C41  composite matrix [defined]  facts F7
+  C42  screen coordinates (device coordinates)  facts F7
+  C43  coordinate space  facts F7
+  C44  pixel (pixels)  facts F7, F8, F9, F10, F11
+  C45  rasterization [defined]  facts F8
+  C46  device space (device-space)  facts F8
+  C47  pixel processing stage (pixel processing) [defined]  facts F9, F10, F11
+  C48  surface texturing [defined]  facts F9, F10
+  C49  hidden surface removal [defined]  facts F9, F11
+  C50  texture (textures, texture images, stored texture images)  facts F10
+  C51  texture color  facts F10
+  C52  texture point  facts F10
+  C53  memory cache (specialized memory caches)  facts F10
+  C54  depth buffer algorithm  facts F11
+  C55  depth buffer [defined]  facts F11
+  C56  depth (depth information) [defined]  facts F11
+  C57  three-dimensional scene (3D scene)  facts F11
+  C58  two-dimensional plane (2D plane)  facts F11
+  R0   graphics processing unit | is the processing unit of a separate | graphics card  (F0)
+  R1   graphics processing unit | has its own | memory element  (F0)
+  R2   graphics processing unit | is used in | computer graphics  (F0)
+  R3   graphics processing unit | is used in | virtual reality  (F0)
+  R4   parallelism | is inherent in | graphics operation  (F0)
+  R5   central processing unit | generally is not designed for large-scale | parallelism  (F0)
+  R6   graphics processing unit | is typically a | multicore system  (F1)
+  R7   multicore system | contains many | core  (F1)
+  R8   core | is capable only of simple | integer arithmetic  (F1)
+  R9   core | is capable only of simple | floating-point arithmetic  (F1)
+  R10  core | works simultaneously on one single | instruction  (F1)
+  R11  streaming multiprocessor | contains several | core  (F1)
+  R12  graphics processing unit | is broadly organized with | host  (F2)
+  R13  graphics processing unit | is broadly organized with | input assembler  (F2)
+  R14  graphics processing unit | is broadly organized with | thread execution manager  (F2)
+  R15  thread execution manager | allocates work to many | streaming multiprocessor  (F2)
+  R16  streaming multiprocessor | has a | parallel data cache  (F2)
+  R17  texture storage | exchanges data with | global memory  (F2)
+  R18  graphics processing unit | performs | modeling transformation  (F3)
+  R19  modeling transformation | applies transformations such as | rotation  (F3)
+  R20  transformation matrix | is multiplied with each | vertex vector  (F3)
+  R21  modeling transformation | produces a stream of transformed | triangle  (F3)
+  R22  local coordinates | are transformed to | world coordinates  (F3)
+  R23  real-time rendering | requires millions of | vertex  (F3)
+  R24  immersive experience | requires even more | vertex  (F3)
+  R25  scene | is assumed to be made of | triangle  (F4)
+  R26  graphics processing unit | assumes | triangular mesh  (F4)
+  R27  graphics library | provides | application programming interface  (F5)
+  R28  triangle | is in a | triangular mesh  (F5)
+  R29  application programming interface | sends | triangle  (F5)
+  R30  triangle | is sent to the graphics processing unit one | vertex  (F5)
+  R31  graphics processing unit | assembles vertices into | triangle  (F5)
+  R32  graphics processing unit | computes | vertex color  (F6)
+  R33  vertex color | is computed by performing | dot product  (F6)
+  R34  dot product | is performed as in the | lighting model  (F6)
+  R35  dot product | is performed simultaneously for multiple | vertex  (F6)
+  R36  projection stage | is a stage of the | graphics processing unit  (F7)
+  R37  projection stage | combines | viewing transformation  (F7)
+  R38  projection stage | combines | projection transformation  (F7)
+  R39  projection stage | combines | viewport transformation  (F7)
+  R40  viewing transformation | is combined in a | composite matrix  (F7)
+  R41  projection transformation | is combined in a | composite matrix  (F7)
+  R42  viewport transformation | is combined in a | composite matrix  (F7)
+  R43  composite matrix | is multiplied with | vertex  (F7)
+  R44  projection stage | produces a stream of | triangle  (F7)
+  R45  triangle | is in | screen coordinates  (F7)
+  R46  screen coordinates | is a continuous | coordinate space  (F7)
+  R47  screen coordinates | is ready to be converted to | pixel  (F7)
+  R48  rasterization | determines the pixels overlapped by device-space | triangle  (F8)
+  R49  rasterization | determines | pixel  (F8)
+  R50  rasterization | exploits the independent treatment of each | pixel  (F8)
+  R51  pixel processing stage | contains the activity | surface texturing  (F9)
+  R52  pixel processing stage | contains the activity | hidden surface removal  (F9)
+  R53  surface texturing | replaces the computed pixel color with the texture color at the corresponding | texture point  (F10)
+  R54  graphics processing unit | stores textures in high-speed | texture storage  (F10)
+  R55  pixel | must access | texture storage  (F10)
+  R56  memory cache | reduces access time for | texture  (F10)
+  R57  hidden surface removal | uses | depth buffer algorithm  (F11)
+  R58  depth buffer | stores the depth information for points in a | three-dimensional scene  (F11)
+  R59  three-dimensional scene | is projected onto a | two-dimensional plane  (F11)
+  R60  depth | is the viewer's distance with respect to each | pixel  (F11)
+  checks: name_not_in_facts 3; no_shared_fact 3; no_triple 2
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+  retried turn 2: 2 attempts, kept 2; lost ['pixel | can be treated independently from all other | pixel']; added ['rasterization | exploits the independent treatment of each | pixel']
+
+58/S7  Summarize the main points of the lecture.
+  (no facts)
+

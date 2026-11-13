@@ -1,0 +1,148 @@
+52/S0  Explain the time-constrained VR tour optimization goal and define the cybersickness time threshold used in it.
+  C0   time-constrained virtual tour optimization approach [defined]  facts F0
+  C1   optimal path  facts F0
+  C2   point of interest (POIs)  facts F0
+  C3   time threshold (TTH, threshold) [defined]  facts F0, F1, F2, F3
+  C4   cybersickness (CS)  facts F1, F2
+  C5   virtual reality (VR)  facts F1
+  C6   virtual tour (virtual reality tour, VR tour)  facts F0, F1, F2
+  C7   movement time  facts F1
+  C8   experience time  facts F1
+  C9   virtual reality exposure time (VR exposure time)  facts F1
+  C10  virtual world graph  facts F2
+  C11  vertex (vertices)  facts F2
+  C12  traversal time  facts F2
+  C13  movement speed  facts F3
+  C14  empirical study  facts F3
+  R0   time-constrained virtual tour optimization approach | seeks | optimal path  (F0)
+  R1   optimal path | covers the maximum number of | point of interest  (F0)
+  R2   optimal path | completes within | time threshold  (F0)
+  R3   time threshold | is the maximum duration of a | virtual tour  (F1)
+  R4   time threshold | is specified for | cybersickness  (F1)
+  R5   movement time | should be kept within | time threshold  (F1)
+  R6   experience time | should be kept within | time threshold  (F1)
+  R7   virtual reality exposure time | should be kept within | time threshold  (F1)
+  R8   cybersickness | may be caused by exceeding | time threshold  (F1)
+  R9   virtual tour | is optimized to cover every | vertex  (F2)
+  R10  virtual tour | is optimized to cover every vertex of a | virtual world graph  (F2)
+  R11  virtual world graph | has | vertex  (F2)
+  R12  virtual tour | has | traversal time  (F2)
+  R13  traversal time | exceeding the time threshold may induce | cybersickness  (F2)
+  R14  cybersickness | occurs above | time threshold  (F2)
+  R15  time threshold | may depend on | movement speed  (F3)
+  R16  time threshold | can be obtained from | empirical study  (F3)
+  checks: name_not_in_facts 3; reverse 3; no_triple 1
+
+52/S1  Define node importance and formulate the objective of maximizing total importance within the time threshold.
+  C0   tour  facts F0
+  C1   time threshold  facts F0, F2, F4
+  C2   node (vertex, point of interest)  facts F0, F1, F2, F3
+  C3   importance (individual importance) [defined]  facts F1, F2, F3
+  C4   importance function [defined]  facts F1
+  C5   path  facts F3, F4
+  C6   total importance [defined]  facts F3, F4
+  R0   tour | is to be completed within a given | time threshold  (F0)
+  R1   tour | does not require and does not always permit visiting every | node  (F0)
+  R2   node | has | importance  (F1)
+  R3   importance | is assigned by an | importance function  (F1)
+  R4   importance function | maps every | node  (F1)
+  R5   importance | is needed to determine which | node  (F2)
+  R6   importance | is needed to determine node coverage within a given | time threshold  (F2)
+  R7   total importance | of a path is the sum of | importance  (F3)
+  R8   total importance | is the sum of the importance of the nodes in a | path  (F3)
+  R9   path | contains | node  (F3)
+  R10  path | takes time less than or equal to the | time threshold  (F4)
+  R11  path | has the maximum | total importance  (F4)
+  R12  total importance | is maximized among paths that take time less than or equal to a | time threshold  (F4)
+  checks: reverse 4
+
+52/S2  Incorporate node waiting time into the optimization formulation and revise the path constraint.
+  C0   virtual reality path optimization model (virtual reality path optimization formulation, revised virtual reality path optimization problem) [defined]  facts F0, F1, F3
+  C1   node [defined]  facts F0, F1, F2
+  C2   importance  facts F0
+  C3   waiting time [defined]  facts F0, F1, F2
+  C4   point of interest  facts F1
+  C5   waiting time function (W) [defined]  facts F1
+  C6   path  facts F2, F3
+  C7   total waiting time [defined]  facts F2, F3
+  C8   total importance  facts F3
+  C9   total completion time  facts F3
+  C10  time threshold  facts F3
+  R0   node | has as an associated quantity in the virtual reality path optimization model | importance  (F0)
+  R1   node | has as an associated quantity in the virtual reality path optimization model | waiting time  (F0)
+  R2   node | is a | point of interest  (F1)
+  R3   waiting time | at a node, is the maximum time a user requires to inspect or interact with the object at that | node  (F1)
+  R4   waiting time | is represented by a | waiting time function  (F1)
+  R5   waiting time function | maps each | node  (F1)
+  R6   total waiting time | for a path, is the sum of the individual | waiting time  (F2)
+  R7   total waiting time | is a quantity of a | path  (F2)
+  R8   total completion time | is T(P) plus | total waiting time  (F2, F3)
+  R9   total completion time | of a path, must be less than or equal to | time threshold  (F3)
+  R10  total importance | is a quantity of a | path  (F3)
+  R11  virtual reality path optimization model | maximizes | total importance  (F3)
+  checks: reverse 2
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+52/S3  Identify the problem as vehicle routing with profit and explain how VRPP solvers can find the optimal path.
+  C0   vehicle routing problem with profit (VRPP) [defined]  facts F0, F1
+  C1   vehicle routing problem (VRP)  facts F0
+  C2   operations research problem  facts F0
+  C3   node  facts F0, F1
+  C4   route  facts F0
+  C5   profit [defined]  facts F0
+  C6   time threshold (time constraint) [defined]  facts F0, F1, F2
+  C7   importance  facts F0, F1, F2
+  C8   vehicle routing problem with profit solver (VRPP solvers)  facts F1
+  C9   optimal path (optimized path) [defined]  facts F1, F2
+  C10  cybersickness  facts F2
+  C11  point of interest (POIs)  facts F2
+  R0   vehicle routing problem with profit | is a generalization of | vehicle routing problem  (F0)
+  R1   vehicle routing problem | is a kind of | operations research problem  (F0)
+  R2   vehicle routing problem with profit | does not require visiting every | node  (F0)
+  R3   route | maximizes | profit  (F0)
+  R4   route | is within a | time threshold  (F0)
+  R5   profit | in this formulation is | importance  (F0)
+  R6   node | has | importance  (F0, F1)
+  R7   vehicle routing problem with profit solver | can be used to find the | optimal path  (F1)
+  R8   vehicle routing problem with profit solver | is a solver for | vehicle routing problem with profit  (F1)
+  R9   optimal path | maximizes the total | importance  (F1)
+  R10  optimal path | is within the given | time threshold  (F1)
+  R11  optimal path | must keep the user's exposure below a | time threshold  (F2)
+  R12  cybersickness | may occur beyond a | time threshold  (F2)
+  R13  optimal path | must let the user visit as many of the most important | point of interest  (F2)
+  R14  point of interest | has | importance  (F2)
+  checks: name_not_in_facts 1
+  retried turn 2: 2 attempts, kept 2; lost nothing; added nothing
+
+52/S4  Describe the algorithm that transforms the environment graph and uses a VRPP solver to compute the optimal path.
+  C0   optimal-path algorithm [defined]  facts F0, F1, F2, F3, F5
+  C1   virtual environment  facts F0
+  C2   original graph (G) [defined]  facts F0, F5
+  C3   fully connected graph  facts F0
+  C4   complete graph (G dash) [defined]  facts F0, F2, F3
+  C5   vertex set (V)  facts F0
+  C6   edge set (E)  facts F0
+  C7   importance (f)  facts F0, F4
+  C8   waiting time (w)  facts F0, F1, F4
+  C9   optimal path (P) [defined]  facts F1, F4, F5
+  C10  importance value (F)  facts F1
+  C11  point of interest (POIs)  facts F1
+  C12  total exposure time [defined]  facts F1
+  C13  travel time (traveling time, travel times, travel duration, t)  facts F1, F3
+  C14  time threshold  facts F1
+  C15  shortest path  facts F2, F5
+  C16  vertex (node)  facts F0, F2, F3, F5
+  C17  edge weight  facts F3
+  C18  Euclidean distance  facts F3
+  C19  natural walking model  facts F3
+  C20  final graph (G double dash) [defined]  facts F3, F4
+  C21  virtual reality path planning solver (VRPP solver)  facts F4
+  C22  modified optimal path  facts F5
+  R0   optimal-path algorithm | is for | virtual environment  (F0)
+  checks: name_not_in_facts 1; no_triple 21
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+  retried turn 2: 2 attempts, kept 2; lost ['original graph | is the input to the optimal-path algorithm for a virtual environment | original graph']; added nothing
+
+52/S5  Summarize the main points of the lecture and preview the case-study application.
+  (no facts)
+
