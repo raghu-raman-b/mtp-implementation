@@ -124,6 +124,13 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **09:20 MVP RUN COMPLETE**: 1,208 activities, all kinds in all 63 lectures (37 retried, 5 unresolved); everything
+  copied home from the EC2 (partial 3b answers in `stage_3_registry/llm/`, queue and logs in `output/logs/ec2/`); the
+  user released the instance. **Demo setup merged**: `pipeline/demo/setup_demo.sh` (llama.cpp Gemma 4 12B, embedder,
+  viewer in tmux, warm-up), `check_demo.sh`, `README.md`, `configs/gemma4_12b_demo.json`, `QA_CONFIG` in qa, YouTube
+  fallback in the viewer when a video file is missing; dry-run tested only (the first real instance run is pending).
+  A testing agent (Opus) checks all 63 lectures and QA and writes `analysis/mvp/test_report.md`, `analysis/mvp/showcase.md`;
+  then O rewrites `pipeline/continue/DEMO_PLAN.md` from them. Notebook sections for stage 5, qa, viewer, the MVP run added.
 - **09:02 user: pause the merge, release the instance at ~09:30, demo later on a similar instance.** 3b stopped on the
   EC2 (job 8 killed; 9 answers cached in the EC2's stage_3_registry/llm). Wave 2 finishing (Qwen half done 470/470,
   Gemma ~09:15, merge ~09:20). Then: copy everything from the EC2 home (stage_3_registry/llm, queue/, output/logs/ ->
