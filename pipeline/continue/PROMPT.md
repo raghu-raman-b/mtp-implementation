@@ -124,6 +124,15 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **07:25 MVP READY** (the user's 08:30 deadline met): knowledge layer for all 63 lectures (2,006 facts, 3,384 concepts,
+  7,479 relationships, 7 course goals, 127 objectives), activities: all kinds in lectures 1-8, 16 (147); code-made kinds
+  (recall, concept_map, complete_map, match_pairs) in every lecture (363 activities); QA verified on 8 questions (see
+  `pipeline/continue/DEMO_PLAN.md`, written for the user's staged demo). Quality pass: activities good; weak spots: masked
+  match-pair definitions read awkwardly, some crossword clues use far-away facts. 4d fixed for null sentence times.
+  Wave 2 (model activities for 9-63) still running in tmux `mvp` (EC2 job 7 + local Gemma), est. 09:35-10:00; its merge
+  rebuilds those lectures' files with all kinds. After the MVP: 3b (synonym merges), real 4a definitions, notebook
+  sections for stages 3, 4, 5, qa, viewer (agents' texts are in their commit messages/docstrings), block 1 resumes
+  (review 1 CHANGES 8-13; `compare.py` STAGE_CACHE now points at the moved 2b folder), then blocks 2-9 tests.
 - **06:23: 3b skipped** (425 clusters = ~1.5 h of Qwen): `s3c_registry.py --no-model` builds the registry from 3a's exact
   merges (3,384 concepts, 7,479 relations; HMD/headset-type synonyms stay apart; run 3b later, its partial answers are in
   the EC2's stage_3_registry/llm). EC2 queue line 4 is a no-op. 3a and 4d now embed on the local GPU (the CPU took 90 s
