@@ -124,6 +124,11 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
+- **Deferred by the user (08:35): the synonym merge (3b).** Cost now: e.g. "headset" C0005, "head-mounted display"
+  C0040, "virtual reality headset" C0222, "VR headset" C0077 (also breaks D8; `acronym_in_name` is report-only) are
+  separate concepts. Plan when asked: 3b on the EC2 (425 clusters, ~1.5 h, partial answers cached) -> 3c (without
+  --no-model) -> 4a --from-facts -> 4b (mostly cached) -> 4c -> 4d -> remap the activities' concept IDs old -> new via
+  segment concepts (code) -> rerun the code-made kinds. Keep the MVP until the rebuilt layer is verified.
 - **07:25 MVP READY** (the user's 08:30 deadline met): knowledge layer for all 63 lectures (2,006 facts, 3,384 concepts,
   7,479 relationships, 7 course goals, 127 objectives), activities: all kinds in lectures 1-8, 16 (147); code-made kinds
   (recall, concept_map, complete_map, match_pairs) in every lecture (363 activities); QA verified on 8 questions (see
