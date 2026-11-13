@@ -124,7 +124,13 @@ State of the MVP (2026-11-13 02:05 IST):
 - **Judge skipped** (user, 02:22 IST, after block 1's review): `s2b_verify_facts.py --no-judge` passes the 2a facts
   through unchanged (2a IDs kept; judgements say "not judged"). The 27 segments the Qwen judge had answered are saved
   in `analysis/fact_judge/data/qwen_judge_partial_2026-11-13/`.
-- **08:50 plan (user: "once all is done, test and update demo; it should be more impressive"):** wave 2 merges ~09:20
+- **09:02 user: pause the merge, release the instance at ~09:30, demo later on a similar instance.** 3b stopped on the
+  EC2 (job 8 killed; 9 answers cached in the EC2's stage_3_registry/llm). Wave 2 finishing (Qwen half done 470/470,
+  Gemma ~09:15, merge ~09:20). Then: copy everything from the EC2 home (stage_3_registry/llm, queue/, output/logs/ ->
+  pipeline/output/logs/ec2/), commit; the user releases the instance. An Opus agent writes `pipeline/demo/setup_demo.sh`,
+  `check_demo.sh`, `README.md`, `configs/gemma4_12b_demo.json`, `QA_CONFIG` env in qa, YouTube fallback in the viewer
+  when a video file is missing. After: test all 63 lectures, QA re-test, rewrite DEMO_PLAN.md.
+- (superseded) **08:50 plan (user: "once all is done, test and update demo; it should be more impressive"):** wave 2 merges ~09:20
   -> test all 63 lectures (contract, read later lectures' quizzes/recaps/crosswords/open questions), viewer pages, QA
   re-test with the GPU free (latency, cross-lecture, learning paths, misspellings) -> rewrite DEMO_PLAN.md around the best
   real items across the course. 3b queued as EC2 job 8 (runs after job 7, ~09:00-10:30; writes only on the EC2); the
