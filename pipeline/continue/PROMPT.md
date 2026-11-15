@@ -69,6 +69,13 @@ with python, it is large), then this file's "State" and "Next".
   question set, block 3 pair gold, block 2 gold for 4 segments (Fable). After the activity review: an Opus agent adds
   the code checks it lists (quiz option length etc.) and the judge to `s5_activities.py`.
 
+- **Agents' work in progress is saved and pushed** (19:30 IST, before a usage limit; WIP commits on their branches):
+  viewer `worktree-agent-a761733a118c47330` (serve.py started), QA `worktree-agent-a5b92c4a8975db27d` (timing logs,
+  bench before, calibration), activity prompts `worktree-agent-aedc2d89f3f3e6d76` (six prompts revised, judges not yet),
+  block 1 gold `fable-block1-gold-changes-8-9` (gold.json edits), gold sets `fable-gold-sets` (nothing yet). If the
+  agents cannot be resumed, start new ones on these branches with the original briefs (in this file's agent list).
+  EC2: the old instance is gone; the user brings a new one; then `pipeline/rebuild_queue.sh <config>`.
+
 ## State (as of 2026-11-13)
 
 Done and pushed (see `git log`):
