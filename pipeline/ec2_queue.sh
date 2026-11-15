@@ -17,7 +17,7 @@ cd "$(dirname "$0")"
 Q=queue
 mkdir -p "$Q/logs" output/logs
 touch "$Q/jobs.txt" "$Q/done.txt"
-declare -A CFG=([qwen]=configs/qwen38_27b_vllm.json [sage]=configs/sage_a15_vllm.json)
+declare -A CFG=([qwen]=${QWEN_CFG:-configs/qwen38_27b_vllm.json} [sage]=configs/sage_a15_vllm.json)   # QWEN_CFG: another GPU's config
 
 say() { echo "$(date -u +%FT%TZ) $*" | tee -a "$Q/queue.log"; }
 
