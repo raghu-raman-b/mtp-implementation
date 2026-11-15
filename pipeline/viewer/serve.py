@@ -24,6 +24,17 @@ Routes
     GET  /api/lecture/<key>         one lecture: segments (from knowledge/, else 1b), sentences (0a), the knowledge
                                     lecture file or null, the activities file or null, where the segments came from,
                                     whether the video file is here ("video") and the YouTube ID ("youtube_id")
+    The page itself reads only the lean routes below; every one is built once, kept in memory until one of the files
+    it is built from changes, and sent gzip-compressed when the browser accepts it (with an ETag, so a reload is a 304):
+    GET  /api/home                  title, syllabus, course goals, the lectures (key, title, week, goal), the layers
+    GET  /api/view/<key>            what the lecture page needs and nothing more: segments, sentences, goal, objectives,
+                                    activities (an activity a checks*.json marks "unresolved" carries "unresolved":
+                                    true; the page hides it outside developer mode), the lecture's concept map, and only
+                                    the concepts and facts this lecture refers to
+    GET  /api/glossary              every concept: name, other names, definition, where it is first explained
+    GET  /api/concept/<C0042>       one concept card: definition, where it is explained, facts, relationships
+    GET  /api/coursemap             the lecture graph for the course map (lectures, direct links, prerequisites)
+    GET  /api/review                the spaced-review cards of activities/course.json
     GET  /data/knowledge/<file>     a knowledge/ file (concepts.json, facts.json, ..., lectures/lec_<n>.json);
                                     fact_embeddings.json is not served
     GET  /data/activities/<file>    an activities/ file (lec_<n>.json, course.json)
@@ -39,6 +50,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
+import hashlib
 import importlib
 import importlib.util
 import json
@@ -80,8 +93,63 @@ def read_json(path: Path):
         return None
 
 
+_JSON: dict = {}                                         # path -> ((mtime_ns, size), parsed JSON)
+
+
+def stat_sig(path: Path):
+    try:
+        st = path.stat()
+        return (st.st_mtime_ns, st.st_size)
+    except OSError:
+        return None
+
+
+def load_json(path: Path):
+    """read_json, kept in memory until the file changes (callers must not modify what it returns)."""
+    sig = stat_sig(path)
+    if sig is None:
+        return None
+    hit = _JSON.get(path)
+    if hit and hit[0] == sig:
+        return hit[1]
+    data = read_json(path)
+    _JSON[path] = (sig, data)
+    return data
+
+
+class Payload:
+    """A JSON answer encoded once: the body, its gzip and an ETag."""
+
+    def __init__(self, data):
+        self.body = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
+        self.gz = gzip.compress(self.body, 6) if len(self.body) > 1024 else None
+        self.etag = '"' + hashlib.sha1(self.body).hexdigest()[:20] + '"'
+
+
+FACT_ID = re.compile(r"(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+/F\d+")
+CONCEPT_ID = re.compile(r"C\d{4,}")
+
+
+def collect_ids(obj, cids: set, fids: set):
+    """Every concept and fact ID an activity refers to (by the contract's field names)."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k in ("concept", "id", "from", "to") and isinstance(v, str) and CONCEPT_ID.fullmatch(v):
+                cids.add(v)
+            elif k == "concepts" and isinstance(v, list):
+                cids.update(x for x in v if isinstance(x, str) and CONCEPT_ID.fullmatch(x))
+            elif k in ("facts", "key_facts") and isinstance(v, list):
+                fids.update(x for x in v if isinstance(x, str) and FACT_ID.fullmatch(x))
+            else:
+                collect_ids(v, cids, fids)
+    elif isinstance(obj, list):
+        for v in obj:
+            collect_ids(v, cids, fids)
+
+
 class Course:
-    """Paths and loaders for one course; every load is fresh, so new outputs show on a reload."""
+    """Paths and loaders for one course; every load is fresh (or cached until its files change), so new outputs show
+    on a reload."""
 
     def __init__(self, course: str, root: Path, media: Path | None = None):
         self.course, self.root = course, root
@@ -90,6 +158,22 @@ class Course:
         self.kd = self.out / "knowledge"
         self.ad = self.out / "activities"
         self.media = media or (root / "input" / course / "media")
+        self._memo: dict = {}
+        self._lock = threading.Lock()
+
+    def memo(self, name: str, paths, build) -> Payload:
+        """build() encoded once, until one of the paths (files or folders) changes."""
+        sig = tuple(stat_sig(p) for p in paths)
+        hit = self._memo.get(name)
+        if hit and hit[0] == sig:
+            return hit[1]
+        pay = Payload(build())
+        with self._lock:
+            self._memo[name] = (sig, pay)
+        return pay
+
+    def kfile(self, name: str):
+        return load_json(self.kd / name) if self.kd.is_dir() else None
 
     # ------------------------------------------------ inputs
     def titles(self) -> dict:
@@ -128,7 +212,7 @@ class Course:
 
     # ------------------------------------------------ layers
     def knowledge(self, name: str):
-        return read_json(self.kd / name) if self.kd.is_dir() else None
+        return load_json(self.kd / name) if self.kd.is_dir() else None
 
     def lecture_goal(self, goals, key):
         if not goals:
@@ -139,13 +223,13 @@ class Course:
         return None
 
     def course_info(self) -> dict:
-        meta = read_json(self.inp / "course.json") or {}
+        meta = load_json(self.inp / "course.json") or {}
         titles = self.titles()
         index = self.knowledge("index.json")
         goals = self.knowledge("goals.json")
         graph = self.knowledge("lecture_graph.json")
         assumed = self.knowledge("assumed.json")
-        acourse = read_json(self.ad / "course.json") if self.ad.is_dir() else None
+        acourse = load_json(self.ad / "course.json") if self.ad.is_dir() else None
         lectures = []
         for k in self.keys():
             t = titles.get(k, {})
@@ -168,8 +252,8 @@ class Course:
 
     def lecture(self, key: str) -> dict:
         stem = stem_of(key)
-        kl = read_json(self.kd / "lectures" / f"{stem}.json") if self.kd.is_dir() else None
-        segs = read_json(self.out / "stage_1b_verify_segments" / "segment_maps" / f"{stem}.json")
+        kl = load_json(self.kd / "lectures" / f"{stem}.json") if self.kd.is_dir() else None
+        segs = load_json(self.out / "stage_1b_verify_segments" / "segment_maps" / f"{stem}.json")
         source = "knowledge" if kl else ("segments" if segs else "none")
         segments = []
         for sid, s in ((kl or {}).get("segments") or segs or {}).items():
@@ -178,8 +262,8 @@ class Course:
                              "objective": s.get("objective"), "facts": s.get("facts", []),
                              "concepts": s.get("concepts", [])})
         segments.sort(key=lambda s: s["start"] or 0)
-        texts = read_json(self.out / "stage_0a_preprocess" / f"{stem}.json") or {}
-        times = read_json(self.out / "stage_0a_preprocess" / "times" / f"{stem}.json") or {}
+        texts = load_json(self.out / "stage_0a_preprocess" / f"{stem}.json") or {}
+        times = load_json(self.out / "stage_0a_preprocess" / "times" / f"{stem}.json") or {}
         sentences, prev = [], 0.0
         for sid, txt in texts.items():                       # a missing start (0a has some) is the previous end
             t = times.get(sid) or {}
@@ -187,12 +271,233 @@ class Course:
             end = t.get("end") if t.get("end") is not None else start
             sentences.append({"id": sid, "text": txt, "start": start, "end": end})
             prev = end
-        acts = read_json(self.ad / f"{stem}.json") if self.ad.is_dir() else None
+        acts = load_json(self.ad / f"{stem}.json") if self.ad.is_dir() else None
         t = self.titles().get(key, {})
         return {"key": key, "title": (kl or {}).get("title") or t.get("title") or f"Lecture {key}",
                 "week": t.get("week", ""), "source": source, "segments": segments, "sentences": sentences,
                 "knowledge": kl, "activities": acts, "video": self.video(key) is not None,
                 "youtube_id": t.get("youtube_id") or None}
+
+    # ------------------------------------------------ lean routes for the page (built once, kept until files change)
+    def _dirs(self):
+        return [self.inp / "titles.tsv", self.out / "stage_1b_verify_segments" / "segment_maps", self.kd,
+                self.kd / "lectures", self.ad, self.media]
+
+    def flagged(self) -> dict:
+        """activity ID -> its check record, for every unit a checks*.json in activities/ marks "unresolved" (for a unit
+        several files report, the newest file wins)."""
+        units = {}
+        files = sorted(self.ad.glob("checks*.json"), key=lambda p: stat_sig(p) or (0, 0)) if self.ad.is_dir() else []
+        for f in files:
+            for kinds in ((load_json(f) or {}).get("lectures") or {}).values():
+                for recs in (kinds or {}).values():
+                    if isinstance(recs, dict):
+                        units.update({u: r for u, r in recs.items() if isinstance(r, dict)})
+        return {r["activity"]: {"unit": u, "status": r.get("status"), "problems": r.get("problems") or []}
+                for u, r in units.items() if r.get("status") == "unresolved" and r.get("activity")}
+
+    def slim_concept(self, cid: str, c: dict) -> dict:
+        return {"name": c.get("name") or cid, "definition": c.get("definition") or "",
+                "defined_in": [{"lecture": d.get("lecture"), "segment": d.get("segment"), "start": d.get("start")}
+                               for d in c.get("defined_in") or []],
+                "first_defined": c.get("first_defined")}
+
+    def home(self) -> Payload:
+        def build():
+            meta = load_json(self.inp / "course.json") or {}
+            titles = self.titles()
+            goals = self.kfile("goals.json") or {}
+            index = self.kfile("index.json")
+            lgoal = {g.get("lecture"): g.get("goal") for g in (goals.get("lecture_goals") or {}).values()}
+            lectures = []
+            for k in self.keys():
+                t = titles.get(k, {})
+                lectures.append({"key": k, "title": t.get("title") or f"Lecture {k}", "week": t.get("week", ""),
+                                 "goal": lgoal.get(k),
+                                 "has": {"knowledge": (self.kd / "lectures" / f"{stem_of(k)}.json").is_file(),
+                                         "activities": (self.ad / f"{stem_of(k)}.json").is_file(),
+                                         "video": self.video(k) is not None, "youtube": bool(t.get("youtube_id"))}})
+            acourse = load_json(self.ad / "course.json") if self.ad.is_dir() else None
+            return {"course": self.course, "title": meta.get("title") or (index or {}).get("title") or self.course,
+                    "meta": {f: meta.get(f) for f in ("platform", "institution", "instructor", "prerequisites",
+                                                      "outline")},
+                    "syllabus": [{"week": w.get("week"), "theme": w.get("theme")} for w in meta.get("syllabus") or []],
+                    "goals": [{"id": gid, "goal": g.get("goal"), "achieves": g.get("achieves"),
+                               "lectures": g.get("lectures") or []}
+                              for gid, g in (goals.get("course_goals") or {}).items()],
+                    "layers": {"knowledge": index is not None, "activities": self.ad.is_dir(),
+                               "spaced_review": bool(acourse and (acourse.get("spaced_review") or {}).get("cards"))},
+                    "counts": (index or {}).get("counts"), "qa": qa_status(), "lectures": lectures}
+        return self.memo("home", self._dirs() + [self.inp / "course.json", self.kd / "goals.json",
+                                                 self.kd / "index.json", self.ad / "course.json"], build)
+
+    def view(self, key: str) -> Payload:
+        stem = stem_of(key)
+        paths = self._dirs() + [self.kd / "lectures" / f"{stem}.json", self.ad / f"{stem}.json",
+                                self.out / "stage_1b_verify_segments" / "segment_maps" / f"{stem}.json",
+                                self.out / "stage_0a_preprocess" / f"{stem}.json",
+                                self.out / "stage_0a_preprocess" / "times" / f"{stem}.json",
+                                self.kd / "concepts.json", self.kd / "facts.json", self.kd / "relations.json",
+                                self.kd / "goals.json"] + (sorted(self.ad.glob("checks*.json")) if self.ad.is_dir() else [])
+
+        def build():
+            base = self.lecture(key)
+            kl = base["knowledge"] or {}
+            concepts = self.kfile("concepts.json") or {}
+            facts = self.kfile("facts.json") or {}
+            rels = self.kfile("relations.json") or {}
+            goals = (self.kfile("goals.json") or {}).get("course_goals") or {}
+            flagged = self.flagged()
+            acts = None
+            if base["activities"] is not None:
+                acts = []
+                for a in (base["activities"].get("activities") or []):
+                    if a.get("id") in flagged:
+                        a = {**a, "unresolved": True, "check": flagged[a["id"]]}
+                    acts.append(a)
+            cids, fids = set(), set()
+            collect_ids(acts or [], cids, fids)
+            kinds = kl.get("concepts") or {}
+            for v in kinds.values():
+                cids.update(v or [])
+            cmap = kl.get("concept_map") or {}
+            mrels = []
+            for rid in cmap.get("relations") or []:
+                r = rels.get(rid)
+                if not r:
+                    continue
+                f0 = (r.get("facts") or [None])[0]
+                mrels.append({"id": rid, "from": r.get("subject"), "to": r.get("object"), "label": r.get("label", ""),
+                              "fact": f0})
+                cids.update((r.get("subject"), r.get("object")))
+                if f0:
+                    fids.add(f0)
+            cids.update(cmap.get("concepts") or [])
+            for sg in base["segments"]:
+                cids.update(sg.get("concepts") or [])
+            keys = self.keys()
+            i = keys.index(key) if key in keys else -1
+            return {
+                "key": key, "title": base["title"], "week": base["week"], "source": base["source"],
+                "video": base["video"], "youtube_id": base["youtube_id"],
+                "prev": keys[i - 1] if i > 0 else None, "next": keys[i + 1] if 0 <= i < len(keys) - 1 else None,
+                "segments": [{k: sg.get(k) for k in ("id", "start", "end", "subgoal", "objective", "concepts")}
+                             for sg in base["segments"]],
+                "sentences": base["sentences"],
+                "goal": kl.get("goal"), "objectives": kl.get("objectives") or [],
+                "course_goals": [{"id": g, "goal": (goals.get(g) or {}).get("goal")} for g in kl.get("course_goals") or []],
+                "kinds": {k: kinds.get(k) or [] for k in ("introduced", "met_again", "defined_later", "assumed")},
+                "prerequisites": kl.get("prerequisites") or {"direct": [], "all": []},
+                "map": {"concepts": cmap.get("concepts") or [], "relations": mrels} if cmap else None,
+                "activities": acts,
+                "concepts": {c: self.slim_concept(c, concepts[c]) for c in sorted(x for x in cids if x in concepts)},
+                "facts": {f: {"text": facts[f].get("text", ""), "lecture": facts[f].get("lecture"),
+                              "segment": facts[f].get("segment"), "start": facts[f].get("start")}
+                          for f in sorted(x for x in fids if x in facts)},
+            }
+        return self.memo("view:" + key, paths, build)
+
+    def glossary(self) -> Payload:
+        def build():
+            out = []
+            for cid, c in (self.kfile("concepts.json") or {}).items():
+                name = c.get("name") or cid
+                also = []
+                for a in (c.get("acronyms") or []) + (c.get("aliases") or []):
+                    if a and a.lower() != name.lower() and a not in also:
+                        also.append(a)
+                d = (c.get("defined_in") or [None])[0]
+                out.append({"id": cid, "name": name, "also": also, "definition": c.get("definition") or "",
+                            "lecture": d["lecture"] if d else (c.get("lectures") or [None])[0],
+                            "start": d["start"] if d else None})
+            out.sort(key=lambda x: x["name"].lower())
+            return {"concepts": out}
+        return self.memo("glossary", [self.kd / "concepts.json"], build)
+
+    def concept(self, cid: str) -> Payload | None:
+        concepts = self.kfile("concepts.json") or {}
+        if cid not in concepts:
+            return None
+
+        def build():
+            c = concepts[cid]
+            facts = self.kfile("facts.json") or {}
+            rels = self.kfile("relations.json") or {}
+            titles = self.titles()
+
+            def fact(f):
+                x = facts.get(f)
+                return {"id": f, "text": x.get("text", ""), "lecture": x.get("lecture"), "start": x.get("start")} if x else None
+
+            def side(r):
+                o = concepts.get(r.get("concept")) or {}
+                rf = (rels.get(r.get("relation")) or {}).get("facts") or []
+                return {"relation": r.get("relation"), "label": r.get("label", ""), "concept": r.get("concept"),
+                        "name": o.get("name") or r.get("name"), "definition": (o.get("definition") or "")[:400],
+                        "defined_in": [{"lecture": d.get("lecture"), "segment": d.get("segment"), "start": d.get("start")}
+                                       for d in (o.get("defined_in") or [])[:1]],
+                        "lectures": len(o.get("lectures") or []), "fact": fact(rf[0]) if rf else None}
+            r = c.get("relations") or {}
+            return {"id": cid, **self.slim_concept(cid, c), "aliases": c.get("aliases") or [],
+                    "acronyms": c.get("acronyms") or [],
+                    "facts": [x for x in (fact(f) for f in (c.get("facts") or [])[:60]) if x],
+                    "defining_facts": c.get("defining_facts") or [],
+                    "relations": {"out": [side(x) for x in r.get("out") or []], "in": [side(x) for x in r.get("in") or []]},
+                    "lectures": [{"key": k, "title": (titles.get(k) or {}).get("title") or f"Lecture {k}"}
+                                 for k in c.get("lectures") or []],
+                    "dev": {"defined": c.get("defined"), "definition_facts": c.get("definition_facts") or [],
+                            "misplaced": c.get("misplaced") or [], "merged": c.get("merged") or []}}
+        return self.memo("concept:" + cid, [self.kd / "concepts.json", self.kd / "facts.json",
+                                            self.kd / "relations.json", self.inp / "titles.tsv"], build)
+
+    def coursemap(self) -> Payload:
+        def build():
+            g = self.kfile("lecture_graph.json") or {}
+            concepts = self.kfile("concepts.json") or {}
+            kinds = g.get("concept_kinds") or {}
+            spread = g.get("concepts") or {}
+            links = [{"from": x.get("from"), "to": x.get("to"), "concepts": (x.get("concepts") or [])[:3],
+                      "more": max(0, len(x.get("concepts") or []) - 3)}
+                     for x in g.get("links") or [] if x.get("kind") == "direct"]
+            intro = {}
+            for k, v in kinds.items():
+                ids = sorted(v.get("introduced") or [], key=lambda c: -((spread.get(c) or {}).get("lectures") or 0))
+                intro[k] = {"n": len(ids), "top": ids[:8]}
+            names = {c for v in intro.values() for c in v["top"]} | {c for x in links for c in x["concepts"]}
+
+            def degree(c):
+                r = (concepts.get(c) or {}).get("relations") or {}
+                return len(r.get("out") or []) + len(r.get("in") or [])
+            first = (g.get("lectures") or [None])[0]
+            pool = [c for c, x in concepts.items() if degree(c)]
+            early = [c for c in pool if concepts[c].get("first_defined") == first] or pool
+            return {"introduced": intro, "links": links, "prerequisites": g.get("prerequisites") or {},
+                    "names": {c: (concepts.get(c) or {}).get("name") or c for c in sorted(names)},
+                    "start_concept": max(early, key=degree) if early else None}
+        return self.memo("coursemap", [self.kd / "lecture_graph.json", self.kd / "concepts.json"], build)
+
+    def review(self) -> Payload:
+        def build():
+            ac = (load_json(self.ad / "course.json") if self.ad.is_dir() else None) or {}
+            return {"cards": [c for c in (ac.get("spaced_review") or {}).get("cards") or [] if c.get("concept")]}
+        return self.memo("review", [self.ad / "course.json"], build)
+
+    def warm(self):
+        """Build the lean routes once in the background, so the first page does not wait for the big files."""
+        t0 = time.time()
+        try:
+            self.home()
+            keys = self.keys()
+            if keys:
+                self.view(keys[0])
+            self.glossary()
+            self.coursemap()
+            for k in keys[1:]:
+                self.view(k)
+        except Exception as e:                               # noqa: BLE001  warming is only a speed-up
+            print(f"viewer warm-up stopped: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
+            return
+        print(f"viewer routes ready ({time.time() - t0:.1f} s)", file=sys.stderr, flush=True)
 
 
 # ---------------------------------------------------------------- question answering
@@ -274,6 +579,9 @@ def ask(course: str, req: dict) -> dict:
 
 
 # ---------------------------------------------------------------- HTTP
+STATIC_CACHE: dict = {}
+
+
 class Handler(BaseHTTPRequestHandler):
     C: Course = None                                         # set in main()
     protocol_version = "HTTP/1.1"
@@ -300,6 +608,34 @@ class Handler(BaseHTTPRequestHandler):
     def not_found(self, what="not found", head_only=False):
         self.send_json({"error": what}, HTTPStatus.NOT_FOUND, head_only)
 
+    def send_payload(self, pay, ctype="application/json; charset=utf-8", head_only=False):
+        """An encoded answer: 304 when the browser has it, gzip when it accepts it."""
+        if pay.etag in [t.strip() for t in (self.headers.get("If-None-Match") or "").split(",")]:
+            self.send_response(HTTPStatus.NOT_MODIFIED)
+            self.send_header("ETag", pay.etag)
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        gz = pay.gz is not None and "gzip" in (self.headers.get("Accept-Encoding") or "")
+        extra = {"ETag": pay.etag, "Vary": "Accept-Encoding"}
+        if gz:
+            extra["Content-Encoding"] = "gzip"
+        self.send_body(pay.gz if gz else pay.body, ctype, head_only=head_only, extra=extra)
+
+    def send_static(self, path: Path, ctype: str, head_only=False):
+        sig = stat_sig(path)
+        if sig is None:
+            return self.not_found(head_only=head_only)
+        hit = STATIC_CACHE.get(path)
+        if not hit or hit[0] != sig:
+            body = path.read_bytes()
+            pay = Payload.__new__(Payload)
+            pay.body, pay.gz = body, gzip.compress(body, 6) if len(body) > 1024 else None
+            pay.etag = '"' + hashlib.sha1(body).hexdigest()[:20] + '"'
+            STATIC_CACHE[path] = hit = (sig, pay)
+        self.send_payload(hit[1], ctype, head_only)
+
     def send_file(self, path: Path, ctype: str, head_only=False):
         try:
             self.send_body(path.read_bytes(), ctype, head_only=head_only)
@@ -314,7 +650,7 @@ class Handler(BaseHTTPRequestHandler):
         C = self.C
         try:
             if path in ("/", "/index.html"):
-                return self.send_file(HERE / "index.html", STATIC[".html"], head_only)
+                return self.send_static(HERE / "index.html", STATIC[".html"], head_only)
             if path == "/favicon.ico":
                 return self.send_body(b"", "image/x-icon", HTTPStatus.NO_CONTENT, head_only)
             if path.startswith("/static/"):
@@ -322,7 +658,26 @@ class Handler(BaseHTTPRequestHandler):
                 p = (HERE / rel).resolve()
                 if ".." in rel or not p.is_file() or HERE not in p.parents or p.suffix not in STATIC:
                     return self.not_found(head_only=head_only)
-                return self.send_file(p, STATIC[p.suffix], head_only)
+                return self.send_static(p, STATIC[p.suffix], head_only)
+            if path == "/api/home":
+                return self.send_payload(C.home(), head_only=head_only)
+            m = re.fullmatch(r"/api/view/([\w]+)", path)
+            if m:
+                if not KEY.fullmatch(m[1]):
+                    return self.not_found("bad lecture key", head_only)
+                if m[1] not in C.keys():
+                    return self.not_found("no such lecture", head_only)
+                return self.send_payload(C.view(m[1]), head_only=head_only)
+            if path == "/api/glossary":
+                return self.send_payload(C.glossary(), head_only=head_only)
+            m = re.fullmatch(r"/api/concept/(C\d{4,})", path)
+            if m:
+                pay = C.concept(m[1])
+                return self.send_payload(pay, head_only=head_only) if pay else self.not_found("no such concept", head_only)
+            if path == "/api/coursemap":
+                return self.send_payload(C.coursemap(), head_only=head_only)
+            if path == "/api/review":
+                return self.send_payload(C.review(), head_only=head_only)
             if path == "/api/course":
                 return self.send_json(C.course_info(), head_only=head_only)
             m = re.fullmatch(r"/api/lecture/([\w]+)", path)
@@ -436,6 +791,7 @@ def main():
     print(f"  segments {has('segments')}, knowledge {has('knowledge')}, activities {has('activities')}, "
           f"videos {has('video')} (from {C.media}; {yt} more from YouTube); question answering "
           f"{'importable' if info['qa'] else 'not available (no pipeline/qa)'}", flush=True)
+    threading.Thread(target=C.warm, daemon=True).start()
     if a.warm and info["qa"]:
         threading.Thread(target=warm_qa, args=(a.course,), daemon=True).start()
     try:
