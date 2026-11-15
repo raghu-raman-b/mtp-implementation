@@ -1,0 +1,57 @@
+{
+ "about": {
+  "what": "Subtle seeded errors (gate review 1, change 9): real 2a facts of lectures 1, 4 and 16 with one small thing made wrong, of the kinds the judge passed in the first round. Written by Fable on 2026-11-15 against the transcripts, before the rerun with the revised judge prompt. The 34 blatant entries are in seeded.json; report the two files separately.",
+  "how": "As seeded.json: one entry per judge call. Take the segment's 2a facts, remove the facts named in 'replaces' (if any), put the entry's 'facts' in their place (or at the end when nothing is replaced), renumber, and judge. Every fact in 'facts' should fail. The IDs go on from seeded.json (E35 to E47), so the two files can be run together.",
+  "fields": "As seeded.json. breaks: the property the error breaks (1 Significant, 2 Whole, 3 Established, 4 Grounded, 5 Self-contained, 6 Terms in full, 7 On the subject, 8 Faithful); when several are listed, a failure on any of them counts as caught for the right reason. kind: the error. changed: what was changed in the real fact, for the reader of the report (the judge is not shown it). No entry is marked 'code': none should be failed by the code checks of fact_checks.py (E46 and E47 get its 'bare_acronym' flag, which only reports; so does E38, for 'US' in 'US dollars', as the real fact does).",
+  "scoring": "As seeded.json. Caught: the judge fails the seeded fact. Caught for the right reason: its reason names a property in 'breaks'. For these entries also read the reason: it should name the changed word or the other fact of the split, not only the property. For E42 and E43 both facts should fail, each naming the other.",
+  "kinds": "Dropped or weakened hedge: E35, E36, E37. Scope widened or narrowed: E38, E39. The wrong thing named for a pointing phrase: E40, E41. Thin split: E42, E43. Restated recap: E44, E45. Acronym alone: E46, E47."
+ },
+ "errors": [
+  {"id": "E35", "segment": "4/S0", "replaces": ["4/S0/F2"], "breaks": [8], "kind": "a limit dropped ('partially determine')",
+   "changed": "'a person's actions partially determine' to 'a person's actions determine' (sentences 4/28, 4/32: 'one's actions partially determine what happens in the environment').",
+   "facts": [{"evidence": ["4/10", "4/28", "4/31", "4/32"], "text": "Virtual reality (VR) is, according to the Miriam Webster dictionary, an artificial environment experienced through sensory stimuli, in which sights and sounds play a primary role and are provided by a computer, possibly along with other sensory stimuli, and in which a person's actions determine what happens in the environment."}]},
+  {"id": "E36", "segment": "16/S1", "replaces": ["16/S1/F10"], "breaks": [8], "kind": "a hedge dropped ('in some apps ... may be matched')",
+   "changed": "'may be matched' to 'are matched' (sentence 16/57: 'In some apps, tracked physical objects may be matched in VR').",
+   "facts": [{"evidence": ["16/23", "16/57", "16/58"], "text": "In virtual reality (VR), tracked physical objects are matched in the virtual world so that the user receives touch feedback while interacting with them, giving a better, more natural experience."}]},
+  {"id": "E37", "segment": "16/S1", "replaces": ["16/S1/F3"], "breaks": [8], "kind": "a hedge weakened ('may also be part of' to 'is usually part of')",
+   "changed": "'eye tracking may be part of head tracking' to 'eye tracking is usually part of head tracking' (sentence 16/32: 'eye tracking may also be part of head tracking'). The first 'may' is kept.",
+   "facts": [{"evidence": ["16/21", "16/30", "16/31", "16/32"], "text": "In virtual reality (VR), eye tracking may be required if rendering and display technology require compensating for eye movements, and eye tracking is usually part of head tracking."}]},
+
+  {"id": "E38", "segment": "1/S3", "replaces": ["1/S3/F3"], "breaks": [8], "kind": "scope widened: 'in India' left out, so the figures read as those of the whole industry",
+   "changed": "'In India, the extended reality industry' to 'The extended reality industry' (sentence 1/172: 'even in India, in our country, this industry is likely to grow significantly').",
+   "facts": [{"evidence": ["1/172", "1/173"], "text": "The extended reality industry was estimated at about 1.83 billion US dollars in 2020 and is expected to be about 14 billion US dollars in 2027."}]},
+  {"id": "E39", "segment": "4/S1", "replaces": ["4/S1/F1"], "breaks": [8], "kind": "scope narrowed: 'a real world' left out of 'a real world or an imaginary or fantastic world'",
+   "changed": "'a computer-generated graphical representation of a real world or an imaginary or fantastic world' to 'of an imaginary or fantastic world' (sentence 4/47: 'of two things a real world or it can be an imaginary or fantastic world').",
+   "facts": [{"evidence": ["4/41", "4/42", "4/43", "4/44", "4/45", "4/47", "4/72"], "text": "The artificial or synthetic environment of a virtual reality (VR) system is a computer-generated graphical representation of an imaginary or fantastic world, populated with artificial objects, and is not a real environment."}]},
+
+  {"id": "E40", "segment": "1/S3", "replaces": ["1/S3/F9"], "breaks": [4, 8], "kind": "the wrong thing named for 'this area': the metaverse, the topic just before, for the extended reality field",
+   "changed": "'The extended reality field' to 'The metaverse' (sentence 1/198: 'this area is one of the major emerging areas'; the area is the field the segment argues for, see 1/199 and 1/200; the metaverse is the topic of 1/180 to 1/194).",
+   "facts": [{"evidence": ["1/198"], "text": "The metaverse is one of the major emerging areas identified by many national governments, along with artificial intelligence (AI), large language models, generative artificial intelligence, drones, and nanomaterials."}]},
+  {"id": "E41", "segment": "1/S2", "replaces": ["1/S2/F3"], "breaks": [4, 8], "kind": "the wrong thing named for 'the two extremes': augmented reality and augmented virtuality, the nearest nouns, for the real and the virtual environment",
+   "changed": "'between the real environment extreme and the virtual environment extreme of the reality-virtuality continuum' to 'between augmented reality and augmented virtuality on the reality-virtuality continuum' (sentence 1/134: 'this entire space between the two extremes, that is virtual environment and real environment'; augmented reality and augmented virtuality are the ends of the interval in 1/128).",
+   "facts": [{"evidence": ["1/121", "1/128", "1/134", "1/138"], "text": "Mixed reality, in a broad sense, is the entire space between augmented reality and augmented virtuality on the reality-virtuality continuum, containing different degrees of augmentation of the real environment with virtual content and of the virtual environment with real content."}]},
+
+  {"id": "E42", "segment": "1/S2", "replaces": ["1/S2/F0"], "breaks": [2], "kind": "a thin split: one definition as 'is a scale' and as its two extremes",
+   "changed": "1/S2/F0 ('... is a scale whose extremes are ...') written as two facts; the first says nothing without the second.",
+   "facts": [{"evidence": ["1/121", "1/124"], "text": "The reality-virtuality continuum is essentially a scale."},
+             {"evidence": ["1/125", "1/126", "1/127"], "text": "One extreme of the reality-virtuality continuum is the completely real environment, with nothing virtual, and the other extreme is the completely virtual environment, with nothing real."}]},
+  {"id": "E43", "segment": "16/S3", "replaces": ["16/S3/F3"], "breaks": [2], "kind": "a thin split: one step of a process as what it does and as why it is needed",
+   "changed": "16/S3/F3 ('registration estimates ... the initial position and orientation of the sensor, so that the starting point is known before movement can be tracked') written as two facts.",
+   "facts": [{"evidence": ["16/121", "16/122"], "text": "In the tracking process, registration estimates or determines the initial position and orientation of the sensor."},
+             {"evidence": ["16/123", "16/124"], "text": "In the tracking process, the starting point of the sensor must be known before its movement can be tracked."}]},
+
+  {"id": "E44", "segment": "1/S5", "replaces": [], "breaks": [2], "kind": "a restated recap ('we have seen that concept'): the continuum and mixed reality, taught in segment 1/S2",
+   "changed": "A new fact from sentence 1/230 of the closing summary ('So, we have seen that concept of the reality-virtuality continuum ...'). It holds what 1/S2/F0 and 1/S2/F3 hold and adds nothing. The judge sees only this segment: the signs are 'we have seen' in the evidence sentence and 'To sum up' in 1/225.",
+   "facts": [{"evidence": ["1/230"], "text": "The reality-virtuality continuum has the completely virtual environment at one end and the completely real environment at the other, and what lies in between is broadly referred to as mixed reality."}]},
+  {"id": "E45", "segment": "4/S2", "replaces": [], "breaks": [2], "kind": "a restated recap ('earlier we talked about', 'in this previous lecture I clarified') without what the segment adds to it",
+   "changed": "A new fact from the first half of sentence 4/112, which recalls the previous lecture. What the segment adds, that this psychological reading does not apply to the computer-aided design system, is left out.",
+   "facts": [{"evidence": ["4/112"], "text": "Non-immersive virtual reality (VR) is experienced on a regular two-dimensional computer screen and is still called an immersive experience, purely from a psychological point of view."}]},
+
+  {"id": "E46", "segment": "4/S2", "replaces": ["4/S2/F3"], "breaks": [6], "kind": "an abbreviation alone that is usually written that way ('3D' for three-dimensional)",
+   "changed": "'A three-dimensional (3D) movie experience' to 'A 3D movie experience'; 'virtual reality (VR)' stays in full.",
+   "facts": [{"evidence": ["4/136", "4/147", "4/148", "4/151"], "text": "A 3D movie experience is not a virtual reality (VR) system because, although it provides a virtual environment and a partly immersive experience, it is not interactive, as the viewer only watches and cannot change the displayed content."}]},
+  {"id": "E47", "segment": "16/S2", "replaces": ["16/S2/F5"], "breaks": [6], "kind": "one acronym alone ('HMD') next to a term written in full",
+   "changed": "'the head-mounted display (HMD)' to 'the HMD'; 'virtual reality (VR)' stays in full.",
+   "facts": [{"evidence": ["16/80", "16/81", "16/82", "16/83", "16/84"], "text": "Inside-out tracking is a tracking type in which the cameras or other sensors required for tracking are located within the device used for the experience, such as the HMD in virtual reality (VR), which is more common, so no other external devices are needed."}]}
+ ]
+}
