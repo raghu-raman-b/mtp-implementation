@@ -186,6 +186,7 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
     conv: list[dict] = []
     steps, full_steps, shown, seen = [], [], set(), {}
     final, error, tokens = "", "", {"input": 0, "output": 0}
+    timing: list[dict] = []          # per round: model seconds, tokens, thinking chars; per tool call: seconds
     for rnd in range(MAX_ROUNDS + 1):
         last = rnd == MAX_ROUNDS
         followup = conv + ([{"role": "user", "content": FINAL_NUDGE}] if last else [])
@@ -194,6 +195,8 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
         res = llm.generate(req, log_file=calls_log)
         tokens["input"] += res.input_tokens
         tokens["output"] += res.output_tokens
+        timing.append({"round": rnd, "model_s": round(res.latency_s, 2), "in": res.input_tokens,
+                       "out": res.output_tokens, "think_chars": len(res.reasoning or ""), "tools": []})
         if res.errors and not res.content and not res.tool_calls:
             error = "; ".join(res.errors)
             break
@@ -213,9 +216,11 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
                 text, summary, ids = (f"You already called {name} with these arguments (call {seen[sig]}); its "
                                       "result is above.", "repeated call", set())
             else:
+                tt = time.time()
                 r = run_tool(kb, name, args)
                 text, summary, ids = r.text, r.summary, r.shown
                 seen[sig] = len(steps) + 1
+                timing[-1]["tools"].append({"tool": name, "s": round(time.time() - tt, 3)})
             shown |= ids
             steps.append({"tool": name, "args": args if args is not None else raw, "result_summary": summary})
             full_steps.append({**steps[-1], "result": text})
@@ -234,7 +239,7 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
                                                                                    for c in citations],
            "dropped_ids": dropped, "covered": out["covered"], "covered_line": marker, "error": error,
            "rounds": len([m for m in conv if m["role"] == "assistant"]), "tokens": tokens,
-           "seconds": round(time.time() - t0, 2)}
+           "timing": timing, "seconds": round(time.time() - t0, 2)}
     try:
         logs.mkdir(parents=True, exist_ok=True)
         with (logs / "answers.jsonl").open("a") as f:
