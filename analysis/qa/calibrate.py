@@ -38,15 +38,14 @@ def auc(pos, neg):
     return sum((p > n) + 0.5 * (p == n) for p in pos for n in neg) / (len(pos) * len(neg))
 
 
-def choose(pos, neg):
-    lo, hi = max(neg), min(pos)
+MARGIN = 0.05
+
+
+def choose(keep, neg):
+    lo, hi = max(neg), min(keep)
     if hi > lo:                                   # separable: the middle of the gap
         return round((hi + lo) / 2, 3), "middle of the gap (every in-course query above, every out-of-course below)"
-    # not separable: the threshold that maximises balanced accuracy among those that keep every in-course query
-    cands = sorted(set(pos + neg))
-    keep = [t for t in cands if t <= hi]
-    t = max(keep, key=lambda t: (sum(n < t for n in neg), t))
-    return round(t, 3), "highest cut-off that keeps every in-course query (classes overlap)"
+    return round(hi - MARGIN, 2), f"{MARGIN} below the lowest in-course or partly score (the classes overlap)"
 
 
 def main():
@@ -56,7 +55,7 @@ def main():
     kb = Knowledge.load(a.course)
     data = json.loads((HERE / "calibration_queries.json").read_text())
     rows = []
-    for label in ("in", "out"):
+    for label in ("in", "partly", "out"):
         for item in data[label]:
             s_alts, f_alts = best(kb, item["q"], item["alts"])
             s_q, _ = best(kb, item["q"], [])
@@ -66,19 +65,21 @@ def main():
     for key in ("score", "score_query_only"):
         pos = [r[key] for r in rows if r["label"] == "in"]
         neg = [r[key] for r in rows if r["label"] == "out"]
+        part = [r[key] for r in rows if r["label"] == "partly"]
         near = [r[key] for r in rows if r["kind"] == "near"]
         far = [r[key] for r in rows if r["kind"] == "far"]
-        t, how = choose(pos, neg)
-        out[key] = {"in": stats(pos), "out": stats(neg), "out_near": stats(near), "out_far": stats(far),
+        t, how = choose(pos + part, neg)
+        out[key] = {"in": stats(pos), "partly": sorted(part), "out": stats(neg), "out_near": stats(near), "out_far": stats(far),
                     "auc": round(auc(pos, neg), 4), "gap": round(min(pos) - max(neg), 4), "cutoff": t, "rule": how,
-                    "at_cutoff": {"in_below": sum(p < t for p in pos), "out_at_or_above": sum(n >= t for n in neg)},
-                    "at_old_0.4": {"in_below": sum(p < 0.4 for p in pos), "out_at_or_above": sum(n >= 0.4 for n in neg)}}
+                    "at_cutoff": {"in_below": sum(p < t for p in pos), "partly_below": sum(p < t for p in part),
+                                  "out_below": sum(n < t for n in neg), "out_at_or_above": sum(n >= t for n in neg)},
+                    "at_old_0.4": {"in_below": sum(p < 0.4 for p in pos), "out_below": sum(n < 0.4 for n in neg), "out_at_or_above": sum(n >= 0.4 for n in neg)}}
     out["rows"] = sorted(rows, key=lambda r: -r["score"])
     (HERE / "calibration.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
     for key in ("score", "score_query_only"):
         print(key, json.dumps({k: v for k, v in out[key].items()}, indent=None))
     for r in out["rows"]:
-        print(f"{r['label']:3s} {r['kind']:4s} {r['score']:.3f} {r['score_query_only']:.3f} {r['q'][:55]:55s} | "
+        print(f"{r['label']:6s} {r['kind']:4s} {r['score']:.3f} {r['score_query_only']:.3f} {r['q'][:55]:55s} | "
               f"{r['top_text'][:90]}")
 
 
