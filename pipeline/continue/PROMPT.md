@@ -53,7 +53,23 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
-## State (updated 2026-11-13 01:30 IST)
+## State (updated 2026-11-15 13:10 IST)
+
+**2026-11-15 session: complete the MVP (user).** Git tag `mvp-2026-11-13` marks the MVP as it was demoed.
+- **Rebuild of the skipped stages** on the EC2: 3b (synonym merge) -> 3c (with the model's groups) -> real 4a (Qwen)
+  -> 4b -> 4c -> 4d -> the whole activities stage again on Qwen (every model kind reads concept lists and definitions,
+  so a remap alone is not enough; ~380 calls) -> `--check` -> merge home once verified. 2b's judge stays off (block 1
+  found it did more harm than good; block 1 continues separately).
+- **EC2**: the user is swapping instances (an RTX PRO 4500 32 GB was too small for the FP8 27B: weights ~28 GB; if a
+  32 GB GPU comes back, `nvidia/Qwen3.8-27B-NVFP4` (~22 GB, ModelOpt, Blackwell-native) is the fallback in vLLM).
+- **Agents running** (worktrees; cherry-pick, test, push): viewer rebuild like the earlier pipelines' viewers
+  (segment-cut video, activities between segments, lazy per-lecture loading) (Opus); QA weak points 1-5 (Opus);
+  block 1 CHANGES 8-9 gold (Fable; user granted Fable writes, `.claude/settings.json` allows `analysis/**`,
+  `pipeline/prompts/**`); activity prompt review + judge prompts before the activities rerun (Fable); gold sets: block 6
+  question set, block 3 pair gold, block 2 gold for 4 segments (Fable). After the activity review: an Opus agent adds
+  the code checks it lists (quiz option length etc.) and the judge to `s5_activities.py`.
+
+## State (as of 2026-11-13)
 
 Done and pushed (see `git log`):
 - **Block 0** complete. Fresh 2b on lectures 1, 4, 16: 62 facts in, 54 kept, 7 rewritten, 1 removed, 62 out.

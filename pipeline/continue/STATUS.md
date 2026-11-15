@@ -1,3 +1,10 @@
+PIPELINE v3 STATUS - COMPLETING THE MVP  (updated 13:10 IST, 15 Nov; full state: pipeline/continue/PROMPT.md)
+
+NOW: EC2 instance being swapped by the user; then 3b -> 3c -> 4a (real) -> 4b -> 4c -> 4d -> activities (Qwen) on it
+AGENTS: viewer rebuild (Opus), QA fixes (Opus), block 1 gold (Fable), activity prompts + judges (Fable),
+        gold sets for blocks 6/3/2 (Fable)
+MVP as demoed: git tag mvp-2026-11-13
+
 PIPELINE v3 STATUS - MVP DONE  (updated 10:05 IST, 13 Nov; full state: pipeline/continue/PROMPT.md)
 
 MVP COMPLETE. Demo plan: pipeline/continue/DEMO_PLAN.md (final). Demo on an instance: pipeline/demo/README.md
