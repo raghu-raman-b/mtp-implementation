@@ -92,6 +92,7 @@ class Knowledge:
         self._vectors = emb["vectors"]
         self._matrix = None
         self._embedder = None
+        self._uses = None
         self._elock = threading.Lock()
 
     @classmethod
@@ -116,6 +117,22 @@ class Knowledge:
 
     def concept_name(self, cid: str) -> str:
         return (self.concepts.get(cid) or {}).get("name", cid)
+
+    def concept_uses(self, k: str) -> dict[str, int]:
+        """How many of lecture k's facts are about each concept (the facts' "concepts"): how much the lecture
+        relies on it, as opposed to naming it in passing."""
+        if self._uses is None:
+            uses: dict[str, dict[str, int]] = {}
+            for f in self.facts.values():
+                u = uses.setdefault(f["lecture"], {})
+                for c in f.get("concepts", []):
+                    u[c] = u.get(c, 0) + 1
+            self._uses = uses
+        return self._uses.get(k, {})
+
+    def is_hub(self, cid: str) -> bool:
+        """A concept used across much of the course (the lecture graph's weight < 1, see s4c_lecture_graph)."""
+        return ((self.graph.get("concepts") or {}).get(cid) or {}).get("weight", 1.0) < 1.0
 
     # ------------------------------------------------------------ names
     def lookup_name(self, name: str) -> tuple[list[str], str | None, str | None]:
