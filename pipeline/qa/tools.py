@@ -29,8 +29,15 @@ CARDS_PER_NAME = 3       # a name shared by several concepts shows each card, up
 LOOKUP_K = 8             # facts fact_lookup returns
 MAX_REPHRASINGS = 4
 LOW_SCORE = {"fake": 0.3}   # best score under this: "no close match" (per embedding model)
-LOW_SCORE_DEFAULT = 0.4     # Qwen3-Embedding-0.6B with the query instruction: provisional (smoke layer: off-topic 0.19, on-topic 0.5-0.7)
-DEP_CONCEPTS = 12        # concepts listed by lecture_dependencies, each with up to 2 defining facts
+# Qwen3-Embedding-0.6B with the query instruction, calibrated on nptel_vr (analysis/qa/calibration.json): 38 in-course
+# queries 0.63-0.86, 3 partly taught 0.60-0.69, 39 out-of-course 0.21-0.72 (unrelated 0.21-0.48, neighbouring fields
+# 0.43-0.72); AUC 0.99. 0.55 is 0.05 under the lowest in-course or partly score and flags 27 of the 39.
+LOW_SCORE_DEFAULT = 0.55
+UNKNOWN_K = 5            # facts closest to an unknown name, shown with the "unknown" answer
+DEP_CONCEPTS = 8         # concepts listed by lecture_dependencies with their definition and up to 2 defining facts
+DEP_MIN_USES = 2         # a concept fewer of the lecture's facts are about is "mentioned in passing"
+DEP_ASSUMED = 10         # assumed concepts named (those the lecture relies on most)
+DEP_INTRODUCED = 12      # concepts the lecture introduces, named (most used first)
 STOP = set("a an the of to in on for and or is are was were be been what which who whom how why when where does do "
            "did can could would should will shall i me my we you your it its this that these those there here with "
            "about from by as at into than then please tell explain mean means meant difference between versus vs "
@@ -42,6 +49,7 @@ class ToolResult:
     text: str
     summary: str
     shown: set = field(default_factory=set)     # fact and segment IDs the text shows
+    found: bool | None = None   # False: the course has nothing close (unknown name, no close fact); None: not a search
 
 
 class ToolError(ValueError):
@@ -70,6 +78,16 @@ def known_lecture(kb: Knowledge, raw) -> str:
 
 
 # ---------------------------------------------------------------- check_concept
+def where_defined(kb: Knowledge, d: dict) -> tuple[str, float, str]:
+    """(lecture, time, ID) of one "defined_in" place: its first defining fact, so that the time the card shows is
+    the time the citation shows (a segment's citation shows the segment's start, often minutes earlier)."""
+    facts = sorted((f for f in d.get("facts", []) if f in kb.facts), key=lambda f: kb.facts[f]["start"])
+    if facts:
+        return d["lecture"], kb.facts[facts[0]]["start"], facts[0]
+    seg = (kb.lectures.get(d["lecture"]) or {}).get("segments", {}).get(d["segment"]) or {}
+    return d["lecture"], seg.get("start", d.get("start", 0)), d["segment"]
+
+
 def card_text(kb: Knowledge, cid: str, shown: set) -> list[str]:
     c = kb.concepts[cid]
     other = list(dict.fromkeys(c.get("aliases", []) + c.get("acronyms", [])))
@@ -81,10 +99,9 @@ def card_text(kb: Knowledge, cid: str, shown: set) -> list[str]:
     else:
         out.append("Definition: none (the course uses this term but does not define it).")
     if c.get("defined_in"):
-        out.append("Defined in: " + "; ".join(
-            f"{lecture_ref(kb, d['lecture'])} at {fmt_time(d['start'])}-{fmt_time(d['end'])} [{d['segment']}]"
-            for d in c["defined_in"]))
-        shown.update(d["segment"] for d in c["defined_in"])
+        places = [where_defined(kb, d) for d in c["defined_in"]]
+        out.append("Defined in: " + "; ".join(f"{lecture_ref(kb, k)} at {fmt_time(t)} [{ref}]" for k, t, ref in places))
+        shown.update(ref for _, _, ref in places)
     out.append("Used in lectures: " + ", ".join(c.get("lectures", [])))
     path = (kb.graph.get("concept_paths") or {}).get(cid, {}).get("path") or []
     if len(path) > 1:
@@ -123,7 +140,19 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
         if sug:
             text += f" Concept names close to it: {', '.join(sug)} (call check_concept with one of them only if it " \
                     f"is clearly what the learner means)."
-        return ToolResult(text, f"unknown name '{name}'" + (f"; close: {', '.join(sug)}" if sug else ""))
+        # The facts closest to the name come with the answer, so that a name the course words differently is
+        # answered without another round, and a name the course does not teach is seen to be so at once.
+        hits = kb.search(list(dict.fromkeys([name, kb.expand_acronyms(name)])), k=UNKNOWN_K)
+        low = LOW_SCORE.get(kb.embed_model, LOW_SCORE_DEFAULT)
+        best = hits[0][1] if hits else 0.0
+        if hits:
+            text += f'\nThe facts closest to "{name}", best first (score 0 to 1):\n' + "\n".join(
+                fact_line(kb, f, f" (score {s:.2f})") for f, s in hits)
+            if best < low:
+                text += f"\nNone of these is a close match (best score {best:.2f}): the course may not cover this."
+        return ToolResult(text, f"unknown name '{name}'" + (f"; close: {', '.join(sug)}" if sug else "")
+                          + (f"; closest fact {best:.2f}" + (" (low)" if best < low else "") if hits else ""),
+                          {f for f, _ in hits}, found=bool(hits) and best >= low)
     shown: set = set()
     lines = []
     if how == "close":
@@ -135,7 +164,7 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
     names = ", ".join(kb.concept_name(c) for c in cids[:CARDS_PER_NAME])
     summary = f"card of {names}" + (f" (matched '{matched}', {how})" if how != "exact" else "") + \
               f"; {sum(1 for s in shown if '/F' in s)} facts"
-    return ToolResult("\n".join(lines).strip(), summary, shown)
+    return ToolResult("\n".join(lines).strip(), summary, shown, found=True)
 
 
 # ---------------------------------------------------------------- fact_lookup
@@ -156,7 +185,7 @@ def fact_lookup(kb: Knowledge, query: str = "", rephrasings=None, lecture=None, 
     k = known_lecture(kb, lecture) if lecture not in (None, "") else None
     hits = kb.search(variants, k=LOOKUP_K, lecture=k)
     if not hits:
-        return ToolResult("No facts found.", f"no facts for '{query}'")
+        return ToolResult("No facts found.", f"no facts for '{query}'", found=False)
     low = LOW_SCORE.get(kb.embed_model, LOW_SCORE_DEFAULT)
     best = hits[0][1]
     lines = [f'Facts closest to "{query}"' + (f" in lecture {k}" if k else "") + ", best first (score 0 to 1):"]
@@ -168,55 +197,82 @@ def fact_lookup(kb: Knowledge, query: str = "", rephrasings=None, lecture=None, 
                      "Use a fact only if it really answers the question.")
     summary = f"{len(hits)} facts for '{query}'" + (f" (+{len(variants) - 1} wordings)" if len(variants) > 1 else "") \
               + f"; best {best:.2f}" + (" (low)" if best < low else "")
-    return ToolResult("\n".join(lines), summary, {f for f, _ in hits})
+    return ToolResult("\n".join(lines), summary, {f for f, _ in hits}, found=best >= low)
 
 
 # ---------------------------------------------------------------- lecture_dependencies
 def lecture_dependencies(kb: Knowledge, lecture=None, **_) -> ToolResult:
+    """What lecture k needs, from the concepts it relies on rather than from every concept it names.
+
+    The lecture graph links K -> L when L names any concept K defines, so one passing mention of a concept makes K a
+    prerequisite, and the graph's met_again list is in concept order. Here the concepts lecture k takes from earlier
+    lectures are ranked by how many of its facts are about them (kb.concept_uses): those with at least DEP_MIN_USES
+    facts are what it relies on (shown with definition and defining facts, most used first); hub concepts (used
+    across the course) are named apart; the rest are named as mentioned in passing. The lectures to revise are where
+    the relied-on concepts are first defined, ranked by those uses.
+    """
     k = known_lecture(kb, lecture)
-    g = kb.graph
-    pre = (g.get("prerequisites") or {}).get(k, {"direct": [], "all": []})
-    links = {ln["from"]: ln for ln in g.get("links", []) if ln["to"] == k}
-    kinds = (g.get("concept_kinds") or {}).get(k) or kb.lectures[k].get("concepts", {})
+    kinds = (kb.graph.get("concept_kinds") or {}).get(k) or kb.lectures[k].get("concepts", {})
+    uses = kb.concept_uses(k)
+    rank = lambda ids: sorted(ids, key=lambda c: (-uses.get(c, 0), kb.concept_name(c).lower()))  # noqa: E731
+    again = rank(kinds.get("met_again", []))
+    hubs = [c for c in again if kb.is_hub(c) and uses.get(c, 0) >= DEP_MIN_USES]
+    key = [c for c in again if not kb.is_hub(c) and uses.get(c, 0) >= DEP_MIN_USES]
+    passing = [c for c in again if uses.get(c, 0) < DEP_MIN_USES]
+    first = lambda c: (kb.concepts.get(c) or {}).get("first_defined") or \
+        ((kb.graph.get("concept_paths") or {}).get(c) or {}).get("first_defined")  # noqa: E731
+    order = {j: i for i, j in enumerate(kb.lectures)}
+    earlier = lambda c: [j for j in ((kb.graph.get("concepts") or {}).get(c) or {}).get("defined_in", [])  # noqa: E731
+                         if order.get(j, 1e9) < order[k]]
+    names = lambda ids: ", ".join(kb.concept_name(c) for c in ids)  # noqa: E731
     shown: set = set()
     out = [f"BEFORE {lecture_ref(kb, k)}"]
-    if pre["direct"]:
-        out.append("Direct prerequisites (the lectures it builds on, with the concepts it takes from each):")
-        for j in pre["direct"]:
-            cs = ", ".join(kb.concept_name(c) for c in links.get(j, {}).get("concepts", []))
-            out.append(f"- {lecture_ref(kb, j)}" + (f": {cs}" if cs else ""))
-        behind = [j for j in pre["all"] if j not in pre["direct"]]
-        if behind:
-            out.append("Earlier lectures behind those: " + ", ".join(behind))
-    else:
-        out.append("No earlier lecture is a prerequisite of this lecture.")
-    weak = [ln for j, ln in links.items() if ln.get("kind") == "weak"]
-    if weak:
-        out.append("Weaker links (only widely used concepts; not prerequisites): " + "; ".join(
-            f"lecture {ln['from']}: {', '.join(kb.concept_name(c) for c in ln['concepts'])}" for ln in weak))
-    again = kinds.get("met_again", [])
-    if again:
-        out.append(f"Concepts lecture {k} uses that earlier lectures define:")
-        for cid in again[:DEP_CONCEPTS]:
-            c = kb.concepts.get(cid, {})
-            first = c.get("first_defined")
-            d = c.get("definition") or "(no definition written)"
-            out.append(f"- {c.get('name', cid)} (first defined in lecture {first}): {d}")
-            for f in [f for f in c.get("defining_facts", []) if f in kb.facts][:2]:
+    if key:
+        out.append(f"Concepts from earlier lectures that lecture {k} relies on, most used first (uses: how many of "
+                   f"its facts are about the concept):")
+        for c in key[:DEP_CONCEPTS]:
+            C = kb.concepts.get(c, {})
+            also = [j for j in earlier(c) if j != first(c)]
+            out.append(f"- {C.get('name', c)} ({uses[c]} uses; first defined in lecture {first(c)}"
+                       + (f", also in {', '.join(also)}" if also else "") + "): "
+                       + (C.get("definition") or "(no definition written)"))
+            for f in [f for f in C.get("defining_facts", []) if f in kb.facts][:2]:
                 out.append("    " + fact_line(kb, f))
                 shown.add(f)
-        if len(again) > DEP_CONCEPTS:
-            out.append(f"  ({len(again) - DEP_CONCEPTS} more: "
-                       + ", ".join(kb.concept_name(c) for c in again[DEP_CONCEPTS:]) + ")")
-    if kinds.get("assumed"):
-        out.append(f"Concepts lecture {k} uses that the course never defines (assumed knowledge): "
-                   + ", ".join(kb.concept_name(c) for c in kinds["assumed"]))
+        if len(key) > DEP_CONCEPTS:
+            out.append(f"  (also relied on: {names(key[DEP_CONCEPTS:])})")
+        score: dict[str, int] = {}
+        carried: dict[str, list] = {}
+        for c in key:
+            j = first(c)
+            if j:
+                score[j] = score.get(j, 0) + uses[c]
+                carried.setdefault(j, []).append(c)
+        revise = sorted(score, key=lambda j: (-score[j], order.get(j, 0)))
+        out.append("Lectures to revise first, by how much lecture " + k + " relies on what they teach: " + "; ".join(
+            f"{lecture_ref(kb, j)} ({names(carried[j])})" for j in revise))
+    else:
+        revise = []
+        out.append(f"Lecture {k} relies on no concept from an earlier lecture (none of its facts is about one more "
+                   f"than once).")
+    if hubs:
+        out.append("General concepts of the course it also uses (taught early, used throughout): " + ", ".join(
+            f"{kb.concept_name(c)} (lecture {first(c)})" for c in hubs))
+    if passing:
+        out.append("Concepts from earlier lectures it only mentions in passing (not needed beforehand): "
+                   + names(passing))
+    assumed = [c for c in rank(kinds.get("assumed", [])) if uses.get(c, 0) >= DEP_MIN_USES]
+    if assumed:
+        rest = len(kinds.get("assumed", [])) - min(len(assumed), DEP_ASSUMED)
+        out.append(f"Concepts lecture {k} relies on that the course never defines (assumed knowledge): "
+                   + names(assumed[:DEP_ASSUMED]) + (f" (and {rest} more it names)" if rest > 0 else ""))
     if kinds.get("introduced"):
-        out.append(f"Concepts lecture {k} itself introduces: "
-                   + ", ".join(kb.concept_name(c) for c in kinds["introduced"]))
-    summary = f"lecture {k}: direct {', '.join(pre['direct']) or 'none'}; all {len(pre['all'])}; " \
-              f"{len(again)} concepts from earlier, {len(kinds.get('assumed', []))} assumed"
-    return ToolResult("\n".join(out), summary, shown)
+        intro = rank(kinds["introduced"])
+        out.append(f"Concepts lecture {k} itself introduces (most used first): " + names(intro[:DEP_INTRODUCED])
+                   + (f" (and {len(intro) - DEP_INTRODUCED} more)" if len(intro) > DEP_INTRODUCED else ""))
+    summary = f"lecture {k}: revise {', '.join(revise) or 'none'}; relies on {len(key)} earlier concepts, " \
+              f"{len(hubs)} general, {len(passing)} in passing, {len(assumed)} assumed"
+    return ToolResult("\n".join(out), summary, shown, found=True)
 
 
 # ---------------------------------------------------------------- lecture_overview
@@ -252,7 +308,7 @@ def lecture_overview(kb: Knowledge, lecture=None, **_) -> ToolResult:
         out.append("Direct prerequisites: " + ", ".join(f"lecture {j}" for j in pre["direct"]))
     summary = f"lecture {k}: {len(L.get('segments', {}))} segments, {len(L.get('objectives', []))} objectives, " \
               f"{len(kinds.get('introduced', []))} concepts introduced"
-    return ToolResult("\n".join(out), summary, shown)
+    return ToolResult("\n".join(out), summary, shown, found=True)
 
 
 # ---------------------------------------------------------------- course_goals
@@ -264,7 +320,7 @@ def course_goals(kb: Knowledge, **_) -> ToolResult:
     for gid, g in cg.items():
         out.append(f"{gid}: {g['goal']}" + (f" Achieves: {g['achieves']}" if g.get("achieves") else ""))
         out.append("   Lectures: " + "; ".join(f"{j} \"{kb.lecture_title(j)}\"" for j in g.get("lectures", [])))
-    return ToolResult("\n".join(out), f"{len(cg)} course goals")
+    return ToolResult("\n".join(out), f"{len(cg)} course goals", found=True)
 
 
 FUNCS = {"check_concept": check_concept, "fact_lookup": fact_lookup, "lecture_dependencies": lecture_dependencies,
