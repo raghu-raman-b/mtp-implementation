@@ -83,6 +83,8 @@ NO_ANSWER = "Sorry, I could not answer that just now. Please try asking again in
 ID = r"(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?"
 BRACKET = re.compile(r"\s?[\[(【]([^\[\]()【】]*?" + ID + r"[^\[\]()【】]*?)[\])】]")
 BARE = re.compile(r"(?<![\w/])(" + ID + r")(?![\w/])")
+# a tool's name the model wrote as if it were a citation ("... lecture 8. [lecture_dependencies]")
+TOOL_REF = re.compile(r"[ \t]*[\[(【]`?(?:check_concept|fact_lookup|lecture_dependencies|lecture_overview|course_goals)`?[\])】]")
 TIME = r"\d{1,2}:\d{2}(?::\d{2})?"
 RANGE = TIME + r"(?:\s*(?:-|–|—|to|and)\s*" + TIME + r")?"
 # a time or range the model wrote before a citation: "at 14:25 [..]", "from 14:25 to 15:00 [..]", "(14:25-15:00) [..]";
@@ -191,7 +193,7 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
         ids = [i for i in re.findall(ID, m.group(1)) if valid(i)]
         return label(list(dict.fromkeys(ids)))
 
-    out = MODEL_TIME.sub("", text)
+    out = TOOL_REF.sub("", MODEL_TIME.sub("", text))
     out = BRACKET.sub(group, out)
     out = BARE.sub(lambda m: label([m.group(1)]) if valid(m.group(1)) else "", out)
     out = merge_adjacent(out, labels)

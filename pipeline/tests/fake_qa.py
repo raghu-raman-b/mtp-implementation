@@ -359,6 +359,9 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
                                f"{r['answer']!r}")
     check([c["fact"] for c in r["citations"]] == ["2/S2/F3", "6/S0/F2", "2/S2/F4"]
           and real_citations(r, facts, lectures), "every cited fact still a citation, in order of first use")
+    from qa.answer import TOOL_REF
+    check(TOOL_REF.sub("", "Revise lecture 8 first. [lecture_dependencies] See (fact_lookup).")
+          == "Revise lecture 8 first. See.", "a tool's name written as a citation is removed")
 
     print("this lecture (the learner's lecture passed on)", flush=True)
     n0 = len(server.bodies)
