@@ -1,3 +1,13 @@
+PIPELINE v3 STATUS - MVP REBUILT  (updated 17:20 IST, 17 Nov; full state: pipeline/continue/PROMPT.md)
+
+DONE TODAY: layer rebuilt and merged (d3896b9): 3,122 concepts (synonym merge), real definitions (1,316 = glossary),
+  goals, graph, knowledge (206,903 refs ok); activities v3 (1,168, judge-checked, failing items hidden per review)
+  viewer fast (lean routes, lazy lectures, streamed answers; tunnel 9 s -> 1 s pages); QA median ~5 s, grounded
+  demo setup proven on a real instance (check_demo ALL PASS); EC2 released at the user's cue (04a797a)
+NEXT: DEMO_PLAN.md rewrite for the new layer (agent running), rehearsal; then docs
+NOTE demo day: SSH to us-east was ~40 kB/s from the user's network: use an instance near the venue, test first
+MVP as demoed before: git tag mvp-2026-11-13
+
 PIPELINE v3 STATUS - MVP COMPLETION DAY  (updated 10:45 IST, 17 Nov; full state: pipeline/continue/PROMPT.md)
 
 GOAL TODAY: the best working MVP; all GPU work done today. Demo runs locally first, on a cloud instance via SSH on demo day.
