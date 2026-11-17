@@ -69,6 +69,11 @@ def default_config() -> Path:
 DEFAULT_CONFIG = default_config()
 SYSTEM_FILE = ROOT / "prompts" / "qa_system.txt"
 MAX_ROUNDS = 5                  # rounds of tool calls before the model must answer
+# Round 0 (where the tools are chosen): thinking on or off, and its tool_choice ("auto"; "required": a search is
+# always made, so a taught topic is never answered "not covered" from the model's own knowledge). Later rounds:
+# thinking off, tool_choice "auto" (the last: "none"). Kept as module switches so analysis/qa/bench.py can try both.
+ROUND0_THINK = True
+ROUND0_TOOL_CHOICE = "auto"
 FINAL_NUDGE = ("Answer the learner now, from the tool results above only, following the rules: IDs in square "
                "brackets after each claim, and the COVERED line at the end.")
 NO_ANSWER = "Sorry, I could not answer that just now. Please try asking again in other words."
@@ -369,8 +374,8 @@ def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable
         last = rnd == MAX_ROUNDS or early
         followup = conv + ([{"role": "user", "content": FINAL_NUDGE}] if last else [])
         req = Request(prompt=user, system=system, followup=followup, tools=tools,
-                      tool_choice="none" if last else "auto", key=f"qa.{rnd}",
-                      sampling=no_think if rnd > 0 else {})
+                      tool_choice="none" if last else ROUND0_TOOL_CHOICE if rnd == 0 else "auto", key=f"qa.{rnd}",
+                      sampling=no_think if rnd > 0 or not ROUND0_THINK else {})
         if emit is None:
             res = llm.generate(req, log_file=calls_log)
         else:

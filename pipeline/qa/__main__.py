@@ -2,7 +2,8 @@
 
 Answers one question with the tool loop and prints the answer, its citations and the tool steps. Run it from the
 pipeline folder. The model server (Gemma 4 12B by default) is started if none answers on the config's port, and is
-left running for the next question; `python -m qa --stop` stops the llama-server on the config's port.
+left running for the next question; `python -m qa --stop` stops the model server on the config's port (llama-server,
+or `vllm serve` for an engine "vllm" config: on a cloud instance, run it there, not through the SSH forward).
 """
 from __future__ import annotations
 
@@ -29,9 +30,10 @@ def main():
     ap.add_argument("--stop", action="store_true", help="stop the model server on the config's port and exit")
     a = ap.parse_args()
     if a.stop:
-        port = get_llm(a.config).cfg.port
-        subprocess.run(["pkill", "-f", f"llama-server.*--port {port}"], check=False)
-        print(f"stopped any llama-server on port {port}")
+        cfg = get_llm(a.config).cfg
+        exe = "(vllm serve|vllm.entrypoints.openai.api_server)" if cfg.engine == "vllm" else "llama-server"
+        subprocess.run(["pkill", "-f", f"{exe}.*--port {cfg.port}( |$)"], check=False)
+        print(f"stopped any {exe.strip('()').replace('|', ' / ')} on port {cfg.port}")
         return 0
     if not a.question:
         ap.error("give a question")

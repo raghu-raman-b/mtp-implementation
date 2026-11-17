@@ -38,12 +38,22 @@ What it looks for (each line is what a broken piece would show):
            names extended reality and virtual reality as in passing and latency as introduced; lecture 8 relies on
            nothing earlier (display resolution, rendering, stereoscopy and virtual reality once each: in passing)
   cli      python -m qa not printing the result as JSON
+  stream   answer_stream not giving a step event per tool call (in order), drafts (labels written, no raw ID, half
+           bracket or COVERED line; the last one the answer), a reset when a round's text ended in tool calls, and
+           last done with exactly what answer() returns; its rounds not sent with "stream" or not with the same
+           tools, tool_choice and thinking; its tokens not logged
+  round 0  the round-0 switches (qa.answer.ROUND0_THINK, ROUND0_TOOL_CHOICE) not reaching round 0, or leaking into
+           round 1
+  vllm     qa with configs/gemma4_12b_vllm_demo.json (fake vLLM on a free port) not sending repetition_penalty, sending
+           thinking_token_budget, or answering differently from the llama.cpp config; python -m qa --stop not
+           stopping a "vllm serve ... --port N" process, or stopping one on another port
   log      a question not logged to <output>/<course>/qa/answers.jsonl
   output   any file under the real output/ created or changed
 """
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import re
@@ -108,9 +118,12 @@ class QAFake(FakeServer):
         tools = [m["content"] for m in msgs if m["role"] == "tool"]
         last = tools[-1] if tools else ""
         out = self.script(q, rnd, last, tools, msgs, body)
-        msg = {"content": out, "tool_calls": None} if isinstance(out, str) else {"content": "", "tool_calls": out}
+        if isinstance(out, tuple):                     # (content, tool calls): text written before the calls
+            msg = {"content": out[0], "tool_calls": out[1]}
+        else:
+            msg = {"content": out, "tool_calls": None} if isinstance(out, str) else {"content": "", "tool_calls": out}
         return {"choices": [{"message": {**msg, "reasoning_content": "fake thinking"},
-                             "finish_reason": "stop" if isinstance(out, str) else "tool_calls"}],
+                             "finish_reason": "tool_calls" if msg["tool_calls"] else "stop"}],
                 "usage": {"prompt_tokens": 100, "completion_tokens": 10}}
 
     @staticmethod
@@ -183,6 +196,10 @@ class QAFake(FakeServer):
             if rnd == 0:
                 return [call("check_concept", {"name": "rendering"})]
             return "Rendering is a big topic.\nCOVERED: yes"
+        if q == "Talk first, then search":
+            if rnd == 0:
+                return "Let me look this up in the course first.", [call("check_concept", {"name": "rendering"})]
+            return f"Rendering is taught in lecture 4 [{ids_in(last)[0]}].\nCOVERED: yes"
         if q == "What is this course about?":
             if rnd == 0:
                 return [call("course_goals", {})]
@@ -401,6 +418,131 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
           "course_goals: 'yes' without citations stays covered (goals have no times)")
 
 
+def stream_events(q: str, llm, **kw) -> list[dict]:
+    import qa
+    return list(qa.answer_stream(q, course=COURSE, llm=llm, **kw))
+
+
+def check_drafts(evs: list[dict], result: dict, what: str):
+    drafts = [e["text"] for e in evs if e["event"] == "draft"]
+    clean = all(not ID.search(d) and "COVERED" not in d.upper() and d.count("(") == d.count(")")
+                and "[" not in d and "\x00" not in d for d in drafts)
+    check(len(drafts) >= 2 and clean and drafts[-1] == result["answer"],
+          f"{what}: drafts grow with lecture labels, no raw ID, bracket or COVERED line; the last equals the answer "
+          f"({len(drafts)} drafts{'' if clean else ', a dirty one: ' + repr(next(d for d in drafts if ID.search(d) or 'COVERED' in d.upper() or '[' in d))})")
+
+
+def test_stream(cfg: LLMConfig, server: QAFake):
+    import qa
+    llm = LLM(cfg, log=lambda *a: None)
+    ask = lambda q, **kw: qa.answer(q, course=COURSE, llm=llm, **kw)  # noqa: E731
+    kinds = lambda evs: [e["event"] for i, e in enumerate(evs)  # noqa: E731
+                         if i == 0 or e["event"] != evs[i - 1]["event"]]
+
+    print("streaming (answer_stream)", flush=True)
+    n0 = len(server.bodies)
+    evs = stream_events("What is an HMD?", llm)
+    sent = server.bodies[n0:]
+    blocking = ask("What is an HMD?")
+    check(kinds(evs) == ["step", "draft", "done"] and evs[0]["tool"] == "check_concept"
+          and evs[0]["args"] == {"name": "HMD"} and "head-mounted display" in evs[0]["result_summary"],
+          f"events: the step, then drafts, then done ({kinds(evs)})")
+    check(evs[-1]["result"] == blocking, "done's result equals answer()'s for the same question")
+    check_drafts(evs, blocking, "one tool call")
+    ctk = lambda b: b.get("chat_template_kwargs") or {}  # noqa: E731
+    check(len(sent) == 2 and all(b.get("stream") is True and b.get("stream_options") == {"include_usage": True}
+                                 for b in sent)
+          and "stream" not in server.bodies[-1] and ctk(sent[0]).get("enable_thinking") is True
+          and ctk(sent[1]).get("enable_thinking") is False and sent[0].get("tool_choice") == "auto"
+          and [t["function"]["name"] for t in sent[0]["tools"]] == [t["function"]["name"] for t in qa.tool_specs()],
+          "streamed rounds sent with stream and include_usage, the same tools, tool_choice and thinking as "
+          "answer() (which does not stream)")
+    log = json.loads((Path(os.environ["QA_OUTPUT"]) / COURSE / "qa" / "answers.jsonl").read_text().splitlines()[-2])
+    check(log["tokens"] == {"input": 200, "output": 20} and len(log["timing"]) == 2,
+          f"the streamed answer logged with the usage of both rounds ({log['tokens']})")
+
+    evs = stream_events("How do HMDs and tracking relate?", llm)
+    blocking = ask("How do HMDs and tracking relate?")
+    steps = [e for e in evs if e["event"] == "step"]
+    check(kinds(evs) == ["step", "draft", "done"] and [s["args"]["name"] for s in steps] == ["HMDs", "tracking"]
+          and evs[-1]["result"] == blocking,
+          "two calls in one message: two step events in order (tool-call deltas assembled by index); done == answer()")
+    check_drafts(evs, blocking, "two cards")
+
+    evs = stream_events("Talk first, then search", llm)
+    blocking = ask("Talk first, then search")
+    check(kinds(evs) == ["draft", "reset", "step", "draft", "done"]
+          and evs[0]["text"].startswith("Let me") and evs[-1]["result"] == blocking
+          and "Let me look" not in blocking["answer"] and len(blocking["citations"]) == 1,
+          f"text written before tool calls: drafted, then reset, then the step and the answer's drafts "
+          f"({kinds(evs)}; answer {blocking['answer']!r})")
+
+    print("round-0 switches (thinking off, tool_choice required)", flush=True)
+    qa_answer = importlib.import_module("qa.answer")   # the module (qa.answer the attribute is the function)
+    keep = qa_answer.ROUND0_THINK, qa_answer.ROUND0_TOOL_CHOICE
+    qa_answer.ROUND0_THINK, qa_answer.ROUND0_TOOL_CHOICE = False, "required"
+    try:
+        n0 = len(server.bodies)
+        r = ask("What is an HMD?")
+        b0, b1 = server.bodies[n0], server.bodies[n0 + 1]
+        check(ctk(b0).get("enable_thinking") is False and b0.get("tool_choice") == "required"
+              and ctk(b0).get("extra_switch") == 1 and ctk(b1).get("enable_thinking") is False
+              and b1.get("tool_choice") == "auto" and len(r["citations"]) == 2,
+              f"round 0 sent with thinking off and tool_choice required, round 1 with auto ({ctk(b0)}, "
+              f"{b0.get('tool_choice')}, {b1.get('tool_choice')})")
+    finally:
+        qa_answer.ROUND0_THINK, qa_answer.ROUND0_TOOL_CHOICE = keep
+
+
+def test_vllm(work: Path, env: dict, ref: dict):
+    """qa against configs/gemma4_12b_vllm_demo.json (the cloud demo), with a fake vLLM on a free port."""
+    import qa
+    print("the vLLM demo config (fake server)", flush=True)
+    port = free_port()
+    cfg = LLMConfig.load(ROOT / "configs" / "gemma4_12b_vllm_demo.json").with_(
+        port=port, server_log=str(work / "server_vllm.log"), attach_wait_s=5)
+    cfg_path = work / "vllm_demo.json"
+    cfg.save(cfg_path)
+    server = QAFake(port, cfg.model).start()
+    try:
+        llm = LLM(cfg, log=lambda *a: None)
+        n0 = len(server.bodies)
+        r = qa.answer("What is an HMD?", course=COURSE, llm=llm)
+        b0, b1 = server.bodies[n0], server.bodies[n0 + 1]
+        evs = stream_events("What is an HMD?", llm)
+        ctk = lambda b: b.get("chat_template_kwargs") or {}  # noqa: E731
+        check(cfg.engine == "vllm" and not cfg.launch and b0["model"] == "gemma-4-12b"
+              and "repetition_penalty" in b0 and "repeat_penalty" not in b0 and "thinking_token_budget" not in b0
+              and b0.get("top_k") == 64 and b0.get("tool_choice") == "auto"
+              and [t["function"]["name"] for t in b0["tools"]] == [t["function"]["name"] for t in qa.tool_specs()]
+              and ctk(b0).get("enable_thinking") is True and ctk(b1).get("enable_thinking") is False,
+              "vLLM body: repetition_penalty (not repeat_penalty), no thinking_token_budget, the five tools, "
+              "tool_choice auto, thinking on in round 0 and off after")
+        check(r == ref and evs[-1]["result"] == ref,
+              "the same answer as through the llama.cpp config, blocking and streamed")
+    finally:
+        server.stop()
+
+    print("python -m qa --stop with an engine vllm config", flush=True)
+    other = free_port()
+    sleeper = lambda p: subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)",  # noqa: E731
+                                          "vllm", "serve", "google/fake", "--port", str(p)])
+    mine, theirs, longer = sleeper(port), sleeper(other), sleeper(int(f"{port}1"))
+    try:
+        p = subprocess.run([sys.executable, "-m", "qa", "--stop", "--config", str(cfg_path)], cwd=ROOT, env=env,
+                           capture_output=True, text=True, timeout=60)
+        try:
+            mine.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        check(p.returncode == 0 and mine.poll() is not None and theirs.poll() is None and longer.poll() is None,
+              f"--stop stops the 'vllm serve ... --port {port}' process only (not port {other}, not {port}1) "
+              f"({p.stdout.strip()})")
+    finally:
+        for x in (mine, theirs, longer):
+            x.kill()
+
+
 def test_cli(cfg_path: Path, env: dict):
     print("command line", flush=True)
     p = subprocess.run([sys.executable, "-m", "qa", "What is an HMD?", "--config", str(cfg_path), "--json"],
@@ -437,11 +579,15 @@ def main():
         test_client(cfg, server, work)
         test_answers(cfg, server, layer)
         test_cli(cfg_path, {**os.environ, "QA_OUTPUT": str(out)})
+        test_stream(cfg, server)
+        import qa
+        ref = qa.answer("What is an HMD?", course=COURSE, llm=LLM(cfg, log=lambda *a: None))
     finally:
         server.stop()
+    test_vllm(work, {**os.environ, "QA_OUTPUT": str(out)}, ref)
     print("log", flush=True)
     log = [json.loads(x) for x in (out / COURSE / "qa" / "answers.jsonl").read_text().splitlines()]
-    check(len(log) == 16 and all(r["steps"] is not None and "raw_answer" in r for r in log)
+    check(len(log) == 26 and all(r["steps"] is not None and "raw_answer" in r for r in log)
           and log[0]["dropped_ids"] == ["9/S9/F9"] and "result" in log[0]["steps"][0],
           f"every question logged with its full tool results and dropped IDs ({len(log)} lines)")
     print("output", flush=True)
