@@ -17,14 +17,25 @@ What it looks for (each line is what a broken piece would show):
   loop     a tool call not executed, executed with other arguments, or its result not sent back under its call ID;
            two calls in one message not both run in order; a repeated call run again; a bad tool name or bad
            arguments ending the loop instead of going back to the model; the loop not forcing an answer
-           (tool_choice "none") after MAX_ROUNDS rounds
-  names    an acronym, a plural or a misspelt name not finding its concept; an unknown name not saying "unknown"
-           and pointing to fact_lookup (and the fake then not falling back to it)
+           (tool_choice "none") after MAX_ROUNDS rounds; thinking not on in round 0 and off in every later round
+           (the config's other chat-template switches kept)
+  early    when every tool result so far found nothing close (an unknown name whose closest facts score low, a
+           fact_lookup with no close fact), the next round not being the answer (tool_choice "none", the nudge
+           last) or the log not saying so; an early answer forced when one result found something, or after a
+           bad tool call
+  names    an acronym, a plural or a misspelt name not finding its concept; an unknown name not saying "unknown",
+           not pointing to fact_lookup, or not showing its closest facts (which the answer may cite)
   answers  a citation that is not a fact (or segment) of the layer, or whose lecture, segment, time or text differ
            from the layer's; an ID no tool returned kept; a raw ID left in the answer; the lecture and time not
            written into the answer; an uncovered question giving covered true; covered not following the COVERED
            line, or a missing line not falling back to "anything cited"
-  graph    lecture_dependencies not giving the hand-worked prerequisites of lecture 8 (direct 4, 5, 6)
+  tidy     a time the model wrote before a citation ("at 26:57 [ID]", "(26:57-27:07) [ID]") kept, or a number
+           without a lead-in ("16:9 [ID]") removed; a run of the same label not written once (at its end); a list
+           whose items share one label not getting it once on its lead-in line; a citation lost by the tidying
+  graph    lecture_dependencies not giving the hand-worked answers: lecture 6 relies on stereoscopy (2 of its
+           facts; first defined in lecture 2, with its defining facts 2/S2/F3, 2/S2/F4) and so revises lecture 2,
+           names extended reality and virtual reality as in passing and latency as introduced; lecture 8 relies on
+           nothing earlier (display resolution, rendering, stereoscopy and virtual reality once each: in passing)
   cli      python -m qa not printing the result as JSON
   log      a question not logged to <output>/<course>/qa/answers.jsonl
   output   any file under the real output/ created or changed
@@ -111,19 +122,30 @@ class QAFake(FakeServer):
         if q == "What is a vergence lens?":
             if rnd == 0:
                 return [call("check_concept", {"name": "vergence lens"})]
-            if rnd == 1:
-                if "unknown" in last and "fact_lookup" in last:
-                    return [call("fact_lookup", {"query": "vergence lens", "rephrasings": ["lens for vergence"]})]
-                return "I do not know.\nCOVERED: no"
-            return f"The course mentions something close [{ids_in(last)[0]}].\nCOVERED: partly"
+            if body.get("tool_choice") == "none":     # the closest facts came with "unknown": answer from them
+                return f"The course mentions something close [{ids_in(last)[0]}].\nCOVERED: partly"
+            if "unknown" in last and "fact_lookup" in last:
+                return [call("fact_lookup", {"query": "vergence lens", "rephrasings": ["lens for vergence"]})]
+            return "I do not know.\nCOVERED: no"
+        if q == "Vergence lens and HMD":
+            if rnd == 0:
+                return [call("check_concept", {"name": "vergence lens"}, 0), call("check_concept", {"name": "HMD"}, 1)]
+            return f"An HMD is worn on the head [{ids_in(tools[-1])[0]}].\nCOVERED: partly"
+        if q == "Repeated labels":
+            if rnd == 0:
+                return [call("check_concept", {"name": "stereoscopy"})]
+            a, b, c = ids_in(last)[:3]
+            return (f"Stereoscopy is taught at 26:57 [{a}]. It is a fake concept [{a}]. Its screens are 16:9 [{c}]. "
+                    f"It goes on from 26:57 to 27:07 [{a}, {b}], (26:57-27:07) [{b}].\n\nIts points are:\n"
+                    f"- point 0 [{a}]\n- point 1 [{a}]\n\nAgain [{a}] and [{c}].\nCOVERED: yes")
         if q == "Who won the 1998 football world cup?":
             if rnd == 0:
                 return [call("fact_lookup", {"query": "1998 football world cup winner"})]
             return "The course does not cover this.\nCOVERED: no"
-        if q == "What do I need before lecture 8?":
+        if q == "What do I need before lecture 6?":
             if rnd == 0:
-                return [call("lecture_dependencies", {"lecture": "8"})]
-            return f"Lecture 8 builds on rendering [{ids_in(last)[2]}].\nCOVERED: yes"
+                return [call("lecture_dependencies", {"lecture": "6"})]
+            return f"Lecture 6 builds on stereoscopy from lecture 2 [{ids_in(last)[0]}].\nCOVERED: yes"
         if q == "What is this lecture for?":
             if rnd == 0:
                 m = re.search(r"watching lecture (\w+)", msgs[1]["content"])
@@ -245,25 +267,78 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
     check("9/S9/F9" not in r["answer"] and not ID.search(r["answer"]) and "(lecture 2, 0:24)" in r["answer"],
           f"IDs replaced by lecture and time, the made-up ID dropped: {r['answer']!r}")
     check(r["covered"] is True, "covered true")
+    ctk = lambda b: b.get("chat_template_kwargs") or {}  # noqa: E731
+    check(ctk(b0).get("enable_thinking") is True and ctk(b1).get("enable_thinking") is False
+          and ctk(b1).get("extra_switch") == 1 and ctk(b0).get("extra_switch") == 1,
+          f"thinking on in round 0, off in round 1, the config's other switch kept ({ctk(b0)}, {ctk(b1)})")
+    log = lambda: json.loads((Path(os.environ["QA_OUTPUT"]) / COURSE / "qa" / "answers.jsonl")  # noqa: E731
+                             .read_text().splitlines()[-1])
+    check(log()["early_exit"] is False, "a card found: no early answer logged")
 
-    print("an unknown concept falls back to fact_lookup", flush=True)
+    print("an unknown concept: its closest facts come with it, and nothing close means answer now", flush=True)
+    n0 = len(server.bodies)
     r = ask("What is a vergence lens?")
-    check(tools_of(r) == ["check_concept", "fact_lookup"] and r["steps"][0]["result_summary"].startswith("unknown"),
-          f"check_concept says unknown, then fact_lookup runs ({[s['result_summary'] for s in r['steps']]})")
-    check(len(r["citations"]) == 1 and real_citations(r, facts, lectures) and r["covered"] is True,
-          "the answer cites a fact the lookup returned; 'partly' counts as covered")
+    sent = server.bodies[n0:]
+    unknown = [m for m in sent[1]["messages"] if m["role"] == "tool"][0]["content"] if len(sent) > 1 else ""
+    check(r["steps"][0]["result_summary"].startswith("unknown") and "fact_lookup" in unknown
+          and "facts closest to" in unknown and "None of these is a close match" in unknown,
+          f"check_concept says unknown, points to fact_lookup and shows the closest facts, none close "
+          f"({r['steps'][0]['result_summary']})")
+    check(tools_of(r) == ["check_concept"] and len(sent) == 2 and sent[1].get("tool_choice") == "none"
+          and sent[1]["messages"][-1] == {"role": "user", "content": FINAL_NUDGE}
+          and ctk(sent[1]).get("enable_thinking") is False and log()["early_exit"] is True,
+          f"nothing close: round 1 is the answer (tool_choice none, the nudge last, thinking off; early_exit logged) "
+          f"({len(sent)} requests)")
+    check(len(r["citations"]) == 1 and r["citations"][0]["fact"] in unknown and real_citations(r, facts, lectures)
+          and r["covered"] is True, "the answer cites one of the closest facts shown; 'partly' counts as covered")
+    n0 = len(server.bodies)
+    r = ask("Vergence lens and HMD")
+    sent = server.bodies[n0:]
+    check(tools_of(r) == ["check_concept", "check_concept"] and sent[1].get("tool_choice") == "auto"
+          and log()["early_exit"] is False and len(r["citations"]) == 1,
+          "one name unknown and one found: no early answer (round 1 may still call tools)")
 
     print("a question the course does not cover", flush=True)
+    n0 = len(server.bodies)
     r = ask("Who won the 1998 football world cup?")
+    sent = server.bodies[n0:]
     check(tools_of(r) == ["fact_lookup"] and r["covered"] is False and r["citations"] == []
           and "does not cover" in r["answer"] and "COVERED" not in r["answer"],
           f"covered false, nothing cited, the COVERED line removed: {r['answer']!r}")
+    check(len(sent) == 2 and sent[1].get("tool_choice") == "none" and log()["early_exit"] is True,
+          "no close fact: round 1 is the answer (tool_choice none), early_exit logged")
 
-    print("before lecture 8 (the lecture graph)", flush=True)
-    r = ask("What do I need before lecture 8?")
-    check(tools_of(r) == ["lecture_dependencies"] and "direct 4, 5, 6" in r["steps"][0]["result_summary"],
-          f"lecture_dependencies(8): direct 4, 5, 6 ({r['steps'][0]['result_summary']})")
-    check(len(r["citations"]) == 1 and real_citations(r, facts, lectures), "its citation is a real fact")
+    print("before lecture 6 and 8 (the lecture graph)", flush=True)
+    from qa import Knowledge, run_tool
+    kb = Knowledge.load(COURSE)
+    d6, d8 = run_tool(kb, "lecture_dependencies", {"lecture": "6"}), run_tool(kb, "lecture_dependencies", {"lecture": 8})
+    check(d6.summary.startswith("lecture 6: revise 2; relies on 1 earlier concepts, 0 general, 2 in passing")
+          and "- stereoscopy (2 uses; first defined in lecture 2)" in d6.text and d6.shown == {"2/S2/F3", "2/S2/F4"}
+          and 'Lectures to revise first, by how much lecture 6 relies on what they teach: lecture 2 "' in d6.text
+          and "only mentions in passing (not needed beforehand): extended reality, virtual reality" in d6.text
+          and "Concepts lecture 6 itself introduces (most used first): latency" in d6.text,
+          f"lecture 6: relies on stereoscopy (2 uses, lecture 2, facts 2/S2/F3, 2/S2/F4), revise 2; extended and "
+          f"virtual reality in passing; introduces latency ({d6.summary})")
+    check(d8.summary.startswith("lecture 8: revise none; relies on 0 earlier concepts, 0 general, 4 in passing")
+          and "in passing (not needed beforehand): display resolution, rendering, stereoscopy, virtual reality"
+          in d8.text and not d8.shown,
+          f"lecture 8: relies on nothing earlier; display resolution, rendering, stereoscopy, virtual reality in "
+          f"passing ({d8.summary})")
+    r = ask("What do I need before lecture 6?")
+    check(tools_of(r) == ["lecture_dependencies"] and r["steps"][0]["result_summary"].startswith("lecture 6: revise 2")
+          and [c["fact"] for c in r["citations"]] == ["2/S2/F3"] and real_citations(r, facts, lectures),
+          f"the loop: lecture_dependencies(6) and its defining fact cited ({r['steps'][0]['result_summary']})")
+
+    print("tidy citations (times the model wrote, repeated labels)", flush=True)
+    r = ask("Repeated labels")
+    a, b = "(lecture 2, 26:57)", "(lecture 2, 27:07)"
+    want = (f"Stereoscopy is taught. It is a fake concept {a}. Its screens are 16:9 (lecture 6, 0:24). "
+            f"It goes on {a[:-1]}; lecture 2, 27:07).\n\nIts points are {a}:\n- point 0\n- point 1\n\n"
+            f"Again {a} and (lecture 6, 0:24).")
+    check(r["answer"] == want, f"times before citations removed, '16:9' kept, runs and the list labelled once: "
+                                f"{r['answer']!r}")
+    check([c["fact"] for c in r["citations"]] == ["2/S2/F3", "6/S0/F2", "2/S2/F4"]
+          and real_citations(r, facts, lectures), "every cited fact still a citation, in order of first use")
 
     print("this lecture (the learner's lecture passed on)", flush=True)
     n0 = len(server.bodies)
@@ -303,11 +378,13 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
           "a repeated call is not run again")
     check(r["citations"] == [] and r["covered"] is False,
           "'COVERED: yes' with an ID no tool showed: nothing cited, covered false")
+    n0 = len(server.bodies)
     r = ask("Call a broken tool")
     sums = [s["result_summary"] for s in r["steps"]]
     check(len(sums) == 3 and sums[0] == "unknown tool no_such_tool" and sums[1] == "bad arguments"
-          and sums[2].startswith("error: There is no lecture 99") and r["covered"] is False,
-          f"a bad tool name, bad JSON and a bad lecture go back to the model ({sums})")
+          and sums[2].startswith("error: There is no lecture 99") and r["covered"] is False
+          and server.bodies[n0 + 1].get("tool_choice") == "auto",
+          f"a bad tool name, bad JSON and a bad lecture go back to the model, which may call tools again ({sums})")
 
     print("covered without the COVERED line", flush=True)
     r = ask("No covered line, with a citation")
@@ -348,7 +425,7 @@ def main():
     port = free_port()
     cfg = LLMConfig.load(ROOT / "configs" / "gemma4_12b_llamacpp.json").with_(
         port=port, model="fake-gemma", model_path="fake/gemma", launch=False, cache_file="", log_file="",
-        server_log=str(work / "server.log"))
+        server_log=str(work / "server.log"), chat_template_kwargs={"extra_switch": 1})
     cfg_path = work / "fake_gemma.json"
     cfg.save(cfg_path)
     print(f"layer copy in {layer}; fake model on port {port}", flush=True)
@@ -361,7 +438,7 @@ def main():
         server.stop()
     print("log", flush=True)
     log = [json.loads(x) for x in (out / COURSE / "qa" / "answers.jsonl").read_text().splitlines()]
-    check(len(log) == 14 and all(r["steps"] is not None and "raw_answer" in r for r in log)
+    check(len(log) == 16 and all(r["steps"] is not None and "raw_answer" in r for r in log)
           and log[0]["dropped_ids"] == ["9/S9/F9"] and "result" in log[0]["steps"][0],
           f"every question logged with its full tool results and dropped IDs ({len(log)} lines)")
     print("output", flush=True)

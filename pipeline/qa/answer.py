@@ -8,11 +8,18 @@ The model (default: Gemma 4 12B, configs/gemma4_12b_llamacpp.json, on this PC; l
 answers on its port, and left running after the question so the next one does not wait; $QA_CONFIG names another
 config, e.g. configs/gemma4_12b_demo.json on a cloud instance, see demo/README.md) gets the system prompt
 (prompts/qa_system.txt with the course's lectures), the question, and the tools (prompts/qa_tools.json, run by
-qa/tools.py). It calls tools for up to MAX_ROUNDS rounds; then it must answer (tool_choice "none").
+qa/tools.py). It calls tools for up to MAX_ROUNDS rounds; then it must answer (tool_choice "none"). It must answer at
+once, too, when every tool result so far found nothing close in the course (ToolResult.found False: an unknown name
+whose closest facts score low, a fact_lookup with no close fact): the answer is then "not covered", and another
+search would only cost time. Thinking (when the config has it on) is used in round 0 only, where the tools are
+chosen; later rounds are sent with enable_thinking false, since thinking before the final answer was most of the
+answer time (analysis/qa/STATE.md).
 
 The answer cites fact IDs ([4/S1/F2]) or segment IDs ([4/S1]) in square brackets. Each one that a tool result showed
 becomes a citation (lecture, segment, time, text) and is written into the answer as "(lecture 4, 6:03)"; an ID no
-tool showed is dropped (and logged). The model's last line "COVERED: yes / partly / no" sets "covered" (yes and
+tool showed is dropped (and logged). A time the model wrote before a citation ("at 14:25 [28/S1]") is removed (the
+label carries the time); the same label repeated over a run of sentences is written once, at the end of the run, and
+a list whose items all carry one label gets it once, on the line that leads into the list. The model's last line "COVERED: yes / partly / no" sets "covered" (yes and
 partly: true); without that line, "covered" is whether anything was cited.
 
 Every question is logged to <output>/<course>/qa/answers.jsonl (question, steps with the full tool texts, the raw
@@ -56,6 +63,15 @@ NO_ANSWER = "Sorry, I could not answer that just now. Please try asking again in
 ID = r"(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?"
 BRACKET = re.compile(r"\s?[\[(【]([^\[\]()【】]*?" + ID + r"[^\[\]()【】]*?)[\])】]")
 BARE = re.compile(r"(?<![\w/])(" + ID + r")(?![\w/])")
+TIME = r"\d{1,2}:\d{2}(?::\d{2})?"
+RANGE = TIME + r"(?:\s*(?:-|–|—|to|and)\s*" + TIME + r")?"
+# a time or range the model wrote before a citation: "at 14:25 [..]", "from 14:25 to 15:00 [..]", "(14:25-15:00) [..]";
+# a lead-in word or a parenthesised range is needed, so that "an aspect ratio of 16:9 [..]" is kept
+MODEL_TIME = re.compile(r"[ \t]*,?[ \t]*(?:\b(?:at|from|around|near|between|by)[ \t]+(?:about[ \t]+|roughly[ \t]+)?"
+                        r"(?:the[ \t]+)?(?:time(?:stamp)?[ \t]+|minute[ \t]+)?\(?" + RANGE + r"\)?|\(" + TIME
+                        + r"\s*(?:-|–|—|to)\s*" + TIME + r"\))(?=\s?[\[(【][^\[\]()【】]*?" + ID + ")")
+TOKEN = re.compile(r"[ \t]*\x00(\d+)\x00")
+LIST_ITEM = re.compile(r"^\s*(?:[*\-•]|\d+[.)])\s+")
 COVERED = re.compile(r"^\s*\**\s*COVERED\s*:\s*\**\s*(yes|partly|partial|no)\b.*$", re.I | re.M)
 
 _llms: dict[str, LLM] = {}
@@ -124,8 +140,10 @@ def citation(kb: Knowledge, cid: str) -> dict:
 
 def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[str]]:
     """Replace the IDs in the answer by "(lecture 4, 6:03)"; return the text, the citations (in order of first use)
-    and the IDs dropped (not shown by any tool, or not in the layer)."""
+    and the IDs dropped (not shown by any tool, or not in the layer). Only the text is tidied (model-written times
+    before a citation removed, repeated labels written once); the citations keep every valid ID cited."""
     citations, index, dropped = [], {}, []
+    labels: list[list[str]] = []      # the labels, as their parts ("lecture 4, 6:03"); "\x00n\x00" in the text
 
     def valid(i: str) -> bool:
         ok = i in shown and (i in kb.facts or ("/F" not in i and i.split("/")[0] in kb.lectures
@@ -144,18 +162,66 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
             p = f"lecture {c['lecture']}, {fmt_time(c['start'])}"
             if p not in parts:
                 parts.append(p)
-        return f" ({'; '.join(parts)})" if parts else ""
+        if not parts:
+            return ""
+        labels.append(parts)
+        return f" \x00{len(labels) - 1}\x00"
 
     def group(m):
         ids = [i for i in re.findall(ID, m.group(1)) if valid(i)]
         return label(list(dict.fromkeys(ids)))
 
-    out = BRACKET.sub(group, text)
+    out = MODEL_TIME.sub("", text)
+    out = BRACKET.sub(group, out)
     out = BARE.sub(lambda m: label([m.group(1)]) if valid(m.group(1)) else "", out)
+    out = merge_adjacent(out, labels)
+    out = "\n\n".join(dedup_block(b, labels) for b in re.split(r"\n[ \t]*\n", out))
+    out = TOKEN.sub(lambda m: f" ({'; '.join(labels[int(m.group(1))])})", out)
     out = re.sub(r"\)\s*\(lecture", "; lecture", out)              # "(lecture 4, 1:00) (lecture 5, 2:00)"
     out = re.sub(r"[ \t]+([.,;:!?])", r"\1", out)
     out = re.sub(r"[ \t]{2,}", " ", out)
     return out.strip(), citations, dropped
+
+
+def merge_adjacent(text: str, labels: list[list[str]]) -> str:
+    """Two labels with only spaces between them ("[4/S1/F2] [4/S1/F3]") become one, their parts de-duplicated."""
+    pair = re.compile(r"\x00(\d+)\x00[ \t]*\x00(\d+)\x00")
+    while True:
+        m = pair.search(text)
+        if not m:
+            return text
+        a, b = int(m.group(1)), int(m.group(2))
+        labels[a] = list(dict.fromkeys(labels[a] + labels[b]))
+        text = text[:m.start()] + f"\x00{a}\x00" + text[m.end():]
+
+
+def dedup_block(block: str, labels: list[list[str]]) -> str:
+    """One paragraph (or list): a list of two or more items that all carry the same one label gets it once, on the
+    line leading into the list; then, of a run of equal labels in a row, only the last is kept."""
+    key = lambda n: tuple(labels[n])  # noqa: E731
+    lines = block.split("\n")
+    i = 0
+    while i < len(lines):
+        if not LIST_ITEM.match(lines[i]):
+            i += 1
+            continue
+        j = i
+        while j < len(lines) and LIST_ITEM.match(lines[j]):
+            j += 1
+        keys = [{key(int(n)) for n in TOKEN.findall(x)} for x in lines[i:j]]
+        if j - i >= 2 and i > 0 and not LIST_ITEM.match(lines[i - 1]) and lines[i - 1].strip() \
+                and all(len(k) == 1 for k in keys) and len(set.union(*keys)) == 1:
+            n = TOKEN.search(lines[i]).group(1)
+            lines[i:j] = [TOKEN.sub("", x) for x in lines[i:j]]
+            lead = lines[i - 1].rstrip()
+            lines[i - 1] = (lead[:-1] + f" \x00{n}\x00:") if lead.endswith(":") else lead + f" \x00{n}\x00"
+        i = j
+    block = "\n".join(lines)
+    toks = list(TOKEN.finditer(block))
+    drop = [t for t, nxt in zip(toks, toks[1:]) if key(int(t.group(1))) == key(int(nxt.group(1)))]
+    for t in reversed(drop):
+        block = block[:t.start()] + block[t.end():]
+    return block
 
 
 def split_covered(text: str) -> tuple[str, bool | None]:
@@ -187,11 +253,16 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
     steps, full_steps, shown, seen = [], [], set(), {}
     final, error, tokens = "", "", {"input": 0, "output": 0}
     timing: list[dict] = []          # per round: model seconds, tokens, thinking chars; per tool call: seconds
+    found: list = []                 # ToolResult.found of each tool run (None: an error or bad arguments)
+    early = False                    # every result so far found nothing close: the next round is the answer
+    no_think = {"chat_template_kwargs": {**getattr(getattr(llm, "cfg", None), "chat_template_kwargs", {}),
+                                         "enable_thinking": False}}
     for rnd in range(MAX_ROUNDS + 1):
-        last = rnd == MAX_ROUNDS
+        last = rnd == MAX_ROUNDS or early
         followup = conv + ([{"role": "user", "content": FINAL_NUDGE}] if last else [])
         req = Request(prompt=user, system=system, followup=followup, tools=tools,
-                      tool_choice="none" if last else "auto", key=f"qa.{rnd}")
+                      tool_choice="none" if last else "auto", key=f"qa.{rnd}",
+                      sampling=no_think if rnd > 0 else {})
         res = llm.generate(req, log_file=calls_log)
         tokens["input"] += res.input_tokens
         tokens["output"] += res.output_tokens
@@ -212,6 +283,7 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
             sig = json.dumps([name, args], sort_keys=True)
             if args is None:
                 text, summary, ids = f"The arguments are not valid JSON: {raw!r}", "bad arguments", set()
+                found.append(None)
             elif sig in seen:
                 text, summary, ids = (f"You already called {name} with these arguments (call {seen[sig]}); its "
                                       "result is above.", "repeated call", set())
@@ -219,6 +291,7 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
                 tt = time.time()
                 r = run_tool(kb, name, args)
                 text, summary, ids = r.text, r.summary, r.shown
+                found.append(r.found)
                 seen[sig] = len(steps) + 1
                 timing[-1]["tools"].append({"tool": name, "s": round(time.time() - tt, 3)})
             shown |= ids
@@ -226,6 +299,7 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
             full_steps.append({**steps[-1], "result": text})
             conv.append({"role": "tool", "tool_call_id": call.get("id") or f"call_{rnd}_{i}", "name": name,
                          "content": text})
+        early = bool(found) and all(f is False for f in found)
     body, marker = split_covered(final)
     text, citations, dropped = cite(kb, body, shown)
     if not text:
@@ -238,7 +312,7 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
            "steps": full_steps, "raw_answer": final, "answer": text, "citations": [c["fact"] or c["segment"]
                                                                                    for c in citations],
            "dropped_ids": dropped, "covered": out["covered"], "covered_line": marker, "error": error,
-           "rounds": len([m for m in conv if m["role"] == "assistant"]), "tokens": tokens,
+           "rounds": len([m for m in conv if m["role"] == "assistant"]), "early_exit": early, "tokens": tokens,
            "timing": timing, "seconds": round(time.time() - t0, 2)}
     try:
         logs.mkdir(parents=True, exist_ok=True)
