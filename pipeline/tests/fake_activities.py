@@ -219,7 +219,7 @@ class ActivitiesFake(fk.KnowledgeFake):
             out[0].update(failed=["one_answer"], reason="R1: option B is also right by fact 2.", **{"pass": False})
         if kind == "put_in_order" and lecture == "2":
             out[0].update(failed=["real_sequence"], reason="R2: the facts state no order.", **{"pass": False})
-        if kind == "crossword" and lecture == "4" and attempt == 0:
+        if kind == "crossword" and "rasterization" in prompt and attempt == 0:
             out[0].update(failed=["readable"])
         return json.dumps({"verdicts": out})
 
@@ -576,6 +576,103 @@ def test_seeded(work: Path, out: Path):
     shutil.rmtree(work / "seeded_activities")
 
 
+def test_judge(work: Path, out: Path, log: Path):
+    print("judge (--judge, --judge-rewrite)", flush=True)
+    lfiles = [f"lec_{k}.json" for k in fk.KEYS]
+    c0 = json.loads((out / "checks.json").read_text())
+    infos = lambda c: [i for lc in c["lectures"].values() for us in lc.values() for i in us.values()]  # noqa: E731
+    check(not any(r["kind"].startswith("judge") or r.get("rewrite") for r in fk.lines(log) if r.get("kind"))
+          and "judge" not in c0["totals"] and not any("judge" in i for i in infos(c0)) and "judge" not in c0["run"],
+          "flags off: no judge or rewrite call, no verdicts in checks.json")
+
+    # --judge alone: the writer answers from the cache, verdicts recorded, the activities unchanged
+    before, n0 = {f: (out / f).read_bytes() for f in lfiles}, len(fk.lines(log))
+    rc = fk.stage(work, "s5_activities.py", ["--llm", "configs/fake_qwen.json", "--judge"], work / "5_judge.log",
+                  record=False)
+    new = fk.lines(log)[n0:]
+    c1 = json.loads((out / "checks.json").read_text())
+    lc = c1["lectures"]
+    j1 = [r for r in new if r["kind"].startswith("judge_")]
+    check(rc == 0 and j1 and all(r["kind"].startswith("judge_") for r in new)
+          and {f: (out / f).read_bytes() for f in lfiles} == before,
+          f"--judge: {len(j1)} judge requests, no writer request (cache), no rewrite, lecture files unchanged")
+    kinds_judged = {r["kind"][6:] for r in j1}
+    left = [r["kind"] for r in j1 if re.search(r"\{[a-z_]+\}", r["messages"][0]["content"])]
+    qp = next(r["messages"][0]["content"] for r in j1 if r["kind"] == "judge_quiz")
+    rp = next(r["messages"][0]["content"] for r in j1 if r["kind"] == "judge_recap")
+    cp = next(r["messages"][0]["content"] for r in j1 if r["kind"] == "judge_crossword" and r["unit"] == "")
+    check(kinds_judged == set(s5.MODEL_KINDS) and not left and all("THE COURSE" in r["messages"][0]["content"]
+                                                                   for r in j1)
+          and re.search(r"^Question 1 \(cites facts [\d, ]+\)\n.+\nA\. .+\nB\. .+\nC\. .+\nD\. .+\nMarked correct: "
+                        r"[ABCD]\nExplanation: ", qp, re.M)
+          and re.search(r"^Point 1 \(cites facts \d", rp, re.M) and "\nText: " in rp
+          and re.search(r"^\[1\] \S.* \(\d+(,\d+)*\): ", cp, re.M) and not re.search(r"\(\d+(,\d+)*\) \(\d", cp),
+          f"judge prompts: all six kinds ({sorted(kinds_judged)}), no placeholder left, items rendered as the "
+          f"review says (lettered options with the key, recap points with facts and the text, clues with the "
+          f"letter count once)")
+    q42 = lc["4"]["quiz"]["quiz:4/S2"]
+    r1 = q42["judge"]["rounds"][0]
+    check(r1["status"] == "ok" and r1["failed_items"] == [1] and r1["verdicts"][0]["failed"] == ["one_answer"]
+          and r1["verdicts"][0]["reason"].startswith("R1") and q42["flags"].get("judge_failed") == [1]
+          and q42["judge"]["kept"] == "original" and "rewrite" not in q42["judge"]
+          and "judge2" not in json.dumps([r["messages"] for r in new]),
+          "--judge: a failed question recorded with criterion and reason, flagged judge_failed, nothing rewritten")
+    cwj = lc["4"]["crossword"]["crossword:4"]["judge"]["rounds"][0]
+    check(cwj["status"] == "ok" and cwj.get("retry", {}).get("attempts") == 2
+          and any('"pass" is true exactly when' in m for m in cwj["retry"]["problems"][0]) and not cwj["failed_items"],
+          "judge check: a verdict with pass true and a failed criterion retried with feedback, then accepted")
+    o5 = lc["5"]["odd_one_out"]["odd_one_out:5"]
+    check(o5["judge"]["rounds"][0]["status"] == "no_answer" and "judge_failed" not in o5.get("flags", {})
+          and any(a["kind"] == "odd_one_out" for a in acts(out, "5")),
+          "judge never JSON: recorded as no answer, the activity kept")
+    t = c1["totals"].get("judge", {})
+    txt_ = (out / "activities.txt").read_text()
+    check(t.get("units") == sum(r["attempt"] == 0 for r in j1) and t.get("no_answer") == 1,
+          f"totals: one judge round per unit with activities ({t})")
+    check(t.get("failed_items") == 2 and t.get("failed", {}).get("quiz.one_answer") == 1 and t.get("rewritten") == 0
+          and "judge round 1" in txt_ and "reason: R1: option B is also right" in txt_ and "check: C" in txt_
+          and c1["run"].get("judge") is True and c1["run"].get("judge_rewrite") is False,
+          "totals and activities.txt: failed per criterion, each verdict with its check and reason under the "
+          "activity")
+
+    # --judge --judge-rewrite: one fail fixed by the rewrite, one still failing (kept and flagged)
+    n1 = len(fk.lines(log))
+    rc = fk.stage(work, "s5_activities.py", ["--llm", "configs/fake_qwen.json", "--judge", "--judge-rewrite"],
+                  work / "5_rewrite.log", record=False)
+    new = fk.lines(log)[n1:]
+    c2 = json.loads((out / "checks.json").read_text())
+    lc = c2["lectures"]
+    rw = [r for r in new if r.get("rewrite")]
+    j2 = [r for r in new if r["kind"].startswith("judge_")]
+    rq = next((r for r in rw if r["kind"] == "quiz"), None)
+    check(rc == 0 and sorted(r["kind"] for r in rw) == ["put_in_order", "quiz"] and len(j2) == 2
+          and len(new) == 4 and rq is not None and rq["messages"][1]["role"] == "assistant"
+          and "Question 1 (one_answer): R1: option B is also right by fact 2." in rq["messages"][2]["content"]
+          and "{problems}" not in rq["messages"][2]["content"],
+          f"--judge-rewrite: rewrites only for the 2 failing units, the judge's reasons as the next turn in the "
+          f"writer's numbering, one more judge call each ({len(new)} new requests)")
+    q42 = lc["4"]["quiz"]["quiz:4/S2"]
+    a42 = next(a for a in acts(out, "4") if a["kind"] == "quiz" and a["segment"] == "4/S2")
+    check(q42["judge"]["kept"] == "rewrite" and len(q42["judge"]["rounds"]) == 2
+          and q42["judge"]["rounds"][1]["failed_items"] == [] and "judge_failed" not in q42.get("flags", {})
+          and a42["data"]["questions"][0]["question"].startswith("fake rewritten question")
+          and q42["judge"]["original"]["status"] == "ok",
+          "rewrite fixed by the judge's second round: the rewritten quiz kept, both rounds recorded")
+    p2 = lc["2"]["put_in_order"]["put_in_order:2"]
+    check(p2["judge"]["kept"] == "original" and p2["judge"]["rounds"][1]["failed_items"] == [1]
+          and p2["flags"].get("judge_failed") == [1] and any(a["kind"] == "put_in_order" for a in acts(out, "2")),
+          "rewrite still failing: the original kept and flagged judge_failed, nothing dropped")
+    t = c2["totals"]["judge"]
+    check(t["rewritten"] == 2 and t["rewrite_kept"] == 1 and t["still_failed_items"] == 1 and not c2["contract"]
+          and "judge round 2 (rewrite, ok)" in (out / "activities.txt").read_text(),
+          f"totals after rewrite: {t['rewritten']} rewritten, {t['rewrite_kept']} kept, {t['still_failed_items']} "
+          f"still failing; contract clean")
+    n2 = len(fk.lines(log))
+    rc = fk.stage(work, "s5_activities.py", ["--llm", "configs/fake_qwen.json", "--judge", "--judge-rewrite"],
+                  work / "5_rewrite2.log", record=False)
+    check(rc == 0 and len(fk.lines(log)) == n2, "rerun with --judge --judge-rewrite answered from the cache")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--work", help="folder for the copy (default: a new temporary folder)")
@@ -605,6 +702,7 @@ def main():
         out = test_s5(work, log)
         test_rerun(work, out, log)
         test_seeded(work, out)
+        test_judge(work, out, log)
     finally:
         server.stop()
     print("output", flush=True)
