@@ -5,24 +5,24 @@
 the tools return, and must put the IDs it used in square brackets after each claim. Code then turns each ID into
 “(lecture N, m:ss)”, drops any ID no tool returned, and reads the model's last line, <code>COVERED: yes / partly / no</code>.</p>
 <figure class="wide"><div class="frame">
-<svg viewBox="0 0 1040 250" role="img" aria-labelledby="qat">
+<svg viewBox="0 0 1040 260" role="img" aria-labelledby="qat">
   <title id="qat">The question-answering loop</title>
   <defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
-  <rect x="8" y="40" width="150" height="90" rx="12" class="box"/>
-  <text x="22" y="66" class="t-l">Question</text><text x="22" y="88" class="t-s ink2">+ the lecture being</text><text x="22" y="106" class="t-s ink2">watched (optional)</text>
-  <rect x="186" y="30" width="200" height="110" rx="12" class="k-qa sw"/>
-  <text x="200" y="56" class="t-l">Round 0</text><text x="200" y="78" class="t-s">thinking on, tool_choice auto</text><text x="200" y="98" class="t-s">chooses tools</text><text x="200" y="118" class="t-s mut">median 1.6–1.7 s</text>
-  <rect x="414" y="30" width="230" height="110" rx="12" class="k-code sw"/>
-  <text x="428" y="56" class="t-l">Tools (local, ≤ 0.7 s)</text><text x="428" y="78" class="t-s">check_concept · fact_lookup</text><text x="428" y="98" class="t-s">lecture_dependencies</text><text x="428" y="118" class="t-s">lecture_overview · course_goals</text>
-  <rect x="672" y="30" width="170" height="110" rx="12" class="k-qa sw"/>
-  <text x="686" y="56" class="t-l">Rounds 1–4</text><text x="686" y="78" class="t-s">thinking off</text><text x="686" y="98" class="t-s">more tools, or</text><text x="686" y="118" class="t-s">the answer</text>
-  <rect x="870" y="30" width="162" height="110" rx="12" class="k-acc sw"/>
-  <text x="884" y="56" class="t-l">Answer</text><text x="884" y="78" class="t-s">IDs → (lecture, m:ss)</text><text x="884" y="98" class="t-s">unknown IDs dropped</text><text x="884" y="118" class="t-s">COVERED line read</text>
-  <path d="M158 85 H184" class="arrow" marker-end="url(#ah5)"/><path d="M386 85 H412" class="arrow" marker-end="url(#ah5)"/>
-  <path d="M644 85 H670" class="arrow" marker-end="url(#ah5)"/><path d="M842 85 H868" class="arrow" marker-end="url(#ah5)"/>
-  <path d="M757 140 V170 H529 V142" class="arrow" marker-end="url(#ah5)"/><text x="560" y="190" class="t-s mut">another tool call (at most 5 rounds; the last must answer)</text>
-  <path d="M529 30 V20 H951 V28" class="arrow" marker-end="url(#ah5)"/><text x="560" y="13" class="t-s mut">early exit: every tool result found nothing close → answer “not covered” at once</text>
-  <text x="8" y="232" class="t-s mut">Streaming: a “step” event per tool call, “draft” events while the answer is written, “reset” if a round's text turns into tool calls, then “done”.</text>
+  <rect x="8" y="40" width="140" height="100" rx="12" class="box"/>
+  <text x="22" y="66" class="t-l">Question</text><text x="22" y="90" class="t-s ink2">+ the lecture</text><text x="22" y="110" class="t-s ink2">(optional)</text>
+  <rect x="170" y="34" width="190" height="116" rx="12" class="k-qa sw"/>
+  <text x="184" y="60" class="t-l">Round 0</text><text x="184" y="84" class="t-s">thinking on</text><text x="184" y="104" class="t-s">chooses the tools</text><text x="184" y="126" class="t-s mut">median 1.6–1.7 s</text>
+  <rect x="382" y="34" width="270" height="116" rx="12" class="k-code sw"/>
+  <text x="396" y="60" class="t-l">Tools (local, ≤ 0.7 s)</text><text x="396" y="82" class="t-s">check_concept · fact_lookup</text><text x="396" y="101" class="t-s">lecture_dependencies</text><text x="396" y="120" class="t-s">lecture_overview</text><text x="396" y="139" class="t-s">course_goals</text>
+  <rect x="674" y="34" width="170" height="116" rx="12" class="k-qa sw"/>
+  <text x="688" y="60" class="t-l">Rounds 1–5</text><text x="688" y="84" class="t-s">thinking off</text><text x="688" y="104" class="t-s">more tools,</text><text x="688" y="124" class="t-s">or the answer</text>
+  <rect x="866" y="34" width="166" height="116" rx="12" class="k-acc sw"/>
+  <text x="880" y="60" class="t-l">Answer</text><text x="880" y="84" class="t-s">IDs → lecture,</text><text x="880" y="104" class="t-s">m:ss; bad IDs</text><text x="880" y="124" class="t-s">dropped</text>
+  <path d="M148 90 H168" class="arrow" marker-end="url(#ah5)"/><path d="M360 90 H380" class="arrow" marker-end="url(#ah5)"/>
+  <path d="M652 90 H672" class="arrow" marker-end="url(#ah5)"/><path d="M844 90 H864" class="arrow" marker-end="url(#ah5)"/>
+  <path d="M759 150 V178 H517 V152" class="arrow" marker-end="url(#ah5)"/><text x="400" y="200" class="t-s mut">at most 5 rounds of tool calls, then one answer round</text>
+  <path d="M517 34 V22 H949 V32" class="arrow" marker-end="url(#ah5)"/><text x="530" y="15" class="t-s mut">early exit: nothing close → “not covered” at once</text>
+  <text x="8" y="240" class="t-s mut">Streaming: “step” per tool call, “draft” while writing, “reset” if a round turns into tool calls, then “done”.</text>
 </svg></div>
 <figcaption>The loop in <code>qa/answer.py</code>. Times are medians from <code>analysis/qa/STATE.md</code> on the local RTX 5070.</figcaption></figure>
 <dl class="facts-grid">
@@ -85,7 +85,7 @@ to the whole answer.</li>
 
 <!-- ------------------------------------------------------------------ viewer -->
 <div class="stage-head"><span class="sid" style="--c:var(--c-code)">Viewer</span><h3 id="viewer" data-toc="The viewer">The viewer</h3><span class="worker w-code">standard-library Python + one page</span></div>
-<span class="redesign">As of 2026-11-18 · being redesigned</span>
+<span class="redesign">As of 2026-11-17 · being redesigned</span>
 <p>The viewer is what a learner opens. This describes it as it is on main; its look is being redesigned by another
 agent. <code>viewer/serve.py</code> (standard library only) serves the page (<code>index.html</code>, <code>app.js</code>,
 <code>style.css</code>, vendored <code>dagre</code> for map layout), the layers through lean JSON routes, the videos with
@@ -112,7 +112,7 @@ with neighbours prefetched when idle; tabs and map views built once and kept; th
 answered in 4 MB chunks and paced at twice its bitrate so a tunnel never queues minutes of video ahead of the page;
 answers streamed.</p>
 <div class="tablewrap"><table>
-<tr><th>Through an emulated SSH tunnel (200 ms RTT, 10 Mbit/s, 4× CPU slowdown)</th><th class="n">Before</th><th class="n">After</th></tr>
+<tr><th>Through an emulated SSH tunnel (a TCP proxy: 200 ms RTT, 10 Mbit/s, 4× CPU slowdown)</th><th class="n">Before</th><th class="n">After</th></tr>
 <tr><td>Home, first visit</td><td class="n">9,297 ms (9,636 kB)</td><td class="n">1,082 ms (128 kB)</td></tr>
 <tr><td>Home again</td><td class="n">8,894 ms</td><td class="n">426 ms</td></tr>
 <tr><td>Lecture 5 opened directly</td><td class="n">9,127 ms</td><td class="n">641 ms</td></tr>
@@ -120,6 +120,8 @@ answers streamed.</p>
 <tr><td>Page start to video metadata</td><td class="n">9,980 ms</td><td class="n">1,893 ms</td></tr>
 <tr><td>Segment click (seek)</td><td class="n">1,875 ms</td><td class="n">576 ms</td></tr>
 <tr><td>Streamed answer: first words (fake 3 s answer)</td><td class="n">—</td><td class="n">1,226 ms</td></tr>
+<tr><td><b>Slower</b>: concept card (one round trip, no longer preloaded)</td><td class="n">21 ms</td><td class="n">222 ms</td></tr>
+<tr><td><b>Slower</b>: course map (one round trip, then kept)</td><td class="n">24 ms</td><td class="n">235 ms</td></tr>
 </table></div>
 <p class="small muted">Measured with headless Chrome over CDP (<code>analysis/viewer/tools/perf.mjs</code>, <code>video.mjs</code>) through
 <code>tools/tunnel.py</code>, a stand-in for <code>ssh -L</code> (a real tunnel and <code>tc netem</code> were not possible on the test

@@ -149,7 +149,7 @@ def build(WT, HERE):
                   "line (✓ yes or partly). Variants: " + "; ".join(f"<b>{E(n)}</b>: {E(d)}" for n, _, d in variants)
                   + ". Files: <code>analysis/qa/bench_*.jsonl</code>; the questions are in <code>analysis/qa/bench.py</code>. "
                   "Grounding was checked by reading every answer (<code>analysis/qa/STATE.md</code>): no wrong citation was seen "
-                  "in the shipped variants.</p>")
+                  "in the shipped variants (answers read, not scored).</p>")
 
     cal = J(A / "qa/calibration.json")
     trs = [[E(r["label"]), E(r["kind"]), E(r["q"]), f"{r['score']:.3f}", f"<code>{E(r['top_fact'])}</code>"]

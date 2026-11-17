@@ -19,7 +19,7 @@ path and request body: prompt, schema, sampling, token limits). The same request
 change reruns only the requests it changes. Every call is logged in <code>llm/calls.jsonl</code> (tokens, time, errors).</li>
 <li><b>All requests of a stage go out at once</b> (<code>generate_many</code>), and the server batches them: up to 128 at a
 time on the 96 GB GPU. Qwen 3.8 27B FP8 on vLLM produced about 1,650–1,850 output tokens per second with the batch
-full, and about 45 tokens per second for a single request (<code>ec2_sync/queue/logs/</code>).</li>
+full, and about 45 tokens per second for a single request (<code>ec2_sync/queue/logs/</code> <span class="local">(local)</span>).</li>
 <li><b>Prompts</b> are plain text files in <code>prompts/</code> with <code>{placeholders}</code>. Most begin with the
 course block (<code>prompts/course_meta.txt</code>: the course outline and syllabus from <code>course.json</code>), so the
 engine reuses its cached prefix across calls.</li>
@@ -109,7 +109,7 @@ small” or “look too big”, never the bounds or the durations, and it may ke
 <p>1b flagged it and sent the logical retry with this problem line:</p>
 <pre data-lang="text" class="wrap">{{S:seg30_problem}}</pre>
 <p>The model did not just glue the small segment to its neighbour. It moved the cut back to sentence 131, where the
-binaural cues begin, so the HRTF material became part of a 5-minute segment on rendering localized sound:</p>
+binaural cues begin (the prompt numbers sentences from 1, so its sentence 131 is ID <code>30/130</code>), so the HRTF material became part of a 5-minute segment on rendering localized sound:</p>
 <pre data-lang="json">{{S:seg30_retry}}</pre>
 <p>The kept segment map and the report line:</p>
 <pre data-lang="json">{{S:segmap30}}</pre>
@@ -132,8 +132,7 @@ binaural cues begin, so the HRTF material became part of a 5-minute segment on r
 sub-goals and cut list items apart; the 12B followed “stand alone” into 28-minute segments (“Therefore, Segment 2 and 3
 must be merged.”). The fix was rules it cannot over-apply: “Connectives are not dependencies. … Never merge segments
 or move a cut because of a connective.”</li>
-<li><b>Length is checked in code, not prompted.</b> A 6–15 minute rule in the prompt was considered and dropped: in run 1,
-473 of 545 segments were under 6 minutes, so code would have done the segmenting. Two retry wordings were tested on 8
+<li><b>Length is checked in code, not prompted.</b> A 6–15 minute rule in the prompt was considered and dropped: run 1's median segment was 2.4 minutes (557 segments), so code would have done the segmenting. Two retry wordings were tested on 8
 lectures; the one with a direction (“see whether small ones together make a more meaningful sub-goal”) kept the
 lecturer's structure better than the bare “check them”.</li>
 <li><b>Run to run, about three quarters of the cuts reproduce</b>: boundary F1 0.75 between seeds of the same pipeline,

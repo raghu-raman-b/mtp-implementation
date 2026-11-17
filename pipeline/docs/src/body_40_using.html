@@ -16,13 +16,14 @@ These are wall times of whole batches, measured from the logs named in each row.
 <tr><td>2a</td><td class="n">386</td><td>16k · 32</td><td>RTX PRO 6000</td><td class="n">1 h 26 min</td><td>notebook, “2a on all 63 lectures”</td></tr>
 <tr><td>2c</td><td class="n">779</td><td>6k · 32</td><td>L40S 46 GB</td><td class="n">3 h 53 min</td><td>notebook, “The MVP run”</td></tr>
 <tr><td>3a</td><td class="n">—</td><td>embeddings</td><td>RTX 5070 (local)</td><td class="n">&lt; 1 min</td><td><code>output/logs/mvp_run.log</code></td></tr>
-<tr><td>3b</td><td class="n">425</td><td>6k · 64</td><td>RTX PRO 6000</td><td class="n">24 min</td><td><code>ec2_sync/queue/logs/1.log</code></td></tr>
-<tr><td>4a</td><td class="n">3,122</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">1 h 47 min</td><td><code>4.log</code></td></tr>
-<tr><td>4b</td><td class="n">64</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">6.5 min</td><td><code>5.log</code></td></tr>
-<tr><td>4c, 4d</td><td class="n">—</td><td>code (embeddings cached)</td><td>—</td><td class="n">3 s</td><td><code>6.log</code>, <code>7.log</code></td></tr>
-<tr><td>5 writers + judge</td><td class="n">945 + 915</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">2 h 10 min</td><td><code>8.log</code></td></tr>
-<tr><td>5 one rewrite round</td><td class="n">246 + 246</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">34 min</td><td><code>10.log</code></td></tr>
-<tr class="total"><td colspan="4">Sum, one pass over the course</td><td class="n">≈ 10.8 h</td><td></td></tr>
+<tr><td>3b</td><td class="n">425</td><td>6k · 64</td><td>RTX PRO 6000</td><td class="n">24 min</td><td><code>ec2_sync/queue/logs/1.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>4a</td><td class="n">3,122</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">1 h 47 min</td><td><code>4.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>4b</td><td class="n">64</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">6.5 min</td><td><code>5.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>4c, 4d</td><td class="n">—</td><td>code (embeddings cached)</td><td>—</td><td class="n">3 s</td><td><code>6.log</code>, <code>7.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>5 writers + judge</td><td class="n">945 + 915</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">2 h 10 min</td><td><code>8.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>5 one rewrite round</td><td class="n">246 + 246</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">34 min</td><td><code>10.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>5 recap re-judge; odd one out rerun (lectures 1, 26)</td><td class="n">347; 3</td><td>6k · 128; 10k · 128</td><td>RTX PRO 6000</td><td class="n">22 + 8 min</td><td><code>11.log</code>, <code>12.log</code> <span class="local">(local)</span></td></tr>
+<tr class="total"><td colspan="4">Sum, one pass over the course (plus the 30 min of reruns: ≈ 11.3 h)</td><td class="n">≈ 10.8 h</td><td></td></tr>
 </table></div>
 <p><b>Estimate for a 63-lecture course from scratch:</b> about 11 GPU hours on one 96 GB GPU, plus about 25 minutes
 to set up a fresh instance (mostly model downloads; <code>pipeline/continue/PROMPT.md</code>) and 1–5 minutes per model
@@ -45,7 +46,7 @@ library. The question box needs more:</p>
 <ul>
 <li>the query embedder: <code>torch</code> and <code>sentence-transformers</code> (the local PC runs <code>torch==2.14.1</code>,
 <code>sentence-transformers==6.1.0</code>, <code>transformers==5.15.0</code>; <code>Qwen/Qwen3-Embedding-0.6B</code> downloads on first use);</li>
-<li>a model server: llama.cpp's <code>llama-server</code> and the Gemma 4 12B QAT GGUF (7.5 GB download). The local config
+<li>a model server: llama.cpp's <code>llama-server</code> and the Gemma 4 12B QAT GGUF (6.72 GB). The local config
 <code>configs/gemma4_12b_llamacpp.json</code> names this PC's binary, model path and toolbox; on another machine edit
 <code>binary</code> and <code>model_path</code>, or point <code>QA_CONFIG</code> at another config. On an Ubuntu GPU machine,
 <code>demo/setup_demo.sh</code> does all of it (<a href="#demo">Demo</a>).</li>
@@ -76,8 +77,8 @@ python3 scripts/s5_activities.py nptel_vr --llm configs/qwen38_27b_vllm_6k_96gb.
 python3 scripts/s5_activities.py nptel_vr --check</pre>
 <p><b>A new course</b>: put its subtitles under <code>input/&lt;course&gt;/input/subs/</code>, its <code>titles.tsv</code> (id, week,
 type, number, part, title, youtube_id) and a <code>course.json</code> written by hand from its syllabus (only
-<code>title</code> is required; the prompts use <code>outline</code> and <code>syllabus</code>). Stage 0a already runs on five MIT and
-NPTEL courses; only VR has been run through the whole pipeline.</p>
+<code>title</code> is required; the prompts use <code>outline</code> and <code>syllabus</code>). Stage 0a already runs on six courses (VR and five other MIT and
+NPTEL courses); only VR has been run through the whole pipeline.</p>
 
 <h3 id="rerun" data-toc="Rerunning after a change">Rerunning after a prompt change</h3>
 <p>Every model answer is cached by a hash of its request: the engine, the model path and the request body (prompt,
@@ -91,8 +92,7 @@ configs share their hashes with <code>qwen38_27b_vllm_6k.json</code>.</li>
 <li>2b's rewriter must use 2a's config: it continues 2a's cached conversation (<code>LLM.lookup</code>).</li>
 <li>A judge pass over finished activities only adds judge calls: writer requests are identical with or without
 <code>--judge</code>. The 2026-11-17 rewrite job found its 410 writer answers cached in 4 s.</li>
-<li>To compare a variant without touching the outputs, write elsewhere: <code>--out DIR</code> and <code>--seed N</code> exist on
-2c, 3a–3c, 4a, 4b and 5.</li>
+<li>To compare a variant without touching the outputs, write elsewhere: <code>--out DIR</code> exists on 2c, 3a–3c, 4a, 4b and 5; <code>--seed N</code> on 2c, 4a, 4b and 5.</li>
 </ul>
 
 <h3 id="ec2" data-toc="The EC2 workflow">The EC2 workflow</h3>
@@ -102,7 +102,7 @@ on the EC2 <code>scripts/llm/serve.py</code> starts the server from it; locally 
 waiting up to <code>attach_wait_s</code>, 30 min) and refuse a port that serves another model.</p>
 <pre data-lang="bash"># once per instance (and after every stop: the NVMe model cache is wiped); ~25 min, mostly downloads
 rsync -a --exclude __pycache__ --exclude 'input/*/media' --exclude 'output/logs' --exclude '.hf_token' pipeline/ mtp:pipeline/
-ssh mtp "tmux new -d -s setup 'bash ~/pipeline/setup_ec2.sh 2&gt;&amp;1 | tee ~/pipeline/output/logs/setup.log'"
+ssh mtp "mkdir -p pipeline/output/logs &amp;&amp; tmux new -d -s setup 'bash ~/pipeline/setup_ec2.sh 2&gt;&amp;1 | tee ~/pipeline/output/logs/setup.log'"
 
 # A. run stages from the local PC against a model server on the EC2
 ssh mtp "tmux new -d -s qwen 'cd ~/pipeline &amp;&amp; python3 -m scripts.llm.serve configs/qwen38_27b_vllm.json'"
@@ -113,7 +113,8 @@ python3 scripts/s2a_fact_extraction.py nptel_vr --llm configs/qwen38_27b_vllm.js
 ssh mtp "cd pipeline &amp;&amp; tmux new -d -s queue 'QWEN_CFG=configs/qwen38_27b_vllm_6k_96gb.json bash ~/pipeline/ec2_queue.sh'"
 ssh mtp "echo 'qwen python3 -u scripts/s3b_same.py nptel_vr --llm configs/qwen38_27b_vllm_6k_96gb.json' &gt;&gt; pipeline/queue/jobs.txt"
 ssh mtp tail -f pipeline/queue/queue.log
-bash pipeline/rebuild_queue.sh configs/qwen38_27b_vllm_6k.json    # queues 3b, 3c, 4a, 4b, 4c, 4d</pre>
+# from the repository root; the 2026-11-17 rebuild ran with configs/qwen38_27b_vllm_6k_96gb.json
+bash pipeline/rebuild_queue.sh configs/qwen38_27b_vllm_6k_96gb.json    # queues 3b, 3c, 4a, 4b, 4c, 4d</pre>
 <ul>
 <li><code>ec2_queue.sh</code> runs <code>queue/jobs.txt</code> line by line, starting the server each job needs and stopping the
 other (each takes about 92% of the GPU); done jobs go to <code>queue/done.txt</code>, logs to <code>queue/logs/&lt;line&gt;.log</code>.
@@ -129,7 +130,7 @@ are merged into <code>pipeline/output/</code> (the local cache must be a prefix 
 </ul>
 
 <h3 id="demo" data-toc="The demo">The demo</h3>
-<span class="redesign">As of 2026-11-18 · being redesigned</span>
+<span class="redesign">As of 2026-11-17 · being redesigned</span>
 <p>As on main: the viewer and its question box run on one GPU instance, and the laptop reaches it through an SSH port
 forward. <code>demo/setup_demo.sh</code> sets it all up; <code>demo/check_demo.sh</code> checks it end to end
 (<code>pipeline/demo/README.md</code>). Another agent is changing this setup to keep only the model on the server
@@ -141,7 +142,7 @@ ssh -N -L 8765:127.0.0.1:8765 demo                     # then open http://localh
 ssh demo bash mtp-implementation/pipeline/demo/check_demo.sh</pre>
 <ul>
 <li><b>setup_demo.sh</b>, about 20 minutes the first time and 2 on a rerun: GPU check; the model cache on the NVMe;
-system packages; a venv with torch and sentence-transformers while Gemma 4 12B QAT (7.5 GB) and the embedder (1.2 GB)
+system packages; a venv with torch and sentence-transformers while Gemma 4 12B QAT (6.72 GB) and the embedder (1.2 GB)
 download; llama.cpp built for the GPU's architecture at the commit the PC runs (<code>LLAMA_REF</code>); the demo config
 filled in; tmux sessions <code>gemma</code> and <code>viewer</code> (with <code>--warm</code>); two test questions. Options:
 <code>VIEWER_HOST</code>, <code>VIEWER_PORT</code>, <code>LLAMA_REF=master</code>, <code>TORCH_CPU=1</code>, <code>NO_NVME=1</code>,
@@ -182,7 +183,7 @@ for ev in answer_stream("What is an HMD?", course="nptel_vr"):
 
 warm("nptel_vr")  # load the layer and the embedder, start or attach to the model server</pre>
 <p>Also exported: <code>get_llm(config, think)</code>, <code>Knowledge</code> (the layer: <code>Knowledge.load(course)</code>),
-<code>run_tool(kb, name, args)</code>, <code>tool_specs()</code>. Module switches in <code>qa.answer</code>: <code>MAX_ROUNDS = 5</code>,
+<code>run_tool(kb, name, args)</code>, <code>tool_specs()</code>. Module switches in <code>qa.answer</code>: <code>MAX_ROUNDS = 5</code> (at most 5 rounds of tool calls, then one answer round),
 <code>ROUND0_THINK = True</code>, <code>ROUND0_TOOL_CHOICE = "auto"</code>. Tool constants in <code>qa.tools</code>: <code>CARD_FACTS = 10</code>,
 <code>LOOKUP_K = 8</code>, <code>LOW_SCORE_DEFAULT = 0.55</code>, <code>UNKNOWN_K = 5</code>, <code>DEP_MIN_USES = 2</code>.</p>
 
@@ -233,11 +234,11 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>python -m scripts.llm.serve</code></td><td><code>CONFIG [--smoke]</code></td></tr>
 <tr><td><code>python -m qa</code></td><td><code>"question" [--lecture N] [--course C] [--config FILE] [--think | --no-think] [--json]</code>; <code>--stop</code></td></tr>
 <tr><td><code>viewer/serve.py</code></td><td><code>course [--port 8765] [--host] [--root] [--media] [--output DIR] [--activities NAME] [--qa-path] [--warm] [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]</code></td></tr>
-<tr><td><code>analysis/qa/bench.py</code></td><td>runs B01–B17; <code>--runs N</code>, <code>--variant shipped|fast|think</code></td></tr>
+<tr><td><code>analysis/qa/bench.py</code></td><td><code>cd pipeline &amp;&amp; python3 ../analysis/qa/bench.py TAG [IDS…] [--runs N] [--variant shipped|fast|think]</code> (runs B01–B17)</td></tr>
 </table></div>
 
 <h3 id="api-http" data-toc="HTTP routes of the viewer">HTTP routes of the viewer</h3>
-<span class="redesign">As of 2026-11-18 · being redesigned</span>
+<span class="redesign">As of 2026-11-17 · being redesigned</span>
 <div class="tablewrap"><table>
 <tr><th>Route</th><th>Answers</th></tr>
 <tr><td><code>GET /</code>, <code>/static/…</code></td><td>the page; every static file named with <code>?v=&lt;hash&gt;</code> and sent <code>Cache-Control: public, max-age=31536000, immutable</code></td></tr>
@@ -286,8 +287,8 @@ section “LLMConfig fields”.</p>
 <tr><td><code>QWEN_CFG</code></td><td><code>ec2_queue.sh</code></td><td>the config the queue starts for <code>qwen</code> jobs</td></tr>
 <tr><td><code>HF_TOKEN</code></td><td><code>setup_ec2.sh</code>, <code>setup_demo.sh</code></td><td>Hugging Face token (else <code>pipeline/.hf_token</code>, gitignored)</td></tr>
 <tr><td><code>VLLM_MODELS</code>, <code>EMBED_MODELS</code>, <code>VLLM_VERSION</code> (0.32.0), <code>SMOKE</code>, <code>SKIP_MODEL</code>, <code>NVME</code>, <code>NO_NVME</code></td><td><code>setup_ec2.sh</code></td><td>what to install and download, the smoke test, the model cache place</td></tr>
-<tr><td><code>VENV</code>, <code>PYTHON</code>, <code>LLAMA_DIR</code>, <code>LLAMA_REF</code>, <code>GGUF_REPO</code>, <code>GGUF_FILE</code>, <code>GGUF_REV</code>, <code>EMBED_MODEL</code>, <code>CONFIG</code>, <code>VIEWER_HOST</code>, <code>VIEWER_PORT</code>, <code>TORCH_CPU</code>, <code>TORCH_PKG</code>, <code>PIP_PKGS</code></td><td><code>setup_demo.sh</code></td><td>the demo setup's choices (defaults at the top of the script)</td></tr>
-<tr><td><code>VIEWER_URL</code>, <code>QUESTION</code>, <code>SESSIONS</code></td><td><code>check_demo.sh</code></td><td>what to check</td></tr>
+<tr><td><code>COURSE</code>, <code>VENV</code>, <code>PYTHON</code>, <code>LLAMA_DIR</code>, <code>LLAMA_REF</code>, <code>GGUF_REPO</code>, <code>GGUF_FILE</code>, <code>GGUF_REV</code>, <code>EMBED_MODEL</code>, <code>CONFIG</code>, <code>VIEWER_HOST</code>, <code>VIEWER_PORT</code>, <code>TORCH_CPU</code>, <code>TORCH_PKG</code>, <code>PIP_PKGS</code>, <code>HUB_PKG</code>, <code>NVME</code>, <code>NO_NVME</code>, <code>HF_TOKEN</code></td><td><code>setup_demo.sh</code></td><td>the demo setup's choices (defaults at the top of the script)</td></tr>
+<tr><td><code>VENV</code>, <code>CONFIG</code>, <code>VIEWER_URL</code>, <code>VIEWER_PORT</code>, <code>EMBED_MODEL</code>, <code>QUESTION</code>, <code>SESSIONS</code></td><td><code>check_demo.sh</code></td><td>what to check and where (defaults as in <code>setup_demo.sh</code>; the question defaults to “What is an HMD?”)</td></tr>
 </table></div>
 
 <h3 id="files" data-toc="Files and tests">Files, schemas and tests</h3>
@@ -298,7 +299,17 @@ section “LLMConfig fields”.</p>
 <tr><td><code>pipeline/continue/</code></td><td><code>STATUS.md</code>, <code>PROMPT.md</code> (state for a new session), <code>DEMO_PLAN.md</code>, <code>progress.sh</code></td></tr>
 <tr><td><code>pipeline/schemas/knowledge.schema.json</code></td><td>the layer's schema (references marked <code>x-ref</code>, IDs <code>x-id</code>), checked by <code>scripts/schema_check.py</code></td></tr>
 <tr><td><code>pipeline/schemas/activities.md</code></td><td>the activities contract</td></tr>
-<tr><td><code>pipeline/tests/</code></td><td>fake-model tests that look for damage: <code>fake_run.py</code> (2a, 2b, the EC2 plumbing), <code>fake_2c.py</code> (44 checks), <code>fake_registry.py</code>, <code>fake_knowledge.py</code>, <code>fake_activities.py</code>, <code>fake_qa.py</code> (also streaming and the vLLM config), <code>viewer_smoke.py</code></td></tr>
+<tr><td><code>pipeline/tests/</code></td><td>fake-model tests that look for damage (below)</td></tr>
 <tr><td><code>analysis/</code></td><td>reports and evaluation sets per block (Part III)</td></tr>
 <tr><td><code>lir-construction/</code></td><td>v1 and v2</td></tr>
 </table></div>
+<h4>Running the tests</h4>
+<p>The tests need no GPU: a fake model server answers with JSON built from each request's schema, on a free port, in a temporary copy of the pipeline folder. Each test lists what it would look like if the stage were broken and seeds known errors. Run them from <code>pipeline/</code>; each ends with PASS or the failing checks. Stop the SSH port forward before <code>fake_run.py</code> (it uses the EC2 configs' ports 8094 and 8095), and run them when no other run is writing logs under <code>output/logs/</code>.</p>
+<pre data-lang="bash">python3 tests/fake_run.py          # 2a and 2b on lectures 1, 4, 16 through the EC2 configs: caches, model swap, no output touched
+python3 tests/fake_2c.py           # stage 2c: checks, retries with feedback, best attempt kept (44 checks)
+python3 tests/fake_registry.py     # stage 3: exact merge, candidates, groups, merge log, relationships rebuilt
+python3 tests/fake_knowledge.py    # stages 4a-4d: definitions, goals, lecture graph, the layer and its check
+python3 tests/fake_activities.py   # stage 5: every kind, code checks, the judge and rewrite paths, the contract
+python3 tests/fake_qa.py           # the tool loop, citations, early exit, streaming, the vLLM config; --layer DIR
+python3 tests/viewer_smoke.py      # every route, 304/gzip, versioned static files, Range, /api/ask_stream</pre>
+
