@@ -1,30 +1,36 @@
 TASK
-You write the glossary definition of one concept of a university course, from the facts that the lectures teach about it. The definition is what a student sees when they look the concept up, and it is the one definition of the concept for the whole course.
+You write the glossary definition of one concept of a university course, from the facts that the lectures teach about it. The definition is what a student sees when they look the concept up, and it is the one definition of the concept for the whole course. The student reads it alone, without the facts and without having seen the lectures, and must learn from it what the concept is.
 
 {course}
 
 THE CONCEPT
 Name: {name}
 Other names: {aliases}
+The other names are the other ways the facts write the concept: its acronym, its plural, another wording. A fact that uses one of them is about this concept.
 
 THE FACTS
-The facts from the course that name the concept, in lecture order, each with its number in brackets and the lecture it comes from. Facts marked * come from a segment that defines the concept. When the course has more facts about the concept than fit here, the facts of the defining segments are given first and a last line says how many are left out; write the definition from the facts given.
+The facts from the course that name the concept, in lecture order, each with its number in square brackets and the lecture it comes from.
+- A fact records what a lecture said, and it is often mainly about something else and only mentions the concept. Only the part of a fact that is about the concept belongs in the definition.
+- A fact marked * comes from a segment of a lecture that defines the concept. Every fact of that segment carries the mark, so a marked fact need not say what the concept is; read the marked facts first.
+- When the course has more facts about the concept than fit here, the marked facts are kept before the others and a last line says how many facts are not shown. Write the definition from the facts shown.
 
 {facts}
 
 THE DEFINITION
-- It says what the concept is. Begin with the name exactly as given above, followed by its acronym in brackets when one of the other names is an acronym. Then say what kind of thing it is and what sets it apart from other things of that kind. Add its parts, its kinds or its purpose only when the facts give them and a student needs them to understand what it is.
-- One to three sentences in plain words, for a student who has not seen the lectures. No pronoun or pointing word that the definition itself does not make clear, and no "in this lecture" or "the lecturer".
-- From the facts only. Merge what the facts say; when two facts say the same thing in different words, say it once. Add nothing from your own knowledge, even if it is true. Keep the hedges and limits of the facts ("usually", "in most systems").
-- A definition, not a summary. Figures, examples, history and comparisons with other concepts stay in the facts.
-- If the facts give more than one definition (a dictionary's and the course's own), use the one the later lectures build on.
-- If no fact says what the concept is, because the lectures only use it, do not define it from your own knowledge. Write one sentence on what the course says about it, and set "defined" to false.
-- A fact may use the same name for a different thing (the "resolution" of a display in one lecture, the "resolution" of a tracker in another). Define the thing that most of the facts are about, and list the facts that are about something else under "misplaced".
+- It says what the concept is, in the form "<name> is <the kind of thing it is> that <what sets it apart from other things of that kind>". Add its parts, its kinds or its purpose only when the facts give them and a student needs them to understand what it is.
+- Begin with the name as given above: the same words in the same singular or plural form, unbroken, with a capital first letter, and with "A", "An" or "The" before it when the sentence needs one. When one of the other names is an acronym that stands for the whole name, write that acronym once, in round brackets, straight after the name ("Gross domestic product (GDP) is ..."). Leave the other names out of the definition, and do not expand an acronym that the facts do not expand.
+- Short: one sentence when one is enough, never more than three, and never more than 60 words. In plain words, with no term of the subject that the facts do not use.
+- It stands alone. No pronoun or pointing word that the definition itself does not make clear ("this method", "the above device"). Nothing about where it comes from: no "in this lecture", "the lecturer", "the course mentions", "according to the facts", and no fact numbers.
+- From the facts only. Merge what the facts say; when two facts say the same thing in different words, say it once. Add nothing from your own knowledge, even if it is true. Keep the hedges and limits of the facts ("usually", "in most cases").
+- A definition, not a summary and not a copied fact. Figures, dates, examples, history, names of people and products, and comparisons with other concepts stay in the facts, unless one of them is what sets the concept apart.
+- If the facts give more than one definition (a dictionary's and the course's own), use the one the later lectures build on, and give it without saying whose it is.
+- Most concepts of a course are never defined in it: the lectures only use the name, list it or give it as an example, and then no fact says what the concept is. Do not define such a concept from your own knowledge. Write one sentence, begun with the name in the same way, that says what the facts do show about it: the kind of thing it is, what it is a part of, one of or an example of, or what it is used for. Set "defined" to false. From the fact "The tools of monetary policy include open market operations, the discount rate and reserve requirements", the definition of "discount rate" is "The discount rate is one of the tools of monetary policy", and not what you know a discount rate to be.
+- A fact may use the same name for a different thing (the "power" of a statistical test in one lecture, the "power" of an electric motor in another). Define the thing that most of the facts are about, and list the facts that are about the other thing under "misplaced". A fact that is about the concept but is not used in the definition, or that only mentions the concept, is not misplaced: it goes in neither list.
 
 ANSWER
 Answer with a JSON object with these fields in this order:
-"facts": the numbers of the facts the definition is built from.
+"facts": the numbers of the facts the definition is built from: only the facts whose content is in the definition, usually one to five of them, and never an empty list.
 "definition": the definition.
-"defined": true if the facts say what the concept is, false if the lectures only use it.
-"misplaced": the numbers of the facts that use the name for a different thing. Usually an empty list.
+"defined": true if at least one of the facts says what the concept is, false if the facts only use it, list it or give it as an example.
+"misplaced": the numbers of the facts that use the name for a different thing. Usually an empty list. No number is in both "facts" and "misplaced".
 Answer with the JSON only.
