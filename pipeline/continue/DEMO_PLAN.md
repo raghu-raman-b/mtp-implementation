@@ -68,7 +68,7 @@ cited. All answers read: grounded, every claim cited, no wrong citation seen.
 | 7 | **"what is cybersicknes"** | 3.5 / 9.1 s (8.4) | 8-11, lectures 10, 25, 26, 49 | Misspelt on purpose: still matched. Symptoms, causes, the presence trade-off. |
 | 8 | **"How does the Wizard of Oz approach work?"** | 2.1 / 4.1 s (6.1; once 21 s, a cold first run) | 3, lecture 42 | The hidden "wizard" and the 1984 IBM speech-recognition test. |
 | 9 | **"What is lecture 36 for?"** | 2.0 / 4.7 s (4.2) | 4, lecture 36 | The goals tree: the lecture's aim and objectives. |
-| 10 | **"What do I need to know before lecture 9?"** | 1.9 / 5.2 s (5.7) | 4-6, lectures 2, 4, 7 | Virtual reality system, reality, immersion, 3D registration, each with its definition and time; revise lectures 4, 2, 7. **Ends with a raw "[lecture_dependencies]"** (every run): say "the tool it used" and move on, or skip this one. |
+| 10 | **"What do I need to know before lecture 9?"** | 1.9 / 5.2 s (5.7) | 4-6, lectures 2, 4, 7 | Virtual reality system, reality, immersion, 3D registration, each with its definition and time; revise lectures 4, 2, 7. (The raw "[lecture_dependencies]" tag it used to end with is removed since commit c0a0c8d.) |
 | 11 | **"What is vergence-accommodation conflict?"** | 1.6 / 2.8 s (3.3, 3.4) | 2-4, lectures 14, 26, 28 | A real VR topic this course does not teach: it says so, then offers what the course does say (vection, binocular vision). |
 | 12 | **"Who won the 2022 FIFA World Cup?"** | 2.9 / 3.2 s (3.9, 4.7) | none | "The course does not cover the 2022 FIFA World Cup", and what the course is about. End here: it does not make things up. |
 
@@ -100,8 +100,7 @@ Click the "Lecture N · m:ss" links inside an answer: they open the lecture at t
   "ios". Open defined concepts (the glossary ones) on stage.
 - **Selecting a hub concept** in a full ("All N concepts") view (e.g. "game engine" in lecture 20): a crowded fan of
   labels. Select hubs in the key view.
-- **Questions**: "before lecture 30" (now thin: only lecture 29's frequency, plus XR and VR); every "before lecture
-  N" answer may end with the raw "[lecture_dependencies]"; formula questions (raw LaTeX: the Kalman answer printed
+- **Questions**: "before lecture 30" (now thin: only lecture 29's frequency, plus XR and VR); formula questions (raw LaTeX: the Kalman answer printed
   `$\theta_{dk} = \alpha \theta_{gk} + ...$` in 2 of 3 runs); several concepts compared at once (9-19 s). The first
   question that uses the fact search after a start without `--warm` takes 20-23 s.
 
