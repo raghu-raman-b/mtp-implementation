@@ -1,0 +1,37 @@
+TASK
+You check the clues of a crossword before learners see it. The crossword is on one lecture of a university course; each answer is a concept of the lecture, and each clue was written from the text given for its answer below. The learner sees the grid, each clue and the number of letters of its answer, and nothing else. Solving it is a way to recall the concepts, so each clue must lead a learner who knows the lecture to its answer, and to no other. Decide for each clue whether it meets all six criteria below. A clue that fails is rewritten once.
+
+{course}
+
+THE LECTURE
+{lecture_title}
+
+THE ANSWERS
+Each answer with its number in brackets, its other names and its definition (or the lecture's main statement about it).
+
+{answers}
+
+THE SIX CRITERIA
+1. from_text. What the clue says is stated by the text given for its answer, and it is true of the answer itself. It fails when the clue adds something from outside the text, and when it describes another thing that the text is about: the text "Photosynthesis takes place in the chloroplasts of plant cells" is about photosynthesis, and a clue for "chloroplast" that says "how plants make sugar from light" describes photosynthesis, not the answer.
+2. leads_to_answer. The clue says what the concept is or does, so that a learner who knows the lecture can reach the answer from the clue and the letter count. It fails when the clue only gives the answer's place in a list or a figure ("the second of the four steps", "one of the three parts of ...", "about 4% of ..."), or is so general that it gives nothing to go on ("a part of the system").
+3. unique. The clue fits its own answer only. Read it against every other answer in the list: it fails when it fits one of them as well (name that answer; two answers with clues that could be swapped both fail), and when it fits a more familiar concept of the subject better than its answer.
+4. no_giveaway. The clue contains neither the answer, nor one of its other names, nor a word of them in any form, nor a longer word built on one of them.
+5. readable. The clue stands alone and reads as a phrase that could stand in the place of the answer: grammatical, at most fifteen words, with no blank ("___") that leaves a hole in the sense, and no "their", "these", "the above", "the software" or "the sequence" that points at something the clue does not name.
+6. no_source_talk. The clue does not speak of the lecturer, the lecture or the course.
+
+HOW TO CHECK
+First read all the answers, so that you know which concepts stand next to each other in this grid. Then take the clues one at a time: cover the answer, read the clue with its letter count, and say which answer of the list you would give and whether another would fit as well. Then read the text of its answer and go through the criteria. Fail a criterion only for a problem you can point to and quote. When you are still in doubt: on criteria 1 and 3 fail the clue; on the others pass it.
+
+THE CLUES
+Each clue with the number of its answer, the answer, the letter count the learner sees, and the clue.
+
+{clues}
+
+ANSWER
+Answer with a JSON object with one field, "verdicts": a list with one entry per clue, in the order given, each with these fields in this order:
+"item": the number of the answer.
+"check": the other answers of the list, or other concepts of the subject, that the clue fits as well as or better than its own answer; "none" if there are none.
+"reason": one or two sentences. If the clue fails: what is wrong, quoting the words concerned, and what in the answer's text a better clue could use; if the text gives nothing that tells the answer apart, say so. The writer is given only this text. If it passes: the words of the answer's text that the clue puts in other words.
+"failed": the names of the criteria it fails, from "from_text", "leads_to_answer", "unique", "no_giveaway", "readable", "no_source_talk"; an empty list if it fails none.
+"pass": true if "failed" is empty, otherwise false.
+Answer with the JSON only.
