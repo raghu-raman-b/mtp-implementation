@@ -8,10 +8,14 @@
  *          #/glossary  #/map  #/review
  * Every layer is optional: a lecture without knowledge/ shows its 1b segments and the 0a transcript only.
  * Developer mode (?dev=1 or the toggle) shows IDs, counts and where things came from.
+ *
+ * Data: only the server's lean routes (/api/home at start; /api/view/<key> when a lecture is opened; /api/glossary,
+ * /api/coursemap, /api/concept/<id>, /api/review when their page is opened). Each answer is fetched once and kept in
+ * the page; the concepts and facts they carry go into one cache (S.cc, S.fc) that the pills, cards and maps read.
  */
 "use strict";
 
-const S = { course: null, K: null, Kp: null, lec: {}, view: null, review: null, qa: [] };
+const S = { course: null, goals: {}, cc: {}, fc: {}, lec: {}, req: new Map(), view: null, qa: [] };
 const KINDS = [["introduced", "Introduced here"], ["met_again", "Met again"], ["assumed", "Assumed (not taught in the course)"],
   ["defined_later", "Explained in a later lecture"]];
 
@@ -72,22 +76,45 @@ async function getJSON(url) {
 }
 
 // ------------------------------------------------------------------ data
-async function knowledge() {  // the course-wide knowledge files, loaded once (null when the layer is absent)
-  if (!S.course.layers.knowledge) return null;
-  if (!S.Kp) {
-    S.Kp = Promise.all(["concepts", "facts", "relations", "lecture_graph"].map((f) => getJSON(`/data/knowledge/${f}.json`)))
-      .then(([concepts, facts, relations, graph]) => (S.K = { concepts: concepts || {}, facts: facts || {}, relations: relations || {}, graph: graph || {} }));
+function cget(url) {  // a GET kept in the page (as its promise, so two callers share one request); a miss is not kept
+  let p = S.req.get(url);
+  if (!p) {
+    p = getJSON(url).then((x) => { if (x == null) S.req.delete(url); return x; }, (e) => { S.req.delete(url); throw e; });
+    S.req.set(url, p);
   }
-  return S.Kp;
+  return p;
 }
-async function lecture(key) {
-  if (!S.lec[key]) S.lec[key] = await getJSON(`/api/lecture/${encodeURIComponent(key)}`);
+function addConcepts(map, fillOnly) {  // fillOnly: a partial record (a name, a shortened definition) never overwrites
+  for (const [cid, c] of Object.entries(map || {})) {
+    const old = S.cc[cid];
+    if (!old) S.cc[cid] = { ...c };
+    else if (fillOnly) { for (const [k, v] of Object.entries(c)) if (old[k] == null || old[k] === "") old[k] = v; }
+    else Object.assign(old, c);
+  }
+}
+function addFacts(map) { Object.assign(S.fc, map || {}); }
+function adaptView(V) {  // /api/view/<key> in the shape the lecture page reads
+  addConcepts(V.concepts);
+  addFacts(V.facts);
+  const KL = V.source === "knowledge" ? { goal: V.goal, objectives: V.objectives || [], course_goals: V.course_goals || [], concepts: V.kinds || {},
+    map: V.map, prerequisites: V.prerequisites || { direct: [], all: [] }, before: V.before || [] } : null;
+  return { ...V, knowledge: KL, activities: V.activities ? { activities: V.activities } : null };
+}
+function lecture(key) {  // fetched when the lecture is first opened (or prefetched), then kept
+  if (!S.lec[key]) {
+    S.lec[key] = getJSON(`/api/view/${encodeURIComponent(key)}`).then((V) => { if (!V) { delete S.lec[key]; return null; } return adaptView(V); },
+      (e) => { delete S.lec[key]; throw e; });
+  }
   return S.lec[key];
 }
+const idle = (fn, ms = 300) => setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2000 }) : fn()), ms);
+function prefetch(key) { if (key && !S.lec[key] && S.course.lectures.some((l) => l.key === key)) lecture(key).catch(() => {}); }
 const lecInfo = (k) => S.course.lectures.find((l) => l.key === k) || { key: k, title: `Lecture ${k}` };
-const concept = (cid) => (S.K && S.K.concepts[cid]) || null;
+const concept = (cid) => S.cc[cid] || null;
 const cname = (cid) => cap((concept(cid) || {}).name || cid);
-const fact = (fid) => (S.K && S.K.facts[fid]) || null;
+const fact = (fid) => S.fc[fid] || null;
+const hasKnowledge = () => !!(S.course && S.course.layers.knowledge);
+const preferYouTube = () => { const v = store("yt"); return v == null ? !!(S.course && S.course.prefer_youtube) : !!v; };
 
 // ------------------------------------------------------------------ links
 function timeHref(lec, t) { return `#/lecture/${lec}/t/${Math.round((t || 0) * 10) / 10}`; }
@@ -627,37 +654,47 @@ async function render() {
   }
   if (S.view && S.view.stop) S.view.stop();
   S.view = null;
-  const app = $("#app");
-  app.replaceChildren(h("div", { class: "empty" }, h("span", { class: "spin" }), " Loading…"));
+  const app = $("#app"), seq = ++renderSeq;
+  // the page stays as it is while the next one loads (most are ready at once); a spinner only after a short wait
+  const slow = setTimeout(() => { if (seq === renderSeq) app.replaceChildren(h("div", { class: "empty" }, h("span", { class: "spin" }), " Loading…")); }, 120);
   try {
-    await knowledge();
     let el;
     if (r.page === "lecture") el = await pageLecture(r.arg, r.rest);
-    else if (r.page === "concept") el = pageConcept(r.arg);
-    else if (r.page === "glossary") el = pageGlossary();
-    else if (r.page === "map") el = pageMap(r.arg, r.rest);
+    else if (r.page === "concept") el = await pageConcept(r.arg);
+    else if (r.page === "glossary") el = await pageGlossary();
+    else if (r.page === "map") el = await pageMap(r.arg, r.rest);
     else if (r.page === "review") el = await pageReview();
     else el = pageHome();
+    if (seq !== renderSeq) return;  // another page was asked for meanwhile
+    clearTimeout(slow);
     app.replaceChildren(el);
+    if (el.view) S.view = el.view;
     if (!(r.page === "lecture" && r.rest[0] === "t")) window.scrollTo(0, 0);
+    if (el.afterShow) el.afterShow();
   } catch (e) {
     console.error(e);
-    app.replaceChildren(h("div", { class: "empty" }, "This page could not be shown.", dev(" " + e)));
+    clearTimeout(slow);
+    if (seq === renderSeq) app.replaceChildren(h("div", { class: "empty" }, "This page could not be shown.", dev(" " + e)));
   }
 }
+let renderSeq = 0;
 
 // ------------------------------------------------------------------ home
 function pageHome() {
-  const C = S.course, m = C.meta || {}, goals = (C.goals && C.goals.course_goals) || {};
+  const C = S.course, m = C.meta || {}, goals = S.goals;
   const weeks = {};
   for (const l of C.lectures) (weeks[l.week || ""] = weeks[l.week || ""] || []).push(l);
-  const theme = (w) => ((m.syllabus || []).find((x) => String(x.week) === String(w)) || {}).theme;
+  const theme = (w) => ((C.syllabus || []).find((x) => String(x.week) === String(w)) || {}).theme;
   const before = h("div", {});
   const sel = h("select", { onchange: () => showBefore() }, C.lectures.map((l) => h("option", { value: l.key }, `Lecture ${l.key}: ${l.title}`)));
-  const showBefore = () => before.replaceChildren(beforeLecture(sel.value, true));
+  const showBefore = () => {  // the lecture's data is fetched when asked for; the box keeps its height meanwhile
+    const key = sel.value;
+    if (before.firstChild) before.style.minHeight = before.offsetHeight + "px";
+    lecture(key).then((L) => { if (sel.value === key) { before.replaceChildren(beforeLecture(L, true)); before.style.minHeight = ""; } },
+      () => { if (sel.value === key) before.replaceChildren(h("p", { class: "muted" }, "Not available right now.")); });
+  };
   if (C.lectures.length > 1) sel.value = C.lectures[Math.min(4, C.lectures.length - 1)].key;
-  showBefore();
-  return h("div", {},
+  const page = h("div", {},
     h("div", { class: "hero" },
       h("h1", {}, C.title),
       h("div", { class: "sub" }, [m.platform, m.institution, m.instructor && m.instructor.name].filter(Boolean).join(" · ")),
@@ -673,31 +710,34 @@ function pageHome() {
       h("a", { class: "card", href: "#/glossary", style: "flex:1;min-width:220px" }, h("h3", {}, "Glossary"), h("div", { class: "muted small" }, "Every concept of the course, with its definition and where it is taught.")),
       h("a", { class: "card", href: "#/map", style: "flex:1;min-width:220px" }, h("h3", {}, "Concept map"), h("div", { class: "muted small" }, "How the concepts of the course relate, and how the lectures build on each other.")),
       C.layers.spaced_review ? h("a", { class: "card", href: "#/review", style: "flex:1;min-width:220px" }, h("h3", {}, "Review cards"), h("div", { class: "muted small" }, "Short daily reviews, scheduled for you.")) : null),
-    S.K ? h("div", { class: "section card" }, h("div", { class: "row" }, h("h2", { style: "margin:0" }, "What you need before"), sel), before) : null,
+    hasKnowledge() ? h("div", { class: "section card" }, h("div", { class: "row" }, h("h2", { style: "margin:0" }, "What you need before"), sel), before) : null,
     h("div", { class: "section" }, h("h2", {}, "Lectures"),
       Object.entries(weeks).map(([w, ls]) => h("div", { class: "week" },
         h("h3", {}, w ? `Week ${w}` + (theme(w) ? ` · ${theme(w)}` : "") : "Other"),
-        h("div", { class: "lecs" }, ls.map((l) => h("a", { class: "card lec-card", href: `#/lecture/${l.key}` },
+        h("div", { class: "lecs" }, ls.map((l) => h("a", { class: "card lec-card", href: `#/lecture/${l.key}`, onpointerenter: () => prefetch(l.key), onfocus: () => prefetch(l.key) },
           h("div", { class: "n" }, `Lecture ${l.key}`), h("div", { class: "t" }, l.title),
           l.goal ? h("div", { class: "g" }, l.goal) : null,
           dev(Object.entries(l.has).filter(([, v]) => v).map(([k]) => k).join(" · ")))))))));
+  page.afterShow = () => { if (hasKnowledge()) idle(showBefore, 0); };
+  return page;
 }
 function devHome() {
-  const C = S.course, idx = C.index;
+  const C = S.course;
   const n = (k) => C.lectures.filter((l) => l.has[k]).length;
   return h("div", { class: "dev card", style: "margin-top:12px" },
-    `${C.course}: ${C.lectures.length} lectures; segments ${n("segments")}, transcript ${n("transcript")}, knowledge ${n("knowledge")}, activities ${n("activities")}, video ${n("video")}; question answering ${C.qa ? "importable" : "not available"}`,
-    idx ? h("div", {}, "knowledge counts: " + Object.entries(idx.counts || {}).map(([k, v]) => `${k} ${v}`).join(", ") + ` · embedding ${(idx.embedding || {}).model}`) : h("div", {}, "no knowledge/ layer"));
+    `${C.course}: ${C.lectures.length} lectures; knowledge ${n("knowledge")}, activities ${n("activities")}, video ${n("video")}, youtube ${n("youtube")}; question answering ${C.qa ? "importable" : "not available"}`,
+    C.counts ? h("div", {}, "knowledge counts: " + Object.entries(C.counts).map(([k, v]) => `${k} ${v}`).join(", ")) : h("div", {}, "no knowledge/ layer"));
 }
 
 // ------------------------------------------------------------------ before a lecture
-function beforeLecture(key, withTitle) {
-  const K = S.K;
-  if (!K || !K.graph || !K.graph.prerequisites) return h("p", { class: "muted" }, "Not available yet for this course.");
-  const pre = K.graph.prerequisites[key] || { direct: [], all: [] };
-  const links = (K.graph.links || []).filter((l) => l.to === key && l.kind !== "weak");
-  const weak = (K.graph.links || []).filter((l) => l.to === key && l.kind === "weak");
-  const kinds = (K.graph.concept_kinds || {})[key] || {};
+function beforeLecture(L, withTitle) {  // L: the lecture (lecture(key))
+  const KL = L && L.knowledge;
+  if (!KL) return h("p", { class: "muted" }, "Not available yet for this lecture.");
+  const key = L.key;
+  const pre = KL.prerequisites || { direct: [], all: [] };
+  const links = (KL.before || []).filter((l) => l.kind !== "weak");
+  const weak = (KL.before || []).filter((l) => l.kind === "weak");
+  const kinds = KL.concepts || {};
   const lecCard = (k) => h("a", { class: "card lec-card", href: `#/lecture/${k}` }, h("div", { class: "n" }, `Lecture ${k}`),
     h("div", { class: "t" }, lecInfo(k).title), lecInfo(k).goal ? h("div", { class: "g" }, lecInfo(k).goal) : null);
   const cBox = (cid, from, redefined) => {
@@ -727,12 +767,14 @@ function beforeLecture(key, withTitle) {
 async function pageLecture(key, rest) {
   const L = await lecture(key);
   if (!L) return h("div", { class: "empty" }, `There is no lecture ${key}.`);
-  const KL = L.knowledge, info = lecInfo(key);
+  const KL = L.knowledge;
   const root = h("div", {});
   const view = { lecture: key, root, tab: rest[0] && rest[0] !== "t" ? rest[0] : "overview" };
-  S.view = view;
-  // player: the video file when the server has it, else the lecture on YouTube (by its youtube_id), else a note
-  const video = L.video ? h("video", { controls: true, preload: "metadata", src: `/media/${key}` }) : null;
+  root.view = view;
+  // player: the video file when the server has it, else the lecture on YouTube (by its youtube_id), else a note.
+  // Jumps inside the lecture only move the playhead (the element is never reloaded).
+  // ?yt=1 (kept in this browser; ?yt=0 undoes it) or the server's --prefer-youtube: YouTube even when the file is here
+  const video = L.video && !(preferYouTube() && L.youtube_id) ? h("video", { controls: true, preload: "metadata", playsinline: true, src: `/media/${encodeURIComponent(key)}` }) : null;
   const yt = !video && L.youtube_id ? youtubePlayer(L.youtube_id, (t) => tick(t)) : null;
   const player = h("div", { class: "player" }, video || (yt && yt.el) || h("div", { class: "novideo" }, "The video for this lecture is not available on this computer.", h("br"), "The segments and transcript still work."));
   const segEls = L.segments.map((sg, i) => h("div", { class: "seg", onclick: () => view.seek(sg.start, true) },
@@ -784,21 +826,30 @@ async function pageLecture(key, rest) {
 
   // tabs
   const hasActs = !!(L.activities && (L.activities.activities || []).length);
-  const tabs = [["overview", "Overview"], KL && ["concepts", "Concepts"], KL && ["map", "Concept map"], KL && S.K && ["before", "Before this lecture"],
+  const tabs = [["overview", "Overview"], KL && ["concepts", "Concepts"], KL && ["map", "Concept map"], KL && ["before", "Before this lecture"],
     hasActs && ["activities", "Activities"]].filter(Boolean);
-  const tabBar = h("div", { class: "tabs" });
+  // each tab is built the first time it is opened and kept (a map keeps its layout, zoom and selection)
+  const tabBtns = Object.fromEntries(tabs.map(([k, label]) => [k, h("button", { onclick: () => { location.hash = `#/lecture/${key}/${k}`; } }, label)]));
+  const tabBar = h("div", { class: "tabs" }, Object.values(tabBtns));
   const tabBody = h("div", {});
+  const bodies = {};
   view.showTab = (t) => {
     if (!tabs.some(([k]) => k === t)) t = "overview";
     view.tab = t;
-    tabBar.replaceChildren(tabs.map(([k, label]) => h("button", { class: k === t ? "on" : "", onclick: () => { location.hash = `#/lecture/${key}/${k}`; } }, label)));
-    let body;
-    if (t === "overview") body = lectureOverview(L);
-    else if (t === "concepts") body = lectureConcepts(L);
-    else if (t === "map") body = lectureMap(L);
-    else if (t === "before") body = h("div", {}, beforeLecture(key), recallFor(L));
-    else body = activitiesView(L);
-    tabBody.replaceChildren(body);
+    for (const [k, b] of Object.entries(tabBtns)) b.classList.toggle("on", k === t);
+    if (!bodies[t]) {
+      let body;
+      try {
+        if (t === "overview") body = lectureOverview(L);
+        else if (t === "concepts") body = lectureConcepts(L);
+        else if (t === "map") body = lectureMap(L);
+        else if (t === "before") body = h("div", {}, beforeLecture(L), recallFor(L));
+        else body = activitiesView(L);
+      } catch (e) { console.error(e); body = h("p", { class: "muted" }, "This part could not be shown.", dev(" " + e)); }
+      bodies[t] = h("div", {}, body);
+      tabBody.append(bodies[t]);
+    }
+    for (const [k, el] of Object.entries(bodies)) el.hidden = k !== t;
   };
   root.append(
     h("div", { class: "lec-head" },
@@ -807,12 +858,13 @@ async function pageLecture(key, rest) {
       KL && KL.goal ? h("div", { class: "goal" }, KL.goal.goal) : null,
       KL && KL.goal && KL.goal.achieves ? h("div", { class: "achieves" }, KL.goal.achieves) : null,
       !KL ? h("div", { class: "note", style: "margin-top:8px" }, "Goals, concepts and activities for this lecture are not ready yet. The video and its parts are below.") : null,
-      dev(`segments from ${L.source}; ${L.segments.length} segments, ${L.sentences.length} sentences; activities ${L.activities ? L.activities.activities.length : "none"}`)),
+      dev(`segments from ${L.source}; ${L.segments.length} segments, ${L.sentences.length} sentences; activities ${L.activities ? L.activities.activities.length : "none"}; ${Object.keys(L.concepts || {}).length} concepts and ${Object.keys(L.facts || {}).length} facts sent`)),
     h("div", { class: "watch" }, h("div", {}, player, h("details", { class: "card", style: "margin-top:12px", open: true }, h("summary", { class: "small muted" }, "Transcript of this part"), trans)), segList),
     tabBar, tabBody);
   view.showTab(view.tab);
   showSeg(L.segments.length ? 0 : -1);
   if (rest[0] === "t") setTimeout(() => view.seek(parseFloat(rest[1])), 0);
+  root.afterShow = () => idle(() => { prefetch(L.next); prefetch(L.prev); }, 800);  // the neighbours open at once
   return root;
 }
 
@@ -877,7 +929,6 @@ function lectureOverview(L) {
   const KL = L.knowledge;
   if (!KL) return h("div", {}, h("h3", {}, "Parts of this lecture"), h("ol", {}, L.segments.map((sg) => h("li", {}, sg.subgoal, " ", h("a", { class: "time", href: timeHref(L.key, sg.start) }, clock(sg.start))))));
   const segIdx = Object.fromEntries(L.segments.map((sg, i) => [sg.id, i]));
-  const goals = (S.course.goals && S.course.goals.course_goals) || {};
   const loose = L.segments.filter((sg) => !(KL.objectives || []).some((o) => (o.segments || []).includes(sg.id)));
   return h("div", { class: "grid2" },
     h("div", { class: "card" }, h("h3", {}, "After this lecture you can"),
@@ -887,7 +938,7 @@ function lectureOverview(L) {
       loose.length ? h("p", { class: "small muted" }, "Also in this lecture: ", loose.map((sg) => h("a", { class: "time", href: timeHref(L.key, sg.start), title: sg.subgoal, style: "margin-right:8px" }, `Part ${segIdx[sg.id] + 1}`))) : null),
     h("div", {},
       (KL.course_goals || []).length ? h("div", { class: "card" }, h("h3", {}, "This lecture serves the course goals"),
-        h("ul", {}, KL.course_goals.map((g) => h("li", {}, (goals[g] || {}).goal || g, " ", dev(g))))) : null,
+        h("ul", {}, KL.course_goals.map((g) => h("li", {}, g.goal || (S.goals[g.id] || {}).goal || g.id, " ", dev(g.id))))) : null,
       h("div", { class: "card" }, h("h3", {}, "Concepts introduced here"),
         h("div", { class: "chips" }, ((KL.concepts || {}).introduced || []).map((c) => conceptPill(c, "introduced"))),
         !((KL.concepts || {}).introduced || []).length ? h("p", { class: "muted small" }, "None new: this lecture builds on concepts met before.") : null)));
@@ -982,30 +1033,44 @@ function lectureMapView(L, nodes, edges, o = {}) {
   const key = `mapview:${o.store || "lecture"}`;
   let mode = big ? (store(key) === "all" && !o.keyFirst ? "all" : "key") : "all";
   const holder = h("div", {});
-  const seg = big ? h("div", { class: "seg-ctl", role: "tablist" }) : null;
   const hint = h("span", { class: "faint hint" });
-  const draw = () => {
-    let el;
+  // each view is laid out once and kept: switching back and forth only swaps them (zoom and selection stay)
+  const built = {};
+  const build = (m) => {
+    let el, text;
     const card = o.card === null ? null : o.card || ((id) => conceptCard(id, L.key));
-    if (mode === "key") {
+    if (m === "key") {
       const ns = nodes.filter((n) => core.has(n.id)), es = keyEdges(edges.filter((e) => core.has(e.from) && core.has(e.to)), ns);
       el = drawMap(ns, es, { card, height: 620, aria: "Key concepts of the lecture" });
-      hint.textContent = "The key concepts and how they connect. Click a concept to see all its links and its card; double-click to zoom in.";
-      if (es.some((e) => e.extra)) hint.textContent += " Some links are shown only when you select a concept.";
+      text = "The key concepts and how they connect. Click a concept to see all its links and its card; double-click to zoom in.";
+      if (es.some((e) => e.extra)) text += " Some links are shown only when you select a concept.";
     } else if (big && groups) {
       el = drawMap(nodes, edges, { mode: "parts", groups, card, aria: "All the concepts of the lecture, by part" });
-      hint.textContent = "Grouped by the part of the lecture that explains them (click a part's title to watch it). Point at or click a concept to see its links.";
+      text = "Grouped by the part of the lecture that explains them (click a part's title to watch it). Point at or click a concept to see its links.";
     } else {
       const es = edges.length > nodes.length * 1.6 ? keyEdges(edges, nodes) : edges;
       el = drawMap(nodes, es, { card, height: 620, dense: big && edges.length > 60 });
-      hint.textContent = "Click a concept to see all its links and its card; double-click to zoom in. Drag to move; Ctrl + scroll to zoom." + (es.some((e) => e.extra) ? " Some links are shown only when you select a concept." : "");
+      text = "Click a concept to see all its links and its card; double-click to zoom in. Drag to move; Ctrl + scroll to zoom." + (es.some((e) => e.extra) ? " Some links are shown only when you select a concept." : "");
     }
-    if (seg) seg.replaceChildren(
-      h("button", { class: mode === "key" ? "on" : "", role: "tab", "aria-selected": String(mode === "key"), onclick: () => { mode = "key"; store(key, mode); draw(); } }, "Key concepts"),
-      h("button", { class: mode === "all" ? "on" : "", role: "tab", "aria-selected": String(mode === "all"), onclick: () => { mode = "all"; store(key, mode); draw(); } }, `All ${nodes.length} concepts` + (groups ? ", by part" : "")));
-    holder.replaceChildren(el);
+    return (built[m] = { el, text });
   };
-  draw();
+  const put = (m) => { holder.replaceChildren(built[m].el); hint.textContent = built[m].text; holder.style.minHeight = ""; };
+  const btn = (m, label) => h("button", { role: "tab", onclick: () => show(m) }, label);
+  const btns = big ? { key: btn("key", "Key concepts"), all: btn("all", `All ${nodes.length} concepts` + (groups ? ", by part" : "")) } : null;
+  const seg = big ? h("div", { class: "seg-ctl", role: "tablist" }, btns.key, btns.all) : null;
+  const show = (m) => {
+    mode = m;
+    if (big) store(key, mode);
+    if (btns) for (const [k, b] of Object.entries(btns)) { b.classList.toggle("on", k === m); b.setAttribute("aria-selected", String(k === m)); }
+    if (built[m] || !holder.firstChild) { if (!built[m]) build(m); put(m); return; }
+    // not laid out yet: answer the click at once, lay out after the next paint, keep the height (no jump)
+    holder.style.minHeight = holder.offsetHeight + "px";
+    holder.replaceChildren(h("div", { class: "empty" }, h("span", { class: "spin" }), " Arranging the concepts…"));
+    requestAnimationFrame(() => setTimeout(() => { if (mode === m) { if (!built[m]) build(m); put(m); } }, 0));
+  };
+  show(mode);
+  // the other view of a large map is laid out in idle time, so the switch is instant
+  if (big) idle(() => { const other = mode === "key" ? "all" : "key"; if (!built[other] && document.body.contains(holder)) build(other); }, 1500);
   return h("div", { class: "lecmap" },
     h("div", { class: "map-head" }, seg, o.legend === false ? null : mapLegend(kinds)),
     holder, h("div", { class: "small map-hint" }, hint));
@@ -1013,27 +1078,41 @@ function lectureMapView(L, nodes, edges, o = {}) {
 
 function lectureMap(L) {
   const KL = L.knowledge;
-  if (!KL || !S.K) return h("p", { class: "muted" }, "Not ready yet for this lecture.");
+  if (!KL || !KL.map) return h("p", { class: "muted" }, "Not ready yet for this lecture.");
   const kindOf = lectureKinds(L);
-  const rels = (KL.concept_map.relations || []).map((r) => [r, S.K.relations[r]]).filter(([, r]) => r);
-  const linked = new Set(rels.flatMap(([, r]) => [r.subject, r.object]));
+  const rels = (KL.map.relations || []).filter((r) => r.from && r.to);
+  const linked = new Set(rels.flatMap((r) => [r.from, r.to]));
   const nodes = [...linked].map((c) => ({ id: c, label: cname(c) }));
-  const edges = rels.map(([rid, r]) => ({ from: r.subject, to: r.object, label: r.label, rid }));
-  const alone = (KL.concept_map.concepts || []).filter((c) => !linked.has(c));
+  const edges = rels.map((r) => ({ from: r.from, to: r.to, label: r.label, rid: r.id }));
+  const alone = (KL.map.concepts || []).filter((c) => !linked.has(c));
   if (!nodes.length) return h("p", { class: "muted" }, "No relationships were found between this lecture's concepts.");
   return h("div", {}, lectureMapView(L, nodes, edges),
     alone.length ? h("div", { style: "margin-top:14px" }, h("div", { class: "small muted" }, "Also in this lecture:"), h("div", { class: "chips", style: "margin-top:4px" }, alone.map((c) => conceptPill(c, kindOf[c])))) : null);
 }
 
 // ------------------------------------------------------------------ concept card
-function pageConcept(cid) {
-  const c = concept(cid);
-  if (!c) return h("div", { class: "empty" }, S.K ? "There is no such concept." : "Concepts are not ready yet for this course.");
+function conceptData(cid) {  // /api/concept/<id>, its facts and its neighbours added to the caches
+  return cget(`/api/concept/${encodeURIComponent(cid)}`).then((c) => {
+    if (!c) return null;
+    addConcepts({ [cid]: { name: c.name, definition: c.definition, defined_in: c.defined_in, first_defined: c.first_defined } });
+    for (const r of [...(c.relations.out || []), ...(c.relations.in || [])]) {
+      if (r.concept) addConcepts({ [r.concept]: { name: r.name, definition: r.definition, defined_in: r.defined_in } }, true);
+      if (r.fact) addFacts({ [r.fact.id]: r.fact });
+    }
+    addFacts(Object.fromEntries((c.facts || []).map((f) => [f.id, f])));
+    return c;
+  });
+}
+async function pageConcept(cid) {
+  if (!hasKnowledge()) return h("div", { class: "empty" }, "Concepts are not ready yet for this course.");
+  const c = /^C\d+$/.test(cid || "") ? await conceptData(cid) : null;
+  if (!c) return h("div", { class: "empty" }, "There is no such concept.");
   const names = [...new Set([...(c.aliases || []), ...(c.acronyms || [])])].filter((a) => a.toLowerCase() !== c.name.toLowerCase());
-  const relRow = (r, dir) => h("li", {}, dir === "out" ? [h("b", {}, cname(cid)), " ", h("span", { class: "lbl" }, r.label), " ", h("a", { href: `#/concept/${r.concept}` }, cname(r.concept))]
-    : [h("a", { href: `#/concept/${r.concept}` }, cname(r.concept)), " ", h("span", { class: "lbl" }, r.label), " ", h("b", {}, cname(cid))], " ", dev(r.relation),
-  relFacts(r.relation));
-  const rels = [...((c.relations || {}).out || []).map((r) => relRow(r, "out")), ...((c.relations || {}).in || []).map((r) => relRow(r, "in"))];
+  const relRow = (r, dir) => h("li", {}, dir === "out" ? [h("b", {}, cap(c.name)), " ", h("span", { class: "lbl" }, r.label), " ", h("a", { href: `#/concept/${r.concept}` }, cname(r.concept))]
+    : [h("a", { href: `#/concept/${r.concept}` }, cname(r.concept)), " ", h("span", { class: "lbl" }, r.label), " ", h("b", {}, cap(c.name))], " ", dev(r.relation),
+  r.fact ? h("span", { class: "small", title: r.fact.text }, " ", timeLink(r.fact.lecture, r.fact.start)) : null);
+  const rels = [...(c.relations.out || []).map((r) => relRow(r, "out")), ...(c.relations.in || []).map((r) => relRow(r, "in"))];
+  const d = c.dev || {};
   return h("div", {},
     h("div", { class: "row small muted" }, h("a", { href: "#/glossary" }, "Glossary"), "›", dev(cid)),
     h("h1", {}, cap(c.name)),
@@ -1041,55 +1120,84 @@ function pageConcept(cid) {
     h("div", { class: "card" },
       c.definition ? h("div", { class: "defn" }, c.definition) : h("div", { class: "muted" }, "The course uses this concept without defining it."),
       (c.defined_in || []).length ? h("div", { class: "row small", style: "margin-top:10px" }, h("span", { class: "muted" }, "Defined in"),
-        c.defined_in.map((d) => h("span", {}, h("a", { href: `#/lecture/${d.lecture}`, title: lecInfo(d.lecture).title }, `Lecture ${d.lecture}`), " ", timeLink(d.lecture, d.start, d.lecture), dev(" " + d.segment)))) : null,
-      dev(`first defined ${c.first_defined || "never"}; defined ${c.defined}; definition built from ${(c.definition_facts || []).join(", ") || "none"}`)),
+        c.defined_in.map((x) => h("span", {}, h("a", { href: `#/lecture/${x.lecture}`, title: lecInfo(x.lecture).title }, `Lecture ${x.lecture}`), " ", timeLink(x.lecture, x.start, x.lecture), dev(" " + x.segment)))) : null,
+      dev(`first defined ${c.first_defined || "never"}; defined ${d.defined}; definition built from ${(d.definition_facts || []).join(", ") || "none"}`)),
     h("div", { class: "grid2", style: "margin-top:14px" },
-      h("div", { class: "card" }, h("h3", {}, "What the course says"), factList(c.facts, null, c.defining_facts)),
+      h("div", { class: "card" }, h("h3", {}, "What the course says"), factList((c.facts || []).map((f) => f.id), null, c.defining_facts)),
       h("div", {},
         h("div", { class: "card" }, h("h3", {}, "Related concepts"), rels.length ? h("ul", { class: "rels" }, rels) : h("p", { class: "muted small" }, "No relationships recorded.")),
-        h("div", { class: "card" }, h("h3", {}, "Lectures that use it"), h("div", { class: "chips" }, (c.lectures || []).map((k) => h("a", { class: "pill", href: `#/lecture/${k}`, title: lecInfo(k).title }, `Lecture ${k}: ${lecInfo(k).title}`)))),
-        (c.misplaced || []).length || (c.merged || []).length ? h("div", { class: "card dev" }, h("div", {}, "misplaced: " + (c.misplaced || []).join(", ")),
-          h("div", {}, "merged: " + (c.merged || []).map((m) => `${m.segment_concept} "${m.name}" (${m.how}${m.reason ? ": " + m.reason : ""})`).join("; "))) : null)));
-}
-function relFacts(rid) {
-  const r = S.K && S.K.relations[rid];
-  if (!r || !(r.facts || []).length) return null;
-  const x = fact(r.facts[0]);
-  return x ? h("span", { class: "small", title: x.text }, " ", timeLink(x.lecture, x.start)) : null;
+        h("div", { class: "card" }, h("h3", {}, "Lectures that use it"), h("div", { class: "chips" }, (c.lectures || []).map((l) => h("a", { class: "pill", href: `#/lecture/${l.key}`, title: l.title, onpointerenter: () => prefetch(l.key) }, `Lecture ${l.key}: ${l.title}`)))),
+        (d.misplaced || []).length || (d.merged || []).length ? h("div", { class: "card dev" }, h("div", {}, "misplaced: " + (d.misplaced || []).join(", ")),
+          h("div", {}, "merged: " + (d.merged || []).map((m) => `${m.segment_concept} "${m.name}" (${m.how}${m.reason ? ": " + m.reason : ""})`).join("; "))) : null)));
 }
 
 // ------------------------------------------------------------------ glossary and course map
-function pageGlossary() {
-  if (!S.K) return h("div", { class: "empty" }, "The glossary is not ready yet for this course.");
-  const all = Object.entries(S.K.concepts).sort((a, b) => a[1].name.localeCompare(b[1].name, undefined, { sensitivity: "base" }));
+function glossaryData() {  // /api/glossary, with what the search needs (lower-cased once)
+  if (!S.gloss) {
+    S.gloss = cget("/api/glossary").then((G) => {
+      if (!G) { S.gloss = null; return null; }
+      for (const c of G.concepts) { c.hay = [c.name, ...(c.also || [])].join("\n").toLowerCase(); c.defl = (c.definition || "").toLowerCase(); }
+      return G;
+    });
+  }
+  return S.gloss;
+}
+async function pageGlossary() {
+  if (!hasKnowledge()) return h("div", { class: "empty" }, "The glossary is not ready yet for this course.");
+  const G = await glossaryData();
+  if (!G) return h("div", { class: "empty" }, "The glossary is not ready yet for this course.");
+  const all = G.concepts;  // sorted by name on the server
   const list = h("div", { class: "gl" });
-  const input = h("input", { type: "search", class: "gl-search", placeholder: "Search concepts, acronyms, definitions…", oninput: () => fill() });
-  const fill = () => {
-    const q = input.value.trim().toLowerCase();
-    const hits = all.filter(([, c]) => !q || [c.name, ...(c.aliases || []), ...(c.acronyms || [])].some((n) => n.toLowerCase().includes(q)) || (c.definition || "").toLowerCase().includes(q));
-    let letter = "";
-    list.replaceChildren(hits.length ? hits.map(([cid, c]) => {
-      const L0 = c.name[0].toUpperCase(), head = L0 !== letter && !q ? h("div", { class: "gl-letter" }, (letter = L0)) : null;
-      const al = [...new Set([...(c.acronyms || []), ...(c.aliases || [])])].filter((a) => a.toLowerCase() !== c.name.toLowerCase());
-      return [head, h("div", { class: "gl-item" }, h("a", { class: "nm", href: `#/concept/${cid}` }, cap(c.name)), al.length ? h("span", { class: "small muted" }, " · " + al.join(", ")) : null, dev(" " + cid),
-        h("div", { class: "small muted" }, c.definition || h("i", {}, "Used in the course without a definition.")))];
-    }) : h("p", { class: "muted" }, "No concept matches."));
+  const input = h("input", { type: "search", class: "gl-search", placeholder: "Search concepts, acronyms, definitions…" });
+  let job = 0, timer = null;
+  const item = (c) => h("div", { class: "gl-item" }, h("a", { class: "nm", href: `#/concept/${c.id}` }, cap(c.name)), c.also.length ? h("span", { class: "small muted" }, " · " + c.also.join(", ")) : null, dev(" " + c.id),
+    h("div", { class: "small muted" }, c.definition || h("i", {}, "Used in the course without a definition.")));
+  const fill = () => {  // the first screenful at once, the rest in small slices between frames (the page never freezes)
+    const my = ++job, q = input.value.trim().toLowerCase();
+    const hits = q ? all.filter((c) => c.hay.includes(q) || c.defl.includes(q)) : all;
+    list.replaceChildren();
+    if (!hits.length) { list.append(h("p", { class: "muted" }, "No concept matches.")); return; }
+    let i = 0, letter = "";
+    const slice = (n) => {
+      const frag = document.createDocumentFragment();
+      for (const end = Math.min(hits.length, i + n); i < end; i++) {
+        const c = hits[i], L0 = (c.name[0] || "").toUpperCase();
+        if (!q && L0 !== letter) frag.append(h("div", { class: "gl-letter" }, (letter = L0)));
+        frag.append(item(c));
+      }
+      list.append(frag);
+    };
+    slice(60);
+    const more = () => { if (my !== job || !list.isConnected) return; slice(200); if (i < hits.length) requestAnimationFrame(() => setTimeout(more, 0)); };
+    if (i < hits.length) requestAnimationFrame(() => setTimeout(more, 0));
   };
+  input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(fill, 90); });
   fill();
-  setTimeout(() => input.focus(), 0);
-  return h("div", {}, h("h1", {}, "Glossary"), dev(`${all.length} concepts`), input, list);
+  const page = h("div", {}, h("h1", {}, "Glossary"), dev(`${all.length} concepts`), input, list);
+  page.afterShow = () => input.focus({ preventScroll: true });
+  return page;
 }
 
 // The course map opens on the lectures (rows of weeks; each lecture's circle grows with the concepts it introduces;
 // an arrow means a later lecture builds on concepts an earlier one explains) and opens into the concepts: a concept
 // and its nearest neighbours, any concept found by name, one click to walk on to the next.
-function pageMap(which, rest) {
-  if (!S.K) return h("div", { class: "empty" }, "The concept map is not ready yet for this course.");
+function coursemapData() {
+  return cget("/api/coursemap").then((M) => {
+    if (M) addConcepts(Object.fromEntries(Object.entries(M.names || {}).map(([c, n]) => [c, { name: n }])), true);
+    return M;
+  });
+}
+async function pageMap(which, rest) {
+  if (!hasKnowledge()) return h("div", { class: "empty" }, "The concept map is not ready yet for this course.");
   const mode = which === "concepts" ? "concepts" : "lectures";
+  const cid = mode === "concepts" && rest && /^C\d+$/.test(rest[0] || "") ? rest[0] : null;
+  if (cid) conceptData(cid).catch(() => {});  // both requests at once (no waterfall through a slow link)
+  const M = await coursemapData();
+  if (!M) return h("div", { class: "empty" }, "The concept map is not ready yet for this course.");
   const sw = h("div", { class: "seg-ctl", style: "margin-bottom:14px" },
     h("a", { class: mode === "lectures" ? "on" : "", href: "#/map" }, "How the lectures build on each other"),
     h("a", { class: mode === "concepts" ? "on" : "", href: "#/map/concepts" }, "Explore the concepts"));
-  return h("div", {}, h("h1", {}, "Concept map"), sw, mode === "lectures" ? courseOverview() : conceptExplorer(rest && rest[0]));
+  return h("div", {}, h("h1", {}, "Concept map"), sw, mode === "lectures" ? courseOverview(M) : await conceptExplorer(M, rest && rest[0]));
 }
 function courseTopics(lectures) {  // consecutive lectures of one topic ("VR Hardware", "VR Hardware II") together
   const norm = (t) => {
@@ -1114,15 +1222,15 @@ function courseTopics(lectures) {  // consecutive lectures of one topic ("VR Har
   }
   return topics;
 }
-function courseOverview() {
+function courseOverview(M) {
   // chapters (runs of lectures that serve one course goal) as bands; in each, its topics as cards; in each topic its
   // lectures as circles that grow with the concepts they introduce; arrows: a later lecture builds on an earlier one
-  const C = S.course, G = S.K.graph || {}, kinds = G.concept_kinds || {};
-  const intro = (k) => ((kinds[k] || {}).introduced || []);
-  const maxI = Math.max(1, ...C.lectures.map((l) => intro(l.key).length));
-  const links = (G.links || []).filter((l) => l.kind === "direct");
-  const goals = (C.goals && C.goals.course_goals) || {};
-  const syl = (C.meta || {}).syllabus || [];
+  const C = S.course, pre = M.prerequisites || {};
+  const nIntro = (k) => (M.introduced[k] || {}).n || 0;
+  const maxI = Math.max(1, ...C.lectures.map((l) => nIntro(l.key)));
+  const links = M.links || [];
+  const goals = S.goals;
+  const syl = C.syllabus || [];
   const theme = (w) => (syl.find((x) => String(x.week) === String(w)) || {}).theme || "";
   const chapters = [];  // runs of weeks with one syllabus theme
   for (const l of C.lectures) {
@@ -1134,8 +1242,8 @@ function courseOverview() {
   }
   chapters.forEach((ch) => (ch.topics = courseTopics(ch.lectures)));
   const R = 19;
-  const nodes = C.lectures.map((l) => ({ id: l.key, label: l.key, circle: Math.round(9 + (R - 9) * Math.sqrt(intro(l.key).length / maxI)), cls: "lec", title: `Lecture ${l.key}: ${l.title}` }));
-  const edges = links.map((l) => ({ from: l.from, to: l.to, label: l.concepts.slice(0, 3).map(cname).join(", ") + (l.concepts.length > 3 ? ", …" : "") }));
+  const nodes = C.lectures.map((l) => ({ id: l.key, label: l.key, circle: Math.round(9 + (R - 9) * Math.sqrt(nIntro(l.key) / maxI)), cls: "lec", title: `Lecture ${l.key}: ${l.title}` }));
+  const edges = links.map((l) => ({ from: l.from, to: l.to, label: l.concepts.slice(0, 3).map(cname).join(", ") + (l.more || l.concepts.length > 3 ? ", …" : "") }));
   const STEP = 2 * R + 12, GAP = 14, PADX = 16;
   const place = (ns, es, W) => {
     const pos = {}, panels = [];
@@ -1161,15 +1269,15 @@ function courseOverview() {
   };
   let map = null;
   const lecCard = (k) => {
-    const l = lecInfo(k), pre = ((G.prerequisites || {})[k] || {}).direct || [], after = links.filter((x) => x.from === k).map((x) => x.to);
+    const l = lecInfo(k), before = (pre[k] || {}).direct || [], after = links.filter((x) => x.from === k).map((x) => x.to);
     const jump = (p) => h("a", { href: `#/lecture/${p}`, title: lecInfo(p).title, onclick: (ev) => { ev.preventDefault(); map.focusNode(p); } }, `Lecture ${p}`);
     const list = (ks) => ks.map((p, i) => [i ? ", " : "", jump(p)]);
-    const news = intro(k).slice().sort((a, b) => (((G.concepts || {})[b] || {}).lectures || 0) - (((G.concepts || {})[a] || {}).lectures || 0));
+    const news = (M.introduced[k] || {}).top || [];  // the most used first
     return h("div", {},
       h("div", { class: "mc-kicker" }, `Lecture ${k}` + (l.week ? ` · Week ${l.week}` : "")),
       h("div", { class: "mc-name" }, l.title),
       l.goal ? h("div", { class: "mc-def" }, l.goal) : null,
-      h("div", { class: "small", style: "margin-top:6px" }, pre.length ? [h("span", { class: "muted" }, "Builds on "), list(pre)] : h("span", { class: "muted" }, "Needs no earlier lecture.")),
+      h("div", { class: "small", style: "margin-top:6px" }, before.length ? [h("span", { class: "muted" }, "Builds on "), list(before)] : h("span", { class: "muted" }, "Needs no earlier lecture.")),
       after.length ? h("div", { class: "small" }, h("span", { class: "muted" }, "Leads to "), list(after)) : null,
       news.length ? [h("div", { class: "small muted", style: "margin-top:8px" }, "New here:"), h("div", { class: "chips", style: "margin-top:4px" }, news.slice(0, 8).map((c) => h("a", { class: "pill k-introduced", href: `#/map/concepts/${c}`, title: "Explore its links" }, cname(c))))] : null,
       h("div", { class: "row", style: "margin-top:10px" }, h("a", { class: "btn primary small", href: `#/lecture/${k}` }, "Open the lecture"), h("a", { class: "btn small", href: `#/lecture/${k}/map` }, "Its concept map")));
@@ -1194,7 +1302,8 @@ function courseOverview() {
   map = drawMap(nodes, edges, { mode: "custom", place, route, card: lecCard, onDouble: (k) => (location.hash = `#/lecture/${k}`),
     aria: "The lectures of the course and how they build on each other",
     onSelect: (k) => {  // the whole chain of earlier lectures stays half lit
-      const all = new Set(k ? ((G.prerequisites || {})[k] || {}).all || [] : []);
+      if (k) prefetch(k);
+      const all = new Set(k ? (pre[k] || {}).all || [] : []);
       for (const [id, g] of Object.entries(map.nodes)) g.classList.toggle("chain", all.has(id));
       if (k && goalOn) { goalOn = null; chips.forEach((x) => x.classList.remove("on")); info.textContent = ""; }
     } });
@@ -1205,23 +1314,19 @@ function courseOverview() {
     map);
 }
 
-function conceptExplorer(cid) {
-  const K = S.K;
-  const degree = (c) => ((c.relations || {}).out || []).length + ((c.relations || {}).in || []).length;
-  const pool = Object.entries(K.concepts).filter(([, c]) => degree(c));
-  if (!pool.length) return h("p", { class: "muted" }, "No relationships yet.");
-  if (!cid || !concept(cid)) {  // start from the best connected concept the first lecture defines
-    const first = (S.course.lectures[0] || {}).key;
-    const early = pool.filter(([, c]) => c.first_defined === first);
-    cid = (early.length ? early : pool).reduce((a, b) => (degree(b[1]) > degree(a[1]) ? b : a))[0];
-  }
+async function conceptExplorer(M, cid) {
+  // the centre's card (/api/concept/<id>) carries its neighbours; the server picks the start (the best connected
+  // concept the first lecture defines)
+  let c = /^C\d+$/.test(cid || "") ? await conceptData(cid) : null;
+  if (!c && M.start_concept) { cid = M.start_concept; c = await conceptData(cid); }
+  if (!c) return h("p", { class: "muted" }, "No relationships yet.");
   S.trail = (S.trail || []).filter((x) => x !== cid).concat([cid]).slice(-6);
-  const c = concept(cid);
-  const lec = (n) => ((K.graph.concepts || {})[n] || {}).lectures || 0;
-  const rels = [...((c.relations || {}).out || []).map((r) => ({ ...r, dir: "out" })), ...((c.relations || {}).in || []).map((r) => ({ ...r, dir: "in" }))]
-    .filter((r) => r.concept !== cid && concept(r.concept));
-  const score = (n) => (concept(n).definition ? 3 : 0) + Math.log(1 + lec(n));
-  const nbs = [...new Set(rels.map((r) => r.concept))].sort((a, b) => score(b) - score(a));
+  const rels = [...(c.relations.out || []).map((r) => ({ ...r, dir: "out" })), ...(c.relations.in || []).map((r) => ({ ...r, dir: "in" }))]
+    .filter((r) => r.concept && r.concept !== cid);
+  const side = {};
+  for (const r of rels) side[r.concept] = side[r.concept] || r;
+  const score = (n) => (side[n].definition ? 3 : 0) + Math.log(1 + (side[n].lectures || 0));
+  const nbs = Object.keys(side).sort((a, b) => score(b) - score(a));
   const shown = new Set(nbs.slice(0, 12));
   const per = {};
   const edges = [];
@@ -1236,21 +1341,31 @@ function conceptExplorer(cid) {
     return body;
   };
   const map = drawMap(nodes, edges, { height: 580, card, onDouble: (id) => (location.hash = `#/map/concepts/${id}`), aria: `${cname(cid)} and the concepts it links to` });
-  const names = pool.map(([id, x]) => [id, cap(x.name)]).sort((a, b) => a[1].localeCompare(b[1]));
-  const find = h("input", { type: "search", class: "map-find", list: "map-names", placeholder: "Find a concept…", "aria-label": "Find a concept" });
-  const go = () => {
+  // the search box: the names of every concept with links (the glossary's list, fetched after the map is shown)
+  const datalist = h("datalist", { id: "map-names" });
+  let names = null;
+  const loadNames = () => glossaryData().then((G) => {
+    if (names) return names;
+    names = ((G && G.concepts) || []).filter((x) => x.linked).map((x) => [x.id, cap(x.name)]);
+    datalist.replaceChildren(names.map(([, n]) => h("option", { value: n })));
+    return names;
+  });
+  const find = h("input", { type: "search", class: "map-find", list: "map-names", placeholder: "Find a concept…", "aria-label": "Find a concept", onfocus: () => loadNames() });
+  const go = async () => {
     const q = find.value.trim().toLowerCase();
     if (!q) return;
-    const hit = names.find(([, n]) => n.toLowerCase() === q) || names.find(([, n]) => n.toLowerCase().startsWith(q)) || names.find(([, n]) => n.toLowerCase().includes(q));
+    const ns = await loadNames();
+    const hit = ns.find(([, n]) => n.toLowerCase() === q) || ns.find(([, n]) => n.toLowerCase().startsWith(q)) || ns.find(([, n]) => n.toLowerCase().includes(q));
     if (hit) location.hash = `#/map/concepts/${hit[0]}`;
   };
   find.addEventListener("change", go);
   find.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); go(); } });
+  idle(() => loadNames().catch(() => {}), 1500);
   const more = rels.filter((r) => !shown.has(r.concept));
   const sentence = (r) => h("li", {}, r.dir === "out" ? [h("b", {}, cname(cid)), " ", h("span", { class: "lbl" }, r.label), " ", h("a", { href: `#/map/concepts/${r.concept}` }, cname(r.concept))]
     : [h("a", { href: `#/map/concepts/${r.concept}` }, cname(r.concept)), " ", h("span", { class: "lbl" }, r.label), " ", h("b", {}, cname(cid))]);
   return h("div", {},
-    h("div", { class: "row", style: "margin-bottom:10px" }, find, h("datalist", { id: "map-names" }, names.map(([, n]) => h("option", { value: n }))),
+    h("div", { class: "row", style: "margin-bottom:10px" }, find, datalist,
       S.trail.length > 1 ? h("div", { class: "trail small" }, S.trail.map((t, i) => [i ? h("span", { class: "faint" }, " › ") : null, t === cid ? h("b", {}, cname(t)) : h("a", { href: `#/map/concepts/${t}` }, cname(t))])) : null,
       dev(`${cid}: ${rels.length} relationships, ${nbs.length} neighbours`)),
     h("div", { class: "explore-head" }, h("h2", { style: "margin:0" }, cap(c.name)), c.definition ? h("div", { class: "muted" }, c.definition) : null),
@@ -1262,12 +1377,26 @@ function conceptExplorer(cid) {
 // ------------------------------------------------------------------ activities
 const KIND_LABEL = { quiz: "Quiz", recap: "Recap", recall: "Recall", open_question: "Think it through", concept_map: "Concept map",
   complete_map: "Complete the map", crossword: "Crossword", match_pairs: "Match the pairs", odd_one_out: "Odd one out", put_in_order: "Put in order" };
+const LAZY_KINDS = new Set(["concept_map", "complete_map", "crossword"]);  // the heavy ones: drawn when scrolled near
+let lazyObs = null;
+function lazyBlock(build, minH) {
+  const box = h("div", { class: "lazy-act", style: `min-height:${minH}px` });
+  const fill = () => { box.style.minHeight = ""; box.replaceChildren(build()); };
+  if (typeof IntersectionObserver === "undefined") { fill(); return box; }
+  if (!lazyObs) lazyObs = new IntersectionObserver((ents) => { for (const e of ents) if (e.isIntersecting) { lazyObs.unobserve(e.target); e.target._fill(); } }, { rootMargin: "600px 0px" });
+  box._fill = fill;
+  lazyObs.observe(box);
+  return box;
+}
 function activityCard(a, L) {
   const fn = RENDER[a.kind];
-  let body;
-  try { body = fn ? fn(a, L) : h("p", { class: "muted" }, "This kind of activity cannot be shown yet."); } catch (e) { console.error(e); body = h("p", { class: "muted" }, "This activity could not be shown.", dev(" " + e)); }
-  return h("div", { class: "card act", id: "act-" + a.id },
-    h("div", { class: "act-head" }, h("span", { class: "act-kind" }, KIND_LABEL[a.kind] || a.kind), a.title ? h("h3", { style: "margin:0" }, a.title) : null, h("span", { class: "spacer" }), dev(a.id)),
+  const make = () => {
+    try { return fn ? fn(a, L) : h("p", { class: "muted" }, "This kind of activity cannot be shown yet."); } catch (e) { console.error(e); return h("p", { class: "muted" }, "This activity could not be shown.", dev(" " + e)); }
+  };
+  const body = fn && LAZY_KINDS.has(a.kind) ? lazyBlock(make, a.kind === "crossword" ? 360 : 520) : make();
+  return h("div", { class: "card act" + (a.unresolved ? " dev-only" : ""), id: "act-" + a.id },
+    h("div", { class: "act-head" }, h("span", { class: "act-kind" }, KIND_LABEL[a.kind] || a.kind), a.title ? h("h3", { style: "margin:0" }, a.title) : null, h("span", { class: "spacer" }),
+      a.unresolved ? dev("unresolved by the checks: " + ((a.check && a.check.problems) || []).map((p) => (typeof p === "string" ? p : JSON.stringify(p))).join("; ") + " ") : null, dev(a.id)),
     body);
 }
 function activitiesView(L) {
@@ -1279,14 +1408,15 @@ function activitiesView(L) {
   for (const a of acts) if (a.scope === "segment" && a.segment && a.kind !== "recall") (bySeg[a.segment] = bySeg[a.segment] || []).push(a);
   const after = acts.filter((a) => a.kind !== "recall" && !(a.scope === "segment" && a.segment));
   const segOrder = Object.keys(bySeg).sort((a, b) => (segIdx[a] ?? 999) - (segIdx[b] ?? 999));
+  const grp = (as) => "act-group" + (as.every((a) => a.unresolved) ? " dev-only" : "");  // a group of hidden ones hides too
   return h("div", {},
-    before.length ? h("div", { class: "act-group" }, h("h3", {}, "Before you watch"), before.map((a) => activityCard(a, L))) : null,
+    before.length ? h("div", { class: grp(before) }, h("h3", {}, "Before you watch"), before.map((a) => activityCard(a, L))) : null,
     segOrder.map((sid) => {
       const i = segIdx[sid], sg = L.segments[i];
-      return h("div", { class: "act-group" }, h("h3", { class: "row" }, sg ? `Part ${i + 1}: ${sg.subgoal}` : sid, sg ? h("a", { class: "time", href: timeHref(L.key, sg.start) }, "▶ " + clock(sg.start)) : null),
+      return h("div", { class: grp(bySeg[sid]) }, h("h3", { class: "row" }, sg ? `Part ${i + 1}: ${sg.subgoal}` : sid, sg ? h("a", { class: "time", href: timeHref(L.key, sg.start) }, "▶ " + clock(sg.start)) : null),
         bySeg[sid].map((a) => activityCard(a, L)));
     }),
-    after.length ? h("div", { class: "act-group" }, h("h3", {}, "After the lecture"), after.map((a) => activityCard(a, L))) : null);
+    after.length ? h("div", { class: grp(after) }, h("h3", {}, "After the lecture"), after.map((a) => activityCard(a, L))) : null);
 }
 function recallFor(L) {
   const acts = ((L.activities && L.activities.activities) || []).filter((a) => a.kind === "recall");
@@ -1328,7 +1458,7 @@ const RENDER = {
       const ta = h("textarea", { placeholder: "Write your answer here (it stays in this browser)…", oninput: () => store(key, ta.value) });
       ta.value = store(key) || "";
       const ref = h("div", { hidden: true, class: "feedback" }, h("b", {}, "A good answer: "), q.reference_answer,
-        (q.key_facts || []).length && S.K ? h("div", { style: "margin-top:8px" }, h("div", { class: "small muted" }, "Key points from the lectures:"), factList(q.key_facts, L.key)) : factLinks(q.key_facts, L.key),
+        (q.key_facts || []).filter(fact).length ? h("div", { style: "margin-top:8px" }, h("div", { class: "small muted" }, "Key points from the lectures:"), factList(q.key_facts, L.key)) : factLinks(q.key_facts, L.key),
         (q.concepts || []).length ? h("div", { class: "chips", style: "margin-top:6px" }, q.concepts.map((c) => conceptPill(c))) : null);
       return h("div", { class: "q" }, h("div", { class: "qt" }, `${qi + 1}. ${q.question}`), ta,
         h("button", { class: "small", style: "margin-top:6px", onclick: (e) => { ref.hidden = !ref.hidden; e.target.textContent = ref.hidden ? "Show a good answer" : "Hide the answer"; } }, "Show a good answer"), ref);
@@ -1488,8 +1618,8 @@ const RENDER = {
 // ------------------------------------------------------------------ spaced review (cards scheduled in this browser)
 const BOX_DAYS = [0, 1, 2, 4, 8, 16, 32, 64];
 async function pageReview() {
-  if (!S.review) S.review = (S.course.layers.activities && (await getJSON("/data/activities/course.json"))) || {};
-  const cards = ((S.review.spaced_review || {}).cards || []).filter((c) => c.concept);
+  const R = S.course.layers.spaced_review ? await cget("/api/review") : null;
+  const cards = ((R && R.cards) || []).filter((c) => c.concept);
   if (!cards.length) return h("div", { class: "empty" }, "Review cards are not ready yet for this course.");
   const key = `review:${S.course.course}`;
   const st = store(key) || {};
@@ -1514,7 +1644,7 @@ async function pageReview() {
       return;
     }
     const back = h("div", { class: "back", hidden: true }, card.back,
-      h("div", { class: "chips", style: "justify-content:center;margin-top:12px" }, (card.lectures || []).map((k) => h("a", { class: "pill", href: `#/lecture/${k}` }, `Lecture ${k}`)), concept(card.concept) ? h("a", { class: "pill", href: `#/concept/${card.concept}` }, "Concept card") : null));
+      h("div", { class: "chips", style: "justify-content:center;margin-top:12px" }, (card.lectures || []).map((k) => h("a", { class: "pill", href: `#/lecture/${k}` }, `Lecture ${k}`)), hasKnowledge() ? h("a", { class: "pill", href: `#/concept/${card.concept}` }, "Concept card") : null));
     const rate = (q) => {
       const cur = st[card.concept] || { box: 0 };
       const box = q === "again" ? 0 : q === "hard" ? Math.max(1, cur.box) : Math.min(BOX_DAYS.length - 1, cur.box + (q === "easy" ? 2 : 1));
@@ -1537,13 +1667,25 @@ async function pageReview() {
 async function ask(q) {
   const lec = S.view && S.view.lecture || null;
   const drawer = $("#drawer"), body = $("#drawer-body");
-  drawer.hidden = false;
-  const ans = h("div", {}, h("span", { class: "spin" }), h("span", { class: "muted" }, " Looking through the course…"));
+  // the question shows at once with a live "still working" line; the page stays usable (and other questions can be
+  // asked) while the answer is prepared
+  const stage = h("span", { class: "muted" }, " Looking through the course…");
+  const ans = h("div", { class: "qa-wait" }, h("span", { class: "spin" }), stage);
   const item = h("div", { class: "qa-item" }, h("div", { class: "qa-q" }, q), lec ? h("div", { class: "small faint" }, `Asked from lecture ${lec}`) : null, ans);
   body.prepend(item);
+  body.scrollTop = 0;
+  const t0 = Date.now();
+  const STAGES = [[0, "Looking through the course…"], [4, "Reading what the lectures say…"], [12, "Writing the answer…"], [35, "Still writing: long answers take a little longer…"]];
+  const clockTimer = setInterval(() => {
+    const sec = Math.round((Date.now() - t0) / 1000);
+    stage.textContent = " " + STAGES.filter(([t]) => sec >= t).pop()[1] + `  ${sec} s`;
+  }, 1000);
   try {
     const r = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: q, lecture: lec }) });
     const res = await r.json();
+    clearInterval(clockTimer);
+    ans.classList.remove("qa-wait");
+    if (drawer.hidden) { const b = $("#ask-form button"); b.classList.add("ready"); b.textContent = "Answer ready"; }
     if (res.available === false) { ans.replaceChildren(h("p", { class: "muted" }, res.answer || "Question answering is not available."), dev(res.error || "")); return; }
     const cites = res.citations || [];
     ans.replaceChildren(mdBlock(res.answer || "(no answer)"),
@@ -1553,25 +1695,33 @@ async function ask(q) {
       res.error ? dev(res.error) : null,
       res.steps ? h("details", { class: "dev" }, h("summary", {}, "steps"), h("pre", { style: "white-space:pre-wrap" }, JSON.stringify(res.steps, null, 1))) : null);
   } catch (e) {
+    clearInterval(clockTimer);
     ans.replaceChildren(h("p", { class: "muted" }, "The question could not be sent. Is the server running?"));
   }
 }
+function openDrawer() { $("#drawer").hidden = false; const b = $("#ask-form button"); b.classList.remove("ready"); b.textContent = "Ask"; }
 
 // ------------------------------------------------------------------ start
 function setDev(on) { document.body.classList.toggle("devmode", on); $("#dev-box").checked = on; store("dev", on); }
 async function main() {
   const params = new URLSearchParams(location.search);
   setDev(params.has("dev") ? params.get("dev") !== "0" : !!store("dev"));
+  if (params.has("yt")) store("yt", params.get("yt") !== "0");
   $("#dev-box").addEventListener("change", (e) => setDev(e.target.checked));
   $("#theme-btn").addEventListener("click", () => {
     const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
     document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
     try { localStorage.setItem("v3:theme", dark ? "light" : "dark"); } catch (e) { /* not kept */ }
   });
-  $("#ask-form").addEventListener("submit", (e) => { e.preventDefault(); const q = $("#ask-input").value.trim(); if (q) { ask(q); $("#ask-input").value = ""; } });
+  $("#ask-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = $("#ask-input").value.trim();
+    if (q) { openDrawer(); ask(q); $("#ask-input").value = ""; } else if ($("#ask-form button").classList.contains("ready")) openDrawer();
+  });
   $("#drawer-close").addEventListener("click", () => ($("#drawer").hidden = true));
-  S.course = await getJSON("/api/course");
+  S.course = await getJSON("/api/home");
   if (!S.course) { $("#app").replaceChildren(h("div", { class: "empty" }, "The course could not be loaded.")); return; }
+  S.goals = Object.fromEntries((S.course.goals || []).map((g) => [g.id, g]));
   document.title = S.course.title;
   $("#brand").textContent = S.course.title;
   if (!S.course.layers.spaced_review) $("#nav-review").hidden = true;

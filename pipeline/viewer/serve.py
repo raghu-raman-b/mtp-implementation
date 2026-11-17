@@ -28,10 +28,12 @@ Routes
     it is built from changes, and sent gzip-compressed when the browser accepts it (with an ETag, so a reload is a 304):
     GET  /api/home                  title, syllabus, course goals, the lectures (key, title, week, goal), the layers
     GET  /api/view/<key>            what the lecture page needs and nothing more: segments, sentences, goal, objectives,
+                                    the links of the lecture graph into this lecture ("before"),
                                     activities (an activity a checks*.json marks "unresolved" carries "unresolved":
                                     true; the page hides it outside developer mode), the lecture's concept map, and only
                                     the concepts and facts this lecture refers to
-    GET  /api/glossary              every concept: name, other names, definition, where it is first explained
+    GET  /api/glossary              every concept: name, other names, definition, where it is first explained, whether
+                                    it has relationships ("linked")
     GET  /api/concept/<C0042>       one concept card: definition, where it is explained, facts, relationships
     GET  /api/coursemap             the lecture graph for the course map (lectures, direct links, prerequisites)
     GET  /api/review                the spaced-review cards of activities/course.json
@@ -117,13 +119,65 @@ def load_json(path: Path):
     return data
 
 
+_MP4: dict = {}
+
+
+def mp4_duration(path: Path) -> float | None:
+    """An MP4's duration in seconds from its moov/mvhd box (kept until the file changes); None if not found."""
+    sig = stat_sig(path)
+    if sig is None:
+        return None
+    if path in _MP4 and _MP4[path][0] == sig:
+        return _MP4[path][1]
+    dur = None
+    try:
+        with open(path, "rb") as f:
+            def boxes(start, stop):
+                pos = start
+                while pos + 8 <= stop:
+                    f.seek(pos)
+                    hdr = f.read(16)
+                    if len(hdr) < 8:
+                        return
+                    n, kind = int.from_bytes(hdr[:4], "big"), hdr[4:8]
+                    head = 8
+                    if n == 1 and len(hdr) >= 16:
+                        n, head = int.from_bytes(hdr[8:16], "big"), 16
+                    elif n == 0:
+                        n = stop - pos
+                    if n < head:
+                        return
+                    yield kind, pos + head, pos + n
+                    pos += n
+            for kind, a, b in boxes(0, sig[1]):
+                if kind == b"moov":
+                    for k2, a2, b2 in boxes(a, b):
+                        if k2 == b"mvhd":
+                            f.seek(a2)
+                            d = f.read(32)
+                            if d[0] == 1:
+                                scale, length = int.from_bytes(d[20:24], "big"), int.from_bytes(d[24:32], "big")
+                            else:
+                                scale, length = int.from_bytes(d[12:16], "big"), int.from_bytes(d[16:20], "big")
+                            dur = length / scale if scale else None
+                    break
+    except (OSError, IndexError):
+        dur = None
+    _MP4[path] = (sig, dur)
+    return dur
+
+
 class Payload:
     """A JSON answer encoded once: the body, its gzip and an ETag."""
 
-    def __init__(self, data):
-        self.body = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
+    def __init__(self, data, raw: bytes | None = None):
+        self.body = raw if raw is not None else json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
         self.gz = gzip.compress(self.body, 6) if len(self.body) > 1024 else None
         self.etag = '"' + hashlib.sha1(self.body).hexdigest()[:20] + '"'
+
+    @classmethod
+    def raw(cls, body: bytes) -> "Payload":
+        return cls(None, body)
 
 
 FACT_ID = re.compile(r"(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+/F\d+")
@@ -199,6 +253,15 @@ class Course:
                     if m:
                         found.add(m[1] or m[2])
         return sorted(found, key=order)
+
+    def duration(self, key: str) -> float | None:
+        """The lecture's length in seconds (its last segment or sentence end), for pacing its video; None if unknown."""
+        stem = stem_of(key)
+        ends = [s.get("end") or 0 for s in (load_json(self.out / "stage_1b_verify_segments" / "segment_maps"
+                                                      / f"{stem}.json") or {}).values() if isinstance(s, dict)]
+        ends += [t.get("end") or 0 for t in (load_json(self.out / "stage_0a_preprocess" / "times" / f"{stem}.json")
+                                             or {}).values() if isinstance(t, dict)]
+        return max(ends) if ends and max(ends) > 0 else None
 
     def video(self, key: str) -> Path | None:
         m = re.fullmatch(r"(\d+)([a-z]?)", key)
@@ -327,7 +390,8 @@ class Course:
                               for gid, g in (goals.get("course_goals") or {}).items()],
                     "layers": {"knowledge": index is not None, "activities": self.ad.is_dir(),
                                "spaced_review": bool(acourse and (acourse.get("spaced_review") or {}).get("cards"))},
-                    "counts": (index or {}).get("counts"), "qa": qa_status(), "lectures": lectures}
+                    "counts": (index or {}).get("counts"), "qa": qa_status(), "prefer_youtube": PREFER_YOUTUBE,
+                    "lectures": lectures}
         return self.memo("home", self._dirs() + [self.inp / "course.json", self.kd / "goals.json",
                                                  self.kd / "index.json", self.ad / "course.json"], build)
 
@@ -338,7 +402,8 @@ class Course:
                                 self.out / "stage_0a_preprocess" / f"{stem}.json",
                                 self.out / "stage_0a_preprocess" / "times" / f"{stem}.json",
                                 self.kd / "concepts.json", self.kd / "facts.json", self.kd / "relations.json",
-                                self.kd / "goals.json"] + (sorted(self.ad.glob("checks*.json")) if self.ad.is_dir() else [])
+                                self.kd / "goals.json", self.kd / "lecture_graph.json"] + (
+                                    sorted(self.ad.glob("checks*.json")) if self.ad.is_dir() else [])
 
         def build():
             base = self.lecture(key)
@@ -375,6 +440,12 @@ class Course:
             cids.update(cmap.get("concepts") or [])
             for sg in base["segments"]:
                 cids.update(sg.get("concepts") or [])
+            before = [{"from": x.get("from"), "kind": x.get("kind"), "concepts": x.get("concepts") or [],
+                       "redefined": x.get("redefined") or []}
+                      for x in (self.kfile("lecture_graph.json") or {}).get("links") or []
+                      if x.get("to") == key and x.get("from") != key]
+            for x in before:
+                cids.update(x["concepts"])
             keys = self.keys()
             i = keys.index(key) if key in keys else -1
             return {
@@ -388,6 +459,7 @@ class Course:
                 "course_goals": [{"id": g, "goal": (goals.get(g) or {}).get("goal")} for g in kl.get("course_goals") or []],
                 "kinds": {k: kinds.get(k) or [] for k in ("introduced", "met_again", "defined_later", "assumed")},
                 "prerequisites": kl.get("prerequisites") or {"direct": [], "all": []},
+                "before": before,
                 "map": {"concepts": cmap.get("concepts") or [], "relations": mrels} if cmap else None,
                 "activities": acts,
                 "concepts": {c: self.slim_concept(c, concepts[c]) for c in sorted(x for x in cids if x in concepts)},
@@ -409,7 +481,8 @@ class Course:
                 d = (c.get("defined_in") or [None])[0]
                 out.append({"id": cid, "name": name, "also": also, "definition": c.get("definition") or "",
                             "lecture": d["lecture"] if d else (c.get("lectures") or [None])[0],
-                            "start": d["start"] if d else None})
+                            "start": d["start"] if d else None,
+                            "linked": bool((c.get("relations") or {}).get("out") or (c.get("relations") or {}).get("in"))})
             out.sort(key=lambda x: x["name"].lower())
             return {"concepts": out}
         return self.memo("glossary", [self.kd / "concepts.json"], build)
@@ -505,6 +578,11 @@ _qa_lock = threading.Lock()
 
 
 QA_PATH = PIPELINE                                       # the folder holding the qa package (--qa-path)
+PREFER_YOUTUBE = False                                   # --prefer-youtube: play from YouTube even when the file is here
+VIDEO_CHUNK = 4 << 20                                    # an open range ("bytes=N-") is answered with at most this much
+VIDEO_PACE = 2.0      # after a first burst, a video is sent at this many times its bitrate (0: as fast as possible); below
+VIDEO_BURST = 1 << 20  # the link's speed, so a tunnel never queues video the viewer may skip, and the page's own
+                      # requests are not stuck behind it
 
 
 def qa_paths():
@@ -582,6 +660,20 @@ def ask(course: str, req: dict) -> dict:
 STATIC_CACHE: dict = {}
 
 
+def static_payload(path: Path):
+    """The file as a Payload (body, gzip, ETag), read again only when it changes; None when it is not there."""
+    sig = stat_sig(path)
+    if sig is None:
+        return None
+    hit = STATIC_CACHE.get(path)
+    if not hit or hit[0] != sig:
+        try:
+            STATIC_CACHE[path] = hit = (sig, Payload.raw(path.read_bytes()))
+        except OSError:
+            return None
+    return hit[1]
+
+
 class Handler(BaseHTTPRequestHandler):
     C: Course = None                                         # set in main()
     protocol_version = "HTTP/1.1"
@@ -590,11 +682,11 @@ class Handler(BaseHTTPRequestHandler):
         if len(args) >= 2 and ("/api/" in str(args[0]) or str(args[1])[:1] in "45"):
             sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
-    def send_body(self, body: bytes, ctype: str, code=HTTPStatus.OK, head_only=False, extra=None):
+    def send_body(self, body: bytes, ctype: str, code=HTTPStatus.OK, head_only=False, extra=None, cache="no-cache"):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Cache-Control", cache)
         for k, v in (extra or {}).items():
             self.send_header(k, v)
         self.end_headers()
@@ -608,12 +700,12 @@ class Handler(BaseHTTPRequestHandler):
     def not_found(self, what="not found", head_only=False):
         self.send_json({"error": what}, HTTPStatus.NOT_FOUND, head_only)
 
-    def send_payload(self, pay, ctype="application/json; charset=utf-8", head_only=False):
+    def send_payload(self, pay, ctype="application/json; charset=utf-8", head_only=False, cache="no-cache"):
         """An encoded answer: 304 when the browser has it, gzip when it accepts it."""
         if pay.etag in [t.strip() for t in (self.headers.get("If-None-Match") or "").split(",")]:
             self.send_response(HTTPStatus.NOT_MODIFIED)
             self.send_header("ETag", pay.etag)
-            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Cache-Control", cache)
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
@@ -621,26 +713,31 @@ class Handler(BaseHTTPRequestHandler):
         extra = {"ETag": pay.etag, "Vary": "Accept-Encoding"}
         if gz:
             extra["Content-Encoding"] = "gzip"
-        self.send_body(pay.gz if gz else pay.body, ctype, head_only=head_only, extra=extra)
+        self.send_body(pay.gz if gz else pay.body, ctype, head_only=head_only, extra=extra, cache=cache)
 
-    def send_static(self, path: Path, ctype: str, head_only=False):
-        sig = stat_sig(path)
-        if sig is None:
+    def send_static(self, path: Path, ctype: str, head_only=False, immutable=False):
+        """A file, encoded once until it changes. immutable: the URL carries the file's version (?v=), so the browser
+        keeps it for good and never asks again (no round trip through a slow tunnel)."""
+        pay = static_payload(path)
+        if pay is None:
             return self.not_found(head_only=head_only)
-        hit = STATIC_CACHE.get(path)
-        if not hit or hit[0] != sig:
-            body = path.read_bytes()
-            pay = Payload.__new__(Payload)
-            pay.body, pay.gz = body, gzip.compress(body, 6) if len(body) > 1024 else None
-            pay.etag = '"' + hashlib.sha1(body).hexdigest()[:20] + '"'
-            STATIC_CACHE[path] = hit = (sig, pay)
-        self.send_payload(hit[1], ctype, head_only)
+        self.send_payload(pay, ctype, head_only, cache="public, max-age=31536000, immutable" if immutable else "no-cache")
 
-    def send_file(self, path: Path, ctype: str, head_only=False):
-        try:
-            self.send_body(path.read_bytes(), ctype, head_only=head_only)
-        except OSError:
-            self.not_found(head_only=head_only)
+    def send_index(self, head_only=False):
+        """index.html with every /static/ file it names given its version (?v=<hash>)."""
+        idx = static_payload(HERE / "index.html")
+        if idx is None:
+            return self.not_found(head_only=head_only)
+        vers = tuple((n, (static_payload(HERE / n) or idx).etag.strip('"')[:10])
+                     for n in re.findall(r'/static/([\w./-]+?)"', idx.body.decode()))
+        key = (idx.etag, vers)
+        hit = STATIC_CACHE.get("index")
+        if not hit or hit[0] != key:
+            html = idx.body.decode()
+            for n, v in vers:
+                html = html.replace(f'/static/{n}"', f'/static/{n}?v={v}"')
+            STATIC_CACHE["index"] = hit = (key, Payload.raw(html.encode()))
+        self.send_payload(hit[1], STATIC[".html"], head_only)
 
     def do_HEAD(self):
         self.do_GET(head_only=True)
@@ -650,7 +747,7 @@ class Handler(BaseHTTPRequestHandler):
         C = self.C
         try:
             if path in ("/", "/index.html"):
-                return self.send_static(HERE / "index.html", STATIC[".html"], head_only)
+                return self.send_index(head_only)
             if path == "/favicon.ico":
                 return self.send_body(b"", "image/x-icon", HTTPStatus.NO_CONTENT, head_only)
             if path.startswith("/static/"):
@@ -658,7 +755,7 @@ class Handler(BaseHTTPRequestHandler):
                 p = (HERE / rel).resolve()
                 if ".." in rel or not p.is_file() or HERE not in p.parents or p.suffix not in STATIC:
                     return self.not_found(head_only=head_only)
-                return self.send_static(p, STATIC[p.suffix], head_only)
+                return self.send_static(p, STATIC[p.suffix], head_only, immutable="v=" in (urlparse(self.path).query or ""))
             if path == "/api/home":
                 return self.send_payload(C.home(), head_only=head_only)
             m = re.fullmatch(r"/api/view/([\w]+)", path)
@@ -690,18 +787,18 @@ class Handler(BaseHTTPRequestHandler):
                 folder = C.kd if m[1] == "knowledge" else C.ad
                 if not FILE.fullmatch(m[2]) or m[2] == "fact_embeddings.json":
                     return self.not_found(head_only=head_only)
-                return self.send_file(folder / m[2], "application/json; charset=utf-8", head_only)
+                return self.send_static(folder / m[2], "application/json; charset=utf-8", head_only)
             m = re.fullmatch(r"/media/([\w]+)(?:\.mp4)?", path)
             if m:
                 p = C.video(m[1]) if KEY.fullmatch(m[1]) else None
                 if p is None:
                     return self.not_found("no video for this lecture", head_only)
-                return self.send_video(p, head_only)
+                return self.send_video(p, head_only, mp4_duration(p) or C.duration(m[1]))
             return self.not_found(head_only=head_only)
         except (BrokenPipeError, ConnectionResetError):
             pass
 
-    def send_video(self, path: Path, head_only=False):
+    def send_video(self, path: Path, head_only=False, duration: float | None = None):
         size = path.stat().st_size
         ctype = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
         rng = self.headers.get("Range")
@@ -713,7 +810,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._unsatisfiable(size)
             if m[1]:
                 start = int(m[1])
-                end = min(int(m[2]), size - 1) if m[2] else size - 1
+                # an open range gets one chunk: through a slow link the bytes of a position the viewer has left
+                # do not keep filling the pipe after a seek (the browser asks for the next chunk as it plays)
+                end = min(int(m[2]), size - 1) if m[2] else min(size - 1, start + VIDEO_CHUNK - 1)
             else:                                            # suffix range: the last N bytes
                 start, end = max(0, size - int(m[2])), size - 1
             if start > end or start >= size:
@@ -722,21 +821,32 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Accept-Ranges", "bytes")
+        st = path.stat()
+        self.send_header("ETag", f'"v{st.st_mtime_ns:x}-{size:x}"')
+        self.send_header("Last-Modified", self.date_time_string(int(st.st_mtime)))
+        self.send_header("Cache-Control", "no-cache")
         self.send_header("Content-Length", str(end - start + 1))
         if code == HTTPStatus.PARTIAL_CONTENT:
             self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
         self.end_headers()
         if head_only:
             return
+        rate = VIDEO_PACE * size / duration if VIDEO_PACE and duration and duration > 60 else None   # bytes/s
+        t0, sent = time.monotonic(), 0
         with open(path, "rb") as f:
             f.seek(start)
             left = end - start + 1
             while left > 0:
-                chunk = f.read(min(1 << 20, left))
+                chunk = f.read(min(64 << 10, left))
                 if not chunk:
                     break
                 self.wfile.write(chunk)
                 left -= len(chunk)
+                sent += len(chunk)
+                if rate and sent > VIDEO_BURST:
+                    ahead = (sent - VIDEO_BURST) / rate - (time.monotonic() - t0)
+                    if ahead > 0:
+                        time.sleep(ahead)
 
     def _unsatisfiable(self, size: int):
         self.send_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
@@ -766,6 +876,7 @@ def make_server(course: str, root: Path, port: int, host="127.0.0.1", media: Pat
 
 
 def main():
+    global QA_PATH, PREFER_YOUTUBE, VIDEO_CHUNK, VIDEO_PACE
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("course", help="course folder name, e.g. nptel_vr")
     ap.add_argument("--port", type=int, default=8765)
@@ -774,8 +885,17 @@ def main():
     ap.add_argument("--media", type=Path, help="folder of the videos (default: <root>/input/<course>/media)")
     ap.add_argument("--qa-path", type=Path, help="folder holding the qa package (default: the pipeline folder)")
     ap.add_argument("--warm", action="store_true", help="load qa and call qa.warm(course) at start (background)")
+    ap.add_argument("--prefer-youtube", action="store_true",
+                    help="play every lecture that has a youtube_id from YouTube, even when its file is here (a slow "
+                         "tunnel); the page's ?yt=1 / ?yt=0 does the same per browser")
+    ap.add_argument("--video-chunk-mb", type=float, default=VIDEO_CHUNK / (1 << 20),
+                    help="the most an open video range is answered with (default 4)")
+    ap.add_argument("--video-pace", type=float, default=VIDEO_PACE,
+                    help="send a video at most this many times its bitrate after the first MB (default 2; 0 = no limit)")
     a = ap.parse_args()
-    global QA_PATH
+    PREFER_YOUTUBE = a.prefer_youtube
+    VIDEO_PACE = max(0.0, a.video_pace)
+    VIDEO_CHUNK = max(256 << 10, int(a.video_chunk_mb * (1 << 20)))
     if a.qa_path:
         QA_PATH = a.qa_path.resolve()
     root = a.root.resolve()
