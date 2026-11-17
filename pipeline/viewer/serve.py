@@ -46,13 +46,17 @@ Routes
                                     fact_embeddings.json is not served
     GET  /data/activities/<file>    an activities/ file (lec_<n>.json, course.json)
     GET  /media/<key>               a lecture's video, with HTTP Range (so seeking works)
+    GET  /api/qa_status             {"importable", "state": "off" | "warming" | "ready" | "failed", "seconds", "error",
+                                    "parts"}: how far --warm got (the demo launcher opens the page once "ready")
     POST /api/ask                   {"question", "lecture"} -> qa.answer(question, course, lecture) from pipeline/qa/
                                     when importable, else {"available": false, "answer": "...not available..."}
     POST /api/ask_stream            the same question, answered as it is written: one JSON event per line (chunked,
                                     application/x-ndjson), qa.answer_stream's {"event": "step" | "draft" | "reset"}
                                     as they come, and last {"event": "done", "result": <what /api/ask answers>}. A qa
                                     without answer_stream (or no qa) gives the single "done". The page uses this route
-                                    and falls back to /api/ask when it is missing.
+                                    and falls back to /api/ask when it is missing. The events and their fields
+                                    ("round", "thinking", "call", "step" with "label" and "detail", "answer_start",
+                                    "draft", "reset", "done" with "timing"): schemas/qa_stream.md.
 
 Activities: an activity a checks*.json marks "unresolved" carries "unresolved": true (dev mode only). Judge-failed
 items ("flags": {"judge_failed"}) carry "judge_failed": {item: [criteria]} and "judge_hide": [items the page shows only
@@ -71,7 +75,8 @@ Speed (the demo runs through an SSH port forward, ssh -L 8765:127.0.0.1:8765, wi
     from YouTube even when its file is here (the browser fetches YouTube directly, not through the tunnel); the
     page's ?yt=1 / ?yt=0 sets the same per browser.
 --warm loads qa at start, in the background, and calls qa.warm(course) (the layer, the query embedder, the model
-server; the config is qa's default: $QA_CONFIG or the local Gemma), so the first question does not wait for them.
+server and its cached prompt prefix; the config is qa's default: $QA_CONFIG or the local Gemma), so the first question
+does not wait for them. Runs the same on Windows (the demo laptop: python -m demo run, see demo/README.md).
 A missing layer is never an error for the course or lecture routes: it comes back as null (or the segments fall back
 to 1b), and the raw /data/ routes answer 404 for a file that does not exist.
 """
@@ -87,6 +92,7 @@ import json
 import mimetypes
 import os
 import re
+import socket
 import sys
 import threading
 import time
@@ -100,6 +106,7 @@ HERE = Path(__file__).resolve().parent            # pipeline/viewer
 PIPELINE = HERE.parent
 KEY = re.compile(r"\d+[a-z]?|tut_\d+(?:_part\d+)?")
 FILE = re.compile(r"(?:lectures/)?[\w.-]+\.json")
+VIDEO_TYPES = {".mp4": "video/mp4", ".m4v": "video/mp4", ".webm": "video/webm"}
 STATIC = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
           ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2"}
 
@@ -718,18 +725,27 @@ def load_qa():
     return (fn, None) if callable(fn) else (None, "pipeline/qa has no answer(question, course, lecture)")
 
 
+WARM = {"state": "off", "seconds": None, "error": None, "parts": None}    # GET /api/qa_status
+
+
 def warm_qa(course: str):
-    """--warm: import qa and call qa.warm(course) (in a background thread; a failure is printed, not raised)."""
+    """--warm: import qa and call qa.warm(course) (in a background thread; a failure is printed, not raised).
+    Its progress is WARM, which GET /api/qa_status answers (the demo launcher waits for "ready")."""
     t0 = time.time()
+    WARM.update(state="warming", error=None)
     fn, err = load_qa()
     mod = sys.modules.get("qa")
     if fn is None or not callable(getattr(mod, "warm", None)):
+        WARM.update(state="failed", error=err or "qa has no warm()")
         print(f"question answering not warmed: {err or 'qa has no warm()'}", file=sys.stderr, flush=True)
         return
     try:
-        mod.warm(course)
-        print(f"question answering warm ({time.time() - t0:.0f} s)", file=sys.stderr, flush=True)
+        parts = mod.warm(course)
+        WARM.update(state="ready", seconds=round(time.time() - t0, 1), parts=parts if isinstance(parts, dict) else None)
+        print(f"question answering warm ({time.time() - t0:.0f} s{': ' + json.dumps(parts) if parts else ''})",
+              file=sys.stderr, flush=True)
     except Exception as e:                                   # noqa: BLE001
+        WARM.update(state="failed", seconds=round(time.time() - t0, 1), error=f"{type(e).__name__}: {e}")
         print(f"question answering not warmed: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
 
 
@@ -758,7 +774,7 @@ def ask_stream(course: str, req: dict):
                 res = dict(res) if isinstance(res, dict) else {"answer": str(res)}
                 res.setdefault("citations", [])
                 res["available"] = True
-                yield {"event": "done", "result": res}
+                yield {**ev, "event": "done", "result": res}       # "t", "timing" kept
                 return
             yield ev
     except Exception as e:                                   # noqa: BLE001
@@ -815,7 +831,8 @@ class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
     def log_message(self, fmt, *args):
-        if len(args) >= 2 and ("/api/" in str(args[0]) or str(args[1])[:1] in "45"):
+        if len(args) >= 2 and (("/api/" in str(args[0]) and "/api/qa_status" not in str(args[0]))
+                               or str(args[1])[:1] in "45"):
             sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
     def send_body(self, body: bytes, ctype: str, code=HTTPStatus.OK, head_only=False, extra=None, cache="no-cache"):
@@ -913,6 +930,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_payload(C.review(), head_only=head_only)
             if path == "/api/course":
                 return self.send_json(C.course_info(), head_only=head_only)
+            if path == "/api/qa_status":
+                return self.send_json({"importable": qa_status(), **WARM}, head_only=head_only)
             m = re.fullmatch(r"/api/lecture/([\w]+)", path)
             if m:
                 if not KEY.fullmatch(m[1]):
@@ -936,7 +955,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def send_video(self, path: Path, head_only=False, duration: float | None = None):
         size = path.stat().st_size
-        ctype = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
+        # not mimetypes alone: on Windows it reads the registry, which some installs map wrongly
+        ctype = VIDEO_TYPES.get(path.suffix.lower()) or mimetypes.guess_type(str(path))[0] or "application/octet-stream"
         rng = self.headers.get("Range")
         start, end = 0, size - 1
         code = HTTPStatus.OK
@@ -1004,7 +1024,12 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"error": f"bad request: {e}"}, HTTPStatus.BAD_REQUEST)
         if path == "/api/ask":
             return self.send_json(ask(self.C.course, req))
-        # one JSON event per line, each sent as it comes (chunked; no gzip, nothing held back by the server)
+        # one JSON event per line, each sent as it comes (chunked; no gzip, nothing held back by the server; no Nagle
+        # delay: on Windows a small write can otherwise wait up to 200 ms for the browser's delayed ACK)
+        try:
+            self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError:
+            pass
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")

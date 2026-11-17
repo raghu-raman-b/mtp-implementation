@@ -229,7 +229,8 @@ def write_fake_qa(folder: Path, raising: bool = False, stream: bool = False):
                  "    yield {'event': 'draft', 'text': 'Wrong start'}\n"
                  "    yield {'event': 'reset'}\n"
                  "    yield {'event': 'draft', 'text': 'echo:'}\n"
-                 "    yield {'event': 'done', 'result': answer(question, course, lecture)}\n")
+                 "    yield {'event': 'done', 'result': answer(question, course, lecture), 't': 0.5,\n"
+                 "           'timing': {'total': 0.5}}\n")
     (folder / "qa" / "__init__.py").write_text(body)
 
 
@@ -504,6 +505,8 @@ def test_ask(root: Path, work: Path):
         res = evs[-1]["result"]
         check(res["available"] and res["answer"] == f"echo: What is VR? ({COURSE}, 4)" and res["citations"][0]["start"] == 24.3,
               "the stream ends with 'done' carrying what /api/ask answers")
+        check(evs[-1].get("timing") == {"total": 0.5} and evs[-1].get("t") == 0.5,
+              "done's other fields (t, timing: schemas/qa_stream.md) passed on")
         code, r = srv.ask("What is VR?", "4")
         check(code == 200 and r["answer"].startswith("echo:"), "/api/ask still answers when qa streams")
     finally:

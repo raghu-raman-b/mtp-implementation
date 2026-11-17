@@ -2,11 +2,17 @@
 """Helpers for setup_demo.sh and check_demo.sh (standard library only; any python3 runs it).
 
     python3 demo/demo_tool.py config CONFIG --gpu-mem-mib 24576 --binary ~/llama.cpp/build/bin/llama-server \
-                                            --model-path /path/to/model.gguf
-        tune the demo config for this instance: the llama-server binary, the model file, and the slots by GPU memory
-        (the sampling and thinking settings are never touched); the file is rewritten only when something changes
+                                            [--model-path /path/to/model.gguf] [--toolbox NAME]
+        tune the demo config for this instance: the server binary, the model file (llama.cpp), and the slots by GPU
+        memory (llama.cpp; vLLM keeps its max-num-seqs) (the sampling and thinking settings are never touched); the
+        file is rewritten only when something changes
     python3 demo/demo_tool.py wait-model CONFIG [--timeout 900]
         wait until the config's model server answers /health, showing the end of its log every 30 s
+    python3 demo/demo_tool.py warm-model CONFIG
+        two requests (a short one, then one with the qa tools and thinking as round 0 sends them) so that the
+        server's first-request costs are paid before the first learner's question; prints their times
+    python3 demo/demo_tool.py wait-url URL [--timeout 600] [--log FILE]
+        wait until URL answers 200 (e.g. the embedding server's /health)
     python3 demo/demo_tool.py media [--course nptel_vr]
         how many lectures have their video file here, and how many play from YouTube instead
     python3 demo/demo_tool.py ask URL "question" [--lecture 4] [--min-citations 1]
@@ -33,7 +39,7 @@ def load_cfg(path: str) -> tuple[Path, dict]:
     p = Path(path).expanduser()
     if not p.is_absolute() and not p.exists():
         p = PIPELINE / p
-    return p, json.loads(p.read_text())
+    return p, json.loads(p.read_text(encoding="utf-8"))
 
 
 def home_form(path: str) -> str:
@@ -79,19 +85,71 @@ def fmt_time(t) -> str:
 # ---------------------------------------------------------------- commands
 def cmd_config(a) -> int:
     path, cfg = load_cfg(a.config)
-    want = {"binary": home_form(a.binary), "model_path": home_form(a.model_path), "slots": slots_for(a.gpu_mem_mib),
-            "toolbox": ""}
+    want = {"binary": home_form(a.binary), "toolbox": a.toolbox or ""}
+    if cfg.get("engine", "llamacpp") == "llamacpp":
+        want["slots"] = slots_for(a.gpu_mem_mib)
+        if a.model_path:
+            want["model_path"] = home_form(a.model_path)
     changed = {k: v for k, v in want.items() if cfg.get(k, "") != v}
     if changed:
         cfg.update(changed)
-        path.write_text(json.dumps(cfg, indent=1) + "\n")
+        path.write_text(json.dumps(cfg, indent=1) + "\n", encoding="utf-8")
         print(f"  {path.name}: set " + ", ".join(f"{k}={v}" for k, v in changed.items()))
     else:
         print(f"  {path.name}: already set for this instance")
-    print(f"  model {cfg['model']}, port {cfg['port']}, {cfg['slots']} slots, context {cfg['context_length']}, "
-          f"temperature {cfg['temperature']}, top_p {cfg['top_p']}, top_k {cfg['top_k']}, thinking {cfg['thinking']} "
-          f"(budget {cfg['think_budget']})")
+    print(f"  {cfg.get('engine', 'llamacpp')}: model {cfg['model']}, port {cfg['port']}, {cfg['slots']} slots, "
+          f"context {cfg['context_length']}, temperature {cfg['temperature']}, top_p {cfg['top_p']}, "
+          f"top_k {cfg['top_k']}, thinking {cfg['thinking']} (budget {cfg['think_budget']})")
     return 0
+
+
+def chat(url: str, body: dict, timeout: float = 300) -> tuple[int, dict | None, float]:
+    return post_json(url + "/v1/chat/completions", body, timeout=timeout)
+
+
+def cmd_warm_model(a) -> int:
+    _, cfg = load_cfg(a.config)
+    url = f"http://{cfg.get('host', '127.0.0.1')}:{cfg['port']}"
+    tools = json.loads((PIPELINE / "prompts" / "qa_tools.json").read_text(encoding="utf-8"))
+    base = {"model": cfg["model"], "temperature": cfg.get("temperature", 1.0), "top_p": cfg.get("top_p", 0.95)}
+    ok = True
+    for what, body in (
+            ("short request", {**base, "messages": [{"role": "user", "content": "Say OK."}], "max_tokens": 16,
+                               "chat_template_kwargs": {"enable_thinking": False}}),
+            ("request with the qa tools and thinking", {
+                **base, "messages": [{"role": "system", "content": "Answer from the course, using the tools."},
+                                     {"role": "user", "content": "What is a head-mounted display?"}],
+                "tools": tools, "tool_choice": "auto", "max_tokens": 512,
+                "chat_template_kwargs": {"enable_thinking": bool(cfg.get("thinking", True))}})):
+        code, r, secs = chat(url, body)
+        msg = ((r or {}).get("choices") or [{}])[0].get("message") or {}
+        calls = [c.get("function", {}).get("name") for c in msg.get("tool_calls") or []]
+        print(f"  warm-up {what}: HTTP {code}, {secs:.1f} s"
+              + (f", tool calls {calls}" if calls else f", {len(msg.get('content') or '')} characters"))
+        ok = ok and code == 200
+    return 0 if ok else 1
+
+
+def cmd_wait_url(a) -> int:
+    t0, note = time.time(), 0.0
+    while True:
+        code, _, body = get(a.url, timeout=5)
+        waited = time.time() - t0
+        if code == 200:
+            print(f"  {a.url} answers ({waited:.0f} s): {body[:160].decode(errors='replace')}")
+            return 0
+        if waited > a.timeout:
+            print(f"  {a.url} did not answer within {a.timeout} s (last: {code} {body[:160]!r})")
+            return 1
+        if waited >= note:
+            last = ""
+            if a.log and Path(a.log).exists():
+                lines = [x for x in Path(a.log).read_text(errors="replace").replace("\r", "\n").splitlines()
+                         if x.strip()]
+                last = lines[-1][:110] if lines else ""
+            print(f"  {time.strftime('%H:%M:%S')}  waiting for {a.url} ({waited:.0f} s): {last}", flush=True)
+            note += 30
+        time.sleep(2)
 
 
 def cmd_wait_model(a) -> int:
@@ -235,7 +293,15 @@ def main():
     p.add_argument("config")
     p.add_argument("--gpu-mem-mib", type=int, required=True)
     p.add_argument("--binary", required=True)
-    p.add_argument("--model-path", required=True)
+    p.add_argument("--model-path", help="llama.cpp: the .gguf file (vLLM: the config's Hugging Face id is kept)")
+    p.add_argument("--toolbox", help="run the server in this toolbox container (a Fedora PC standing in for the "
+                                     "instance)")
+    p = sub.add_parser("warm-model")
+    p.add_argument("config")
+    p = sub.add_parser("wait-url")
+    p.add_argument("url")
+    p.add_argument("--timeout", type=int, default=600)
+    p.add_argument("--log")
     p = sub.add_parser("wait-model")
     p.add_argument("config")
     p.add_argument("--timeout", type=int, default=900)
@@ -255,7 +321,7 @@ def main():
     p.add_argument("--timeout", type=int, default=600)
     a = ap.parse_args()
     return {"config": cmd_config, "wait-model": cmd_wait_model, "media": cmd_media, "ask": cmd_ask,
-            "check-http": cmd_check_http}[a.cmd](a)
+            "check-http": cmd_check_http, "warm-model": cmd_warm_model, "wait-url": cmd_wait_url}[a.cmd](a)
 
 
 if __name__ == "__main__":

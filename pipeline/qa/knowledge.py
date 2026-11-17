@@ -6,7 +6,9 @@
 
 The folder is <output>/<course>/knowledge, where <output> is $QA_OUTPUT when set (tests point it at a copy) and the
 pipeline's output/ otherwise. The facts were embedded with no instruction; a query is embedded with QUERY_INSTRUCTION
-(scripts/embed.py), by the model the layer names in index.json, on the CPU (the GPU holds the answering model).
+(scripts/embed.py), by the model the layer names in index.json, on the CPU (the GPU holds the answering model), or,
+when $QA_EMBED_URL is set, by the embedding server at that URL (demo/embed_server.py on the demo's GPU instance, reached
+through the SSH forward: same model and library, so the same vectors; the laptop then needs no torch).
 """
 from __future__ import annotations
 
@@ -72,7 +74,7 @@ class Knowledge:
         self.dir = Path(folder)
         if not (self.dir / "index.json").exists():
             raise FileNotFoundError(f"no knowledge layer at {self.dir} (run scripts/s4d_assemble.py first)")
-        load = lambda name: json.loads((self.dir / name).read_text())  # noqa: E731
+        load = lambda name: json.loads((self.dir / name).read_text(encoding="utf-8"))  # noqa: E731
         self.index = load("index.json")
         self.names = load("names.json")
         self.concepts = load("concepts.json")
@@ -85,7 +87,7 @@ class Knowledge:
         for k in self.index["lectures"]:
             p = self.dir / "lectures" / f"{lec.stem_of(k)}.json"
             if p.exists():
-                self.lectures[k] = json.loads(p.read_text())
+                self.lectures[k] = json.loads(p.read_text(encoding="utf-8"))
         emb = load("fact_embeddings.json")
         self.embed_model = emb["model"]
         self.fact_ids = list(emb["vectors"])
@@ -188,7 +190,9 @@ class Knowledge:
                 from scripts.embed import Embedder
                 qd = qa_dir(self.course)
                 cache = qd / "query_embed_cache.jsonl" if self.embed_model != "fake" else None
-                self._embedder = Embedder(self.embed_model, cache=cache, device="cpu")
+                url = os.environ.get("QA_EMBED_URL", "").strip() or None
+                self._embedder = Embedder(self.embed_model, cache=cache, device="cpu",
+                                          url=url if self.embed_model != "fake" else None)
             return self._embedder
 
     def _mat(self):

@@ -1,5 +1,136 @@
 # The learner demo on a cloud GPU instance
 
+Two ways to run it:
+
+- **A. Model on the instance, everything else on the laptop (demo day, Windows laptop).** The GPU instance only
+  serves the model (llama.cpp or vLLM, chosen at start) and the query embedder; the viewer, the question box's tool
+  loop and the videos run on the laptop, which reaches the instance through an SSH tunnel. Scripts:
+  `demo/ec2_model_server.sh` (instance), `demo/setup_windows.ps1` and `demo/run_demo.ps1` (laptop), both calling
+  `python -m demo` (`demo/launcher.py`, the same on Windows, Linux and macOS). Section A below.
+- **B. Everything on the instance** (the viewer too; the laptop only opens a browser through the forward):
+  `demo/setup_demo.sh`, checked by `demo/check_demo.sh`. Section B below, unchanged.
+
+## A. Model on the instance, viewer on the laptop
+
+```
+ laptop (Windows)                                         GPU instance (no open port but SSH)
+ browser -> viewer/serve.py :8765  (videos, layers)
+            qa tool loop (tools, citations) --ssh -L 8096--> llama-server or vLLM :8096  (Gemma 4 12B)
+            fact search ---------------------ssh -L 8097--> demo/embed_server.py :8097 (Qwen3-Embedding-0.6B)
+```
+
+| Piece | Where | Why there |
+|---|---|---|
+| Gemma 4 12B: llama.cpp (`unsloth/gemma-4-12B-it-qat-GGUF` Q4, 7.5 GB, the PC's exact file and flags) or vLLM (`google/gemma-4-12B-it` BF16, needs 40 GB+ GPU and the HF token) | instance, tmux `model`, 127.0.0.1:8096 | the GPU |
+| Query embedder Qwen3-Embedding-0.6B (sentence-transformers, as the layer was embedded) | instance, tmux `embed`, 127.0.0.1:8097 | the laptop then needs no torch and no 1.2 GB model, and the first question does not wait 10-20 s for it to load. Vectors checked equal: cosine >= 0.999 against `fact_embeddings.json` (`python -m demo check`) |
+| viewer, qa (tools, citations, the layer), videos | laptop | the videos (5.5 GB) and every page load stay local; only the model's requests cross the network |
+
+Speed (measured through a simulated 250 ms tunnel, `analysis/demo/remote_setup.md`): the page shows progress at
+once (a `round` event, then `thinking`, `call`, `step` with a display line), and the answer streams as it is
+written. Over the tunnel each new TCP connection costs a round trip (a new SSH channel), so qa keeps its connections
+to both servers open and warm (`scripts/llm/http_pool.py`); on llama.cpp all rounds of a question go to one server
+slot, so each round reuses the KV cache of the one before (`cache_prompt`, `id_slot`); vLLM caches prefixes itself.
+At start the instance script sends two warm-up requests, and the viewer's warm-up sends the real system prompt and
+tools once (so the first question finds them cached) and reaches the embedder.
+
+### A1. The instance (once per start; about 20 min the first time, 2-3 min after)
+
+Start it as in B1 below (Deep Learning Base OSS Nvidia Driver AMI, Ubuntu 24.04; security group: SSH only). Any
+NVIDIA GPU with 16 GB or more runs llama.cpp; vLLM serves the BF16 checkpoint and needs 40 GB or more (an L40S, an
+A100, the RTX PRO 6000) and a Hugging Face token with access to `google/gemma-4-12B-it`.
+
+**From the laptop (Windows PowerShell, in the repository folder)**: copies the ~150 kB the instance needs (the
+scripts, the configs, `scripts/llm`, `prompts/qa_tools.json`, and `pipeline/.hf_token` if you have one) and runs the
+setup there in tmux, showing its output:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Push -Engine llamacpp   # or -Engine vllm
+```
+
+(Linux/macOS: `cd pipeline && python -m demo push --instance ubuntu@<ip> --key ~/demo.pem --engine llamacpp`.)
+
+**Or on the instance itself** (the repository cloned or copied as in B2, or the bundle above):
+
+```bash
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --engine llamacpp     # or --engine vllm; no flag: it asks
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --status              # what answers, and the tunnel command
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --stop                # both servers
+```
+
+It installs only what the engine needs (llama.cpp: build tools and the llama-server build for this GPU; vLLM: a
+`~/vllm-venv` with vLLM), plus `~/demo-venv` for the downloads and the embedder (torch, sentence-transformers),
+downloads the model and the embedder to the local NVMe, starts the two servers in tmux, waits for both, warms the
+model up and prints the tunnel command. Rerunning reuses everything; switching engine stops the other one first.
+Options are at the top of the script (`--no-embed`, `TORCH_CPU=1`, `LLAMA_REF=master`, `VLLM_PKG=...`).
+
+### A2. The laptop (once)
+
+1. Python 3.12: `winget install -e --id Python.Python.3.12` (or python.org; tick "Add to PATH"). Open a new terminal.
+2. The repository: `git clone --depth 1 --filter=blob:none --sparse https://github.com/raghu-raman-b/mtp-implementation.git`,
+   then `cd mtp-implementation; git sparse-checkout set pipeline` (about 330 MB; or copy the folder over).
+3. The videos: copy `pipeline/input/nptel_vr/media/` (L01.mp4 ..., 5.5 GB) to the laptop, anywhere. Without them,
+   lectures play from YouTube (the laptop then needs internet for the videos).
+4. Setup (a venv in `%USERPROFILE%\mtp-demo-venv` with numpy only; the settings go to `pipeline\demo\local.json`):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File pipeline\demo\setup_windows.ps1 -Instance ubuntu@<ip> -Key C:\keys\demo.pem -Media D:\demo\media
+```
+
+   It narrows the key's permissions to you (Windows OpenSSH refuses a key others can read) and checks Python, numpy,
+   ssh, the key, the videos and the course layer. `-LocalEmbed` installs the embedder on the laptop instead (torch CPU
+   and sentence-transformers, ~1 GB) for an instance started with `--no-embed`.
+
+### A3. Demo day
+
+```powershell
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1
+```
+
+It opens the tunnel (`ssh -N -L 8096:127.0.0.1:8096 -L 8097:127.0.0.1:8097 ubuntu@<ip>`, reopened when it drops),
+waits for the model server (it may still be loading), finds the engine from the served model name, starts the viewer
+(`viewer/serve.py --warm`, with `QA_CONFIG` = that engine's demo config pointed at the tunnel, `QA_EMBED_URL` = the
+embedder's tunnel), waits until qa is warm, and opens the browser at http://127.0.0.1:8765/. Ctrl+C stops the viewer
+and the tunnel. In a second window:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Check    # PASS/FAIL lines, ALL PASS at the end
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Bench    # the DEMO_PLAN questions, timed
+```
+
+To open the tunnel by hand instead (any terminal; leave it running), then start with `python -m demo run --no-tunnel`:
+
+```
+ssh -N -o ServerAliveInterval=15 -o ExitOnForwardFailure=yes -i C:\keys\demo.pem -L 8096:127.0.0.1:8096 -L 8097:127.0.0.1:8097 ubuntu@<ip>
+```
+
+### A4. When something fails
+
+- **"UNPROTECTED PRIVATE KEY FILE"**: rerun setup_windows.ps1 with `-Key` (it fixes the permissions), or
+  `icacls key.pem /inheritance:r /grant:r "%USERNAME%:R"`.
+- **"running scripts is disabled on this system"**: start the scripts with `powershell -ExecutionPolicy Bypass -File ...`
+  as above (nothing is changed system-wide).
+- **The launcher waits for the model server**: on the instance, `bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --status`,
+  `tmux attach -t model`. A port 8096 already used on the laptop: `run_demo.ps1` stops; `python -m demo run --model-port 18096`.
+- **"no embedder"**: the instance was started with `--no-embed` or `tmux attach -t embed` shows an error. Either
+  start it again without `--no-embed`, or `setup_windows.ps1 -LocalEmbed` and `run_demo.ps1 -LocalEmbed`.
+- **Answers fail or hang**: the viewer's output in the run_demo window; `run_demo.ps1 -Check`.
+- The instance's engine changed (llama.cpp <-> vLLM): just restart `run_demo.ps1`; it reads the engine from the server.
+
+### A5. Files
+
+| File | What |
+|---|---|
+| `demo/ec2_model_server.sh` | the instance: `--engine llamacpp|vllm`, `--status`, `--stop` |
+| `demo/embed_server.py` | the query embedder over HTTP (OpenAI `/v1/embeddings`, base64 float32), 127.0.0.1:8097 |
+| `demo/launcher.py` (`python -m demo`) | the laptop: `setup`, `run`, `check`, `bench`, `push`, `tunnel` |
+| `demo/setup_windows.ps1`, `demo/run_demo.ps1` | Windows wrappers of the launcher (venv, settings, start) |
+| `demo/requirements-local.txt` (numpy), `demo/requirements-local-embed.txt` | the laptop's packages |
+| `demo/local.json` | the laptop's settings (instance, key, videos; gitignored) |
+| `scripts/llm/http_pool.py` | kept-open connections to the model server and the embedder |
+| `schemas/qa_stream.md` | the events of `/api/ask_stream` (what the chat screen shows while the model works) |
+
+## B. Everything on the instance
+
 The viewer (`viewer/serve.py`) and its question box (`qa/`, Gemma 4 12B on llama.cpp, the query embedder on the CPU)
 run on one GPU instance. You reach the viewer from your laptop through an SSH port forward. One script sets it all up:
 `demo/setup_demo.sh`. Another checks it: `demo/check_demo.sh`.
@@ -21,12 +152,12 @@ not faster. llama.cpp is also built at the commit the PC runs (`LLAMA_REF=master
 YouTube instead, using the `youtube_id` in `titles.tsv`. Segment clicks, transcript clicks and citation links still
 jump to the right moment. If the files are copied over (step 3), they are used instead.
 
-## Steps
+### B. Steps
 
 Expected times are for a g6.xlarge or g5.xlarge (4 vCPUs, one 24 GB GPU) with the Deep Learning AMI. They are
 estimates until the first real run.
 
-### 1. Start the instance (3 min)
+### B1. Start the instance (3 min)
 
 - AMI: *Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 24.04)*. It has the NVIDIA driver, the CUDA toolkit
   (`nvcc`) and Python 3.12. `qa` needs Python 3.11 or newer, and the Ubuntu 22.04 AMI's `python3` is 3.10. On that AMI,
@@ -40,7 +171,7 @@ estimates until the first real run.
 
 You can also use the pipeline's EC2 (`mtp`), but only with its vLLM server stopped: vLLM takes 93% of the GPU.
 
-### 2. Copy the code and the course outputs (1-2 min, about 170 MB)
+### B2. Copy the code and the course outputs (1-2 min, about 170 MB)
 
 All the outputs the demo needs are in git: `output/nptel_vr/knowledge`, `activities`, and the stage folders. Choose
 one of these.
