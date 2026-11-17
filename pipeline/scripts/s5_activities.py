@@ -1,6 +1,7 @@
 """Stage 5: the activities of every lecture, from the knowledge layer (MVP of 2026-11-13).
 
     python scripts/s5_activities.py nptel_vr --llm configs/qwen38_27b_vllm.json [--only 1-5] [--kinds quiz,recap,...]
+    python scripts/s5_activities.py nptel_vr --llm CFG --judge [--judge-rewrite] [--judge-llm CFG2]
     python scripts/s5_activities.py nptel_vr --check            (check an existing activities/ against the contract)
 
 Reads   output/<course>/knowledge/ (stage 4d): index, concepts, relations, facts, lectures/lec_<n>.json,
@@ -58,20 +59,42 @@ match_pairs, crossword, odd_one_out, put_in_order (lecture), open_question.
 
 The model-made kinds. One request per unit, all sent at once (generate_many). Facts are numbered [1]..[n] in the
 prompt and mapped back to fact IDs through that list. Code checks with retry (the problems are shown to the model,
-LLM API feedback, the config's retries): a cited number outside 1..n or none cited (open questions: fewer than two);
-an empty text; a count outside its range (quiz 3 to 5 questions, fewer when the segment has fewer facts; recap 2 to
-5 points; open questions 2 to 4; crossword: one clue per answer); quiz options not one correct and three wrong, two
-options the same, "all/none of the above"; a repeated question; an odd-one-out group not three items or an item
-twice; put-in-order steps not 3 to 8 or repeated; a clue with the answer or one of its words (or another name of the
-concept), or over 20 words; open-question concepts not in the list. When every attempt fails the client keeps the
-attempt with the fewest problems: the unit is "unresolved" (checks.json) and its items that still have a problem
-are dropped (a clue with the answer's words is masked "___"; a missing clue is taken from the definition). An
-answer that never parses is "no answer": no activity. Report-only flags: quiz correct_longest (the correct option
-1.5 times as long as every wrong one), correct_not_in_facts (no content word of the correct option in its cited
-facts); recap facts_uncovered; open_question no_earlier_or_relation (no question uses an earlier lecture's fact or a
-relationship's fact); odd_one_out not_a_concept (an option that is no concept name or alias of the lecture);
-put_in_order order_cue (a step starting with "first", "then", "finally" or a number); crossword small (fewer than 6
-answers), filled_from_used, clue_masked, clue_from_definition.
+LLM API feedback, the config's retries), in two classes (analysis/activities/review_prompts.md section 7):
+  hard (an item that still has the problem after the last attempt is dropped): a cited number outside 1..n or none
+    cited (open questions: fewer than two); an empty text; a count outside its range (quiz 3 to 5 questions, fewer
+    when the segment has fewer facts; recap 2 to 5 points; open questions 2 to 4; crossword: one clue per answer);
+    quiz options not one correct and three wrong, two options the same, "all/none of the above", a question not
+    ending with "?"; a repeated question; an odd-one-out group not three items or an item twice, a later puzzle with
+    three or four items of an earlier one; put-in-order steps not 3 to 8 or repeated; a clue with the answer or one
+    of its words in any form (or another name of the concept), or over 15 words, two answers with the same clue (the
+    later one); open-question concepts not in the list
+  soft (retried, but kept and flagged in checks.json by the check's name; the judge decides): source_talk (all
+    kinds: "the segment", "the facts state", "according to the lecture", "is listed as" ...); quiz correct_longest
+    (correct over 1.2 times and 12 characters longer than every wrong option), correct_longest_share (strictly the
+    longest in more than half of the quiz), absolute_wrong; recap text_repeats_points, point_long, text_length
+    (flagged item 0: the text); put_in_order order_cue (also a year or "previous step"); odd_one_out shared_word,
+    length_tell; open_question two_questions, reference_long; crossword clue_list_place
+When every attempt fails the client keeps the attempt with the fewest problems: the unit is "unresolved" (checks.json)
+and its items with a hard problem are dropped (a clue with the answer's words or too long has the answer's own name
+and its plain forms masked "___" and is capped; any other bad or missing clue is taken from the definition). An
+answer that never parses is "no answer": no activity. Code fixes: quiz options and clues lose one trailing full stop,
+odd-one-out items get a capital first letter. Report-only flags (item numbers as the learner sees them): quiz
+correct_not_in_facts, rotated_options; recap facts_uncovered, duplicate_points; open_question no_earlier_or_relation,
+key_fact_unused; odd_one_out not_a_concept; put_in_order title_cue, no_order_word, three_steps; crossword small,
+filled_from_used, clue_masked, clue_from_definition, clue_points.
+
+The judge (--judge, off by default; --judge-rewrite implies it; --judge-llm another config, default the --llm
+model): one call per unit that made activities, after the code checks, with prompts/activity_judge_<kind>.txt (the
+writer's blocks and fact numbers, the items as converted, numbered as the learner sees them; recap item 0 is the
+text). Its answer is checked (one verdict per item, "pass" exactly when "failed" is empty, a reason for a fail) with
+retry. With --judge-rewrite a unit with a failed item gets one rewrite: the writer's conversation goes on with its
+kept answer and prompts/activity_rewrite.txt ({problems}: one line per failed item, the judge's criteria and reason,
+in the writer's numbering), the code checks run again, the judge once more; the rewrite is kept only when the judge
+fails strictly fewer of its items. Nothing is dropped on a verdict: what still fails is flagged judge_failed.
+checks.json: per unit "judge" {"rounds": [{status, verdicts [{item, about, pass, failed, check, reason}],
+failed_items}], "rewrite", "kept", "failed_items", "original" (the writer's code result when the rewrite is kept)};
+totals "judge"; activities.txt shows every verdict under its activity. Writer requests are the same with or without
+the judge (a run with --judge on a finished --out folder only adds the judge calls).
 
 --kinds limits the run to some kinds: the lecture files keep the activities of the other kinds (renumbered in the
 order above), checks.json keeps their entries. --only limits it to some lectures; course.json (spaced_review) is

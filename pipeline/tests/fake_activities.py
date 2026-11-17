@@ -19,6 +19,18 @@ prompt, "Fact 4/S1/F0: ...", or a crossword answer's name) it seeds, by attempt:
                    "tracing" in every attempt (unresolved: masked "___")
   odd_one_out 6    never JSON (no answer: no activity)
   put_in_order     lecture 1 answers none (no activity); lecture 3 cites facts of two segments (lecture scope)
+  review checks    (fake answers are first made clean for them) quiz 3/S0 correct option clearly longest (soft:
+                   kept, flagged); quiz 6/S0 question 2 without "?" (hard: dropped); recap 3/S0 one-sentence text
+                   (soft); odd_one_out 4 a puzzle with the items of puzzle 1 (hard) and one whose group shares a word
+                   (soft), lower-case items (capitalised); put_in_order 4 a step "Then ..." (soft); open_question 4
+                   "..., and why ...?" (soft); crossword clues "The second of the four steps" (soft), the same clue
+                   for two answers (the later one from the definition), "Mappings for texturing" (only the name's
+                   own word masked)
+  judge            (its own criteria enum tells the kind) all pass, except quiz 4/S2 question 1 (one_answer, until
+                   the rewrite), put_in_order 2 exercise 1 (real_sequence, in both rounds), crossword 4 attempt 1
+                   contradicting itself (judge retried), odd_one_out 5 never JSON; a rewrite (the writer's
+                   conversation with "A reviewer has checked your answer") of quiz 4/S2 rewrites question 1
+Runs: flags off (all of the above), then --judge on the same folder, then --judge --judge-rewrite, then that again.
 
 What it looks for (each line is what a broken stage would show):
   contract  a file not matching schemas/activities.md (checked by an independent validator here and by the stage's
