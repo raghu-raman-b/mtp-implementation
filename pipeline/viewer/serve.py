@@ -58,6 +58,7 @@ import importlib
 import importlib.util
 import json
 import mimetypes
+import os
 import re
 import sys
 import threading
@@ -1030,6 +1031,8 @@ def main():
         QA_PATH = a.qa_path.resolve()
     root = a.root.resolve()
     output = a.output.resolve() if a.output else None
+    if output and not os.environ.get("QA_OUTPUT"):          # qa answers from the same layer the page shows
+        os.environ["QA_OUTPUT"] = str(output)
     if not (root / "input" / a.course).is_dir() and not ((output or root / "output") / a.course).is_dir():
         sys.exit(f"no course {a.course!r} under {root}/input or {output or root / 'output'}")
     srv = make_server(a.course, root, a.port, a.host, a.media.resolve() if a.media else None, output, a.activities)

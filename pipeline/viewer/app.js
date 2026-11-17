@@ -1174,7 +1174,7 @@ async function pageGlossary() {
   };
   input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(fill, 90); });
   fill();
-  const page = h("div", {}, h("h1", {}, "Glossary"), dev(`${all.length} concepts listed; ${G.connecting || 0} connecting concepts not listed`), input, list);
+  const page = h("div", {}, h("h1", {}, "Glossary"), h("div", { class: "dev" }, `${all.length} concepts listed; ${G.connecting || 0} connecting concepts not listed`), input, list);
   page.afterShow = () => input.focus({ preventScroll: true });
   return page;
 }
