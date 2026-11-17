@@ -12,10 +12,13 @@ request; this pool keeps one open per server and reuses it for the next request 
 other within a second or two).
 
 Servers close idle connections: llama-server after 5 s (and after 100 requests), vLLM after
-VLLM_HTTP_TIMEOUT_KEEP_ALIVE (default 5 s). A request on a connection the server has closed fails before any
-response arrives; it is then sent once more on a new connection (safe: the server never saw it). keep_warm(base)
-sends GET /health on the idle connection to that server every PING_S seconds, so the connection a question will use
-is already open (and a dead tunnel is noticed between questions, not during one).
+VLLM_HTTP_TIMEOUT_KEEP_ALIVE (default 5 s). llama-server also closes the connection after every streamed answer
+(measured on the PC's build, 2026-11-17). A request on a connection the server has closed fails before any response
+arrives; it is then sent once more on a new connection (safe: the server never saw it), and a server seen closing
+after a stream gets no such connection back again. keep_warm(base) keeps a spare connection to that server open and
+tested: GET /health on it every PING_S seconds, and a new spare opened (and pinged) as soon as a request takes the
+one there was, so the next round of a question finds its connection ready (a new SSH channel costs a round trip;
+here it is paid while the model is still answering the round before). A dead tunnel is noticed between questions.
 
 Standard library only; thread-safe (a connection is used by one request at a time).
 """
@@ -38,6 +41,7 @@ class PooledResponse:
     def __init__(self, pool: "Pool", key, conn: http.client.HTTPConnection, resp: http.client.HTTPResponse):
         self.pool, self.key, self.conn, self.resp = pool, key, conn, resp
         self.status = resp.status
+        self.stream = "event-stream" in (resp.getheader("Content-Type") or "")
 
     def __iter__(self):
         return iter(self.resp)
@@ -58,10 +62,11 @@ class PooledResponse:
                 if self.conn.sock is not None:
                     self.conn.sock.settimeout(2)
                 self.resp.read()
-            reusable = not self.resp.will_close
+            reusable = not self.resp.will_close and not (self.stream and self.key in self.pool._stream_closes)
         except (OSError, http.client.HTTPException):
             reusable = False
         if reusable:
+            self.conn._pool_after_stream = self.stream
             self.pool._put(self.key, self.conn)
         else:
             self.conn.close()
@@ -83,6 +88,8 @@ class Pool:
         self._lock = threading.Lock()
         self._warm: dict[tuple, str] = {}            # key -> health path
         self._pinger: threading.Thread | None = None
+        self._wake = threading.Event()                # a spare was taken: open the next one now
+        self._stream_closes: set = set()              # servers that close the connection after a streamed answer
         self.opened = 0                               # connections opened (for tests and timing notes)
 
     @staticmethod
@@ -139,6 +146,8 @@ class Pool:
                 conn.timeout = timeout
                 if conn.sock is not None:
                     conn.sock.settimeout(timeout)
+            if key in self._warm:
+                self._wake.set()                        # the keep-warm thread opens the next spare meanwhile
             try:
                 conn.request(method, path, body=body, headers=headers or {})
                 resp = conn.getresponse()
@@ -147,6 +156,8 @@ class Pool:
                 conn.close()
                 if fresh:
                     raise
+                if getattr(conn, "_pool_after_stream", False):
+                    self._stream_closes.add(key)       # this server closes after a stream: never keep those
                 # a kept connection the server had closed while idle: the request never reached it; send it again
         raise ConnectionError("unreachable")                    # not reached
 
@@ -179,7 +190,8 @@ class Pool:
 
     def _ping_loop(self):
         while True:
-            time.sleep(PING_S / 3)
+            self._wake.wait(PING_S / 3)
+            self._wake.clear()
             now = time.monotonic()
             with self._lock:
                 todo = []

@@ -107,6 +107,34 @@ def test_pool():
                                              f"on a new one ({pool.opened} opened)")
         seen = []
         pool.keep_warm(url, "/slots", on_body=seen.append)
+    finally:
+        srv.shutdown()
+
+    class ClosesAfterStream(KeepAlive):            # as llama-server does
+        def do_POST(self):
+            super().do_POST()
+            self.close_connection = True
+
+    srv, url = serve(ClosesAfterStream)
+    pool2 = Pool()
+    try:
+        pool2.keep_warm(url, "/health")
+        oks = []
+        for _ in range(4):
+            time.sleep(0.3)
+            with pool2.request("POST", url + "/v1/chat/completions", b"{}", timeout=5) as r:
+                oks.append(r.status == 200 and b"[DONE]" in r.read())
+        time.sleep(0.3)
+        idle = pool2._idle.get(pool2._key(url)) or []
+        check(all(oks) and pool2._key(url) in pool2._stream_closes and len(idle) >= 1,
+              f"a server that closes after each stream: every request answered, the pool learns it and keeps a "
+              f"pinged spare ready ({oks}, {len(idle)} spare, {pool2.opened} opened)")
+    finally:
+        srv.shutdown()
+    srv, url = serve(KeepAlive)
+    try:
+        seen = []
+        pool.keep_warm(url, "/slots", on_body=seen.append)
         check(len(seen) == 1 and json.loads(seen[0])[0]["is_processing"] is True,
               "keep_warm calls back with its path's answer (llama.cpp's /slots)")
     finally:
