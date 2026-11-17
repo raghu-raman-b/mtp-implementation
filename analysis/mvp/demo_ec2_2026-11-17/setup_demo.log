@@ -1,0 +1,38 @@
+
+== 1/9 GPU
+NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB, 12.0, 595.112.07
+  CUDA 13.2, build for sm_120, 97887 MiB
+
+== 2/9 model cache and Hugging Face token
+  Hugging Face cache: /home/ubuntu/.cache/huggingface -> /opt/dlami/nvme/huggingface (local NVMe, 1.6T free)
+  Hugging Face token: set
+
+== 3/9 system packages
+  git 2.43.0, cmake 3.28.3, tmux 3.4, Python 3.12.3
+
+== 4/9 Python venv (/home/ubuntu/demo-venv) and model downloads
+  downloading gemma-4-12B-it-qat-UD-Q4_K_XL.gguf and Qwen/Qwen3-Embedding-0.6B (pid 46570, log demo/logs/download.log)
+  installing torch==2.14.1 (a few minutes: the CUDA wheels are ~3 GB)
+  installing sentence-transformers==6.1.0 transformers==5.15.0 numpy
+  torch 2.14.1+cu130 (CUDA available: True) sentence-transformers 6.1.0 transformers 5.15.0
+
+== 5/9 llama.cpp (/home/ubuntu/llama.cpp)
+  llama.cpp 69eb250 2026-09-15, CUDA sm_120; building llama-server (5-15 min)
+  version: 0.4.1-dev (build 1, commit 69eb250)
+
+== 6/9 downloads and the demo config
+  /opt/dlami/nvme/huggingface/hub/models--unsloth--gemma-4-12B-it-qat-GGUF/snapshots/980b060c40a8539ac159e0501a3e0f66a6365af3/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf (6.3G)
+  /opt/dlami/nvme/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B/snapshots/97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3
+  gemma4_12b_demo.json: set model_path=/opt/dlami/nvme/huggingface/hub/models--unsloth--gemma-4-12B-it-qat-GGUF/snapshots/980b060c40a8539ac159e0501a3e0f66a6365af3/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf, slots=16
+  model gemma-4-12b-qat, port 8096, 16 slots, context 131072, temperature 1.0, top_p 0.95, top_k 64, thinking True (budget 8192)
+
+== 7/9 videos
+  63 lectures: 0 video files in /home/ubuntu/mtp-implementation/pipeline/input/nptel_vr/media, 63 from YouTube
+  to play the files instead of YouTube, copy them from the PC (5.5 GB; from the repository root there):
+    rsync -a --info=progress2 pipeline/input/nptel_vr/media/ <instance>:~/mtp-implementation/pipeline/input/nptel_vr/media/
+
+== 8/9 servers (tmux sessions gemma and viewer)
+  started (log demo/logs/gemma.log, server log demo/logs/llm_server_8096.log)
+  10:24:41  waiting for the model server (0 s): 
+  10:25:11  waiting for the model server (30 s): 0.02.704.778 E srv  llama_server: exiting due to model loading error
+  10:25:41  waiting for the model server (60 s): 0.02.704.778 E srv  llama_server: exiting due to model loading error
