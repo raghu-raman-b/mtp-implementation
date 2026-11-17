@@ -1,0 +1,169 @@
+
+<!-- ------------------------------------------------------------------ 3 -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-emb)">3a–3c</span><h3 id="s3" data-toc="3 · Registry and synonym merge">The concept registry and the synonym merge</h3><span class="worker w-code">code</span><span class="worker w-emb">embedder</span><span class="worker w-gen">Qwen 3.8 27B</span></div>
+<p>Stage 2c names concepts segment by segment, so “headset” in lecture 1 and “head-mounted display” in lecture 2 are
+two entries. Stage 3 joins them into the course's concepts, in four steps, and rebuilds the relationships over the
+joined concepts.</p>
+<ol>
+<li><b>Exact merge (3a, code).</b> Same normalised name: case, hyphens, slashes, punctuation and a plural ending
+ignored (“lens” = “lenses”, “head set” = “headsets”). A name that is an acronym is never merged by name.</li>
+<li><b>Candidates (3a, embedder).</b> Each entry is embedded as <code>&lt;name&gt;; also called: &lt;other names&gt;. &lt;up to 5
+defining facts&gt;</code> with Qwen3-Embedding-0.6B. A pair is a candidate at cosine ≥ 0.70 or when it shares a name or
+alias. Clusters are the connected candidates, at most 12 entries; larger components are split at their weakest
+links, and the cut pairs are listed (they can never merge).</li>
+<li><b>Same or different (3b, model).</b> One call per cluster: the entries with their names, lectures and up to 8
+facts (defining facts first, marked <code>*</code>). The answer groups them, gives a reason per group and the group's name.</li>
+<li><b>Merge (3c, code).</b> One concept per group, <code>C0001…</code> in course order; losing names become aliases.
+Relationships are rebuilt from the 2c triples through <code>segment_concepts.json</code>: a triple that now joins a
+concept to itself is dropped, identical triples are joined. Every decision is a line in <code>decisions.jsonl</code>.</li>
+</ol>
+<dl class="facts-grid">
+<dt>Out</dt><dd><code>stage_3_registry/concepts.json</code>, <code>segment_concepts.json</code>, <code>relations.json</code>, <code>clusters.json</code>, <code>decisions.jsonl</code>, <code>text/</code>, <code>embed/cache.jsonl</code>, <code>llm/</code></dd>
+<dt>Command</dt><dd><code>python scripts/s3a_candidates.py nptel_vr [--embed-model M --threshold 0.70 --cap 12 --embed-facts … --device cuda]</code><br>
+<code>python scripts/s3b_same.py nptel_vr --llm configs/qwen38_27b_vllm_6k_96gb.json</code><br>
+<code>python scripts/s3c_registry.py nptel_vr [--no-model]</code> (<code>--no-model</code>: exact merges only, as in the MVP)</dd>
+<dt>Time</dt><dd>3a under a minute on the local GPU (on the CPU, 90 s per batch); 3b 425 calls in 24 min 6 s at 64 parallel requests (2026-11-17); 3c 1 s</dd>
+<dt>Result</dt><dd>5,805 segment concepts → 3,384 entries (2,421 exact merges) → 425 clusters (18,733 candidate pairs, 11,030 cut by the cap) → <b>3,122 concepts</b> (262 model merges); 7,502 triples → 7,427 relationships (46 joined, 29 self-loops dropped); 827 concept pairs with several labels</dd>
+</dl>
+{{PROMPT:concept_same.txt}}
+<h4>Real decisions</h4>
+<p>An exact merge, and the model merge that joined “headset” and “head-mounted display”:</p>
+<pre data-lang="json">{{S:dec_exact}}</pre>
+<pre data-lang="json">{{S:dec_headset}}</pre>
+<p>The registry entry of the HRTF, a concept met in one segment only:</p>
+<pre data-lang="json">{{S:reg_hrtf}}</pre>
+<h4>Changes and why</h4>
+<ul>
+<li><b>Deferred, then run.</b> The MVP of 2026-11-13 skipped 3b for time (425 clusters, about 1.5 h on the L40S) and
+built the registry from exact merges: 3,384 concepts, with “headset”, “head-mounted display”, “virtual reality
+headset” and “VR headset” as separate concepts on 11 lecture maps. The rebuild of 2026-11-17 ran 3b in 24 minutes on
+the 96 GB GPU: <b>3,384 → 3,122 concepts</b>.</li>
+<li><b>Acronyms (D8).</b> A group is never named by an acronym; an entry named only by an acronym takes its full name
+from its aliases. A frequent acronym can form a large shared-name cluster that the cap splits (listed as cut pairs).</li>
+<li><b>What is left.</b> Some synonyms stayed apart: “head-mounted display” (C0005) and “virtual reality headset”
+(C0075) were in the same cluster (K0002), and the model kept them as two groups; “interaction” / “user interaction”;
+“iPhone operating system” / “ios”; “field of view” / “horizontal field of view” share the alias FOV
+(<code>pipeline/continue/DEMO_PLAN.md</code>). The pair gold that would measure merges (block 3) is not written yet.</li>
+</ul>
+
+<!-- ------------------------------------------------------------------ 4a -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-gen)">4a</span><h3 id="s4a" data-toc="4a · Definitions">Definitions: one per concept</h3><span class="worker w-gen">Qwen 3.8 27B</span></div>
+<p>One call per concept writes the definition a student sees when they look it up, from the facts that name it.
+The facts are shown in lecture order with the lecture, defining facts marked <code>*</code>, capped at 40 (defining
+facts kept first). The answer: the facts the definition is built from, the definition, <code>defined</code> (false
+when the lectures only use the concept), and <code>misplaced</code> facts that use the name for another thing
+(reported, never split: the check on exact-name merges).</p>
+<dl class="facts-grid">
+<dt>Out</dt><dd><code>stage_4a_definitions/definitions.json</code> <code>{"C1574": {"name", "definition", "defined", "facts", "misplaced", "shown", "defining", "total_facts", "capped"}}</code>; <code>definitions.txt</code>; <code>checks.json</code></dd>
+<dt>Command</dt><dd><code>python scripts/s4a_definitions.py nptel_vr --llm configs/qwen38_27b_vllm_6k_96gb.json [--cap 40] [--seed 1 --out DIR]</code><br>
+<code>python scripts/s4a_definitions.py nptel_vr --from-facts</code> (no model: each definition is the first defining fact, as in the MVP)</dd>
+<dt>Time</dt><dd>3,122 calls in 1 h 47 min (6,466 s) at 128 parallel requests; about 1,800 output tokens per second with the batch full</dd>
+<dt>Result</dt><dd><b>1,316 defined</b> (these are the glossary), 1,806 connecting concepts; 15 capped; 1 retried; flags: <code>defined_mismatch</code> 276, <code>misplaced</code> 29</dd>
+</dl>
+{{PROMPT:concept_definition.txt}}
+<h4>Defined and connecting concepts, and the glossary rule</h4>
+<p>Most terms a course names it never explains: “discount rate” in a list of policy tools, “gigabyte” in a spec. The
+prompt says not to define such a concept from the model's own knowledge, but to write one sentence on what the
+facts show about it, and set <code>defined</code> to false. These 1,806 <b>connecting concepts</b> stay on the concept
+maps and keep their cards; the <b>glossary lists only the 1,316 defined ones</b> (viewer rule since commit
+<code>194d12a</code>).</p>
+<div class="split">
+<div><span class="lbl">Defined · C1574</span><pre data-lang="json">{{S:def_hrtf}}</pre></div>
+<div><span class="lbl">Connecting · C2091</span><pre data-lang="json">{{S:def_control}}</pre>
+<p>A role sentence, not a definition. The demo plan lists “control” among the odd ones to avoid on stage.</p></div>
+</div>
+<p><code>defined_mismatch</code> (276) flags concepts where 4a's <code>defined</code> disagrees with 2c's: true with no defining
+segment, or false although a segment was marked as defining it. It is reported, not acted on.</p>
+<h4>Changes and why</h4>
+<div class="split">
+<div class="before"><span class="lbl">MVP (--from-facts): the first defining fact</span>
+<p><b>presence</b>: “Presence is the psychological side that captures whether a user perceives the immersive qualities that are generated.”</p>
+<p><b>head-mounted display</b>: “The formative years of virtual reality are the second phase of its historical evolution, roughly 1950 to 1990 …”</p>
+<p><b>fully immersive system</b>: “Virtual reality (VR) system categories are based on the experience or psychological aspect, and comprise non-immersive, semi-immersive, and fully immersive systems.”</p></div>
+<div class="after"><span class="lbl">Rebuild: written by the model from the facts</span>
+<p><b>presence</b>: “Presence is a subjective psychological state in which an experience generated by human-made technology is perceived as real, because the user fails to acknowledge the technology's role and perceives computer-generated stimuli as coming from the real world.”</p>
+<p><b>head-mounted display</b>: “A head-mounted display (HMD) is a wearable, mobile visual display that integrates electronic, optical, mechanical, and audio components and uses one or two small screens directly in front of the user's eyes …”</p>
+<p class="small muted">MVP text from <code>git show mvp-2026-11-13:pipeline/output/nptel_vr/stage_4a_definitions/definitions.json</code>.</p></div>
+</div>
+<ul>
+<li><b>Why it was skipped first.</b> On 2026-11-13 the MVP ran 4a <code>--from-facts</code> (no model) to meet a deadline. The
+test report found only about 26% of the 1,107 review cards read like a definition; match-the-pairs, recall,
+crossword clues and “what is X” answers all suffered.</li>
+<li><b>The prompt was revised by Fable before the real run</b> (<code>716e6b5</code>): used-but-not-defined concepts get a role
+sentence and <code>defined: false</code>; no copied facts; the name as given, with its acronym in brackets; at most three
+sentences and 60 words.</li>
+<li><b>Article capitals</b> (<code>3b8deef</code>): 271 definitions began “A virtual …” for a lower-case name; code lowers the
+first letter of the name after a leading article.</li>
+<li>The question box uses the new cards' definitions as its first sentence; on the old layer, “a fully immersive
+system” was answered only as “one of the categories of VR systems” (<code>analysis/qa/STATE.md</code>).</li>
+</ul>
+
+<!-- ------------------------------------------------------------------ 4b -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-gen)">4b</span><h3 id="s4b" data-toc="4b · Goals">Lecture and course goals</h3><span class="worker w-gen">Qwen 3.8 27B</span></div>
+<p>Two levels above the segment sub-goals. One call per lecture groups consecutive segments into <b>objectives</b> and
+writes the <b>lecture goal</b>, each with what it “achieves” for the learner; it sees each segment's sub-goal and the
+concepts it defines and uses. Then one call for the course writes four to eight <b>course goals</b> from the lecture
+goals, each with the lectures that serve it.</p>
+<dl class="facts-grid">
+<dt>Out</dt><dd><code>stage_4b_goals/lecture_goals/lec_&lt;n&gt;.json</code>, <code>course_goals.json</code>, <code>goals.txt</code>, <code>checks.json</code></dd>
+<dt>Command</dt><dd><code>python scripts/s4b_goals.py nptel_vr --llm configs/qwen38_27b_vllm_6k_96gb.json [--only 1,4,16] [--seed 1 --out DIR]</code></dd>
+<dt>Time</dt><dd>63 lecture calls in 3 min 46 s, then the course call alone in 2 min 43 s (one request decodes at about 45 tokens per second); 391 s in all</dd>
+<dt>Result</dt><dd>8 course goals, 63 lecture goals, 125 objectives; <code>in_no_objective</code> 60 (allowed for a closing summary: 61 lectures end with one)</dd>
+</dl>
+{{PROMPT:lecture_goals.txt}}
+{{PROMPT:course_goals.txt}}
+<pre data-lang="json">{{S:goals30}}</pre>
+<pre data-lang="json">{{S:coursegoal}}</pre>
+<p>Checks (reported): a segment number out of range, a segment in two objectives, objectives not consecutive or out of
+order, a segment in no objective, a lecture in no course goal, a course goal's lectures out of order. The prompt gaps
+found while building (lecture keys such as “24b” called numbers, no “achieves” lines) were fixed in <code>c818591</code>.</p>
+
+<!-- ------------------------------------------------------------------ 4c -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-code)">4c</span><h3 id="s4c" data-toc="4c · Lecture graph">The lecture graph</h3><span class="worker w-code">code</span></div>
+<p>Lecture K is needed for lecture L when L uses a concept that K defines and K comes first. The link carries those
+concepts. A concept used everywhere should not make every lecture depend on lecture 1, so it weighs less:</p>
+<div class="callout note"><span class="tag">Hub weighting</span>
+<p>With N lectures and n lectures using a concept, free = max(3, 0.25·N). The concept weighs 1 when n ≤ free, else
+1 − 0.9·(n − free)/(N − free), down to 0.1. A link is a prerequisite when its concepts weigh at least 1; lighter
+links are kept as <code>weak</code>. <b>Direct</b> prerequisites are those not implied through another lecture
+(transitive reduction); the rest are <code>indirect</code>. Defaults proposed, D10.</p></div>
+<dl class="facts-grid">
+<dt>Out</dt><dd><code>stage_4c_lecture_graph/graph.json</code> (links, prerequisites, concept kinds, concept paths), <code>needed/lec_&lt;n&gt;.json</code> (what is needed before a lecture), <code>graph.txt</code>, <code>checks.json</code></dd>
+<dt>Command</dt><dd><code>python scripts/s4c_lecture_graph.py nptel_vr [--hub-share 0.25 --hub-min-lectures 3 --hub-floor 0.1 --min-weight 1]</code></dd>
+<dt>Time</dt><dd>under a second</dd>
+<dt>Result</dt><dd>83 direct, 391 indirect and 245 weak links; 10 hub concepts; lectures 1, 4 and 23 need none; 2,074 concepts used but never defined (assumed); the graph's own consistency checks find no problem</dd>
+</dl>
+<pre data-lang="json">{{S:needed30}}</pre>
+<details><summary>checks.json totals</summary><pre data-lang="json">{{S:graphtotals}}</pre></details>
+<p>A lecture's concepts fall into four kinds: <code>introduced</code> (first defined here), <code>met_again</code> (defined
+earlier), <code>defined_later</code>, <code>assumed</code> (never defined). Lecture 30 has 23, 7, 0 and 15. Recall activities and
+“what do I need before lecture N” answers read this. A weakness found by the QA work: a link counts any single
+mention, so lists of prerequisites held odd items; the QA tool now ranks earlier concepts by how often the lecture
+uses them and lists single mentions as “in passing” (<a href="#qa">QA</a>).</p>
+
+<!-- ------------------------------------------------------------------ 4d -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-emb)">4d</span><h3 id="s4d" data-toc="4d · Knowledge layer">The knowledge layer: assemble and check</h3><span class="worker w-code">code</span><span class="worker w-emb">embedder</span></div>
+<p>Stage 4d writes <code>output/nptel_vr/knowledge/</code>, the folder the question answering, the activities and the viewer
+read, and checks it: every file against <code>schemas/knowledge.schema.json</code> (a standard-library checker,
+<code>scripts/schema_check.py</code>), every reference against the IDs the layer defines, no ID defined twice, every fact
+with a vector, every concept in the name index and the graph. It exits 1 when anything is found.</p>
+<dl class="facts-grid">
+<dt>Command</dt><dd><code>python scripts/s4d_assemble.py nptel_vr [--embed-model Qwen/Qwen3-Embedding-0.6B] [--check]</code></dd>
+<dt>Time</dt><dd>3 s with the fact embeddings cached (2026-11-17); the embeddings run on the GPU (on the CPU they were too slow)</dd>
+<dt>Result</dt><dd>“72 files, 206903 references: all good”</dd>
+</dl>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Holds</th><th class="n">Size</th></tr>
+<tr><td><code>index.json</code></td><td>course, lectures, files, counts, the embedding model, name keying, graph params</td><td class="n">4 KB</td></tr>
+<tr><td><code>names.json</code></td><td>every name, alias and acronym (lower case, hyphens as spaces) → its concepts: what <code>check_concept</code> looks up</td><td class="n">508 KB</td></tr>
+<tr><td><code>concepts.json</code></td><td>a card per concept: definition, where defined (lecture, segment, time), facts (defining first), relationships both ways, lectures, merge record</td><td class="n">4.9 MB</td></tr>
+<tr><td><code>relations.json</code></td><td>the relationships</td><td class="n">1.5 MB</td></tr>
+<tr><td><code>facts.json</code></td><td>the fact store: text, evidence, segment, lecture, time, concepts</td><td class="n">984 KB</td></tr>
+<tr><td><code>fact_embeddings.json</code></td><td>one 1,024-dimension vector per fact (Qwen3-Embedding-0.6B)</td><td class="n">21 MB</td></tr>
+<tr><td><code>lectures/lec_&lt;n&gt;.json</code></td><td>segments, concepts by kind, the lecture's concept map, goal, objectives, course goals, prerequisites</td><td class="n">644 KB</td></tr>
+<tr><td><code>goals.json</code>, <code>lecture_graph.json</code>, <code>assumed.json</code></td><td>the goal tree; 4c's graph with each concept's path; concepts never defined</td><td class="n">1.4 MB</td></tr>
+</table></div>
+<details><summary>index.json</summary><pre data-lang="json">{{S:index}}</pre></details>
+<details><summary>A concept card: concepts.json, C1574</summary><pre data-lang="json">{{S:card_hrtf}}</pre></details>
+<details><summary>A fact in the store: facts.json</summary><pre data-lang="json">{{S:fact_store}}</pre></details>
+<details><summary>The name index: names.json (an acronym can name two concepts)</summary><pre data-lang="json">{{S:names}}</pre></details>

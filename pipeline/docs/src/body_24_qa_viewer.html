@@ -1,0 +1,127 @@
+
+<!-- ------------------------------------------------------------------ QA -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-qa)">QA</span><h3 id="qa" data-toc="Question answering (the tool agent)">Question answering: a tool agent over the layer</h3><span class="worker w-qa">Gemma 4 12B</span><span class="worker w-emb">query embedder</span></div>
+<p>A learner's question goes to a small model with five tools over <code>knowledge/</code>. It may only answer from what
+the tools return, and must put the IDs it used in square brackets after each claim. Code then turns each ID into
+“(lecture N, m:ss)”, drops any ID no tool returned, and reads the model's last line, <code>COVERED: yes / partly / no</code>.</p>
+<figure class="wide"><div class="frame">
+<svg viewBox="0 0 1040 250" role="img" aria-labelledby="qat">
+  <title id="qat">The question-answering loop</title>
+  <defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+  <rect x="8" y="40" width="150" height="90" rx="12" class="box"/>
+  <text x="22" y="66" class="t-l">Question</text><text x="22" y="88" class="t-s ink2">+ the lecture being</text><text x="22" y="106" class="t-s ink2">watched (optional)</text>
+  <rect x="186" y="30" width="200" height="110" rx="12" class="k-qa sw"/>
+  <text x="200" y="56" class="t-l">Round 0</text><text x="200" y="78" class="t-s">thinking on, tool_choice auto</text><text x="200" y="98" class="t-s">chooses tools</text><text x="200" y="118" class="t-s mut">median 1.6–1.7 s</text>
+  <rect x="414" y="30" width="230" height="110" rx="12" class="k-code sw"/>
+  <text x="428" y="56" class="t-l">Tools (local, ≤ 0.7 s)</text><text x="428" y="78" class="t-s">check_concept · fact_lookup</text><text x="428" y="98" class="t-s">lecture_dependencies</text><text x="428" y="118" class="t-s">lecture_overview · course_goals</text>
+  <rect x="672" y="30" width="170" height="110" rx="12" class="k-qa sw"/>
+  <text x="686" y="56" class="t-l">Rounds 1–4</text><text x="686" y="78" class="t-s">thinking off</text><text x="686" y="98" class="t-s">more tools, or</text><text x="686" y="118" class="t-s">the answer</text>
+  <rect x="870" y="30" width="162" height="110" rx="12" class="k-acc sw"/>
+  <text x="884" y="56" class="t-l">Answer</text><text x="884" y="78" class="t-s">IDs → (lecture, m:ss)</text><text x="884" y="98" class="t-s">unknown IDs dropped</text><text x="884" y="118" class="t-s">COVERED line read</text>
+  <path d="M158 85 H184" class="arrow" marker-end="url(#ah5)"/><path d="M386 85 H412" class="arrow" marker-end="url(#ah5)"/>
+  <path d="M644 85 H670" class="arrow" marker-end="url(#ah5)"/><path d="M842 85 H868" class="arrow" marker-end="url(#ah5)"/>
+  <path d="M757 140 V170 H529 V142" class="arrow" marker-end="url(#ah5)"/><text x="560" y="190" class="t-s mut">another tool call (at most 5 rounds; the last must answer)</text>
+  <path d="M529 30 V20 H951 V28" class="arrow" marker-end="url(#ah5)"/><text x="560" y="13" class="t-s mut">early exit: every tool result found nothing close → answer “not covered” at once</text>
+  <text x="8" y="232" class="t-s mut">Streaming: a “step” event per tool call, “draft” events while the answer is written, “reset” if a round's text turns into tool calls, then “done”.</text>
+</svg></div>
+<figcaption>The loop in <code>qa/answer.py</code>. Times are medians from <code>analysis/qa/STATE.md</code> on the local RTX 5070.</figcaption></figure>
+<dl class="facts-grid">
+<dt>In</dt><dd>the question, optionally the lecture being watched; <code>knowledge/</code> (or <code>$QA_OUTPUT/&lt;course&gt;/knowledge/</code>)</dd>
+<dt>Out</dt><dd><code>{"answer", "citations": [{"fact", "lecture", "segment", "start", "end", "text"}], "steps", "covered"}</code>; logs in <code>output/&lt;course&gt;/qa/answers.jsonl</code> and <code>llm_calls.jsonl</code> (gitignored)</dd>
+<dt>Command</dt><dd><code>python -m qa "What is an HMD?" [--lecture 4] [--course nptel_vr] [--config FILE] [--think | --no-think] [--json]</code>; <code>python -m qa --stop</code></dd>
+<dt>Model</dt><dd>Gemma 4 12B QAT (<code>unsloth/gemma-4-12B-it-qat-GGUF</code>, <code>UD-Q4_K_XL</code>) on llama.cpp, <code>configs/gemma4_12b_llamacpp.json</code> (port 8092, 6 slots, thinking up to 8,192 tokens, temperature 1.0); on a cloud instance <code>configs/gemma4_12b_demo.json</code> or the vLLM <code>configs/gemma4_12b_vllm_demo.json</code> (<code>google/gemma-4-12B-it</code>). Queries embedded with Qwen3-Embedding-0.6B on the CPU.</dd>
+<dt>Time</dt><dd>local RTX 5070: median 4.9 s, p90 7.6 s, max 8.9 s (34 answers); vLLM on the RTX PRO 6000: median 4.5 s, max 6.6 s, none over 8 s (17 answers); first words after a median 3.2 s when streamed</dd>
+</dl>
+{{PROMPT:qa_system.txt}}
+{{PROMPT:qa_tools.json}}
+<div class="tablewrap"><table>
+<tr><th>Tool</th><th>What it returns</th><th>Used for</th></tr>
+<tr><td><code>check_concept(name)</code></td><td>the card: definition, where defined (lecture, time, the first defining fact), up to 10 facts with IDs and times, up to 10 relationships, the lectures leading to it. Finds aliases, acronyms, plurals and close spellings (difflib ≥ 0.84). An unknown name returns its 5 closest facts, so no extra round is needed.</td><td>“what is X”, “how does X work”, “where is X taught”, each side of “X vs Y”</td></tr>
+<tr><td><code>fact_lookup(query, rephrasings, lecture)</code></td><td>the 8 facts closest to the query or any of up to 4 rewordings (best cosine), with a note when the best score is under 0.55</td><td>how / why questions, steps, questions across lectures, unknown terms</td></tr>
+<tr><td><code>lecture_dependencies(lecture)</code></td><td>direct prerequisite lectures; earlier concepts ranked by how many of the lecture's facts use them (≥ 2 uses with definition, single uses “in passing”); hubs named apart; lectures to revise</td><td>“what do I need before lecture N”</td></tr>
+<tr><td><code>lecture_overview(lecture)</code></td><td>goal, objectives, segments with times and sub-goals, concepts by kind, course goals</td><td>“what is lecture N for”</td></tr>
+<tr><td><code>course_goals()</code></td><td>the course goals and their lectures</td><td>“what is this course about”</td></tr>
+</table></div>
+<h4>A real answer, with its timing</h4>
+<p>“What is the difference between immersion and presence?” on the rebuilt layer, local GPU
+(<code>analysis/qa/bench_think_newlayer.jsonl</code>, B07, run 0). Round 0 thought for 716 characters and called
+<code>check_concept("immersion")</code>; round 1 (no thinking) called it for presence; round 2 wrote the answer:</p>
+<pre data-lang="text" class="wrap">{{S:qa_b07}}</pre>
+<h4>Out of course</h4>
+<pre data-lang="text" class="wrap">{{S:qa_b04}}</pre>
+
+<h4>Changes and why</h4>
+<div class="tablewrap"><table>
+<tr><th>34 answers each (17 questions × 2 runs)</th><th class="n">median</th><th class="n">mean</th><th class="n">p90</th><th class="n">max</th><th class="n">over 8 s</th></tr>
+<tr><td>before (thinking every round, cut-off 0.4)</td><td class="n">5.4</td><td class="n">6.4</td><td class="n">12.1</td><td class="n">16.2</td><td class="n">9</td></tr>
+<tr><td>thinking in round 0 only + early exit</td><td class="n">4.8</td><td class="n">5.2</td><td class="n">8.0</td><td class="n">9.3</td><td class="n">4</td></tr>
+<tr><td>shipped, rebuilt layer</td><td class="n">4.9</td><td class="n">5.2</td><td class="n">7.6</td><td class="n">8.9</td><td class="n">3</td></tr>
+<tr><td>experiment: thinking off everywhere (not shipped)</td><td class="n">3.1</td><td class="n">3.2</td><td class="n">5.4</td><td class="n">5.9</td><td class="n">0</td></tr>
+<tr><td>vLLM on the RTX PRO 6000, shipped (17 answers)</td><td class="n">4.5</td><td class="n"></td><td class="n"></td><td class="n">6.6</td><td class="n">0</td></tr>
+</table></div>
+<p class="small muted">Seconds; <code>analysis/qa/STATE.md</code> and the bench files. The vLLM row is computed from <code>bench_vllm_shipped.jsonl</code>.</p>
+<ul>
+<li><b>Where the time went: thinking before the final answer</b> (1,400–2,400 characters, 7–14 s), not the tools
+(0–0.9 s). Later rounds are now sent with <code>enable_thinking: false</code>; llama.cpp honours it per request and keeps
+its KV reuse (<code>ebcc593</code>).</li>
+<li><b>Early exit.</b> When every tool result so far found nothing close (<code>ToolResult.found</code> false), the next round
+must answer (“not covered” answers took about 20 s before; now about 4.4 s).</li>
+<li><b>Thinking off everywhere was faster and wrong.</b> Without thinking in round 0 the model answered a question the
+course does teach (B17, statistical tests, lecture 46) with “the course does not cover this”, without a search. Forcing
+a tool call did not work on llama.cpp: <code>tool_choice: "required"</code> made the model write its answer and run to
+<code>max_tokens</code> (3+ minutes), and a named function was ignored. On vLLM the forced variant had median 3.7 s but
+answered B17 without a search too (<code>04a797a</code>). Not shipped; the switches are <code>qa.answer.ROUND0_THINK</code> and <code>ROUND0_TOOL_CHOICE</code>.</li>
+<li><b>Calibrated “no close match”.</b> The cut-off was a guess (0.4). On 80 labelled queries
+(<code>analysis/qa/calibration_queries.json</code>) in-course scores run 0.63–0.86 and out-of-course 0.21–0.72 (AUC 0.989);
+0.55 flags 27 of 39 out-of-course queries and none in-course (0.4 flagged 18).</li>
+<li><b>Prerequisites ranked by use.</b> Lists held odd items (“HMDs: displays from the 1950s” before lecture 16) because the
+graph links lectures on any single mention and the tool listed concepts in ID order. Now ranked by uses in the lecture.</li>
+<li><b>Citations tidied</b>: a time the model wrote before a citation is removed (the label carries the time); repeated
+labels in one line are written once; a list whose items share one label gets it once (<code>90ffe5e</code>). A tool's name
+written as a citation (“[lecture_dependencies]”) is removed (<code>c0a0c8d</code>).</li>
+<li><b>Streaming</b> (<code>qa.answer_stream</code>, <code>efa7e21</code>): time to the first draft median 3.2 s against 3.2–6.6 s
+to the whole answer.</li>
+</ul>
+
+<!-- ------------------------------------------------------------------ viewer -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-code)">Viewer</span><h3 id="viewer" data-toc="The viewer">The viewer</h3><span class="worker w-code">standard-library Python + one page</span></div>
+<span class="redesign">As of 2026-11-18 · being redesigned</span>
+<p>The viewer is what a learner opens. This describes it as it is on main; its look is being redesigned by another
+agent. <code>viewer/serve.py</code> (standard library only) serves the page (<code>index.html</code>, <code>app.js</code>,
+<code>style.css</code>, vendored <code>dagre</code> for map layout), the layers through lean JSON routes, the videos with
+HTTP Range, and the question box. Every layer is optional: a lecture without <code>knowledge/</code> shows its 1b segments
+and its 0a transcript.</p>
+<dl class="facts-grid">
+<dt>Command</dt><dd><code>python viewer/serve.py nptel_vr [--port 8765] [--host 127.0.0.1] [--root DIR] [--media DIR] [--output DIR] [--activities NAME] [--qa-path DIR] [--warm] [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]</code>, then open http://localhost:8765</dd>
+<dt>Pages</dt><dd><code>#/</code> course home (goals, lectures by week); <code>#/lecture/&lt;key&gt;[/&lt;tab&gt;]</code> with tabs overview, concepts, map, before, activities; <code>#/lecture/&lt;key&gt;/t/&lt;sec&gt;</code> seeks the video; <code>#/concept/C0042</code> a card; <code>#/glossary</code>; <code>#/map</code> (course map and concept explorer); <code>#/review</code></dd>
+<dt>Flags in the page</dt><dd><code>?dev=1</code> developer mode (IDs, counts, judge marks, hidden items; learners never see statistics); <code>?yt=1</code> / <code>?yt=0</code> prefer YouTube; the theme toggle</dd>
+</dl>
+<ul>
+<li><b>Glossary</b>: only the 1,316 defined concepts; connecting concepts stay on maps and keep their cards, and come in
+the glossary route by name only, for the explorer's search. Search by name, alias or acronym (“HRTF”).</li>
+<li><b>Hiding</b>: judge-failed items by the per-kind rule above; activities marked <code>unresolved</code> show only in developer mode.</li>
+<li><b>Concept maps</b>: a key view of about 20 concepts by default and an “all N, by part” view; the course map shows
+lectures by week with prerequisite arcs (<code>0965ba9</code>).</li>
+<li><b>Videos</b>: local files with Range, or YouTube by the <code>youtube_id</code> in <code>titles.tsv</code> when a file is missing.</li>
+</ul>
+<h4>Speed work and why</h4>
+<p>The live demo of 2026-11-13 felt choppy: the page loaded the four big knowledge files (9.6 MB) on every visit, and
+the demo was to run through an SSH tunnel. The rework (<code>analysis/viewer/perf.md</code>): lean routes built once and
+gzip-compressed with ETags (a reload answers 304); static files versioned and cached for good; lectures loaded lazily
+with neighbours prefetched when idle; tabs and map views built once and kept; the glossary rendered in slices; video
+answered in 4 MB chunks and paced at twice its bitrate so a tunnel never queues minutes of video ahead of the page;
+answers streamed.</p>
+<div class="tablewrap"><table>
+<tr><th>Through an emulated SSH tunnel (200 ms RTT, 10 Mbit/s, 4× CPU slowdown)</th><th class="n">Before</th><th class="n">After</th></tr>
+<tr><td>Home, first visit</td><td class="n">9,297 ms (9,636 kB)</td><td class="n">1,082 ms (128 kB)</td></tr>
+<tr><td>Home again</td><td class="n">8,894 ms</td><td class="n">426 ms</td></tr>
+<tr><td>Lecture 5 opened directly</td><td class="n">9,127 ms</td><td class="n">641 ms</td></tr>
+<tr><td>Glossary</td><td class="n">309 ms + 882 ms of long tasks</td><td class="n">343 ms, no long task</td></tr>
+<tr><td>Page start to video metadata</td><td class="n">9,980 ms</td><td class="n">1,893 ms</td></tr>
+<tr><td>Segment click (seek)</td><td class="n">1,875 ms</td><td class="n">576 ms</td></tr>
+<tr><td>Streamed answer: first words (fake 3 s answer)</td><td class="n">—</td><td class="n">1,226 ms</td></tr>
+</table></div>
+<p class="small muted">Measured with headless Chrome over CDP (<code>analysis/viewer/tools/perf.mjs</code>, <code>video.mjs</code>) through
+<code>tools/tunnel.py</code>, a stand-in for <code>ssh -L</code> (a real tunnel and <code>tc netem</code> were not possible on the test
+machine). On demo day, SSH from the user's network to us-east ran at about 40 kB/s each way, so the demo plan says to
+pick a region near the venue and time the tunnel first.</p>

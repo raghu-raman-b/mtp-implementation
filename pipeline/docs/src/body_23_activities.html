@@ -1,0 +1,163 @@
+
+<!-- ------------------------------------------------------------------ 5 -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-gen)">5</span><h3 id="s5" data-toc="5 · Activities">Activities: ten kinds, code checks, a judge, one rewrite</h3><span class="worker w-gen">Qwen 3.8 27B</span><span class="worker w-code">code</span></div>
+<p>Stage 5 reads only the knowledge layer and writes what a learner does around each lecture. Every activity lists the
+facts and concepts it is built from, so every item can be checked against them and every answer linked to a moment of
+the video. A model writes only the kinds that need language; the others are code.</p>
+<dl class="facts-grid">
+<dt>In</dt><dd><code>knowledge/</code> (concepts, relations, facts, lectures, lecture graph), <code>course.json</code></dd>
+<dt>Out</dt><dd><code>activities/lec_&lt;n&gt;.json</code>, <code>course.json</code> (review cards), <code>checks.json</code>, <code>activities.txt</code> (readable, with every verdict), <code>llm/</code>; the contract is <code>schemas/activities.md</code></dd>
+<dt>Command</dt><dd><code>python scripts/s5_activities.py nptel_vr --llm configs/qwen38_27b_vllm_6k_96gb.json --judge [--judge-rewrite] [--judge-llm CFG] [--only 1-5] [--kinds quiz,recap] [--out DIR]</code><br>
+<code>python scripts/s5_activities.py nptel_vr --check</code> (the contract check alone)</dd>
+<dt>Time</dt><dd>writers: 945 calls in 1 h 9 min; judge: 915 calls in 1 h 1 min (job total 7,829 s); one rewrite round for quizzes and open questions: 246 rewrites + 246 re-judgements in 34 min; the recap re-judge after its criteria changed: 347 calls in 22 min. All at 128 parallel requests on the RTX PRO 6000, 2026-11-17.</dd>
+<dt>Result</dt><dd>1,168 activities: quiz 347, recap 347, concept map 63, complete the map 63, match the pairs 63, open question 63, crossword 62, recall 62, odd one out 57, put in order 41; 1,316 review cards. 197 units retried by the code checks, none unresolved, no item dropped; the contract check “all good”.</dd>
+</dl>
+
+<h4 id="s5-kinds">The ten kinds and spaced review</h4>
+<div class="tablewrap"><table>
+<tr><th>Kind</th><th>Where</th><th>Made by</th><th>How</th><th class="n">Count</th></tr>
+<tr><td>recall</td><td>before the lecture</td><td>code</td><td>the concepts the lecture graph says it needs (direct prerequisites first), at most 6; “What is X?” with its definition and the lecture that defines it</td><td class="n">62</td></tr>
+<tr><td>quiz</td><td>after each segment</td><td>model</td><td>3–5 questions from the segment's facts; wrong options from related concepts and other facts of the lecture; code shuffles the options</td><td class="n">347</td></tr>
+<tr><td>recap</td><td>after each segment</td><td>model</td><td>2–5 key points with their facts, and a 2–4 sentence summary of how they connect</td><td class="n">347</td></tr>
+<tr><td>put in order</td><td>segment or lecture</td><td>model</td><td>only where the facts state an order; zero to two per lecture</td><td class="n">41</td></tr>
+<tr><td>concept map</td><td>after the lecture</td><td>code</td><td>the lecture's relationships as edges, each with its facts</td><td class="n">63</td></tr>
+<tr><td>complete the map</td><td>after the lecture</td><td>code</td><td>the map with up to 4 blanks (a label, or a concept on no other edge), 3–4 options each; one blank per concept pair</td><td class="n">63</td></tr>
+<tr><td>match the pairs</td><td>after the lecture</td><td>code</td><td>up to 8 concepts and the first sentence of their definitions, names masked</td><td class="n">63</td></tr>
+<tr><td>crossword</td><td>after the lecture</td><td>code + model</td><td>code lays out up to 12 concept names (greedy, best crossing); the model writes the clues from the definitions</td><td class="n">62</td></tr>
+<tr><td>odd one out</td><td>after the lecture</td><td>model</td><td>three members of a group the facts state and one near miss; zero to three puzzles</td><td class="n">57</td></tr>
+<tr><td>open question</td><td>after the lecture</td><td>model</td><td>2–4 questions needing two or more facts; reference answer and its key facts</td><td class="n">63</td></tr>
+<tr><td>spaced review</td><td>course-wide</td><td>code</td><td>a card per defined concept: name (and acronym) on the front, definition on the back; scheduled per learner in the browser</td><td class="n">1,316 cards</td></tr>
+</table></div>
+
+<h4>The writer prompts</h4>
+<p>Each prompt says what the learner will see (and what they will not: the facts), gives the rules with examples from
+another subject, and ends with a self-test the model runs before answering. The quiz prompt, for instance, asks it to
+“cover the options”, “compare lengths” and “argue for each wrong option as a learner would”.</p>
+{{PROMPT:activity_quiz.txt}}
+{{PROMPT:activity_recap.txt}}
+{{PROMPT:activity_open_question.txt}}
+{{PROMPT:activity_odd_one_out.txt}}
+{{PROMPT:activity_put_in_order.txt}}
+{{PROMPT:activity_crossword.txt}}
+
+<h4>Lecture 30, one of each</h4>
+<div class="split">
+<div><span class="lbl">Quiz 30/A9, question 1 (segment S4)</span><pre data-lang="json">{{S:quiz30}}</pre></div>
+<div><span class="lbl">Recap 30/A10 (segment S4)</span><pre data-lang="json">{{S:recap30}}</pre></div>
+</div>
+<div class="split">
+<div><span class="lbl">Crossword 30/A14 (two of ten entries)</span><pre data-lang="json">{{S:cross30}}</pre></div>
+<div><span class="lbl">Odd one out 30/A15</span><pre data-lang="json">{{S:odd30}}</pre>
+<span class="lbl">Match the pairs 30/A13 (one pair)</span><pre data-lang="json">{{S:pairs30}}</pre></div>
+</div>
+<div class="split">
+<div><span class="lbl">Open question 30/A16</span><pre data-lang="json">{{S:open30}}</pre></div>
+<div><span class="lbl">Recall 30/A0 (two of six items)</span><pre data-lang="json">{{S:recall30}}</pre>
+<span class="lbl">Complete the map 30/A12 (one blank and its edge)</span><pre data-lang="json">{{S:blank30}}</pre></div>
+</div>
+<details><summary>A review card: course.json</summary><pre data-lang="json">{{S:card30}}</pre></details>
+
+<h4 id="s5-checks">Code checks: hard and soft</h4>
+<p>Every model answer is checked in code. A failure goes back to the model with the problem written out, as the next
+turn of the same conversation. The checks come in two classes (Fable's review, <code>analysis/activities/review_prompts.md</code> section 7):</p>
+<ul>
+<li><b>Hard</b>: an item that still has the problem after the last attempt is dropped. A cited fact number outside the
+list; a count out of range; quiz options not one right and three wrong, two the same, “all of the above”, a question
+not ending in “?”; an odd-one-out group of the wrong size or reused; put-in-order steps not 3–8; a clue containing
+its answer, over 15 words or the same as another clue.</li>
+<li><b>Soft</b>: retried, but an item that still fails is kept and flagged by name, and the judge decides.
+<code>source_talk</code> (“the segment”, “the facts state”, “according to the lecture”) for every kind;
+<code>correct_longest</code> (the right option over 1.2 times and 12 characters longer than every wrong one) and
+<code>correct_longest_share</code>, <code>absolute_wrong</code> for quizzes; <code>text_repeats_points</code>,
+<code>point_long</code>, <code>text_length</code> for recaps; <code>order_cue</code>; <code>shared_word</code>, <code>length_tell</code>;
+<code>two_questions</code>, <code>reference_long</code>; <code>clue_list_place</code>.</li>
+<li><b>Fixes in code</b>: options and clues lose a trailing full stop; odd-one-out items get a capital; final masking
+hides only the answer's own name and its plain forms.</li>
+</ul>
+<p>A real retry, lecture 30's first quiz (<code>checks.json</code>):</p>
+<pre data-lang="text" class="wrap">{{S:retry30}}</pre>
+
+<h4 id="s5-judge">The judge, the rewrite and the hiding rules</h4>
+<p>With <code>--judge</code>, one call per unit (a segment's quiz or recap, a lecture's puzzles, exercises, questions or
+clues) checks every item against named criteria, after the code checks. The judge sees what the writer saw, with the
+same fact numbers, and the items as the learner will see them (quiz options in their shuffled order). It must do a
+piece of work before deciding (the <code>check</code> field: for a quiz, the letters of every option the facts make
+correct, found before reading the key) and name the criteria an item fails. In doubt it fails an item on the criteria
+where a learner would be taught something wrong, and passes it on criteria of form.</p>
+{{PROMPT:activity_judge_quiz.txt}}
+{{PROMPT:activity_judge_recap.txt}}
+{{PROMPT:activity_judge_open_question.txt}}
+{{PROMPT:activity_judge_odd_one_out.txt}}
+{{PROMPT:activity_judge_put_in_order.txt}}
+{{PROMPT:activity_judge_crossword.txt}}
+<p>With <code>--judge-rewrite</code>, a unit with a failed item gets one rewrite: the writer's conversation continues with
+<code>prompts/activity_rewrite.txt</code>, one line per failed item with the judge's criteria and reason; the code checks
+run again, then the judge once more. The rewrite is kept only when the judge fails strictly fewer of its items.
+Nothing is dropped on a verdict: what still fails is flagged <code>judge_failed</code>.</p>
+{{PROMPT:activity_rewrite.txt}}
+<p>A real verdict, the crossword of lecture 30, clue 4:</p>
+<pre data-lang="json">{{S:verdict30}}</pre>
+<div class="tablewrap"><table>
+<tr><th>Kind</th><th class="n">Items judged</th><th class="n">Failed (first judgement)</th><th class="n">Units rewritten</th><th class="n">Rewrites kept</th><th class="n">Failed after the rewrite</th></tr>
+<tr><td>quiz</td><td class="n">1,164</td><td class="n">285</td><td class="n">201</td><td class="n">129</td><td class="n">102</td></tr>
+<tr><td>recap</td><td class="n">1,707</td><td class="n">593</td><td class="n">—</td><td class="n">—</td><td class="n">593</td></tr>
+<tr><td>crossword</td><td class="n">645</td><td class="n">82</td><td class="n">—</td><td class="n">—</td><td class="n">82</td></tr>
+<tr><td>open question</td><td class="n">220</td><td class="n">62</td><td class="n">45</td><td class="n">31</td><td class="n">24</td></tr>
+<tr><td>odd one out</td><td class="n">133</td><td class="n">39</td><td class="n">—</td><td class="n">—</td><td class="n">39</td></tr>
+<tr><td>put in order</td><td class="n">42</td><td class="n">25</td><td class="n">—</td><td class="n">—</td><td class="n">25</td></tr>
+<tr class="total"><td>all</td><td class="n">3,911</td><td class="n">1,086</td><td class="n">246</td><td class="n">160</td><td class="n">865</td></tr>
+</table></div>
+<p class="small muted">Computed from <code>activities/checks.json</code> (per unit: <code>judge.rounds[0]</code> and <code>judge.failed_items</code>);
+totals match <code>totals.judge</code>. A recap's items are its points plus the text (item 0). The rewrite round ran for
+quizzes and open questions only.</p>
+<p>What a learner sees is decided by a per-kind rule in the viewer (<code>HIDE_JUDGE_FAILED</code> in
+<code>viewer/serve.py</code>, the coordinator's decision of 2026-11-17). In developer mode every failed item is shown and
+marked with its criteria.</p>
+<div class="tablewrap"><table>
+<tr><th>Kind</th><th>A judge-failed item is hidden from learners when it failed …</th></tr>
+<tr><td>put in order, odd one out, open question</td><td>any criterion</td></tr>
+<tr><td>quiz</td><td><code>answerable</code>, <code>one_answer</code>, <code>clear</code> or <code>no_source_talk</code> (kept when only <code>no_giveaway</code> or <code>worth_asking</code> failed)</td></tr>
+<tr><td>recap</td><td><code>no_source_talk</code> (points only; the text is never hidden)</td></tr>
+<tr><td>crossword</td><td>never (a clue cannot leave the grid)</td></tr>
+</table></div>
+<p>The result, from <code>pipeline/continue/DEMO_PLAN.md</code>: learners see 1,136 activities; 32 whole activities and 35
+of 1,163 quiz questions are hidden.</p>
+
+<h4>Changes and why</h4>
+<p>The MVP's activity prompts (2026-11-13) were written in a hurry by Opus and never reviewed. Fable read the 63
+lectures' outputs against their facts, counted each weakness with a rule that code could later apply, and rewrote the
+prompts and wrote the six judges (<code>312cb6c</code>, <code>analysis/activities/review_prompts.md</code>).</p>
+<div class="split">
+<div class="before"><span class="lbl">MVP quiz: the right option is the long one (18/A18, Q2)</span><pre data-lang="json">{{S:mvp_quiz}}</pre>
+<p>The prompt had said “about the same length as the correct one”, and the model did not act on it:</p>
+<pre data-lang="prompt">{{S:mvp_quiz_prompt.txt}}</pre></div>
+<div class="after"><span class="lbl">Rebuild: an order of work, a self-test, a soft check, a judge</span>
+<p>“Write the correct option first, then build each wrong option to match it … At least one wrong option is as long
+as the correct one or longer.” Plus the <code>correct_longest</code> check with retry and the judge's
+<code>no_giveaway</code> criterion. See quiz 30/A9 above: four options of one shape.</p>
+<p><b>The correct option is the single longest in 52% of MVP questions (751 of 1,443) and 14% now (160 of 1,163).</b>
+Chance is 25%.</p></div>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Kind</th><th>Found in the MVP (counted or read)</th><th>Changed</th></tr>
+<tr><td>quiz</td><td>longest correct option 52%; wrong options made false with “only”/“always” 155 (11%); 69 questions speak of the segment or the facts</td><td>order of work, self-test, no absolutes, no two-by-two option sets, soft checks, judge</td></tr>
+<tr><td>recap</td><td>142 of 347 texts repeat the points; points that cannot be read alone; meaning shifted in rewording</td><td>the points say what to remember, the text how they connect; <code>text_repeats_points</code></td></tr>
+<tr><td>put in order</td><td>at least 5 of 76 not a sequence; about 10 solvable from the wording (“started / executed / completed”); 23 with no order word in any cited fact</td><td>an order must be stated by the facts; a swap test; an example whose right answer is the empty list (MVP: 76 exercises; now 41 put-in-order activities)</td></tr>
+<tr><td>odd one out</td><td>about a quarter contestable: the group's own name as the odd item, “not in the list” groups, the form gives it away (28)</td><td>a group named by a fact; a near miss of the same sort; one answer; <code>shared_word</code></td></tr>
+<tr><td>open question</td><td>two questions joined by “and” in 81 of 240; forced links to early lectures; 51 of 63 lectures at the maximum of four</td><td>one thread, earlier lectures only when built on, direct answer first, about 80 words</td></tr>
+<tr><td>crossword</td><td>50 clues give a place in a list; 17 duplicate clues in 4 grids; 332 end with a full stop, 276 do not</td><td>what the thing is or does; read against every other answer; no full stop; at most 15 words</td></tr>
+<tr><td>complete the map, match the pairs</td><td>5/A10 blanks two edges between the same pair; masked blanks read oddly; twin rows</td><td>one blank per concept pair; no prefix labels as options; skip a definition with the name inside; real definitions from 4a</td></tr>
+</table></div>
+<p><b>The recap judge was too strict on wording.</b> Its first run failed 969 recap items. Reading them, Fable found it
+failed paraphrases and dropped details that do not change what is true. Criteria 1 and 2 were rewritten to “judge the
+meaning, not the wording” (<code>d730cd4</code>) and the recaps judged again: 593 items failed. Over all kinds the
+judge's failures went from <b>1,465 to 1,086</b> (the counts are in the judge cache,
+<code>activities/llm/cache.jsonl</code>, keys <code>judge1:recap:*</code>, old and new).</p>
+<details><summary>The old criteria 1 and 2 <span class="meta">git show d730cd4^:pipeline/prompts/activity_judge_recap.txt</span></summary>
+<pre data-lang="prompt">{{S:old_recap_judge.txt}}</pre></details>
+<p><b>Odd one out, lectures 1 and 26</b> failed their code checks on every attempt at 6k thinking (“the three group
+items all contain ‘reality’…”, “the odd item is much longer”) and were rerun with a 10,240-token budget
+(<code>configs/qwen38_27b_vllm_10k_96gb.json</code>): lecture 26 now has a puzzle; for lecture 1 the model answered with none.</p>
+<p><b>The judge is not yet measured.</b> The review asked to run it three times on a seed set of known failures
+and passes before letting it drop anything (listed in <a href="#ev-activities">Evaluation</a>). That has not been
+done; so the judge only flags, and the viewer hides by the rule above.</p>

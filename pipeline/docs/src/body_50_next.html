@@ -1,0 +1,64 @@
+
+<!-- ======================================================================= PART V -->
+<div class="part-head" data-part="V · Limits and what's next"><span class="num">Part V · Limits and what's next</span><h2 id="limits" data-toc="Known limits">Known limits</h2>
+<p>What is weak in the course as built, from the demo plan's “avoid on stage” list and the status notes, then the
+fixes planned next, then longer-term work. Each limit names where it shows.</p></div>
+<div class="tablewrap"><table>
+<tr><th>Limit</th><th>Where it shows</th><th>Size</th></tr>
+<tr><td>Recap texts the judge failed are still shown (the hiding rule hides recaps only for source talk)</td><td>4/A2, 9/A7, 30/A2, 30/A4, 30/A8, 36/A2, 36/A4 …</td><td>222 of 347 texts; 371 failed points</td></tr>
+<tr><td>Crosswords with judge-failed clues are shown (a clue cannot leave a grid)</td><td>51/A21 (6 of 12 clues), 40/A18 (5), 57/A16 (5 of 8), 29/A11 (4), 5/A12 (3 of 5) …</td><td>82 failed clues</td></tr>
+<tr><td>Duplicate concepts left after the merge</td><td>head-mounted display / virtual reality headset (both defined, together on 7 lecture maps); interaction / user interaction; iPhone operating system / ios</td><td>—</td></tr>
+<tr><td>Two concepts share an alias</td><td>field of view / horizontal field of view (both “FOV”); “VR” also matches “virtual reality headset”</td><td>—</td></tr>
+<tr><td>Odd “also known as” lists</td><td>presence (“present”, “presence results”, “presence ratings”); virtual reality system (“system”)</td><td>—</td></tr>
+<tr><td>Connecting-concept cards with odd role sentences</td><td>“control”, “live-action 180-degree video”, “gigabyte”, “real-world view”, “ios”</td><td>1,806 connecting concepts</td></tr>
+<tr><td>Formulas print as raw LaTeX in answers</td><td>the Kalman question printed <code>$\theta_{dk} = \alpha \theta_{gk} + ...$</code> in 2 of 3 runs</td><td>—</td></tr>
+<tr><td>The first question that uses the fact search loads the embedder</td><td>20–23 s without <code>--warm</code></td><td>once</td></tr>
+<tr><td>Comparisons of several concepts are slow</td><td>9–19 s</td><td>—</td></tr>
+<tr><td>Selecting a hub concept in the full map view crowds the labels</td><td>“game engine” in lecture 20</td><td>—</td></tr>
+<tr><td>The fact judge is off</td><td>thin facts such as 1/S0/F0 stay</td><td>all 2,006 facts unjudged</td></tr>
+<tr><td>The activity judge is not measured against a seed set</td><td>it only flags</td><td>—</td></tr>
+<tr><td>Relationships only within a segment (D4)</td><td>links between concepts taught in different segments are never found</td><td>—</td></tr>
+<tr><td>Prerequisite links count any single mention</td><td>“before lecture 30” is thin: only lecture 29's frequency, plus XR and VR</td><td>—</td></tr>
+</table></div>
+<p class="small muted">From <code>pipeline/continue/DEMO_PLAN.md</code> (“Avoid on stage”) and <code>STATUS.md</code>; counts from
+<code>activities/checks.json</code>.</p>
+
+<h2 id="upcoming" data-toc="Upcoming fixes">Upcoming fixes</h2>
+<div class="cards">
+<div class="card"><span class="k">Recaps</span><h4>Show only passing points</h4><p>222 of 347 recap texts and 371 points failed the judge. Plan: show only the points that pass, and optionally have the model rewrite the text with the judge's reasons.</p></div>
+<div class="card"><span class="k">Crosswords</span><h4>Drop failed words, lay out again</h4><p>A failed clue cannot be hidden inside a grid. Plan: drop the words whose clues fail and run the layout again on the rest.</p></div>
+<div class="card"><span class="k">Duplicates</span><h4>A reviewed merge list</h4><p>HMD / VR headset, interaction / user interaction, iOS / iPhone OS: merged by a list a person reviews, applied in 3c, so the merge is logged like the others.</p></div>
+<div class="card"><span class="k">Aliases</span><h4>FOV and odd alias lists</h4><p>One owner for a shared alias such as FOV; drop aliases like “present” and “system” that are not names of the concept.</p></div>
+<div class="card"><span class="k">Connecting concepts</span><h4>Show their facts</h4><p>On a connecting concept's card, show the lecture facts that use it instead of the model's one-sentence role.</p></div>
+<div class="card"><span class="k">Answers</span><h4>Render formulas</h4><p>Render LaTeX in answers (KaTeX, bundled with the page so it works offline).</p></div>
+<div class="card"><span class="k">First question</span><h4>Warm-up</h4><p>Load the embedder and ask one hidden question at start, so no learner waits 20 s.</p></div>
+<div class="card"><span class="k">Viewer</span><h4>The redesign</h4><p>Being done by another agent as of 2026-11-18.</p></div>
+<div class="card"><span class="k">Deployment</span><h4>Remote-model setup</h4><p>Only the model on the GPU server; the viewer, layer, videos and tool loop on the learner's machine (<a href="#deploy">design</a>).</p></div>
+<div class="card"><span class="k">Evaluation</span><h4>Baseline experiments</h4><p>Plain LLM, RAG over transcripts and graph-only on the same questions, scored for correctness, grounding, citations, “not covered” and time (<a href="#baselines">placeholder</a>).</p></div>
+</div>
+
+<h2 id="future" data-toc="Future work">Future work: what can be improved further</h2>
+<div class="tablewrap"><table>
+<tr><th>Idea</th><th>Why, and what in the repository points to it</th></tr>
+<tr><td><b>Finish the planned gates</b></td><td>The block tests of <code>PLAN.md</code> were deferred by the MVP: the fact-judge rerun with the revised prompts (block 1), concept gold (block 2), pair gold (block 3), the scored question set (block 6, draft of 85 questions on a branch).</td></tr>
+<tr><td><b>A judge for every kind, measured first</b></td><td>The activity judge runs on six kinds and is not yet measured on its seed set; recall, match the pairs and complete the map have no judge. The fact judge needs majority voting or another fix for its 15% flips.</td></tr>
+<tr><td><b>A smaller or distilled answer model</b></td><td>The answer time is mostly model time (round 0 about 1.6 s, the final answer about 2.6 s at about 60 tokens per second). A smaller model, or one tuned on the course's tool calls, would cut it; tool choice by a small model is the known risk (B17).</td></tr>
+<tr><td><b>Faster decoding</b></td><td>An FP8 Gemma checkpoint on vLLM would roughly double decode speed over BF16 (<code>analysis/qa/STATE.md</code>); speculative decoding is untried; a forced first tool call works on vLLM but needs a guard (it skipped the search on B17).</td></tr>
+<tr><td><b>Batch the whole build</b></td><td>1a, 1b, 2a and 2c ran at 32 parallel requests; 4a reached about 1,800 tokens per second at 128. Running every stage at 128 on one GPU, and stages whose inputs are ready side by side, would shorten the 10.8 hours.</td></tr>
+<tr><td><b>Incremental updates</b></td><td>The cache already skips unchanged requests. A lecture that changes reruns its own segments, facts and concepts; the registry, definitions of the concepts it touches and the graph would then need a targeted rerun rather than a full one.</td></tr>
+<tr><td><b>Relationships across segments</b></td><td>D4: a later pass over concept pairs that share a lecture but never a segment.</td></tr>
+<tr><td><b>Cross-course concept linking</b></td><td>Stage 0a already runs on six courses; one registry over several courses would let a learner follow a concept from one course to another.</td></tr>
+<tr><td><b>Learner modelling</b></td><td>Review cards are scheduled per learner in the browser only; quiz answers could feed the schedule and the recall before a lecture.</td></tr>
+<tr><td><b>Multilingual subtitles</b></td><td>The pipeline trusts human punctuation (0a); other languages need their own splitting rules and prompts in that language or translation of the layer.</td></tr>
+<tr><td><b>Evaluation at scale</b></td><td>More than one human annotator for segmentation, blind gold for facts and concepts, the question set scored automatically, and the baselines.</td></tr>
+</table></div>
+
+<h2 id="changes" data-toc="Changelog of v3">Changelog of v3</h2>
+<p>The main steps on <code>main</code>, from the git log (dates are commit dates, IST).</p>
+<div class="log">
+<div class="ent"><span class="when">2026-11-11</span><p><b>v3 started</b> (<code>423d617</code>). Segmentation runs 1–4 and 1b on Gemma 4 locally; boundary times from cue edges; the module completed (<code>161f965</code>); first fact extraction tests (<code>1305a56</code>).</p></div>
+<div class="ent"><span class="when">2026-11-12</span><p>Segmentation on Qwen 3.8 27B on the EC2 (<code>0e0f253</code>); <b>the plan</b>, concept and goal prompt drafts and the reviewer agent (<code>3f42e64</code>); block 0 (EC2 setup, attach-only configs, fake servers); block 1 gold, seeded errors and the judge measured; 2c, 3a–3c, 4a–4d built and tested with fake models; the EC2 job queue (<code>8f5d497</code>).</p></div>
+<div class="ent"><span class="when">2026-11-13 (night)</span><p>2a on all 63 lectures (<code>39afcf4</code>); decisions D8 and D12 applied; review 1 of block 1: “change”; <b>the MVP</b>: judge skipped (<code>c8a9326</code>), 4a from facts (<code>5120058</code>), 6k thinking (<code>2bef4b4</code>), viewer (<code>609e434</code>), question answering (<code>52c4246</code>), activities (<code>f5667a9</code>), 3b skipped (<code>0578a97</code>), the full course by morning (<code>3ff2c57</code>, tag <code>mvp-2026-11-13</code>); demo setup (<code>6eb49c2</code>); readable concept maps (<code>0965ba9</code>).</p></div>
+<div class="ent"><span class="when">2026-11-15</span><p>Completing the MVP planned; rebuild queue (<code>5da9654</code>); block 1 gold changes 8 and 9; agents' work saved before a usage limit.</p></div>
+<div class="ent"><span class="when">2026-11-17</span><p>96 GB configs (<code>3915cb7</code>, <code>84fa2e8</code>); 4a prompt revised by Fable (<code>716e6b5</code>); activity judges and review (<code>312cb6c</code>), code checks and judge path (<code>a3af1b0</code>), code-made kinds (<code>b3f8ea4</code>), recap judge criteria (<code>d730cd4</code>); QA: thinking only in round 0 and early exit (<code>ebcc593</code>), streaming (<code>efa7e21</code>), bench variants (<code>3078b7e</code>); viewer: glossary rule, hiding, <code>/api/ask_stream</code> (<code>194d12a</code>), perf (<code>b999a0f</code>); <b>the rebuilt layer</b> merged (<code>d3896b9</code>); EC2 released (<code>04a797a</code>); demo plan rewritten (<code>a6a0c31</code>); tool names removed from answers (<code>c0a0c8d</code>).</p></div>
+</div>
