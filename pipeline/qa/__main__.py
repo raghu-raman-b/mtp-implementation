@@ -31,7 +31,11 @@ def main():
     a = ap.parse_args()
     if a.stop:
         cfg = get_llm(a.config).cfg
-        exe = "(vllm serve|vllm.entrypoints.openai.api_server)" if cfg.engine == "vllm" else "llama-server"
+        if cfg.url or sys.platform == "win32":
+            print(f"the model server ({cfg.base_url}) is not on this machine: stop it where it runs "
+                  "(on the instance: bash pipeline/demo/ec2_model_server.sh --stop)")
+            return 0
+        exe ="(vllm serve|vllm.entrypoints.openai.api_server)" if cfg.engine == "vllm" else "llama-server"
         subprocess.run(["pkill", "-f", f"{exe}.*--port {cfg.port}( |$)"], check=False)
         print(f"stopped any {exe.strip('()').replace('|', ' / ')} on port {cfg.port}")
         return 0

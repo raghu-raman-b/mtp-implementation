@@ -2,7 +2,9 @@
 
 Each tool takes the Knowledge and the arguments the model sent, and returns a ToolResult: the text the model reads
 (every fact line carries its ID, lecture and time, so the answer can cite it), a one-line summary for the viewer's
-steps, and the fact and segment IDs it showed (only those may be cited). The tool descriptions the model sees are in
+steps (developer view), the fact and segment IDs it showed (only those may be cited), and for the chat screen a
+display line ("label", plain words, no IDs) and "detail" (the same in fields: names, counts, lecture numbers; the
+fields per tool are in schemas/qa_stream.md). The tool descriptions the model sees are in
 prompts/qa_tools.json (written apart, as a prompt); TOOLS checks that they name exactly the tools here.
 
     check_concept(name)                          a concept's card, by name, alias, acronym, plural or a close spelling
@@ -50,6 +52,8 @@ class ToolResult:
     summary: str
     shown: set = field(default_factory=set)     # fact and segment IDs the text shows
     found: bool | None = None   # False: the course has nothing close (unknown name, no close fact); None: not a search
+    label: str = ""             # what was done, for the learner's screen ('Looked up "HMD": definition found, ...')
+    detail: dict = field(default_factory=dict)   # the same as fields (schemas/qa_stream.md)
 
 
 class ToolError(ValueError):
@@ -64,6 +68,23 @@ def fact_line(kb: Knowledge, fid: str, extra: str = "") -> str:
 
 def lecture_ref(kb: Knowledge, k: str) -> str:
     return f'lecture {k} "{kb.lecture_title(k)}"'
+
+
+def lectures_of(kb: Knowledge, ids) -> list[str]:
+    """The lectures of these fact or segment IDs, in course order."""
+    ks = {kb.facts[i]["lecture"] if i in kb.facts else i.split("/")[0] for i in ids}
+    return [k for k in kb.lectures if k in ks] + sorted(ks - set(kb.lectures))
+
+
+def in_lectures(ks: list[str], most: int = 6) -> str:
+    """"lecture 4" / "lectures 4, 9 and 13" / "lectures 4, 9, 13, 20, 21, 22 and 2 more"."""
+    if not ks:
+        return ""
+    if len(ks) == 1:
+        return f"lecture {ks[0]}"
+    if len(ks) > most:
+        return f"lectures {', '.join(ks[:most])} and {len(ks) - most} more"
+    return f"lectures {', '.join(ks[:-1])} and {ks[-1]}"
 
 
 def known_lecture(kb: Knowledge, raw) -> str:
@@ -150,9 +171,15 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
                 fact_line(kb, f, f" (score {s:.2f})") for f, s in hits)
             if best < low:
                 text += f"\nNone of these is a close match (best score {best:.2f}): the course may not cover this."
+        ks = lectures_of(kb, [f for f, _ in hits])
+        close = bool(hits) and best >= low
+        label = f'"{name}" is not a concept of the course' + (
+            f"; the closest facts are in {in_lectures(ks)}" if close else "; nothing in the course comes close")
         return ToolResult(text, f"unknown name '{name}'" + (f"; close: {', '.join(sug)}" if sug else "")
                           + (f"; closest fact {best:.2f}" + (" (low)" if best < low else "") if hits else ""),
-                          {f for f, _ in hits}, found=bool(hits) and best >= low)
+                          {f for f, _ in hits}, found=close, label=label,
+                          detail={"name": name, "known": False, "suggestions": sug, "facts": len(hits),
+                                  "lectures": ks, "best_score": round(best, 2), "close": close})
     shown: set = set()
     lines = []
     if how == "close":
@@ -162,9 +189,20 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
     for cid in cids[:CARDS_PER_NAME]:
         lines += card_text(kb, cid, shown) + [""]
     names = ", ".join(kb.concept_name(c) for c in cids[:CARDS_PER_NAME])
+    n_facts = sum(1 for s in shown if '/F' in s)
     summary = f"card of {names}" + (f" (matched '{matched}', {how})" if how != "exact" else "") + \
-              f"; {sum(1 for s in shown if '/F' in s)} facts"
-    return ToolResult("\n".join(lines).strip(), summary, shown, found=True)
+              f"; {n_facts} facts"
+    cards = [{"id": c, "name": kb.concept_name(c), "defined": bool(kb.concepts[c].get("definition")),
+              "defined_in": list(dict.fromkeys(d["lecture"] for d in kb.concepts[c].get("defined_in", [])))}
+             for c in cids[:CARDS_PER_NAME]]
+    ks = lectures_of(kb, [s for s in shown if "/F" in s])
+    defined = [c["defined"] for c in cards]
+    label = f'Looked up "{" / ".join(c["name"] for c in cards)}": ' + (
+        "definition found" if all(defined) else "a definition found" if any(defined)
+        else "the course uses it without defining it") + (f", {n_facts} facts from {in_lectures(ks)}" if n_facts else "")
+    return ToolResult("\n".join(lines).strip(), summary, shown, found=True, label=label,
+                      detail={"name": name, "known": True, "matched": matched, "how": how, "concepts": cards,
+                              "facts": n_facts, "lectures": ks})
 
 
 # ---------------------------------------------------------------- fact_lookup
@@ -185,7 +223,10 @@ def fact_lookup(kb: Knowledge, query: str = "", rephrasings=None, lecture=None, 
     k = known_lecture(kb, lecture) if lecture not in (None, "") else None
     hits = kb.search(variants, k=LOOKUP_K, lecture=k)
     if not hits:
-        return ToolResult("No facts found.", f"no facts for '{query}'", found=False)
+        return ToolResult("No facts found.", f"no facts for '{query}'", found=False,
+                          label=f'Searched the course for "{query}": nothing found',
+                          detail={"query": query, "wordings": len(variants), "lecture": k, "facts": 0, "lectures": [],
+                                  "best_score": None, "close": False})
     low = LOW_SCORE.get(kb.embed_model, LOW_SCORE_DEFAULT)
     best = hits[0][1]
     lines = [f'Facts closest to "{query}"' + (f" in lecture {k}" if k else "") + ", best first (score 0 to 1):"]
@@ -197,7 +238,12 @@ def fact_lookup(kb: Knowledge, query: str = "", rephrasings=None, lecture=None, 
                      "Use a fact only if it really answers the question.")
     summary = f"{len(hits)} facts for '{query}'" + (f" (+{len(variants) - 1} wordings)" if len(variants) > 1 else "") \
               + f"; best {best:.2f}" + (" (low)" if best < low else "")
-    return ToolResult("\n".join(lines), summary, {f for f, _ in hits}, found=best >= low)
+    ks = lectures_of(kb, [f for f, _ in hits])
+    label = f'Searched the course for "{query}"' + (f" in lecture {k}" if k else "") + \
+        (f": {len(hits)} facts from {in_lectures(ks)}" if best >= low else ": nothing close")
+    return ToolResult("\n".join(lines), summary, {f for f, _ in hits}, found=best >= low, label=label,
+                      detail={"query": query, "wordings": len(variants), "lecture": k, "facts": len(hits),
+                              "lectures": ks, "best_score": round(best, 2), "close": best >= low})
 
 
 # ---------------------------------------------------------------- lecture_dependencies
@@ -272,7 +318,13 @@ def lecture_dependencies(kb: Knowledge, lecture=None, **_) -> ToolResult:
                    + (f" (and {len(intro) - DEP_INTRODUCED} more)" if len(intro) > DEP_INTRODUCED else ""))
     summary = f"lecture {k}: revise {', '.join(revise) or 'none'}; relies on {len(key)} earlier concepts, " \
               f"{len(hubs)} general, {len(passing)} in passing, {len(assumed)} assumed"
-    return ToolResult("\n".join(out), summary, shown, found=True)
+    label = f"Checked what lecture {k} builds on: " + (
+        f"revise {in_lectures(revise, 8)}" if revise else "nothing from earlier lectures")
+    return ToolResult("\n".join(out), summary, shown, found=True, label=label,
+                      detail={"lecture": k, "title": kb.lecture_title(k), "revise": revise,
+                              "relies_on": [kb.concept_name(c) for c in key[:DEP_CONCEPTS]],
+                              "general": [kb.concept_name(c) for c in hubs], "in_passing": len(passing),
+                              "assumed": len(assumed)})
 
 
 # ---------------------------------------------------------------- lecture_overview
@@ -308,7 +360,12 @@ def lecture_overview(kb: Knowledge, lecture=None, **_) -> ToolResult:
         out.append("Direct prerequisites: " + ", ".join(f"lecture {j}" for j in pre["direct"]))
     summary = f"lecture {k}: {len(L.get('segments', {}))} segments, {len(L.get('objectives', []))} objectives, " \
               f"{len(kinds.get('introduced', []))} concepts introduced"
-    return ToolResult("\n".join(out), summary, shown, found=True)
+    n_seg = len(L.get("segments", {}))
+    return ToolResult("\n".join(out), summary, shown, found=True,
+                      label=f'Read the outline of lecture {k} "{kb.lecture_title(k)}": {n_seg} parts',
+                      detail={"lecture": k, "title": kb.lecture_title(k), "segments": n_seg,
+                              "objectives": len(L.get("objectives", [])),
+                              "introduced": len(kinds.get("introduced", []))})
 
 
 # ---------------------------------------------------------------- course_goals
@@ -320,7 +377,8 @@ def course_goals(kb: Knowledge, **_) -> ToolResult:
     for gid, g in cg.items():
         out.append(f"{gid}: {g['goal']}" + (f" Achieves: {g['achieves']}" if g.get("achieves") else ""))
         out.append("   Lectures: " + "; ".join(f"{j} \"{kb.lecture_title(j)}\"" for j in g.get("lectures", [])))
-    return ToolResult("\n".join(out), f"{len(cg)} course goals", found=True)
+    return ToolResult("\n".join(out), f"{len(cg)} course goals", found=True, label=f"Read the {len(cg)} course goals",
+                      detail={"goals": len(cg)})
 
 
 FUNCS = {"check_concept": check_concept, "fact_lookup": fact_lookup, "lecture_dependencies": lecture_dependencies,
@@ -329,7 +387,7 @@ FUNCS = {"check_concept": check_concept, "fact_lookup": fact_lookup, "lecture_de
 
 def tool_specs(path: Path = TOOLS_FILE) -> list[dict]:
     """The OpenAI tools list from prompts/qa_tools.json (its names must be exactly the tools above)."""
-    specs = json.loads(Path(path).read_text())
+    specs = json.loads(Path(path).read_text(encoding="utf-8"))
     names = [s["function"]["name"] for s in specs]
     if sorted(names) != sorted(FUNCS):
         raise ValueError(f"{path} names {names}, the code has {sorted(FUNCS)}")
@@ -338,11 +396,14 @@ def tool_specs(path: Path = TOOLS_FILE) -> list[dict]:
 
 def run_tool(kb: Knowledge, name: str, args: dict) -> ToolResult:
     """Run one tool; a bad name or bad arguments come back as a result the model can read and correct."""
+    oops = "A lookup went wrong; trying again"
     if name not in FUNCS:
-        return ToolResult(f"There is no tool {name!r}. The tools are: {', '.join(FUNCS)}.", f"unknown tool {name}")
+        return ToolResult(f"There is no tool {name!r}. The tools are: {', '.join(FUNCS)}.", f"unknown tool {name}",
+                          label=oops, detail={"error": f"unknown tool {name}"})
     if not isinstance(args, dict):
-        return ToolResult("The arguments must be a JSON object.", "bad arguments")
+        return ToolResult("The arguments must be a JSON object.", "bad arguments", label=oops,
+                          detail={"error": "bad arguments"})
     try:
         return FUNCS[name](kb, **args)
     except ToolError as e:
-        return ToolResult(str(e), f"error: {e}")
+        return ToolResult(str(e), f"error: {e}", label=oops, detail={"error": str(e)})

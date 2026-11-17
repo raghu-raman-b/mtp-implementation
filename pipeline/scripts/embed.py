@@ -6,10 +6,14 @@
     q = emb.embed(["what is an HMD?"], instruction=QUERY)           # queries: with the task's instruction
     sim = sum(a * b for a, b in zip(vecs[0], vecs[1]))              # cosine: the vectors are L2-normalised
 
-Embedder(model, cache=None, device=None). `model` is a sentence-transformers model ID (Hugging Face, or a local
-folder), or "fake": a deterministic hashed bag of words (512 dimensions, no download, standard library only) for
+Embedder(model, cache=None, device=None, url=None). `model` is a sentence-transformers model ID (Hugging Face, or a
+local folder), or "fake": a deterministic hashed bag of words (512 dimensions, no download, standard library only) for
 plumbing tests. `device` is passed to sentence-transformers (None: CUDA when there is one). The model is loaded at the
 first text that is not in the cache, so a rerun answered wholly from the cache never loads it.
+`url`: compute the vectors on an embedding server instead (OpenAI /v1/embeddings, e.g. demo/embed_server.py on the
+demo's GPU instance, which runs this same model with sentence-transformers), so the machine asking needs neither torch
+nor the model. The texts are sent with their instruction prefix already applied, the vectors come back as float32
+(base64) and go through the same normalising and cache as local ones; the server must serve this `model`.
 
 embed(texts, instruction=None) -> list of vectors, one per text, in order, each L2-normalised (plain Python floats).
 
@@ -72,8 +76,9 @@ def fake_vector(text: str) -> list[float]:
 
 class Embedder:
     def __init__(self, model: str = "Qwen/Qwen3-Embedding-0.6B", cache: Path | None = None,
-                 device: str | None = None):
+                 device: str | None = None, url: str | None = None):
         self.model, self.device = model, device
+        self.url = (url or "").rstrip("/") or None
         self.cache = Path(cache) if cache else None
         self.computed = 0               # texts embedded by the model in this process (not from the cache)
         self._st = None
@@ -108,7 +113,7 @@ class Embedder:
                 self.computed += len(todo)
                 if self.cache:
                     self.cache.parent.mkdir(parents=True, exist_ok=True)
-                    with self.cache.open("a") as f:
+                    with self.cache.open("a", encoding="utf-8") as f:
                         f.writelines(json.dumps(r) + "\n" for r in new)
             return [list(entries[k]) for k in keys]
 
@@ -120,7 +125,7 @@ class Embedder:
         if self._entries is None:
             self._entries = {}
             if self.cache and self.cache.exists():
-                for line in self.cache.read_text().splitlines():
+                for line in self.cache.read_text(encoding="utf-8").splitlines():
                     if line.strip():
                         rec = json.loads(line)
                         if rec.get("model") == self.model:
@@ -130,8 +135,25 @@ class Embedder:
     def _compute(self, texts: list[str]) -> list:
         if self.model == "fake":
             return [fake_vector(t) for t in texts]
+        if self.url:
+            return self._remote(texts)
         if self._st is None:
             from sentence_transformers import SentenceTransformer   # only for real models
             self._st = SentenceTransformer(self.model, device=self.device)
         return self._st.encode(texts, batch_size=32, normalize_embeddings=True, convert_to_numpy=True,
                                show_progress_bar=len(texts) > 256).tolist()
+
+    def _remote(self, texts: list[str], batch: int = 64) -> list:
+        """The vectors from the embedding server at self.url (POST /v1/embeddings, base64 float32)."""
+        from scripts.llm.http_pool import POOL
+        out = []
+        for i in range(0, len(texts), batch):
+            body = json.dumps({"model": self.model, "input": texts[i:i + batch], "encoding_format": "base64"}).encode()
+            with POOL.request("POST", self.url + "/v1/embeddings", body, {"Content-Type": "application/json"},
+                              timeout=120) as r:
+                data = r.read()
+                if r.status != 200:
+                    raise RuntimeError(f"embedding server {self.url}: HTTP {r.status}: {data[:300]!r}")
+            got = sorted(json.loads(data)["data"], key=lambda d: d["index"])
+            out += [_unpack(d["embedding"]) if isinstance(d["embedding"], str) else d["embedding"] for d in got]
+        return out

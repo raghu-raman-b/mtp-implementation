@@ -217,7 +217,7 @@ class LLM:
         if key not in self._caches:
             entries = {}
             if path.exists():
-                for line in path.read_text().splitlines():
+                for line in path.read_text(encoding="utf-8").splitlines():
                     if line.strip():
                         rec = json.loads(line)
                         entries[rec["hash"]] = rec
@@ -226,7 +226,7 @@ class LLM:
 
     def _append(self, path: Path, rec: dict):
         path.parent.mkdir(parents=True, exist_ok=True)
-        with self._lock, path.open("a") as f:
+        with self._lock, path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     def _post(self, route: str, body: dict, timeout: int) -> dict:
