@@ -129,6 +129,32 @@ only when the user asks.
   iPhone OS) via a reviewed merge list + remap (code); the FOV alias on horizontal field of view; odd alias lists
   (fragments/generic words); KaTeX for formulas in answers (vendored, offline). Warm-up at start is done (setup merge).
 
+### FINAL TASK LIST (user-approved 2026-11-18 00:25; supersedes "Next" below). Sonnet = simple, Opus = complex.
+Baselines: finish GraphRAG (run it WITH source text units, and also without) + add two ablations of ours
+(facts only = fact_lookup alone; graph only = concept cards/prerequisites/overview/goals, no fact search) + RAG with
+thinking on + 2–3 runs on the categories that differ. Local GPU fits one model: order GPU users S6 -> O3 -> O5.
+- Wave 0 (user): design pick.
+- Wave 1 (parallel):
+  - S1 (Sonnet) serve.py display rules as API data: recaps = passing points only (failed text dropped, empty recaps
+    dropped); crossword failed entries `prefilled: true`, clue removed; connecting concepts: no card route, glossary
+    defined-only, map nodes flagged `connecting`. Keep viewer_smoke passing.
+  - S2 (Sonnet) qa: connecting concepts never return a definition, facts only (check_concept etc.); fake_qa test;
+    also make fake_qa's output snapshot ignore `output/logs/`.
+  - S3 (Sonnet) KaTeX vendored into viewer/vendor (offline) + a `renderMath(el)` helper for the design build.
+  - S6 (Sonnet, local GPU) part titles: Gemma 4 12B, one 3–6-word title per segment (386) from its facts + goal; code
+    check + retry; output into the knowledge layer; Opus reviews a sample.
+  - O2 (Opus) duplicates + aliases: candidate finder (shared alias, name = other's alias, acronym expansion, generic
+    head, embedding similarity) -> Opus reviewer decides -> `stage_3_registry/merge_overrides.json` -> 3c applies
+    (survivor = the defined concept, its ID + definition) -> 4c/4d rebuilt (code) -> activity concept IDs remapped,
+    code-made kinds rebuilt -> alias rules (shared alias kept only where defined; generic head word; fragments) with a
+    reviewed removal list -> 4d ref check, activities --check, viewer smoke.
+- Wave 2: O1 (Opus) build the chosen design (after S1–S3 merge; renders S1's flags, S3's math, S6's titles);
+  O3 (Opus, GPU after S6) baselines as above, Opus-judged, README with method + tables + examples.
+- Wave 3: O4 (Opus) docs update (baseline method/results/ablations, fixes, part titles, new viewer, remote setup);
+  O5 (Opus, GPU) DEMO_PLAN rewrite on the new build.
+- Wave 4: rehearsal (user + orchestrator) after the user's docs and slides.
+Orchestrator reviews every merge (Opus reviewer for O-tasks unless the user waives).
+
 ### Next (in order)
 1. **User picks the design** on the canvas (and any mix).
 2. In parallel: (a) a **fresh Opus agent builds the chosen design** into `pipeline/viewer/` (keep the speed work and
