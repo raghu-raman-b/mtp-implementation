@@ -1,0 +1,185 @@
+######## D07 [definition, expect yes] What is a frame buffer?
+GOLD: In a raster scan system the frame buffer is the video memory that stores the intensity values of all pixels, one memory location (a bit string) per pixel; its size equals the screen resolution.
+SOURCES: 54/S4/F0 (lecture 54, 27:59); 54/S4/F1 (28:51)
+--- ours  (5.07 s, ctx 4685 tok, steps ['check_concept'])
+A frame buffer is a video memory component of a raster scan system that contains one memory location for each pixel. It stores the intensity of each pixel as a bit string of 0s and 1s (lecture 54, 27:59). The size of a frame buffer is equal to the screen resolution of a raster scan device (lecture 54, 28:51).
+   c1 54/S4/F0 (L54 27:59) ov=1.0: In a raster scan system, the frame buffer is the video memory component that stores the intensity values for all pixels in the grid, and it contains one memory location for each pixel that stores the intensity as a bit string of 0s and 1s.
+   c2 54/S4/F1 (L54 28:51) ov=1.0: The size of a frame buffer is the size of the screen and is equal to the screen resolution of a raster scan device.
+--- plain  (1.09 s, ctx 94 tok)
+A frame buffer is a dedicated region of memory used to store the bitmap of an image or video frame currently being displayed. In VR and AR systems, it holds the color and depth data for every pixel before they are rendered onto the screen. It acts as a storage area that the graphics processing unit (GPU) updates rapidly to create smooth motion.
+--- rag  (3.14 s, ctx 4039 tok)
+The frame buffer is the video memory component of a raster scan system (lecture 54, 28:30). It contains one memory location for each pixel, where the intensity of each pixel is stored as a bit string of 0s and 1s (lecture 54, 28:30). The size of the frame buffer is exactly the same as the screen resolution (lecture 54, 28:30).
+
+COVERED: yes
+   c1 L54 28:30 ov=1.0 n=30: [54/198] So, the frame buffer essentially is the video memory component of the raster scan system. || [54/197] Now, when we are talking of the video memory for a raster scan system where we are storing the intensity values for all pixels in the grid, the more generally accepted or popular term is called the frame buffer.
+   c2 L54 28:30 ov=0.88 n=30: [54/200] So, for each pixel there is one memory location which stores the intensity in the form of a bit string of 0s and 1s. || [54/199] It contains one location corresponding to each pixel.
+   c3 L54 28:30 ov=1.0 n=30: [54/202] So, the frame buffer is the video memory for raster scan devices, and its size is exactly the same as the screen resolution. || [54/201] So, the size of the frame buffer is the size of the screen, or in other words, the size of the frame buffer is equal to the screen resolution.
+--- graphrag: (no run)
+
+######## E01 [explanation, expect yes] Why are GPUs used for rendering in VR?
+GOLD: A GPU speeds up rendering because of its inherent parallel processing and the inherent parallelism of the rendering process, so it suits the complex scenes of realistic VR; CPUs are powerful but busy with other tasks, so GPU support is preferable (multi-GPU systems are typical). Lecture 58 adds that GPUs run transformation, lighting, projection, rasterisation, texturing and hidden-surface removal in parallel.
+SOURCES: 14/S1/F3 (lecture 14, 8:38); 14/S1/F6 (7:03); 14/S1/F4; 58/S6 (lecture 58, 25:27)
+--- ours  (6.5 s, ctx 5967 tok, steps ['check_concept'])
+GPUs are used for rendering in VR because they are hardware components designed to exploit the inherent parallelism of graphics operations (lecture 58, 25:27). While CPUs are generally not designed for large-scale parallel activities, GPUs can perform tasks such as modeling transformations and computing vertex colors simultaneously for millions of vertices per second (lecture 58, 26:06; lecture 58, 27:50). This parallel processing ability is essential for speeding up the rendering of complex graphics and scenes required for realistic, immersive virtual reality experiences (lecture 14, 8:38).
+   c1 58/S6/F0 (L58 25:27) ov=0.55: A graphics processing unit (GPU) is the processing unit of a separate graphics card, with its own memory elements, that is used in computer graphics and virtual reality to exploit the inherent parallelism of graphics operations, which are highly parallel, whereas central processing units (CPUs) are generally not designed for large-scale parallel activities, although modern CPUs have some parallel 
+   c2 58/S6/F3 (L58 26:06) ov=0.38: The GPU performs modeling transformation by applying transformations such as rotation, multiplying the same transformation matrix with each vertex vector simultaneously for all vertices, producing a stream of transformed triangles from local coordinates to world coordinates, which gives a significant performance gain in real-time rendering because millions of vertices need to be processed per seco
+   c3 58/S6/F6 (L58 27:50) ov=0.14: The GPU computes vertex color by performing vector dot products, as in the simple lighting model, simultaneously for multiple vertices.
+   c4 14/S1/F3 (L14 8:38) ov=0.67: A graphics processing unit (GPU) is used to speed up the rendering process because of its inherent parallel processing abilities and the inherent parallelism in the rendering process, and it is therefore very useful for rendering complex graphics and complex scenes that are part of realistic virtual reality (VR) experiences.
+--- plain  (1.57 s, ctx 97 tok)
+GPUs are used for rendering in VR because they are designed for high-speed, parallel processing of thousands of pixels simultaneously. This allows them to handle the complex calculations required for:
+
+*   **High Frame Rates:** VR requires high FPS (usually 90+) to prevent motion sickness.
+*   **High Resolutions:** Rendering two high-quality views (one for each eye) requires massive throughput.
+*   **Real-time Geometry:** Processing 3D models and lighting effects instantly to create an immersive experience.
+--- rag  (5.49 s, ctx 4058 tok)
+GPUs are preferred for rendering in VR because they are specifically designed to handle the inherent parallelism in graphics operations (lecture 14, 8:17; lecture 58, 17:19; lecture 58, 26:54). While CPUs are powerful, they are traditionally not designed to handle large-scale parallel activities, which can lead to performance issues (lecture 14, 8:17; lecture 58, 26:54). 
+
+The use of GPUs provides a significant gain in performance for the following reasons:
+*   **Parallel Processing:** GPUs contain a large number of cores that work on single instructions simultaneously to produce data at the same time (lecture 58, 26:54).
+*   **Real-Time Requirements:** This parallelism is essential for real-time rendering, where millions of vertices must be processed per second to create a realistic immersive experience without lag or distortion (lecture 58, 17:19; lecture 58, 26:54).
+*   **Complex Scenes:** They are highly useful for rendering the complex graphics and complex scenes typically found in realistic VR (lecture 14, 8:17).
+
+COVERED: yes
+   c1 L14 8:17 ov=0.55 n=30: [14/48] For those who may not be aware, these are typically used to speed up the rendering process because of their inherent parallel processing abilities and the inherent parallelism in the rendering process. || [14/49] So, later on we will take up this issue in more detail in another part of the course where we will talk about computer graphics, the rendering process and how GPUs are suitable for such a process.
+   c2 L58 17:19 ov=0.27 n=24: [58/102] We ignored many things particularly relevant for VR because, in VR, we are interested in a realistic experience where the complexity of the rendering is much more as compared to what we have seen in our discussion. || [58/103] Also, the scene is dynamic; it is changing based on user input, and those things we have not taken care of or discussed in the preceding discussion on the 3D graphics pipeline.
+   c3 L58 26:54 ov=0.73 n=29: [58/161] And this processing unit is called a graphics processing unit or GPU, which is designed to deal with the inherent parallelism in graphics operations. || [58/155] If it is not done at the same time, then it will be much, much slower, and that significant gain is important in real-time rendering because millions of vertices need to be processed per second.
+   c4 L14 8:17 ov=0.38 n=30: [14/52] Even modern-day CPUs are also quite powerful. || [14/54] So, if we solely depend on CPU-based systems where GPU support is minimal, then there can be performance issues.
+   c5 L58 26:54 ov=0.62 n=29: [58/159] Of course, modern CPUs come with some such features, but they are traditionally not very good at taking care of large-scale parallel activities. || [58/158] Traditionally, the way CPUs used to be made, because they are not designed to do that.
+   c6 L58 26:54 ov=1.0 n=29: [58/163] You can see multiple cores are there in a GPU; they work on Single instructions: all the cores work simultaneously on an instruction and produce data simultaneously. || [58/162] Now, GPUs are typically multicore systems; that means they contain a large number of cores or unit processing elements, as shown here.
+   c7 L58 17:19 ov=0.42 n=24: [58/107] So, all these together increase the computation for rendering in a VR environment manifold, and clearly that is the challenge: how to take care of such a computationally complex rendering process without letting the user perceive any lag or distortion. || [58/102] We ignored many things particularly relevant for VR because, in VR, we are interested in a realistic experience where the complexity of the rendering is much more as compared to what we have seen in our discussion.
+   c8 L58 26:54 ov=0.63 n=29: [58/155] If it is not done at the same time, then it will be much, much slower, and that significant gain is important in real-time rendering because millions of vertices need to be processed per second. || [58/156] The number may be even more when we are talking of a realistic immersive experience.
+   c9 L14 8:17 ov=0.89 n=30: [14/50] For the time being, it is sufficient to know that GPUs are very useful in rendering complex graphics and complex scenes that are typically part of realistic VR experiences. || [14/46] So, when we talk of GPU or graphics processor unit, multi-GPU enabled systems are typically used for building VR applications and for rendering also we prefer to have good quality GPU enabled graphics card.
+--- graphrag: (no run)
+
+######## E02 [explanation, expect yes] How does the Wizard of Oz approach work?
+GOLD: A prototyping technique: the participant believes they interact with an autonomous computer, but a hidden human operator (the wizard) produces the responses. Example: IBM's 1984 listening typewriter, where a hidden typist typed what the user spoke so the idea of speech recognition could be tested before the technology existed.
+SOURCES: 42/S6/F0 (lecture 42, 35:43); 42/S6/F1 (36:40); 42/S6/F2; 42/S6/F3
+--- ours  (7.98 s, ctx 4368 tok, steps ['check_concept'])
+The Wizard of Oz approach is a prototype-creation technique where a human subject interacts with a system they believe is autonomous. In reality, an unseen human operator, known as the "wizard," operates the computer and provides the responses or results to the subject (lecture 42, 35:43).
+
+An example of this was the 1984 IBM listening typewriter setup, where (lecture 42, 36:40):
+* A user spoke into a microphone while facing a computer.
+* A hidden wizard, separated by a wall, heard the speech and typed the characters.
+* The characters were transmitted to the user's screen, making the user believe the speech was being automatically converted to text.
+
+This approach was used by IBM to test the acceptability of a speech recognition system before committing resources to build the technology, as automatic conversion did not yet exist (lecture 42, 36:40).
+   c1 42/S6/F0 (L42 35:43) ov=0.58: The Wizard of Oz approach is a prototype-creation technique in which a human subject believes they are interacting with an autonomous computer, but an unseen human operator, called the wizard, operates the computer and returns the requested response or result to the subject.
+   c2 42/S6/F2 (L42 36:40) ov=0.83: The 1984 International Business Machines (IBM) listening typewriter Wizard of Oz setup consisted of a human user speaking into a microphone while facing a computer that the user believed was a real computer, a hidden wizard separated from the user by a wall, and two computers connected through an intermediary.
+   c3 42/S6/F3 (L42 36:40) ov=0.83: The hidden wizard in the 1984 International Business Machines (IBM) listening typewriter Wizard of Oz setup heard the user's speech through the microphone that was also connected to a computer speaker, typed the corresponding characters, and the characters were transmitted to the user's screen, making the user believe that the speech had been automatically converted, although no automatic technolo
+   c4 42/S6/F1 (L42 36:40) ov=0.67: International Business Machines (IBM) used the Wizard of Oz approach in its 1984 listening typewriter experiment to test the acceptability of a speech recognition system idea before committing resources to build a speech recognizer, because speech recognizer technology was not yet available.
+--- plain  (1.84 s, ctx 97 tok)
+The Wizard of Oz approach is a research methodology where the user interacts with a system that appears to be functional, but is actually being controlled by a human "behind the scenes." 
+
+In the context of VR/AR, it works by:
+*   **Simulating technology:** A human performs the backend processing (e.g., AI responses or complex physics) instead of using an actual algorithm.
+*   **Testing usability:** It allows researchers to study user behavior and reactions before investing in expensive automation.
+*   **Identifying requirements:** It helps determine which features are most important for the final system design.
+--- rag  (4.65 s, ctx 4049 tok)
+The Wizard of Oz approach is a technique where a human subject believes they are interacting with an autonomous computer, but the system is actually being operated by a hidden human being called a "wizard" (lecture 42, 34:50). 
+
+The process works as follows:
+*   The subject performs an action, such as speaking into a microphone (lecture 42, 37:24).
+*   The hidden wizard listens to the subject and types the characters or provides the results (lecture 42, 37:24).
+*   The results are transmitted back to the subject's screen, making the subject believe the computer processed the input automatically (lecture 42, 37:24).
+
+This method allows developers to test the acceptability of an idea before committing resources to build the actual technology, as the required technology may not yet be available (lecture 42, 34:50).
+
+COVERED: yes
+   c1 L42 34:50 ov=1.0 n=41: [42/242] So, in this approach, a human subject is involved who believes that they are interacting with an autonomous computer or a computer in short. || [42/243] But in reality, what happens is that the computer is actually operated by another human being who is unseen by the subject.
+   c2 L42 37:24 ov=0.6 n=41: [42/271] So, the wizard gets to hear what the subject is speaking, and based on that, the wizard types those characters. || [42/257] There is this human user in front of a microphone.
+   c3 L42 37:24 ov=0.62 n=41: [42/271] So, the wizard gets to hear what the subject is speaking, and based on that, the wizard types those characters. || [42/262] And there is this wizard sitting hidden away from the subject.
+   c4 L42 37:24 ov=0.64 n=41: [42/272] Then that gets transmitted because these two computers are connected, and it gets displayed on the subject's computer screen. || [42/273] Effectively letting the subject believe that whatever he has spoken, has appeared on the screen, so this is a good system or this is a bad system, whatever the perception of the subject is.
+   c5 L42 34:50 ov=0.8 n=41: [42/253] However, the company wanted to test the idea first before committing resources to build the technology. || [42/248] At that time, IBM was trying to develop a speech recognition system and it wanted to test the acceptability of the idea, which required a working system.
+--- graphrag: (no run)
+
+######## E03 [explanation, expect yes] How does inside looking out infrared tracking work?
+GOLD: Infrared tracking uses targets that emit or reflect (infrared) light, easy to detect because they are bright; in the inside-looking-out configuration the camera is mounted on the user and detects external targets, from which it estimates the pose (in outside-looking-in, cameras in the environment see targets on the object).
+SOURCES: 18/S3/F7 (lecture 18, 12:12); 18/S3/F3 (10:56); 18/S3/F5; 18/S3/F6
+--- ours  (8.16 s, ctx 4267 tok, steps ['check_concept'])
+Inside looking out infrared tracking works by mounting a camera with the user that detects external targets. These targets are used to estimate the pose of the tracked object (lecture 18, 12:12). This method is robust to adverse illumination effects, such as poor ambient lighting or harsh shadows, because it relies on infrared sensing rather than visible light sensing (lecture 16, 15:14; lecture 18, 10:56).
+   c1 18/S3/F7 (L18 12:12) ov=0.2: In inside looking out infrared tracking, the camera is mounted with the user and detects external targets, from which it estimates poses.
+   c2 16/S2/F5 (L16 15:14) ov=0.0: Inside-out tracking is a tracking type in which the cameras or other sensors required for tracking are located within the device used for the experience, such as the head-mounted display (HMD) in virtual reality (VR), which is more common, so no other external devices are needed.
+   c3 18/S3/F4 (L18 10:56) ov=0.94: Infrared tracking is robust to adverse illumination effects such as poor ambient lighting or harsh shadows because it relies on infrared sensing rather than visible light sensing.
+--- plain  (1.91 s, ctx 97 tok)
+Inside-looking-out infrared (IR) tracking works by placing IR cameras inside a head-mounted display (HMD) facing outward toward the user's environment. Here is the basic process:
+
+*   **Emission:** IR emitters (LEDs or lasers) are placed on the user's head or on physical markers in the room.
+*   **Detection:** The internal cameras capture these IR light sources.
+*   **Triangulation:** By calculating the position and angle of these light sources from multiple internal camera perspectives, the system computes the user's head position and orientation (6DOF tracking).
+--- rag  (2.67 s, ctx 4096 tok)
+Inside-out infrared tracking works by mounting the camera to the target (the user) and using targets that are external to the environment (lecture 18, 13:19). The camera mounted on the target detects these external targets to estimate the user's poses (lecture 18, 13:19).
+
+COVERED: yes
+   c1 L18 13:19 ov=0.83 n=28: [18/86] Similar idea here: the targets are external to the environment with the camera mounted to the target. || [18/87] So, in the case of inside-out, the camera is mounted with the user.
+   c2 L18 13:19 ov=0.89 n=28: [18/86] Similar idea here: the targets are external to the environment with the camera mounted to the target. || [18/89] The camera detects the targets that are external and based on that estimates poses.
+--- graphrag: (no run)
+
+######## E04 [explanation, expect yes] What is the field of view and why does it matter for cybersickness?
+GOLD: FOV is the extent to which the headset display captures the user's field of vision (an angular measure of what can be seen). A larger FOV gives more immersion; reducing FOV can alleviate cybersickness, but an excessively narrow FOV lowers immersion and increases head movement, which may worsen cybersickness, so an optimal FOV is needed; FOV adjustment is a developer-side mitigation.
+SOURCES: 11/S2/F0 (lecture 11, 9:19); 11/S2/F1; 11/S2/F2 (10:03); 11/S2/F3 (10:18); 28/S1/F0 (lecture 28, 11:54); 12/S3/F0 (lecture 12, 16:17)
+--- ours  (11.9 s, ctx 5745 tok, steps ['check_concept'])
+Field of view (FOV) is an angular measure of the region visible to the eye at a single point in time (lecture 28, 11:54). In virtual reality (VR), it represents the amount of the virtual environment visible to the user or the extent to which a headset's display captures the user's field of vision (lecture 11, 9:19; lecture 12, 16:24).
+
+FOV matters for cybersickness (CS) because it is a content-related factor that affects a user's susceptibility to these symptoms (lecture 11, 9:19; lecture 11, 1:08). Specifically:
+* **Reducing FOV** can be an effective way to alleviate cybersickness because it restricts peripheral optical flow (lecture 11, 10:03; lecture 12, 16:42).
+* **Excessively narrow FOV** may increase cybersickness by requiring the user to move their head more to see things in the environment (lecture 11, 10:18).
+* **Finding an optimal FOV** is necessary to balance comfort with immersion, as a wide FOV increases immersion but a narrow FOV can help mitigate sickness (lecture 11, 9:45; lecture 11, 10:18).
+   c1 28/S1/F0 (L28 11:54) ov=1.0: Field of view (FOV) is the view frustum, that is, the region visible to the human eye, and it is an angular measure of what can be seen at a single point in time.
+   c2 11/S2/F0 (L11 9:19) ov=0.69: Field of view (FOV) is a content-related factor in virtual reality (VR) that affects susceptibility to cybersickness (CS), and it is the extent to which the display in a VR headset captures the user's field of vision.
+   c3 12/S3/F1 (L12 16:24) ov=0.38: Field of view (FOV) is the amount of virtual environment that is visible at any moment.
+   c4 11/S0/F1 (L11 1:08) ov=0.09: The six virtual reality (VR) content factors that affect cyber sickness (CS) are visual motion, means of locomotion, field of view, type of content, duration, and visual complexity.
+   c5 11/S2/F2 (L11 10:03) ov=0.55: Research has found that reducing the field of view (FOV) in virtual reality (VR) can be an effective way to alleviate symptoms of cybersickness (CS).
+   c6 12/S3/F2 (L12 16:42) ov=0.55: Field of view (FOV) adjustment can, ideally, mitigate the onset or severity of cybersickness (CS) because restricting the field of view reduces peripheral optical flow.
+   c7 11/S2/F3 (L11 10:18) ov=0.67: An excessively narrow field of view (FOV) in virtual reality (VR) can decrease immersion and increase head movement to look for things in the environment, which may exacerbate or increase cybersickness (CS); finding the optimal FOV is crucial for creating a comfortable VR experience.
+   c8 11/S2/F1 (L11 9:45) ov=0.14: A larger field of view (FOV) in virtual reality (VR) captures a larger field of vision and generally results in greater immersion.
+--- plain  (1.25 s, ctx 103 tok)
+Field of view (FOV) refers to the extent of the observable area visible at any one time within a VR or AR headset. It matters for cybersickness because a narrow FOV can create a "tunnel vision" effect, while a wide FOV can intensify sensory conflicts between what your eyes see and what your inner ear feels. These conflicts are the primary cause of motion sickness in virtual environments.
+--- rag  (5.27 s, ctx 4061 tok)
+Field of view (FOV) is defined as the extent to which a user's field of vision is captured by the display in a VR headset (lecture 11, 4:00). It matters because larger FOV generally results in greater immersion (lecture 11, 9:45), while reducing the FOV can be an effective way to alleviate symptoms of cybersickness (lecture 11, 9:45).
+
+Specifically, FOV impacts cybersickness in the following ways:
+*   **Optical Flow:** Restricting the FOV reduces peripheral optical flow, which has an impact on visual motion perception and leads to the occurrence of cybersickness (lecture 12, 16:31).
+*   **Trade-offs:** While adjusting FOV can mitigate the onset or severity of cybersickness, it can also reduce the sense of presence and impair performance in visual tasks (lecture 12, 16:31).
+*   **Head Movement:** An excessively narrow FOV can decrease immersion, causing users to move their heads more to look for things, which may exacerbate or increase cybersickness (lecture 11, 9:45).
+
+COVERED: yes
+   c1 L11 4:00 ov=0.1 n=22: [11/39] Now, the type of control mechanism used in VR, as well as the extent of control. || [11/40] So, the type of control and the extent of control are both important.
+   c2 L11 9:45 ov=0.75 n=19: [11/52] Larger FOV means a larger field of vision is captured, and larger FOV generally results in greater immersion. || [11/54] However, an excessively narrow field of view can lead to decreased immersion, which in turn leads to an increase in head movement to basically look for things in the environment, and that increase in head movement may be likely to exacerbate or increase CS.
+   c3 L11 9:45 ov=0.73 n=19: [11/52] Larger FOV means a larger field of vision is captured, and larger FOV generally results in greater immersion. || [11/53] Research has found that reducing the field of view can be an effective way to alleviate symptoms of cyber sickness.
+   c4 L12 16:31 ov=0.93 n=31: [12/104] Now, if you can recollect from the earlier part of the lecture, peripheral optical flow has an impact on our visual motion perception and which in turn leads to the occurrence of cyber sickness. || [12/103] Restricting FOV reduces peripheral optical flow.
+   c5 L12 16:31 ov=0.81 n=31: [12/107] But the drawback is it can reduce presence or sense of presence and impair performance in visual tasks because certain things are restricted. || [12/102] So, essentially by adjusting the amount of virtual environment visible at any moment, we can mitigate the onset or severity of cyber sickness.
+   c6 L11 9:45 ov=0.69 n=19: [11/54] However, an excessively narrow field of view can lead to decreased immersion, which in turn leads to an increase in head movement to basically look for things in the environment, and that increase in head movement may be likely to exacerbate or increase CS. || [11/52] Larger FOV means a larger field of vision is captured, and larger FOV generally results in greater immersion.
+--- graphrag: (no run)
+
+######## E05 [explanation, expect yes] Why is a mouse-driven CAD system not a virtual reality system?
+GOLD: A VR system must have all three characteristics: virtual environment, immersive experience through the senses, and interaction. A CAD system has a virtual environment and interaction (via the mouse) but no immersion: the user sees the real world around the screen. So it is not VR.
+SOURCES: 4/S2/F1 (lecture 4, 14:08); 4/S2/F0 (13:24)
+--- ours  (10.18 s, ctx 11045 tok, steps ['check_concept', 'fact_lookup'])
+A computer-aided design (CAD) system is not considered a virtual reality (VR) system because it does not support an immersive experience. While a CAD system supports a virtual environment and interaction, the user interacts with screen content through a mouse while still seeing the real world around the computer screen (lecture 4, 14:08). 
+
+In contrast, a system is only categorized as a virtual reality system if it satisfies all three of the following characteristics (lecture 4, 6:01):
+* An artificial or synthetic environment
+* Sensory experience through computer-generated stimuli
+* User actions that partially determine what happens in the environment
+
+If a system does not satisfy at least one of these three characteristics, it is not a VR system (lecture 4, 13:24).
+   c1 4/S2/F1 (L4 14:08) ov=1.0: A computer-aided design (CAD) system is not a virtual reality (VR) system because, although it supports a virtual environment and interaction, it does not support an immersive experience, since the user interacts with screen content through a mouse while still seeing the real world around the computer screen.
+   c2 4/S1/F0 (L4 6:01) ov=0.62: A virtual reality (VR) system is defined by three characteristics: an artificial or synthetic environment, sensory experience through computer-generated stimuli, and user actions that partially determine what happens in the environment; a system with these aspects can be categorized as a virtual reality system and distinguished from other systems, which are not supposed to have these aspects.
+   c3 4/S2/F0 (L4 13:24) ov=1.0: A system is a virtual reality (VR) system if it satisfies all three characteristics of a VR system—virtual environment, immersive experience through sensory organs, and interaction—and it is not a VR system if it does not satisfy at least one of them.
+--- plain  (1.25 s, ctx 102 tok)
+A mouse-driven CAD system is not a virtual reality (VR) system because it lacks **immersion** and **presence**. In CAD, you interact with a 2D representation of 3D data through a peripheral, whereas VR requires a simulated environment where the user feels physically present within the digital space. Additionally, CAD lacks the real-time spatial interaction and sensory feedback provided by VR hardware like headsets and motion trackers.
+--- rag  (4.21 s, ctx 3855 tok)
+A mouse-driven CAD system is not a VR system because it does not satisfy all three required characteristics:
+
+*   **Virtual Environment:** While it has a virtual environment, it is not a VR system because it fails the other criteria (lecture 4, 13:44).
+*   **Immersive Experience:** It is not considered an immersive environment or experience because it does not generate stimuli to stimulate all sensory organs; users can still see the real world surrounding the computer screen (lecture 4, 13:44).
+*   **Interaction:** Although the system is interactive, a VR system must support all three characteristics simultaneously (lecture 4, 13:44).
+
+If a system does not support at least one of the three characteristics—virtual environment, immersive experience through sensory organs, and interaction—it cannot be called a VR system (lecture 4, 13:44).
+
+COVERED: yes
+   c1 L4 13:44 ov=0.38 n=38: [4/98] First thing is virtual environment. || [4/99] Is there a virtual environment present?
+   c2 L4 13:44 ov=0.78 n=38: [4/105] No, it is not. it's only as computer screen our so we are able to see it but along with that we are able to see things in the real world surrounding the computer screen. || [4/109] So among the three characteristics that is virtual environment, immersive experience through sensory organs and interaction.
+   c3 L4 13:44 ov=0.75 n=38: [4/95] If it supports all the three characteristics, then it must be a VR system. || [4/81] If the system satisfies all of these characteristics, then it is a VR system otherwise it is not.
+   c4 L4 13:44 ov=1.0 n=38: [4/109] So among the three characteristics that is virtual environment, immersive experience through sensory organs and interaction. || [4/110] It supports two virtual environment and interaction whereas it does not support the immersive experience part.
+--- graphrag: (no run)
