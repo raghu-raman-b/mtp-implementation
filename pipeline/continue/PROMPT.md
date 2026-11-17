@@ -99,6 +99,13 @@ only when the user asks.
   not-covered, where, prerequisite, structure and formula questions (where systems should differ most) are not judged
   yet. Resume with the commands in `baseline-tests/STATE.md` (~45–60 min extraction, then judge 29 + GraphRAG), then
   merge, then fill the docs placeholder. RAG embeddings not committed (`python3 rag.py build`, 27 min CPU).
+  **Docs must include the method** (user, 00:15): how each system was built and run (chunking, embedding, top-k,
+  prompts, GraphRAG extraction/communities/reports/query, model and sampling, the judge and its criteria, how to
+  rerun), the full question set, and per-category tables, not only the results. **Fairness points to settle before
+  finishing** (raised by the orchestrator, for the user to confirm): the GraphRAG query leaves out source text units
+  (real GraphRAG local search includes them; run it with text units, optionally also without); the baselines run with
+  thinking off while ours thinks in round 0 (consider a RAG run with thinking on); one sample per question at
+  temperature 1.0 (consider 2–3 runs on the categories that differ).
 
 ### Decisions recorded (user, 2026-11-17/18)
 - **Lecture experience**: roadmap (sequential) · lecture map · concept map as the top tabs; a lecture opens with the
