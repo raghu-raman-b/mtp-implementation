@@ -1475,11 +1475,13 @@ def make_complete_map(layer: Layer, k: str):
     rng = stable_rng("complete_map", k)
     order = list(range(len(edges)))
     rng.shuffle(order)
-    blanks = []
+    blanks, pairs_done = [], set()
     for n_, i in enumerate(order):
         if len(blanks) >= BLANKS_CAP:
             break
         e = edges[i]
+        if frozenset((e["from"], e["to"])) in pairs_done:
+            continue                               # one blank per pair of concepts: two would fit each other
         tries = ["label", "to", "from"] if n_ % 2 == 0 else ["to", "from", "label"]
         for hide in tries:
             if hide == "label":
@@ -1492,12 +1494,15 @@ def make_complete_map(layer: Layer, k: str):
                 right = {label_of[x[hide]] for x in edges if x[other] == e[other] and x["label"] == e["label"]}
                 answer, wrong = label_of[e[hide]], [x for x in pool if x not in right]
             wrong = [w for w in wrong if norm(w) != norm(answer)]
+            if hide == "label":                    # not "is for" beside "is for covering a"
+                wrong = [w for w in wrong if not (norm(w).startswith(norm(answer)) or norm(answer).startswith(norm(w)))]
             if len(wrong) < 2:
                 continue
             rng.shuffle(wrong)
             options = [answer] + wrong[:3]
             rng.shuffle(options)
             blanks.append({"edge": i, "hide": hide, "answer": answer, "options": options})
+            pairs_done.add(frozenset((e["from"], e["to"])))
             break
     if not blanks:
         return None, "no blank with enough wrong options"
@@ -1519,6 +1524,10 @@ def make_match_pairs(layer: Layer, k: str):
         right = short_definition(layer.cards[c]["definition"], layer.names(c))
         if norm(left) in lefts or norm(right) in rights or not norm(right.replace("___", "")):
             continue
+        if "___" in right and not right.startswith("___"):   # the name inside the sentence: not a definition
+            continue
+        if any(jaccard(content_tokens(right), content_tokens(p["right"])) >= 0.7 for p in pairs):
+            continue                               # twin rows
         lefts.add(norm(left))
         rights.add(norm(right))
         pairs.append({"left": left, "right": right, "concept": c, "facts": layer.definition_facts(c)})
