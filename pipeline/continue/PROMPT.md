@@ -90,8 +90,15 @@ only when the user asks.
 ### In flight
 - **Baseline tests** (Opus agent, branch `worktree-agent-ac043cfbb4e8a782d`, folder `baseline-tests/`): ours vs plain
   LLM vs RAG over transcripts vs GraphRAG-style/graph-only, same Gemma 4 12B on the local GPU, ~50 questions with gold,
-  Opus-judged (correct, hallucination, citation validity, context tokens, latency). Told to save WIP + `STATE.md` and
-  stop at 00:05 on 11-18; resume from its `baseline-tests/STATE.md`, then merge, then fill the docs placeholder.
+  Opus-judged (correct, hallucination, citation validity, context tokens, latency). **Paused 00:10 on 11-18, WIP commit
+  932c303** (branch pushed). 53 questions (9 categories, gold + fact IDs); ours, plain and RAG (738 chunks, top 8) ran on
+  all 53; light GraphRAG extraction 176/476 text units (graph, community reports and its answers not run); long context:
+  all transcripts = 244,971 tokens, 1.87× the 131,072 context. PARTIAL (24 of 53 judged: definitions, explanations,
+  comparisons, lists; ours/plain/RAG only): correct ours 1.00 / RAG 0.96 / plain 0.79; hallucinations 1 / 0 / 5; valid
+  citations 108/110 / 118/121 / none. Median latency 6.5 / 3.85 / 1.56 s. RAG nearly ties on the easy categories; the
+  not-covered, where, prerequisite, structure and formula questions (where systems should differ most) are not judged
+  yet. Resume with the commands in `baseline-tests/STATE.md` (~45–60 min extraction, then judge 29 + GraphRAG), then
+  merge, then fill the docs placeholder. RAG embeddings not committed (`python3 rag.py build`, 27 min CPU).
 
 ### Decisions recorded (user, 2026-11-17/18)
 - **Lecture experience**: roadmap (sequential) · lecture map · concept map as the top tabs; a lecture opens with the
