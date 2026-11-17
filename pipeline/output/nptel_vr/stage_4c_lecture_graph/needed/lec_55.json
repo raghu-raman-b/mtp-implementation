@@ -5,10 +5,14 @@
   {
    "lecture": "53",
    "title": "VR experience optimisation",
-   "weight": 1.0,
+   "weight": 2.0,
    "concepts": [
     {
-     "concept": "C1459",
+     "concept": "C1172",
+     "name": "point of interest"
+    },
+    {
+     "concept": "C1381",
      "name": "edge"
     }
    ]
@@ -16,26 +20,34 @@
   {
    "lecture": "54",
    "title": "VR resource optimization",
-   "weight": 5.0,
+   "weight": 7.0,
    "concepts": [
     {
-     "concept": "C1056",
-     "name": "computer graphics"
+     "concept": "C0682",
+     "name": "rendering"
     },
     {
-     "concept": "C1393",
-     "name": "pixel"
-    },
-    {
-     "concept": "C2764",
+     "concept": "C0689",
      "name": "display controller"
     },
     {
-     "concept": "C2766",
+     "concept": "C1004",
+     "name": "computer graphics"
+    },
+    {
+     "concept": "C1174",
+     "name": "three-dimensional graphics pipeline"
+    },
+    {
+     "concept": "C1321",
+     "name": "pixel"
+    },
+    {
+     "concept": "C2566",
      "name": "video controller"
     },
     {
-     "concept": "C2784",
+     "concept": "C2582",
      "name": "frame buffer"
     }
    ]
@@ -139,12 +151,20 @@
    "title": "Human Factors in XR"
   },
   {
+   "lecture": "26",
+   "title": "Human Factors in XR"
+  },
+  {
    "lecture": "27",
    "title": "Visual Perception & Displays I"
   },
   {
    "lecture": "28",
    "title": "Visual Perception & Displays II"
+  },
+  {
+   "lecture": "31",
+   "title": "Other Senses & Full Immersion"
   },
   {
    "lecture": "32",
@@ -225,14 +245,15 @@
  ],
  "concepts": [
   {
-   "concept": "C0713",
+   "concept": "C0682",
    "name": "rendering",
    "defined_in": [
     "19",
+    "54",
     "56"
    ],
    "weight": 1.0,
-   "definition": "Creating a virtual reality (VR) experience involves three activities: creating the virtual environment, which can also be called environment modeling or object modeling; creating the stereoscopic output view, which can also be called rendering; and incorporating interactions, which involve tracking hardware.",
+   "definition": "Rendering is the multi-stage computational process that creates a scene's visual output as a two-dimensional image that can be displayed, and, in a broad sense, output for other senses.",
    "defining_facts": [
     {
      "fact": "19/S2/F0",
@@ -247,20 +268,67 @@
      "text": "From the developer's point of view, virtual reality (VR) software should allow the developer to create a VR application by providing assistance in the three activities of creating the virtual environment, rendering the stereoscopic output view, and incorporating interactions."
     },
     {
+     "fact": "54/S2/F2",
+     "text": "The display controller is responsible for image generation, meaning it creates a representation of a scene as a two-dimensional image that can be displayed on a two-dimensional screen."
+    },
+    {
+     "fact": "54/S2/F3",
+     "text": "Image generation is a multi-stage computational process, and if all rendering-related computations were carried out by the central processing unit (CPU), the CPU's time would be consumed by rendering, leaving it with very little time for other tasks and the system could do little except rendering; to avoid this and increase efficiency, rendering is usually carried out by a dedicated component."
+    },
+    {
+     "fact": "54/S2/F4",
+     "text": "The dedicated rendering component is typically the graphics card, which usually contains its own graphics processing unit (GPU); in a generic graphics system this component is called the display controller, and the central processing unit (CPU) passes graphics rendering tasks to it so the computation takes place in the GPU rather than in the CPU."
+    },
+    {
+     "fact": "54/S2/F8",
+     "text": "The video controller uses the data stored in video memory to render an image on the screen, converting the digital image into some analog voltages required to activate the pixels, and it controls the pixel excitation mechanism using the video memory content."
+    },
+    {
      "fact": "56/S0/F0",
      "text": "Rendering, the key component of any immersive experience in which the scene is rendered in front of the user's eyes on the display device, is covered by computer graphics, so some knowledge of computer graphics is needed to understand the complexities involved in rendering."
     }
    ]
   },
   {
-   "concept": "C1056",
+   "concept": "C0689",
+   "name": "display controller",
+   "defined_in": [
+    "54"
+   ],
+   "weight": 1.0,
+   "definition": "Display controller is the rendering component in a generic graphics system that is responsible for image generation, receives display commands from the CPU, uses a GPU for rendering, and sends the generated two-dimensional digital image to video memory.",
+   "defining_facts": [
+    {
+     "fact": "54/S2/F0",
+     "text": "A generic graphics system has a host computer and a display, with three major components in between: a display controller, video memory, and a video controller."
+    },
+    {
+     "fact": "54/S2/F1",
+     "text": "In a generic graphics system, the host computer, or its central processing unit (CPU), has two-way communication with the display controller, in which the CPU sends display commands and may receive interaction data."
+    },
+    {
+     "fact": "54/S2/F2",
+     "text": "The display controller is responsible for image generation, meaning it creates a representation of a scene as a two-dimensional image that can be displayed on a two-dimensional screen."
+    },
+    {
+     "fact": "54/S2/F4",
+     "text": "The dedicated rendering component is typically the graphics card, which usually contains its own graphics processing unit (GPU); in a generic graphics system this component is called the display controller, and the central processing unit (CPU) passes graphics rendering tasks to it so the computation takes place in the GPU rather than in the CPU."
+    },
+    {
+     "fact": "54/S2/F5",
+     "text": "The display controller generates the image in a digital format, as strings of zeros and ones, and sends that image representation to video memory for storage."
+    }
+   ]
+  },
+  {
+   "concept": "C1004",
    "name": "computer graphics",
    "defined_in": [
     "19",
     "54"
    ],
    "weight": 1.0,
-   "definition": "Computer graphics addresses computer-generated images from synthetic models, and the software that helps a developer build a virtual reality (VR) experience should support computer-graphics operations.",
+   "definition": "Computer graphics (CG) is the area that addresses computer-generated images from synthetic models. It creates or represents objects, synthesizes them into a scene, allows users to manipulate images on a screen, creates the perception of motion, and renders the scene on a display so humans can perceive it.",
    "defining_facts": [
     {
      "fact": "19/S3/F5",
@@ -289,14 +357,133 @@
    ]
   },
   {
-   "concept": "C1236",
+   "concept": "C1172",
+   "name": "point of interest",
+   "defined_in": [
+    "21",
+    "52",
+    "53"
+   ],
+   "weight": 1.0,
+   "definition": "Point of interest (POI) is a significant spot in a virtual tour, modeled as a graph node or vertex with importance and a maximum waiting time, that need not be a physical object and is visited to inspect or interact with objects.",
+   "defining_facts": [
+    {
+     "fact": "21/S1/F7",
+     "text": "A scene graph is a node-based graph, essentially a tree of nodes and links, that represents a computer graphics scene, allowing selective work with nodes to manipulate the scene, create realistic effects, and support interaction, thereby providing a way to manage the functionality of a complex graphics application."
+    },
+    {
+     "fact": "21/S1/F15",
+     "text": "In a scene-graph representation of the marker-cow augmented reality (AR) example, the whole activity is represented as a node graph containing nodes for video input, tracking, a root node, a virtual camera whose parameters can be manipulated, projection, other related concepts, the three-dimensional (3D) object, and transformations represented as a single node or individual nodes; video input comes from the input device, tracking uses device sensors such as a camera, and graphics-rendering nodes include transformation, three-dimensional (3D) object representation, and orthographic projection, making the scene easier to visualize and manipulate to create the desired effect."
+    },
+    {
+     "fact": "52/S2/F0",
+     "text": "In the virtual reality path optimization model, each node has two associated quantities: importance and waiting time."
+    },
+    {
+     "fact": "52/S2/F1",
+     "text": "In the virtual reality path optimization formulation, the waiting time at a node, which is a point of interest, is the maximum time a user requires to inspect or interact with the object at that node, and it is represented by a waiting-time function W that maps each node v in V to a positive real number."
+    },
+    {
+     "fact": "52/S2/F2",
+     "text": "For a path P with vertices v1 to vn, the total waiting time W(P) is the sum of the individual waiting times W(v_i) for i = 1 to n."
+    },
+    {
+     "fact": "53/S1/F0",
+     "text": "The Satra campus is modeled as a graph in which the points of interest (POI) are the nodes, the graph has at least 25 nodes, and the edges connecting pairs of nodes are weighted by the Euclidean distance between the corresponding points of interest."
+    },
+    {
+     "fact": "53/S1/F3",
+     "text": "A point of interest (POI) in the Satra graph does not have to refer to an actual physical object; for example, a lake is not treated as a point of interest, but the corners of the lake are."
+    },
+    {
+     "fact": "53/S1/F4",
+     "text": "When the first navigation optimization approach gives a minimum time above the time threshold, the second approach requires each point of interest (POI) node to be assigned a relative importance from discussions with people and an estimated maximum wait time from observed visitor behavior."
+    },
+    {
+     "fact": "53/S1/F5",
+     "text": "The maximum wait time at a point of interest (POI) is the time a user needs to stop at the point of interest, inspect it, interact with it if possible, and resume navigation."
+    },
+    {
+     "fact": "53/S1/F6",
+     "text": "Once the graph is obtained, a traveling salesman problem (TSP) solver can be used to find a minimum-time path covering all 25 nodes, or a vehicle routing problem with profits (VRPP) solver can be used to find a path within a chosen time threshold that covers the maximum number of most important points of interest while accounting for the maximum wait time at each point of interest."
+    }
+   ]
+  },
+  {
+   "concept": "C1174",
+   "name": "three-dimensional graphics pipeline",
+   "defined_in": [
+    "54",
+    "55",
+    "56",
+    "58"
+   ],
+   "weight": 1.0,
+   "definition": "The three-dimensional graphics pipeline is a stage-wise process of computation that starts from object representation and ends by computing pixel intensities for a pixel-grid display, with five stages: object representation, modeling transformation, lighting, a viewing pipeline, and scan conversion.",
+   "defining_facts": [
+    {
+     "fact": "54/S5/F0",
+     "text": "The three-dimensional (3D) computer graphics pipeline (3D graphics pipeline) is a stage-wise process of computation starting from object representation to rendering on the pixel grid."
+    },
+    {
+     "fact": "55/S1/F0",
+     "text": "The three-dimensional (3D) graphics pipeline is the stage-wise process that computes the intensity values for each pixel, stores them in the frame buffer, and uses them to drive the display mechanism through the video controller."
+    },
+    {
+     "fact": "55/S1/F1",
+     "text": "The three-dimensional (3D) graphics pipeline contains five stages: first object representation, second modeling transformation, third lighting, fourth the viewing pipeline, and fifth scan conversion."
+    },
+    {
+     "fact": "55/S1/F2",
+     "text": "The first stage of the three-dimensional (3D) graphics pipeline, object representation, defines the objects that together form the rendered image in each object's own local coordinate system."
+    },
+    {
+     "fact": "55/S1/F3",
+     "text": "The second stage of the three-dimensional (3D) graphics pipeline, modeling transformation, transforms objects from their local coordinate systems to the common world coordinate system to construct the scene."
+    },
+    {
+     "fact": "55/S1/F4",
+     "text": "The third stage of the three-dimensional (3D) graphics pipeline, lighting or illumination, assigns color to the constructed scene in the world coordinate system, making the scene's three-dimensional nature more perceptible."
+    },
+    {
+     "fact": "55/S1/F6",
+     "text": "The fourth stage of the three-dimensional (3D) graphics pipeline is a viewing pipeline that comprises viewing transformation, clipping, hidden surface removal, projection transformation, and window-to-viewport transformation."
+    },
+    {
+     "fact": "55/S1/F8",
+     "text": "The fifth stage of the three-dimensional (3D) graphics pipeline, scan conversion, transforms the continuous device coordinate system description, whose points can take real-number coordinates, into the discrete pixel-grid or screen coordinate system, where each pixel coordinate is an integer."
+    },
+    {
+     "fact": "55/S1/F9",
+     "text": "Transforming an object definition to a pixel-level scene description in the three-dimensional (3D) graphics pipeline uses six coordinate systems: the local coordinate system, the world coordinate system, the three-dimensional (3D) view coordinate system, the two-dimensional (2D) view coordinate system, the device coordinate system, and the pixel-grid or screen coordinate system."
+    },
+    {
+     "fact": "56/S1/F0",
+     "text": "The three-dimensional (3D) graphics pipeline consists of five stages in order: object representation in the local coordinate system; modeling transformation, which transforms a local coordinate description to a world coordinate description; lighting, which takes place in the world coordinate reference frame; the viewing pipeline, which contains viewing transformation from the world coordinate system to a three-dimensional view coordinate system, clipping in the three-dimensional view coordinate system, hidden surface removal in the three-dimensional view coordinate system, projection transformation from the three-dimensional view coordinate system to a two-dimensional (2D) view coordinate system, and window-to-viewport transformation from the two-dimensional view coordinate system to the device coordinate system; and scan conversion, which transforms the device coordinate scene description to a screen coordinate or pixel grid description."
+    },
+    {
+     "fact": "58/S0/F1",
+     "text": "The three-dimensional (3D) graphics pipeline has five stages, and the first four stages are object representation in the local coordinate system; modeling or geometric transformation from the local coordinate system to the world coordinate system; lighting in the world coordinate system; and viewing transformation from the world coordinate system to the three-dimensional (3D) view coordinate system."
+    },
+    {
+     "fact": "58/S0/F2",
+     "text": "In the three-dimensional (3D) graphics pipeline, after the viewing transformation, the view pipeline includes clipping in the three-dimensional (3D) view coordinate system, hidden surface removal in the three-dimensional (3D) view coordinate system, projection transformation from the three-dimensional (3D) view coordinate system to the two-dimensional (2D) view coordinate system, and window-to-viewport transformation from the two-dimensional (2D) view coordinate system to the device coordinate system."
+    },
+    {
+     "fact": "58/S0/F3",
+     "text": "The fifth stage of the three-dimensional (3D) graphics pipeline is the scan conversion stage, also called the rendering stage, which transforms a device coordinate description into a screen coordinate description on the pixel grid."
+    }
+   ]
+  },
+  {
+   "concept": "C1176",
    "name": "clipping",
    "defined_in": [
     "21",
     "57"
    ],
    "weight": 1.0,
-   "definition": "Scene graph-based representations support operations that are part of a three-dimensional (3D) graphics pipeline, including sorting objects according to visibility (visible surface detection), removing objects outside the camera field of view (clipping), state management, and higher-level abstractions of functionality.",
+   "definition": "Clipping is the process in the three-dimensional graphics pipeline that discards objects or portions of objects that are part of the scene but outside the view volume before projection.",
    "defining_facts": [
     {
      "fact": "21/S1/F8",
@@ -317,13 +504,13 @@
    ]
   },
   {
-   "concept": "C1393",
+   "concept": "C1321",
    "name": "pixel",
    "defined_in": [
     "54"
    ],
    "weight": 1.0,
-   "definition": "A graphic display screen generally has a grid of picture elements, or pixels; when these pixels are activated, or excited, by an electrical or electromechanical means, they emit light with specific intensities that the viewer perceives as a colored image on the screen.",
+   "definition": "A Pixel is an element in the grid of a graphic display screen that, when activated, emits light with a specific intensity, helping to form a colored image perceived on the screen.",
    "defining_facts": [
     {
      "fact": "54/S2/F7",
@@ -360,13 +547,13 @@
    ]
   },
   {
-   "concept": "C1459",
+   "concept": "C1381",
    "name": "edge",
    "defined_in": [
     "53"
    ],
    "weight": 1.0,
-   "definition": "The Satra campus is modeled as a graph in which the points of interest (POI) are the nodes, the graph has at least 25 nodes, and the edges connecting pairs of nodes are weighted by the Euclidean distance between the corresponding points of interest.",
+   "definition": "An edge is a connection between two nodes or vertices in a graph, which can be weighted by a distance or by a shortest path length.",
    "defining_facts": [
     {
      "fact": "53/S1/F0",
@@ -375,44 +562,13 @@
    ]
   },
   {
-   "concept": "C2764",
-   "name": "display controller",
-   "defined_in": [
-    "54"
-   ],
-   "weight": 1.0,
-   "definition": "A generic graphics system has a host computer and a display, with three major components in between: a display controller, video memory, and a video controller.",
-   "defining_facts": [
-    {
-     "fact": "54/S2/F0",
-     "text": "A generic graphics system has a host computer and a display, with three major components in between: a display controller, video memory, and a video controller."
-    },
-    {
-     "fact": "54/S2/F1",
-     "text": "In a generic graphics system, the host computer, or its central processing unit (CPU), has two-way communication with the display controller, in which the CPU sends display commands and may receive interaction data."
-    },
-    {
-     "fact": "54/S2/F2",
-     "text": "The display controller is responsible for image generation, meaning it creates a representation of a scene as a two-dimensional image that can be displayed on a two-dimensional screen."
-    },
-    {
-     "fact": "54/S2/F4",
-     "text": "The dedicated rendering component is typically the graphics card, which usually contains its own graphics processing unit (GPU); in a generic graphics system this component is called the display controller, and the central processing unit (CPU) passes graphics rendering tasks to it so the computation takes place in the GPU rather than in the CPU."
-    },
-    {
-     "fact": "54/S2/F5",
-     "text": "The display controller generates the image in a digital format, as strings of zeros and ones, and sends that image representation to video memory for storage."
-    }
-   ]
-  },
-  {
-   "concept": "C2766",
+   "concept": "C2566",
    "name": "video controller",
    "defined_in": [
     "54"
    ],
    "weight": 1.0,
-   "definition": "A generic graphics system has a host computer and a display, with three major components in between: a display controller, video memory, and a video controller.",
+   "definition": "A video controller is a component of a generic graphics system that uses data stored in video memory to render an image on the display by converting the digital image into analog voltages that activate the pixels.",
    "defining_facts": [
     {
      "fact": "54/S2/F0",
@@ -425,13 +581,13 @@
    ]
   },
   {
-   "concept": "C2784",
+   "concept": "C2582",
    "name": "frame buffer",
    "defined_in": [
     "54"
    ],
    "weight": 1.0,
-   "definition": "In a raster scan system, the frame buffer is the video memory component that stores the intensity values for all pixels in the grid, and it contains one memory location for each pixel that stores the intensity as a bit string of 0s and 1s.",
+   "definition": "Frame buffer is a video memory component of a raster scan system that contains one memory location for each pixel, stores the pixel's intensity as a bit string, and has a size equal to the screen resolution.",
    "defining_facts": [
     {
      "fact": "54/S4/F0",
@@ -446,358 +602,322 @@
  ],
  "never_defined": [
   {
-   "concept": "C0117",
-   "name": "computer vision technique",
-   "definition": "Markerless augmented reality (AR) applications are more versatile than marker-based augmented reality applications, do not require physical markers, can use computer vision techniques, and allow users to decide where to place virtual objects."
+   "concept": "C0114",
+   "name": "computer vision",
+   "definition": "Computer vision (CV) is an enabling technology for augmented reality and mixed reality applications that detects, recognizes, and tracks objects in real-world scenes."
   },
   {
-   "concept": "C0167",
+   "concept": "C0158",
    "name": "three-dimensional space",
-   "definition": "In virtual reality (VR), headsets or display devices present two-dimensional (2D) images, but stereoscopic vision makes the user perceive them as three-dimensional (3D) objects and space, which is immersion."
+   "definition": "Three-dimensional space is the space with x, y, and z axes in which an object can have three translational and three rotational degrees of freedom."
   },
   {
-   "concept": "C0704",
+   "concept": "C0674",
    "name": "input sensor",
-   "definition": "In a virtual reality (VR) system, the processing part or computer is a device that processes data from input sensors and, based on that processing, activates or actuates output devices."
+   "definition": "Input sensor is a sensor that provides data to the processing part of a VR system or is used to capture real world scene information as points in point sample rendering."
   },
   {
-   "concept": "C0960",
+   "concept": "C0916",
    "name": "point",
-   "definition": "In natural feature tracking, the advanced image processing algorithms or computer vision techniques detect features that are unique to the surroundings with respect to the object to be tracked, such as points, corners, and line intersections."
+   "definition": "A point is a position in a coordinate system, represented by coordinates or a vector, that can be transformed between coordinate systems and mapped to integer pixel-grid coordinates for display."
   },
   {
-   "concept": "C1079",
+   "concept": "C1027",
    "name": "surface",
-   "definition": "Physics support in a virtual world generator should also replicate other physical-world phenomena, such as how light propagates, how light interacts with different surfaces, the effects generated, the sources of light and resulting illumination effects, and how sound and smell propagate."
+   "definition": "Surface is a boundary of an object that can be polygonal or curved."
   },
   {
-   "concept": "C1309",
+   "concept": "C1243",
    "name": "animation",
-   "definition": "Standalone augmented reality (AR) authoring tools typically support scene construction, animation, and adding interactive behavior, with capabilities ranging from scene construction only to the full capability of building complex interactive behavior."
+   "definition": "Animation is computer graphics content or an asset used for creating the perception of motion and in representing objects or complex characters."
   },
   {
-   "concept": "C1750",
+   "concept": "C1654",
    "name": "stage",
-   "definition": "A software development lifecycle is a set of stages that should ideally be followed in a particular sequence."
+   "definition": "A Stage is a step in an interactive system development lifecycle, a set of stages that should ideally be followed in a particular sequence, with iterations that may return to a previous stage."
   },
   {
-   "concept": "C2658",
-   "name": "vertex",
-   "definition": "For every pair of vertices v1 and v2 in the vertex set V, the assigned edge weight is the Euclidean distance between v1 and v2 if they are directly connected, and a very large number represented by the infinity symbol if they are not directly connected."
-  },
-  {
-   "concept": "C2775",
+   "concept": "C2574",
    "name": "curve",
-   "definition": "Vector scan devices, also called random scan, stroke writing, or calligraphic devices, view an image as composed of continuous geometric primitives such as lines and curves and render the image by exciting only selected pixels that represent the primitives, on the assumption that rendering the primitives will make the whole image be perceived."
+   "definition": "A curve is a continuous geometric primitive that can be represented by a higher-degree polynomial or by smoothly joined lower-degree polynomial pieces in spline representation."
   },
   {
-   "concept": "C2799",
+   "concept": "C2596",
    "name": "color value",
-   "definition": "The color values stored in the frame buffer are computed by the display processor, which is part of the display controller, in distinct stages."
+   "definition": "Color value is a value stored in the frame buffer and computed by the display processor."
   },
   {
-   "concept": "C2800",
+   "concept": "C2597",
    "name": "display processor",
-   "definition": "The color values stored in the frame buffer are computed by the display processor, which is part of the display controller, in distinct stages."
+   "definition": "A display processor is part of the display controller that computes the color values stored in the frame buffer in distinct stages."
   },
   {
-   "concept": "C2802",
+   "concept": "C2599",
    "name": "display mechanism",
-   "definition": "The three-dimensional (3D) graphics pipeline is the stage-wise process that computes the intensity values for each pixel, stores them in the frame buffer, and uses them to drive the display mechanism through the video controller."
+   "definition": "A display mechanism is a mechanism driven through a video controller by the pixel intensity values that the 3D graphics pipeline stores in the frame buffer."
   },
   {
-   "concept": "C2812",
-   "name": "three-dimensional view coordinate system",
-   "definition": "Within the viewing pipeline, viewing transformation maps the scene from the world coordinate system to the view coordinate system, clipping and hidden surface removal operate in the view coordinate system, projection transformation maps the three-dimensional (3D) view coordinate system to the two-dimensional (2D) view coordinate system, and window-to-viewport transformation maps the two-dimensional view coordinate system to the device coordinate system; together, these sub-stages transform a scene from the world coordinate system to the device coordinate system."
-  },
-  {
-   "concept": "C2813",
+   "concept": "C2610",
    "name": "two-dimensional view coordinate system",
-   "definition": "Within the viewing pipeline, viewing transformation maps the scene from the world coordinate system to the view coordinate system, clipping and hidden surface removal operate in the view coordinate system, projection transformation maps the three-dimensional (3D) view coordinate system to the two-dimensional (2D) view coordinate system, and window-to-viewport transformation maps the two-dimensional view coordinate system to the device coordinate system; together, these sub-stages transform a scene from the world coordinate system to the device coordinate system."
+   "definition": "Two-dimensional view coordinate system is a coordinate system in the 3D graphics pipeline that projection transformation maps the 3D view coordinate system to and that window-to-viewport transformation maps to the device coordinate system."
   },
   {
-   "concept": "C2818",
+   "concept": "C2614",
    "name": "three-dimensional object representation technique",
-   "definition": "A single three-dimensional (3D) object representation technique is not sufficient because different object representation techniques are available, and the appropriate technique must be chosen for a particular problem."
+   "definition": "A three-dimensional object representation technique is one of the different object representation techniques available; broad categories are point sample rendering, boundary representation, and space partitioning based representation, and the appropriate technique must be chosen for a particular problem."
   },
   {
-   "concept": "C2823",
+   "concept": "C2619",
    "name": "parametric representation",
-   "definition": "The broad categories of three-dimensional (3D) object representation techniques are point sample rendering, boundary representation, and space partitioning based representation, with boundary representation comprising mesh representation, parametric representation, and implicit representation, and space partitioning based representation comprising the octree method, binary space partitioning (BSP) method, and constructive solid geometry (CSG) method."
+   "definition": "Parametric representation is a form of boundary representation; higher-level boundary representations use it, and spline representation for curved surfaces or curves falls under it."
   },
   {
-   "concept": "C2824",
+   "concept": "C2620",
    "name": "implicit representation",
-   "definition": "The broad categories of three-dimensional (3D) object representation techniques are point sample rendering, boundary representation, and space partitioning based representation, with boundary representation comprising mesh representation, parametric representation, and implicit representation, and space partitioning based representation comprising the octree method, binary space partitioning (BSP) method, and constructive solid geometry (CSG) method."
+   "definition": "Implicit representation is a boundary representation technique for three-dimensional objects, used in higher-level boundary representations."
   },
   {
-   "concept": "C2825",
+   "concept": "C2621",
    "name": "octree method",
-   "definition": "The broad categories of three-dimensional (3D) object representation techniques are point sample rendering, boundary representation, and space partitioning based representation, with boundary representation comprising mesh representation, parametric representation, and implicit representation, and space partitioning based representation comprising the octree method, binary space partitioning (BSP) method, and constructive solid geometry (CSG) method."
+   "definition": "The octree method is a space partitioning based representation technique for 3D objects."
   },
   {
-   "concept": "C2826",
+   "concept": "C2622",
    "name": "binary space partitioning method",
-   "definition": "The broad categories of three-dimensional (3D) object representation techniques are point sample rendering, boundary representation, and space partitioning based representation, with boundary representation comprising mesh representation, parametric representation, and implicit representation, and space partitioning based representation comprising the octree method, binary space partitioning (BSP) method, and constructive solid geometry (CSG) method."
+   "definition": "Binary space partitioning method is one of the space partitioning based representation techniques for three-dimensional objects."
   },
   {
-   "concept": "C2827",
+   "concept": "C2623",
    "name": "constructive solid geometry method",
-   "definition": "The broad categories of three-dimensional (3D) object representation techniques are point sample rendering, boundary representation, and space partitioning based representation, with boundary representation comprising mesh representation, parametric representation, and implicit representation, and space partitioning based representation comprising the octree method, binary space partitioning (BSP) method, and constructive solid geometry (CSG) method."
+   "definition": "Constructive solid geometry method is a space partitioning based representation technique for three-dimensional objects."
   },
   {
-   "concept": "C2828",
+   "concept": "C2624",
    "name": "data point",
-   "definition": "Point sample rendering is the simplest broad representation category, in which the captured scene information is represented as a set of raw data points on the scene, with each point carrying that information as attributes."
+   "definition": "A data point is a raw point in a scene that carries captured scene information as attributes in point sample rendering."
   },
   {
-   "concept": "C2829",
+   "concept": "C2625",
    "name": "attribute",
-   "definition": "Point sample rendering is the simplest broad representation category, in which the captured scene information is represented as a set of raw data points on the scene, with each point carrying that information as attributes."
+   "definition": "An attribute is the captured scene information carried by a raw data point in point sample rendering."
   },
   {
-   "concept": "C2830",
+   "concept": "C2626",
    "name": "three-dimensional range scanner",
-   "definition": "In point sample rendering, the scene information is captured from the real world in the form of points using input sensors such as three-dimensional (3D) range scanners, range finders, or computer vision techniques."
+   "definition": "A three-dimensional range scanner is an input sensor that captures real-world scene information as points in point sample rendering."
   },
   {
-   "concept": "C2831",
+   "concept": "C2627",
    "name": "range finder",
-   "definition": "In point sample rendering, the scene information is captured from the real world in the form of points using input sensors such as three-dimensional (3D) range scanners, range finders, or computer vision techniques."
+   "definition": "A range finder is one of the input sensors used in point sample rendering to capture scene information from the real world as points."
   },
   {
-   "concept": "C2832",
+   "concept": "C2628",
    "name": "synthetic image",
-   "definition": "In point sample rendering, the captured points are processed or mapped to pixels to generate a synthetic image, relying on real-world information rather than synthetically defining objects."
+   "definition": "A Synthetic image is an image generated in point sample rendering by processing or mapping captured points to pixels."
   },
   {
-   "concept": "C2833",
+   "concept": "C2629",
    "name": "polygon",
-   "definition": "Boundary representation is a broad representation category in which objects are represented by the surfaces that define the object's boundary, and those surfaces can be polygonal or curved."
+   "definition": "A polygon is a geometric shape used in a polygonal mesh to approximate an object's boundary."
   },
   {
-   "concept": "C2835",
+   "concept": "C2630",
    "name": "vertex list",
-   "definition": "Mesh representation is a popular boundary representation technique in which object surfaces are assumed to be polygons, the connected polygons form a mesh that represents the whole object, and a vertex or edge list stores all vertices or edges and their connections, allowing the object to be reconstructed."
+   "definition": "A Vertex list is a list in mesh representation that stores all vertices and their connections."
   },
   {
-   "concept": "C2836",
+   "concept": "C2631",
    "name": "edge list",
-   "definition": "Mesh representation is a popular boundary representation technique in which object surfaces are assumed to be polygons, the connected polygons form a mesh that represents the whole object, and a vertex or edge list stores all vertices or edges and their connections, allowing the object to be reconstructed."
+   "definition": "An Edge list is a list in a mesh representation that stores all edges and their connections, allowing the object to be reconstructed."
   },
   {
-   "concept": "C2838",
+   "concept": "C2632",
    "name": "triangle",
-   "definition": "Objects with non-polygonal surfaces can be represented using mesh representation by approximating the surfaces with polygonal meshes, typically triangles, although other simple convex polygons may also be used."
+   "definition": "A triangle is a polygon that most graphics systems use to form meshes approximating object surfaces in rendered scenes."
   },
   {
-   "concept": "C2839",
+   "concept": "C2633",
    "name": "simple convex polygon",
-   "definition": "Objects with non-polygonal surfaces can be represented using mesh representation by approximating the surfaces with polygonal meshes, typically triangles, although other simple convex polygons may also be used."
+   "definition": "Simple convex polygon is a polygon that may be used, besides triangles, to approximate non-polygonal surfaces in mesh representation."
   },
   {
-   "concept": "C2840",
+   "concept": "C2634",
    "name": "pipeline",
-   "definition": "Mesh representation is the most basic form of representation for any object in a rendered scene used in computer graphics, and all other representations are converted to a mesh representation at the end of the pipeline before the objects are rendered."
+   "definition": "A pipeline is part of computer graphics, and all other representations are converted to a mesh representation at its end before objects are rendered."
   },
   {
-   "concept": "C2842",
+   "concept": "C2636",
    "name": "curved surface",
-   "definition": "Spline representation is a higher-level boundary representation for curved surfaces or curves that falls under parametric representation."
+   "definition": "A curved surface is a surface for which spline representation is a higher-level boundary representation that falls under parametric representation."
   },
   {
-   "concept": "C2843",
+   "concept": "C2637",
    "name": "simple polygon",
-   "definition": "Spline representation is typically preferred by developers or designers of scenes who want to create an artificial environment, and it is used to construct quality scenes for rendering and to represent complex surfaces with complex properties that cannot be represented by simple polygons or simple polynomial equations."
+   "definition": "A simple polygon is a surface representation that cannot represent complex surfaces with complex properties."
   },
   {
-   "concept": "C2844",
+   "concept": "C2638",
    "name": "polynomial equation",
-   "definition": "Spline representation is typically preferred by developers or designers of scenes who want to create an artificial environment, and it is used to construct quality scenes for rendering and to represent complex surfaces with complex properties that cannot be represented by simple polygons or simple polynomial equations."
+   "definition": "A polynomial equation is a simple representation that cannot represent complex surfaces with complex properties."
   },
   {
-   "concept": "C2846",
+   "concept": "C2640",
    "name": "polynomial",
-   "definition": "In polynomial representation of a curve, a more complex curve is represented by a polynomial of higher degree, and computing points on a higher-degree polynomial becomes more time-consuming."
+   "definition": "A polynomial is used to represent curves, with higher-degree polynomials for more complex curves, and in spline representations lower-degree polynomial pieces, most commonly third-order, compute points on curve segments."
   },
   {
-   "concept": "C2849",
+   "concept": "C2642",
    "name": "curve segment",
-   "definition": "In spline representation, a complete curve consists of several lower-degree polynomial pieces instead of a single higher-degree complex polynomial, and each piece is called a blending function or basis function so that simpler polynomials can compute points on the curve segment represented by that piece."
+   "definition": "A curve segment is a portion of a complete curve in spline representation that is represented by one lower-degree polynomial piece, called a blending or basis function."
   },
   {
-   "concept": "C2850",
+   "concept": "C2643",
    "name": "third-order polynomial",
-   "definition": "Third-order polynomials are the most common form of polynomial used to construct spline curves."
+   "definition": "A Third-order polynomial is a form of polynomial most commonly used to construct spline curves."
   },
   {
-   "concept": "C2851",
+   "concept": "C2644",
    "name": "spline curve",
-   "definition": "Third-order polynomials are the most common form of polynomial used to construct spline curves."
+   "definition": "A spline curve is a curve commonly constructed using third-order polynomials."
   },
   {
-   "concept": "C2854",
-   "name": "binary space partitioning",
-   "definition": "Space partitioning representations include the octree method, binary space partitioning, and constructive solid geometric methods."
-  },
-  {
-   "concept": "C2855",
-   "name": "constructive solid geometry",
-   "definition": "Space partitioning representations include the octree method, binary space partitioning, and constructive solid geometric methods."
-  },
-  {
-   "concept": "C2859",
+   "concept": "C2649",
    "name": "computer animation",
-   "definition": "A skeletal model is a specialized representation method for complex characters such as a cat that captures the character's overall appearance and motion behavior, and such models are typically used in animation or computer animation to represent objects or complex characters."
+   "definition": "Computer animation is a context in which skeletal models are typically used to represent objects or complex characters."
   },
   {
-   "concept": "C2860",
+   "concept": "C2650",
    "name": "pipeline stage",
-   "definition": "In an implementation of the three-dimensional (3D) graphics pipeline, all pipeline stages are present, the stages are more important than their sequence, and the order of the stages and sub-stages may differ from the stage-wise sequence used to show how the computations occur."
+   "definition": "A pipeline stage is a part of a 3D graphics or render pipeline."
   },
   {
-   "concept": "C2861",
+   "concept": "C2651",
    "name": "sub-stage",
-   "definition": "In an implementation of the three-dimensional (3D) graphics pipeline, all pipeline stages are present, the stages are more important than their sequence, and the order of the stages and sub-stages may differ from the stage-wise sequence used to show how the computations occur."
+   "definition": "A sub-stage is part of a 3D graphics pipeline implementation, and the order of sub-stages may differ from the stage-wise sequence used to show how computations occur."
   }
  ],
  "defined_later": [
   {
-   "concept": "C0717",
-   "name": "scene",
+   "concept": "C0686",
+   "name": "Unity scene",
    "first_defined": "60"
   },
   {
-   "concept": "C2809",
+   "concept": "C2606",
    "name": "hidden surface removal",
    "first_defined": "57"
   },
   {
-   "concept": "C2817",
-   "name": "pixel intensity",
-   "first_defined": "56"
+   "concept": "C2609",
+   "name": "three-dimensional view coordinate system",
+   "first_defined": "57"
   },
   {
-   "concept": "C2837",
-   "name": "polygonal mesh",
-   "first_defined": "61"
+   "concept": "C2613",
+   "name": "pixel intensity",
+   "first_defined": "56"
   }
  ],
  "introduced": [
   {
-   "concept": "C0331",
+   "concept": "C0314",
    "name": "lighting"
   },
   {
-   "concept": "C1234",
-   "name": "three-dimensional graphics pipeline"
+   "concept": "C1067",
+   "name": "rasterization"
   },
   {
-   "concept": "C2798",
+   "concept": "C2595",
    "name": "object representation"
   },
   {
-   "concept": "C2801",
+   "concept": "C2598",
    "name": "graphics pipeline"
   },
   {
-   "concept": "C2803",
+   "concept": "C2600",
    "name": "local coordinate system"
   },
   {
-   "concept": "C2804",
+   "concept": "C2601",
    "name": "modeling transformation"
   },
   {
-   "concept": "C2805",
+   "concept": "C2602",
    "name": "world coordinate system"
   },
   {
-   "concept": "C2806",
+   "concept": "C2603",
    "name": "device coordinate system"
   },
   {
-   "concept": "C2807",
+   "concept": "C2604",
    "name": "viewing pipeline"
   },
   {
-   "concept": "C2808",
+   "concept": "C2605",
    "name": "viewing transformation"
   },
   {
-   "concept": "C2810",
+   "concept": "C2607",
    "name": "projection transformation"
   },
   {
-   "concept": "C2811",
+   "concept": "C2608",
    "name": "window-to-viewport transformation"
   },
   {
-   "concept": "C2814",
-   "name": "scan conversion"
-  },
-  {
-   "concept": "C2815",
+   "concept": "C2611",
    "name": "screen coordinate system"
   },
   {
-   "concept": "C2816",
+   "concept": "C2612",
    "name": "three-dimensional object representation"
   },
   {
-   "concept": "C2819",
+   "concept": "C2615",
    "name": "point sample rendering"
   },
   {
-   "concept": "C2820",
+   "concept": "C2616",
    "name": "boundary representation"
   },
   {
-   "concept": "C2821",
+   "concept": "C2617",
    "name": "space partitioning based representation"
   },
   {
-   "concept": "C2822",
-   "name": "mesh representation"
-  },
-  {
-   "concept": "C2834",
+   "concept": "C2618",
    "name": "mesh"
   },
   {
-   "concept": "C2841",
+   "concept": "C2635",
    "name": "spline representation"
   },
   {
-   "concept": "C2845",
+   "concept": "C2639",
    "name": "polynomial representation"
   },
   {
-   "concept": "C2847",
+   "concept": "C2641",
    "name": "polynomial piece"
   },
   {
-   "concept": "C2848",
-   "name": "basis function"
-  },
-  {
-   "concept": "C2852",
-   "name": "space partitioning representation"
-  },
-  {
-   "concept": "C2853",
+   "concept": "C2645",
    "name": "space partitioning tree"
   },
   {
-   "concept": "C2856",
+   "concept": "C2646",
    "name": "fractal representation"
   },
   {
-   "concept": "C2857",
+   "concept": "C2647",
    "name": "particle system representation"
   },
   {
-   "concept": "C2858",
+   "concept": "C2648",
    "name": "skeletal model"
   }
  ]
