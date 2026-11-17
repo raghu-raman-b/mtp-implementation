@@ -205,12 +205,13 @@ class Course:
     """Paths and loaders for one course; every load is fresh (or cached until its files change), so new outputs show
     on a reload."""
 
-    def __init__(self, course: str, root: Path, media: Path | None = None):
+    def __init__(self, course: str, root: Path, media: Path | None = None, output: Path | None = None,
+                 activities: str = "activities"):
         self.course, self.root = course, root
         self.inp = root / "input" / course / "input"
-        self.out = root / "output" / course
+        self.out = (output or root / "output") / course
         self.kd = self.out / "knowledge"
-        self.ad = self.out / "activities"
+        self.ad = self.out / activities
         self.media = media or (root / "input" / course / "media")
         self._memo: dict = {}
         self._lock = threading.Lock()
@@ -346,9 +347,9 @@ class Course:
         return [self.inp / "titles.tsv", self.out / "stage_1b_verify_segments" / "segment_maps", self.kd,
                 self.kd / "lectures", self.ad, self.media]
 
-    def flagged(self) -> dict:
-        """activity ID -> its check record, for every unit a checks*.json in activities/ marks "unresolved" (for a unit
-        several files report, the newest file wins)."""
+    def check_units(self) -> dict:
+        """unit -> its record, from every checks*.json in activities/ (for a unit several files report, the newest
+        file wins)."""
         units = {}
         files = sorted(self.ad.glob("checks*.json"), key=lambda p: stat_sig(p) or (0, 0)) if self.ad.is_dir() else []
         for f in files:
@@ -356,8 +357,57 @@ class Course:
                 for recs in (kinds or {}).values():
                     if isinstance(recs, dict):
                         units.update({u: r for u, r in recs.items() if isinstance(r, dict)})
+        return units
+
+    def flagged(self, units: dict) -> dict:
+        """activity ID -> its check record, for every unit the checks mark "unresolved"."""
         return {r["activity"]: {"unit": u, "status": r.get("status"), "problems": r.get("problems") or []}
                 for u, r in units.items() if r.get("status") == "unresolved" and r.get("activity")}
+
+    @staticmethod
+    def judge_failed(units: dict, acts: list[dict]) -> dict:
+        """activity ID -> {item number: the criteria the judge failed it on} (s5's numbering: 1.. in the order of the
+        activity's list; recap 0 is its text), from the judge round of the version kept. A put_in_order unit may have
+        made several activities (the record names the last): its numbers run on across the unit's activities of that
+        segment, in file order."""
+        out = {}
+        for r in units.values():
+            j = r.get("judge") or {}
+            nums = [n for n in (r.get("flags") or {}).get("judge_failed") or [] if isinstance(n, int)]
+            aid = r.get("activity")
+            if not nums or not aid:
+                continue
+            rounds = j.get("rounds") or []
+            rnd = (rounds[-1] if j.get("kept") == "rewrite" else rounds[0]) if rounds else {}
+            why = {v.get("item"): [str(c) for c in v.get("failed") or []]
+                   for v in rnd.get("verdicts") or [] if isinstance(v, dict)}
+            last = next((a for a in acts if a.get("id") == aid), None)
+            if last is None:
+                continue
+            group = [last]
+            if last.get("kind") == "put_in_order":
+                i = acts.index(last)
+                while i > 0 and acts[i - 1].get("kind") == "put_in_order" and acts[i - 1].get("segment") == last.get("segment"):
+                    i -= 1
+                    group.insert(0, acts[i])
+            off = 0
+            for a in group:
+                n_items = len(((a.get("data") or {}).get(ITEM_LIST.get(a.get("kind")) or "") or []))
+                mine = {n - off: why.get(n, []) for n in nums if off < n <= off + n_items} if len(group) > 1 else \
+                    {n: why.get(n, []) for n in nums}
+                if mine:
+                    out[a["id"]] = mine
+                off += n_items
+        return out
+
+    @staticmethod
+    def judge_hidden(kind: str, failed: dict) -> list[int]:
+        """The judge-failed items of an activity the page shows only in developer mode (HIDE_JUDGE_FAILED)."""
+        rule = HIDE_JUDGE_FAILED.get(kind, False)
+        if rule is False:
+            return []
+        return sorted(n for n, crit in failed.items()
+                      if (kind != "recap" or n > 0) and (rule is True or set(crit) & rule))
 
     def slim_concept(self, cid: str, c: dict) -> dict:
         return {"name": c.get("name") or cid, "definition": c.get("definition") or "",
@@ -412,13 +462,20 @@ class Course:
             facts = self.kfile("facts.json") or {}
             rels = self.kfile("relations.json") or {}
             goals = (self.kfile("goals.json") or {}).get("course_goals") or {}
-            flagged = self.flagged()
+            units = self.check_units()
+            flagged = self.flagged(units)
             acts = None
             if base["activities"] is not None:
                 acts = []
-                for a in (base["activities"].get("activities") or []):
+                raw = base["activities"].get("activities") or []
+                failed = self.judge_failed(units, raw)
+                for a in raw:
                     if a.get("id") in flagged:
                         a = {**a, "unresolved": True, "check": flagged[a["id"]]}
+                    if a.get("id") in failed:       # judge_failed: item -> criteria (shown in developer mode only);
+                        f = failed[a["id"]]             # judge_hide: the items learners do not see (HIDE_JUDGE_FAILED)
+                        a = {**a, "judge_failed": {str(k): v for k, v in sorted(f.items())},
+                             "judge_hide": self.judge_hidden(a.get("kind"), f)}
                     acts.append(a)
             cids, fids = set(), set()
             collect_ids(acts or [], cids, fids)
@@ -471,20 +528,27 @@ class Course:
 
     def glossary(self) -> Payload:
         def build():
-            out = []
-            for cid, c in (self.kfile("concepts.json") or {}).items():
+            out, connecting = [], 0
+            concepts = self.kfile("concepts.json") or {}
+            has_flag = any("defined" in c for c in concepts.values())     # an older layer without 4a's flag: list all
+            for cid, c in concepts.items():
                 name = c.get("name") or cid
                 also = []
                 for a in (c.get("acronyms") or []) + (c.get("aliases") or []):
                     if a and a.lower() != name.lower() and a not in also:
                         also.append(a)
+                linked = bool((c.get("relations") or {}).get("out") or (c.get("relations") or {}).get("in"))
+                if has_flag and c.get("defined") is not True:     # a connecting concept: on the maps, not listed
+                    connecting += 1
+                    if linked:                                       # the explorer's search still finds it by name
+                        out.append({"id": cid, "name": name, "also": also, "linked": True, "listed": False})
+                    continue
                 d = (c.get("defined_in") or [None])[0]
                 out.append({"id": cid, "name": name, "also": also, "definition": c.get("definition") or "",
                             "lecture": d["lecture"] if d else (c.get("lectures") or [None])[0],
-                            "start": d["start"] if d else None,
-                            "linked": bool((c.get("relations") or {}).get("out") or (c.get("relations") or {}).get("in"))})
+                            "start": d["start"] if d else None, "linked": linked, "listed": True})
             out.sort(key=lambda x: x["name"].lower())
-            return {"concepts": out}
+            return {"concepts": out, "connecting": connecting}
         return self.memo("glossary", [self.kd / "concepts.json"], build)
 
     def concept(self, cid: str) -> Payload | None:
@@ -577,6 +641,17 @@ class Course:
 _qa_lock = threading.Lock()
 
 
+# Which judge-failed items (checks*.json "flags": {"judge_failed": [item numbers]}, the criteria from the judge's
+# verdicts) the page shows only in developer mode, per kind (coordinator's decision, 2026-11-17): True hides every
+# failed item, a set hides an item that failed any of those criteria; a kind not listed (crossword) is always shown.
+# A recap's text (item 0) is never hidden, only its points. Developer mode marks every failed item with its criteria.
+HIDE_JUDGE_FAILED: dict = {
+    "put_in_order": True, "odd_one_out": True, "open_question": True,
+    "quiz": {"answerable", "one_answer", "clear", "no_source_talk"},     # kept: only no_giveaway / worth_asking failed
+    "recap": {"no_source_talk"},
+}
+ITEM_LIST = {"quiz": "questions", "recap": "points", "open_question": "questions", "odd_one_out": "items",
+             "put_in_order": "items", "crossword": "entries", "recall": "items", "match_pairs": "pairs"}
 QA_PATH = PIPELINE                                       # the folder holding the qa package (--qa-path)
 PREFER_YOUTUBE = False                                   # --prefer-youtube: play from YouTube even when the file is here
 VIDEO_CHUNK = 4 << 20                                    # an open range ("bytes=N-") is answered with at most this much
@@ -632,6 +707,39 @@ def warm_qa(course: str):
 
 def qa_status() -> bool:
     return (QA_PATH / "qa" / "__init__.py").exists()
+
+
+def ask_stream(course: str, req: dict):
+    """The events of one answer: qa.answer_stream's ({"event": "step" | "draft" | "reset" | ...}) when qa has it, else
+    one "done" with what /api/ask answers; the last event is always {"event": "done", "result": <the /api/ask
+    answer>}."""
+    q = str(req.get("question") or "").strip()
+    mod = None
+    if q and load_qa()[0] is not None:
+        mod = sys.modules.get("qa")
+    stream = getattr(mod, "answer_stream", None) if mod else None
+    if not callable(stream):
+        yield {"event": "done", "result": ask(course, req)}
+        return
+    try:
+        for ev in stream(q, course, req.get("lecture") or None):
+            if not isinstance(ev, dict):
+                continue
+            if ev.get("event") == "done":
+                res = ev.get("result")
+                res = dict(res) if isinstance(res, dict) else {"answer": str(res)}
+                res.setdefault("citations", [])
+                res["available"] = True
+                yield {"event": "done", "result": res}
+                return
+            yield ev
+    except Exception as e:                                   # noqa: BLE001
+        traceback.print_exc()
+        yield {"event": "done", "result": {"available": True, "citations": [], "error": f"{type(e).__name__}: {e}",
+                                           "answer": "Something went wrong while answering. Please try again."}}
+        return
+    yield {"event": "done", "result": {"available": True, "citations": [], "error": "the stream ended without done",
+                                       "answer": "Something went wrong while answering. Please try again."}}
 
 
 def ask(course: str, req: dict) -> dict:
@@ -858,7 +966,7 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         n = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(n) if n else b""
-        if path != "/api/ask":
+        if path not in ("/api/ask", "/api/ask_stream"):
             return self.not_found()
         try:
             req = json.loads(raw or b"{}")
@@ -866,11 +974,29 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("expected a JSON object")
         except ValueError as e:
             return self.send_json({"error": f"bad request: {e}"}, HTTPStatus.BAD_REQUEST)
-        self.send_json(ask(self.C.course, req))
+        if path == "/api/ask":
+            return self.send_json(ask(self.C.course, req))
+        # one JSON event per line, each sent as it comes (chunked; no gzip, nothing held back by the server)
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("X-Accel-Buffering", "no")
+        self.send_header("Transfer-Encoding", "chunked")
+        self.end_headers()
+        try:
+            for ev in ask_stream(self.C.course, req):
+                line = json.dumps(ev, ensure_ascii=False).encode() + b"\n"
+                self.wfile.write(b"%x\r\n%s\r\n" % (len(line), line))
+                self.wfile.flush()
+            self.wfile.write(b"0\r\n\r\n")
+            self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
 
 
-def make_server(course: str, root: Path, port: int, host="127.0.0.1", media: Path | None = None):
-    Handler.C = Course(course, root, media)
+def make_server(course: str, root: Path, port: int, host="127.0.0.1", media: Path | None = None,
+                output: Path | None = None, activities: str = "activities"):
+    Handler.C = Course(course, root, media, output, activities)
     ThreadingHTTPServer.daemon_threads = True
     return ThreadingHTTPServer((host, port), Handler)
 
@@ -883,6 +1009,10 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--root", type=Path, default=PIPELINE, help="the pipeline folder to read (default: this one)")
     ap.add_argument("--media", type=Path, help="folder of the videos (default: <root>/input/<course>/media)")
+    ap.add_argument("--output", type=Path,
+                    help="the output folder to read the layers from (default: <root>/output; e.g. a synced copy)")
+    ap.add_argument("--activities", default="activities",
+                    help="the activities folder name under output/<course> (default: activities)")
     ap.add_argument("--qa-path", type=Path, help="folder holding the qa package (default: the pipeline folder)")
     ap.add_argument("--warm", action="store_true", help="load qa and call qa.warm(course) at start (background)")
     ap.add_argument("--prefer-youtube", action="store_true",
@@ -899,9 +1029,10 @@ def main():
     if a.qa_path:
         QA_PATH = a.qa_path.resolve()
     root = a.root.resolve()
-    if not (root / "input" / a.course).is_dir() and not (root / "output" / a.course).is_dir():
-        sys.exit(f"no course {a.course!r} under {root}/input or {root}/output")
-    srv = make_server(a.course, root, a.port, a.host, a.media.resolve() if a.media else None)
+    output = a.output.resolve() if a.output else None
+    if not (root / "input" / a.course).is_dir() and not ((output or root / "output") / a.course).is_dir():
+        sys.exit(f"no course {a.course!r} under {root}/input or {output or root / 'output'}")
+    srv = make_server(a.course, root, a.port, a.host, a.media.resolve() if a.media else None, output, a.activities)
     C = Handler.C
     info = C.course_info()
     n = len(info["lectures"])

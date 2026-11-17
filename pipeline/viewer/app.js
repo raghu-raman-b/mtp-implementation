@@ -1146,7 +1146,8 @@ async function pageGlossary() {
   if (!hasKnowledge()) return h("div", { class: "empty" }, "The glossary is not ready yet for this course.");
   const G = await glossaryData();
   if (!G) return h("div", { class: "empty" }, "The glossary is not ready yet for this course.");
-  const all = G.concepts;  // sorted by name on the server
+  const all = G.concepts.filter((c) => c.listed !== false);  // sorted by name on the server; connecting concepts (no
+  // definition of their own in the course) stay on the maps and keep their cards, but are not listed here
   const list = h("div", { class: "gl" });
   const input = h("input", { type: "search", class: "gl-search", placeholder: "Search concepts, acronyms, definitions…" });
   let job = 0, timer = null;
@@ -1173,7 +1174,7 @@ async function pageGlossary() {
   };
   input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(fill, 90); });
   fill();
-  const page = h("div", {}, h("h1", {}, "Glossary"), dev(`${all.length} concepts`), input, list);
+  const page = h("div", {}, h("h1", {}, "Glossary"), dev(`${all.length} concepts listed; ${G.connecting || 0} connecting concepts not listed`), input, list);
   page.afterShow = () => input.focus({ preventScroll: true });
   return page;
 }
@@ -1388,15 +1389,36 @@ function lazyBlock(build, minH) {
   lazyObs.observe(box);
   return box;
 }
+// Items the activity judge failed (a.judge_failed: {item number: the criteria}, items 1.. in the activity's list, a
+// recap's text 0) are marked in developer mode; those the server lists in a.judge_hide are shown only there.
+const ITEMS = { quiz: "questions", recap: "points", open_question: "questions", odd_one_out: "items", put_in_order: "items", crossword: "entries" };
+const jfail = (a, n) => !!(a.judge_failed && a.judge_failed[n]);
+const jhide = (a, n) => !!(a.judge_hide && a.judge_hide.includes(n));
+function jf(a, n) { return jhide(a, n) ? " jf dev-only" : jfail(a, n) ? " jf" : ""; }
+const jfMark = (a, n) => (jfail(a, n) ? dev(`judge failed (${a.judge_failed[n].join(", ") || "?"})${jhide(a, n) ? ", hidden" : ""} `) : null);
+function qnum(a, n) {  // the number a learner sees: hidden items do not count
+  if (!(a.judge_hide || []).length) return `${n}.`;
+  if (jhide(a, n)) return `(${n})`;
+  let k = 0;
+  for (let i = 1; i <= n; i++) if (!jhide(a, i)) k++;
+  return `${k}.`;
+}
+function actHidden(a) {  // the whole activity is hidden from learners
+  if (a.unresolved) return true;
+  const list = ITEMS[a.kind], n = list ? ((a.data || {})[list] || []).length : 0;
+  return !!(a.judge_hide || []).length && n > 0 && Array.from({ length: n }, (_, i) => i + 1).every((i) => jhide(a, i))
+    && !(a.kind === "recap" && a.data.text);
+}
 function activityCard(a, L) {
   const fn = RENDER[a.kind];
   const make = () => {
     try { return fn ? fn(a, L) : h("p", { class: "muted" }, "This kind of activity cannot be shown yet."); } catch (e) { console.error(e); return h("p", { class: "muted" }, "This activity could not be shown.", dev(" " + e)); }
   };
   const body = fn && LAZY_KINDS.has(a.kind) ? lazyBlock(make, a.kind === "crossword" ? 360 : 520) : make();
-  return h("div", { class: "card act" + (a.unresolved ? " dev-only" : ""), id: "act-" + a.id },
+  return h("div", { class: "card act" + (actHidden(a) ? " dev-only" : ""), id: "act-" + a.id },
     h("div", { class: "act-head" }, h("span", { class: "act-kind" }, KIND_LABEL[a.kind] || a.kind), a.title ? h("h3", { style: "margin:0" }, a.title) : null, h("span", { class: "spacer" }),
-      a.unresolved ? dev("unresolved by the checks: " + ((a.check && a.check.problems) || []).map((p) => (typeof p === "string" ? p : JSON.stringify(p))).join("; ") + " ") : null, dev(a.id)),
+      a.unresolved ? dev("unresolved by the checks: " + ((a.check && a.check.problems) || []).map((p) => (typeof p === "string" ? p : JSON.stringify(p))).join("; ") + " ") : null,
+      a.judge_failed ? dev(`judge failed: items ${Object.keys(a.judge_failed).join(", ")}${(a.judge_hide || []).length ? `; hidden from learners: ${a.judge_hide.join(", ")}` : ""} `) : null, dev(a.id)),
     body);
 }
 function activitiesView(L) {
@@ -1408,7 +1430,7 @@ function activitiesView(L) {
   for (const a of acts) if (a.scope === "segment" && a.segment && a.kind !== "recall") (bySeg[a.segment] = bySeg[a.segment] || []).push(a);
   const after = acts.filter((a) => a.kind !== "recall" && !(a.scope === "segment" && a.segment));
   const segOrder = Object.keys(bySeg).sort((a, b) => (segIdx[a] ?? 999) - (segIdx[b] ?? 999));
-  const grp = (as) => "act-group" + (as.every((a) => a.unresolved) ? " dev-only" : "");  // a group of hidden ones hides too
+  const grp = (as) => "act-group" + (as.every(actHidden) ? " dev-only" : "");  // a group of hidden ones hides too
   return h("div", {},
     before.length ? h("div", { class: grp(before) }, h("h3", {}, "Before you watch"), before.map((a) => activityCard(a, L))) : null,
     segOrder.map((sid) => {
@@ -1433,12 +1455,12 @@ const RENDER = {
         btns.forEach((b, j) => { b.disabled = true; if (j === q.answer) b.classList.add("right"); else if (j === i) b.classList.add("wrong"); });
         fb.replaceChildren(feedback(i === q.answer, q.explanation, q.facts, L));
       } }, String.fromCharCode(65 + i) + ".  " + o));
-      return h("div", { class: "q" }, h("div", { class: "qt" }, `${qi + 1}. ${q.question}`), h("div", { class: "opts" }, btns), fb,
+      return h("div", { class: "q" + jf(a, qi + 1) }, h("div", { class: "qt" }, jfMark(a, qi + 1), `${qnum(a, qi + 1)} ${q.question}`), h("div", { class: "opts" }, btns), fb,
         h("button", { class: "ghost small", style: "margin-top:4px", onclick: () => { btns.forEach((b) => { b.disabled = false; b.classList.remove("right", "wrong"); }); fb.replaceChildren(); } }, "Try again"));
     }));
   },
   recap(a, L) {
-    return h("div", {}, a.data.text ? h("p", {}, a.data.text) : null, (a.data.points || []).length ? h("ul", {}, a.data.points.map((p) => h("li", {}, p))) : null, factLinks(a.facts, L.key));
+    return h("div", {}, a.data.text ? h("p", { class: jf(a, 0).trim() }, jfMark(a, 0), a.data.text) : null, (a.data.points || []).length ? h("ul", {}, a.data.points.map((p, i) => h("li", { class: jf(a, i + 1).trim() }, jfMark(a, i + 1), p))) : null, factLinks(a.facts, L.key));
   },
   recall(a) {
     return h("div", { class: "flips" }, (a.data.items || []).map((it) => {
@@ -1460,7 +1482,7 @@ const RENDER = {
       const ref = h("div", { hidden: true, class: "feedback" }, h("b", {}, "A good answer: "), q.reference_answer,
         (q.key_facts || []).filter(fact).length ? h("div", { style: "margin-top:8px" }, h("div", { class: "small muted" }, "Key points from the lectures:"), factList(q.key_facts, L.key)) : factLinks(q.key_facts, L.key),
         (q.concepts || []).length ? h("div", { class: "chips", style: "margin-top:6px" }, q.concepts.map((c) => conceptPill(c))) : null);
-      return h("div", { class: "q" }, h("div", { class: "qt" }, `${qi + 1}. ${q.question}`), ta,
+      return h("div", { class: "q" + jf(a, qi + 1) }, h("div", { class: "qt" }, jfMark(a, qi + 1), `${qnum(a, qi + 1)} ${q.question}`), ta,
         h("button", { class: "small", style: "margin-top:6px", onclick: (e) => { ref.hidden = !ref.hidden; e.target.textContent = ref.hidden ? "Show a good answer" : "Hide the answer"; } }, "Show a good answer"), ref);
     }));
   },
@@ -1582,7 +1604,7 @@ const RENDER = {
         btns.forEach((b, j) => { b.disabled = true; if (j === it.odd) b.classList.add("right"); else if (j === i) b.classList.add("wrong"); });
         fb.replaceChildren(feedback(i === it.odd, it.reason, it.facts, L));
       } }, o));
-      return h("div", { class: "q" }, h("div", { class: "qt" }, `${qi + 1}. Which one does not belong?`), h("div", { class: "opts", style: "grid-template-columns:1fr 1fr" }, btns), fb);
+      return h("div", { class: "q" + jf(a, qi + 1) }, h("div", { class: "qt" }, jfMark(a, qi + 1), `${qnum(a, qi + 1)} Which one does not belong?`), h("div", { class: "opts", style: "grid-template-columns:1fr 1fr" }, btns), fb);
     }));
   },
   put_in_order(a, L) {
@@ -1606,7 +1628,7 @@ const RENDER = {
       }));
       const swap = (i, j) => { [order[i], order[j]] = [order[j], order[i]]; fb.replaceChildren(); draw(); };
       draw();
-      return h("div", { class: "q" }, h("div", { class: "qt" }, it.title || "Put these steps in order"), h("p", { class: "small muted" }, "Drag the steps, or use the arrows."), list,
+      return h("div", { class: "q" + jf(a, qi + 1) }, h("div", { class: "qt" }, jfMark(a, qi + 1), it.title || "Put these steps in order"), h("p", { class: "small muted" }, "Drag the steps, or use the arrows."), list,
         h("div", { class: "row", style: "margin-top:8px" },
           h("button", { class: "primary small", onclick: () => { const ok = order.every((v, i) => v === i); draw(true); fb.replaceChildren(feedback(ok, ok ? "That is the order the lecture gives." : "The steps in red are not in place yet.", ok ? it.facts : null, L)); } }, "Check"),
           h("button", { class: "ghost small", onclick: () => { order = steps.map((_, i) => i); draw(true); fb.replaceChildren(feedback(null, "The order the lecture gives.", it.facts, L)); } }, "Show the order")),
@@ -1675,14 +1697,16 @@ async function ask(q) {
   body.prepend(item);
   body.scrollTop = 0;
   const t0 = Date.now();
+  let stepLabel = null;
   const STAGES = [[0, "Looking through the course…"], [4, "Reading what the lectures say…"], [12, "Writing the answer…"], [35, "Still writing: long answers take a little longer…"]];
   const clockTimer = setInterval(() => {
     const sec = Math.round((Date.now() - t0) / 1000);
-    stage.textContent = " " + STAGES.filter(([t]) => sec >= t).pop()[1] + `  ${sec} s`;
+    stage.textContent = " " + (stepLabel || STAGES.filter(([t]) => sec >= t).pop()[1]) + `  ${sec} s`;
   }, 1000);
-  try {
-    const r = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: q, lecture: lec }) });
-    const res = await r.json();
+  let streamed = false, draftText = "", drawn = "";
+  const draft = h("div", { class: "qa-draft" });
+  const showDraft = () => requestAnimationFrame(() => { if (drawn !== draftText) { drawn = draftText; draft.replaceChildren(draftText ? mdBlock(draftText) : ""); } });
+  const finish = (res) => {
     clearInterval(clockTimer);
     ans.classList.remove("qa-wait");
     if (drawer.hidden) { const b = $("#ask-form button"); b.classList.add("ready"); b.textContent = "Answer ready"; }
@@ -1694,11 +1718,59 @@ async function ask(q) {
       res.covered === false ? h("div", { class: "small muted", style: "margin-top:6px" }, "The course may not cover this.") : null,
       res.error ? dev(res.error) : null,
       res.steps ? h("details", { class: "dev" }, h("summary", {}, "steps"), h("pre", { style: "white-space:pre-wrap" }, JSON.stringify(res.steps, null, 1))) : null);
+  };
+  const onEvent = (ev) => {
+    if (ev.event === "step") {
+      stepLabel = STEP_LABEL[ev.tool] || "Looking through the course…";
+      stage.textContent = " " + stepLabel + `  ${Math.round((Date.now() - t0) / 1000)} s`;
+      steps.append(dev(`${ev.tool} ${JSON.stringify(ev.args || {})} → ${ev.result_summary || ""}`), dev(h("br")));
+    } else if (ev.event === "draft") {
+      if (!streamed) { streamed = true; clearInterval(clockTimer); ans.replaceChildren(draft, h("div", { class: "qa-wait" }, h("span", { class: "spin" }), h("span", { class: "muted" }, " Writing…")), steps); }
+      draftText = ev.text || ""; showDraft();
+    } else if (ev.event === "reset") {
+      draftText = ""; showDraft();
+    } else if (ev.event === "done") {
+      finish(ev.result || {});
+      return true;
+    }
+    return false;
+  };
+  const steps = h("div", { class: "small faint" });
+  ans.append(steps);
+  const body_ = JSON.stringify({ question: q, lecture: lec });
+  try {
+    // streamed: the steps, then the answer as it is written; a server without the stream route gets /api/ask
+    const r = await fetch("/api/ask_stream", { method: "POST", headers: { "Content-Type": "application/json" }, body: body_ });
+    if (!r.ok || !r.body || !r.body.getReader) throw new Error("no stream");
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    let buf = "", done = false;
+    while (!done) {
+      const { value, done: end } = await reader.read();
+      if (end) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line) continue;
+        try { if (onEvent(JSON.parse(line))) { done = true; break; } } catch (e) { console.error(e); }
+      }
+    }
+    if (!done) throw new Error("the stream ended early");
   } catch (e) {
-    clearInterval(clockTimer);
-    ans.replaceChildren(h("p", { class: "muted" }, "The question could not be sent. Is the server running?"));
+    if (streamed) { finish({ answer: draftText || "The answer was cut off. Please ask again.", citations: [], error: String(e) }); return; }
+    try {
+      const r = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: body_ });
+      finish(await r.json());
+    } catch (e2) {
+      clearInterval(clockTimer);
+      ans.classList.remove("qa-wait");
+      ans.replaceChildren(h("p", { class: "muted" }, "The question could not be sent. Is the server running?"));
+    }
   }
 }
+const STEP_LABEL = { check_concept: "Checking what the course says about a concept…", fact_lookup: "Finding what the lectures say…",
+  lecture_dependencies: "Looking at what this builds on…", lecture_overview: "Reading the lecture's overview…", course_goals: "Reading the course goals…" };
 function openDrawer() { $("#drawer").hidden = false; const b = $("#ask-form button"); b.classList.remove("ready"); b.textContent = "Ask"; }
 
 // ------------------------------------------------------------------ start
