@@ -30,6 +30,7 @@ const PAGES = [
   ["ask", "#/lecture/5", `document.querySelector("#ask-input").value = "What is an HMD?"; document.querySelector("#ask-form button").click()`],
   ["ask-done", "#/lecture/5", `new Promise((r) => setTimeout(r, 3000))`],
 ];
+if (process.env.PAGES_JSON) PAGES.splice(0, PAGES.length, ...JSON.parse(process.env.PAGES_JSON));  // [[name, hash, js]]
 const extra = (process.env.CONCEPT ? [["concept", "#/concept/" + process.env.CONCEPT]] : []);
 for (const dev of [0, 1]) {
   await send("Page.navigate", { url: `${BASE}/?dev=${dev}#/` }); await sleep(1500);
@@ -37,7 +38,8 @@ for (const dev of [0, 1]) {
     await ev(`location.hash = ${JSON.stringify(hash)}`); await sleep(1200);
     if (act) { await ev(act); await sleep(1500); }
     if (name.endsWith("activities")) { await ev(`(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } scrollTo(0, 0); })()`); await sleep(800); }
-    const { data } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: 0, y: 0, width: 1280, height: Math.min(4000, await ev("document.documentElement.scrollHeight")), scale: 0.6 } });
+    const top = act && act.includes("scrollIntoView") ? await ev("scrollY") : 0;
+    const { data } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: 0, y: top, width: 1280, height: Math.min(4000, (await ev("document.documentElement.scrollHeight")) - top), scale: 0.6 } });
     const f = join(OUT, `${PFX}${name}-dev${dev}.png`);
     writeFileSync(f, Buffer.from(data, "base64"));
     console.log(f);

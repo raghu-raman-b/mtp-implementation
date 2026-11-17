@@ -1562,7 +1562,7 @@ const RENDER = {
       grid.append(box);
     }
     const clue = (e) => h("li", { onclick: () => { dir = e.direction; const k = e.row + "," + e.col; if (inputs[k]) inputs[k].focus(); }, style: "cursor:pointer" },
-      h("b", {}, e.number), e.clue, " ", h("span", { class: "faint small" }, `(${(e.answer || "").replace(/[^A-Z]/gi, "").length})`));
+      h("b", {}, e.number), e.clue, /\(\d+(?:[,-]\d+)*\)\s*$/.test(e.clue || "") ? null : [" ", h("span", { class: "faint small" }, `(${(e.answer || "").replace(/[^A-Z]/gi, "").length})`)]);  // a clue may carry its enumeration "(7,6)"
     const ents = d.entries || [];
     const across = ents.filter((e) => e.direction === "across").sort((x, y) => x.number - y.number);
     const down = ents.filter((e) => e.direction === "down").sort((x, y) => x.number - y.number);

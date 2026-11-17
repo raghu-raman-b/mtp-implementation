@@ -2,7 +2,12 @@
 """The v3 viewer: a standard-library HTTP server for the static viewer, the course's JSON layers and the videos.
 
     python pipeline/viewer/serve.py nptel_vr [--port 8765] [--host 127.0.0.1] [--root PIPELINE_DIR] [--media DIR]
-                                             [--qa-path DIR] [--warm]
+                                             [--output DIR] [--activities NAME] [--qa-path DIR] [--warm]
+                                             [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]
+
+    e.g. a synced layer not yet merged:  --output ec2_sync/output --activities activities_v3
+    (--output also sets $QA_OUTPUT, unless set, so questions are answered from the layer the page shows; qa then
+    writes its logs under that folder)
 
 Then open http://localhost:8765 (add ?dev=1, or use the toggle, for developer mode).
 
@@ -43,6 +48,28 @@ Routes
     GET  /media/<key>               a lecture's video, with HTTP Range (so seeking works)
     POST /api/ask                   {"question", "lecture"} -> qa.answer(question, course, lecture) from pipeline/qa/
                                     when importable, else {"available": false, "answer": "...not available..."}
+    POST /api/ask_stream            the same question, answered as it is written: one JSON event per line (chunked,
+                                    application/x-ndjson), qa.answer_stream's {"event": "step" | "draft" | "reset"}
+                                    as they come, and last {"event": "done", "result": <what /api/ask answers>}. A qa
+                                    without answer_stream (or no qa) gives the single "done". The page uses this route
+                                    and falls back to /api/ask when it is missing.
+
+Activities: an activity a checks*.json marks "unresolved" carries "unresolved": true (dev mode only). Judge-failed
+items ("flags": {"judge_failed"}) carry "judge_failed": {item: [criteria]} and "judge_hide": [items the page shows only
+in developer mode], by the per-kind rule HIDE_JUDGE_FAILED below. The glossary lists only the concepts 4a defined
+("defined": true; every concept when the layer has no such field); the others ("connecting concepts") stay on the maps
+and keep their cards, and come in the glossary route only by name (when linked), for the explorer's search.
+
+Speed (the demo runs through an SSH port forward, ssh -L 8765:127.0.0.1:8765, with 100-250 ms RTT):
+    index.html names every /static/ file with ?v=<its hash>; a versioned file is sent with Cache-Control "public,
+    max-age=31536000, immutable", so a reload asks for nothing but index.html and the routes (which answer 304).
+    /media/<key> answers an open Range ("bytes=N-") with at most --video-chunk-mb (4 MB): after a seek the link is
+    not left filling with bytes of the old position. After the first 1 MB a video is sent at --video-pace (2) times
+    its bitrate (from the MP4's mvhd duration, else the lecture's length; 0 turns it off), so a tunnel never queues
+    minutes of video ahead of the page's own requests. Videos should be faststart (moov first):
+    ffmpeg -i in.mp4 -c copy -movflags +faststart out.mp4. --prefer-youtube plays every lecture that has a youtube_id
+    from YouTube even when its file is here (the browser fetches YouTube directly, not through the tunnel); the
+    page's ?yt=1 / ?yt=0 sets the same per browser.
 --warm loads qa at start, in the background, and calls qa.warm(course) (the layer, the query embedder, the model
 server; the config is qa's default: $QA_CONFIG or the local Gemma), so the first question does not wait for them.
 A missing layer is never an error for the course or lecture routes: it comes back as null (or the segments fall back

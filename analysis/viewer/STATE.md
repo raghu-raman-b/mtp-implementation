@@ -1,5 +1,11 @@
 # Viewer speed work: state at the pause (2026-11-17, 10:50 IST)
 
+**Update (afternoon): next steps 1-5 are done.** Smoke test extended and passing; screenshots in `shots/` (read, three
+fixes: glossary as a row grid, judge-failed mark as a side bar, crossword enumeration not doubled); `perf.md` written
+with local and tunnel numbers; serve.py docstring updated. Also added: glossary lists only `defined: true` concepts;
+judge-failed items hidden per kind and criterion (`HIDE_JUDGE_FAILED` in serve.py); `/api/ask_stream` + streamed
+answers in the page; `--output` / `--activities` to serve a synced layer. Left: step 6 (optional).
+
 Branch `worktree-agent-a761733a118c47330`. main is merged in. Nothing is pushed.
 
 ## Requirements
