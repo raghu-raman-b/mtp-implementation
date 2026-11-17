@@ -31,7 +31,8 @@ What it looks for (each line is what a broken piece would show):
            line, or a missing line not falling back to "anything cited"
   tidy     a time the model wrote before a citation ("at 26:57 [ID]", "(26:57-27:07) [ID]") kept, or a number
            without a lead-in ("16:9 [ID]") removed; a run of the same label not written once (at its end); a list
-           whose items share one label not getting it once on its lead-in line; a citation lost by the tidying
+           whose items share one label not getting it once on its lead-in line; a label dropped from a list item
+           when the items do not all share it; a citation lost by the tidying
   graph    lecture_dependencies not giving the hand-worked answers: lecture 6 relies on stereoscopy (2 of its
            facts; first defined in lecture 2, with its defining facts 2/S2/F3, 2/S2/F4) and so revises lecture 2,
            names extended reality and virtual reality as in passing and latency as introduced; lecture 8 relies on
@@ -137,7 +138,8 @@ class QAFake(FakeServer):
             a, b, c = ids_in(last)[:3]
             return (f"Stereoscopy is taught at 26:57 [{a}]. It is a fake concept [{a}]. Its screens are 16:9 [{c}]. "
                     f"It goes on from 26:57 to 27:07 [{a}, {b}], (26:57-27:07) [{b}].\n\nIts points are:\n"
-                    f"- point 0 [{a}]\n- point 1 [{a}]\n\nAgain [{a}] and [{c}].\nCOVERED: yes")
+                    f"- point 0 [{a}]\n- point 1 [{a}]\n\nAgain [{a}] and [{c}].\n\nMixed:\n- one [{a}]\n"
+                    f"- two [{a}]\n- three [{c}]\nCOVERED: yes")
         if q == "Who won the 1998 football world cup?":
             if rnd == 0:
                 return [call("fact_lookup", {"query": "1998 football world cup winner"})]
@@ -334,9 +336,10 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
     a, b = "(lecture 2, 26:57)", "(lecture 2, 27:07)"
     want = (f"Stereoscopy is taught. It is a fake concept {a}. Its screens are 16:9 (lecture 6, 0:24). "
             f"It goes on {a[:-1]}; lecture 2, 27:07).\n\nIts points are {a}:\n- point 0\n- point 1\n\n"
-            f"Again {a} and (lecture 6, 0:24).")
-    check(r["answer"] == want, f"times before citations removed, '16:9' kept, runs and the list labelled once: "
-                                f"{r['answer']!r}")
+            f"Again {a} and (lecture 6, 0:24).\n\nMixed:\n- one {a}\n- two {a}\n- three (lecture 6, 0:24)")
+    check(r["answer"] == want, f"times before citations removed, '16:9' kept, runs in a line and a list sharing one "
+                               f"label labelled once, items of a mixed list each keep theirs: "
+                               f"{r['answer']!r}")
     check([c["fact"] for c in r["citations"]] == ["2/S2/F3", "6/S0/F2", "2/S2/F4"]
           and real_citations(r, facts, lectures), "every cited fact still a citation, in order of first use")
 

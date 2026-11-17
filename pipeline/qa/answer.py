@@ -18,8 +18,8 @@ answer time (analysis/qa/STATE.md).
 The answer cites fact IDs ([4/S1/F2]) or segment IDs ([4/S1]) in square brackets. Each one that a tool result showed
 becomes a citation (lecture, segment, time, text) and is written into the answer as "(lecture 4, 6:03)"; an ID no
 tool showed is dropped (and logged). A time the model wrote before a citation ("at 14:25 [28/S1]") is removed (the
-label carries the time); the same label repeated over a run of sentences is written once, at the end of the run, and
-a list whose items all carry one label gets it once, on the line that leads into the list. The model's last line "COVERED: yes / partly / no" sets "covered" (yes and
+label carries the time); the same label repeated over a run of sentences of one line is written once, at the end of
+the run, and a list whose items all carry one label gets it once, on the line that leads into the list. The model's last line "COVERED: yes / partly / no" sets "covered" (yes and
 partly: true); without that line, "covered" is whether anything was cited.
 
 Every question is logged to <output>/<course>/qa/answers.jsonl (question, steps with the full tool texts, the raw
@@ -197,7 +197,8 @@ def merge_adjacent(text: str, labels: list[list[str]]) -> str:
 
 def dedup_block(block: str, labels: list[list[str]]) -> str:
     """One paragraph (or list): a list of two or more items that all carry the same one label gets it once, on the
-    line leading into the list; then, of a run of equal labels in a row, only the last is kept."""
+    line leading into the list; then, of a run of equal labels in a row within one line (a paragraph line or a list
+    item, never across items: each item is a claim of its own), only the last is kept."""
     key = lambda n: tuple(labels[n])  # noqa: E731
     lines = block.split("\n")
     i = 0
@@ -216,12 +217,13 @@ def dedup_block(block: str, labels: list[list[str]]) -> str:
             lead = lines[i - 1].rstrip()
             lines[i - 1] = (lead[:-1] + f" \x00{n}\x00:") if lead.endswith(":") else lead + f" \x00{n}\x00"
         i = j
-    block = "\n".join(lines)
-    toks = list(TOKEN.finditer(block))
-    drop = [t for t, nxt in zip(toks, toks[1:]) if key(int(t.group(1))) == key(int(nxt.group(1)))]
-    for t in reversed(drop):
-        block = block[:t.start()] + block[t.end():]
-    return block
+    for n, line in enumerate(lines):         # within one line: a list item is a claim of its own
+        toks = list(TOKEN.finditer(line))
+        drop = [t for t, nxt in zip(toks, toks[1:]) if key(int(t.group(1))) == key(int(nxt.group(1)))]
+        for t in reversed(drop):
+            line = line[:t.start()] + line[t.end():]
+        lines[n] = line
+    return "\n".join(lines)
 
 
 def split_covered(text: str) -> tuple[str, bool | None]:
