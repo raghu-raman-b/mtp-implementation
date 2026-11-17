@@ -4,6 +4,7 @@
     answer("What is an HMD?", course="nptel_vr", lecture="4")
     -> {"answer": str, "citations": [{"fact", "lecture", "segment", "start", "end", "text"}],
         "steps": [{"tool", "args", "result_summary"}], "covered": bool}
+    for ev in answer_stream("What is an HMD?", course="nptel_vr"): ...   # step / draft / reset events, then done
 
     python -m qa "What is an HMD?" [--lecture 4] [--course nptel_vr] [--config configs/...json] [--json]
 
@@ -18,8 +19,8 @@ _ROOT = Path(__file__).resolve().parent.parent      # the pipeline folder: qa us
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from .answer import answer, get_llm, warm  # noqa: E402
+from .answer import answer, answer_stream, get_llm, warm  # noqa: E402
 from .knowledge import Knowledge  # noqa: E402
 from .tools import run_tool, tool_specs  # noqa: E402
 
-__all__ = ["answer", "get_llm", "warm", "Knowledge", "run_tool", "tool_specs"]
+__all__ = ["answer", "answer_stream", "get_llm", "warm", "Knowledge", "run_tool", "tool_specs"]

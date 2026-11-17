@@ -22,6 +22,14 @@ label carries the time); the same label repeated over a run of sentences of one 
 the run, and a list whose items all carry one label gets it once, on the line that leads into the list. The model's last line "COVERED: yes / partly / no" sets "covered" (yes and
 partly: true); without that line, "covered" is whether anything was cited.
 
+answer_stream(question, course, lecture) runs the same loop and yields events as it goes, for a viewer that shows the
+answer while it is written (the blocking answer() is unchanged): {"event": "step", "tool", "args", "result_summary"}
+after each tool call; {"event": "draft", "text"} with the answer so far (IDs already shown as labels, a half-written
+bracket or COVERED line held back; each draft replaces the one before, since the tidying can move a label); {"event":
+"reset"} when text written in a round turned out not to be the answer (the round ended in tool calls); and last
+{"event": "done", "result": <what answer() returns>}. Its rounds are sent with "stream": true; their timing and log
+lines are those of the blocking path.
+
 Every question is logged to <output>/<course>/qa/answers.jsonl (question, steps with the full tool texts, the raw
 and final answer, the dropped IDs, tokens, time) and every model call to <output>/<course>/qa/llm_calls.jsonl.
 """
@@ -31,11 +39,16 @@ import json
 import os
 import re
 import sys
+import queue
 import threading
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
+from typing import Callable, Iterator
 
 from scripts.llm import LLM, LLMConfig, Request
+from scripts.llm.client import Result
 
 from .knowledge import Knowledge, fmt_time, lecture_key, qa_dir
 from .tools import run_tool, tool_specs
@@ -240,6 +253,99 @@ def split_covered(text: str) -> tuple[str, bool | None]:
 def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, llm=None) -> dict:
     """{"answer", "citations": [{"fact", "lecture", "segment", "start", "end", "text"}], "steps": [{"tool", "args",
     "result_summary"}], "covered"}. `llm`: an LLM, an LLMConfig, a config path, or None for Gemma 4 12B."""
+    return _answer(question, course, lecture, llm)
+
+
+def answer_stream(question: str, course: str = "nptel_vr", lecture: str | None = None, llm=None) -> Iterator[dict]:
+    """The events of one answer (module docstring), the last always {"event": "done", "result": {...}} with what
+    answer() would return (an exception in the loop gives the NO_ANSWER result with "error")."""
+    q: queue.Queue = queue.Queue()
+
+    def run():
+        try:
+            res = _answer(question, course, lecture, llm, emit=q.put)
+        except Exception as e:                    # noqa: BLE001  the viewer gets an answer, never a hung stream
+            res = {"answer": NO_ANSWER, "citations": [], "steps": [], "covered": False,
+                   "error": f"{type(e).__name__}: {e}"}
+        q.put({"event": "done", "result": res})
+
+    threading.Thread(target=run, daemon=True).start()
+    while True:
+        ev = q.get()
+        yield ev
+        if ev["event"] == "done":
+            return
+
+
+def draft_text(kb: Knowledge, raw: str, shown: set) -> str:
+    """The answer so far as the learner may see it: up to the last whitespace (no half-written ID), without an
+    unclosed bracket or a COVERED line begun, its IDs shown as labels."""
+    cut = raw if not raw or raw[-1].isspace() else raw[:max(raw.rfind(" "), raw.rfind("\n")) + 1]
+    opened = max(cut.rfind(c) for c in "[(【")
+    if opened > max(cut.rfind(c) for c in "])】"):
+        cut = cut[:opened]
+    line = cut[cut.rfind("\n") + 1:].strip().lstrip("*").strip().upper()
+    if line and ("COVERED".startswith(line[:7]) or line.startswith("COVERED")):
+        cut = cut[:cut.rfind("\n") + 1]
+    body, _ = split_covered(cut)
+    return cite(kb, body, shown)[0] if body else ""
+
+
+def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callable[[str], None]) -> Result:
+    """One request sent with "stream": true (the body the client builds, so the same fields as llm.generate);
+    on_text(content so far) at each piece of content; the Result as llm.generate would give it (no retries: a
+    failed stream is an error, as a failed request is)."""
+    body = llm._body(req, 0, req.followup)
+    res = Result(key=req.key, hash=llm._hash(body), attempts=1)
+    body = {**body, "stream": True, "stream_options": {"include_usage": True}}
+    llm.start()
+    t0 = time.time()
+    content, reasoning, calls = "", "", {}
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(
+            llm.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
+            headers={"Content-Type": "application/json", "Accept": "text/event-stream"}), timeout=llm.cfg.timeout_s)
+        with r:
+            for raw in r:
+                line = raw.decode("utf-8", "replace").strip()
+                if not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                d = json.loads(data)
+                if d.get("usage"):
+                    res.input_tokens = d["usage"].get("prompt_tokens", 0)
+                    res.output_tokens = d["usage"].get("completion_tokens", 0)
+                for ch in d.get("choices") or []:
+                    delta = ch.get("delta") or {}
+                    reasoning += delta.get("reasoning_content") or delta.get("reasoning") or ""
+                    for tc in delta.get("tool_calls") or []:
+                        c = calls.setdefault(tc.get("index", len(calls)), {"id": "", "type": "function",
+                                                                          "function": {"name": "", "arguments": ""}})
+                        c["id"] = tc.get("id") or c["id"]
+                        fn = tc.get("function") or {}
+                        c["function"]["name"] += fn.get("name") or ""
+                        c["function"]["arguments"] += fn.get("arguments") or ""
+                    if delta.get("content"):
+                        content += delta["content"]
+                        on_text(content)
+                    res.finish = ch.get("finish_reason") or res.finish
+    except urllib.error.HTTPError as e:
+        res.errors.append(f"server rejected the request ({e.code}): {e.read().decode(errors='replace')[:500]}")
+    except (urllib.error.URLError, ConnectionError, TimeoutError, json.JSONDecodeError) as e:
+        res.errors.append(f"stream failed: {e}")
+    res.content, res.reasoning, res.latency_s = content.strip(), reasoning, time.time() - t0
+    res.tool_calls = [calls[i] for i in sorted(calls)]
+    if res.finish == "length":
+        res.errors.append("the answer was cut off at max_tokens")
+    res.ok = not res.errors
+    res.parsed = res.content
+    llm._log_attempt(log_file, req, res, 0)
+    return res
+
+
+def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable[[dict], None] | None = None) -> dict:
     t0 = time.time()
     kb = Knowledge.load(course)
     if llm is None or isinstance(llm, (str, Path)):
@@ -265,7 +371,20 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
         req = Request(prompt=user, system=system, followup=followup, tools=tools,
                       tool_choice="none" if last else "auto", key=f"qa.{rnd}",
                       sampling=no_think if rnd > 0 else {})
-        res = llm.generate(req, log_file=calls_log)
+        if emit is None:
+            res = llm.generate(req, log_file=calls_log)
+        else:
+            sent = [""]
+
+            def on_text(raw: str):
+                d = draft_text(kb, raw, shown)
+                if d and d != sent[0]:
+                    sent[0] = d
+                    emit({"event": "draft", "text": d})
+
+            res = stream_round(llm, req, calls_log, on_text)
+            if sent[0] and res.tool_calls and not last:
+                emit({"event": "reset"})
         tokens["input"] += res.input_tokens
         tokens["output"] += res.output_tokens
         timing.append({"round": rnd, "model_s": round(res.latency_s, 2), "in": res.input_tokens,
@@ -298,6 +417,8 @@ def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, 
                 timing[-1]["tools"].append({"tool": name, "s": round(time.time() - tt, 3)})
             shown |= ids
             steps.append({"tool": name, "args": args if args is not None else raw, "result_summary": summary})
+            if emit is not None:
+                emit({"event": "step", **steps[-1]})
             full_steps.append({**steps[-1], "result": text})
             conv.append({"role": "tool", "tool_call_id": call.get("id") or f"call_{rnd}_{i}", "name": name,
                          "content": text})

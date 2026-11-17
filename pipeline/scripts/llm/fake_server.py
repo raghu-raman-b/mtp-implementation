@@ -10,7 +10,9 @@ Serves /health, /v1/models, /v1/chat/completions, /tokenize and /metrics. A requ
 - an array has max(minItems, 2) items (at most maxItems); when its items carry a property with an enum (a judge's
   "fact": [ids]), it has one item per enum value and item i takes value i, so every fact gets exactly one entry;
 - anyOf takes its first option; const and enum give their (first) value.
-A request without a schema gets "fake answer". Every request can be logged (--log, one JSON line: the messages and
+A request without a schema gets "fake answer". A request with "stream": true gets the same answer as server-sent
+events, as vLLM and llama.cpp send it: the content in small pieces, each tool call as a first piece with its ID and
+name and then its arguments in two pieces, the usage last (stream_options include_usage), then [DONE]. Every request can be logged (--log, one JSON line: the messages and
 the schema), so a test can check what a stage sent. Not for measuring anything: the answers mean nothing.
 """
 from __future__ import annotations
@@ -57,6 +59,27 @@ def _enum_of(items: dict) -> list:
     return next((p["enum"] for p in obj.get("properties", {}).values() if "enum" in p), [])
 
 
+def stream_chunks(ans: dict, piece: int = 7) -> list[dict]:
+    """A chat completion as the stream of chunks a server sends for it."""
+    choice = ans["choices"][0]
+    msg = choice.get("message") or {}
+    delta = lambda d, fin=None: {"choices": [{"index": 0, "delta": d, "finish_reason": fin}]}  # noqa: E731
+    out = [delta({"role": "assistant"})]
+    if msg.get("reasoning_content"):
+        out.append(delta({"reasoning_content": msg["reasoning_content"]}))
+    text = msg.get("content") or ""
+    out += [delta({"content": text[i:i + piece]}) for i in range(0, len(text), piece)]
+    for i, tc in enumerate(msg.get("tool_calls") or []):
+        args = tc["function"].get("arguments") or ""
+        out.append(delta({"tool_calls": [{"index": i, "id": tc.get("id"), "type": "function",
+                                          "function": {"name": tc["function"]["name"], "arguments": ""}}]}))
+        for part in (args[:len(args) // 2], args[len(args) // 2:]):
+            out.append(delta({"tool_calls": [{"index": i, "function": {"arguments": part}}]}))
+    out.append(delta({}, choice.get("finish_reason") or "stop"))
+    out.append({"choices": [], "usage": ans.get("usage") or {}})
+    return out
+
+
 class FakeServer:
     def __init__(self, port: int, model: str, log: str = "", delay: float = 0.0, host: str = "127.0.0.1"):
         self.model, self.log, self.delay = model, log, delay
@@ -100,7 +123,22 @@ class FakeServer:
                 if body.get("model") != server.model:
                     self._send(404, {"error": f"model {body.get('model')!r} does not exist"})
                     return
-                self._send(200, server.answer(body))
+                ans = server.answer(body)
+                if body.get("stream"):
+                    self._stream(ans)
+                else:
+                    self._send(200, ans)
+
+            def _stream(self, ans: dict):
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                for chunk in stream_chunks(ans):
+                    self.wfile.write(f"data: {json.dumps(chunk)}\n\n".encode())
+                    self.wfile.flush()
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.close_connection = True
 
         self.httpd = ThreadingHTTPServer((host, port), Handler)
 
