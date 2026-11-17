@@ -1,3 +1,12 @@
+PIPELINE v3 STATUS - DEMO PREP  (updated 00:05 IST, 18 Nov; full state + decisions: pipeline/continue/PROMPT.md)
+
+DONE: docs v3 (pipeline/docs/pipeline.html, sources docs/src/); remote-model demo setup (model on the instance, app on
+  the Windows laptop; ec2_model_server.sh, python -m demo, run_demo.ps1); design mockups (3 directions) on the canvas
+WAITING: user's design pick; baseline tests paused (branch worktree-agent-ac043cfbb4e8a782d, baseline-tests/STATE.md)
+NEXT: design build + weak-spot fixes + part titles (Gemma 12B) in parallel -> docs update -> DEMO_PLAN -> rehearsal
+DECIDED: no cards/definitions for connecting concepts (facts only); recaps = passing points; crosswords = failed words
+  pre-filled; pause at segment ends with activities overlaid; no demo fallback
+
 PIPELINE v3 STATUS - MVP REBUILT  (updated 17:20 IST, 17 Nov; full state: pipeline/continue/PROMPT.md)
 
 DONE TODAY: layer rebuilt and merged (d3896b9): 3,122 concepts (synonym merge), real definitions (1,316 = glossary),
