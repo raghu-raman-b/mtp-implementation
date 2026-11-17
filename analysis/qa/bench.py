@@ -1,12 +1,16 @@
 """Latency and answer read for the qa weak points (not covered, comparisons, prerequisites, where, repeated citations).
 
-    cd pipeline && python3 ../analysis/qa/bench.py TAG [--runs 2] [IDS...]
+    cd pipeline && python3 ../analysis/qa/bench.py TAG [--runs 2] [--variant shipped|fast] [IDS...]
 
 Asks each question `runs` times in one process with the local Gemma (qa starts it) and appends one line per answer to
 analysis/qa/bench_<TAG>.jsonl: the time, the per-round timing qa logged (model seconds, tokens, thinking characters,
-tool seconds), the tools, the answer, the citations and covered. Logs go where qa puts them (output/<course>/qa/).
+tool seconds), the tools, the answer, the citations and covered. Logs go where qa puts them (output/<course>/qa/, or
+$QA_OUTPUT/<course>/qa/: set QA_OUTPUT to a copy, and QA_CONFIG to a config copy whose server_log is outside output/).
+--variant: "shipped" keeps qa's round-0 switches as they are; "fast" sends round 0 with thinking off and tool_choice
+"required"; "think" sends round 0 with thinking on and tool_choice "auto" (the switches qa.answer has).
 """
 import argparse
+import importlib
 import json
 import sys
 import time
@@ -44,8 +48,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("tag")
     ap.add_argument("--runs", type=int, default=2)
+    ap.add_argument("--variant", choices=["shipped", "fast", "think"], default="shipped")
     ap.add_argument("ids", nargs="*")
     a = ap.parse_args()
+    qa_answer = importlib.import_module("qa.answer")   # the module (qa.answer the attribute is the function)
+    if a.variant == "fast":
+        qa_answer.ROUND0_THINK, qa_answer.ROUND0_TOOL_CHOICE = False, "required"
+    elif a.variant == "think":
+        qa_answer.ROUND0_THINK, qa_answer.ROUND0_TOOL_CHOICE = True, "auto"
+    print(f"round 0: thinking {qa_answer.ROUND0_THINK}, tool_choice {qa_answer.ROUND0_TOOL_CHOICE}", flush=True)
     out = HERE / f"bench_{a.tag}.jsonl"
     log = qa_dir("nptel_vr") / "answers.jsonl"
     t = time.time()
@@ -59,7 +70,7 @@ def main():
             r = qa.answer(q, course="nptel_vr", lecture=lec)
             dt = time.time() - t
             rec_log = json.loads(log.read_text().splitlines()[-1])
-            rec = {"id": qid, "run": run, "kind": kind, "question": q, "seconds": round(dt, 2),
+            rec = {"id": qid, "run": run, "variant": a.variant, "kind": kind, "question": q, "seconds": round(dt, 2),
                    "timing": rec_log.get("timing"), "rounds": rec_log.get("rounds"), "covered": r["covered"],
                    "tools": [s["tool"] for s in r["steps"]], "steps": r["steps"], "answer": r["answer"],
                    "citations": [c["fact"] or c["segment"] for c in r["citations"]]}

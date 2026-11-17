@@ -1,4 +1,4 @@
-# QA latency and weak points: state (paused on request, 2026-11-17 10:55 IST)
+# QA latency and weak points: state (2026-11-17 afternoon: ready to merge)
 
 ## Done
 - Timing per round in `output/<course>/qa/answers.jsonl` ("timing": model s, tokens, thinking chars, tool s), committed.
@@ -60,36 +60,113 @@ this" with no tool call (0.4 s), both runs; B04 off-topic answered without a too
 (uncommitted runner, round 0 tool_choice "required" + thinking off): B01 3.9 s, B02 2.7 s, B03 3.4 s, tools called;
 stopped at the pause (bench_nothink_required.jsonl, 3 lines). Both are design choices for the user.
 
-## Half-done (WIP commit, untested against a real server)
-- **Streaming** (coordinator request: an option the viewer can use, blocking API unchanged): `qa.answer_stream(q,
-  course, lecture)` yields `{"event":"step",tool,args,result_summary}`, `{"event":"draft","text"}` (whole answer so far
-  with labels; replaces the previous draft), `{"event":"reset"}`, last `{"event":"done","result":<answer() dict>}`.
-  Rounds are sent with `stream: true` + `stream_options.include_usage` by `stream_round()` (body from `llm._body`, so
-  the same fields; tool-call deltas assembled by index; logged via `llm._log_attempt`). `draft_text()` holds back a
-  half-written word, an unclosed bracket and a begun COVERED line. `scripts/llm/fake_server.py` streams SSE when asked
-  (content pieces, tool call id+name then args in 2 pieces, usage, [DONE]). fake_qa still PASSes (blocking path).
-- **vLLM demo config** `pipeline/configs/gemma4_12b_vllm_demo.json` written (google/gemma-4-12B-it BF16, port 8096,
-  launch false, 32k ctx, 8 slots, reasoning_parser gemma4, extra_args `--enable-auto-tool-choice --tool-call-parser
-  gemma4`, think_budget 0 so no `thinking_token_budget` is sent). Parser names from recipes.vllm.ai (Gemma 4 12B
-  recipe; vLLM >= 0.23 or the `vllm/vllm-openai:gemma4-unified` image; the recipe also passes `--chat-template
-  examples/tool_chat_template_gemma4.jinja` from the vLLM repo: add it if tool calls come back as text). To verify
-  on the box. Static check: the client sends the same request fields (tools, tool_choice, chat_template_kwargs
-  enable_thinking per request); differences: `repetition_penalty` (llama.cpp: `repeat_penalty`), the request hash
-  (engine and model_path are in it; qa uses no cache so nothing depends on it), the answers (BF16 vs the local QAT Q4).
+## Done on 2026-11-17 afternoon (commits 9bdb150 and the one after it)
+All runs: local RTX 5070, Gemma 4 12B QAT on llama.cpp (port 8092), QA_CONFIG = a scratch copy of
+configs/gemma4_12b_llamacpp.json with server_log outside output/, QA_OUTPUT = a scratch copy of the layer (so the qa
+logs never went into pipeline/output/). Nothing tracked was touched by the runs.
+
+1. **Streaming finished.** `qa.answer_stream()` checked in `tests/fake_qa.py` (stream section): a step event per tool
+   call in order (two calls in one message assembled from the deltas by index), drafts with labels and never a raw
+   ID / half bracket / COVERED line, the last draft equal to the answer, `reset` when a round's text ended in tool
+   calls, `done` == `answer()` for the same question, rounds sent with `stream` + `include_usage` and the same tools,
+   tool_choice and thinking, tokens logged. Blocking `answer()` unchanged. **On the real llama.cpp** (5 questions, new
+   layer): tool-call deltas arrive fine (parallel immersion + presence calls), answers equal in kind to the blocking
+   ones; **time to first draft 2.3-4.6 s (median 3.2 s)** against 3.2-6.6 s to the whole answer. The viewer does not
+   use it yet (`/api/ask_stream` + app.js: next steps).
+2. **Speed experiment: thinking off in every round + forced tool call in round 0. NOT shipped.**
+   - `tool_choice "required"` on llama.cpp with Gemma 4 and thinking off does not force a call: the model writes its
+     plain answer ("the course does not cover this ... COVERED: no") and then cannot stop, so the round runs to
+     max_tokens (12288 tokens, 3 min 20 s per attempt, retried 3 times). Bench B04 (FIFA) hung this way; stopped
+     after B01-B03 (`bench_fast_old.jsonl`, 3 lines: 3.3 / 2.1 / 4.0 s). Reproduced with max_tokens 300 for B04 and
+     B17: finish "length", content = a "not covered" answer.
+   - A named function (`{"type":"function","function":{"name":"fact_lookup"}}`) is ignored by llama.cpp: B17
+     (statistical test, taught in lecture 46) answered "the course does not cover statistical tests" with no call in
+     0.8 s, B04 too. Same as this morning's think-off-everywhere run (B17 "not covered" both runs).
+   - So the round-0 switches stay **thinking on, tool_choice auto** (shipped). They are now module switches
+     (`qa.answer.ROUND0_THINK`, `ROUND0_TOOL_CHOICE`; `bench.py --variant shipped|fast|think`) so the experiment can be
+     repeated on vLLM, where `required` and named functions are enforced by structured outputs (untested here: no
+     EC2). Options for the user if more speed is wanted: (a) on vLLM, bench `--variant fast` first; (b) a code-side
+     guard (round 0 without a tool call and thinking off -> run fact_lookup on the question, then answer); (c) shorter
+     compare/prereq answers via prompts/qa_system.txt (Fable's file). None done: design choices.
+3. **Bench, shipped code, `--runs 2`, 34 answers each, every answer read.**
+
+| (34 answers each) | median | mean | p90 | max | > 8 s | covered false |
+|---|---|---|---|---|---|---|
+| before (morning baseline) | 5.4 | 6.4 | 12.1 | 16.2 | 9 | |
+| after (morning, adbf84d) | 4.8 | 5.2 | 8.1 | 9.3 | 4 | 5 |
+| shipped, current layer (`bench_think_old`) | 5.1 | 5.2 | 8.0 | 8.8 | 3 | 4 |
+| shipped, NEW layer (`bench_think_newlayer`) | 4.9 | 5.2 | 7.6 | 8.9 | 3 | 3 |
+| fast (think off + required), current layer | hung on B04 (3+ min per attempt) | | | | | |
+| think off everywhere (morning, `bench_nothink`) | 3.1 | 3.2 | 5.4 | 5.9 | 0 | 6 (B17 wrong) |
+
+   Per kind, median (max), current / new layer: not_covered 5.4 (5.7) / 4.4 (5.9); off_topic 5.9 / 5.9 (6.8); compare
+   8.2 (8.8) / 8.0 (8.9); list 4.6 / 4.9; where 3.8 (5.2) / 3.4 (5.3); prereq 4.8 (5.2) / 5.8 (7.5); definition 3.9 /
+   4.0 (4.4); how 3.5 / 3.2; lookup 5.5 / 5.0. Where the time goes (both): round 0 (thinking + tool choice) median
+   1.6-1.7 s, the final answer median 2.6-2.7 s (compare 4-4.6 s for 220-280 tokens at ~60 tok/s); tools <= 0.7 s.
+   Over 8 s: B05-B07 comparisons only (8.3-8.9 s; some runs call the second check_concept in round 1 instead of in
+   parallel, +1.3 s). Grounding: 0 failures in both runs of both layers: B17 answered from lecture 46 (paired t-test,
+   Wilcoxon, McNemar) every time; B01-B03 "not covered as such; closest: ..." with real citations; B04 "not covered",
+   nothing cited; every claim cited, no wrong citation seen. Oddity left: B14 writes "[1]" / "[4]" (lecture numbers,
+   not IDs) for the assumed concepts, as this morning.
+4. **New knowledge layer** (ec2_sync/output/nptel_vr/knowledge, synonym merge + real definitions; 3122 concepts
+   instead of 3384, 262 names merged into others, 3113 definitions rewritten). qa takes it with
+   `QA_OUTPUT=<folder holding nptel_vr/knowledge>` (used a scratch copy; logs land next to it). Bench above: same speed,
+   same grounding; prereq answers a bit longer (B13 lecture 40 now lists 5 concepts, 7.3-7.5 s). "What is X" checked
+   on both layers (presence, behavioral data, x-ray visualization, application software, a VR headset, a fully
+   immersive system, a game engine): **the new cards' definitions are used as the answer's first sentence**, and are
+   better: old "a fully immersive system" answered only "one of the categories of VR systems" (the old card's
+   definition was that category sentence), new gives the definition (blocks all senses ...); old "a VR headset" led
+   with "a common example of a semi-immersive system", new leads with the HMD definition (the headset names merged
+   into head-mounted display); old "x-ray visualization" / "behavioral data" paraphrased a history/questionnaire fact,
+   new define the term. No regressions seen.
+5. **vLLM demo config** `configs/gemma4_12b_vllm_demo.json` checked against the fake OpenAI server (fake_qa "vllm"
+   section): the body carries `repetition_penalty` (not `repeat_penalty`), no `thinking_token_budget` (think_budget 0),
+   the five tools, tool_choice auto, enable_thinking true in round 0 / false after; the answer is identical to the
+   llama.cpp config's, blocking and streamed. `python -m qa --stop` now stops `vllm serve ... --port N` (or
+   `vllm.entrypoints.openai.api_server ... --port N`) for an engine "vllm" config; checked with dummy processes (the
+   one on the config's port stopped; another port and port N1 left alone).
+6. `tests/fake_qa.py --layer DIR`: **PASS** (all old checks + stream, round 0, vllm; 26 logged questions). Note:
+   `tests/fake_knowledge.py` (which fake_qa runs to build its layer when no --layer is given) FAILs one check on
+   main as merged today ("capped: ... the prompt's new THE FACTS paragraph and first bullet": the 4a prompt changed on
+   main), so fake_qa was run with `--layer` on the layer fake_knowledge still builds. Not a qa problem.
+
+### How demo setup would start vLLM Gemma on the instance (not run: no EC2)
+On the RTX PRO 6000 box, from the pipeline folder, with vLLM >= 0.23 in `~/vllm-venv` (the config's `binary`; or
+change `binary`):
+
+```bash
+tmux new -d -s gemma -c ~/mtp-implementation/pipeline \
+  "env PATH=$HOME/demo-venv/bin:$PATH python -m scripts.llm.serve configs/gemma4_12b_vllm_demo.json"
+```
+
+`scripts.llm.serve` launches whatever the config says (launch false only means clients attach), i.e.
+
+```
+~/vllm-venv/bin/vllm serve google/gemma-4-12B-it --served-model-name gemma-4-12b --host 127.0.0.1 --port 8096
+  --max-model-len 32768 --max-num-seqs 8 --gpu-memory-utilization 0.85 --tensor-parallel-size 1 --seed 0
+  --enable-prefix-caching --reasoning-parser gemma4 --enable-auto-tool-choice --tool-call-parser gemma4
+```
+
+then the viewer with `QA_CONFIG=configs/gemma4_12b_vllm_demo.json viewer/serve.py --warm` (setup_demo.sh does this with
+`CONFIG=$PIPE/configs/gemma4_12b_vllm_demo.json`, except that its step 5 builds llama.cpp and its step 4 does not
+install vLLM: on the vLLM path skip the llama.cpp build and `python -m venv ~/vllm-venv && ~/vllm-venv/bin/pip install
+"vllm>=0.23"`; the gated `google/gemma-4-12B-it` needs the HF token). From the laptop: `ssh -L 8765:127.0.0.1:8765
+demo` for the viewer (the model port need not be forwarded: the viewer runs on the box). To check before the demo:
+`demo/demo_tool.py wait-model configs/gemma4_12b_vllm_demo.json`, then one `python -m qa "What is an HMD?" --config
+configs/gemma4_12b_vllm_demo.json` (tool calls must come back as tool_calls, not text; if they come back as text add
+`--chat-template examples/tool_chat_template_gemma4.jinja` from the vLLM repo to extra_args). Stop: `python -m qa --stop
+--config configs/gemma4_12b_vllm_demo.json` on the box (a Docker-run vLLM is root-owned: stop the container instead).
+**Speed caveat for the user:** BF16 12B is ~24 GB of weights; at the RTX PRO 6000's ~1.8 TB/s that is at most ~70
+tok/s per request, about what the local Q4 QAT gives (~60 tok/s), so the demo box will not answer much faster than
+the PC. An FP8 checkpoint (or `--quantization fp8`) would roughly double the decode rate; and with vLLM the
+`--variant fast` bench is worth one run (forced tool calls are enforced there). Both are the user's choice.
 
 ## Next steps (in order)
-1. fake_qa: add streaming checks (answer_stream with the fake: step events in order, drafts with labels and no raw
-   IDs/COVERED, reset when a round with content ends in tool calls, done == answer() for the same script) and a run
-   of qa against the vLLM config with the fake server (port override, engine vllm: body has repetition_penalty, no
-   thinking_token_budget, tools/tool_choice/enable_thinking as with llama.cpp). Fake server only, no EC2.
-2. Try answer_stream on the local llama.cpp (does it stream tool-call deltas with --jinja for Gemma 4?) on 3-4 bench
-   questions; time to first draft.
-3. viewer: `POST /api/ask_stream` in viewer/serve.py (text/event-stream, one `data:` line per event; falls back to
-   ask()) and app.js ask(): read the stream (status line "Looking through the course…" / "Writing the answer…", draft
-   rendered with mdBlock, final render as now on done; steps only in dev mode; fall back to /api/ask on 404). Keep
-   /api/ask unchanged. Run tests/viewer_smoke.py.
-4. `python -m qa --stop` kills only llama-server: also `vllm serve.*--port N` for an engine vllm config.
-5. Rerun `bench.py after --runs 2` (fresh file) on the final code; read answers; update this file; commit `qa: ...`.
-6. Decisions for the user: thinking off in round 0 (+ tool_choice "required" in round 0, to be benched fully) saves
-   ~1.5 s per answer; a shorter-answer wording in prompts/qa_system.txt (Fable's file) for compare/prereq; demo
-   should keep `viewer/serve.py --warm` (embedder + server warm at start).
+1. viewer: `POST /api/ask_stream` in viewer/serve.py (text/event-stream, one `data:` line per event; falls back to
+   ask()) and app.js ask() reading it (status "Looking through the course…" / "Writing the answer…", draft rendered
+   with mdBlock, final render on done; steps only in dev mode; fall back to /api/ask on 404). Keep /api/ask. Run
+   tests/viewer_smoke.py. This is what brings the felt wait to ~3 s (first draft median 3.2 s).
+2. On the demo box: smoke the vLLM config (above), then `bench.py shipped --runs 2` and `--variant fast` there
+   (QA_CONFIG=configs/gemma4_12b_vllm_demo.json); read every answer; ship `fast` only with 0 grounding failures.
+3. Decisions for the user: FP8 on the demo box; the code-side search guard (option b above); shorter compare/prereq
+   answers (prompt wording, Fable's file); B14's "[1]"-style lecture numbers.

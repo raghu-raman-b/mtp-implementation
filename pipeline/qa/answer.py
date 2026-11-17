@@ -69,9 +69,11 @@ def default_config() -> Path:
 DEFAULT_CONFIG = default_config()
 SYSTEM_FILE = ROOT / "prompts" / "qa_system.txt"
 MAX_ROUNDS = 5                  # rounds of tool calls before the model must answer
-# Round 0 (where the tools are chosen): thinking on or off, and its tool_choice ("auto"; "required": a search is
-# always made, so a taught topic is never answered "not covered" from the model's own knowledge). Later rounds:
-# thinking off, tool_choice "auto" (the last: "none"). Kept as module switches so analysis/qa/bench.py can try both.
+# Round 0 (where the tools are chosen): thinking on or off, and its tool_choice. Later rounds: thinking off,
+# tool_choice "auto" (the last: "none"). Kept as module switches so analysis/qa/bench.py can try both. Shipped: thinking
+# on, "auto". With thinking off Gemma 4 answers some taught topics "not covered" without a search (B17, lecture 46),
+# and on llama.cpp neither "required" (the model writes its answer, cannot stop, and runs to max_tokens: 3+ minutes)
+# nor a named function (ignored) forces the call (analysis/qa/STATE.md, 2026-11-17).
 ROUND0_THINK = True
 ROUND0_TOOL_CHOICE = "auto"
 FINAL_NUDGE = ("Answer the learner now, from the tool results above only, following the rules: IDs in square "
