@@ -26,7 +26,17 @@ What it looks for (each line is what a broken viewer server would show):
              not passed through, the lecture not passed in; a qa that raises: a server error instead of a message
   degrade    a copy without knowledge/ and activities/: the course or a lecture failing, the layers reported as
              present, a lecture not falling back to its 1b segments
-  js         app.js not valid JavaScript (node --check, when node is installed)
+  lean       the page's routes (/api/home, /api/view/<k> with "before", /api/glossary with "linked" and only the
+             concepts 4a defined listed, /api/concept, /api/coursemap, /api/review) failing or missing fields; a
+             connecting concept's card not opening; no gzip, no ETag, no 304 on If-None-Match
+  judge      a judge-failed item (checks.json "flags": {"judge_failed"}) not reported with its criteria, or the
+             per-kind rule not applied (a quiz item failed on "answerable" not hidden, one failed only on
+             "no_giveaway" hidden; a crossword hidden)
+  versioned  index.html without ?v= on its static files; a versioned file without the long immutable cache
+  stream     /api/ask_stream: not one JSON event per line, the qa's step/draft/reset events not passed on in order,
+             no final "done" with the answer; a qa without answer_stream or no qa: not a single "done" like /api/ask
+  js         app.js not valid JavaScript (node --check, when node is installed); app.js fetching the big knowledge
+             files (/data/knowledge/...) instead of the lean routes
   output     any file under the real output/ created or changed
 """
 from __future__ import annotations
@@ -48,7 +58,9 @@ ROOT = Path(__file__).resolve().parent.parent  # the pipeline folder
 COURSE = "nptel_vr"
 FORBIDDEN = {8094, 8095}
 FAILURES: list[str] = []
-VIDEO = bytes((i * 7 + 3) % 256 for i in range(10_000))
+VIDEO = bytes((i * 7 + 3) % 256 for i in range(600_000))   # larger than the open-range chunk the test sets (256 kB)
+CHUNK = 256 << 10
+N = len(VIDEO)
 
 
 def check(ok: bool, what: str):
@@ -179,18 +191,45 @@ def write_activities(kd: Path, ad: Path, keys: list[str]):
                                                                      "Render the frame", "Show it on the display"],
                         "facts": f0[:2]}]}, f0[:2], [])
         (ad / f"lec_{k}.json").write_text(json.dumps({"lecture": k, "activities": acts}, indent=1))
+        if k == "1":
+            write_checks(ad, acts)
     (ad / "course.json").write_text(json.dumps({"spaced_review": {"cards": [
         {"concept": cid, "front": c["name"], "back": c["definition"] or c["name"], "lectures": c["lectures"]}
         for cid, c in concepts.items()]}}, indent=1))
 
 
-def write_fake_qa(folder: Path, raising: bool = False):
+def write_checks(ad: Path, acts: list[dict]):
+    """checks.json for lecture 1 as s5 writes it: two quizzes judge-failed (one on "answerable", one only on
+    "no_giveaway"), a crossword judge-failed, an odd_one_out unresolved by the code checks."""
+    quiz = [a["id"] for a in acts if a["kind"] == "quiz"][:2]
+    cw = next(a["id"] for a in acts if a["kind"] == "crossword")
+    odd = next(a["id"] for a in acts if a["kind"] == "odd_one_out")
+
+    def judged(aid, crit):
+        return {"status": "ok", "activity": aid, "flags": {"judge_failed": [1]},
+                "judge": {"rounds": [{"status": "ok", "verdicts": [{"item": 1, "pass": False, "failed": crit,
+                                                                    "reason": "a reason"}], "failed_items": [1]}],
+                          "kept": "original", "failed_items": [1]}}
+    (ad / "checks.json").write_text(json.dumps({"lectures": {"1": {
+        "quiz": {"quiz:1/a": judged(quiz[0], ["answerable", "no_giveaway"]), "quiz:1/b": judged(quiz[1], ["no_giveaway"])},
+        "crossword": {"crossword:1": judged(cw, ["clear"])},
+        "odd_one_out": {"odd_one_out:1": {"status": "unresolved", "activity": odd, "problems": ["two odd ones"]}}}}}))
+
+
+def write_fake_qa(folder: Path, raising: bool = False, stream: bool = False):
     (folder / "qa").mkdir(parents=True)
     body = ("def answer(question, course, lecture):\n"
             + ("    raise RuntimeError('model server down')\n" if raising else
                "    return {'answer': f'echo: {question} ({course}, {lecture})', 'covered': True, 'steps': [],\n"
                "            'citations': [{'fact': '1/S0/F0', 'lecture': '1', 'segment': '1/S0', 'start': 24.3,\n"
                "                           'end': 31.9, 'text': 'a fact'}]}\n"))
+    if stream:
+        body += ("def answer_stream(question, course, lecture):\n"
+                 "    yield {'event': 'step', 'tool': 'fact_lookup', 'args': {'query': question}, 'result_summary': '2 facts'}\n"
+                 "    yield {'event': 'draft', 'text': 'Wrong start'}\n"
+                 "    yield {'event': 'reset'}\n"
+                 "    yield {'event': 'draft', 'text': 'echo:'}\n"
+                 "    yield {'event': 'done', 'result': answer(question, course, lecture)}\n")
     (folder / "qa" / "__init__.py").write_text(body)
 
 
@@ -201,7 +240,8 @@ class Server:
         self.base = f"http://127.0.0.1:{self.port}"
         self.log = open(log, "w")
         self.p = subprocess.Popen([sys.executable, str(ROOT / "viewer" / "serve.py"), COURSE, "--port", str(self.port),
-                                   "--root", str(root), "--qa-path", str(qa_path)], stdout=self.log, stderr=self.log)
+                                   "--root", str(root), "--qa-path", str(qa_path),
+                                   "--video-chunk-mb", str(CHUNK / (1 << 20))], stdout=self.log, stderr=self.log)
         for _ in range(100):
             try:
                 urllib.request.urlopen(self.base + "/api/course", timeout=2)
@@ -228,6 +268,21 @@ class Server:
     def ask(self, q, lecture):
         return self.json("/api/ask", method="POST", data=json.dumps({"question": q, "lecture": lecture}).encode(),
                          headers={"Content-Type": "application/json"})
+
+    def stream(self, q, lecture):
+        """/api/ask_stream: (status, content type, the events, every line parsed)."""
+        req = urllib.request.Request(self.base + "/api/ask_stream", method="POST",
+                                     data=json.dumps({"question": q, "lecture": lecture}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            lines = r.read().decode().splitlines()
+            evs = []
+            for ln in lines:
+                try:
+                    evs.append(json.loads(ln))
+                except ValueError:
+                    evs.append(None)
+            return r.status, r.headers.get("Content-Type", ""), evs
 
     def stop(self):
         self.p.terminate()
@@ -298,7 +353,7 @@ def test_full(srv: Server, root: Path):
           f"every knowledge/ file served as is ({len(files)} files) {bad[:3]}")
     afiles = sorted(p.name for p in ad.glob("*.json"))
     bad = [f for f in afiles if srv.get(f"/data/activities/{f}")[2] != (ad / f).read_bytes()]
-    check(not bad and len(afiles) == 4, f"every activities/ file served as is ({len(afiles)}) {bad[:3]}")
+    check(not bad and len(afiles) == 5, f"every activities/ file served as is ({len(afiles)}) {bad[:3]}")
     check(srv.get("/data/knowledge/fact_embeddings.json")[0] == 404, "fact_embeddings.json not served")
     check(srv.get("/data/activities/lec_9.json")[0] == 404 and srv.get("/data/knowledge/lectures/lec_9.json")[0] == 404
           and srv.get("/data/knowledge/../index.json")[0] == 404, "missing or outside files are 404")
@@ -313,14 +368,18 @@ def test_full(srv: Server, root: Path):
     code, hd, body = srv.get("/media/1", {"Range": "bytes=100-199"})
     check(code == 206 and body == VIDEO[100:200] and hd.get("Content-Range") == f"bytes 100-199/{len(VIDEO)}"
           and hd.get("Content-Length") == "100", f"bytes=100-199 -> 206 with those bytes ({code}, {hd.get('Content-Range')})")
-    code, hd, body = srv.get("/media/1.mp4", {"Range": "bytes=9990-"})
-    check(code == 206 and body == VIDEO[9990:] and hd.get("Content-Range") == f"bytes 9990-9999/{len(VIDEO)}",
-          f"open range bytes=9990- ({code})")
+    code, hd, body = srv.get("/media/1.mp4", {"Range": f"bytes={N - 10}-"})
+    check(code == 206 and body == VIDEO[N - 10:] and hd.get("Content-Range") == f"bytes {N - 10}-{N - 1}/{N}",
+          f"open range bytes={N - 10}- ({code})")
+    code, hd, body = srv.get("/media/1", {"Range": "bytes=1000-"})
+    check(code == 206 and body == VIDEO[1000:1000 + CHUNK] and hd.get("Content-Range") == f"bytes 1000-{1000 + CHUNK - 1}/{N}",
+          f"an open range is answered with one chunk ({len(body)} bytes, {hd.get('Content-Range')})")
+    check(hd.get("ETag") and hd.get("Last-Modified"), "the video carries ETag and Last-Modified")
     code, hd, body = srv.get("/media/1", {"Range": "bytes=-50"})
     check(code == 206 and body == VIDEO[-50:], f"suffix range bytes=-50 ({code})")
-    code, hd, body = srv.get("/media/1", {"Range": "bytes=9000-20000"})
-    check(code == 206 and body == VIDEO[9000:], f"a range past the end is cut to the file ({code}, {len(body)})")
-    code, hd, _ = srv.get("/media/1", {"Range": "bytes=20000-"})
+    code, hd, body = srv.get("/media/1", {"Range": f"bytes={N - 1000}-{N + 10000}"})
+    check(code == 206 and body == VIDEO[N - 1000:], f"a range past the end is cut to the file ({code}, {len(body)})")
+    code, hd, _ = srv.get("/media/1", {"Range": f"bytes={N + 10000}-"})
     check(code == 416 and hd.get("Content-Range") == f"bytes */{len(VIDEO)}", f"an unsatisfiable range is 416 ({code})")
     code, hd, body = srv.get("/media/1", {"Range": "bytes=0-9"}, method="HEAD")
     check(code == 206 and body == b"" and hd.get("Content-Length") == "10", f"HEAD with a Range ({code})")
@@ -332,7 +391,12 @@ def test_full(srv: Server, root: Path):
           and all(l["has"]["youtube"] for l in C["lectures"]),
           f"the YouTube ID of titles.tsv in the lecture route (for the fallback player) ({L2['youtube_id']})")
 
+    test_lean(srv, root)
+
     print("ask", flush=True)
+    code, _, evs = srv.stream("What is VR?", "1")
+    check(code == 200 and len(evs) == 1 and evs[0]["event"] == "done" and evs[0]["result"]["available"] is False,
+          f"no qa package: /api/ask_stream gives one 'done' with 'not available' ({evs[:1]})")
     code, r = srv.ask("What is VR?", "1")
     check(code == 200 and r["available"] is False and "not available" in r["answer"] and r["citations"] == [],
           f"no qa package: a clear 'not available' answer ({r.get('answer')!r})")
@@ -340,9 +404,80 @@ def test_full(srv: Server, root: Path):
     check(code == 400, f"a malformed question is 400 ({code})")
 
 
+def test_lean(srv: Server, root: Path):
+    kd = root / "output" / COURSE / "knowledge"
+    concepts = json.loads((kd / "concepts.json").read_text())
+    print("lean", flush=True)
+    code, H = srv.json("/api/home")
+    check(code == 200 and len(H["lectures"]) == 63 and H["layers"]["knowledge"] and "prefer_youtube" in H
+          and H["lectures"][0]["goal"], f"/api/home ({code})")
+    code, V = srv.json("/api/view/2")
+    check(code == 200 and V["segments"] and V["sentences"] and V["goal"] and V["activities"]
+          and isinstance(V["before"], list) and V["prev"] == "1" and V["next"] == "3"
+          and all(c in V["concepts"] for sg in V["segments"] for c in sg["concepts"] or [] if c in concepts),
+          f"/api/view/2: segments, sentences, goal, activities, before, prev/next, its concepts ({code})")
+    lg = json.loads((kd / "lecture_graph.json").read_text())
+    want = sorted(x["from"] for x in lg.get("links") or [] if x.get("to") == "5" and x.get("from") != "5")
+    _, V5 = srv.json("/api/view/5")
+    check(sorted(x["from"] for x in V5["before"]) == want and all(c in V5["concepts"] for x in V5["before"] for c in x["concepts"]),
+          f"/api/view/5 'before': the lecture-graph links into it, with their concepts ({want})")
+    check(srv.get("/api/view/99")[0] == 404 and srv.get("/api/view/..")[0] == 404, "an unknown lecture view is 404")
+    code, G = srv.json("/api/glossary")
+    listed = [c for c in G["concepts"] if c.get("listed") is not False]
+    has_flag = any("defined" in c for c in concepts.values())
+    want_listed = sorted(cid for cid, c in concepts.items() if not has_flag or c.get("defined") is True)
+    check(code == 200 and sorted(c["id"] for c in listed) == want_listed and all("linked" in c for c in G["concepts"]),
+          f"/api/glossary lists exactly the concepts 4a defined ({len(listed)} of {len(concepts)}), each with 'linked'")
+    check(all(c.get("linked") and "definition" not in c for c in G["concepts"] if c.get("listed") is False)
+          and G.get("connecting") == len(concepts) - len(want_listed),
+          f"connecting concepts: only the linked ones, by name, for the explorer's search ({G.get('connecting')})")
+    other = next((cid for cid, c in concepts.items() if has_flag and c.get("defined") is not True), next(iter(concepts)))
+    code, CC = srv.json(f"/api/concept/{other}")
+    check(code == 200 and CC["name"] and "relations" in CC and "facts" in CC, f"a connecting concept's card opens ({other})")
+    check(srv.get("/api/concept/C9999")[0] == 404, "an unknown concept is 404")
+    code, M = srv.json("/api/coursemap")
+    check(code == 200 and "links" in M and "introduced" in M and "names" in M, f"/api/coursemap ({code})")
+    code, R = srv.json("/api/review")
+    check(code == 200 and R["cards"] and all(c["concept"] for c in R["cards"]), f"/api/review ({len(R['cards'])} cards)")
+    code, hd, body = srv.get("/api/glossary", {"Accept-Encoding": "gzip"})
+    tag = hd.get("ETag")
+    check(code == 200 and hd.get("Content-Encoding") == "gzip" and tag and body[:2] == b"\x1f\x8b", "lean routes gzip with an ETag")
+    code, hd, body = srv.get("/api/glossary", {"If-None-Match": tag})
+    check(code == 304 and body == b"", f"If-None-Match gives 304 with no body ({code})")
+    code, _, _ = srv.get("/data/knowledge/concepts.json", {"If-None-Match": srv.get("/data/knowledge/concepts.json")[1].get("ETag", "x")})
+    check(code == 304, f"/data/ files give 304 too ({code})")
+
+    print("judge", flush=True)
+    _, V1 = srv.json("/api/view/1")
+    by = {a["id"]: a for a in V1["activities"]}
+    q = [a for a in V1["activities"] if a["kind"] == "quiz"][:2]
+    cw = next(a for a in V1["activities"] if a["kind"] == "crossword")
+    odd = next(a for a in V1["activities"] if a["kind"] == "odd_one_out")
+    check(q[0].get("judge_failed") == {"1": ["answerable", "no_giveaway"]} and q[0].get("judge_hide") == [1],
+          f"a quiz item failed on 'answerable' is hidden from learners ({q[0].get('judge_failed')}, {q[0].get('judge_hide')})")
+    check(q[1].get("judge_failed") == {"1": ["no_giveaway"]} and q[1].get("judge_hide") == [],
+          f"a quiz item failed only on 'no_giveaway' is kept ({q[1].get('judge_hide')})")
+    check(cw.get("judge_failed") and cw.get("judge_hide") == [], "a judge-failed crossword is still shown")
+    check(odd.get("unresolved") is True and not any(by[x].get("judge_failed") for x in by if by[x]["kind"] == "recap"),
+          "an unresolved activity is marked; nothing invented for the others")
+
+    print("versioned", flush=True)
+    code, hd, body = srv.get("/")
+    import re as _re
+    refs = _re.findall(r'/static/([\w./-]+)\?v=(\w+)"', body.decode())
+    check(code == 200 and {r[0] for r in refs} >= {"app.js", "style.css", "vendor/dagre.min.js"},
+          f"index.html names its static files with ?v= ({len(refs)})")
+    code, hd, _ = srv.get(f"/static/{refs[0][0]}?v={refs[0][1]}")
+    check(code == 200 and "immutable" in hd.get("Cache-Control", "") and "max-age=31536000" in hd.get("Cache-Control", ""),
+          f"a versioned static file is cached for good ({hd.get('Cache-Control')})")
+    code, hd, _ = srv.get("/static/app.js")
+    check(hd.get("Cache-Control") == "no-cache" and hd.get("ETag"), "an unversioned static file is revalidated (ETag)")
+
+
 def test_ask(root: Path, work: Path):
-    good, bad = work / "qa_good", work / "qa_bad"
+    good, bad, streaming = work / "qa_good", work / "qa_bad", work / "qa_stream"
     write_fake_qa(good)
+    write_fake_qa(streaming, stream=True)
     write_fake_qa(bad, raising=True)
     srv = Server(root, good, work / "server_qa.log")
     try:
@@ -354,6 +489,23 @@ def test_ask(root: Path, work: Path):
               f"the qa answer and citations passed through, with course and lecture ({r.get('answer')!r})")
         code, r = srv.ask("Across the course?", None)
         check(r["answer"].endswith(f"({COURSE}, None)"), "no lecture is passed as None")
+        code, ctype, evs = srv.stream("What is VR?", "4")
+        check(code == 200 and [e["event"] for e in evs] == ["done"] and evs[0]["result"]["answer"].startswith("echo:"),
+              f"a qa without answer_stream: /api/ask_stream gives one 'done' with the answer ({[e['event'] for e in evs]})")
+    finally:
+        srv.stop()
+    print("stream", flush=True)
+    srv = Server(root, streaming, work / "server_qa_stream.log")
+    try:
+        code, ctype, evs = srv.stream("What is VR?", "4")
+        check(code == 200 and "ndjson" in ctype and None not in evs
+              and [e["event"] for e in evs] == ["step", "draft", "reset", "draft", "done"],
+              f"answer_stream's events passed on in order, one JSON per line ({[e and e['event'] for e in evs]})")
+        res = evs[-1]["result"]
+        check(res["available"] and res["answer"] == f"echo: What is VR? ({COURSE}, 4)" and res["citations"][0]["start"] == 24.3,
+              "the stream ends with 'done' carrying what /api/ask answers")
+        code, r = srv.ask("What is VR?", "4")
+        check(code == 200 and r["answer"].startswith("echo:"), "/api/ask still answers when qa streams")
     finally:
         srv.stop()
     srv = Server(root, bad, work / "server_qa_bad.log")
@@ -411,6 +563,9 @@ def main():
         check(r.returncode == 0, f"app.js parses {r.stderr.strip()[:200]}")
     else:
         print("  (node not installed: skipped)")
+    js = (ROOT / "viewer" / "app.js").read_text()
+    check("/data/knowledge" not in js and "/data/activities" not in js and "/api/ask_stream" in js,
+          "app.js reads only the lean routes (no /data/knowledge files) and asks through /api/ask_stream")
     print("output", flush=True)
     check(snapshot(ROOT / "output") == before, "nothing under the real output/ created or changed")
     if not a.keep and not FAILURES:
