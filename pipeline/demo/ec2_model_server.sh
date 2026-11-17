@@ -98,12 +98,12 @@ if [ "$ACTION" = stop ]; then
   exit 0
 fi
 if [ "$ACTION" = status ]; then
-  for p in 8096 "$EMBED_PORT"; do
+  for p in "$([ -n "${CONFIG:-}" ] && cfg_get "$CONFIG" port || echo 8096)" "$EMBED_PORT"; do
     if healthy "$p"; then echo "  port $p: answers ($(curl -s -m 3 "http://127.0.0.1:$p/v1/models" | head -c 200))"
     else echo "  port $p: nothing answers"; fi
   done
   tmux ls 2>/dev/null | sed 's/^/  tmux /' || true
-  tunnel_hint 8096
+  tunnel_hint "$([ -n "${CONFIG:-}" ] && cfg_get "$CONFIG" port || echo 8096)"
   exit 0
 fi
 

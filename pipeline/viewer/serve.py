@@ -774,7 +774,7 @@ def ask_stream(course: str, req: dict):
                 res = dict(res) if isinstance(res, dict) else {"answer": str(res)}
                 res.setdefault("citations", [])
                 res["available"] = True
-                yield {"event": "done", "result": res}
+                yield {**ev, "event": "done", "result": res}       # "t", "timing" kept
                 return
             yield ev
     except Exception as e:                                   # noqa: BLE001
