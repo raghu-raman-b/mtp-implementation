@@ -435,8 +435,8 @@ def test_4a(work: Path, cfg: Path, syn: dict, log: Path) -> int:
                  for c, v in concepts.items()}
     tail = lambda c: prompt_of[c].split("\nTHE DEFINITION\n")[0].rstrip().splitlines()[-1]  # noqa: E731
     check(tail(imm) == f"({20 - CAP} more facts not shown)" and FACT_LINE.fullmatch(tail(cn["rendering"]))
-          and "Begin with the name exactly as given above" in prompt_of[imm]
-          and "a last line says how many are left out" in prompt_of[imm],
+          and "Begin with the name as given above" in prompt_of[imm]
+          and "a last line says how many facts are not shown" in prompt_of[imm],
           f"capped: the last line says how many facts are not shown ({tail(imm)!r}); none when all are shown; the "
           f"prompt's new THE FACTS paragraph and first bullet")
     check(ok_map, "cited numbers mapped to fact IDs through the shown list")

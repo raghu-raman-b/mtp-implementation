@@ -287,6 +287,22 @@ def answer_items(answer: dict, shown: list[str]) -> list[str]:
             + [f"defined: {bool(answer.get('defined'))}", f"definition: {str(answer.get('definition', '')).strip()}"])
 
 
+ARTICLE_CAP = re.compile(r"^(A|An|The) ([A-Z])")
+
+
+def tidy_case(definition: str, name: str | None) -> str:
+    """"A Non-immersive system is ..." -> "A non-immersive system is ...": after a leading article, the concept's name
+    keeps its own lower-case first letter (reviewed 2026-11-17; a capital that the name itself has, as in "Oculus Rift",
+    stays)."""
+    m = ARTICLE_CAP.match(definition)
+    if not m or not name or not name[:1].islower():
+        return definition
+    rest = definition[m.end(1) + 1:]
+    if not rest.lower().startswith(name.lower()):
+        return definition
+    return f"{m.group(1)} {rest[:1].lower()}{rest[1:]}"
+
+
 def check_answer(answer: dict, shown: list[str], defined_in: list[str], name: str | None = None) -> tuple[dict, dict]:
     """Map the answer's numbers to fact IDs through the shown list; the flags of the code checks (the problems of
     problems() when a name is given, then defined_mismatch and misplaced)."""
@@ -305,7 +321,7 @@ def check_answer(answer: dict, shown: list[str], defined_in: list[str], name: st
     elif not answer["defined"] and defined_in:
         flags["defined_mismatch"] = f"not defined here, but defined in {', '.join(defined_in)}"
     pick = lambda nums: list(dict.fromkeys(shown[i - 1] for i in _ints(nums) if 1 <= i <= n))  # noqa: E731
-    mapped = {"definition": answer["definition"].strip(), "defined": answer["defined"],
+    mapped = {"definition": tidy_case(answer["definition"].strip(), name), "defined": answer["defined"],
               "facts": pick(answer["facts"]), "misplaced": pick(answer["misplaced"])}
     if mapped["misplaced"]:
         flags["misplaced"] = mapped["misplaced"]
