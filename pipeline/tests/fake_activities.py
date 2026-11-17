@@ -75,8 +75,40 @@ FIRST_FACT = re.compile(r"^\[1\] (?:\([^)]*\) )?Fact (\S+?):", re.M)
 ANSWER_LINE = re.compile(r"^\[(\d+)\] (.+?) \(other names", re.M)
 
 
+JUDGE_MARK = {"worth_asking": "quiz", "summary": "recap", "real_sequence": "put_in_order", "near_miss": "odd_one_out",
+              "answers_question": "open_question", "from_text": "crossword"}
+REWRITE_MARK = "A reviewer has checked your answer"
+
+
+def judge_kind(schema: dict) -> str | None:
+    """The kind a judge request is for (by its criteria enum), or None when it is no judge request."""
+    try:
+        enum = schema["properties"]["verdicts"]["items"]["properties"]["failed"]["items"]["enum"]
+    except (KeyError, TypeError):
+        return None
+    return next((JUDGE_MARK[c] for c in enum if c in JUDGE_MARK), None)
+
+
+def clean(kind: str, a: dict, n: int) -> dict:
+    """fake()'s answer made to pass the code checks of the review (questions end with "?", the correct option not
+    the longest, a recap text of two sentences, puzzles with distinct items and no shared word)."""
+    if kind == "quiz":
+        for q in a["questions"]:
+            q["question"] += "?"
+            q["wrong"][0] = q["wrong"][0].replace("fake wrong", "fake wrong option")
+    elif kind == "recap":
+        a["text"] = f"The first sentence of summary {n}. The second sentence joins the ideas."
+    elif kind == "odd_one_out":
+        for j, it in enumerate(a["items"]):
+            it["group"] = [f"{w} thing {n}.{j}" for w in ("Alpha", "Beta", "Gamma")]
+            it["odd"] = f"Delta thing {n}.{j}"
+    return a
+
+
 def kind_of(schema: dict) -> str | None:
     p = schema.get("properties", {})
+    if "verdicts" in p:
+        return "judge"
     if "clues" in p:
         return "crossword"
     if "points" in p:
@@ -110,9 +142,17 @@ class ActivitiesFake(fk.KnowledgeFake):
         with self.lock:
             self.requests += 1
             n = self.requests
-        a = fake(fmt["schema"], "answer", n)
+        rewrite = any(REWRITE_MARK in (x.get("content") or "") for x in body["messages"][1:])
+        if kind == "judge":
+            kind = "judge_" + (judge_kind(fmt["schema"]) or "?")
+            content = self.judge(kind[6:], fmt["schema"], prompt, unit, lecture, attempt)
+            return self.reply(kind, unit, attempt, body, fmt, content, prompt)
+        a = clean(kind, fake(fmt["schema"], "answer", n), n)
         content = None
-        if kind == "quiz" and unit == "4/S1" and attempt == 0:
+        if rewrite:
+            if kind == "quiz" and unit == "4/S2":
+                a["questions"][0]["question"] = f"fake rewritten question {n}?"
+        elif kind == "quiz" and unit == "4/S1" and attempt == 0:
             a["questions"][0]["wrong"][0] = a["questions"][0]["correct"]
             a["questions"][1]["facts"] = [99]
         elif kind == "quiz" and unit == "5/S0":
@@ -128,19 +168,69 @@ class ActivitiesFake(fk.KnowledgeFake):
         elif kind == "put_in_order" and lecture == "3":
             a["items"] = a["items"][:1]
             a["items"][0]["facts"] = [1, len(re.findall(r"^\[\d+\]", prompt, re.M))]
-        elif kind == "crossword":
-            names = {int(i): nm for i, nm in ANSWER_LINE.findall(prompt)}
+        elif kind == "quiz" and unit == "3/S0":
+            a["questions"][0]["correct"] = "fake correct option that is very much longer than the others"
+        elif kind == "quiz" and unit == "6/S0":
+            a["questions"][1]["question"] = a["questions"][1]["question"].rstrip("?")
+        elif kind == "recap" and unit == "3/S0":
+            a["text"] = "Only one sentence here."
+        elif kind == "odd_one_out" and lecture == "4":
+            third = {"facts": [1], "group": ["Red apple", "Green apple", "Yellow apple"], "odd": "Banana",
+                     "reason": "A banana is no apple."}
+            a["items"] = [a["items"][0], dict(a["items"][0], odd="Epsilon thing"), third]
+            for it in a["items"][:2]:
+                it["group"] = [g.lower() for g in it["group"]]
+        elif kind == "put_in_order" and lecture == "4":
+            a["items"][0]["steps"][1] = "Then the second thing happens"
+        elif kind == "open_question" and lecture == "4":
+            a["questions"][0]["question"] = "What is the first thing, and why does it matter?"
+        if kind == "crossword":
+            names = {}
+            for i, nm in ANSWER_LINE.findall(prompt):     # the answers block comes before the prompt's example
+                names.setdefault(int(i), nm)
             for c in a["clues"]:
-                if names.get(c["number"]) == "rasterization" and attempt == 0:
-                    c["clue"] = "Rasterized output of a pipeline"
-                if names.get(c["number"]) == "ray tracing":
+                nm = names.get(c["number"])
+                if nm == "rasterization":
+                    c["clue"] = "Rasterized output of a pipeline" if attempt == 0 and not rewrite else \
+                        "Turning shapes into pixels."
+                if nm == "ray tracing":
                     c["clue"] = "Tracing of light paths"
+                if nm == "shader":
+                    c["clue"] = "The second of the four steps"
+                if nm == "texture mapping":
+                    c["clue"] = "Mappings for texturing"
+                if nm in ("polygon mesh", "depth buffer"):
+                    c["clue"] = "A structure of the synthetic notion"
         if content is None:
             content = json.dumps(a)
+        return self.reply(kind, unit, attempt, body, fmt, content, prompt)
+
+    def judge(self, kind: str, schema: dict, prompt: str, unit: str, lecture: str, attempt: int) -> str:
+        """All pass, except: quiz 4/S2 question 1 fails one_answer until rewritten; put_in_order 2 exercise 1 fails
+        real_sequence in both rounds; crossword 4's first answer contradicts itself in attempt 1 (judge retried);
+        odd_one_out 5 never JSON (no verdicts)."""
+        if kind == "odd_one_out" and lecture == "5":
+            return fk.NOT_JSON
+        v = schema["properties"]["verdicts"]
+        n = v["minItems"]
+        items = list(range(1, n)) + [0] if kind == "recap" else list(range(1, n + 1))
+        out = [{"item": i, "check": "C", "reason": "Fact 1 states it.", "failed": [], "pass": True} for i in items]
+        if kind == "quiz" and unit == "4/S2" and "fake rewritten question" not in prompt:
+            out[0].update(failed=["one_answer"], reason="R1: option B is also right by fact 2.", **{"pass": False})
+        if kind == "put_in_order" and lecture == "2":
+            out[0].update(failed=["real_sequence"], reason="R2: the facts state no order.", **{"pass": False})
+        if kind == "crossword" and lecture == "4" and attempt == 0:
+            out[0].update(failed=["readable"])
+        return json.dumps({"verdicts": out})
+
+    def reply(self, kind, unit, attempt, body, fmt, content, prompt) -> dict:
         with self.lock:
             if self.log:
                 with open(self.log, "a") as f:
-                    f.write(json.dumps({"kind": kind, "unit": unit, "attempt": attempt, "messages": body["messages"],
+                    f.write(json.dumps({"kind": kind, "unit": unit, "attempt": attempt,
+                                        "rewrite": any(REWRITE_MARK in (x.get("content") or "")
+                                                       for x in body["messages"][1:]),
+                                        "messages": body["messages"],
                                         "schema": fmt["schema"]}) + "\n")
         return {"choices": [{"message": {"content": content}, "finish_reason": "stop"}],
                 "usage": {"prompt_tokens": len(prompt) // 4, "completion_tokens": len(content) // 4}}
@@ -329,16 +419,59 @@ def test_s5(work: Path, log: Path):
     names = {e["concept"]: cards_ok[e["concept"]]["name"] for e in ents}
     check(len(ents) >= 6 and not grid_problems(cw["data"]), f"crossword of lecture 4: {len(ents)} answers, no "
           f"clashing letter, every entry inside the grid and crossing another")
-    check(all(e["answer"] == re.sub(r"[^A-Z]", "", names[e["concept"]].upper()) for e in ents)
-          and all(not s5.words_in(e["clue"], s5.term_words([names[e["concept"]]])) for e in ents)
-          and all(e["facts"] for e in ents), "crossword: answers are the names' letters, no clue writes a word of "
-                                             "its answer, every entry has facts")
     cl = lc["4"]["crossword"]["crossword:4"]
+    masked = set(cl["flags"].get("clue_masked", []))
+    check(all(e["answer"] == re.sub(r"[^A-Z]", "", names[e["concept"]].upper()) for e in ents)
+          and all(not s5.words_in(e["clue"], s5.term_words([names[e["concept"]]]))
+                  for i, e in enumerate(ents, 1) if i not in masked)
+          and all(e["facts"] for e in ents), "crossword: answers are the names' letters, no clue writes a word of "
+                                             "its answer (masked clues aside: flagged), every entry has facts")
     rt = next(e for e in ents if names[e["concept"]] == "ray tracing")
     check(cl["status"] == "unresolved" and "___" in rt["clue"] and len(cl["retry"]["problems"]) == 3
           and any("rasteriz" in m for m in cl["retry"]["problems"][0]),
           f"crossword: the clue with 'rasterized' retried, 'tracing' masked when unresolved ({rt['clue']})")
     print("    " + "\n    ".join(s5.render(cw, s5.Layer(kd))[:cw["data"]["height"]]), flush=True)
+
+    # the code checks of the review (2026-11-15, section 7): soft ones kept and flagged, hard ones dropped
+    def info(k, kind, key):
+        return lc[k][kind][key]
+    q3 = info("3", "quiz", "quiz:3/S0")
+    a3 = next(a for a in acts(out, "3") if a["kind"] == "quiz" and a["segment"] == "3/S0")
+    check(q3["status"] == "unresolved" and q3["flags"].get("correct_longest") == [1] and not q3.get("dropped")
+          and len(requests_of(log, "quiz", "3/S0")) == 3 and retried("quiz", "3/S0", "is clearly longer than every")
+          and len(a3["data"]["questions"]) >= 2,
+          "soft: quiz correct option clearly longest retried with feedback, kept and flagged correct_longest")
+    q6 = info("6", "quiz", "quiz:6/S0")
+    check([d["item"] for d in q6.get("dropped", [])] == [2] and "question mark" in q6["dropped"][0]["problems"][0],
+          "hard: a quiz question without '?' dropped after the retries")
+    check(all(not o.endswith(".") for a in every if a["kind"] == "quiz" for q in a["data"]["questions"]
+              for o in q["options"]), "quiz: no option ends with a full stop")
+    r3 = info("3", "recap", "recap:3/S0")
+    check(r3["status"] == "unresolved" and r3["flags"].get("text_length") == [0]
+          and any(a["kind"] == "recap" and a["segment"] == "3/S0" for a in acts(out, "3")),
+          "soft: a one-sentence recap text kept and flagged text_length (item 0, the text)")
+    o4 = info("4", "odd_one_out", "odd_one_out:4")
+    od4 = next(a for a in acts(out, "4") if a["kind"] == "odd_one_out")
+    check([d["item"] for d in o4.get("dropped", [])] == [2] and "the same items" in o4["dropped"][0]["problems"][0]
+          and o4["flags"].get("shared_word") == [2] and len(od4["data"]["items"]) == 2
+          and all(o[0].isupper() for it in od4["data"]["items"] for o in it["options"]),
+          "odd_one_out: the puzzle with the same items dropped (hard), the shared-word one flagged (soft), items "
+          "capitalised")
+    p4 = info("4", "put_in_order", "put_in_order:4")
+    u4 = next(r["unit"] for r in sent if r["kind"] == "put_in_order" and r["unit"].startswith("4/"))
+    check(p4["flags"].get("order_cue") == [1] and "three_steps" in p4["flags"] and "title_cue" in p4["flags"]
+          and retried("put_in_order", u4, "carries an order word or a year"),
+          "put_in_order: a step starting 'Then' retried and flagged order_cue; three_steps, title_cue reported")
+    q4 = info("4", "open_question", "open_question:4")
+    check(q4["flags"].get("two_questions") == [1], "open_question: 'X, and why Y?' flagged two_questions")
+    by_name = {names[e["concept"]]: (i, e) for i, e in enumerate(ents, 1)}
+    check(cl["flags"].get("clue_list_place") == [by_name["shader"][0]]
+          and max(by_name["depth buffer"][0], by_name["polygon mesh"][0]) in cl["flags"].get("clue_from_definition", [])
+          and any("have the same clue" in m for d in cl.get("dropped", []) for m in d["problems"])
+          and by_name["texture mapping"][1]["clue"].startswith("___ for texturing")
+          and not any(e["clue"].rsplit(" (", 1)[0].endswith(".") for e in ents),
+          "crossword: a list-place clue flagged, the second of two equal clues replaced from the definition, "
+          "masking only the name's own words ('texturing' kept), no clue ends with a full stop")
 
     # maps and pairs
     cm = next(a for a in acts(out, "4") if a["kind"] == "complete_map")

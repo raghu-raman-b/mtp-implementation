@@ -117,7 +117,7 @@ SCOPES = {"quiz": {"segment"}, "recap": {"segment"}, "put_in_order": {"segment",
 RECALL_CAP, PAIRS_CAP, BLANKS_CAP = 6, 8, 4
 CROSS_MAX, CROSS_MIN, CROSS_WANT, CROSS_CANDIDATES = 12, 4, 6, 14
 QUIZ_FACTS_CAP, OTHER_FACTS_CAP, RELATED_CAP, LECTURE_FACTS_CAP, EARLIER_CONCEPTS_CAP = 20, 12, 10, 60, 6
-CLUE_MAX_WORDS = 20
+CLUE_MAX_WORDS = 15
 
 
 def knowledge_dir(course: str) -> Path:
@@ -300,6 +300,55 @@ def fill(name: str, **values) -> str:
 # ---------------------------------------------------------------- shared checks
 ABOVE = re.compile(r"\b(?:all|none|both) of the (?:above|options|answers)\b", re.I)
 ORDER_CUE = re.compile(r"^\s*(?:first|firstly|then|next|finally|lastly|step\b|\d)", re.I)
+YEAR = re.compile(r"\b(?:1[5-9]\d\d|20\d\d)\b")
+PREVIOUS_STEP = re.compile(r"\bprevious step\b", re.I)
+TITLE_CUE = re.compile(r"\b(?:first|last)\b|\d", re.I)
+ORDER_WORD = re.compile(r"\b(?:first|then|after|before|next|follow\w*|order|steps?|stages?|sequence|finally|"
+                        r"subsequently|once|pipeline|phases?|until|later)\b", re.I)
+ABSOLUTE = re.compile(r"\b(?:only|always|never|all|none|must|cannot|solely|entirely)\b", re.I)
+TWO_QUESTIONS = re.compile(r",? and (how|why|what|which|when|where)\b", re.I)
+LIST_PLACE = [re.compile(x, re.I) for x in (
+    r"\bone of (?:the )?(?:\w+ )?(?:two|three|four|five|six|seven|eight|\d+)\b",
+    r"\b(?:first|second|third|fourth|fifth|sixth|last) (?:of|in) the\b", r"\blisted (?:first|last)\b")]
+POINTING = re.compile(r"\b(?:their|these|those|the above)\b", re.I)
+SOURCE_TALK = [re.compile(x, re.I) for x in (
+    r"\b(?:the|this) (?:segment|lecture|lecturer|instructor|video|transcript)\b",
+    r"\bthe facts? (?:state|say|place|show|list)s?\b", r"\baccording to the (?:lecture|segment|facts)\b",
+    r"\bas we (?:saw|discussed)\b", r"\bis (?:listed|identified) as\b")]
+ODD_STOP = STOP | set("that this with from than their have which what when where also more most other".split())
+
+
+# Soft checks (review of 2026-11-15, section 7): shown to the model like the others (retry), but an item that still
+# has the problem after the last attempt is kept and flagged in checks.json by the check's name (the judge decides).
+# They return (check, message) pairs; hard problems stay plain strings and drop the item.
+def source_talk(where: str, text: str) -> list[tuple[str, str]]:
+    for pat in SOURCE_TALK:
+        m = pat.search(text or "")
+        if m:
+            return [("source_talk", f'{where} has "{m[0]}", which speaks of the lecture or the facts. The learner '
+                                    f'never sees them: say it as a statement about the subject.')]
+    return []
+
+
+def sentences(text: str) -> list[str]:
+    return [x for x in re.split(r"(?<=[.!?])\s+", text.strip()) if x.strip()]
+
+
+def jaccard(a, b) -> float:
+    a, b = set(a), set(b)
+    return len(a & b) / len(a | b) if a | b else 0.0
+
+
+def flag_soft(flags: dict, soft: list[tuple[str, str]], pos):
+    for check, _ in soft:
+        lst = flags.setdefault(check, [])
+        if pos not in lst:
+            lst.append(pos)
+
+
+def strip_stop(s: str) -> str:
+    """One trailing full stop removed (options and clues end alike)."""
+    return s[:-1].rstrip() if s.endswith(".") and not s.endswith("..") else s
 
 
 def fact_problems(nums, n: int, least: int = 1, name: str = "facts") -> list[str]:
@@ -396,10 +445,10 @@ def quiz_unit(layer: Layer, course: str, k: str, sid: str, seed) -> Unit | None:
     others = sorted(others[:OTHER_FACTS_CAP], key=s4a.fact_order)
     material = ([concept_line(layer, c) for c in related] or ["(none)"]) + [""] + \
                ([f"- {layer.facts[f]['text']}" for f in others] or ["(no other facts)"])
-    u = Unit("quiz", k, sid, f"quiz:{sid}", {"shown": shown, "lo": lo, "hi": hi})
-    prompt = fill("quiz", course=course_meta.course_prompt(course), lecture_title=L["title"],
-                  subgoal=seg["subgoal"], facts="\n".join(numbered(shown, layer)), related="\n".join(material),
-                  count=count_text(lo, hi))
+    blocks = dict(course=course_meta.course_prompt(course), lecture_title=L["title"], subgoal=seg["subgoal"],
+                  facts="\n".join(numbered(shown, layer)), related="\n".join(material))
+    u = Unit("quiz", k, sid, f"quiz:{sid}", {"shown": shown, "lo": lo, "hi": hi, "blocks": blocks})
+    prompt = fill("quiz", **blocks, count=count_text(lo, hi))
     q = obj({"facts": nums_schema(n), "question": S, "correct": S, "wrong": arr(S, 3, 3), "explanation": S})
     u.request = request(u, prompt, obj({"questions": arr(q, lo, hi)}), seed)
     return u
@@ -411,6 +460,8 @@ def quiz_item(q, n: int) -> list[str]:
     p = []
     if not txt(q.get("question")):
         p.append("the question is empty.")
+    elif not txt(q.get("question")).endswith("?"):
+        p.append("write one full question that ends with a question mark, not a sentence to complete.")
     correct = txt(q.get("correct"))
     wrong = q.get("wrong") if isinstance(q.get("wrong"), list) else []
     if not correct:
@@ -431,6 +482,39 @@ def quiz_item(q, n: int) -> list[str]:
     return p
 
 
+def quiz_soft(q) -> list[tuple[str, str]]:
+    if not isinstance(q, dict):
+        return []
+    correct = txt(q.get("correct"))
+    wrong = [txt(w) for w in q.get("wrong")] if isinstance(q.get("wrong"), list) else []
+    out = []
+    if correct and wrong and all(wrong):
+        n, m = len(correct), max(len(w) for w in wrong)
+        if n > 1.2 * m and n - m >= 12:
+            out.append(("correct_longest", f"the correct option ({n} characters) is clearly longer than every wrong "
+                                           f"option (the longest has {m}). Cut it down to what the answer needs, or "
+                                           f"rewrite the wrong options to its length and shape: at least one wrong "
+                                           f"option must be as long as the correct one."))
+        absw = [j for j, w in enumerate(wrong, 1) if ABSOLUTE.search(w)]
+        if len(absw) >= 2 and not ABSOLUTE.search(correct):
+            out.append(("absolute_wrong", f"the wrong options {', '.join(map(str, absw))} are made false with "
+                                          f'"only", "always", "never" or the like, and the correct option has no '
+                                          f"such word. Replace them with options that are wrong in substance."))
+    for where, t in [("the question", q.get("question")), ("the correct option", correct)] + \
+            [(f"wrong option {j}", w) for j, w in enumerate(wrong, 1)] + [("the explanation", q.get("explanation"))]:
+        out += source_talk(where, txt(t))
+    return out
+
+
+def longest_share(qs: list[tuple[str, list[str]]]) -> tuple[list[int], int]:
+    """Over (correct, wrong options) per question: the questions (1-based) where the correct option is strictly the
+    longest, and how many of them must change to get to half; ([], 0) when at most half."""
+    longest = [i for i, (c, ws) in enumerate(qs, 1) if ws and len(c) > max(len(w) for w in ws)]
+    if len(qs) < 2 or 2 * len(longest) <= len(qs):
+        return [], 0
+    return longest, len(longest) - len(qs) // 2
+
+
 def quiz_problems(answer, ctx) -> list[str]:
     qs = items_of(answer, "questions")
     p = count_problem(qs, ctx["lo"], ctx["hi"], "questions")
@@ -439,11 +523,19 @@ def quiz_problems(answer, ctx) -> list[str]:
         p.append(f"Questions repeat: {rep}. Each question asks about a different point.")
     for i, q in enumerate(qs, 1):
         p += [f"Question {i}: {m}" for m in quiz_item(q, len(ctx["shown"]))]
+        p += [f"Question {i}: {m}" for _, m in quiz_soft(q)]
+    good = [(txt(q["correct"]), [txt(w) for w in q["wrong"]]) for q in qs
+            if isinstance(q, dict) and isinstance(q.get("wrong"), list) and txt(q.get("correct"))]
+    longest, k = longest_share(good)
+    if longest:
+        p.append(f"In questions {', '.join(map(str, longest))} the correct option is the longest of the four, so a "
+                 f"learner can score by picking the longest. In at least {k} of them make one wrong option as long "
+                 f"as the correct one or longer, or shorten the correct one.")
     return p
 
 
 def quiz_convert(answer, ctx, layer: Layer, unit: Unit):
-    shown, out, dropped, flags = ctx["shown"], [], [], {}
+    shown, out, dropped, flags, src = ctx["shown"], [], [], {}, []
     seen = set()
     for i, q in enumerate(items_of(answer, "questions"), 1):
         p = quiz_item(q, len(shown))
@@ -453,19 +545,30 @@ def quiz_convert(answer, ctx, layer: Layer, unit: Unit):
             dropped.append({"item": i, "problems": p})
             continue
         seen.add(norm(q["question"]))
-        opts = [txt(q["correct"])] + [txt(w) for w in q["wrong"]]
+        opts = [strip_stop(txt(q["correct"]))] + [strip_stop(txt(w)) for w in q["wrong"]]
         order = [0, 1, 2, 3]
         stable_rng(unit.key, q["question"]).shuffle(order)
         facts = ids_of(q["facts"], shown)
         out.append({"question": txt(q["question"]), "options": [opts[j] for j in order], "answer": order.index(0),
                     "explanation": txt(q["explanation"]), "facts": facts})
-        if len(opts[0]) > 20 and len(opts[0]) >= 1.5 * max(len(w) for w in opts[1:]):
-            flags.setdefault("correct_longest", []).append(len(out))
+        src.append(i)
+        flag_soft(flags, quiz_soft(q), len(out))
         words = set(content_tokens(opts[0]))
         if words and not words & {w for f in facts for w in content_tokens(layer.facts[f]["text"])}:
             flags.setdefault("correct_not_in_facts", []).append(len(out))
     if not out:
         return [], dropped, flags
+    pairs = [(q["options"][q["answer"]], [o for j, o in enumerate(q["options"]) if j != q["answer"]]) for q in out]
+    longest, _ = longest_share(pairs)
+    if longest:
+        flags["correct_longest_share"] = longest
+    for i, (_, ws) in enumerate(pairs, 1):           # report: wrong options that are other questions' keys
+        others = [set(content_tokens(c)) for j, (c, _) in enumerate(pairs, 1) if j != i]
+        hits = sum(1 for w in ws if len(set(content_tokens(w))) >= 5
+                   and any(len(o) >= 5 and jaccard(content_tokens(w), o) >= 0.6 for o in others))
+        if hits >= 2:
+            flags.setdefault("rotated_options", []).append(i)
+    ctx["_conv"] = {"src": src}
     facts = list(dict.fromkeys(f for q in out for f in q["facts"]))
     return [{"scope": "segment", "segment": unit.segment, "data": {"questions": out}, "facts": facts,
              "concepts": layer.fact_concepts(facts)}], dropped, flags
@@ -481,9 +584,10 @@ def recap_unit(layer: Layer, course: str, k: str, sid: str, seed) -> Unit | None
     lo, hi = min(2, n), min(5, max(2, n))
     objective = next((o["goal"] for o in L.get("objectives", []) if sid in o["segments"]), None) \
         or (L["goal"]["goal"] if L.get("goal") else "(none)")
-    u = Unit("recap", k, sid, f"recap:{sid}", {"shown": shown, "lo": lo, "hi": hi})
-    prompt = fill("recap", course=course_meta.course_prompt(course), lecture_title=L["title"], subgoal=seg["subgoal"],
-                  objective=objective, facts="\n".join(numbered(shown, layer)), count=count_text(lo, hi))
+    blocks = dict(course=course_meta.course_prompt(course), lecture_title=L["title"], subgoal=seg["subgoal"],
+                  objective=objective, facts="\n".join(numbered(shown, layer)))
+    u = Unit("recap", k, sid, f"recap:{sid}", {"shown": shown, "lo": lo, "hi": hi, "blocks": blocks})
+    prompt = fill("recap", **blocks, count=count_text(lo, hi))
     u.request = request(u, prompt, obj({"points": arr(obj({"facts": nums_schema(n), "point": S}), lo, hi),
                                         "text": S}), seed)
     return u
@@ -495,32 +599,70 @@ def recap_item(pt, n: int) -> list[str]:
     return (["the point is empty."] if not txt(pt.get("point")) else []) + fact_problems(pt.get("facts"), n)
 
 
+def point_soft(pt) -> list[tuple[str, str]]:
+    if not isinstance(pt, dict) or not txt(pt.get("point")):
+        return []
+    point, out = txt(pt["point"]), []
+    n = len(point.split())
+    if n > 28:
+        out.append(("point_long", f"has {n} words: one sentence of about twenty words at most, with one idea."))
+    return out + source_talk("the point", point)
+
+
+def text_soft(text: str, points: list[str]) -> list[tuple[str, str]]:
+    if not text:
+        return []
+    out, sents = [], sentences(text)
+    pw = [norm(x).split() for x in points]
+    same = [i for i, x in enumerate(sents, 1) if any(jaccard(norm(x).split(), w) >= 0.8 for w in pw)]
+    if sents and 2 * len(same) >= len(sents):
+        out.append(("text_repeats_points", f"The text repeats the points almost word for word (its sentences "
+                                           f"{', '.join(map(str, same))}). The text has another job: say what the "
+                                           f"segment is about as a whole and how the points connect."))
+    n, m = len(sents), len(text.split())
+    if not 2 <= n <= 4 or m > 90:
+        out.append(("text_length", f"The text has {n} sentences and {m} words: write two to four sentences."))
+    return out + source_talk("The text", text)
+
+
 def recap_problems(answer, ctx) -> list[str]:
     pts = items_of(answer, "points")
     p = count_problem(pts, ctx["lo"], ctx["hi"], "points")
-    if not txt(answer.get("text") if isinstance(answer, dict) else ""):
+    text = txt(answer.get("text") if isinstance(answer, dict) else "")
+    if not text:
         p.append('"text" is empty: write the summary.')
     for i, pt in enumerate(pts, 1):
         p += [f"Point {i}: {m}" for m in recap_item(pt, len(ctx["shown"]))]
+        p += [f"Point {i} {m}" if m.startswith("has ") else f"Point {i}: {m}" for _, m in point_soft(pt)]
+    p += [m for _, m in text_soft(text, [txt(pt.get("point")) for pt in pts if isinstance(pt, dict)])]
     return p
 
 
 def recap_convert(answer, ctx, layer: Layer, unit: Unit):
-    shown, pts, facts, dropped, flags = ctx["shown"], [], [], [], {}
+    shown, pts, facts, dropped, flags, src, pfacts = ctx["shown"], [], [], [], {}, [], []
     for i, pt in enumerate(items_of(answer, "points"), 1):
         p = recap_item(pt, len(shown))
         if p:
             dropped.append({"item": i, "problems": p})
             continue
         pts.append(txt(pt["point"]))
-        facts += ids_of(pt["facts"], shown)
+        src.append(i)
+        pfacts.append(ids_of(pt["facts"], shown))
+        facts += pfacts[-1]
+        flag_soft(flags, point_soft(pt), len(pts))
     text = txt(answer.get("text"))
     if not text or not pts:
         return [], dropped, flags
+    flag_soft(flags, text_soft(text, pts), 0)       # 0: the text
+    dup = [[i, j] for i in range(1, len(pts) + 1) for j in range(i + 1, len(pts) + 1)
+           if jaccard(content_tokens(pts[i - 1]), content_tokens(pts[j - 1])) >= 0.6]
+    if dup:
+        flags["duplicate_points"] = dup
     facts = list(dict.fromkeys(facts))
     left = [f for f in shown if f not in facts]
     if left:
         flags["facts_uncovered"] = left
+    ctx["_conv"] = {"src": src, "point_facts": pfacts}
     return [{"scope": "segment", "segment": unit.segment, "data": {"text": text, "points": pts}, "facts": facts,
              "concepts": layer.fact_concepts(facts)}], dropped, flags
 
@@ -561,12 +703,12 @@ def open_unit(layer: Layer, course: str, k: str, seed) -> Unit | None:
     clines = [f"- {n}" + (f" (from {s4a.lecture_label(layer.cards[c]['first_defined'])})" if c in earlier_c else "")
               for n, c in name_of.items()]
     lo, hi = 2, 4
-    u = Unit("open_question", k, None, f"open_question:{k}", {"shown": shown, "lo": lo, "hi": hi,
-                                                               "names": name_of, "earlier": earlier})
-    prompt = fill("open_question", course=course_meta.course_prompt(course), lecture_title=L["title"],
+    blocks = dict(course=course_meta.course_prompt(course), lecture_title=L["title"],
                   goal=L["goal"]["goal"] if L.get("goal") else "(none)", facts="\n".join(lines),
-                  relations="\n".join(relation_lines(layer, rids, num)) or "(none)", concepts="\n".join(clines),
-                  count=count_text(lo, hi))
+                  relations="\n".join(relation_lines(layer, rids, num)) or "(none)", concepts="\n".join(clines))
+    u = Unit("open_question", k, None, f"open_question:{k}", {"shown": shown, "lo": lo, "hi": hi,
+                                                               "names": name_of, "earlier": earlier, "blocks": blocks})
+    prompt = fill("open_question", **blocks, count=count_text(lo, hi))
     cschema = {"type": "array", "items": {"type": "string", "enum": list(name_of)} if name_of else S}
     q = obj({"key_facts": nums_schema(len(shown), 2), "question": S, "reference_answer": S, "concepts": cschema})
     u.request = request(u, prompt, obj({"questions": arr(q, lo, hi)}), seed)
@@ -588,6 +730,23 @@ def open_item(q, ctx) -> list[str]:
     return p
 
 
+def open_soft(q) -> list[tuple[str, str]]:
+    if not isinstance(q, dict):
+        return []
+    question, ref, out = txt(q.get("question")), txt(q.get("reference_answer")), []
+    m = TWO_QUESTIONS.search(question)
+    if question.count("?") > 1:
+        out.append(("two_questions", f"asks two things (it has {question.count('?')} question marks). Ask one of "
+                                     f"them."))
+    elif m:
+        out.append(("two_questions", f'asks two things ("... and {m[1].lower()} ..."). Ask one of them.'))
+    n, ns = len(ref.split()), len(sentences(ref)) if ref else 0
+    if n > 100 or ns > 4:
+        out.append(("reference_long", f"the reference answer has {n} words. Give the direct answer first and the "
+                                      f"support after it, in two to four sentences of about eighty words in all."))
+    return out + source_talk("the question", question) + source_talk("the reference answer", ref)
+
+
 def open_problems(answer, ctx) -> list[str]:
     qs = items_of(answer, "questions")
     p = count_problem(qs, ctx["lo"], ctx["hi"], "questions")
@@ -596,11 +755,12 @@ def open_problems(answer, ctx) -> list[str]:
         p.append(f"Questions repeat: {rep}. Each question asks about a different point.")
     for i, q in enumerate(qs, 1):
         p += [f"Question {i}: {m}" for m in open_item(q, ctx)]
+        p += [f"Question {i} {m}" if m.startswith("asks ") else f"Question {i}: {m}" for _, m in open_soft(q)]
     return p
 
 
 def open_convert(answer, ctx, layer: Layer, unit: Unit):
-    shown, out, dropped, flags = ctx["shown"], [], [], {}
+    shown, out, dropped, flags, src = ctx["shown"], [], [], {}, []
     for i, q in enumerate(items_of(answer, "questions"), 1):
         p = open_item(q, ctx)
         if p:
@@ -610,6 +770,12 @@ def open_convert(answer, ctx, layer: Layer, unit: Unit):
         concepts = list(dict.fromkeys(ctx["names"][c] for c in q.get("concepts") or [])) or layer.fact_concepts(facts)
         out.append({"question": txt(q["question"]), "reference_answer": txt(q["reference_answer"]),
                     "key_facts": facts, "concepts": concepts})
+        src.append(i)
+        flag_soft(flags, open_soft(q), len(out))
+        ref = set(content_tokens(out[-1]["reference_answer"]))
+        if any(len(set(content_tokens(layer.facts[f]["text"])) & ref) < 3 for f in facts):
+            flags.setdefault("key_fact_unused", []).append(len(out))
+    ctx["_conv"] = {"src": src}
     if not out:
         return [], dropped, flags
     facts = list(dict.fromkeys(f for q in out for f in q["key_facts"]))
@@ -630,12 +796,13 @@ def odd_unit(layer: Layer, course: str, k: str, seed) -> Unit | None:
         return None
     num = {f: i for i, f in enumerate(shown, 1)}
     names = {norm(x) for c in L["concept_map"]["concepts"] if c in layer.cards for x in layer.names(c)}
-    u = Unit("odd_one_out", k, None, f"odd_one_out:{k}", {"shown": shown, "names": names})
-    prompt = fill("odd_one_out", course=course_meta.course_prompt(course), lecture_title=L["title"],
+    blocks = dict(course=course_meta.course_prompt(course), lecture_title=L["title"],
                   concepts="\n".join(concept_line(layer, c, 20) for c in L["concept_map"]["concepts"]
                                      if c in layer.cards) or "(none)",
                   relations="\n".join(relation_lines(layer, L["concept_map"]["relations"], num)) or "(none)",
                   facts="\n".join(numbered(shown, layer)))
+    u = Unit("odd_one_out", k, None, f"odd_one_out:{k}", {"shown": shown, "names": names, "blocks": blocks})
+    prompt = fill("odd_one_out", **blocks)
     item = obj({"facts": nums_schema(len(shown)), "group": arr(S, 3, 3), "odd": S, "reason": S})
     u.request = request(u, prompt, obj({"items": arr(item, 0, 3)}), seed)
     return u
@@ -659,29 +826,77 @@ def odd_item(it, n: int) -> list[str]:
     return p + fact_problems(it.get("facts"), n)
 
 
+def odd_soft(it) -> list[tuple[str, str]]:
+    if not isinstance(it, dict) or not isinstance(it.get("group"), list) or len(it["group"]) != 3:
+        return []
+    group, odd = [txt(g) for g in it["group"]], txt(it.get("odd"))
+    out = []
+    if all(group) and odd:
+        words = lambda x: {w for w in re.findall(r"[a-z]+", x.lower()) if len(w) >= 4 and w not in ODD_STOP}  # noqa
+        shared = sorted(words(group[0]) & words(group[1]) & words(group[2]) - words(odd))
+        if shared:
+            out.append(("shared_word", f'the three group items all contain "{shared[0]}" and the odd item does not, '
+                                       f"so its form gives it away. Choose an odd item that carries the word too, or "
+                                       f"use another group."))
+        hi, lo = max(map(len, group)), min(map(len, group))
+        if len(odd) > 1.5 * hi and len(odd) - hi >= 8:
+            out.append(("length_tell", "the odd item is much longer than the three others. Write the four items "
+                                       "alike."))
+        elif len(odd) < 0.5 * lo and lo - len(odd) >= 8:
+            out.append(("length_tell", "the odd item is much shorter than the three others. Write the four items "
+                                       "alike."))
+    return out + source_talk("the reason", txt(it.get("reason")))
+
+
+def odd_same_items(its: list) -> dict[int, str]:
+    """Hard: a later puzzle (1-based) that shares three or four items with an earlier one -> its problem."""
+    sets, out = {}, {}
+    for j, it in enumerate(its, 1):
+        if not isinstance(it, dict) or not isinstance(it.get("group"), list):
+            continue
+        cur = {norm(txt(x)) for x in it["group"] + [it.get("odd")]} - {""}
+        for i, prev in sets.items():
+            if len(cur & prev) >= 3:
+                out[j] = (f"Puzzles {i} and {j} show the same items with a different odd one. Use another group for "
+                          f"puzzle {j}.")
+                break
+        sets[j] = cur
+    return out
+
+
 def odd_problems(answer, ctx) -> list[str]:
     its = items_of(answer, "items")
     p = count_problem(its, 0, 3, "puzzles")
     for i, it in enumerate(its, 1):
         p += [f"Puzzle {i}: {m}" for m in odd_item(it, len(ctx["shown"]))]
-    return p
+        p += [f"Puzzle {i}: {m}" for _, m in odd_soft(it)]
+    return p + list(odd_same_items(its).values())
+
+
+def capital(s: str) -> str:
+    return s[:1].upper() + s[1:]
 
 
 def odd_convert(answer, ctx, layer: Layer, unit: Unit):
-    shown, out, dropped, flags = ctx["shown"], [], [], {}
-    for i, it in enumerate(items_of(answer, "items"), 1):
-        p = odd_item(it, len(shown))
+    shown, out, dropped, flags, src = ctx["shown"], [], [], {}, []
+    its = items_of(answer, "items")
+    same = odd_same_items(its)
+    for i, it in enumerate(its, 1):
+        p = odd_item(it, len(shown)) + ([same[i]] if i in same else [])
         if p:
             dropped.append({"item": i, "problems": p})
             continue
-        opts = [txt(g) for g in it["group"]] + [txt(it["odd"])]
+        opts = [capital(txt(g)) for g in it["group"]] + [capital(txt(it["odd"]))]
         order = [0, 1, 2, 3]
         stable_rng(unit.key, *opts).shuffle(order)
         out.append({"options": [opts[j] for j in order], "odd": order.index(3), "reason": txt(it["reason"]),
                     "facts": ids_of(it["facts"], shown)})
+        src.append(i)
+        flag_soft(flags, odd_soft(it), len(out))
         unknown = [o for o in opts if norm(o) not in ctx["names"]]
         if unknown:
             flags.setdefault("not_a_concept", []).extend(unknown)
+    ctx["_conv"] = {"src": src}
     if not out:
         return [], dropped, flags
     facts = list(dict.fromkeys(f for it in out for f in it["facts"]))
@@ -702,9 +917,9 @@ def order_unit(layer: Layer, course: str, k: str, seed) -> Unit | None:
             lines += [f"Segment {j}: {seg['subgoal']}"] + numbered(fs, layer, start=i) + [""]
             i += len(fs)
     shown = [f for seg in L["segments"].values() for f in seg["facts"] if f in shown]
-    u = Unit("put_in_order", k, None, f"put_in_order:{k}", {"shown": shown})
-    prompt = fill("put_in_order", course=course_meta.course_prompt(course), lecture_title=L["title"],
-                  facts="\n".join(lines).strip())
+    blocks = dict(course=course_meta.course_prompt(course), lecture_title=L["title"], facts="\n".join(lines).strip())
+    u = Unit("put_in_order", k, None, f"put_in_order:{k}", {"shown": shown, "blocks": blocks})
+    prompt = fill("put_in_order", **blocks)
     item = obj({"facts": nums_schema(len(shown)), "title": S, "steps": arr(S, 3, 8)})
     u.request = request(u, prompt, obj({"items": arr(item, 0, 2)}), seed)
     return u
@@ -725,11 +940,25 @@ def order_item(it, n: int) -> list[str]:
     return p + fact_problems(it.get("facts"), n)
 
 
+def order_soft(it) -> list[tuple[str, str]]:
+    if not isinstance(it, dict):
+        return []
+    steps = [txt(x) for x in it.get("steps")] if isinstance(it.get("steps"), list) else []
+    out = [("order_cue", f'the step "{x}" carries an order word or a year, which sorts it without understanding. Say '
+                         f"what happens in the step without it.")
+           for x in steps if x and (ORDER_CUE.match(x) or YEAR.search(x) or PREVIOUS_STEP.search(x))]
+    out += source_talk("the title", txt(it.get("title")))
+    for j, x in enumerate(steps, 1):
+        out += source_talk(f"step {j}", x)
+    return out
+
+
 def order_problems(answer, ctx) -> list[str]:
     its = items_of(answer, "items")
     p = count_problem(its, 0, 2, "exercises")
     for i, it in enumerate(its, 1):
         p += [f"Exercise {i}: {m}" for m in order_item(it, len(ctx["shown"]))]
+        p += [f"Exercise {i}: {m}" for _, m in order_soft(it)]
     return p
 
 
@@ -744,16 +973,25 @@ def order_convert(answer, ctx, layer: Layer, unit: Unit):
         steps = [txt(s) for s in it["steps"]]
         segs = {layer.facts[f]["segment"] for f in facts}
         where = segs.pop() if len(segs) == 1 else None
-        groups.setdefault(where, []).append({"title": txt(it["title"]), "steps": steps, "facts": facts})
-        cues = [s for s in steps if ORDER_CUE.match(s)]
-        if cues:
-            flags.setdefault("order_cue", []).extend(cues)
-    out = []
-    for where, items in groups.items():
+        groups.setdefault(where, []).append(({"title": txt(it["title"]), "steps": steps, "facts": facts}, i, it))
+    out, src = [], []
+    for where, items in groups.items():           # judge numbering: the items in this order, 1-based
+        for item, i, it in items:
+            src.append(i)
+            pos = len(src)
+            flag_soft(flags, order_soft(it), pos)
+            if TITLE_CUE.search(item["title"]):
+                flags.setdefault("title_cue", []).append(pos)
+            if not any(ORDER_WORD.search(layer.facts[f]["text"]) for f in item["facts"]):
+                flags.setdefault("no_order_word", []).append(pos)
+            if len(item["steps"]) == 3:
+                flags.setdefault("three_steps", []).append(pos)
+        items = [x[0] for x in items]
         facts = list(dict.fromkeys(f for it in items for f in it["facts"]))
         out.append({"scope": "segment" if where else "lecture", "segment": where,
                     "title": items[0]["title"] if len(items) == 1 else None,
                     "data": {"items": items}, "facts": facts, "concepts": layer.fact_concepts(facts)})
+    ctx["_conv"] = {"src": src}
     return out, dropped, flags
 
 
@@ -887,8 +1125,9 @@ def crossword_unit(layer: Layer, course: str, k: str, seed) -> Unit | None:
         c = layer.cards[e["concept"]]
         other = ", ".join(x for x in layer.names(e["concept"]) if x != c["name"]) or "none"
         lines.append(f"[{i}] {c['name']} (other names: {other}). Definition: {c['definition'].strip()}")
-    prompt = fill("crossword", course=course_meta.course_prompt(course), lecture_title=layer.lectures[k]["title"],
-                  answers="\n".join(lines))
+    u.ctx["blocks"] = dict(course=course_meta.course_prompt(course), lecture_title=layer.lectures[k]["title"],
+                           answers="\n".join(lines))
+    prompt = fill("crossword", **u.ctx["blocks"])
     n = len(entries)
     clue = obj({"number": {"type": "integer", "minimum": 1, "maximum": n}, "clue": S})
     u.request = request(u, prompt, obj({"clues": arr(clue, n, n)}), seed)
@@ -914,6 +1153,32 @@ def clue_item(cl, ctx) -> list[str]:
     return p
 
 
+def clue_soft(cl) -> list[tuple[str, str]]:
+    clue = txt(cl.get("clue")) if isinstance(cl, dict) else ""
+    out = []
+    for pat in LIST_PLACE:
+        m = pat.search(clue)
+        if m:
+            out.append(("clue_list_place", f'"{m[0]}" only says where the answer stands in a list. Say what the thing '
+                                           f"is or does."))
+            break
+    return out + source_talk("the clue", clue)
+
+
+def clue_same(cls: list) -> dict[int, str]:
+    """Hard: an answer (its number) whose clue is the same as an earlier answer's -> its problem."""
+    seen, out = {}, {}
+    for cl in cls:
+        if not isinstance(cl, dict) or not isinstance(cl.get("number"), int) or not norm(txt(cl.get("clue"))):
+            continue
+        key, j = norm(strip_stop(txt(cl["clue"]))), cl["number"]
+        if key in seen and seen[key] != j:
+            out.setdefault(j, f"Answers {seen[key]} and {j} have the same clue. Give each the detail that tells it "
+                              f"apart from the other.")
+        seen.setdefault(key, j)
+    return out
+
+
 def crossword_problems(answer, ctx) -> list[str]:
     cls = items_of(answer, "clues")
     n = len(ctx["grid"]["entries"])
@@ -926,33 +1191,53 @@ def crossword_problems(answer, ctx) -> list[str]:
     if twice:
         p.append(f"The answers {twice} have more than one clue: write one clue per answer.")
     for j, cl in enumerate(cls, 1):
-        p += [f"Clue {cl.get('number', j) if isinstance(cl, dict) else j}: {m}" for m in clue_item(cl, ctx)]
-    return p
+        w = f"Clue {cl.get('number', j) if isinstance(cl, dict) else j}"
+        p += [f"{w}: {m}" for m in clue_item(cl, ctx)]
+        p += [f"{w}: {m}" for _, m in clue_soft(cl)]
+    return p + list(clue_same(cls).values())
+
+
+def mask_name(clue: str, name: str) -> str:
+    """The answer's own name and its plain forms (plural, "-ed", "-ing") replaced by "___"; not its other names and
+    not longer words built on a word of it (the code check rejects those, the judge reads the clue)."""
+    clue = mask_terms(clue, [name])
+    for w in sorted({w for w in norm(name).split() if w not in STOP}, key=len, reverse=True):
+        clue = re.sub(r"(?i)(?<![A-Za-z0-9])" + re.escape(w) + r"(?:s|es|d|ed|ing)?(?![A-Za-z0-9])", "___", clue)
+    return clue
 
 
 def crossword_convert(answer, ctx, layer: Layer, unit: Unit):
     grid, dropped, flags = ctx["grid"], [], {}
     clues = {}
-    for j, cl in enumerate(items_of(answer, "clues"), 1):
+    cls = items_of(answer, "clues")
+    same = clue_same(cls)
+    for j, cl in enumerate(cls, 1):
         p = clue_item(cl, ctx)
         i = cl.get("number") if isinstance(cl, dict) else None
+        if isinstance(i, int) and i in same:
+            p.append(same[i])
         if p and isinstance(i, int) and 1 <= i <= len(grid["entries"]) and txt(cl.get("clue")) \
                 and all(m.startswith("the clue writes") or m.startswith("the clue has") for m in p):
-            names = layer.names(grid["entries"][i - 1]["concept"])
-            masked = cap_words(mask_words(txt(cl["clue"]), names, ctx["words"][i - 1]), CLUE_MAX_WORDS)
-            clues.setdefault(i, masked)
+            name = layer.cards[grid["entries"][i - 1]["concept"]]["name"]
+            masked = cap_words(mask_name(strip_stop(txt(cl["clue"])), name), CLUE_MAX_WORDS)
+            if i not in clues:
+                clues[i] = masked
+                flag_soft(flags, clue_soft(cl), i)
             flags.setdefault("clue_masked", []).append(i)
         elif p:
             dropped.append({"item": j, "problems": p})
-        else:
-            clues.setdefault(i, txt(cl["clue"]))
+        elif i not in clues:
+            clues[i] = strip_stop(txt(cl["clue"]))
+            flag_soft(flags, clue_soft(cl), i)
     entries = []
     for i, e in enumerate(grid["entries"], 1):
         c = layer.cards[e["concept"]]
         clue = clues.get(i)
         if clue is None:
-            clue = short_definition(c["definition"], layer.names(e["concept"]), 15)
+            clue = strip_stop(short_definition(c["definition"], layer.names(e["concept"]), 15))
             flags.setdefault("clue_from_definition", []).append(i)
+        if POINTING.search(clue):
+            flags.setdefault("clue_points", []).append(i)
         entries.append({"number": e["number"], "answer": e["answer"], "clue": f"{clue} {enumeration(c['name'])}",
                         "row": e["row"], "col": e["col"], "direction": e["direction"], "concept": e["concept"],
                         "facts": layer.definition_facts(e["concept"])})
@@ -960,6 +1245,7 @@ def crossword_convert(answer, ctx, layer: Layer, unit: Unit):
         flags["small"] = len(entries)
     if ctx["filled"]:
         flags["filled_from_used"] = True
+    ctx["_conv"] = {"src": list(range(1, len(entries) + 1))}
     concepts = [e["concept"] for e in entries]
     facts = list(dict.fromkeys(f for c in concepts for f in layer.definition_facts(c)))
     return [{"scope": "lecture", "segment": None, "data": {"width": grid["width"], "height": grid["height"],
@@ -974,6 +1260,165 @@ PROBLEMS = {"quiz": quiz_problems, "recap": recap_problems, "open_question": ope
             "odd_one_out": odd_problems, "put_in_order": order_problems, "crossword": crossword_problems}
 CONVERT = {"quiz": quiz_convert, "recap": recap_convert, "open_question": open_convert, "odd_one_out": odd_convert,
            "put_in_order": order_convert, "crossword": crossword_convert}
+
+
+# ---------------------------------------------------------------- the judge (--judge, --judge-rewrite)
+# One call per unit (the writer's units) after the code checks, with prompts/activity_judge_<kind>.txt: the writer's
+# blocks (same fact numbers) and the items as they came out of *_convert, numbered 1.. in that order (recap: the
+# points, and 0 for the text). On a fail and with --judge-rewrite: one rewrite (the writer's conversation goes on with
+# its kept answer and prompts/activity_rewrite.txt, {problems} one line per failed item with the judge's reason, in the
+# writer's numbering), the code checks again (the client's retry loop), the judge once more; the rewrite is kept only
+# when it is judged with strictly fewer failed items. Nothing is dropped on a verdict: items that still fail are kept
+# and flagged "judge_failed" (the judge is to be measured first, review section 8).
+JUDGE_CRITERIA = {
+    "quiz": ["answerable", "one_answer", "no_giveaway", "worth_asking", "clear", "no_source_talk"],
+    "recap": ["supported", "faithful", "stands_alone", "clear", "no_source_talk", "one_idea", "summary", "coverage"],
+    "put_in_order": ["in_facts", "real_sequence", "one_order", "no_giveaway", "worth_doing", "clear", "no_source_talk"],
+    "odd_one_out": ["in_facts", "real_group", "near_miss", "one_answer", "no_giveaway", "clear", "no_source_talk"],
+    "open_question": ["answerable", "answers_question", "open", "one_thread", "no_giveaway", "clear",
+                      "no_source_talk"],
+    "crossword": ["from_text", "leads_to_answer", "unique", "no_giveaway", "readable", "no_source_talk"]}
+JUDGE_ITEMS = {"quiz": "questions", "recap": "recap", "put_in_order": "exercises", "odd_one_out": "puzzles",
+               "open_question": "questions", "crossword": "clues"}
+JUDGE_LABEL = {"quiz": "Question", "recap": "Point", "put_in_order": "Exercise", "odd_one_out": "Puzzle",
+               "open_question": "Question", "crossword": "Clue"}
+
+
+def _nums(fids: list[str], shown: list[str]) -> str:
+    num = {f: i for i, f in enumerate(shown, 1)}
+    return ", ".join(str(num[f]) for f in fids if f in num)
+
+
+def judge_items(unit: Unit, acts: list[dict], conv: dict, layer: Layer) -> list[tuple[int, str, str]]:
+    """[(item number, its block for the judge prompt, a short text for checks.json)] in judge order."""
+    shown, kind, out = unit.ctx.get("shown", []), unit.kind, []
+    if kind == "quiz":
+        for j, q in enumerate(acts[0]["data"]["questions"], 1):
+            lines = [f"Question {j} (cites facts {_nums(q['facts'], shown)})", q["question"]]
+            lines += [f"{'ABCD'[x]}. {o}" for x, o in enumerate(q["options"])]
+            lines += [f"Marked correct: {'ABCD'[q['answer']]}", f"Explanation: {q['explanation']}"]
+            out.append((j, "\n".join(lines), q["question"]))
+    elif kind == "recap":
+        d, pf = acts[0]["data"], conv.get("point_facts") or []
+        for j, pt in enumerate(d["points"], 1):
+            fs = pf[j - 1] if j - 1 < len(pf) else []
+            out.append((j, f"Point {j} (cites facts {_nums(fs, shown)}): {pt}", pt))
+        out.append((0, f"Text: {d['text']}", d["text"]))
+    elif kind == "put_in_order":
+        j = 0
+        for a in acts:
+            for it in a["data"]["items"]:
+                j += 1
+                lines = [f"Exercise {j} (cites facts {_nums(it['facts'], shown)})", f"Title: {it['title']}"]
+                lines += [f"{x}. {st}" for x, st in enumerate(it["steps"], 1)]
+                out.append((j, "\n".join(lines), it["title"]))
+    elif kind == "odd_one_out":
+        for j, it in enumerate(acts[0]["data"]["items"], 1):
+            lines = [f"Puzzle {j} (cites facts {_nums(it['facts'], shown)})"] + [f"- {o}" for o in it["options"]]
+            lines += [f"Marked as odd: {it['options'][it['odd']]}", f"Reason: {it['reason']}"]
+            out.append((j, "\n".join(lines), " | ".join(it["options"])))
+    elif kind == "open_question":
+        for j, q in enumerate(acts[0]["data"]["questions"], 1):
+            lines = [f"Question {j} (key facts {_nums(q['key_facts'], shown)})", f"Question: {q['question']}",
+                     f"Reference answer: {q['reference_answer']}"]
+            out.append((j, "\n".join(lines), q["question"]))
+    elif kind == "crossword":
+        for j, e in enumerate(acts[0]["data"]["entries"], 1):
+            name = layer.cards[e["concept"]]["name"]
+            enum = enumeration(name)
+            clue = e["clue"][:-len(enum) - 1] if e["clue"].endswith(" " + enum) else e["clue"]
+            out.append((j, f"[{j}] {name} {enum}: {clue}", f"{name}: {clue}"))
+    return out
+
+
+def judge_problems(answer, expect: list[int], crit: list[str]) -> list[str]:
+    vs = items_of(answer, "verdicts")
+    got = [v.get("item") for v in vs if isinstance(v, dict)]
+    p = []
+    missing = [i for i in expect if i not in got]
+    extra = sorted({i for i in got if i not in expect}, key=str)
+    twice = sorted({i for i in got if got.count(i) > 1 and i in expect})
+    if missing:
+        p.append(f"No verdict for the items {missing}: give one verdict per item.")
+    if extra:
+        p.append(f"Verdicts for {extra}, which are not items: use the item numbers given.")
+    if twice:
+        p.append(f"The items {twice} have more than one verdict: give one verdict per item.")
+    for v in vs:
+        if not isinstance(v, dict):
+            p.append("A verdict is not an object.")
+            continue
+        i, failed = v.get("item"), v.get("failed") if isinstance(v.get("failed"), list) else []
+        bad = [c for c in failed if c not in crit]
+        if bad:
+            p.append(f'Item {i}: "failed" has {bad}, not criteria: use only {", ".join(crit)}.')
+        if v.get("pass") is not (not failed):
+            p.append(f'Item {i}: "pass" is {json.dumps(v.get("pass"))} and "failed" is {json.dumps(failed)}: '
+                     f'"pass" is true exactly when "failed" is empty.')
+        if failed and not txt(v.get("reason")):
+            p.append(f'Item {i}: it fails {failed} but "reason" is empty: say what is wrong.')
+    return p
+
+
+def judge_request(unit: Unit, items: list[tuple[int, str, str]], rnd: int, seed) -> Request:
+    template = (PROMPTS / f"activity_judge_{unit.kind}.txt").read_text()
+    values = {k: v for k, v in unit.ctx["blocks"].items() if "{" + k + "}" in template}
+    values[JUDGE_ITEMS[unit.kind]] = "\n\n".join(b for _, b, _ in items)
+    prompt = s4a.fill(template, **values)
+    expect, crit = [i for i, _, _ in items], JUDGE_CRITERIA[unit.kind]
+    v = obj({"item": {"type": "integer", "minimum": min(expect), "maximum": max(expect)}, "check": S, "reason": S,
+             "failed": {"type": "array", "items": {"type": "string", "enum": crit}}, "pass": {"type": "boolean"}})
+    return Request(prompt=prompt, key=f"judge{rnd}:{unit.key}", schema=obj({"verdicts": arr(v, len(items), len(items))}),
+                   check=lambda a, e=expect, c=crit: judge_problems(a, e, c), feedback=True,
+                   sampling={} if seed is None else {"seed": seed},
+                   meta={"kind": unit.kind, "lecture": unit.lecture, "segment": unit.segment, "judge": rnd})
+
+
+def judge_round(res, items: list[tuple[int, str, str]]) -> dict:
+    """The judge's answer as recorded in checks.json: status, verdicts in item order, the failed items."""
+    rnd = {}
+    if res.history:
+        rnd["retry"] = {"attempts": res.attempts, "problems": [h["errors"] for h in res.history]}
+    if not s4a.answered(res):
+        rnd.update(status="no_answer", problems=res.errors)
+        return rnd
+    rnd["status"] = "ok" if res.ok else "unresolved"
+    if not res.ok:
+        rnd["problems"] = res.errors
+    by = {}
+    for v in items_of(res.parsed, "verdicts"):
+        if isinstance(v, dict):
+            by.setdefault(v.get("item"), v)
+    verdicts = []
+    for i, _, about in items:
+        v = by.get(i)
+        if v is None:
+            verdicts.append({"item": i, "about": short(about, 14), "missing": True})
+            continue
+        failed = [c for c in v.get("failed") or [] if isinstance(c, str)]
+        ok = not failed and v.get("pass") is not False
+        verdicts.append({"item": i, "about": short(about, 14), "pass": ok, "failed": failed,
+                         "check": txt(v.get("check")), "reason": txt(v.get("reason"))})
+    rnd["verdicts"] = verdicts
+    rnd["failed_items"] = [v["item"] for v in verdicts if v.get("pass") is False]
+    return rnd
+
+
+def rewrite_request(unit: Unit, res, rnd: dict, conv: dict) -> Request:
+    src, label = conv.get("src") or [], JUDGE_LABEL[unit.kind]
+    lines = []
+    for v in rnd["verdicts"]:
+        if v.get("pass") is not False:
+            continue
+        i = v["item"]
+        who = "The text" if unit.kind == "recap" and i == 0 else \
+            f"{label} {src[i - 1] if 0 < i <= len(src) else i}"
+        lines.append(f"{who} ({', '.join(v['failed']) or 'failed'}): {v['reason'] or 'no reason given'}")
+    msg = s4a.fill((PROMPTS / "activity_rewrite.txt").read_text(), problems="\n".join(lines))
+    r0 = unit.request
+    return Request(prompt=r0.prompt, key=f"rewrite:{unit.key}", schema=r0.schema, check=r0.check, feedback=True,
+                   sampling=dict(r0.sampling), meta={**r0.meta, "rewrite": True},
+                   followup=[{"role": "assistant", "content": res.content}, {"role": "user", "content": msg}])
 
 
 # ---------------------------------------------------------------- code-made kinds
@@ -1407,16 +1852,44 @@ def render(a: dict, layer: Layer) -> list[str]:
     return out
 
 
+def judge_lines(j: dict | None) -> list[str]:
+    """The judge's verdicts under the activity: every round, each item with its check and reason."""
+    if not j:
+        return []
+    out = []
+    for r, rnd in enumerate(j["rounds"], 1):
+        head = f"  judge round {r}" + (f" (rewrite, {j['rewrite']['status']})" if r == 2 else "")
+        if rnd["status"] == "no_answer":
+            out.append(f"{head}: no answer")
+            continue
+        out.append(f"{head}: {len(rnd['failed_items'])} of {len(rnd['verdicts'])} failed"
+                   + (f"; unresolved: {' | '.join(rnd['problems'])}" if rnd.get("problems") else ""))
+        for v in rnd["verdicts"]:
+            if v.get("missing"):
+                out.append(f"    {v['item']} no verdict  ({v['about']})")
+                continue
+            out.append(f"    {v['item']} {'pass' if v['pass'] else 'FAIL ' + ','.join(v['failed'])}  ({v['about']})")
+            out.append(f"      check: {v['check']}")
+            out.append(f"      reason: {v['reason']}")
+    if "rewrite" in j and len(j["rounds"]) == 1:
+        out.append(f"  rewrite: {j['rewrite']['status']} (not judged again)")
+    out.append(f"  judge kept: {j['kept']}" + (f"; still failing: {j['failed_items']}" if j.get("failed_items") else ""))
+    return out
+
+
 def write_text(od: Path, layer: Layer, checks: dict):
     lines = []
     for p in lec.files(od):
         k = lec.key_of(p.stem)
         d = json.loads(p.read_text())
         lines += [f"===== lecture {k}: {layer.lectures.get(k, {}).get('title', '')}", ""]
+        judged = {info["activity"]: info["judge"] for units in checks.get("lectures", {}).get(k, {}).values()
+                  for info in units.values() if info.get("judge") and info.get("activity")}
         for a in d["activities"]:
             lines.append(f"{a['id']}  {a['kind']}  {a['segment'] or 'lecture'}  \"{a['title']}\"  "
                          f"({len(a['facts'])} facts, {len(a['concepts'])} concepts)")
             lines += render(a, layer)
+            lines += judge_lines(judged.get(a["id"]))
             lines.append("")
         for kind, units in checks.get("lectures", {}).get(k, {}).items():
             for key, info in units.items():
@@ -1447,7 +1920,9 @@ def sort_key(a: dict, segs: list[str]) -> tuple:
 
 
 def run(course: str, llm: LLM | None, only: list[str] | None = None, kinds: list[str] | None = None,
-        seed: int | None = None, out: Path | None = None, kd: Path | None = None) -> dict:
+        seed: int | None = None, out: Path | None = None, kd: Path | None = None, judge: bool = False,
+        rewrite: bool = False, judge_llm: LLM | None = None) -> dict:
+    judge = judge or rewrite
     layer = Layer(Path(kd) if kd else knowledge_dir(course))
     kinds = list(kinds or KINDS)
     keys = [k for k in layer.keys if k in layer.lectures and (not only or k in only)]
@@ -1478,6 +1953,7 @@ def run(course: str, llm: LLM | None, only: list[str] | None = None, kinds: list
     lecture_checks = prev_checks.get("lectures", {})
     new: dict[str, list] = {k: [] for k in keys}
     infos: dict[str, dict] = {k: {} for k in keys}
+    done: dict[str, tuple] = {}                       # unit key -> (acts, conv) of the writer's kept answer
     for u in units:
         info = {}
         if u.request is None:
@@ -1490,6 +1966,7 @@ def run(course: str, llm: LLM | None, only: list[str] | None = None, kinds: list
                 info.update(status="no_answer", problems=res.errors)
             else:
                 acts, dropped, flags = CONVERT[u.kind](res.parsed, u.ctx, layer, u)
+                conv = u.ctx.pop("_conv", {})
                 info["status"] = "ok" if res.ok else "unresolved"
                 if not res.ok:
                     info["problems"] = res.errors
@@ -1499,11 +1976,87 @@ def run(course: str, llm: LLM | None, only: list[str] | None = None, kinds: list
                     info["flags"] = flags
                 if not acts:
                     info["status"] = info["status"] + "_empty" if info["status"] != "ok" else "empty"
-                for a in acts:
-                    a = {"kind": u.kind, "title": a.pop("title", None) or TITLES[u.kind], **a}
-                    a["_info"] = info
-                    new[u.lecture].append(a)
+                done[u.key] = (acts, conv)
         infos[u.lecture].setdefault(u.kind, {})[u.key] = info
+
+    n_judge = 0
+    if judge and done:
+        jl = judge_llm or llm
+        live = {u.key: u for u in units if u.key in done and done[u.key][0]}
+        items = {k_: judge_items(u, done[k_][0], done[k_][1], layer) for k_, u in live.items()}
+        jreqs = [judge_request(u, items[k_], 1, seed) for k_, u in live.items() if items[k_]]
+        n_judge += len(jreqs)
+        print(f"5: judge, {len(jreqs)} calls with {jl.model}", flush=True)
+        j1 = {r.key: r for r in jl.generate_many(jreqs, cache_file=od / "llm" / "cache.jsonl",
+                                                 log_file=od / "llm" / "calls.jsonl")}
+        rounds = {k_: judge_round(j1[f"judge1:{k_}"], items[k_]) for k_ in live if f"judge1:{k_}" in j1}
+        for k_, rnd in rounds.items():
+            infos[live[k_].lecture][live[k_].kind][k_]["judge"] = {"rounds": [rnd], "kept": "original"}
+        failing = [k_ for k_, rnd in rounds.items() if rnd.get("failed_items")]
+        if rewrite and failing:
+            wreqs = [rewrite_request(live[k_], results[k_], rounds[k_], done[k_][1]) for k_ in failing]
+            n_judge += len(wreqs)
+            print(f"5: rewrite, {len(wreqs)} calls with {llm.model}", flush=True)
+            rw = {r.key: r for r in llm.generate_many(wreqs, cache_file=od / "llm" / "cache.jsonl",
+                                                      log_file=od / "llm" / "calls.jsonl")}
+            second, j2reqs = {}, []
+            for k_ in failing:
+                u, res = live[k_], rw[f"rewrite:{k_}"]
+                jinfo = infos[u.lecture][u.kind][k_]["judge"]
+                rinfo = {"status": "ok" if res.ok else ("unresolved" if s4a.answered(res) else "no_answer")}
+                if res.history:
+                    rinfo["retry"] = {"attempts": res.attempts, "problems": [h["errors"] for h in res.history]}
+                if not res.ok:
+                    rinfo["problems"] = res.errors
+                jinfo["rewrite"] = rinfo
+                if not s4a.answered(res):
+                    continue
+                acts2, dropped2, flags2 = CONVERT[u.kind](res.parsed, u.ctx, layer, u)
+                conv2 = u.ctx.pop("_conv", {})
+                if not acts2:
+                    rinfo["status"] += "_empty"
+                    continue
+                items2 = judge_items(u, acts2, conv2, layer)
+                if not items2:
+                    continue
+                second[k_] = (res, acts2, dropped2, flags2, conv2, items2)
+                j2reqs.append(judge_request(u, items2, 2, seed))
+            n_judge += len(j2reqs)
+            j2 = {r.key: r for r in jl.generate_many(j2reqs, cache_file=od / "llm" / "cache.jsonl",
+                                                     log_file=od / "llm" / "calls.jsonl")} if j2reqs else {}
+            for k_, (res, acts2, dropped2, flags2, conv2, items2) in second.items():
+                u = live[k_]
+                info = infos[u.lecture][u.kind][k_]
+                rnd2 = judge_round(j2[f"judge2:{k_}"], items2)
+                info["judge"]["rounds"].append(rnd2)
+                if rnd2["status"] != "no_answer" and len(rnd2["failed_items"]) < len(rounds[k_]["failed_items"]):
+                    info["judge"]["kept"] = "rewrite"
+                    info["judge"]["original"] = {x: info.pop(x) for x in ("status", "problems", "dropped", "flags")
+                                                 if x in info}
+                    info["status"] = "ok" if res.ok else "unresolved"
+                    if not res.ok:
+                        info["problems"] = res.errors
+                    if dropped2:
+                        info["dropped"] = dropped2
+                    if flags2:
+                        info["flags"] = flags2
+                    done[k_] = (acts2, conv2)
+        for k_ in rounds:                             # what still fails in the version kept
+            u = live[k_]
+            info = infos[u.lecture][u.kind][k_]
+            jr = info["judge"]["rounds"]
+            last = jr[-1] if info["judge"]["kept"] == "rewrite" else jr[0]
+            if last.get("failed_items"):
+                info.setdefault("flags", {})["judge_failed"] = last["failed_items"]
+            info["judge"]["failed_items"] = last.get("failed_items", [])
+    for u in units:
+        if u.key not in done:
+            continue
+        info = infos[u.lecture][u.kind][u.key]
+        for a in done[u.key][0]:
+            a = {"kind": u.kind, "title": a.pop("title", None) or TITLES[u.kind], **a}
+            a["_info"] = info
+            new[u.lecture].append(a)
     for k in keys:
         for kind, make in CODE_MAKERS.items():
             if kind not in kinds:
@@ -1553,6 +2106,8 @@ def run(course: str, llm: LLM | None, only: list[str] | None = None, kinds: list
     contract = validate(od, layer)
     totals = {"activities": {}, "units": {}, "retried": 0, "unresolved": [], "no_answer": [], "dropped_items": 0,
               "flags": {}}
+    jt = {"units": 0, "items": 0, "failed_items": 0, "failed": {}, "no_answer": 0, "rewritten": 0,
+          "rewrite_kept": 0, "still_failed_items": 0}
     for p in lec.files(od):
         for a in json.loads(p.read_text())["activities"]:
             totals["activities"][a["kind"]] = totals["activities"].get(a["kind"], 0) + 1
@@ -1572,8 +2127,25 @@ def run(course: str, llm: LLM | None, only: list[str] | None = None, kinds: list
                 totals["dropped_items"] += len(info.get("dropped", []))
                 for f in info.get("flags", {}):
                     totals["flags"][f"{kind}.{f}"] = totals["flags"].get(f"{kind}.{f}", 0) + 1
+                j = info.get("judge")
+                if j:
+                    r1 = j["rounds"][0]
+                    jt["units"] += 1
+                    jt["no_answer"] += r1["status"] == "no_answer"
+                    jt["items"] += len(r1.get("verdicts", []))
+                    jt["failed_items"] += len(r1.get("failed_items", []))
+                    for v in r1.get("verdicts", []):
+                        for c in v.get("failed", []):
+                            jt["failed"][f"{kind}.{c}"] = jt["failed"].get(f"{kind}.{c}", 0) + 1
+                    jt["rewritten"] += "rewrite" in j
+                    jt["rewrite_kept"] += j["kept"] == "rewrite"
+                    jt["still_failed_items"] += len(j.get("failed_items", []))
+    if jt["units"]:
+        totals["judge"] = jt
     checks = {"run": {"lectures": keys, "kinds": kinds, "model": llm.model if (llm and reqs) else None,
-                      "calls": len(reqs), "seconds": round(time.time() - t0, 1)},
+                      "calls": len(reqs), "seconds": round(time.time() - t0, 1),
+                      **({"judge": True, "judge_rewrite": rewrite, "judge_model": (judge_llm or llm).model,
+                          "judge_calls": n_judge} if judge and llm else {})},
               "totals": totals, "contract": contract, "lectures": lecture_checks}
     (od / "checks.json").write_text(json.dumps(checks, indent=1, ensure_ascii=False) + "\n")
     write_text(od, layer, checks)
@@ -1596,6 +2168,11 @@ def main():
     ap.add_argument("--seed", type=int, help="sampling seed (default: the config's); for repeat runs")
     ap.add_argument("--out", help="output folder (default: output/<course>/activities)")
     ap.add_argument("--check", action="store_true", help="only check the existing activities folder")
+    ap.add_argument("--judge", action="store_true", help="judge every model-made unit after the code checks "
+                    "(prompts/activity_judge_<kind>.txt); verdicts go to checks.json and activities.txt")
+    ap.add_argument("--judge-rewrite", action="store_true", help="on a judge fail, one rewrite and one more judge "
+                    "call (implies --judge)")
+    ap.add_argument("--judge-llm", help="LLMConfig file of the judge (default: the --llm model judges)")
     a = ap.parse_args()
     od = Path(a.out) if a.out else out_dir(a.course)
     if a.check:
@@ -1612,8 +2189,14 @@ def main():
     if any(x in MODEL_KINDS for x in kinds):
         if not a.llm:
             sys.exit("the model-made kinds need --llm")
+        judge = a.judge or a.judge_rewrite
         with LLM(LLMConfig.load(a.llm)) as llm:
-            checks = run(a.course, llm, only, kinds, a.seed, od)
+            if judge and a.judge_llm:
+                with LLM(LLMConfig.load(a.judge_llm)) as jllm:
+                    checks = run(a.course, llm, only, kinds, a.seed, od, judge=judge, rewrite=a.judge_rewrite,
+                                 judge_llm=jllm)
+            else:
+                checks = run(a.course, llm, only, kinds, a.seed, od, judge=judge, rewrite=a.judge_rewrite)
     else:
         checks = run(a.course, None, only, kinds, a.seed, od)
     sys.exit(1 if checks["contract"] else 0)
