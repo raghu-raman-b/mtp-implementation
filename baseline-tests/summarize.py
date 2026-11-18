@@ -169,7 +169,8 @@ def main():
                       else str(q["gold_sources"]))
         demo.setdefault(q["category"], []).append(
             {"id": q["id"], "q": q["question"], "category": q["category"], "lecture": m.group(1) if m else None,
-             "ours_score": 1, "ours_runs": len(ours), "others": others, "best_other": best,
+             "ours": 1, "ours_runs": len(ours), "best_other": next(k for k, v in others.items() if v == best),
+             "best_other_score": best, "others": others,
              "ablations": {s: score(s, q["id"]) for s in ("abl_facts", "abl_graph") if (s, 1) in runs}})
     (OUT / "demo_questions.json").write_text(json.dumps(demo, indent=1, ensure_ascii=False))
     print((OUT / "tables.md").read_text().split("## Hallucinations")[0])
