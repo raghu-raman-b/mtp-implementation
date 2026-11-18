@@ -139,11 +139,17 @@ llama.cpp build, no downloads, no server start), its vLLM branch has not run at 
 “Checklist for the user”.</p></div>
 
 <h4 id="demo-nogpu">1. No GPU: the viewer only, Ask off</h4>
-<p>Every page works (lectures, activities, maps, glossary, videos); the question box is off, so nothing loads a model,
-the embedder or numpy. Any OS with Python 3.11 or newer. <code>--no-qa</code> (the viewer, the launcher and
-<code>run_demo.ps1</code>) is new on 2026-11-19.</p>
+<p>Every page works (lectures, activities, maps, glossary, videos); Ask is off. <code>serve.py --no-qa</code> never
+imports <code>qa</code>, so no model, embedder, numpy or GPU is needed: <code>/api/qa_status</code> reports off, the ask
+routes answer <code>{"available": false}</code> and the page says question answering is off; <code>--warm</code> is
+ignored with a note. Any OS with Python 3.11 or newer. <code>python -m demo run --no-qa</code> needs no
+<code>--instance</code> or <code>--key</code>: it opens no tunnel, waits for no model, checks no embedder, and starts
+<code>serve.py --no-qa</code> (with <code>--media</code>, <code>--port</code>, <code>--no-browser</code> as usual).
+<code>python -m demo check</code> against it prints SKIP for question answering and checks the viewer's routes only.
+<code>run_demo.ps1 -NoQa</code> passes <code>--no-qa</code> and leaves out <code>-Instance</code>, <code>-Key</code> and
+<code>-LocalEmbed</code> (untested on Windows, as below).</p>
 <pre data-lang="bash">python3 viewer/serve.py nptel_vr --no-qa                                      # any OS
-python -m demo run --no-qa                                                     # the same through the launcher
+python -m demo run --no-qa                                                     # the same through the launcher, browser opened
 powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -NoQa      # Windows, after setup_windows.ps1</pre>
 <p><b>Videos</b> (5.5 GB) are not in git and are optional: the viewer reads <code>input/nptel_vr/media/</code> or the folder
 given with <code>--media</code>, and plays a lecture without a file from YouTube (by the <code>youtube_id</code> in
@@ -234,7 +240,7 @@ checks that the embedder serves the layer's model, starts <code>viewer/serve.py 
 browser. The instance keeps serving after Ctrl+C. Options: <code>--port</code> (8765; the next free port when taken),
 <code>--media</code>, <code>--prefer-youtube</code>, <code>--no-browser</code>, <code>--no-tunnel</code> (the ports are already
 forwarded), <code>--model-port N</code> (when 8096 is taken on the laptop), <code>--local-embed</code>,
-<code>--wait-model</code> (1800 s), <code>--wait-warm</code> (180 s), <code>--no-qa</code>.</li>
+<code>--wait-model</code> (1800 s), <code>--wait-warm</code> (180 s), <code>--no-qa</code> (setup 1).</li>
 <li><b>check</b> prints PASS, FAIL or SKIP per item and exits with 1 on a failure: the viewer answers; the model server is
 healthy through the tunnel (with its time) and serves a demo model; question answering is warm; the embedding server
 serves the layer's model, and its vectors for 24 fact texts equal the layer's (cosine ≥ 0.999); the viewer routes
@@ -284,7 +290,8 @@ others can read); runs <code>python -m demo setup</code>. <code>-Venv</code> mov
 <li><b>run_demo.ps1</b> runs <code>python -m demo</code> with the venv's Python: <code>run</code> by default, or
 <code>-Check</code>, <code>-Bench</code> (with <code>--warmup</code>), <code>-Push</code> (<code>-Engine</code>); it takes
 <code>-Instance</code>, <code>-Key</code>, <code>-Media</code>, <code>-Port</code> (8765), <code>-NoBrowser</code>,
-<code>-LocalEmbed</code>, <code>-NoQa</code>; a parameter given wins over the saved settings.</li>
+<code>-LocalEmbed</code>, <code>-NoQa</code> (then the instance, key and <code>-LocalEmbed</code> are not passed); a
+parameter given wins over the saved settings.</li>
 <li><code>-ExecutionPolicy Bypass</code> runs the scripts without changing the system's policy. “UNPROTECTED PRIVATE KEY
 FILE”: rerun <code>setup_windows.ps1</code> with <code>-Key</code>. Port 8096 taken on the laptop: <code>python -m demo run
 --model-port 18096</code>. More in <code>pipeline/demo/README.md</code>, A4.</li>
