@@ -11,7 +11,7 @@ playback). Lecture 63's segment map is removed in the copy, so one lecture has n
 Servers listen on free ports (never 8094 or 8095, the SSH forward to the EC2).
 
 What it looks for (each line is what a broken viewer server would show):
-  static     the page, app.js, style.css or the vendored dagre not served, or served with the wrong type;
+  static     the page, app.js, style.css or the vendored dagre or KaTeX (js, css, a woff2 font) or math.js not served, or served with the wrong type;
              a path outside the viewer folder served (../)
   course     /api/course missing a lecture of titles.tsv, the layers not reported, a lecture's goal or flags wrong
   lecture    a lecture route failing; segments missing; knowledge not used where it exists (1-8), the 1b fallback
@@ -296,7 +296,11 @@ def test_full(srv: Server, root: Path):
     out = root / "output" / COURSE
     print("static", flush=True)
     for path, ctype in (("/", "text/html"), ("/static/app.js", "javascript"), ("/static/style.css", "text/css"),
-                        ("/static/vendor/dagre.min.js", "javascript")):
+                        ("/static/vendor/dagre.min.js", "javascript"), ("/static/math.js", "javascript"),
+                        ("/static/vendor/katex/katex.min.js", "javascript"),
+                        ("/static/vendor/katex/contrib/auto-render.min.js", "javascript"),
+                        ("/static/vendor/katex/katex.min.css", "text/css"),
+                        ("/static/vendor/katex/fonts/KaTeX_Main-Regular.woff2", "font/woff2")):
         code, hd, body = srv.get(path)
         check(code == 200 and ctype in hd.get("Content-Type", "") and len(body) > 100, f"{path} served ({code})")
     code, _, _ = srv.get("/static/../serve.py")

@@ -120,21 +120,20 @@ const preferYouTube = () => { const v = store("yt"); return v == null ? !!(S.cou
 function timeHref(lec, t) { return `#/lecture/${lec}/t/${Math.round((t || 0) * 10) / 10}`; }
 
 // ---- answers: a small, safe markdown renderer (DOM nodes only, never innerHTML) ----
-// paragraphs, "* "/"- " and "1. " lists, **bold**, *italic*, `code`, $math$ shown plain; "(lecture 4, 6:01)" and
+// paragraphs, "* "/"- " and "1. " lists, **bold**, *italic*, `code`; $math$ stays text here and renderMath (math.js) typesets it once the answer is in the page; "(lecture 4, 6:01)" and
 // "(lecture 4, 6:01; lecture 5, 9:21)" become links that open the lecture at that time.
 function mdInline(text) {
   const out = [];
-  const re = /\*\*([^*]+)\*\*|\*([^*\s][^*]*)\*|`([^`]+)`|\$([^$]+)\$|lecture (\d+[a-z]?), (\d{1,2}(?::\d{2}){1,2})/g;
+  const re = /\*\*([^*]+)\*\*|\*([^*\s][^*]*)\*|`([^`]+)`|lecture (\d+[a-z]?), (\d{1,2}(?::\d{2}){1,2})/g;
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
     if (m[1] != null) out.push(h("b", {}, m[1]));
     else if (m[2] != null) out.push(h("i", {}, m[2]));
     else if (m[3] != null) out.push(h("code", {}, m[3]));
-    else if (m[4] != null) out.push(m[4].replace(/\\(text|mathrm)\{([^}]*)\}/g, "$2").replace(/\\/g, ""));
     else {
-      const parts = m[6].split(":").map(Number), secs = parts.reduce((a, b) => a * 60 + b, 0);
-      out.push(h("a", { class: "time", href: timeHref(m[5], secs) }, `lecture ${m[5]}, ${m[6]}`));
+      const parts = m[5].split(":").map(Number), secs = parts.reduce((a, b) => a * 60 + b, 0);
+      out.push(h("a", { class: "time", href: timeHref(m[4], secs) }, `lecture ${m[4]}, ${m[5]}`));
     }
     last = re.lastIndex;
   }
@@ -1718,6 +1717,7 @@ async function ask(q) {
       res.covered === false ? h("div", { class: "small muted", style: "margin-top:6px" }, "The course may not cover this.") : null,
       res.error ? dev(res.error) : null,
       res.steps ? h("details", { class: "dev" }, h("summary", {}, "steps"), h("pre", { style: "white-space:pre-wrap" }, JSON.stringify(res.steps, null, 1))) : null);
+    if (window.renderMath) window.renderMath(ans);
   };
   const onEvent = (ev) => {
     if (ev.event === "step") {
