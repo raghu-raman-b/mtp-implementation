@@ -1,3 +1,10 @@
+PIPELINE v3 STATUS - NIGHT RUNS  (updated 02:06 IST, 19 Nov; full state: pipeline/continue/PROMPT.md "NIGHT")
+
+DONE: baseline 53 questions judged (Sonnet), ablations fixed + rerun; --no-qa merged; docs part 1 on its branch
+QUEUED (detached, baseline-tests/queue.sh): multihop runs -> activities study GPU
+RUNNING: multihop questions (Sonnet), activities study build (Opus)
+NEXT: judge multihop + activities (Sonnet) -> docs part 2 (sell the method) -> merge all
+
 PIPELINE v3 STATUS - DEMO PREP, FINAL STEPS  (updated 19 Nov; full state: pipeline/continue/PROMPT.md)
 
 DONE: baseline GPU runs (all systems, repeats; committed 6c20dff on the baseline branch)

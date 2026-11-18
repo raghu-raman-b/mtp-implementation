@@ -53,6 +53,47 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
+## NIGHT 2026-11-19 (from 02:05 IST) — READ THIS FIRST; supersedes everything below where they differ
+
+**User (02:00):** get every test done tonight (studies, GPU runs), queued so they go on if the session's limit runs
+out; minimal tokens until everything is ready for reports + docs; keep this file updated after every step; say
+"warmed" on a ~55-min timer (session one-shot crons 02:59 ... 13:04; re-create them if the session restarted).
+**Goal of the baseline study (user): sell the method** — show where ours is worth it and why ~12 h of build compute
+is fine; keep RAG's honest wins in (credibility). Judge = Sonnet (user).
+
+Baseline worktree: `.claude/worktrees/agent-ac043cfbb4e8a782d` (branch `worktree-agent-ac043cfbb4e8a782d`, pushed
+37d80cf). Folder `baseline-tests/`.
+- DONE: all GPU runs for the 53 questions; Sonnet judged all 592 answers (`judgments.jsonl`; Opus's 257 in
+  `judgments_opus.jsonl`, agreement kappa 0.715, `judge_agreement.md`); ablations were INVALID (restrict_tools patched
+  the function `qa.answer`, not the module) -> fixed, rerun, re-judged (old in `runs/invalid/`). Tables/figures by
+  `summarize.py`, `figures.py`. Results run 1: ours 0.868, rag 0.858, rag_think 0.858, graphrag_text 0.821,
+  graphrag_notext 0.717, plain 0.255, abl_facts 0.802, abl_graph 0.887. Prerequisite: ours 0.5, abl_graph 0.75,
+  abl_facts 0.0, all baselines <=0.125. RAG wins structure (S02 six modules, S05 what the course skips): those are
+  excluded from facts BY DESIGN (prompts/fact_extraction.txt rule 7), not a bug — a design question for the user.
+  RAG = 738 sentence chunks within a lecture (~400 tok, 60 overlap, whole course), Qwen3-Embedding-0.6B, top 8;
+  median ctx 4,027 tok vs ours 4,804.
+- **GPU queue (detached, `setsid nohup bash baseline-tests/queue.sh > baseline-tests/queue.log`)**, lock
+  `baseline-tests/gpu.lock`: (1) waits for `"category": "multihop"` in questions.jsonl -> all 8 systems + r2/r3 for
+  ours/rag/rag_think -> `MULTIHOP_DONE`; (2) waits for `activities_study/READY` -> `activities_study/gpu.sh` ->
+  `activities_study/GPU_DONE`. If the queue died: rerun the same command (steps resume, markers skip done steps).
+- RUNNING agents: (a) Sonnet writes 12 multihop questions -> `questions_multihop.jsonl` + `.md` (kinds: chain,
+  spread 4+ lectures, course order, connect; gold checked against transcripts, written blind to answers). NEXT: the
+  orchestrator reviews, then appends them to questions.jsonl (that releases queue step 1).
+  (b) Opus builds `baseline-tests/activities_study/` (user-approved design: 6 lectures by code; ours vs B1 plain
+  transcript prompt vs B2 our prompts with the transcript in place of facts; kinds quiz, recap, open_question,
+  odd_one_out, put_in_order + concept_map and recall attempts; judges: pipeline's Gemma activity judges, code checks,
+  blind Sonnet packets; summarize script; "only possible with the layer" list). Fake-tested, then touches READY.
+- AFTER the queue: Sonnet judges multihop answers (render_for_judge.py -> todo packets -> judge/sonnet_M*.jsonl ->
+  append to judgments.jsonl) and the activities blind packets; summarize.py, figures.py, judge_agreement.py,
+  activities summarize; commit + push the branch.
+- THEN docs part 2 (docs agent's branch `worktree-agent-afef209db8fea72c8`, part 1 done: 085adc3 + 59b4dee, rebased on
+  main 1ab20c7, not merged): baseline section framed "what the method buys": (1) where ours wins and which part of
+  the layer causes it (multihop, prerequisites, definitions, ablations), (2) activities only the layer makes possible,
+  (3) activity quality drop without it, (4) cost: ~12 h one-off build vs per-question cost similar to RAG, (5) where
+  RAG ties/wins (single-lecture lookups; structure, excluded by design). Method + question set + per-category tables.
+  Then sample_questions.json from demo_questions.json (by code), merge docs + baseline branch to main, push.
+- Main: `--no-qa` merged (1ab20c7). The user's own commits (stats/) are on main too; rebase before pushing.
+
 ## State (updated 2026-11-18 00:05 IST) — READ THIS FIRST; it supersedes the older sections below where they differ
 
 **Roles now (user, 2026-11-17/18).** The main session is the **reviewer + orchestrator**: it briefs agents, reviews
