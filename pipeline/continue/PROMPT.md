@@ -156,6 +156,9 @@ only when the user asks.
   writes tables/figures/demo_questions.json (minimal tokens) in the same worktree.
 - **11:07**: the session restarted; O1 and the baseline runner stopped and were resumed by message; gpu_all.sh had
   stopped at abl_graph 44/53 and was restarted by the orchestrator (resumable, log `baseline-tests/gpu_all.log`).
+- **11:18**: O1 merged (b405a4c..14f4743; user waived the review: "it did the tests"). Screens in
+  `analysis/viewer/design_c_screens/`; home 211->140 kB. Sample questions file is a placeholder until the baseline
+  runner's demo_questions.json. Only the baseline runner is still running; docs at 15:03.
 - Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
   (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
 - Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;
