@@ -11,9 +11,13 @@ Run from the pipeline folder (setup_windows.ps1 and run_demo.ps1 call these):
         it (QA_CONFIG = a copy of that engine's demo config with "url" = the tunnel; QA_EMBED_URL = the tunnel's
         embedder port), waits until qa is warm (layer, embedder, model server, prompt prefix cached), opens the
         browser. Ctrl+C stops the viewer and the tunnel (the instance keeps serving).
+    python -m demo run --no-qa [--media ...] [--port 8765] [--no-browser]
+        no GPU, instance, key, tunnel or embedder: the viewer starts with serve.py --no-qa (everything works but Ask,
+        which shows its "question answering is off" state)
     python -m demo check [--url http://127.0.0.1:8765]
         PASS/FAIL lines: the model server and its model, the embedder and its vectors (cosine >= 0.999 against the
         layer's fact_embeddings.json for 24 fact texts), the viewer's routes, one streamed question with its timings
+        (against a viewer running --no-qa: the viewer's routes only, QA reported as off)
     python -m demo bench [--url ...] [--runs 1] [--out FILE]
         the DEMO_PLAN questions through /api/ask_stream: seconds to the first event, the first step, the answer's
         start, the first words and the end, per question and the medians (several --url: each question is asked of
@@ -207,6 +211,8 @@ def write_qa_config(model_id: str, model_url: str) -> tuple[str, Path]:
 
 # ---------------------------------------------------------------- run
 def cmd_run(a) -> int:
+    if a.no_qa:
+        return run_viewer(a, None, None, None)
     model_url = a.model_url or f"http://127.0.0.1:{a.model_port}"
     embed_url = None if a.local_embed else (a.embed_url or f"http://127.0.0.1:{a.embed_port}")
     tunnel = None
@@ -229,6 +235,8 @@ def cmd_run(a) -> int:
 
 def run_viewer(a, model_url: str, embed_url: str | None, tunnel) -> int:
     t0 = time.time()
+    if a.no_qa:
+        return serve_viewer(a, t0, dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8"), None)
 
     def model_up():
         if tunnel:
@@ -264,6 +272,12 @@ def run_viewer(a, model_url: str, embed_url: str | None, tunnel) -> int:
             say(f"  embedder: {h.get('model')} on the instance ({h.get('device')}) at {embed_url}")
     if not embed_url:
         say(f"  embedder: {want} on this machine's CPU (loads in 10-20 s at the warm-up)")
+    return serve_viewer(a, t0, dict(os.environ, QA_CONFIG=str(qa_cfg), QA_KEEP_WARM="1", PYTHONUTF8="1",
+                                    PYTHONIOENCODING="utf-8"), embed_url, tunnel)
+
+
+def serve_viewer(a, t0: float, env: dict, embed_url, tunnel=None) -> int:
+    """Start serve.py (with --warm, or --no-qa), wait for it (and for qa to warm), open the browser, keep watch."""
     port = a.port
     while not port_free(port):
         port += 1
@@ -272,11 +286,10 @@ def run_viewer(a, model_url: str, embed_url: str | None, tunnel) -> int:
             return 1
     if port != a.port:
         say(f"  port {a.port} is taken on this machine: the viewer uses {port}")
-    env = dict(os.environ, QA_CONFIG=str(qa_cfg), QA_KEEP_WARM="1", PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
     env.pop("QA_EMBED_URL", None)
     if embed_url:
         env["QA_EMBED_URL"] = embed_url
-    cmd = [sys.executable, str(PIPELINE / "viewer" / "serve.py"), COURSE, "--port", str(port), "--warm"]
+    cmd = [sys.executable, str(PIPELINE / "viewer" / "serve.py"), COURSE, "--port", str(port), "--no-qa" if a.no_qa else "--warm"]
     if a.media:
         cmd += ["--media", str(Path(a.media).expanduser())]
     if a.output:
@@ -292,15 +305,17 @@ def run_viewer(a, model_url: str, embed_url: str | None, tunnel) -> int:
                           60, 0.5) or viewer.poll() is not None:
             say("STOP: the viewer did not start (see its output above)")
             return 1
-        st = wait_until("qa to warm up (layer, embedder, model server, prompt prefix)",
+        st = None if a.no_qa else wait_until("qa to warm up (layer, embedder, model server, prompt prefix)",
                         lambda: (lambda d: d if d and d.get("state") in ("ready", "failed", "off") else None)(
                             http_json(url + "/api/qa_status", 3)[1]), a.wait_warm, 1)
-        if st and st.get("state") == "ready":
+        if a.no_qa:
+            say("  question answering is off (--no-qa)")
+        elif st and st.get("state") == "ready":
             say(f"  question answering warm in {st.get('seconds')} s {json.dumps(st.get('parts') or {})}")
         else:
             say(f"  WARNING: question answering is not warm ({(st or {}).get('error') or 'timed out'}); the first "
                 "question may be slow or fail")
-        say(f"\nReady in {time.time() - t0:.0f} s: {url}/   (Ctrl+C here stops the viewer and the tunnel)")
+        say(f"\nReady in {time.time() - t0:.0f} s: {url}/   (Ctrl+C here stops the viewer{'' if a.no_qa else ' and the tunnel'})")
         if not a.no_browser:
             webbrowser.open(url + "/")
         while viewer.poll() is None:
@@ -426,6 +441,13 @@ def cmd_check(a) -> int:
     base = a.url.rstrip("/")
     code, st = http_json(base + "/api/qa_status", 5)
     item(code == 200, "viewer answers", f"{base}/api/qa_status -> {code}")
+    if code == 200 and not (st or {}).get("importable") and (st or {}).get("state") == "off":
+        item(None, "question answering", "off (the viewer runs with --no-qa): model, embedder and question skipped")
+        for route in ("/", "/api/home", "/api/view/4", "/api/glossary"):
+            code, _ = http_get(base + route, 30)
+            item(code == 200, f"viewer route {route}", str(code))
+        say("\nALL PASS" if not fails else f"\n{len(fails)} FAILED: {', '.join(fails)}")
+        return 1 if fails else 0
     cfg_path = os.environ.get("QA_CONFIG") or next(iter(sorted(LOGS.glob("qa_remote_*.json"),
                                                                key=lambda p: p.stat().st_mtime)[-1:]), None)
     model_url = a.model_url
@@ -634,6 +656,7 @@ def main(argv=None) -> int:
     p.add_argument("--prefer-youtube", action="store_true")
     p.add_argument("--no-tunnel", action="store_true", help="the model and embedder ports are already reachable")
     p.add_argument("--no-browser", action="store_true")
+    p.add_argument("--no-qa", action="store_true", help="no model, embedder or tunnel: the viewer without Ask")
     p.add_argument("--wait-model", type=int, default=1800, help="seconds to wait for the model server")
     p.add_argument("--wait-warm", type=int, default=180, help="seconds to wait for qa's warm-up")
     p = sub.add_parser("tunnel", help="only the SSH tunnel, in the foreground")
