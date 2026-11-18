@@ -151,6 +151,9 @@ only when the user asks.
   `baseline-tests/demo_questions.json`, chosen by code). O3 (Opus) runs in the old baseline worktree with minimal
   tokens: numbers, tables, method README only; O4 draws the inferences. O4 starts after 15:00 (cron at 15:03). Cache-warm
   pings every 50 min until 19:05 (session crons). O1 told: looks + agreed behaviours only, performance budget measured.
+- **11:35**: S6 merged (49f7ef4; 386/386 titles ok, 12 retried). O3 stopped by the user after its setup (51e57b9:
+  all systems coded, `baseline-tests/gpu_all.sh`, method README draft); a fresh Opus runner runs gpu_all.sh, judges,
+  writes tables/figures/demo_questions.json (minimal tokens) in the same worktree.
 - Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
   (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
 - Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;

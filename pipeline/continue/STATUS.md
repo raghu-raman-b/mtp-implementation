@@ -1,3 +1,11 @@
+PIPELINE v3 STATUS - DEMO PREP  (updated 10:53 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
+
+MERGED: S1 display rules, S2 QA facts-only, S3 KaTeX, S6 part titles (386/386 ok, 49f7ef4), S7 failure inventory
+  (analysis/failures/, 69 rows, code only)
+RUNNING: O1 design C viewer (Opus); baseline runner (Opus, old baseline worktree, setup by O3 complete at 51e57b9):
+  gpu_all.sh -> judge -> tables/figures/demo_questions.json
+NEXT: 15:03 O4 docs (adds baselines when they land); demo prep deferred by the user
+
 PIPELINE v3 STATUS - DEMO PREP  (updated 10:25 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
 
 MERGED: S1 display rules (075f045), S2 QA facts-only (5ef2d4b), S3 KaTeX (7620342); design C mockups + user's changes
