@@ -978,11 +978,13 @@ row("qa.two_times", "QA", "'where is X taught' answers showing two different tim
 pt = OUT / "stage_4e_part_titles" / "titles.json"
 if pt.exists():
     t = jload(pt)
-    items = t.get("titles", t) if isinstance(t, dict) else t
-    vals = items.values() if isinstance(items, dict) else items
-    bad = [v for v in vals if isinstance(v, dict) and v.get("ok") is False]
-    row("seg.part_titles", "4e part titles", "part titles failing the code check (ok: false)", "stage_4e_part_titles/titles.json ok == false",
-        len(bad), len(list(items)), "segments", [ex(str(v.get("segment", "")), v.get("title", "")) for v in bad[:5]], "not fixed (future work)")
+    items = t.get("segments", {})
+    bad = [(k, v) for k, v in items.items() if isinstance(v, dict) and v.get("ok") is False]
+    row("seg.part_titles", "4e part titles", "part titles failing the code check after retries (ok: false; shown as \"Part N\")",
+        "stage_4e_part_titles/titles.json segments[*].ok == false", len(bad), len(items), "segments",
+        [ex(k, "; ".join(v.get("problems") or [])) for k, v in bad[:5]], "display rule" if bad else "fixed in the pipeline",
+        "Code check: 3-6 words, no end punctuation/quotes/IDs, Title Case, no filler start, unique within the lecture, a content word "
+        "from the goal or facts; retry with feedback (12 of 386 retried). Failed titles stay null; the viewer shows \"Part N\".")
 else:
     row("seg.part_titles", "4e part titles", "part titles failing the code check (ok: false)", "stage_4e_part_titles/titles.json (task S6, not run yet)",
         None, 386, "segments", [], "not fixed (future work)", "pending: the file does not exist yet.")

@@ -74,7 +74,7 @@ Written by `analysis/failures/inventory.py` from `pipeline/output/nptel_vr/` (re
 | `qa.not_covered_padded` | QA | not-covered answers that decline but then pad with loosely related facts, and are the slowest type | 2 of 36 (5.6%) questions | fixed in the pipeline |
 | `qa.prereq_odd` | QA / 4c | prerequisite answers listing odd concepts (location awareness, markers before lecture 40; augmented virtuality before 16) | 2 of 36 (5.6%) questions | fixed in the pipeline |
 | `qa.two_times` | QA | 'where is X taught' answers showing two different times (text 14:25, citation 11:44) | 2 of 36 (5.6%) questions | fixed in the pipeline |
-| `seg.part_titles` | 4e part titles | part titles failing the code check (ok: false) | 0 of 2 (0.0%) segments | not fixed (future work) |
+| `seg.part_titles` | 4e part titles | part titles failing the code check after retries (ok: false; shown as "Part N") | 0 of 386 (0.0%) segments | fixed in the pipeline |
 
 Self-check: failed judge items found here 865, the pipeline's own total (checks.json totals.judge.still_failed_items) 865: equal.
 
@@ -946,12 +946,12 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 
 ### `seg.part_titles` (4e part titles)
 
-- **Fails:** part titles failing the code check (ok: false)
-- **Detected by:** stage_4e_part_titles/titles.json ok == false
-- **Count:** 0 of 2 (0.0%) segments
+- **Fails:** part titles failing the code check after retries (ok: false; shown as "Part N")
+- **Detected by:** stage_4e_part_titles/titles.json segments[*].ok == false
+- **Count:** 0 of 386 (0.0%) segments
 - **Examples:**
   - (none)
-- **Handling:** not fixed (future work)
+- **Handling:** fixed in the pipeline. Code check: 3-6 words, no end punctuation/quotes/IDs, Title Case, no filler start, unique within the lecture, a content word from the goal or facts; retry with feedback (12 of 386 retried). Failed titles stay null; the viewer shows "Part N".
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Pending.
 
 ## History: failures found earlier and fixed
