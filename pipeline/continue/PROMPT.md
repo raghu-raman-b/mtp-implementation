@@ -146,6 +146,11 @@ only when the user asks.
   B's raw tool-call trace as a collapsed detail per step; null part title -> "Part N").
   New schedule: S7 ~11:00, S6 ~11:30, O1 ~14:30 + review ~15:15, O3 11:30-17:00, O4 15:15-18:00 (baselines last),
   O5 17:00-18:30.
+- **10:45 (user)**: demo prep (O5 DEMO_PLAN, rehearsal) deferred; work up to the docs. Sample questions that only our
+  design answers go into the Ask screen itself (`pipeline/viewer/sample_questions.json`, filled from O3's
+  `baseline-tests/demo_questions.json`, chosen by code). O3 (Opus) runs in the old baseline worktree with minimal
+  tokens: numbers, tables, method README only; O4 draws the inferences. O4 starts after 15:00 (cron at 15:03). Cache-warm
+  pings every 50 min until 19:05 (session crons). O1 told: looks + agreed behaviours only, performance budget measured.
 - Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
   (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
 - Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;
