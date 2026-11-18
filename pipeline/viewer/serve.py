@@ -2,7 +2,7 @@
 """The v3 viewer: a standard-library HTTP server for the static viewer, the course's JSON layers and the videos.
 
     python pipeline/viewer/serve.py nptel_vr [--port 8765] [--host 127.0.0.1] [--root PIPELINE_DIR] [--media DIR]
-                                             [--output DIR] [--activities NAME] [--qa-path DIR] [--warm]
+                                             [--output DIR] [--activities NAME] [--qa-path DIR] [--warm] [--no-qa]
                                              [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]
 
     e.g. a synced layer not yet merged:  --output ec2_sync/output --activities activities_v3
@@ -98,7 +98,8 @@ Speed (the demo runs through an SSH port forward, ssh -L 8765:127.0.0.1:8765, wi
     page's ?yt=1 / ?yt=0 sets the same per browser.
 --warm loads qa at start, in the background, and calls qa.warm(course) (the layer, the query embedder, the model
 server and its cached prompt prefix; the config is qa's default: $QA_CONFIG or the local Gemma), so the first question
-does not wait for them. Runs the same on Windows (the demo laptop: python -m demo run, see demo/README.md).
+does not wait for them. --no-qa never imports or loads qa (no model, embedder or GPU needed): everything but Ask works, and Ask shows
+the page's "question answering is off" state; --warm is ignored. Runs the same on Windows (the demo laptop: python -m demo run, see demo/README.md).
 A missing layer is never an error for the course or lecture routes: it comes back as null (or the segments fall back
 to 1b), and the raw /data/ routes answer 404 for a file that does not exist.
 """
@@ -811,6 +812,7 @@ HIDE_JUDGE_FAILED: dict = {
 }
 ITEM_LIST = {"quiz": "questions", "recap": "points", "open_question": "questions", "odd_one_out": "items",
              "put_in_order": "items", "crossword": "entries", "recall": "items", "match_pairs": "pairs"}
+NO_QA = False                                            # --no-qa: qa is never imported; Ask is off
 QA_PATH = PIPELINE                                       # the folder holding the qa package (--qa-path)
 PREFER_YOUTUBE = False                                   # --prefer-youtube: play from YouTube even when the file is here
 VIDEO_CHUNK = 4 << 20                                    # an open range ("bytes=N-") is answered with at most this much
@@ -829,6 +831,8 @@ def qa_paths():
 def load_qa():
     """<qa-path>/qa/ (default pipeline/qa/) as the module `qa`, imported on demand (so it can appear while the
     server runs)."""
+    if NO_QA:
+        return None, "question answering is off (--no-qa)"
     qa_paths()
     with _qa_lock:
         try:
@@ -874,7 +878,7 @@ def warm_qa(course: str):
 
 
 def qa_status() -> bool:
-    return (QA_PATH / "qa" / "__init__.py").exists()
+    return not NO_QA and (QA_PATH / "qa" / "__init__.py").exists()
 
 
 def ask_stream(course: str, req: dict):
@@ -1187,7 +1191,7 @@ def make_server(course: str, root: Path, port: int, host="127.0.0.1", media: Pat
 
 
 def main():
-    global QA_PATH, PREFER_YOUTUBE, VIDEO_CHUNK, VIDEO_PACE
+    global QA_PATH, PREFER_YOUTUBE, NO_QA, VIDEO_CHUNK, VIDEO_PACE
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("course", help="course folder name, e.g. nptel_vr")
     ap.add_argument("--port", type=int, default=8765)
@@ -1200,6 +1204,8 @@ def main():
                     help="the activities folder name under output/<course> (default: activities)")
     ap.add_argument("--qa-path", type=Path, help="folder holding the qa package (default: the pipeline folder)")
     ap.add_argument("--warm", action="store_true", help="load qa and call qa.warm(course) at start (background)")
+    ap.add_argument("--no-qa", action="store_true",
+                    help="never import or load qa (no model or embedder needed); Ask shows its off state")
     ap.add_argument("--prefer-youtube", action="store_true",
                     help="play every lecture that has a youtube_id from YouTube, even when its file is here (a slow "
                          "tunnel); the page's ?yt=1 / ?yt=0 does the same per browser")
@@ -1209,6 +1215,9 @@ def main():
                     help="send a video at most this many times its bitrate after the first MB (default 2; 0 = no limit)")
     a = ap.parse_args()
     PREFER_YOUTUBE = a.prefer_youtube
+    NO_QA = a.no_qa
+    if NO_QA and a.warm:
+        print("--no-qa: --warm ignored", flush=True)
     VIDEO_PACE = max(0.0, a.video_pace)
     VIDEO_CHUNK = max(256 << 10, int(a.video_chunk_mb * (1 << 20)))
     if a.qa_path:
@@ -1228,7 +1237,7 @@ def main():
     yt = sum(1 for x in info["lectures"] if x["has"]["youtube"] and not x["has"]["video"])
     print(f"  segments {has('segments')}, knowledge {has('knowledge')}, activities {has('activities')}, "
           f"videos {has('video')} (from {C.media}; {yt} more from YouTube); question answering "
-          f"{'importable' if info['qa'] else 'not available (no pipeline/qa)'}", flush=True)
+          f"{'off (--no-qa)' if NO_QA else 'importable' if info['qa'] else 'not available (no pipeline/qa)'}", flush=True)
     threading.Thread(target=C.warm, daemon=True).start()
     if a.warm and info["qa"]:
         threading.Thread(target=warm_qa, args=(a.course,), daemon=True).start()

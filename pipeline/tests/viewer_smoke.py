@@ -261,13 +261,13 @@ def write_fake_qa(folder: Path, raising: bool = False, stream: bool = False):
 
 # ---------------------------------------------------------------- HTTP
 class Server:
-    def __init__(self, root: Path, qa_path: Path, log: Path):
+    def __init__(self, root: Path, qa_path: Path, log: Path, extra=()):
         self.port = free_port()
         self.base = f"http://127.0.0.1:{self.port}"
         self.log = open(log, "w")
         self.p = subprocess.Popen([sys.executable, str(ROOT / "viewer" / "serve.py"), COURSE, "--port", str(self.port),
                                    "--root", str(root), "--qa-path", str(qa_path),
-                                   "--video-chunk-mb", str(CHUNK / (1 << 20))], stdout=self.log, stderr=self.log)
+                                   "--video-chunk-mb", str(CHUNK / (1 << 20)), *extra], stdout=self.log, stderr=self.log)
         for _ in range(100):
             try:
                 urllib.request.urlopen(self.base + "/api/course", timeout=2)
@@ -701,6 +701,36 @@ def test_ask(root: Path, work: Path):
         srv.stop()
 
 
+def test_no_qa(root: Path, work: Path):
+    """--no-qa (with a qa package present and --warm given): pages load, Ask is off, qa is never imported."""
+    print("no-qa", flush=True)
+    qa = work / "qa_marker"
+    write_fake_qa(qa)
+    marker = work / "qa_imported"
+    init = qa / "qa" / "__init__.py"
+    init.write_text(f"open({str(marker)!r}, 'w').close()\n" + init.read_text())
+    srv = Server(root, qa, work / "server_noqa.log", extra=("--no-qa", "--warm"))
+    try:
+        code, C = srv.json("/api/course")
+        check(code == 200 and C["qa"] is False, "--no-qa: qa reported not available")
+        code, S = srv.json("/api/qa_status")
+        check(code == 200 and S["importable"] is False and S["state"] == "off", f"--no-qa: /api/qa_status off ({S})")
+        code, H = srv.json("/api/home")
+        check(code == 200 and H["qa"] is False, "--no-qa: /api/home reports qa off")
+        for route in ("/", "/api/view/1", "/api/glossary", "/api/coursemap"):
+            check(srv.get(route)[0] == 200, f"--no-qa: {route} loads")
+        code, r = srv.ask("What is VR?", "4")
+        check(code == 200 and r["available"] is False and r["citations"] == [], f"--no-qa: /api/ask answers off ({r})")
+        code, ctype, evs = srv.stream("What is VR?", "4")
+        check(code == 200 and [e["event"] for e in evs] == ["done"] and evs[0]["result"]["available"] is False,
+              "--no-qa: /api/ask_stream gives one 'done' with available false")
+        time.sleep(0.5)
+        check(not marker.exists() and "ignored" in open(work / "server_noqa.log").read(),
+              "--no-qa: qa never imported, --warm ignored with a note")
+    finally:
+        srv.stop()
+
+
 def test_degrade(root: Path, work: Path):
     print("degrade", flush=True)
     srv = Server(root, work / "no_qa", work / "server_bare.log")
@@ -740,6 +770,7 @@ def main():
     finally:
         srv.stop()
     test_ask(full, work)
+    test_no_qa(full, work)
     test_degrade(bare, work)
     print("js", flush=True)
     if shutil.which("node"):
