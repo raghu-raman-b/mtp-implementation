@@ -23,18 +23,25 @@ the run, and a list whose items all carry one label gets it once, on the line th
 partly: true); without that line, "covered" is whether anything was cited.
 
 answer_stream(question, course, lecture) runs the same loop and yields events as it goes, for a viewer that shows the
-answer while it is written (the blocking answer() is unchanged): {"event": "step", "tool", "args", "result_summary"}
-after each tool call; {"event": "draft", "text"} with the answer so far (IDs already shown as labels, a half-written
-bracket or COVERED line held back; each draft replaces the one before, since the tidying can move a label); {"event":
-"reset"} when text written in a round turned out not to be the answer (the round ended in tool calls); and last
-{"event": "done", "result": <what answer() returns>}. Its rounds are sent with "stream": true; their timing and log
-lines are those of the blocking path.
+answer while it is written and what the model is doing (the blocking answer() is unchanged). Every event carries "t",
+the seconds since the question came in. In order: {"event": "round"} when a request goes to the model (the first one
+at once: the earliest sign of progress), {"event": "thinking", "chars"} while it thinks (at most every 0.5 s),
+{"event": "call", "tool", "args"} when a tool is about to run, {"event": "step", "tool", "args", "result_summary",
+"label", "detail", "found", "seconds", ...} when it has run (label: a display line; detail: names, counts, lecture
+numbers), {"event": "answer_start"} when the model starts writing text, {"event": "draft", "text"} with the answer so
+far (IDs already shown as labels, a half-written bracket or COVERED line held back; each draft replaces the one
+before, since the tidying can move a label), {"event": "reset"} when text written in a round turned out not to be the
+answer (the round ended in tool calls), and last {"event": "done", "result": <what answer() returns>, "timing"}. The
+fields of each event: schemas/qa_stream.md. Its rounds are sent with "stream": true on a kept-open connection
+(scripts/llm/http_pool.py: no new SSH channel per round through the demo's port forward); on llama.cpp all rounds of a
+question go to one server slot (id_slot), so each round reuses the KV cache of the one before.
 
 Every question is logged to <output>/<course>/qa/answers.jsonl (question, steps with the full tool texts, the raw
 and final answer, the dropped IDs, tokens, time) and every model call to <output>/<course>/qa/llm_calls.jsonl.
 """
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import re
@@ -42,13 +49,13 @@ import sys
 import queue
 import threading
 import time
-import urllib.error
-import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
 
 from scripts.llm import LLM, LLMConfig, Request
 from scripts.llm.client import Result
+from scripts.llm.http_pool import POOL
 
 from .knowledge import Knowledge, fmt_time, lecture_key, qa_dir
 from .tools import run_tool, tool_specs
@@ -79,6 +86,8 @@ ROUND0_TOOL_CHOICE = "auto"
 FINAL_NUDGE = ("Answer the learner now, from the tool results above only, following the rules: IDs in square "
                "brackets after each claim, and the COVERED line at the end.")
 NO_ANSWER = "Sorry, I could not answer that just now. Please try asking again in other words."
+PIN_SLOTS = True                # llama.cpp: the rounds of one question go to one server slot (its KV cache is reused)
+THINKING_EVERY_S = 0.5          # "thinking" events at most this often
 
 ID = r"(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?"
 BRACKET = re.compile(r"\s?[\[(【]([^\[\]()【】]*?" + ID + r"[^\[\]()【】]*?)[\])】]")
@@ -117,19 +126,58 @@ def get_llm(config: str | Path | None = None, think: bool | None = None) -> LLM:
         return _llms[key]
 
 
-def warm(course: str = "nptel_vr", llm=None) -> None:
+def warm(course: str = "nptel_vr", llm=None) -> dict:
     """Load the layer and the query embedder, and start (or attach to) the model server, so that the first
-    question does not wait for them (the embedder takes about 10 s to load on the CPU, the server longer)."""
+    question does not wait for them (the embedder takes about 10 s to load on the CPU, the server longer). Then one
+    request with the system prompt and the tools, as round 0 sends them (max_tokens 1, the slot the first question
+    will use), so the server has that prefix cached. With $QA_KEEP_WARM=1 (the demo launcher sets it) the connections
+    to the model server and the embedding server are kept open between questions (http_pool.keep_warm). Returns the
+    seconds of each part."""
+    out = {}
+    t = time.time()
     kb = Knowledge.load(course)
+    out["layer_s"] = round(time.time() - t, 2)
+    t = time.time()
     emb = kb.embedder()
     if emb.model != "fake" and emb._st is None:
-        emb._compute(["warm up"])          # loads the model (embed() would not, for a text already in the cache)
-    (get_llm(llm) if llm is None or isinstance(llm, (str, Path)) else llm).start()
+        emb._compute(["warm up"])          # loads the model, or reaches the embedding server ($QA_EMBED_URL)
+    out["embedder_s"] = round(time.time() - t, 2)
+    t = time.time()
+    llm = get_llm(llm) if llm is None or isinstance(llm, (str, Path)) else llm
+    llm.start()
+    out["model_server_s"] = round(time.time() - t, 2)
+    t = time.time()
+    req = Request(prompt="Hello.", system=system_prompt(kb), tools=tool_specs(), tool_choice=ROUND0_TOOL_CHOICE,
+                  key="qa.warm", max_tokens=1, sampling={} if ROUND0_THINK else
+                  {"chat_template_kwargs": {**llm.cfg.chat_template_kwargs, "enable_thinking": False}})
+    if llm.cfg.engine == "llamacpp":
+        try:                                    # which slots are busy now, so the prefix does not wait behind them
+            with POOL.request("GET", llm.server.url + "/slots", timeout=10) as r:
+                body = r.read()
+                if r.status == 200:
+                    _slots_seen(body)
+        except (OSError, http.client.HTTPException, ValueError):
+            pass
+    with pinned_slot(llm) as slot:
+        res = stream_round(llm, req, None, lambda _: None, slot=slot)
+    out["prefix_s"] = round(time.time() - t, 2)
+    out["prefix_tokens"] = res.input_tokens
+    if res.errors:
+        out["prefix_error"] = "; ".join(res.errors)
+    if os.environ.get("QA_KEEP_WARM", "") not in ("", "0"):
+        if llm.cfg.engine == "llamacpp":
+            POOL.keep_warm(llm.server.url, "/slots", on_body=_slots_seen)
+        else:
+            POOL.keep_warm(llm.server.url)
+        if getattr(emb, "url", None):
+            POOL.keep_warm(emb.url)
+        out["keep_warm"] = True
+    return out
 
 
 def system_prompt(kb: Knowledge) -> str:
     lectures = "\n".join(f"{k}: {kb.lecture_title(k)}" for k in kb.lectures)
-    return SYSTEM_FILE.read_text().format(course_title=kb.title or kb.course, lectures=lectures)
+    return SYSTEM_FILE.read_text(encoding="utf-8").format(course_title=kb.title or kb.course, lectures=lectures)
 
 
 def user_message(kb: Knowledge, question: str, lecture: str | None) -> str:
@@ -270,13 +318,16 @@ def answer_stream(question: str, course: str = "nptel_vr", lecture: str | None =
     answer() would return (an exception in the loop gives the NO_ANSWER result with "error")."""
     q: queue.Queue = queue.Queue()
 
+    t0 = time.time()
+
     def run():
         try:
             res = _answer(question, course, lecture, llm, emit=q.put)
         except Exception as e:                    # noqa: BLE001  the viewer gets an answer, never a hung stream
             res = {"answer": NO_ANSWER, "citations": [], "steps": [], "covered": False,
                    "error": f"{type(e).__name__}: {e}"}
-        q.put({"event": "done", "result": res})
+        q.put({"event": "done", "result": res, "t": round(time.time() - t0, 3),
+               "timing": _last_timing.pop(threading.get_ident(), {})})
 
     threading.Thread(target=run, daemon=True).start()
     while True:
@@ -284,6 +335,9 @@ def answer_stream(question: str, course: str = "nptel_vr", lecture: str | None =
         yield ev
         if ev["event"] == "done":
             return
+
+
+_last_timing: dict = {}           # thread -> the timing of the answer it just streamed (read by answer_stream)
 
 
 def draft_text(kb: Knowledge, raw: str, shown: set) -> str:
@@ -300,21 +354,65 @@ def draft_text(kb: Knowledge, raw: str, shown: set) -> str:
     return cite(kb, body, shown)[0] if body else ""
 
 
-def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callable[[str], None]) -> Result:
-    """One request sent with "stream": true (the body the client builds, so the same fields as llm.generate);
-    on_text(content so far) at each piece of content; the Result as llm.generate would give it (no retries: a
-    failed stream is an error, as a failed request is)."""
+_slot_lock = threading.Lock()
+_busy_slots: set = set()
+_server_busy = {"at": 0.0, "slots": set()}     # llama.cpp's /slots as the keep-warm ping last saw it
+
+
+def _slots_seen(body: bytes):
+    d = json.loads(body)
+    if isinstance(d, list):
+        _server_busy.update(at=time.monotonic(), slots={s.get("id") for s in d if s.get("is_processing")})
+
+
+@contextmanager
+def pinned_slot(llm):
+    """llama.cpp: the lowest server slot that no question of this process is using and that the server did not show
+    busy in its last /slots answer (read by the keep-warm ping, at most a few seconds old; a pinned request waits
+    for its slot, so a slot another client is using is skipped). None: vLLM, $QA_PIN_SLOTS=0, or no slot free (the
+    server then chooses). One learner's questions thus use slot 0, which holds the system prompt from the one
+    before."""
+    cfg = getattr(llm, "cfg", None)
+    sid = None
+    if PIN_SLOTS and cfg is not None and cfg.engine == "llamacpp" and os.environ.get("QA_PIN_SLOTS", "1") != "0":
+        with _slot_lock:
+            other = _server_busy["slots"] if time.monotonic() - _server_busy["at"] < 6 else set()
+            sid = next((i for i in range(max(1, cfg.slots)) if i not in _busy_slots and i not in other), None)
+            if sid is not None:
+                _busy_slots.add(sid)
+    try:
+        yield sid
+    finally:
+        if sid is not None:
+            with _slot_lock:
+                _busy_slots.discard(sid)
+
+
+def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callable[[str], None],
+                 on_reasoning: Callable[[int], None] | None = None, slot: int | None = None) -> Result:
+    """One request sent with "stream": true (the body the client builds, so the same fields as llm.generate, plus on
+    llama.cpp "cache_prompt" and the pinned "id_slot") on a kept-open connection; on_text(content so far) at each
+    piece of content, on_reasoning(thinking characters so far) at each piece of thinking; the Result as llm.generate
+    would give it (no retries: a failed stream is an error, as a failed request is), with meta "ttft_s" (seconds to
+    the first streamed piece) and, from llama.cpp, "prompt_n" / "cache_n" (prompt tokens computed / reused)."""
     body = llm._body(req, 0, req.followup)
     res = Result(key=req.key, hash=llm._hash(body), attempts=1)
     body = {**body, "stream": True, "stream_options": {"include_usage": True}}
+    if llm.cfg.engine == "llamacpp":
+        body["cache_prompt"] = True
+        if slot is not None:
+            body["id_slot"] = slot
+            res.meta["slot"] = slot
     llm.start()
     t0 = time.time()
     content, reasoning, calls = "", "", {}
     try:
-        r = urllib.request.urlopen(urllib.request.Request(
-            llm.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
-            headers={"Content-Type": "application/json", "Accept": "text/event-stream"}), timeout=llm.cfg.timeout_s)
-        with r:
+        with POOL.request("POST", llm.server.url + "/v1/chat/completions", json.dumps(body).encode(),
+                          {"Content-Type": "application/json", "Accept": "text/event-stream"},
+                          timeout=llm.cfg.timeout_s) as r:
+            if r.status != 200:
+                raise RuntimeError(f"server rejected the request ({r.status}): "
+                                   f"{r.read().decode(errors='replace')[:500]}")
             for raw in r:
                 line = raw.decode("utf-8", "replace").strip()
                 if not line.startswith("data:"):
@@ -323,12 +421,20 @@ def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callabl
                 if data == "[DONE]":
                     break
                 d = json.loads(data)
+                res.meta.setdefault("ttft_s", round(time.time() - t0, 3))
                 if d.get("usage"):
                     res.input_tokens = d["usage"].get("prompt_tokens", 0)
                     res.output_tokens = d["usage"].get("completion_tokens", 0)
+                if d.get("timings"):
+                    tm = d["timings"]
+                    res.meta.update({k: tm[k] for k in ("prompt_n", "cache_n", "prompt_ms") if k in tm})
                 for ch in d.get("choices") or []:
                     delta = ch.get("delta") or {}
-                    reasoning += delta.get("reasoning_content") or delta.get("reasoning") or ""
+                    piece = delta.get("reasoning_content") or delta.get("reasoning") or ""
+                    if piece:
+                        reasoning += piece
+                        if on_reasoning:
+                            on_reasoning(len(reasoning))
                     for tc in delta.get("tool_calls") or []:
                         c = calls.setdefault(tc.get("index", len(calls)), {"id": "", "type": "function",
                                                                           "function": {"name": "", "arguments": ""}})
@@ -340,13 +446,13 @@ def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callabl
                         content += delta["content"]
                         on_text(content)
                     res.finish = ch.get("finish_reason") or res.finish
-    except urllib.error.HTTPError as e:
-        res.errors.append(f"server rejected the request ({e.code}): {e.read().decode(errors='replace')[:500]}")
-    except (urllib.error.URLError, ConnectionError, TimeoutError, json.JSONDecodeError) as e:
-        res.errors.append(f"stream failed: {e}")
+    except RuntimeError as e:
+        res.errors.append(str(e))
+    except (OSError, http.client.HTTPException, json.JSONDecodeError) as e:
+        res.errors.append(f"stream failed: {type(e).__name__}: {e}")
     res.content, res.reasoning, res.latency_s = content.strip(), reasoning, time.time() - t0
     res.tool_calls = [calls[i] for i in sorted(calls)]
-    if res.finish == "length":
+    if res.finish == "length" and req.max_tokens != 1:
         res.errors.append("the answer was cut off at max_tokens")
     res.ok = not res.errors
     res.parsed = res.content
@@ -356,11 +462,23 @@ def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callabl
 
 def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable[[dict], None] | None = None) -> dict:
     t0 = time.time()
-    kb = Knowledge.load(course)
     if llm is None or isinstance(llm, (str, Path)):
         llm = get_llm(llm)
     elif isinstance(llm, LLMConfig):
         llm = LLM(llm, log=lambda *a: print(*a, file=sys.stderr))
+    if emit is None:
+        return _answer_loop(question, course, lecture, llm, t0, None, None)
+    with pinned_slot(llm) as slot:              # streamed: every round of this question on one llama.cpp slot
+        return _answer_loop(question, course, lecture, llm, t0, emit, slot)
+
+
+def _answer_loop(question: str, course: str, lecture: str | None, llm, t0: float,
+                 emit: Callable[[dict], None] | None, slot: int | None) -> dict:
+    if emit is not None:
+        raw_emit = emit
+        emit = lambda ev: raw_emit({**ev, "t": round(time.time() - t0, 3)})  # noqa: E731
+    marks: dict = {}                 # when the stream first showed each thing (for the done event's timing)
+    kb = Knowledge.load(course)
     lec_key = lecture_key(lecture) if lecture not in (None, "") else None
     tools = tool_specs()
     system, user = system_prompt(kb), user_message(kb, question, lec_key)
@@ -383,21 +501,36 @@ def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable
         if emit is None:
             res = llm.generate(req, log_file=calls_log)
         else:
-            sent = [""]
+            sent, began, thought = [""], [False], [0.0]
+            think = req.sampling.get("chat_template_kwargs", {}).get("enable_thinking", True) and \
+                getattr(llm.cfg, "thinking", True)
+            emit({"event": "round", "round": rnd, "final": last, "thinking": bool(think)})
 
-            def on_text(raw: str):
+            def on_text(raw: str, rnd=rnd, last=last):
+                if not began[0] and raw.strip():
+                    began[0] = True
+                    marks.setdefault("answer_start", round(time.time() - t0, 3))
+                    emit({"event": "answer_start", "round": rnd, "forced": last})
                 d = draft_text(kb, raw, shown)
                 if d and d != sent[0]:
                     sent[0] = d
+                    marks.setdefault("first_draft", round(time.time() - t0, 3))
                     emit({"event": "draft", "text": d})
 
-            res = stream_round(llm, req, calls_log, on_text)
-            if sent[0] and res.tool_calls and not last:
-                emit({"event": "reset"})
+            def on_reasoning(n: int, rnd=rnd):
+                now = time.time()
+                if now - thought[0] >= THINKING_EVERY_S:
+                    thought[0] = now
+                    emit({"event": "thinking", "round": rnd, "chars": n})
+
+            res = stream_round(llm, req, calls_log, on_text, on_reasoning, slot=slot)
+            if began[0] and res.tool_calls and not last:
+                emit({"event": "reset", "round": rnd})
         tokens["input"] += res.input_tokens
         tokens["output"] += res.output_tokens
         timing.append({"round": rnd, "model_s": round(res.latency_s, 2), "in": res.input_tokens,
-                       "out": res.output_tokens, "think_chars": len(res.reasoning or ""), "tools": []})
+                       "out": res.output_tokens, "think_chars": len(res.reasoning or ""), "tools": [],
+                       **{k: res.meta[k] for k in ("ttft_s", "cache_n", "prompt_n", "slot") if k in res.meta}})
         if res.errors and not res.content and not res.tool_calls:
             error = "; ".join(res.errors)
             break
@@ -411,23 +544,31 @@ def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable
             name, raw = fn.get("name", ""), fn.get("arguments", "{}")
             args = parse_args(raw)
             sig = json.dumps([name, args], sort_keys=True)
+            if emit is not None:
+                emit({"event": "call", "round": rnd, "index": len(steps), "tool": name,
+                      "args": args if args is not None else raw})
+            tt = time.time()
+            res_found, label, detail = None, "A lookup went wrong; trying again", {"error": "bad arguments"}
             if args is None:
                 text, summary, ids = f"The arguments are not valid JSON: {raw!r}", "bad arguments", set()
                 found.append(None)
             elif sig in seen:
                 text, summary, ids = (f"You already called {name} with these arguments (call {seen[sig]}); its "
                                       "result is above.", "repeated call", set())
+                label, detail = "Already looked that up", {"repeated": True}
             else:
-                tt = time.time()
                 r = run_tool(kb, name, args)
                 text, summary, ids = r.text, r.summary, r.shown
+                res_found, label, detail = r.found, r.label, r.detail
                 found.append(r.found)
                 seen[sig] = len(steps) + 1
                 timing[-1]["tools"].append({"tool": name, "s": round(time.time() - tt, 3)})
             shown |= ids
             steps.append({"tool": name, "args": args if args is not None else raw, "result_summary": summary})
             if emit is not None:
-                emit({"event": "step", **steps[-1]})
+                marks.setdefault("first_step", round(time.time() - t0, 3))
+                emit({"event": "step", **steps[-1], "round": rnd, "index": len(steps) - 1,
+                      "seconds": round(time.time() - tt, 3), "found": res_found, "label": label, "detail": detail})
             full_steps.append({**steps[-1], "result": text})
             conv.append({"role": "tool", "tool_call_id": call.get("id") or f"call_{rnd}_{i}", "name": name,
                          "content": text})
@@ -448,8 +589,11 @@ def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable
            "timing": timing, "seconds": round(time.time() - t0, 2)}
     try:
         logs.mkdir(parents=True, exist_ok=True)
-        with (logs / "answers.jsonl").open("a") as f:
+        with (logs / "answers.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     except OSError:
         pass
+    if emit is not None:
+        marks["total"] = round(time.time() - t0, 3)
+        _last_timing[threading.get_ident()] = {**marks, "rounds": timing}
     return out

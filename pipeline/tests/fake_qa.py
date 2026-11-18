@@ -42,6 +42,11 @@ What it looks for (each line is what a broken piece would show):
            bracket or COVERED line; the last one the answer), a reset when a round's text ended in tool calls, and
            last done with exactly what answer() returns; its rounds not sent with "stream" or not with the same
            tools, tool_choice and thinking; its tokens not logged
+  events   (schemas/qa_stream.md) the first event not a "round" at once; a step not preceded by its "call"; a step
+           without its display label, its detail (check_concept: the concept, whether it has a definition, the
+           lectures of its facts; an unknown name: known false, the closest facts' lectures) or its time; no
+           "answer_start" before the first draft; "t" going backwards; done without its timing; on llama.cpp the
+           rounds of one question not all on one slot (id_slot) or without cache_prompt
   round 0  the round-0 switches (qa.answer.ROUND0_THINK, ROUND0_TOOL_CHOICE) not reaching round 0, or leaking into
            round 1
   vllm     qa with configs/gemma4_12b_vllm_demo.json (fake vLLM on a free port) not sending repetition_penalty, sending
@@ -83,8 +88,9 @@ def check(ok: bool, what: str):
 
 
 def snapshot(folder: Path) -> dict:
+    """Size and mtime of every file under folder, except output/logs/ (a shared llama-server writes there)."""
     return {str(p.relative_to(folder)): (p.stat().st_size, p.stat().st_mtime_ns)
-            for p in folder.rglob("*") if p.is_file()}
+            for p in folder.rglob("*") if p.is_file() and p.relative_to(folder).parts[:1] != ("logs",)}
 
 
 def free_port() -> int:
@@ -375,8 +381,36 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
 
     print("two calls in one message", flush=True)
     n0 = len(server.bodies)
-    r = ask("How do HMDs and tracking relate?")
-    tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"]
+    from qa import Knowledge as _K, run_tool as _rt
+    _kb = _K.load(COURSE)
+    SECRET = "SECRETDEF connecting concept definition text"
+    tid = next(c for c, v in _kb.concepts.items() if v["name"] == "tracking")
+    sid = next(c for c, v in _kb.concepts.items() if v["name"] == "stereoscopy")
+    saved = {c: dict(_kb.concepts[c]) for c in (tid, sid)}
+    for c in (tid, sid):                  # make them connecting concepts, with a definition that must not leak
+        _kb.concepts[c].update(defined=False, definition=SECRET + " " + _kb.concepts[c]["name"])
+    try:
+        r = ask("How do HMDs and tracking relate?")
+        tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"]
+        cc = _rt(_kb, "check_concept", {"name": "tracking"})
+        dp = _rt(_kb, "lecture_dependencies", {"lecture": "6"})
+        transcript = json.dumps(server.bodies[n0:]) + cc.text + dp.text + json.dumps([(s["result_summary"], s.get("label")) for s in r["steps"]])
+        facts_of_c = [f for f in saved[tid].get("facts", []) if f in _kb.facts]
+        check(SECRET not in transcript and "Definition: none" in cc.text and "built from" not in cc.text
+              and "Defined in:" not in cc.text and all(f in cc.text for f in facts_of_c[:3]) and facts_of_c
+              and cc.detail["concepts"][0]["defined"] is False
+              and "definition found" not in cc.label and "facts found" in cc.label,
+              f"connecting concept: no definition text anywhere, facts shown, defined false ({cc.label!r})")
+        check(SECRET not in dp.text and "- stereoscopy (2 uses; first met in lecture 2)" in dp.text
+              and "2/S2/F3" in dp.text, "lecture_dependencies: a connecting concept shows facts, no definition")
+    finally:
+        for c, v in saved.items():
+            _kb.concepts[c].clear()
+            _kb.concepts[c].update(v)
+    dd = _rt(_kb, "check_concept", {"name": "stereoscopy"})
+    check("Definition: Stereoscopy" in dd.text and dd.detail["concepts"][0]["defined"] is True
+          and "definition found" in dd.label and "first defined in lecture 2" in
+          _rt(_kb, "lecture_dependencies", {"lecture": "6"}).text, f"a defined concept keeps its definition ({dd.label!r})")
     check(tools_of(r) == ["check_concept", "check_concept"]
           and [s["args"]["name"] for s in r["steps"]] == ["HMDs", "tracking"]
           and [m["tool_call_id"] for m in tm] == ["call_check_concept_0", "call_check_concept_1"],
@@ -439,19 +473,49 @@ def test_stream(cfg: LLMConfig, server: QAFake):
     import qa
     llm = LLM(cfg, log=lambda *a: None)
     ask = lambda q, **kw: qa.answer(q, course=COURSE, llm=llm, **kw)  # noqa: E731
-    kinds = lambda evs: [e["event"] for i, e in enumerate(evs)  # noqa: E731
-                         if i == 0 or e["event"] != evs[i - 1]["event"]]
+    OLD = ("step", "draft", "reset", "done")         # the events the page has read since the stream was added
+    kinds = lambda evs: [e["event"] for i, e in enumerate(old) if i == 0 or e["event"] != old[i - 1]["event"]] \
+        if (old := [e for e in evs if e["event"] in OLD]) else []  # noqa: E731
 
     print("streaming (answer_stream)", flush=True)
     n0 = len(server.bodies)
     evs = stream_events("What is an HMD?", llm)
     sent = server.bodies[n0:]
     blocking = ask("What is an HMD?")
-    check(kinds(evs) == ["step", "draft", "done"] and evs[0]["tool"] == "check_concept"
-          and evs[0]["args"] == {"name": "HMD"} and "head-mounted display" in evs[0]["result_summary"],
+    s0 = next(e for e in evs if e["event"] == "step")
+    check(kinds(evs) == ["step", "draft", "done"] and s0["tool"] == "check_concept"
+          and s0["args"] == {"name": "HMD"} and "head-mounted display" in s0["result_summary"],
           f"events: the step, then drafts, then done ({kinds(evs)})")
     check(evs[-1]["result"] == blocking, "done's result equals answer()'s for the same question")
     check_drafts(evs, blocking, "one tool call")
+    names = [e["event"] for e in evs]
+    step, call_ = next(e for e in evs if e["event"] == "step"), next(e for e in evs if e["event"] == "call")
+    ts = [e["t"] for e in evs]
+    check(names[0] == "round" and evs[0]["round"] == 0 and evs[0]["final"] is False and evs[0]["t"] < 0.5
+          and all(isinstance(t, float) or isinstance(t, int) for t in ts) and ts == sorted(ts),
+          f"the first event is round 0, at once ({evs[0]}); every event has a non-decreasing t")
+    check(names.index("call") < names.index("step") and call_["tool"] == step["tool"] == "check_concept"
+          and call_["args"] == step["args"] and step["round"] == 0 and step["index"] == 0
+          and isinstance(step["seconds"], float) and step["found"] is True,
+          "a call event before its step; the step with round, index, seconds and found")
+    d = step.get("detail") or {}
+    check(d.get("known") is True and d.get("concepts") and d["concepts"][0]["name"] == "head-mounted display"
+          and isinstance(d["concepts"][0]["defined"], bool) and d.get("facts", 0) > 0 and d.get("lectures")
+          and all(isinstance(k, str) for k in d["lectures"])
+          and step.get("label", "").startswith('Looked up "head-mounted display"') and "/F" not in step["label"],
+          f"check_concept's step: label and detail (concept, definition found, facts and their lectures) "
+          f"({step.get('label')!r}, {d})")
+    check(names.index("answer_start") < names.index("draft") and names.index("answer_start") > names.index("step")
+          and next(e for e in evs if e["event"] == "answer_start")["round"] == 1 and "thinking" in names,
+          f"thinking events, then answer_start (round 1) before the first draft ({names})")
+    tm = evs[-1].get("timing") or {}
+    check(tm.get("first_step") is not None and tm.get("first_draft") is not None
+          and tm.get("first_step") <= tm.get("answer_start") <= tm.get("first_draft") <= tm.get("total")
+          and len(tm.get("rounds", [])) == 2 and "ttft_s" in tm["rounds"][0] and evs[-1]["t"] >= tm["total"],
+          f"done carries the timing: first step, answer start, first draft, total, the rounds ({tm})")
+    check(all(b.get("cache_prompt") is True for b in sent) and sent[0].get("id_slot") == 0
+          and sent[1].get("id_slot") == 0 and tm["rounds"][0].get("slot") == 0,
+          f"llama.cpp: both rounds sent with cache_prompt and to one slot ({[b.get('id_slot') for b in sent]})")
     ctk = lambda b: b.get("chat_template_kwargs") or {}  # noqa: E731
     check(len(sent) == 2 and all(b.get("stream") is True and b.get("stream_options") == {"include_usage": True}
                                  for b in sent)
@@ -470,12 +534,16 @@ def test_stream(cfg: LLMConfig, server: QAFake):
     check(kinds(evs) == ["step", "draft", "done"] and [s["args"]["name"] for s in steps] == ["HMDs", "tracking"]
           and evs[-1]["result"] == blocking,
           "two calls in one message: two step events in order (tool-call deltas assembled by index); done == answer()")
+    order = [(e["event"], e.get("tool")) for e in evs if e["event"] in ("call", "step")]
+    check(order == [("call", "check_concept"), ("step", "check_concept")] * 2
+          and [s["index"] for s in steps] == [0, 1],
+          f"two calls: call, step, call, step, indexes 0 and 1 ({order})")
     check_drafts(evs, blocking, "two cards")
 
     evs = stream_events("Talk first, then search", llm)
     blocking = ask("Talk first, then search")
     check(kinds(evs) == ["draft", "reset", "step", "draft", "done"]
-          and evs[0]["text"].startswith("Let me") and evs[-1]["result"] == blocking
+          and next(e for e in evs if e["event"] == "draft")["text"].startswith("Let me") and evs[-1]["result"] == blocking
           and "Let me look" not in blocking["answer"] and len(blocking["citations"]) == 1,
           f"text written before tool calls: drafted, then reset, then the step and the answer's drafts "
           f"({kinds(evs)}; answer {blocking['answer']!r})")
@@ -521,6 +589,9 @@ def test_vllm(work: Path, env: dict, ref: dict):
               and ctk(b0).get("enable_thinking") is True and ctk(b1).get("enable_thinking") is False,
               "vLLM body: repetition_penalty (not repeat_penalty), no thinking_token_budget, the five tools, "
               "tool_choice auto, thinking on in round 0 and off after")
+        streamed = [b for b in server.bodies[n0:] if b.get("stream")]
+        check(streamed and not any("id_slot" in b or "cache_prompt" in b for b in streamed),
+              "vLLM: streamed rounds carry no llama.cpp fields (id_slot, cache_prompt)")
         check(r == ref and evs[-1]["result"] == ref,
               "the same answer as through the llama.cpp config, blocking and streamed")
     finally:

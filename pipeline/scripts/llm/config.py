@@ -102,13 +102,14 @@ class LLMConfig:
 
     def save(self, path: str | Path):
         """Write the config as JSON (load it back with LLMConfig.load)."""
-        Path(path).write_text(json.dumps(self.to_dict(), indent=1) + "\n")
+        Path(path).write_text(json.dumps(self.to_dict(), indent=1) + "\n", encoding="utf-8")
 
     @classmethod
     def load(cls, path: str | Path) -> "LLMConfig":
         """Read a config from .json or .toml (top-level keys are the field names)."""
         p = Path(path)
-        d = tomllib.loads(p.read_text()) if p.suffix == ".toml" else json.loads(p.read_text())
+        text = p.read_text(encoding="utf-8")
+        d = tomllib.loads(text) if p.suffix == ".toml" else json.loads(text)
         known = {f.name for f in fields(cls)}
         unknown = set(d) - known
         if unknown:

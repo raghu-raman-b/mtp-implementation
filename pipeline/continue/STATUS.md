@@ -1,3 +1,28 @@
+PIPELINE v3 STATUS - DEMO PREP  (updated 10:25 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
+
+MERGED: S1 display rules (075f045), S2 QA facts-only (5ef2d4b), S3 KaTeX (7620342); design C mockups + user's changes
+  in analysis/demo/design_c/ (7021d51)
+RUNNING: O1 design C build (Opus, ~14:30 + review), S6 part titles (local GPU, ~11:30), S7 failure inventory (~11:00)
+NEXT: O3 baselines (GPU after S6, ~17:00); O4 docs from ~15:15 (baselines added after O3, ~18:00); O5 DEMO_PLAN
+  (GPU after O3, ~18:30); rehearsal after the user's docs + slides
+
+PIPELINE v3 STATUS - DEMO PREP WAVE 1  (updated 10:15 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
+
+RUNNING (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only for connecting concepts, S3 KaTeX offline,
+  S6 part titles (Gemma 4 12B, local GPU), S7 code-only failure inventory (O2 dropped: no Opus-decided merges)
+WAITING: user's design pick (gates O1)
+NEXT: O1 design build (~11:00-15:45), O3 baselines (GPU after S6, ~17:00), O5 DEMO_PLAN, O4 docs (+ Windows setup,
+  what-fails table from S7) ~19:00, rehearsal
+
+PIPELINE v3 STATUS - DEMO PREP  (updated 00:05 IST, 18 Nov; full state + decisions: pipeline/continue/PROMPT.md)
+
+DONE: docs v3 (pipeline/docs/pipeline.html, sources docs/src/); remote-model demo setup (model on the instance, app on
+  the Windows laptop; ec2_model_server.sh, python -m demo, run_demo.ps1); design mockups (3 directions) on the canvas
+WAITING: user's design pick; baseline tests paused (branch worktree-agent-ac043cfbb4e8a782d, baseline-tests/STATE.md)
+NEXT: design build + weak-spot fixes + part titles (Gemma 12B) in parallel -> docs update -> DEMO_PLAN -> rehearsal
+DECIDED: no cards/definitions for connecting concepts (facts only); recaps = passing points; crosswords = failed words
+  pre-filled; pause at segment ends with activities overlaid; no demo fallback
+
 PIPELINE v3 STATUS - MVP REBUILT  (updated 17:20 IST, 17 Nov; full state: pipeline/continue/PROMPT.md)
 
 DONE TODAY: layer rebuilt and merged (d3896b9): 3,122 concepts (synonym merge), real definitions (1,316 = glossary),

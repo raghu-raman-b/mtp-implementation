@@ -53,6 +53,145 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
+## State (updated 2026-11-18 00:05 IST) — READ THIS FIRST; it supersedes the older sections below where they differ
+
+**Roles now (user, 2026-11-17/18).** The main session is the **reviewer + orchestrator**: it briefs agents, reviews
+their output, merges to main and pushes. Opus agents (worktrees) write code and docs. Fable only decides and reviews,
+never writes (memory `fable-review-only`); when Fable is unavailable, Opus agents review. The user may skip a review
+("no review needed"): then merge after the agent's own tests. Do not run agents unrelated to the demo. Cache-warm pings
+only when the user asks.
+
+**Goal: the best possible demo of the MVP** (nptel_vr, 63 lectures). The user writes the slides themselves.
+**No fallback on demo day** (user: "we rawdog this"): no replay mode, no recorded backup.
+
+### Done on 2026-11-17 evening (main 6cc8c67, pushed)
+- **Docs v3**: `pipeline/docs/pipeline.html` (one offline page, ~551 KB; Parts I–V + appendix; story of v1 -> v2 -> v3
+  with real failed prompts, "why this pipeline" vs plain LLM / RAG / GraphRAG (argued, not measured yet), "why this
+  design" (14 arguments, each marked measured/argued), every stage with prompts, samples, commands, times; Evaluation
+  part with every eval set written out and what-fails-where tables; upcoming fixes; future work). Sources:
+  `pipeline/docs/src/` — rebuild with `python3 pipeline/docs/src/build.py <repo root>` (byte-identical). Opus-reviewed,
+  fixes applied (01df357). Has a placeholder "Measured comparison (baseline tests)" to fill.
+- **Remote-model demo setup** (merged 6cc8c67, user skipped review): model on the GPU instance only, app on the
+  laptop. Instance: `pipeline/demo/ec2_model_server.sh --engine llamacpp|vllm` (asks if no flag; `--status`, `--stop`,
+  `--no-embed`; vLLM needs ≥40 GB). The query embedder also runs there (`demo/embed_server.py`, cosine ≥0.9997 vs stored
+  vectors), so the laptop needs only numpy. Laptop: `python -m demo setup|run|check|bench|push|tunnel`
+  (`demo/launcher.py`, stdlib only); Windows wrappers `setup_windows.ps1`, `run_demo.ps1` (-Check, -Bench, -Push).
+  Stream events documented in `pipeline/schemas/qa_stream.md` (round, thinking, call, step with display line + details,
+  answer_start, done; every event has `t`). Tests: fake_qa, viewer_smoke, demo_remote pass (fake_qa's "nothing under
+  output/ changed" trips only while the shared llama-server writes its log). NOT yet run on Windows, a real instance,
+  or vLLM: checklist in `analysis/demo/remote_setup.md` (do it at the rehearsal).
+- **Design mockups** (not code): canvas https://claude.ai/artifact/UDrY88AbBdhTbKoRHQ3HDm, 3 directions × 6 screens
+  (roadmap, lecture player with quiz overlay + caption-to-notes, activities tab, recap tab with animated cards, Ask
+  full-window chat with the "what the model is doing" sequence, lecture/concept maps): A Folio (editorial, light),
+  B Theatre (dark cinematic, raw tool-call trace in Ask), C Signal (bold product, light + dark glass player; phone view).
+  Working copies: scratchpad `design/project/` (may be gone; the canvas is the source). **The user has not picked yet**;
+  recommended: C Signal + B's tool-call trace in Ask.
+
+### In flight
+- **Baseline tests** (Opus agent, branch `worktree-agent-ac043cfbb4e8a782d`, folder `baseline-tests/`): ours vs plain
+  LLM vs RAG over transcripts vs GraphRAG-style/graph-only, same Gemma 4 12B on the local GPU, ~50 questions with gold,
+  Opus-judged (correct, hallucination, citation validity, context tokens, latency). **Paused 00:10 on 11-18, WIP commit
+  932c303** (branch pushed). 53 questions (9 categories, gold + fact IDs); ours, plain and RAG (738 chunks, top 8) ran on
+  all 53; light GraphRAG extraction 176/476 text units (graph, community reports and its answers not run); long context:
+  all transcripts = 244,971 tokens, 1.87× the 131,072 context. PARTIAL (24 of 53 judged: definitions, explanations,
+  comparisons, lists; ours/plain/RAG only): correct ours 1.00 / RAG 0.96 / plain 0.79; hallucinations 1 / 0 / 5; valid
+  citations 108/110 / 118/121 / none. Median latency 6.5 / 3.85 / 1.56 s. RAG nearly ties on the easy categories; the
+  not-covered, where, prerequisite, structure and formula questions (where systems should differ most) are not judged
+  yet. Resume with the commands in `baseline-tests/STATE.md` (~45–60 min extraction, then judge 29 + GraphRAG), then
+  merge, then fill the docs placeholder. RAG embeddings not committed (`python3 rag.py build`, 27 min CPU).
+  **Docs must include the method** (user, 00:15): how each system was built and run (chunking, embedding, top-k,
+  prompts, GraphRAG extraction/communities/reports/query, model and sampling, the judge and its criteria, how to
+  rerun), the full question set, and per-category tables, not only the results. **Fairness points to settle before
+  finishing** (raised by the orchestrator, for the user to confirm): the GraphRAG query leaves out source text units
+  (real GraphRAG local search includes them; run it with text units, optionally also without); the baselines run with
+  thinking off while ours thinks in round 0 (consider a RAG run with thinking on); one sample per question at
+  temperature 1.0 (consider 2–3 runs on the categories that differ).
+
+### Decisions recorded (user, 2026-11-17/18)
+- **Lecture experience**: roadmap (sequential) · lecture map · concept map as the top tabs; a lecture opens with the
+  video playing full-window, own controls only; the video is cut by segment (play ranges; no file cutting) and **pauses
+  at each segment end with the activities overlaid** (start: goal + prerequisites + recall; after each part: recap ->
+  quiz (+ put in order where it exists); end: complete the map, match pairs, crossword, odd one out, open question);
+  subtitle sentences clickable -> saved to Notes with ID and time, shown at the end; an **Activities tab** with all
+  activities; a **Recap tab** with animated cards; activities animated; **Ask is the highlight**: its own full-window
+  professional chat, sample questions, and a "what the model is doing" sequence from the stream events (concepts
+  loaded, facts checked, writing the answer). Clean, uncluttered, professional fonts, responsive.
+- **Connecting concepts** (concepts with `defined: false`, 1,806): **no concept cards, not in the glossary, a different
+  (muted, non-clickable) representation in the concept graph; never use their model-written definition anywhere** —
+  in QA (check_concept etc.) give the model their lecture **facts only**. Only the 1,316 defined concepts have cards and
+  are in the glossary. (Yesterday's viewer brief wrongly kept their cards open; fix in the redesign.)
+- **Recaps**: show only judge-passing points; hide the summary text when it failed (222 of 347 texts; 371 failed
+  points); 6 recaps with no passing point vanish (that break shows only the quiz). Display-side, no regeneration.
+- **Crosswords with failed clues**: keep the grid, show the failed words **pre-filled**; never show their clues.
+- **Part (segment) titles**: the design needs a short title per segment (386; the data has only goals). **Generate them
+  with Gemma 4 12B from the segment's facts and goal** (3–6 words; code check on length/wording; review a sample).
+- Still to do from the weak-spot list: duplicate concepts (HMD / VR headset, interaction / user interaction, iOS /
+  iPhone OS) via a reviewed merge list + remap (code); the FOV alias on horizontal field of view; odd alias lists
+  (fragments/generic words); KaTeX for formulas in answers (vendored, offline). Warm-up at start is done (setup merge).
+
+### UPDATE 2026-11-18 10:15 IST (user) — supersedes the FINAL TASK LIST below where they differ
+- **O2 dropped.** No Opus-decided merge list or alias removal list: a stronger model must not decide changes to pipeline
+  outputs (memory `no-stronger-model-fixes`). Duplicates/aliases are not fixable by display rules (no pipeline signal).
+  Instead **S7 (Sonnet)**: code-only failure inventory `analysis/failures/inventory.{py,json,md}` (every failure kind:
+  activities, crosswords, recaps, duplicates/aliases by code rules, 2c flags, 0a, part titles; with how each was handled:
+  fixed in the pipeline / display rule / hidden / not fixed) -> O4 turns it into the docs' "what fails where" table.
+- Part titles contract: `output/<course>/stage_4e_part_titles/titles.json` = {"run", "segments": {"1/S0": {"title"|null,
+  "ok", "problems"}}}; failed titles stay null (no one fills them in). S1 exposes `title` per segment in /api/view.
+- O3: ours does not need a rerun (layer unchanged); GPU order S6 -> O3 -> O5.
+- **O4 also documents the demo setup on a Windows machine** (user, 10:15): setup_windows.ps1, run_demo.ps1 (-Check,
+  -Bench, -Push), python -m demo, tunnel to the instance; mark it untested on real Windows until the rehearsal.
+- **10:25**: S1, S2, S3 merged. User picked **design C (Signal)** with changes (home: no stats, no course goals,
+  keep the 12-week route and the dev mode toggle; player: subtitles centred; an activity hides subtitles and controls
+  and blurs the video). Mockups + changes: `analysis/demo/design_c/`. O1 (Opus) building since 10:25 (C's Ask rail,
+  B's raw tool-call trace as a collapsed detail per step; null part title -> "Part N").
+  New schedule: S7 ~11:00, S6 ~11:30, O1 ~14:30 + review ~15:15, O3 11:30-17:00, O4 15:15-18:00 (baselines last),
+  O5 17:00-18:30.
+- Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
+  (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
+- Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;
+  O5 17:00-18:30; O4 17:00-19:00; rehearsal after the user's docs + slides.
+
+### FINAL TASK LIST (user-approved 2026-11-18 00:25; supersedes "Next" below). Sonnet = simple, Opus = complex.
+Baselines: finish GraphRAG (run it WITH source text units, and also without) + add two ablations of ours
+(facts only = fact_lookup alone; graph only = concept cards/prerequisites/overview/goals, no fact search) + RAG with
+thinking on + 2–3 runs on the categories that differ. Local GPU fits one model: order GPU users S6 -> O3 -> O5.
+- Wave 0 (user): design pick.
+- Wave 1 (parallel):
+  - S1 (Sonnet) serve.py display rules as API data: recaps = passing points only (failed text dropped, empty recaps
+    dropped); crossword failed entries `prefilled: true`, clue removed; connecting concepts: no card route, glossary
+    defined-only, map nodes flagged `connecting`. Keep viewer_smoke passing.
+  - S2 (Sonnet) qa: connecting concepts never return a definition, facts only (check_concept etc.); fake_qa test;
+    also make fake_qa's output snapshot ignore `output/logs/`.
+  - S3 (Sonnet) KaTeX vendored into viewer/vendor (offline) + a `renderMath(el)` helper for the design build.
+  - S6 (Sonnet, local GPU) part titles: Gemma 4 12B, one 3–6-word title per segment (386) from its facts + goal; code
+    check + retry; output into the knowledge layer; Opus reviews a sample.
+  - O2 (Opus) duplicates + aliases: candidate finder (shared alias, name = other's alias, acronym expansion, generic
+    head, embedding similarity) -> Opus reviewer decides -> `stage_3_registry/merge_overrides.json` -> 3c applies
+    (survivor = the defined concept, its ID + definition) -> 4c/4d rebuilt (code) -> activity concept IDs remapped,
+    code-made kinds rebuilt -> alias rules (shared alias kept only where defined; generic head word; fragments) with a
+    reviewed removal list -> 4d ref check, activities --check, viewer smoke.
+- Wave 2: O1 (Opus) build the chosen design (after S1–S3 merge; renders S1's flags, S3's math, S6's titles);
+  O3 (Opus, GPU after S6) baselines as above, Opus-judged, README with method + tables + examples.
+- Wave 3: O4 (Opus) docs update (baseline method/results/ablations, fixes, part titles, new viewer, remote setup);
+  O5 (Opus, GPU) DEMO_PLAN rewrite on the new build.
+- Wave 4: rehearsal (user + orchestrator) after the user's docs and slides.
+Orchestrator reviews every merge (Opus reviewer for O-tasks unless the user waives).
+
+### Next (in order)
+1. **User picks the design** on the canvas (and any mix).
+2. In parallel: (a) a **fresh Opus agent builds the chosen design** into `pipeline/viewer/` (keep the speed work and
+   routes; includes the viewer-side fixes: recap/crossword display rules, connecting concepts, KaTeX, part titles shown);
+   (b) **weak-spot fixes, data side** (duplicates merge list, aliases; connecting-concept facts-only in QA);
+   (c) **part titles** with Gemma 4 12B on the local GPU (free it first: the baseline agent used the shared llama-server
+   on 8092).
+3. **Docs update** with the baseline results, the weak-spot fixes, part titles and the new viewer (edit
+   `pipeline/docs/src/`, rebuild).
+4. **DEMO_PLAN.md update** for the new design (screens, chat flow, item IDs, questions rechecked).
+5. **Rehearsal** once the user has finished docs + slides: Windows laptop + an instance near the venue, run the
+   `analysis/demo/remote_setup.md` checklist, network test first (SSH to us-east-1 was ~40 kB/s from the user's network).
+6. Later: plan the next course's MVP run (deep learning; ask which dataset: `mit_6_7960_deep_learning` or
+   `introduction_to_machine_learning`).
+
 ## State (updated 2026-11-15 13:10 IST)
 
 **2026-11-15 session: complete the MVP (user).** Git tag `mvp-2026-11-13` marks the MVP as it was demoed.

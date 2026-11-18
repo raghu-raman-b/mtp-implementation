@@ -11,7 +11,7 @@ playback). Lecture 63's segment map is removed in the copy, so one lecture has n
 Servers listen on free ports (never 8094 or 8095, the SSH forward to the EC2).
 
 What it looks for (each line is what a broken viewer server would show):
-  static     the page, app.js, style.css or the vendored dagre not served, or served with the wrong type;
+  static     the page, app.js, style.css or the vendored dagre or KaTeX (js, css, a woff2 font) or math.js not served, or served with the wrong type;
              a path outside the viewer folder served (../)
   course     /api/course missing a lecture of titles.tsv, the layers not reported, a lecture's goal or flags wrong
   lecture    a lecture route failing; segments missing; knowledge not used where it exists (1-8), the 1b fallback
@@ -32,6 +32,12 @@ What it looks for (each line is what a broken viewer server would show):
   judge      a judge-failed item (checks.json "flags": {"judge_failed"}) not reported with its criteria, or the
              per-kind rule not applied (a quiz item failed on "answerable" not hidden, one failed only on
              "no_giveaway" hidden; a crossword hidden)
+  display    the display rules (serve.py "Display rules"): a recap point the judge failed still sent, a failed recap text
+             kept, a recap with no passing point not dropped; a crossword entry with a failed clue not "prefilled" or
+             still carrying its clue, a passing one not "prefilled": false; a connecting concept (defined: false) with a
+             card, in the glossary, with its definition anywhere in any route's JSON, or a map node (view, map.nodes,
+             coursemap, activity maps) not flagged "connecting"; part titles not null without
+             stage_4e_part_titles/titles.json, wrong with one (ok false -> null), or not picked up after a change
   versioned  index.html without ?v= on its static files; a versioned file without the long immutable cache
   stream     /api/ask_stream: not one JSON event per line, the qa's step/draft/reset events not passed on in order,
              no final "done" with the answer; a qa without answer_stream or no qa: not a single "done" like /api/ask
@@ -101,6 +107,12 @@ def make_root(root: Path, knowledge: Path | None, activities: bool):
     (media / "L01.mp4").write_bytes(VIDEO)
     if knowledge:
         shutil.copytree(knowledge, dst / "knowledge")
+        cf = dst / "knowledge" / "concepts.json"
+        cs = json.loads(cf.read_text())
+        for cid, c in cs.items():                      # a connecting concept with a definition to look for in the routes
+            if c.get("defined") is False and not c.get("definition"):
+                c["definition"] = f"Seeded definition text of {cid} that must not leave the server."
+        cf.write_text(json.dumps(cs, indent=1))
     if activities and knowledge:
         write_activities(dst / "knowledge", dst / "activities", ["1", "2", "3"])
 
@@ -204,15 +216,22 @@ def write_checks(ad: Path, acts: list[dict]):
     quiz = [a["id"] for a in acts if a["kind"] == "quiz"][:2]
     cw = next(a["id"] for a in acts if a["kind"] == "crossword")
     odd = next(a["id"] for a in acts if a["kind"] == "odd_one_out")
+    recaps = [a["id"] for a in acts if a["kind"] == "recap"]
 
-    def judged(aid, crit):
-        return {"status": "ok", "activity": aid, "flags": {"judge_failed": [1]},
-                "judge": {"rounds": [{"status": "ok", "verdicts": [{"item": 1, "pass": False, "failed": crit,
-                                                                    "reason": "a reason"}], "failed_items": [1]}],
-                          "kept": "original", "failed_items": [1]}}
+    def judged(aid, crit, nums=(1,)):
+        return {"status": "ok", "activity": aid, "flags": {"judge_failed": list(nums)},
+                "judge": {"rounds": [{"status": "ok", "verdicts": [{"item": n, "pass": False, "failed": crit,
+                                                                    "reason": "a reason"} for n in nums],
+                                      "failed_items": list(nums)}],
+                          "kept": "original", "failed_items": list(nums)}}
+    recap_units = {}
+    if len(recaps) >= 2:       # recap 0: its text and point 1 failed; recap 1: every point failed (n points, text ok)
+        recap_units = {"recap:1/a": judged(recaps[0], ["supported"], (0, 1)),
+                       "recap:1/b": judged(recaps[1], ["supported"], tuple(range(1, 1 + len(
+                           next(a for a in acts if a["id"] == recaps[1])["data"]["points"]))))}
     (ad / "checks.json").write_text(json.dumps({"lectures": {"1": {
         "quiz": {"quiz:1/a": judged(quiz[0], ["answerable", "no_giveaway"]), "quiz:1/b": judged(quiz[1], ["no_giveaway"])},
-        "crossword": {"crossword:1": judged(cw, ["clear"])},
+        "crossword": {"crossword:1": judged(cw, ["clear"])}, "recap": recap_units,
         "odd_one_out": {"odd_one_out:1": {"status": "unresolved", "activity": odd, "problems": ["two odd ones"]}}}}}))
 
 
@@ -229,7 +248,8 @@ def write_fake_qa(folder: Path, raising: bool = False, stream: bool = False):
                  "    yield {'event': 'draft', 'text': 'Wrong start'}\n"
                  "    yield {'event': 'reset'}\n"
                  "    yield {'event': 'draft', 'text': 'echo:'}\n"
-                 "    yield {'event': 'done', 'result': answer(question, course, lecture)}\n")
+                 "    yield {'event': 'done', 'result': answer(question, course, lecture), 't': 0.5,\n"
+                 "           'timing': {'total': 0.5}}\n")
     (folder / "qa" / "__init__.py").write_text(body)
 
 
@@ -295,7 +315,11 @@ def test_full(srv: Server, root: Path):
     out = root / "output" / COURSE
     print("static", flush=True)
     for path, ctype in (("/", "text/html"), ("/static/app.js", "javascript"), ("/static/style.css", "text/css"),
-                        ("/static/vendor/dagre.min.js", "javascript")):
+                        ("/static/vendor/dagre.min.js", "javascript"), ("/static/math.js", "javascript"),
+                        ("/static/vendor/katex/katex.min.js", "javascript"),
+                        ("/static/vendor/katex/contrib/auto-render.min.js", "javascript"),
+                        ("/static/vendor/katex/katex.min.css", "text/css"),
+                        ("/static/vendor/katex/fonts/KaTeX_Main-Regular.woff2", "font/woff2")):
         code, hd, body = srv.get(path)
         check(code == 200 and ctype in hd.get("Content-Type", "") and len(body) > 100, f"{path} served ({code})")
     code, _, _ = srv.get("/static/../serve.py")
@@ -348,12 +372,12 @@ def test_full(srv: Server, root: Path):
     print("data", flush=True)
     kd, ad = out / "knowledge", out / "activities"
     files = sorted(str(p.relative_to(kd)) for p in kd.rglob("*.json") if p.name != "fact_embeddings.json")
-    bad = [f for f in files if srv.get(f"/data/knowledge/{f}")[2] != (kd / f).read_bytes()]
+    bad = [f for f in files if f != "concepts.json" and srv.get(f"/data/knowledge/{f}")[2] != (kd / f).read_bytes()]
     check(not bad and len(files) == 8 + len(list((kd / "lectures").glob("*.json"))) and len(files) > 8,
-          f"every knowledge/ file served as is ({len(files)} files) {bad[:3]}")
+          f"every knowledge/ file served as is, but the filtered concepts.json ({len(files)} files) {bad[:3]}")
     afiles = sorted(p.name for p in ad.glob("*.json"))
-    bad = [f for f in afiles if srv.get(f"/data/activities/{f}")[2] != (ad / f).read_bytes()]
-    check(not bad and len(afiles) == 5, f"every activities/ file served as is ({len(afiles)}) {bad[:3]}")
+    bad = [f for f in afiles if not f.startswith("lec_") and f != "course.json" and srv.get(f"/data/activities/{f}")[2] != (ad / f).read_bytes()]
+    check(not bad and len(afiles) == 5, f"every activities/ file served as is, but the filtered lec_<n>.json ({len(afiles)}) {bad[:3]}")
     check(srv.get("/data/knowledge/fact_embeddings.json")[0] == 404, "fact_embeddings.json not served")
     check(srv.get("/data/activities/lec_9.json")[0] == 404 and srv.get("/data/knowledge/lectures/lec_9.json")[0] == 404
           and srv.get("/data/knowledge/../index.json")[0] == 404, "missing or outside files are 404")
@@ -423,17 +447,16 @@ def test_lean(srv: Server, root: Path):
           f"/api/view/5 'before': the lecture-graph links into it, with their concepts ({want})")
     check(srv.get("/api/view/99")[0] == 404 and srv.get("/api/view/..")[0] == 404, "an unknown lecture view is 404")
     code, G = srv.json("/api/glossary")
-    listed = [c for c in G["concepts"] if c.get("listed") is not False]
+    listed = G["concepts"]
     has_flag = any("defined" in c for c in concepts.values())
     want_listed = sorted(cid for cid, c in concepts.items() if not has_flag or c.get("defined") is True)
     check(code == 200 and sorted(c["id"] for c in listed) == want_listed and all("linked" in c for c in G["concepts"]),
           f"/api/glossary lists exactly the concepts 4a defined ({len(listed)} of {len(concepts)}), each with 'linked'")
-    check(all(c.get("linked") and "definition" not in c for c in G["concepts"] if c.get("listed") is False)
-          and G.get("connecting") == len(concepts) - len(want_listed),
-          f"connecting concepts: only the linked ones, by name, for the explorer's search ({G.get('connecting')})")
-    other = next((cid for cid, c in concepts.items() if has_flag and c.get("defined") is not True), next(iter(concepts)))
+    check(G.get("connecting") == len(concepts) - len(want_listed) and not any(c.get("listed") is False for c in listed),
+          f"connecting concepts are not in the glossary, only counted ({G.get('connecting')})")
+    other = next(iter(want_listed))
     code, CC = srv.json(f"/api/concept/{other}")
-    check(code == 200 and CC["name"] and "relations" in CC and "facts" in CC, f"a connecting concept's card opens ({other})")
+    check(code == 200 and CC["name"] and "relations" in CC and "facts" in CC, f"a defined concept's card opens ({other})")
     check(srv.get("/api/concept/C9999")[0] == 404, "an unknown concept is 404")
     code, M = srv.json("/api/coursemap")
     check(code == 200 and "links" in M and "introduced" in M and "names" in M, f"/api/coursemap ({code})")
@@ -461,6 +484,8 @@ def test_lean(srv: Server, root: Path):
     check(odd.get("unresolved") is True and not any(by[x].get("judge_failed") for x in by if by[x]["kind"] == "recap"),
           "an unresolved activity is marked; nothing invented for the others")
 
+    test_display(srv, root)
+
     print("versioned", flush=True)
     code, hd, body = srv.get("/")
     import re as _re
@@ -472,6 +497,143 @@ def test_lean(srv: Server, root: Path):
           f"a versioned static file is cached for good ({hd.get('Cache-Control')})")
     code, hd, _ = srv.get("/static/app.js")
     check(hd.get("Cache-Control") == "no-cache" and hd.get("ETag"), "an unversioned static file is revalidated (ETag)")
+
+
+def walk(o):
+    """Every dict of a JSON value."""
+    if isinstance(o, dict):
+        yield o
+        for v in o.values():
+            yield from walk(v)
+    elif isinstance(o, list):
+        for v in o:
+            yield from walk(v)
+
+
+def test_display(srv: Server, root: Path):
+    print("display", flush=True)
+    out = root / "output" / COURSE
+    kd, ad = out / "knowledge", out / "activities"
+    concepts = json.loads((kd / "concepts.json").read_text())
+    facts = json.loads((kd / "facts.json").read_text())
+    conn = {c for c, x in concepts.items() if x.get("defined") is False}
+    check(len(conn) > 0 and len(conn) < len(concepts), f"the synthetic layer has connecting and defined concepts ({len(conn)})")
+
+    # recaps (lecture 1: recap a lost its text and point 1, recap b lost every point)
+    raw = json.loads((ad / "lec_1.json").read_text())["activities"]
+    rraw = [a for a in raw if a["kind"] == "recap"]
+    _, V1 = srv.json("/api/view/1")
+    _, L1 = srv.json("/api/lecture/1")
+    for route, acts in (("/api/view/1", V1["activities"]), ("/api/lecture/1", L1["activities"]["activities"])):
+        rec = {a["id"]: a for a in acts if a["kind"] == "recap"}
+        a0, a1 = rraw[0], rraw[1]
+        pts0 = a0["data"]["points"]
+        check(a0["id"] in rec and rec[a0["id"]]["data"]["points"] == pts0[1:] and "text" not in rec[a0["id"]]["data"]
+              and rec[a0["id"]].get("judge_dropped") == {"text": True, "points": [1]},
+              f"{route}: a recap loses its failed point and its failed text ({rec.get(a0['id'], {}).get('data')})")
+        check(a1["id"] not in rec, f"{route}: a recap with no passing point is dropped")
+        untouched = [a for a in rraw[2:] if a["id"] in rec and rec[a["id"]]["data"] == a["data"]]
+        check(len(untouched) == len(rraw) - 2 and len(rraw) > 2, f"{route}: other recaps unchanged ({len(untouched)})")
+    # the raw data route too
+    _, D1 = srv.json("/data/activities/lec_1.json")
+    check(a1["id"] not in [a["id"] for a in D1["activities"]], "/data/activities/lec_1.json: the dropped recap is absent")
+
+    # crosswords
+    cw_raw = next(a for a in raw if a["kind"] == "crossword")
+    for route, acts in (("/api/view/1", V1["activities"]), ("/api/lecture/1", L1["activities"]["activities"])):
+        cw = next(a for a in acts if a["kind"] == "crossword")
+        e = cw["data"]["entries"]
+        check(len(e) == len(cw_raw["data"]["entries"]) and cw["data"]["width"] == cw_raw["data"]["width"]
+              and e[0]["prefilled"] is True and "clue" not in e[0] and e[0]["answer"] == "LATENCY"
+              and all(x["prefilled"] is False and x.get("clue") for x in e[1:]),
+              f"{route}: the failed clue is prefilled and unsent, the others have clue and prefilled false")
+    _, V2 = srv.json("/api/view/2")
+    cw2 = next(a for a in V2["activities"] if a["kind"] == "crossword")
+    check(all(x["prefilled"] is False and x.get("clue") for x in cw2["data"]["entries"]),
+          "a crossword without judge failures: no entry prefilled")
+
+    # connecting concepts
+    bad = []
+    for cid in concepts:
+        code, c = srv.json(f"/api/concept/{cid}")
+        if (code == 404) != (cid in conn) or (code == 200 and (c.get("connecting") is not False or not c.get("definition"))):
+            bad.append((cid, code))
+    check(not bad, f"/api/concept: 404 for every connecting concept, a card with its definition for the others {bad[:3]}")
+    fact_texts = {f["text"] for f in facts.values()}
+    secrets = [c["definition"] for k, c in concepts.items() if k in conn and c.get("definition")
+               and c["definition"] not in fact_texts]
+    check(len(secrets) > 0, f"connecting concepts have definitions to look for ({len(secrets)})")
+    routes = ["/api/home", "/api/glossary", "/api/coursemap", "/api/review", "/api/course"]
+    routes += [f"/api/view/{k}" for k in range(1, 9)] + [f"/api/lecture/{k}" for k in range(1, 9)]
+    routes += [f"/api/concept/{c}" for c in concepts] + ["/data/knowledge/concepts.json"]
+    routes += [f"/data/activities/lec_{k}.json" for k in (1, 2, 3)] + ["/data/activities/course.json"]
+    leaks = []
+    for r in routes:
+        code, _, body = srv.get(r)
+        txt = json.dumps(json.loads(body)) if code == 200 else ""
+        leaks += [(r, d[:30]) for d in secrets if json.dumps(d)[1:-1] in txt]
+    check(not leaks, f"no connecting concept's definition in the JSON of any route ({len(routes)} routes) {leaks[:3]}")
+    _, G = srv.json("/api/glossary")
+    check(not ({c["id"] for c in G["concepts"]} & conn), "the glossary lists defined concepts only")
+    code, rawc, _ = (lambda r: (r[0], json.loads(r[2]), None))(srv.get("/data/knowledge/concepts.json"))
+    check(code == 200 and all(rawc[c]["definition"] == "" for c in conn) and len(rawc) == len(concepts)
+          and all(rawc[c]["definition"] == concepts[c]["definition"] for c in concepts if c not in conn),
+          "/data/knowledge/concepts.json: connecting definitions blanked, the rest as is")
+    # flags on every map payload
+    flagged = 0
+    for k in range(1, 9):
+        _, V = srv.json(f"/api/view/{k}")
+        if V["map"]:
+            nodes = V["map"]["nodes"]
+            check(all(n["connecting"] == (n["id"] in conn) for n in nodes)
+                  and {n["id"] for n in nodes} >= set(V["map"]["concepts"]), f"view {k}: map.nodes flagged")
+            flagged += sum(n["connecting"] for n in nodes)
+        check(all(c["connecting"] == (i in conn) and (c["connecting"] != ("definition" in c))
+                  for i, c in V["concepts"].items()), f"view {k}: concepts flagged, connecting ones without definition")
+        for a in V["activities"] or []:
+            if a["kind"] in ("concept_map", "complete_map"):
+                check(all(n["connecting"] == (n["id"] in conn) for n in a["data"]["nodes"]),
+                      f"view {k}: {a['kind']} nodes flagged")
+        for a in V["activities"] or []:
+            if a["kind"] in ("recall", "match_pairs"):
+                its = a["data"].get("items") or a["data"].get("pairs")
+                check(all(i["concept"] not in conn for i in its), f"view {k}: {a['kind']} has no connecting concept")
+    check(flagged > 0, f"some map node is a connecting concept ({flagged})")
+    _, M = srv.json("/api/coursemap")
+    check(M["nodes"] and all(n["connecting"] == (c in conn) for c, n in M["nodes"].items())
+          and set(M["nodes"]) == set(M["names"]) and M["start_concept"] not in conn, "coursemap nodes flagged")
+    sample = next(c for c in concepts if c not in conn and concepts[c].get("relations"))
+    _, CC = srv.json(f"/api/concept/{sample}")
+    sides = [x for d in ("out", "in") for x in CC["relations"][d]]
+    check(all(x["connecting"] == (x["concept"] in conn) and (x["connecting"] != ("definition" in x)) for x in sides),
+          f"a concept card's relationship sides are flagged ({len(sides)})")
+    _, R = srv.json("/api/review")
+    check(all(c["concept"] not in conn for c in R["cards"]), "no review card for a connecting concept")
+
+    # part titles
+    tf = out / "stage_4e_part_titles" / "titles.json"
+    sid = V1["segments"][0]["id"]
+    sid2 = V1["segments"][1]["id"] if len(V1["segments"]) > 1 else None
+    check(not tf.exists() and all(s["title"] is None for s in V1["segments"]) and
+          all(s["title"] is None for s in L1["segments"]), "no titles file: every segment title is null")
+    tf.parent.mkdir(parents=True)
+    body = {sid: {"title": "Three little words", "ok": True, "problems": []}}
+    if sid2:
+        body[sid2] = {"title": "Rejected title here", "ok": False, "problems": ["too long"]}
+    tf.write_text(json.dumps({"segments": body}))
+    for route in ("/api/view/1", "/api/lecture/1"):
+        _, V = srv.json(route)
+        t = {s["id"]: s["title"] for s in V["segments"]}
+        check(t[sid] == "Three little words" and (not sid2 or t[sid2] is None)
+              and all(v is None for k, v in t.items() if k != sid),
+              f"{route}: a title is sent when ok, null when not ok or missing ({t[sid]!r})")
+    tf.write_text(json.dumps({"segments": {sid: {"title": "Changed again now", "ok": True, "problems": []}}}))
+    _, V = srv.json("/api/view/1")
+    check(V["segments"][0]["title"] == "Changed again now", "a changed titles file is picked up on reload")
+    tf.unlink()
+    tf.parent.rmdir()
+    _, V = srv.json("/api/view/1")
+    check(all(s["title"] is None for s in V["segments"]), "titles gone with the file")
 
 
 def test_ask(root: Path, work: Path):
@@ -504,6 +666,8 @@ def test_ask(root: Path, work: Path):
         res = evs[-1]["result"]
         check(res["available"] and res["answer"] == f"echo: What is VR? ({COURSE}, 4)" and res["citations"][0]["start"] == 24.3,
               "the stream ends with 'done' carrying what /api/ask answers")
+        check(evs[-1].get("timing") == {"total": 0.5} and evs[-1].get("t") == 0.5,
+              "done's other fields (t, timing: schemas/qa_stream.md) passed on")
         code, r = srv.ask("What is VR?", "4")
         check(code == 200 and r["answer"].startswith("echo:"), "/api/ask still answers when qa streams")
     finally:
