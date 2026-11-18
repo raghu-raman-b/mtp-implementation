@@ -1,6 +1,6 @@
 # Failure inventory: nptel_vr (code-only)
 
-Written by `analysis/failures/inventory.py` from `pipeline/output/nptel_vr/` (read only) and the QA records in `analysis/`. Every count comes from a deterministic rule, a pipeline check file or judge verdict, or a stored similarity: no language model and no agent decided what a failure is. Handling is one of: **fixed in the pipeline**; **display rule**; **hidden from learners**; **not fixed (future work)**.
+Written by `analysis/failures/inventory.py` from `pipeline/output/nptel_vr/` (read only) and the QA records in `analysis/`. Every count comes from a deterministic rule, a pipeline check file or judge verdict, or a stored similarity: no language model and no agent decided what a failure is. Handling is one of: **fixed in the pipeline**; **fixed in the viewer**; **display rule**; **hidden from learners**; **not fixed (future work)**.
 
 ## Table
 
@@ -68,7 +68,7 @@ Written by `analysis/failures/inventory.py` from `pipeline/output/nptel_vr/` (re
 | `seg.1b.flagged_left` | 1b verify segments | lectures where a flagged segment problem was left after the retries | 1 of 63 (1.6%) lectures | not fixed (future work) |
 | `seg.4c.assumed` | 4c lecture graph | concepts a lecture uses but no earlier lecture defines (assumed knowledge) | 2,074 of 3,122 (66.4%) concepts | display rule |
 | `seg.4d.broken_refs` | 4d assemble | broken references, duplicate IDs or schema errors in the knowledge layer | 0 of 206,903 (0.0%) references | fixed in the pipeline |
-| `qa.markdown_raw` | QA / viewer | answers containing markdown (** bold, bullets) or LaTeX that the page showed as raw characters | 32 of 56 (57.1%) answers | not fixed (future work) |
+| `qa.markdown_raw` | QA / viewer | answers containing markdown (** bold, bullets) or LaTeX that the page showed as raw characters | 32 of 56 (57.1%) answers | fixed in the viewer |
 | `qa.slow` | QA | answers slower than 15 s | 3 of 56 (5.4%) answers | fixed in the pipeline |
 | `qa.bench_slow` | QA | bench answers slower than 8 s after the latency fixes | 4 of 34 (11.8%) answers | not fixed (future work) |
 | `qa.not_covered_padded` | QA | not-covered answers that decline but then pad with loosely related facts, and are the slowest type | 2 of 36 (5.6%) questions | fixed in the pipeline |
@@ -92,7 +92,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `58/A10 item 3 [one_answer,no_source_talk]`: How can a computer-graphics programmer avoid always implementing pipeline stages from scratch? | correct: by importing a graphics…
   - `60/A5 item 3 [one_answer,clear]`: Which camera determines what the Unity game view renders for the final published or deployed application? | correct: The develope…
 - **Handling:** hidden from learners. viewer rule HIDE_JUDGE_FAILED[quiz] = ['answerable', 'clear', 'no_source_talk', 'one_answer']: 35 of the 102 failed questions are hidden; the other 67 (no_giveaway / worth_asking only) are shown. First judgement failed 285; judge-and-rewrite repaired 183. Criteria on the remaining: no_giveaway 68, no_source_talk 13, one_answer 11, answerable 10
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2 verdicts: 1/A0 Q1 (correct option is the only hedged one) is a fair no_giveaway.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2 verdicts: 1/A0 Q1 (correct option is the only hedged one) is a fair no_giveaway.
 
 ### `act.recap.points_failed` (5 activities)
 
@@ -106,7 +106,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `3/A6 point 5 [supported,faithful]`: Projection-based and outlining-based markerless augmented reality applications use light projectors or object recognition to enha…
   - `3/A8 point 4 [supported,faithful]`: Markerless augmented reality overcomes marker maintenance mainly with computer vision, sometimes GPS, superimposition, outline, o…
 - **Handling:** display rule. 2026-11-18 decision: recaps show only judge-passing points. Display-side only (no regeneration). Criteria: faithful 507, supported 299, stands_alone 44, one_idea 28, clear 19
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2: 1/A3 point 2 and 1/A1 text ('different immersive experiences' goes beyond the facts) are fair. Recaps fail most often (faithful 507, supported 299 on first judgement): the criteria are strict.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2: 1/A3 point 2 and 1/A1 text ('different immersive experiences' goes beyond the facts) are fair. Recaps fail most often (faithful 507, supported 299 on first judgement): the criteria are strict.
 
 ### `act.recap.text_failed` (5 activities)
 
@@ -120,7 +120,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `3/A2 text [supported,faithful]`: XR has broad application potential across many fields, but AR is the form that adds digital content to the real world rather than…
   - `3/A6 text [faithful,summary]`: Augmented reality applications divide into marker-based and markerless systems according to their technology. Marker-based system…
 - **Handling:** display rule. 2026-11-18 decision: the summary text is hidden when it failed (shown only if it passed).
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). 222 of 347 is high; the summary text adds connecting words the facts do not state.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). 222 of 347 is high; the summary text adds connecting words the facts do not state.
 
 ### `act.recap.no_passing_point` (5 activities)
 
@@ -128,13 +128,13 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** every point number 1..n is in the unit's judge failed_items
 - **Count:** 6 of 347 (1.7%) recaps
 - **Examples:**
-  - `6/A2`: Virtual reality's evolution has four mostly distinct, sometimes overlapping phases: before digital computers,…
-  - `8/A10`: Slater and Wilbur's 1997 paper is an early reference for VR immersion and presence definitions.
   - `15/A9`: Spatial AR devices are projector-based, room-scale systems that place virtual content on physical objects, no…
   - `19/A2`: VR software does not merely drive VR or AR hardware; it creates sensory stimuli for a VR experience.
   - `23/A10`: Human factors in XR system design require knowing users' characteristics, because users in the same task need…
+  - `48/A7`: Use the Human-Computer Interaction book and NPTEL weeks 4, 5, 10-12 for prototype building, evaluation, empir…
+  - `6/A2`: Virtual reality's evolution has four mostly distinct, sometimes overlapping phases: before digital computers,…
 - **Handling:** display rule. 2026-11-18 decision: such recaps are dropped; that break shows only the quiz.
-- **Rule precision:** Exact given the verdicts (same source as the recap rows). Matches the 6 stated in PROMPT.md.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact given the verdicts (same source as the recap rows). Matches the 6 stated in PROMPT.md.
 
 ### `act.crossword.clue_failed` (5 activities)
 
@@ -148,7 +148,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `13/A19 item 4 [from_text,unique]`: PINCHGLOVE: hand input with sensors only on fingertips detecting limited thumb-index gestures (5,5)
   - `45/A20 item 2 [from_text,unique]`: EXPERIMENT: Planned, executed comparison of measured outcomes to answer a research question (10)
 - **Handling:** display rule. 2026-11-18 decision: the grid is kept, the failed words are shown pre-filled and their clues are never shown. Criteria: from_text 58, unique 23, readable 9, no_giveaway 4, leads_to_answer 2
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 3: 1/A14 MIXEDREALITY ('identical to augmented', a dangling fragment) and 6/A16 OCULUSRIFT are fair.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 3: 1/A14 MIXEDREALITY ('identical to augmented', a dangling fragment) and 6/A16 OCULUSRIFT are fair.
 
 ### `act.odd_one_out.judge_failed` (5 activities)
 
@@ -162,7 +162,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `15/A16 item 2 [near_miss,no_giveaway]`: Sony Xperia Touch | Nintendo Device | Tablet | Smartphone (odd: Sony Xperia Touch)
   - `17/A14 item 2 [in_facts,near_miss]`: Tag | Computer Vision | Fiducial Marker | Reflector (odd: Computer Vision)
 - **Handling:** hidden from learners. viewer rule HIDE_JUDGE_FAILED[odd_one_out] = True: 39 of 39 hidden. First judgement failed 39. Criteria: no_giveaway 17, one_answer 13, near_miss 9, in_facts 9, real_group 2
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2: 2/A10 #1 (Virtual Boot Camp is itself a defense use) and #2 are fair near_miss failures.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2: 2/A10 #1 (Virtual Boot Camp is itself a defense use) and #2 are fair near_miss failures.
 
 ### `act.put_in_order.judge_failed` (5 activities)
 
@@ -176,7 +176,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `2/A5 item 1 [real_sequence,worth_doing]`: Order the VR system categories from the least sensory blocking to the greatest sensory blocking
   - `31/A3 item 1 [one_order,worth_doing]`: Order the stages of somatosensory touch processing and motor response
 - **Handling:** hidden from learners. viewer rule HIDE_JUDGE_FAILED[put_in_order] = True: 25 of 25 hidden. First judgement failed 25. Criteria: in_facts 11, worth_doing 11, one_order 6, real_sequence 5, no_giveaway 5
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2: 1/A6 (the two middle steps are not an order the facts fix) is fair. 25 of 42 is a high failure rate.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865). Read 2: 1/A6 (the two middle steps are not an order the facts fix) is fair. 25 of 42 is a high failure rate.
 
 ### `act.open_question.judge_failed` (5 activities)
 
@@ -190,7 +190,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `35/A18 item 2 [clear,answerable]`: Why are usability requirements classified as non-functional requirements instead of functional requirements in the specification …
   - `61/A19 item 2 [answers_question,clear]`: How do a rigid body and a collider work together to give a Unity game object realistic physical behavior?
 - **Handling:** hidden from learners. viewer rule HIDE_JUDGE_FAILED[open_question] = True: 24 of 24 hidden. First judgement failed 62. Criteria: answerable 16, answers_question 8, clear 4, open 2
-- **Rule precision:** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Counts are the pipeline's own judge verdicts, so precision is the judge's, which is itself unmeasured (the judge seed set, analysis/activities/review_prompts.md section 8, was not run). Mapping verified by code: every failed item resolves to the item the verdict is about (0 mismatches over quiz, recap, put-in-order, odd-one-out and open-question items; crossword by concept name), and the per-kind sums equal totals.judge.still_failed_items (865).
 
 ### `act.whole_hidden` (5 activities)
 
@@ -198,13 +198,13 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** per activity: hidden items (HIDE_JUDGE_FAILED parsed by ast from pipeline/viewer/serve.py; recap rule of 2026-11-18) cover all its items
 - **Count:** 40 of 855 (4.7%) activities
 - **Examples:**
-  - `put_in_order 58/A14`: all items hidden
-  - `put_in_order 6/A18`: all items hidden
-  - `quiz 59/A7`: all items hidden
-  - `recap 6/A2`: all items hidden
-  - `recap 8/A10`: all items hidden
+  - `put_in_order 1/A6`: all items hidden
+  - `put_in_order 13/A11`: all items hidden
+  - `recap 15/A9`: all items hidden
+  - `recap 19/A2`: all items hidden
+  - `odd_one_out 2/A10`: all items hidden
 - **Handling:** hidden from learners. per kind: quiz 1/347, recap 6/347, put_in_order 24/41, odd_one_out 9/57, open_question 0/63
-- **Rule precision:** Exact given the rule parsed from serve.py. The recap number follows the 2026-11-18 decision, which serve.py HIDE_JUDGE_FAILED (recap: no_source_talk only) does not implement yet (task S1).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact given the rule parsed from serve.py. The recap number follows the 2026-11-18 decision, which serve.py HIDE_JUDGE_FAILED implements since 2026-11-18 (075f045).
 
 ### `act.units_empty_skipped` (5 activities)
 
@@ -218,7 +218,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `odd_one_out lecture 16`: empty: no reason recorded: the model answer made no activity (nothing to order / no group found)
   - `odd_one_out lecture 54`: empty: no reason recorded: the model answer made no activity (nothing to order / no group found)
 - **Handling:** not fixed (future work). By contract a kind may be missing; kinds: recall {'skipped': 1, 'ok': 62}, put_in_order {'ok': 38, 'empty': 25}, crossword {'ok': 62, 'skipped': 1}, odd_one_out {'empty': 6, 'ok': 57}. Lecture 1 has no recall (no earlier concept) and lecture 63 has no crossword (5 facts): expected.
-- **Rule precision:** Exact (status field).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (status field).
 
 ### `act.retried` (5 activities)
 
@@ -232,7 +232,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `13/A20`: Puzzle 3: the odd item is much longer than the three others. Write the four items alike.
   - `54/A7`: Exercise 1: step 3 has "The video", which speaks of the lecture or the facts. The learner never sees them: sa…
 - **Handling:** fixed in the pipeline. code checks + retry (s5_activities). Units with status unresolved after retries: 0. Retries by kind: quiz 104, recap 59, crossword 22, odd_one_out 9, put_in_order 1, open_question 2. Last-attempt problems seen: {'correct option longest': 110, 'The text has "The segment", which speaks of the le': 44, 'answer in clue': 33, 'The text has "This segment", which speaks of the l': 10}
-- **Rule precision:** Exact (a retry record exists). Retries repaired the code-check problems listed; none stayed unresolved.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (a retry record exists). Retries repaired the code-check problems listed; none stayed unresolved.
 
 ### `act.judge_unresolved` (5 activities)
 
@@ -242,7 +242,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `totals.judge`: first judgement failed 1086 of 3911; rewrote 246 units, kept 160 rewrites; 865 still fail
 - **Handling:** fixed in the pipeline. activities judge v3 + rewrite repaired 221 of 1086 first-judgement failures; the rest are hidden or pre-filled by the display rules in the rows above (nothing is dropped from the data).
-- **Rule precision:** Exact (pipeline totals).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (pipeline totals).
 
 ### `act.quiz.correct_longest` (5 activities)
 
@@ -256,7 +256,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `32/A13 Q2`: 47 vs 38 chars: broader interactive system development concerns
   - `13/A1 Q2`: 11 vs 9 chars: stimulation
 - **Handling:** fixed in the pipeline. Was 52% (751/1,443) in the 2026-11-13 MVP (analysis/mvp/test_report.md); the retry check 'correct option is the longest' brought it to 14% (chance for a unique longest is 25%, including ties 20%). Longest-or-tied: 235; at least 1.5x the next: 0.
-- **Rule precision:** Exact (character counts of the stored options). Read 3: 13/A1 Q2 (11 vs 9 chars) is a small margin; no question is 1.5x longer.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (character counts of the stored options). Read 3: 13/A1 Q2 (11 vs 9 chars) is a small margin; no question is 1.5x longer.
 
 ### `act.crossword.clue_has_answer` (5 activities)
 
@@ -266,7 +266,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** fixed in the pipeline. s5 blanks answer words in clues with `___` and retries (clue_masked); this rule re-checks the final text.
-- **Rule precision:** Whole-word rule. 0 matches. A first version using letter substrings matched 42/A19 CYCLE ('lifecycle'), a false positive, so it was changed. Misses leaks by a different word form (e.g. 'tracker' for TRACKING).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Whole-word rule. 0 matches. A first version using letter substrings matched 42/A19 CYCLE ('lifecycle'), a false positive, so it was changed. Misses leaks by a different word form (e.g. 'tracker' for TRACKING).
 
 ### `act.crossword.clue_has_part` (5 activities)
 
@@ -276,7 +276,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `17/A13 ACCELEROMETER (acceleration)`: Inertial sensor reading three-axis linear acceleration (13)
 - **Handling:** not fixed (future work). Partly handled: s5 masks name words with `___` (over-masking: 'graphics' for SCENEGRAPH); what slips through is counted here.
-- **Rule precision:** Read the 1 match: 17/A13 ACCELEROMETER / 'acceleration' is a real leak. A first version also matched 44/A17 'with' (an alias 'evaluation with self-reports'); function words are excluded now. Under-counts other word forms.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Read the 1 match: 17/A13 ACCELEROMETER / 'acceleration' is a real leak. A first version also matched 44/A17 'with' (an alias 'evaluation with self-reports'); function words are excluded now. Under-counts other word forms.
 
 ### `act.crossword.clue_masked` (5 activities)
 
@@ -286,7 +286,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** fixed in the pipeline. The 5 masked MVP crosswords (13/A19, 21/A11, 29/A11, 51/A21, 58/A20) were regenerated by the Qwen judge-v3 run; no clue is masked now.
-- **Rule precision:** Exact.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact.
 
 ### `act.crossword.clue_duplicate` (5 activities)
 
@@ -296,7 +296,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** not fixed (future work)
-- **Rule precision:** Exact (identical text); near-identical clues for sibling answers (the MVP's three ear parts) are not caught.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (identical text); near-identical clues for sibling answers (the MVP's three ear parts) are not caught.
 
 ### `act.match.truncated` (5 activities)
 
@@ -304,13 +304,13 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** right side ends with '…' or '...'
 - **Count:** 383 of 502 (76.3%) pairs
 - **Examples:**
-  - `57/A15 viewpoint`: The user's field of view in a virtual world, represented as an origin vector in the world coordinate system, and it changes …
-  - `57/A15 view plane`: The two-dimensional plane in a three-dimensional view coordinate system onto which a selected portion of a three-dimensional scene is proje…
-  - `57/A15 clipping`: The process in the three-dimensional graphics pipeline that discards objects or portions of objects that are part of the scene but outside …
-  - `57/A15 world coordinate system`: The common reference frame in which all scene points are defined and to which objects are transformed from local coordinate systems to …
-  - `57/A15 viewing pipeline`: The fourth stage of the 3D graphics pipeline that selects a portion of a 3D scene and transforms it from the world …
+  - `1/A13 extended reality`: An umbrella term, not a specific technology, that covers all present or future immersive technologies, such as augmented reality (AR), virt…
+  - `1/A13 augmented reality`: An enhanced version of reality created by technology, in which computer-generated digital content is overlaid on the real world in real tim…
+  - `1/A13 mixed reality`: An immersive technology that is the same as augmented reality, in which digital content is overlaid on the view of reality and …
+  - `1/A13 immersive technology`: A technology that produces an experience in which a person perceives an environment through sensory organs as real, so that they cannot …
+  - `1/A13 immersive experience`: A perceived experience through sensory organs that appears real, because a person cannot distinguish the experienced environment from their…
 - **Handling:** not fixed (future work). The right side is the 4a definition cut to a word cap by s5; no judge exists for match pairs (code-made kind).
-- **Rule precision:** Exact (text ends with the ellipsis). Read 5 (57/A15): each is the 4a definition cut mid-clause.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (text ends with the ellipsis). Read 5 (57/A15): each is the 4a definition cut mid-clause.
 
 ### `act.match.term_in_definition` (5 activities)
 
@@ -320,7 +320,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `62/A23 vector3`: A data type that represents the position of a three-dimensional point by storing three coordinates as three elements of a vector.
 - **Handling:** not fixed (future work). Masking artefact: the right side is the 4a definition, which usually opens with the term; s5 trims the opening but not later mentions. A looser rule (any >=5-letter word of the term in the definition) matches 231 pairs and mostly flags legitimate overlap (view plane / plane).
-- **Rule precision:** Whole-phrase rule, 1 match, read: fair. A looser any-word version gave 231 and, in a read of 5, flagged only legitimate overlap (view plane / plane), so it was not used. Does not see the masking artefacts that need meaning (an article left after a removed term).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Whole-phrase rule, 1 match, read: fair. A looser any-word version gave 231 and, in a read of 5, flagged only legitimate overlap (view plane / plane), so it was not used. Does not see the masking artefacts that need meaning (an article left after a removed term).
 
 ### `act.match.twin_rows` (5 activities)
 
@@ -330,7 +330,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** not fixed (future work). Twin rows make a match ambiguous; no judge for this kind.
-- **Rule precision:** Exact; 0 at Jaccard >= 0.7 (the MVP's near-identical right sides no longer occur).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact; 0 at Jaccard >= 0.7 (the MVP's near-identical right sides no longer occur).
 
 ### `act.match.bad_start` (5 activities)
 
@@ -340,7 +340,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** not fixed (future work)
-- **Rule precision:** Exact; 0.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact; 0.
 
 ### `act.map.too_big` (5 activities)
 
@@ -354,7 +354,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `58/A17`: 135 nodes, 206 edges
   - `18/A22`: 133 nodes, 190 edges
 - **Handling:** display rule. median 71 nodes, max 159. The viewer shows ~20 key concepts by default with 'all N, by part' as an option (2026-11-13, commit 0965ba9). Maps are code-made: no judge verdicts.
-- **Rule precision:** Exact count of nodes. 60 is the line from analysis/mvp/test_report.md, not a pipeline value.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact count of nodes. 60 is the line from analysis/mvp/test_report.md, not a pipeline value.
 
 ### `act.map.long_edge_label` (5 activities)
 
@@ -362,13 +362,13 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** len(label.split()) >= 9 on concept_map edges
 - **Count:** 1,065 of 7,450 (14.3%) edges
 - **Examples:**
-  - `57/A13 C2741->C0686`: uses the camera viewing mechanism to simulate looking at
-  - `57/A13 C0916->C2671`: in view coordinates is obtained by multiplying its world-coordinate vector by
-  - `57/A13 C2754->C1089`: defines the portion of the scene that is projected onto the
-  - `57/A13 C2755->C2756`: is a projection type in which the projectors are not parallel and converge at a
-  - `57/A13 C2757->C2756`: is a projection type in which the projectors are parallel and never meet at a
+  - `1/A11 C0002->C0005`: is most commonly perceived as involving a user wearing a
+  - `1/A11 C0002->C0006`: is most commonly perceived as involving a user transported to a
+  - `1/A11 C0004->C0010`: in a broad sense is the entire space between the real and virtual extremes of the
+  - `1/A11 C0013->C0012`: has a market in the extended reality market that is about 60 percent of the
+  - `1/A11 C0014->C0012`: has a market in the extended reality market that is about 40 percent of the
 - **Handling:** not fixed (future work)
-- **Rule precision:** Heuristic (>= 9 words). Read 5: all are fragments cut at a dangling preposition ('...projected onto the'); other long labels may be complete, so over-counts.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Heuristic (>= 9 words). Read 5: all are fragments cut at a dangling preposition ('...projected onto the'); other long labels may be complete, so over-counts.
 
 ### `act.completemap.blank_twice` (5 activities)
 
@@ -378,7 +378,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** not fixed (future work)
-- **Rule precision:** Exact; 0 (the MVP's 5/A10 case no longer occurs).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact; 0 (the MVP's 5/A10 case no longer occurs).
 
 ### `act.code_flags` (5 activities)
 
@@ -392,7 +392,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `crossword.filled_from_used 1/A14`: True
   - `recap.facts_uncovered 2/A4`: ['2/S1/F4']
 - **Handling:** not fixed (future work). By flag: odd_one_out.not_a_concept 85, recap.facts_uncovered 42, crossword.filled_from_used 20, put_in_order.no_order_word 14, quiz.correct_not_in_facts 10, put_in_order.three_steps 6, put_in_order.title_cue 3, crossword.small 2, recap.duplicate_points 2, quiz.rotated_options 1, open_question.key_fact_unused 1
-- **Rule precision:** The pipeline's own report-only flags; odd_one_out.not_a_concept counts items, the others units/items as stored.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own report-only flags; odd_one_out.not_a_concept counts items, the others units/items as stored.
 
 ### `con.shared_key` (3 registry / 2c)
 
@@ -406,7 +406,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `'sx'`: C2666 alias of "scaling factor"; C2667 alias of "shearing factor"; C2675 alias of "x-direction scaling factor"
   - `'vr tour'`: C0043 alias of "virtual reality tour"; C1855 alias of "Majuli virtual reality tour"; C2474 alias of "semi-interactive virtual tour"
 - **Handling:** not fixed (future work). 100 concept pairs. By role: alias+name 43, alias+alias 34, acronym+acronym 8, alias+alias+alias 5, acronym+alias 1. Planned: O2 (alias rules; merge list) in the 2026-11-18 task list.
-- **Rule precision:** Exact collision count. Read 19 (every 5th key): about 16 are defects (true duplicates such as 2d, ios, vr headset, empirical research, or over-broad aliases such as library, source, screen, feedback); 3 are harmless ambiguity (os, sy, alpha).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact collision count. Read 19 (every 5th key): about 16 are defects (true duplicates such as 2d, ios, vr headset, empirical research, or over-broad aliases such as library, source, screen, feedback); 3 are harmless ambiguity (os, sy, alpha).
 
 ### `con.name_is_other_alias` (3 registry / 2c)
 
@@ -420,7 +420,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `'controller'`: C0598 name "controller"; C2340 alias "joystick-based controller"
   - `'data flow diagram'`: C0587 alias "data flow"; C2369 name "data flow diagram"
 - **Handling:** not fixed (future work). Subset of con.shared_key.
-- **Rule precision:** Exact collision count. Read 15: all are alias collisions; only about 3 are true duplicates to merge (noise cancelling microphone, operating system, exploration), the rest are hypernym aliases (model, system, controller) that should be removed.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact collision count. Read 15: all are alias collisions; only about 3 are true duplicates to merge (noise cancelling microphone, operating system, exploration), the rest are hypernym aliases (model, system, controller) that should be removed.
 
 ### `con.acronym_expansion` (3 registry)
 
@@ -434,7 +434,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0043 "virtual reality tour" / C1855 "Majuli virtual reality tour"`: "VR Tour" with VR = "virtual reality" matches "virtual reality tour" of C0043
   - `C0043 "virtual reality tour" / C2474 "semi-interactive virtual tour"`: "VR tour" with VR = "virtual reality" matches "virtual reality tour" of C2474
 - **Handling:** not fixed (future work). 3b synonym merge (rebuilt 2026-11-17: 262 model merges) removed many; the rest is counted here. Planned: O2 merge list. The MVP's six acronym/expansion twins (analysis/mvp/test_report.md): 5 now resolve to one concept, open: Majuli virtual reality tour / Majuli VR Tour. The headset family ['C0005', 'C0075', 'C0735'] still appears together on 7 lecture concept maps (11 in the MVP). Strong rule only (the registry lists the acronym on the expanded concept); 4 more pairs match through unambiguous initials alone (e.g. dx / delta x, but also false ones such as IoT / inside-out tracking) and are listed in extra.weak_pairs, not counted.
-- **Rule precision:** Strong rule (the registry lists the acronym on the expanded concept). Read all 17: about 14 are real defects (duplicates: operating system / operating system layer, data flow / data flow diagram, two-dimensional form / two-dimensional, iOS / ios, 3D transformation pair, HMD / VR headset; or a wrong alias: VR on 'virtual reality headset', AI on 'generative AI'); about 3 are false (ASQ is two different questionnaires, the Majuli VR Tour pairs are different concepts). Under-counts: needs the acronym listed on the expansion.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Strong rule (the registry lists the acronym on the expanded concept). Read all 17: about 14 are real defects (duplicates: operating system / operating system layer, data flow / data flow diagram, two-dimensional form / two-dimensional, iOS / ios, 3D transformation pair, HMD / VR headset; or a wrong alias: VR on 'virtual reality headset', AI on 'generative AI'); about 3 are false (ASQ is two different questionnaires, the Majuli VR Tour pairs are different concepts). Under-counts: needs the acronym listed on the expansion.
 
 ### `con.generic_modifier` (3 registry)
 
@@ -448,7 +448,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0590 "user motion" (connecting) / C0829 "motion" (connecting)`: "user motion" = generic modifier + "motion"
   - `C0652 "input" (connecting) / C2420 "user input" (connecting)`: "user input" = generic modifier + "input"
 - **Handling:** not fixed (future work). Planned: O2 reviewed merge list.
-- **Rule precision:** Read all 22: about 11 are plausible duplicates (every 'user X' / 'X': interaction, tracking, locomotion, motion, input, movement, behavior, feedback); about 11 are different concepts (user interface / interface, main camera / camera, main thread / thread, simple polygon / polygon, primary color / color). Candidate list for a reviewer only.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Read all 22: about 11 are plausible duplicates (every 'user X' / 'X': interaction, tracking, locomotion, motion, input, movement, behavior, feedback); about 11 are different concepts (user interface / interface, main camera / camera, main thread / thread, simple polygon / polygon, primary color / color). Candidate list for a reviewer only.
 
 ### `con.embedding_similar` (3 registry)
 
@@ -462,7 +462,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C1500 "audio recording" / C1501 "audio reproduction"`: cos 0.990
   - `C0371 "prior exposure to virtual reality systems" (connecting) / C0372 "repeated exposure to virtual reality" (connecting)`: cos 0.989
 - **Handling:** not fixed (future work). Counts by threshold, all pairs / sharing a word: >= 0.8: 5877 / 1688, >= 0.85: 3637 / 1107, >= 0.9: 1881 / 676, >= 0.95: 559 / 272. Of the 676 at >= 0.9, 8 were cut by the 3b cap (12 per cluster) and never judged; the others were judged and kept apart by the 3b model. Vectors embed names plus facts, not names alone (no name-only vectors are stored).
-- **Rule precision:** Weak. Read 40 pairs (every 34th at >= 0.90 and every 14th at >= 0.95): about 6 are plausible duplicates (physics event / physics-related event, thread / main thread, force feedback / force feedback mouse, virtual reality modeling language / modeling language, spotlight effect / region); the rest are siblings (x axis / y axis, box collider / capsule collider, entry- / exit-controlled loop). Vectors embed names plus facts, so siblings that share a passage score high. Use as candidates for review, not as a verdict.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Weak. Read 40 pairs (every 34th at >= 0.90 and every 14th at >= 0.95): about 6 are plausible duplicates (physics event / physics-related event, thread / main thread, force feedback / force feedback mouse, virtual reality modeling language / modeling language, spotlight effect / region); the rest are siblings (x axis / y axis, box collider / capsule collider, entry- / exit-controlled loop). Vectors embed names plus facts, so siblings that share a passage score high. Use as candidates for review, not as a verdict.
 
 ### `con.alias_short` (2c / 3 registry)
 
@@ -476,7 +476,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C2317 "t value" (connecting)`: alias 't'
   - `C2440 "instantaneous step frequency"`: alias 'f'
 - **Handling:** not fixed (future work). Planned: O2 alias rules (fragments) with a reviewed removal list.
-- **Rule precision:** Read all of them: units (Hz, dB) and symbols (V, E, G, dx, dt) are legitimate; single letters shared across concepts (f, t, P, x) are defects. About half are defects.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Read all of them: units (Hz, dB) and symbols (V, E, G, dx, dt) are legitimate; single letters shared across concepts (f, t, P, x) are defects. About half are defects.
 
 ### `con.alias_generic` (2c / 3 registry)
 
@@ -490,7 +490,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C2064 "tool" (connecting)`: alias 'tools'
   - `C2266 "independent variable"`: alias 'factor'
 - **Handling:** not fixed (future work). Planned: O2 alias rules.
-- **Rule precision:** Read all 10: about 7 are defects (system, user, factor, factors, values, model, objects for a more specific concept); tools / techniques / components plural forms are borderline.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Read all 10: about 7 are defects (system, user, factor, factors, values, model, objects for a more specific concept); tools / techniques / components plural forms are borderline.
 
 ### `con.alias_fragment` (2c / 3 registry)
 
@@ -504,7 +504,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0296 "Android operating system" (connecting)`: alias 'Android'
   - `C0313 "display resolution" (connecting)`: alias 'resolution'
 - **Handling:** not fixed (future work). Planned: O2 alias rules.
-- **Rule precision:** Read 20 (every 5th): about 12 are defects (environment, electromagnetic, library, source, social, constant, asset, mismatch); code identifiers (Destroy, isKinematic) and clear short forms (gaze, plugin) are legitimate. Precision about 60%.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Read 20 (every 5th): about 12 are defects (environment, electromagnetic, library, source, social, constant, asset, mismatch); code identifiers (Destroy, isKinematic) and clear short forms (gaze, plugin) are legitimate. Precision about 60%.
 
 ### `con.alias_shared_by_many` (3 registry)
 
@@ -518,7 +518,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `'sx'`: C2666 alias "scaling factor"; C2667 alias "shearing factor"; C2675 alias "x-direction scaling factor"
   - `'vr tour'`: C0043 alias "virtual reality tour"; C1855 alias "Majuli virtual reality tour"; C2474 alias "semi-interactive virtual tour"
 - **Handling:** not fixed (future work). Planned: O2 alias rules (shared alias kept only where defined).
-- **Rule precision:** Exact collision count; read all 6: f, p, sx, sy-like single symbols and 'hardware', 'vr tour' are all alias defects.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact collision count; read all 6: f, p, sx, sy-like single symbols and 'hardware', 'vr tour' are all alias defects.
 
 ### `con.acronym_of_other_concept` (2c / 3 registry)
 
@@ -531,7 +531,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0296 "Android operating system" (connecting)`: acronym 'OS' = initials of operating system
   - `C1468 "horizontal field of view" (connecting)`: acronym 'FOV' = initials of field of view
 - **Handling:** not fixed (future work). Planned: O2 (the FOV alias on horizontal field of view).
-- **Rule precision:** Read all 4: FOV on horizontal field of view, VR on virtual reality headset, AI on generative AI, OS on Android operating system; the first three are clear defects, OS is a plausible but loose alias. Under-counts: needs the shorter concept to exist and sit inside the name.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Read all 4: FOV on horizontal field of view, VR on virtual reality headset, AI on generative AI, OS on Android operating system; the first three are clear defects, OS is a plausible but loose alias. Under-counts: needs the shorter concept to exist and sit inside the name.
 
 ### `con.connecting` (4a definitions)
 
@@ -545,7 +545,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0016 "three-dimensional environment" (connecting)`: A three-dimensional environment is an all-around environment in the metaverse in which people act as they do in the rea…
   - `C0017 "natural interaction" (connecting)`: Natural interaction is a form of interacting with digital content in an all-around three-dimensional environment, in wh…
 - **Handling:** display rule. 2026-11-18 decision: no concept card, not in the glossary, muted non-clickable node in the concept graph, never use their definition; QA gets their facts only. On concept maps: 1779 connecting concepts appear, 2244 of 4625 map node slots (49%). Used in definition-based kinds (crossword, match pairs, recall, spaced-review cards): {'spaced_review': 0}.
-- **Rule precision:** Exact (defined == false). Not a defect by itself: these are concepts no segment defines.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (defined == false). Not a defect by itself: these are concepts no segment defines.
 
 ### `con.2c.no_triple` (2c concepts)
 
@@ -559,7 +559,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `1/S0 no_triple`: virtual object
   - `1/S3 no_triple`: artificial intelligence
 - **Handling:** not fixed (future work). Report-only in 2c; the registry (3) and 4a use the concepts as extracted.
-- **Rule precision:** The pipeline's own flag. Read 4: extended reality, augmented reality, mixed reality as concepts in no relation of 1/S0: real isolated nodes in that segment.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag. Read 4: extended reality, augmented reality, mixed reality as concepts in no relation of 1/S0: real isolated nodes in that segment.
 
 ### `con.2c.name_not_in_facts` (2c concepts)
 
@@ -573,7 +573,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `2/S1 name_not_in_facts`: device-based virtual tour
   - `2/S1 name_not_in_facts`: web-based virtual tour
 - **Handling:** not fixed (future work). Report-only in 2c; the registry (3) and 4a use the concepts as extracted.
-- **Rule precision:** The pipeline's own flag. Read 5: e.g. 'virtual reality device', 'web-based virtual tour' are paraphrases of the facts, so many are harmless.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag. Read 5: e.g. 'virtual reality device', 'web-based virtual tour' are paraphrases of the facts, so many are harmless.
 
 ### `con.2c.reverse` (2c concepts)
 
@@ -587,7 +587,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `2/S0 reverse`: virtual reality --has as major current application domains--> real estate and architecture
   - `2/S0 reverse`: virtual reality --has as major current application domains--> defense
 - **Handling:** not fixed (future work). Report-only in 2c; the registry (3) and 4a use the concepts as extracted.
-- **Rule precision:** The pipeline's own flag (relation direction opposite to its sentence). Read 5: the 'virtual reality --has as major current application domains--> healthcare' family looks like a direction the code check disagrees with, but the relation reads sensibly: over-flags.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag (relation direction opposite to its sentence). Read 5: the 'virtual reality --has as major current application domains--> healthcare' family looks like a direction the code check disagrees with, but the relation reads sensibly: over-flags.
 
 ### `con.2c.acronym_in_name` (2c concepts)
 
@@ -601,7 +601,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `6/S3 acronym_in_name`: {'concept': 'CAVE system', 'acronyms': ['CAVE']}
   - `6/S3 acronym_in_name`: {'concept': 'Java 3D', 'acronyms': ['3D']}
 - **Handling:** not fixed (future work). Report-only in 2c; the registry (3) and 4a use the concepts as extracted.
-- **Rule precision:** The pipeline's own flag; read 5: VR box, VR headset, CAVE system are real (the acronym sits inside the name).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag; read 5: VR box, VR headset, CAVE system are real (the acronym sits inside the name).
 
 ### `con.2c.no_shared_fact` (2c concepts)
 
@@ -615,7 +615,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `2/S1 no_shared_fact`: semi-immersive virtual reality system --is the form of which most commercial immersive applications are--> vi…
   - `8/S1 no_shared_fact`: matching --refers to congruence between--> sensory modality
 - **Handling:** not fixed (future work). Report-only in 2c; the registry (3) and 4a use the concepts as extracted.
-- **Rule precision:** The pipeline's own flag; read 3: the semi-immersive relations are real (the concepts are in different facts of the segment).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag; read 3: the semi-immersive relations are real (the concepts are in different facts of the segment).
 
 ### `con.2c.alias_not_in_facts` (2c concepts)
 
@@ -627,7 +627,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `37/S3 alias_not_in_facts`: {'concept': 'large geographical area', 'alias': 'large space'}
   - `59/S0 alias_not_in_facts`: {'concept': 'virtual reality tour', 'alias': 'virtual tour'}
 - **Handling:** not fixed (future work). Report-only in 2c (alias_not_in_facts / lost-and-added items are retried: turn-1 retries 63, turn-2 22, none unresolved).
-- **Rule precision:** The pipeline's own flag; read all 3: real (joysticks, large space, virtual tour absent from the facts).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag; read all 3: real (joysticks, large space, virtual tour absent from the facts).
 
 ### `con.2c.fact_without_concept` (2c concepts)
 
@@ -637,7 +637,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `31/S4 fact_without_concept`: 3
 - **Handling:** not fixed (future work). Report-only in 2c; the registry (3) and 4a use the concepts as extracted.
-- **Rule precision:** The pipeline's own flag; 1 fact (31/S4/F3).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag; 1 fact (31/S4/F3).
 
 ### `con.4a.defined_mismatch` (4a definitions)
 
@@ -651,7 +651,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0095 "augmented reality application"`: An augmented reality application is an application that emphasizes augmenting digital content onto the real-world view rather tha…
   - `C0114 "computer vision"`: Computer vision (CV) is an enabling technology for augmented reality and mixed reality applications that detects, recognizes, and…
 - **Handling:** not fixed (future work). 272 are defined:true with empty defined_in (they keep a card and a glossary entry); 4 are defined:false with a defining segment. The definition text is the real 4a one (one Qwen call per concept, cap 40 facts).
-- **Rule precision:** Exact (the pipeline's flag). 272 of the 276 are defined:true with no defined_in; read 5: the definitions are real 4a text, but no segment is recorded as defining them.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (the pipeline's flag). 272 of the 276 are defined:true with no defined_in; read 5: the definitions are real 4a text, but no segment is recorded as defining them.
 
 ### `con.4a.misplaced` (4a definitions)
 
@@ -665,7 +665,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0611 "trigger"`: misplaced facts ['13/S4/F3', '39/S3/F0', '39/S8/F4']
   - `C0647 "pitch"`: misplaced facts ['13/S5/F1', '28/S2/F2']
 - **Handling:** not fixed (future work)
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `con.4a.capped` (4a definitions)
 
@@ -675,7 +675,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `totals.capped`: 15 concepts, cap 40
 - **Handling:** not fixed (future work)
-- **Rule precision:** The pipeline's own count.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own count.
 
 ### `con.4a.definition_no_verb` (4a definitions)
 
@@ -685,7 +685,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** fixed in the pipeline. Real 4a (2026-11-17): the old facts-based 'definition' read like a definition in only 26% of cards (analysis/mvp/test_report.md); this rule is a cheap lower bound of what remains.
-- **Rule precision:** Cheap lower bound. 0 matches; two false positives of an earlier regex (names containing a dot, three.js and debug.log) were fixed. Does not test that the definition is correct.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Cheap lower bound. 0 matches; two false positives of an earlier regex (names containing a dot, three.js and debug.log) were fixed. Does not test that the definition is correct.
 
 ### `fact.0a.null_start` (0a preprocess)
 
@@ -699,7 +699,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `1/92`: It is an umbrella term.
   - `1/94`: So, that is the first thing.
 - **Handling:** fixed in the pipeline. By design of 0a; 1b estimates segment boundaries inside a cue and 4d fixed null times for facts (2026-11-13). Also 201 with null end, 38 with both null.
-- **Rule precision:** Exact.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact.
 
 ### `fact.2a.long` (2a facts)
 
@@ -713,7 +713,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `2/S1/F9`: 81 words: several points in one fact? | Fully immersive virtual reality (VR) systems, such as dedicated virtual shooting game zones, use many devices…
   - `3/S1/F1`: 70 words: several points in one fact? | Augmented reality (AR) customer-experience applications that let a customer preview a product before purchase…
 - **Handling:** not fixed (future work). Report-only in 2a; the 2b judge (which would act on them) was not run.
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `fact.2a.bare_acronym` (2a facts)
 
@@ -727,7 +727,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `6/S3/F1`: Written without the full term: CAVE | The CAVE system, invented in 1992 at the University of Illinois at Chicago's Electronic Visualization Laborator…
   - `6/S3/F2`: Written without the full term: WTK | In 1992, the company Sense8 developed the WTK software package for higher-level application development in virtu…
 - **Handling:** not fixed (future work). Report-only in 2a; the 2b judge (which would act on them) was not run.
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `fact.2a.pointing` (2a facts)
 
@@ -741,7 +741,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `5/S2/F6`: The text has a pointing word that a reader cannot resolve: "this". Name what it refers to. | Because most definitions of mixed reality (MR) are confu…
   - `5/S3/F0`: The text has a pointing word that a reader cannot resolve: "this". Name what it refers to. | In this course, mixed reality (MR) is assumed to be the …
 - **Handling:** not fixed (future work). Report-only in 2a; the 2b judge (which would act on them) was not run.
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `fact.2a.acronym` (2a facts)
 
@@ -751,7 +751,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `3/S0/F0`: The lecturer does not use "XR" in the segment. Write the term in full without it. | Extended reality (XR) technologies have huge application potentia…
 - **Handling:** not fixed (future work). Report-only in 2a; the 2b judge (which would act on them) was not run.
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `fact.2a.sentences_uncited` (2a facts)
 
@@ -765,7 +765,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `33/51`: So those are two broad aspects of heritage that are part of cultural heritage.
   - `33/53`: Now the question is, so far so good, all are there.
 - **Handling:** not fixed (future work). Many are greetings, recaps and asides (expected); the share is not a defect by itself.
-- **Rule precision:** Exact. Read 5: greetings and asides ('You might be wondering, why so much interest?') are legitimately uncited; the row is a coverage figure, not a defect count.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact. Read 5: greetings and asides ('You might be wondering, why so much interest?') are legitimately uncited; the row is a coverage figure, not a defect count.
 
 ### `fact.2b.not_judged` (2b verify facts)
 
@@ -775,7 +775,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `segments`: 347 of 347 segments judged:false
 - **Handling:** not fixed (future work). Block 1 of the plan is open (PROMPT.md weak point 3); the 2b check files are copies of 2a's. Deferred to the 27B runs.
-- **Rule precision:** Exact.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact.
 
 ### `fact.no_segment` (4d assemble)
 
@@ -785,7 +785,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** fixed in the pipeline. 4d reference check: 0 broken references of 206,903.
-- **Rule precision:** Exact; 0.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact; 0.
 
 ### `fact.null_time` (4d assemble)
 
@@ -795,7 +795,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** fixed in the pipeline. 4d fixed null sentence times (2026-11-13).
-- **Rule precision:** Exact; 0.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact; 0.
 
 ### `fact.shared_start` (4d assemble)
 
@@ -809,7 +809,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `1/S2/F3`: 930.721s: Mixed reality, in a broad sense, is the entire space between the real environment extreme and the v…
   - `1/S3/F4`: 1353.071s: The metaverse is a term that has been in use for more than 30 years and has heavily stimulated gro…
 - **Handling:** not fixed (future work). The citation time is the start of the fact's first evidence sentence, often the topic's introduction (test_report.md: 462 with >= 2 others).
-- **Rule precision:** Exact (>= 3 facts in a segment at one start time). Matches the 462 of analysis/mvp/test_report.md.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (>= 3 facts in a segment at one start time). Matches the 462 of analysis/mvp/test_report.md.
 
 ### `seg.no_facts` (2a / 4d)
 
@@ -818,12 +818,12 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Count:** 39 of 386 (10.1%) segments
 - **Examples:**
   - `1/S4`: Outline the course's objectives, scope, and the digital heritage preservation case study used for practical l…
+  - `2/S2`: Summarize the main points of this part of the lecture and preview the next part on AR applications.
+  - `4/S3`: Summarize the main points of the lecture.
   - `11/S8`: Summarize the main points of the lecture and preview the remaining topics.
   - `12/S5`: Summarize the main points of the lecture and preview the next topic.
-  - `14/S4`: Summarize the main points of the lecture and preview the next lecture on AR hardware.
-  - `15/S5`: Summarize the main points of the AR hardware lecture.
 - **Handling:** not fixed (future work). Mostly intros and closing summaries; 4b: segments in no objective 60 (of which 13 define a concept).
-- **Rule precision:** Exact. Read 5: intros and closing summaries ('Summarize the main points...') have no facts by design.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact. Read 5: intros and closing summaries ('Summarize the main points...') have no facts by design.
 
 ### `seg.4b.in_no_objective` (4b goals)
 
@@ -837,7 +837,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `3/S3`: Summarize the lecture by contrasting VR and AR applications and their system categories.
   - `4/S3`: Summarize the main points of the lecture.
 - **Handling:** not fixed (future work). Mostly closing summaries.
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `seg.1b.flagged_left` (1b verify segments)
 
@@ -847,7 +847,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `lec_41`: ['Segment 9 (sentences 168 to 178, "Explain how controlled navigation, careful vehicle speed, and consistent …
 - **Handling:** not fixed (future work)
-- **Rule precision:** The pipeline's own flag.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own flag.
 
 ### `seg.4c.assumed` (4c lecture graph)
 
@@ -861,7 +861,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `C0014`: software
   - `C0016`: three-dimensional environment
 - **Handling:** display rule. Same set as the connecting concepts (2,074 listed; 1,806 have defined:false); shown as assumed knowledge, not as cards. 3 lectures with no prerequisite, 70 lecture pairs where everything is redefined (all_redefined).
-- **Rule precision:** The pipeline's own list.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** The pipeline's own list.
 
 ### `seg.4d.broken_refs` (4d assemble)
 
@@ -871,7 +871,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `checks.json`: ok: True, 72 files
 - **Handling:** fixed in the pipeline. 4d reference check; also re-run independently by analysis/mvp/integrity.py (2026-11-13).
-- **Rule precision:** Exact; 0 of 206,903 (also rechecked independently in analysis/mvp/test_report.md).
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact; 0 of 206,903 (also rechecked independently in analysis/mvp/test_report.md).
 
 ### `qa.markdown_raw` (QA / viewer)
 
@@ -884,8 +884,8 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `Q05 11.5s`: Augmented reality (AR) and virtual reality (VR) differ in how they treat the user's perception of reality and…
   - `Q07 8.8s`: Walking-based locomotion is divided into three categories: * **Full gait techniques**: These involve the user…
   - `Q08 6.1s`: Cybersickness is caused by a variety of factors rather than a single one (lecture 10, 4:23; lecture 49, 8:25)…
-- **Handling:** not fixed (future work). KaTeX in the viewer is task S3 of the 2026-11-18 task list (queued); LaTeX in 1 of them. Source: analysis/mvp/test_report.md section 5, issue 1.
-- **Rule precision:** Exact on the recorded 2026-11-13 run (56 answers = 36 + 20 reruns). The regex counts ** bold, bullets and $...$; not rerun.
+- **Handling:** fixed in the viewer. Bold and lists rendered since 2026-11-13; formulas typeset with KaTeX (vendored, offline) since 2026-11-18 (7620342); LaTeX in 1 of them. Source: analysis/mvp/test_report.md section 5, issue 1.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact on the recorded 2026-11-13 run (56 answers = 36 + 20 reruns). The regex counts ** bold, bullets and $...$; not rerun.
 
 ### `qa.slow` (QA)
 
@@ -897,7 +897,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `Q07 19.0s`: How do full gait, partial gait and gait negation locomotion techniques differ?
   - `Q19 18.4s`: How does a Kalman filter fuse IMU and camera data for tracking?
 - **Handling:** fixed in the pipeline. Round-1+ thinking off and early exit for unknown names (2026-11-17, analysis/qa/STATE.md): bench_after median 4.8 s, max 9.3 s.
-- **Rule precision:** Exact on the recorded run.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact on the recorded run.
 
 ### `qa.bench_slow` (QA)
 
@@ -910,7 +910,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `B06 run 1 8.13s`: How is augmented reality different from virtual reality?
   - `B07 run 1 9.29s`: What is the difference between immersion and presence?
 - **Handling:** not fixed (future work). Compare questions (two cards, long answers) remain the slowest; analysis/qa/STATE.md.
-- **Rule precision:** Exact on the recorded bench.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact on the recorded bench.
 
 ### `qa.not_covered_padded` (QA)
 
@@ -921,7 +921,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `Q19`: Kalman filter: correct refusal after 20.9 s, then related facts
   - `Q20`: Vergence-accommodation: declines, pads with loosely related facts
 - **Handling:** fixed in the pipeline. Time fixed 2026-11-17 (unknown name -> early exit; B01 Kalman now one round, analysis/qa/STATE.md); the padding itself is unchanged.
-- **Rule precision:** Quoted from a human read of the answers; not recomputed.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Quoted from a human read of the answers; not recomputed.
 
 ### `qa.prereq_odd` (QA / 4c)
 
@@ -932,7 +932,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `Q13`: prerequisites for lecture 40 include location awareness, markers
   - `Q35`: lecture 16: augmented virtuality; HMD = 'displays from the 1950s'
 - **Handling:** fixed in the pipeline. lecture_dependencies rewritten 2026-11-17: single mentions listed 'in passing', ranked by uses (analysis/qa/STATE.md); hand-checked on lectures 16, 40, 30.
-- **Rule precision:** Quoted; not recomputed.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Quoted; not recomputed.
 
 ### `qa.two_times` (QA)
 
@@ -942,7 +942,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - `Q11`: text says 14:25 but cites the segment at 11:44
 - **Handling:** fixed in the pipeline. cite() removes a model-written time before a citation; the card cites one time (2026-11-17, analysis/qa/STATE.md).
-- **Rule precision:** Quoted; not recomputed.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Quoted; not recomputed.
 
 ### `seg.part_titles` (4e part titles)
 
@@ -952,7 +952,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Examples:**
   - (none)
 - **Handling:** not fixed (future work). pending: the file does not exist yet.
-- **Rule precision:** Pending.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** Pending.
 
 ## History: failures found earlier and fixed
 

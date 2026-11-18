@@ -15,7 +15,7 @@ PRECISION.update({
     "act.put_in_order.judge_failed": JUDGE + " Read 2: 1/A6 (the two middle steps are not an order the facts fix) is fair. 25 of 42 is a high failure rate.",
     "act.open_question.judge_failed": JUDGE,
     "act.whole_hidden": "Exact given the rule parsed from serve.py. The recap number follows the 2026-11-18 decision, which serve.py HIDE_JUDGE_FAILED "
-                        "(recap: no_source_talk only) does not implement yet (task S1).",
+                        "implements since 2026-11-18 (075f045).",
     "act.units_empty_skipped": "Exact (status field).",
     "act.retried": "Exact (a retry record exists). Retries repaired the code-check problems listed; none stayed unresolved.",
     "act.judge_unresolved": "Exact (pipeline totals).",

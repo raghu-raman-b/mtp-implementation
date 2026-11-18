@@ -26,7 +26,7 @@ OUT = ROOT / "pipeline" / "output" / COURSE
 K = OUT / "knowledge"
 HERE = Path(__file__).resolve().parent
 
-HANDLING = ("fixed in the pipeline", "display rule", "hidden from learners", "not fixed (future work)")
+HANDLING = ("fixed in the pipeline", "fixed in the viewer", "display rule", "hidden from learners", "not fixed (future work)")
 EMBED_THRESHOLDS = (0.80, 0.85, 0.90, 0.95)
 EMBED_MAIN = 0.90
 GENERIC_MODIFIERS = {"user", "users", "general", "basic", "main", "common", "typical", "different", "various",
@@ -950,8 +950,8 @@ slow = [r for r in qa_res if r["seconds"] > 15]
 nocite = [r for r in qa_res if r.get("covered") and not r.get("citations")]
 row("qa.markdown_raw", "QA / viewer", "answers containing markdown (** bold, bullets) or LaTeX that the page showed as raw characters",
     "regex ** / list bullet / $...$ in answer of analysis/mvp/qa_run/results.jsonl and results_run2.jsonl (2026-11-13 run, not rerun)",
-    len(md), len(qa_res), "answers", [ex(f'{r["id"]} {r["seconds"]}s', r["answer"][:120]) for r in md[:5]], "not fixed (future work)",
-    f"KaTeX in the viewer is task S3 of the 2026-11-18 task list (queued); LaTeX in {len(latex)} of them. Source: analysis/mvp/test_report.md section 5, issue 1.")
+    len(md), len(qa_res), "answers", [ex(f'{r["id"]} {r["seconds"]}s', r["answer"][:120]) for r in md[:5]], "fixed in the viewer",
+    f"Bold and lists rendered since 2026-11-13; formulas typeset with KaTeX (vendored, offline) since 2026-11-18 (7620342); LaTeX in {len(latex)} of them. Source: analysis/mvp/test_report.md section 5, issue 1.")
 row("qa.slow", "QA", "answers slower than 15 s", "seconds > 15 in analysis/mvp/qa_run/results*.jsonl", len(slow), len(qa_res), "answers",
     [ex(f'{r["id"]} {r["seconds"]}s', r["question"]) for r in slow[:5]], "fixed in the pipeline",
     "Round-1+ thinking off and early exit for unknown names (2026-11-17, analysis/qa/STATE.md): bench_after median 4.8 s, max 9.3 s.")
@@ -1036,7 +1036,7 @@ for r in rows:
                  f"- **Count:** {fmt(r)} {r['unit']}", "- **Examples:**"]
     md_lines += [f"  - `{e['id']}`: {e['excerpt']}" for e in r["examples"]] or ["  - (none)"]
     md_lines += [f"- **Handling:** {r['handling']}" + (f". {r['handling_note']}" if r["handling_note"] else ""),
-                 f"- **Rule precision:** {r['precision']}", ""]
+                 f"- **Sample read (an agent's reading of a few hits; not code, not used for any count):** {r['precision']}", ""]
 md_lines += ["## History: failures found earlier and fixed", "", "| Date | Failure found | Fix |", "|---|---|---|"]
 md_lines += [f"| {d} | {f} | {x} |" for d, f, x in HISTORY]
 (HERE / "inventory.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
