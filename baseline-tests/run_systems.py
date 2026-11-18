@@ -236,7 +236,10 @@ ABLATIONS = {"abl_facts": ["fact_lookup"],
 def restrict_tools(allowed: list[str] | None):
     sys.path.insert(0, str(PIPE))
     os.chdir(PIPE)
-    import qa.answer as qa_answer
+    import qa.answer  # noqa: F401
+    # NOT "import qa.answer as qa_answer": qa/__init__.py re-exports the function `answer`, so that name binds the
+    # function and the patches below would land on it silently (the first ablation runs were ours unchanged).
+    qa_answer = sys.modules["qa.answer"]
     from qa import tools as qa_tools
     from qa.tools import ToolResult
     if allowed is None:

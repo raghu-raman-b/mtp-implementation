@@ -2,7 +2,7 @@
 
     python3 baseline-tests/summarize.py
 
-Correctness, hallucinations and not-covered handling come from judgments.jsonl (Opus judge). Citation validity is by
+Correctness, hallucinations and not-covered handling come from judgments.jsonl (Sonnet judge; Opus agreement in judge_agreement.md). Citation validity is by
 code: every "(lecture N, m:ss)" an answer writes (citations.written_citations, the same for all systems) is valid when
 the lecture exists and at least VALID_OVERLAP of the claim's content words occur in that lecture's transcript from
 30 s before to 240 s after the cited time. Cost figures (context tokens, model calls, latency, first token) are from
@@ -91,7 +91,7 @@ def main():
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
 
     # tables.md
-    L = ["# Baseline comparison tables", "", "Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Opus "
+    L = ["# Baseline comparison tables", "", "Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Sonnet "
          "judge). halluc: false claims counted (answers with one). cit valid: by code (see summarize.py). nc handled: "
          "not-covered questions answered as not covered without invented content. ctx: median context tokens. "
          "calls: mean model calls. latency / first token in seconds.", "",
