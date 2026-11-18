@@ -37,3 +37,16 @@ Additions (2026-11-13, requested by the viewer; everything above unchanged):
   whenever the material gives them; always a subset of the activity's `facts`.
 - `complete_map`: a blank that hides `from` or `to` hides a concept that appears on no other edge of the map, so the
   answer is not visible elsewhere (blanks on shared concepts hide the `label` instead).
+
+What the viewer server sends (viewer/serve.py, "Display rules"; the files on disk are unchanged, the routes apply these
+from the pipeline's own signals only, the judge verdicts of checks*.json and 4a's `defined` flag):
+- `recap`: only the points the judge passed; `data.text` only when it passed (absent otherwise); a recap with no passing
+  point is not sent. Dropped something: `"judge_dropped": {"text": bool, "points": [numbers, 1-based]}`.
+- `crossword`: each entry gets `"prefilled": bool`; a judge-failed clue is `"prefilled": true` and has no `clue`.
+- `recall` items and `match_pairs` pairs of a connecting concept (`defined: false`) are dropped; every `concept_map` /
+  `complete_map` node gets `"connecting": bool`. Connecting concepts have no card (`/api/concept/<id>` is 404), are not
+  in `/api/glossary`, and never send a `definition`; map payloads (`/api/view` `map.nodes`, `concepts`; `/api/coursemap`
+  `nodes`) flag them with `"connecting": true`.
+- Segments in `/api/view` and `/api/lecture` carry `"title"`: the part title of
+  `output/<course>/stage_4e_part_titles/titles.json` (`{"segments": {"1/S0": {"title", "ok", "problems"}}}`) when `ok`,
+  else null.

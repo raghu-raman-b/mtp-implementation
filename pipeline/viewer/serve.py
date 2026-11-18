@@ -37,9 +37,11 @@ Routes
                                     activities (an activity a checks*.json marks "unresolved" carries "unresolved":
                                     true; the page hides it outside developer mode), the lecture's concept map, and only
                                     the concepts and facts this lecture refers to
-    GET  /api/glossary              every concept: name, other names, definition, where it is first explained, whether
-                                    it has relationships ("linked")
-    GET  /api/concept/<C0042>       one concept card: definition, where it is explained, facts, relationships
+    GET  /api/glossary              every defined concept: name, other names, definition, where it is first explained,
+                                    whether it has relationships ("linked"), "connecting": false (connecting concepts
+                                    are not listed; "connecting" says how many there are)
+    GET  /api/concept/<C0042>       one concept card: definition, where it is explained, facts, relationships (each
+                                    with "connecting"; no definition for a connecting one). 404 for a connecting concept
     GET  /api/coursemap             the lecture graph for the course map (lectures, direct links, prerequisites)
     GET  /api/review                the spaced-review cards of activities/course.json
     GET  /data/knowledge/<file>     a knowledge/ file (concepts.json, facts.json, ..., lectures/lec_<n>.json);
@@ -60,9 +62,27 @@ Routes
 
 Activities: an activity a checks*.json marks "unresolved" carries "unresolved": true (dev mode only). Judge-failed
 items ("flags": {"judge_failed"}) carry "judge_failed": {item: [criteria]} and "judge_hide": [items the page shows only
-in developer mode], by the per-kind rule HIDE_JUDGE_FAILED below. The glossary lists only the concepts 4a defined
-("defined": true; every concept when the layer has no such field); the others ("connecting concepts") stay on the maps
-and keep their cards, and come in the glossary route only by name (when linked), for the explorer's search.
+in developer mode], by the per-kind rule HIDE_JUDGE_FAILED below.
+
+Display rules (the user's decisions; they use only the pipeline's own signals, the judge's verdicts and 4a's flag).
+Every route that sends activities or concepts applies them: /api/view, /api/lecture, /api/glossary, /api/concept,
+/api/coursemap, /api/review, and the raw /data/knowledge/concepts.json and /data/activities/lec_<n>.json (filtered):
+  recap        only the points the judge passed ("data": {"points": [...]}); "data.text" only when the judge passed it
+               (absent when it failed); a recap with no passing point is not sent at all. When something was dropped
+               the activity has "judge_dropped": {"text": bool, "points": [the dropped points' numbers, 1-based]}
+               (developer mode). A recap in /api/view has no "judge_failed"/"judge_hide" (the dropping replaces them).
+  crossword    every entry has "prefilled": bool; an entry whose clue the judge failed has "prefilled": true and no
+               "clue" key (the front end shows its letters filled in); the grid and the other entries are unchanged
+  connecting   a concept 4a did not define ("defined" not true; none when the layer has no such field). No card
+  concepts     (/api/concept/<id> is 404), not in the glossary, never a "definition" in any route (the raw concepts.json
+               has "definition": "" for them), its recall items and match pairs are dropped. Every concept record that
+               is sent says "connecting": true|false: /api/view "concepts" and "map.nodes" ([{id, name, connecting}]; "map.
+               concepts" stays the list of IDs), the nodes of an activity's concept_map/complete_map ("data.nodes[]
+               .connecting"), /api/coursemap "nodes" ({id: {name, connecting}}; "names" stays; "start_concept" is a
+               defined concept), the relationship sides of a concept card, the glossary entries.
+  part titles  output/<course>/stage_4e_part_titles/titles.json ({"segments": {"1/S0": {"title", "ok", "problems"}}},
+               written by another stage; optional, watched like the other files): "title" on every segment of
+               /api/view and /api/lecture = its title when "ok" is true, else null (every title null without the file)
 
 Speed (the demo runs through an SSH port forward, ssh -L 8765:127.0.0.1:8765, with 100-250 ms RTT):
     index.html names every /static/ file with ?v=<its hash>; a versioned file is sent with Cache-Control "public,
@@ -349,7 +369,7 @@ class Course:
                 "index": index, "goals": goals, "assumed": assumed, "lectures": lectures,
                 "qa": qa_status()}
 
-    def lecture(self, key: str) -> dict:
+    def lecture(self, key: str, raw: bool = False) -> dict:
         stem = stem_of(key)
         kl = load_json(self.kd / "lectures" / f"{stem}.json") if self.kd.is_dir() else None
         segs = load_json(self.out / "stage_1b_verify_segments" / "segment_maps" / f"{stem}.json")
@@ -371,6 +391,12 @@ class Course:
             sentences.append({"id": sid, "text": txt, "start": start, "end": end})
             prev = end
         acts = load_json(self.ad / f"{stem}.json") if self.ad.is_dir() else None
+        if acts is not None and not raw:
+            acts = {**acts, "activities": self.learner_activities(
+                acts.get("activities") or [], self.check_units(), self.connecting_ids(self.kfile("concepts.json") or {}))}
+        pt = self.part_titles()
+        for sg in segments:
+            sg["title"] = pt.get(sg["id"])
         t = self.titles().get(key, {})
         return {"key": key, "title": (kl or {}).get("title") or t.get("title") or f"Lecture {key}",
                 "week": t.get("week", ""), "source": source, "segments": segments, "sentences": sentences,
@@ -444,8 +470,72 @@ class Course:
         return sorted(n for n, crit in failed.items()
                       if (kind != "recap" or n > 0) and (rule is True or set(crit) & rule))
 
-    def slim_concept(self, cid: str, c: dict) -> dict:
-        return {"name": c.get("name") or cid, "definition": c.get("definition") or "",
+    @staticmethod
+    def connecting_ids(concepts: dict) -> set:
+        """The connecting concepts: 4a's "defined" is not true. (An older layer without the flag has none.)"""
+        if not any("defined" in c for c in concepts.values()):
+            return set()
+        return {cid for cid, c in concepts.items() if c.get("defined") is not True}
+
+    def part_titles(self) -> dict:
+        """segment ID -> its part title (stage_4e_part_titles/titles.json) when the check passed, else None."""
+        d = (load_json(self.out / "stage_4e_part_titles" / "titles.json") or {}).get("segments") or {}
+        return {sid: (r.get("title") or None) if isinstance(r, dict) and r.get("ok") is True else None
+                for sid, r in d.items()}
+
+    def learner_activities(self, raw: list, units: dict, conn: set, annotate: bool = False) -> list:
+        """The activities as learners get them (see "Display rules" in the docstring): a recap keeps only the points
+        the judge passed (its text only when that passed too; a recap with no passing point is dropped), a crossword
+        entry whose clue the judge failed is "prefilled" and has no clue, recall items and match pairs of connecting
+        concepts are dropped (they carry the definition), the nodes of a concept map say "connecting". annotate adds
+        "unresolved"/"check" and the judge-failed fields (the lean view)."""
+        failed = self.judge_failed(units, raw)
+        flagged = self.flagged(units) if annotate else {}
+        out = []
+        for a in raw:
+            f = failed.get(a.get("id")) or {}
+            kind, d = a.get("kind"), a.get("data") or {}
+            if a.get("id") in flagged:
+                a = {**a, "unresolved": True, "check": flagged[a["id"]]}
+            if annotate and f and kind != "recap":      # judge_failed: item -> criteria (shown in developer mode only);
+                a = {**a, "judge_failed": {str(k): v for k, v in sorted(f.items())},    # judge_hide: items learners
+                     "judge_hide": self.judge_hidden(kind, f)}                          # do not see (HIDE_JUDGE_FAILED)
+            if kind == "recap":
+                pts = d.get("points") or []
+                keep = [t for i, t in enumerate(pts, 1) if i not in f]
+                if not keep:
+                    continue
+                nd = {"points": keep}
+                if 0 not in f and d.get("text"):
+                    nd = {"text": d["text"], **nd}
+                a = {**a, "data": nd}
+                if f:
+                    a["judge_dropped"] = {"text": 0 in f, "points": sorted(i for i in f if i > 0)}
+            elif kind == "crossword":
+                ents = []
+                for i, e in enumerate(d.get("entries") or [], 1):
+                    e = dict(e)
+                    if i in f:
+                        e.pop("clue", None)
+                    e["prefilled"] = i in f
+                    ents.append(e)
+                a = {**a, "data": {**d, "entries": ents}}
+            elif kind in ("recall", "match_pairs"):
+                lst = "items" if kind == "recall" else "pairs"
+                items = [x for x in d.get(lst) or [] if x.get("concept") not in conn]
+                if not items:
+                    continue
+                a = {**a, "data": {**d, lst: items}}
+            elif kind in ("concept_map", "complete_map"):
+                a = {**a, "data": {**d, "nodes": [{**n, "connecting": n.get("id") in conn}
+                                                  for n in d.get("nodes") or []]}}
+            out.append(a)
+        return out
+
+    def slim_concept(self, cid: str, c: dict, connecting: bool = False) -> dict:
+        """A connecting concept goes out without its definition."""
+        return {"name": c.get("name") or cid, "connecting": connecting,
+                **({} if connecting else {"definition": c.get("definition") or ""}),
                 "defined_in": [{"lecture": d.get("lecture"), "segment": d.get("segment"), "start": d.get("start")}
                                for d in c.get("defined_in") or []],
                 "first_defined": c.get("first_defined")}
@@ -487,31 +577,23 @@ class Course:
                                 self.out / "stage_0a_preprocess" / f"{stem}.json",
                                 self.out / "stage_0a_preprocess" / "times" / f"{stem}.json",
                                 self.kd / "concepts.json", self.kd / "facts.json", self.kd / "relations.json",
-                                self.kd / "goals.json", self.kd / "lecture_graph.json"] + (
+                                self.kd / "goals.json", self.kd / "lecture_graph.json",
+                                self.out / "stage_4e_part_titles" / "titles.json"] + (
                                     sorted(self.ad.glob("checks*.json")) if self.ad.is_dir() else [])
 
         def build():
-            base = self.lecture(key)
+            base = self.lecture(key, raw=True)       # unfiltered: the view filters (and annotates) itself
             kl = base["knowledge"] or {}
             concepts = self.kfile("concepts.json") or {}
             facts = self.kfile("facts.json") or {}
             rels = self.kfile("relations.json") or {}
             goals = (self.kfile("goals.json") or {}).get("course_goals") or {}
             units = self.check_units()
-            flagged = self.flagged(units)
+            titles = self.part_titles()
+            conn = self.connecting_ids(concepts)
             acts = None
             if base["activities"] is not None:
-                acts = []
-                raw = base["activities"].get("activities") or []
-                failed = self.judge_failed(units, raw)
-                for a in raw:
-                    if a.get("id") in flagged:
-                        a = {**a, "unresolved": True, "check": flagged[a["id"]]}
-                    if a.get("id") in failed:       # judge_failed: item -> criteria (shown in developer mode only);
-                        f = failed[a["id"]]             # judge_hide: the items learners do not see (HIDE_JUDGE_FAILED)
-                        a = {**a, "judge_failed": {str(k): v for k, v in sorted(f.items())},
-                             "judge_hide": self.judge_hidden(a.get("kind"), f)}
-                    acts.append(a)
+                acts = self.learner_activities(base["activities"].get("activities") or [], units, conn, annotate=True)
             cids, fids = set(), set()
             collect_ids(acts or [], cids, fids)
             kinds = kl.get("concepts") or {}
@@ -544,17 +626,21 @@ class Course:
                 "key": key, "title": base["title"], "week": base["week"], "source": base["source"],
                 "video": base["video"], "youtube_id": base["youtube_id"],
                 "prev": keys[i - 1] if i > 0 else None, "next": keys[i + 1] if 0 <= i < len(keys) - 1 else None,
-                "segments": [{k: sg.get(k) for k in ("id", "start", "end", "subgoal", "objective", "concepts")}
-                             for sg in base["segments"]],
+                "segments": [{**{k: sg.get(k) for k in ("id", "start", "end", "subgoal", "objective", "concepts")},
+                              "title": titles.get(sg["id"])} for sg in base["segments"]],
                 "sentences": base["sentences"],
                 "goal": kl.get("goal"), "objectives": kl.get("objectives") or [],
                 "course_goals": [{"id": g, "goal": (goals.get(g) or {}).get("goal")} for g in kl.get("course_goals") or []],
                 "kinds": {k: kinds.get(k) or [] for k in ("introduced", "met_again", "defined_later", "assumed")},
                 "prerequisites": kl.get("prerequisites") or {"direct": [], "all": []},
                 "before": before,
-                "map": {"concepts": cmap.get("concepts") or [], "relations": mrels} if cmap else None,
+                "map": {"concepts": cmap.get("concepts") or [], "relations": mrels,
+                        "nodes": [{"id": c, "name": (concepts.get(c) or {}).get("name") or c, "connecting": c in conn}
+                                  for c in sorted(set(cmap.get("concepts") or []) | {x for r in mrels
+                                                                                     for x in (r["from"], r["to"])})]}
+                if cmap else None,
                 "activities": acts,
-                "concepts": {c: self.slim_concept(c, concepts[c]) for c in sorted(x for x in cids if x in concepts)},
+                "concepts": {c: self.slim_concept(c, concepts[c], c in conn) for c in sorted(x for x in cids if x in concepts)},
                 "facts": {f: {"text": facts[f].get("text", ""), "lecture": facts[f].get("lecture"),
                               "segment": facts[f].get("segment"), "start": facts[f].get("start")}
                           for f in sorted(x for x in fids if x in facts)},
@@ -575,24 +661,24 @@ class Course:
                 linked = bool((c.get("relations") or {}).get("out") or (c.get("relations") or {}).get("in"))
                 if has_flag and c.get("defined") is not True:     # a connecting concept: on the maps, not listed
                     connecting += 1
-                    if linked:                                       # the explorer's search still finds it by name
-                        out.append({"id": cid, "name": name, "also": also, "linked": True, "listed": False})
                     continue
                 d = (c.get("defined_in") or [None])[0]
                 out.append({"id": cid, "name": name, "also": also, "definition": c.get("definition") or "",
                             "lecture": d["lecture"] if d else (c.get("lectures") or [None])[0],
-                            "start": d["start"] if d else None, "linked": linked, "listed": True})
+                            "start": d["start"] if d else None, "linked": linked, "listed": True,
+                            "connecting": False})
             out.sort(key=lambda x: x["name"].lower())
             return {"concepts": out, "connecting": connecting}
         return self.memo("glossary", [self.kd / "concepts.json"], build)
 
     def concept(self, cid: str) -> Payload | None:
         concepts = self.kfile("concepts.json") or {}
-        if cid not in concepts:
+        if cid not in concepts or cid in self.connecting_ids(concepts):      # connecting: no card
             return None
 
         def build():
             c = concepts[cid]
+            conn = self.connecting_ids(concepts)
             facts = self.kfile("facts.json") or {}
             rels = self.kfile("relations.json") or {}
             titles = self.titles()
@@ -604,13 +690,15 @@ class Course:
             def side(r):
                 o = concepts.get(r.get("concept")) or {}
                 rf = (rels.get(r.get("relation")) or {}).get("facts") or []
+                cn = r.get("concept") in conn
                 return {"relation": r.get("relation"), "label": r.get("label", ""), "concept": r.get("concept"),
-                        "name": o.get("name") or r.get("name"), "definition": (o.get("definition") or "")[:400],
+                        "name": o.get("name") or r.get("name"), "connecting": cn,
+                        **({} if cn else {"definition": (o.get("definition") or "")[:400]}),
                         "defined_in": [{"lecture": d.get("lecture"), "segment": d.get("segment"), "start": d.get("start")}
                                        for d in (o.get("defined_in") or [])[:1]],
                         "lectures": len(o.get("lectures") or []), "fact": fact(rf[0]) if rf else None}
             r = c.get("relations") or {}
-            return {"id": cid, **self.slim_concept(cid, c), "aliases": c.get("aliases") or [],
+            return {"id": cid, **self.slim_concept(cid, c, False), "aliases": c.get("aliases") or [],
                     "acronyms": c.get("acronyms") or [],
                     "facts": [x for x in (fact(f) for f in (c.get("facts") or [])[:60]) if x],
                     "defining_facts": c.get("defining_facts") or [],
@@ -641,18 +729,52 @@ class Course:
                 r = (concepts.get(c) or {}).get("relations") or {}
                 return len(r.get("out") or []) + len(r.get("in") or [])
             first = (g.get("lectures") or [None])[0]
-            pool = [c for c, x in concepts.items() if degree(c)]
+            conn = self.connecting_ids(concepts)
+            pool = [c for c, x in concepts.items() if degree(c) and c not in conn]
             early = [c for c in pool if concepts[c].get("first_defined") == first] or pool
             return {"introduced": intro, "links": links, "prerequisites": g.get("prerequisites") or {},
                     "names": {c: (concepts.get(c) or {}).get("name") or c for c in sorted(names)},
+                    "nodes": {c: {"name": (concepts.get(c) or {}).get("name") or c, "connecting": c in conn}
+                              for c in sorted(names)},
                     "start_concept": max(early, key=degree) if early else None}
         return self.memo("coursemap", [self.kd / "lecture_graph.json", self.kd / "concepts.json"], build)
+
+    def data_file(self, folder: str, name: str) -> Payload | None:
+        """A /data/ file the display rules touch, filtered like the lean routes: knowledge/concepts.json without the
+        connecting concepts' definitions ("definition": "", "definition_facts": []), activities/lec_<n>.json as
+        learner_activities makes them, activities/course.json without the connecting concepts' review cards. None for any other file (sent as it is) or one that does not exist."""
+        if folder == "knowledge" and name == "concepts.json":
+            def build():
+                cs = self.kfile("concepts.json") or {}
+                conn = self.connecting_ids(cs)
+                return {k: ({**c, "definition": "", "definition_facts": []} if k in conn else c) for k, c in cs.items()}
+            return self.memo("data:concepts", [self.kd / "concepts.json"], build) if (self.kd / name).is_file() else None
+        if folder == "activities" and re.fullmatch(r"lec_[\w]+\.json", name) and (self.ad / name).is_file():
+            def build():
+                acts = load_json(self.ad / name) or {}
+                return {**acts, "activities": self.learner_activities(
+                    acts.get("activities") or [], self.check_units(),
+                    self.connecting_ids(self.kfile("concepts.json") or {}))}
+            return self.memo("data:" + name, [self.ad / name, self.kd / "concepts.json"]
+                             + sorted(self.ad.glob("checks*.json")), build)
+        if folder == "activities" and name == "course.json" and (self.ad / name).is_file():
+            def build():
+                ac = load_json(self.ad / name) or {}
+                conn = self.connecting_ids(self.kfile("concepts.json") or {})
+                sr = ac.get("spaced_review")
+                if isinstance(sr, dict):
+                    sr = {**sr, "cards": [c for c in sr.get("cards") or [] if c.get("concept") not in conn]}
+                return {**ac, "spaced_review": sr} if sr is not None else ac
+            return self.memo("data:course", [self.ad / name, self.kd / "concepts.json"], build)
+        return None
 
     def review(self) -> Payload:
         def build():
             ac = (load_json(self.ad / "course.json") if self.ad.is_dir() else None) or {}
-            return {"cards": [c for c in (ac.get("spaced_review") or {}).get("cards") or [] if c.get("concept")]}
-        return self.memo("review", [self.ad / "course.json"], build)
+            conn = self.connecting_ids(self.kfile("concepts.json") or {})
+            return {"cards": [c for c in (ac.get("spaced_review") or {}).get("cards") or []
+                              if c.get("concept") and c["concept"] not in conn]}
+        return self.memo("review", [self.ad / "course.json", self.kd / "concepts.json"], build)
 
     def warm(self):
         """Build the lean routes once in the background, so the first page does not wait for the big files."""
@@ -942,6 +1064,9 @@ class Handler(BaseHTTPRequestHandler):
                 folder = C.kd if m[1] == "knowledge" else C.ad
                 if not FILE.fullmatch(m[2]) or m[2] == "fact_embeddings.json":
                     return self.not_found(head_only=head_only)
+                pay = C.data_file(m[1], m[2])
+                if pay:
+                    return self.send_payload(pay, head_only=head_only)
                 return self.send_static(folder / m[2], "application/json; charset=utf-8", head_only)
             m = re.fullmatch(r"/media/([\w]+)(?:\.mp4)?", path)
             if m:
