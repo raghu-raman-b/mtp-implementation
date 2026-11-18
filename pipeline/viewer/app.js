@@ -102,6 +102,22 @@ async function getJSON(url) {
   if (!r.ok) return null;
   return r.json();
 }
+// vendored libraries the first screen does not need, loaded once when a page needs them (window.LAZY, index.html)
+const lazyScripts = {};
+function need(name) {
+  if (!lazyScripts[name]) {
+    lazyScripts[name] = new Promise((resolve, reject) => {
+      const sc = document.createElement("script");
+      sc.src = (window.LAZY || {})[name];
+      sc.onload = resolve;
+      sc.onerror = () => { delete lazyScripts[name]; reject(new Error(`${name} did not load`)); };
+      document.head.append(sc);
+    });
+  }
+  return lazyScripts[name];
+}
+const needDagre = () => (typeof dagre !== "undefined" ? Promise.resolve() : need("dagre"));
+const needMath = () => (window.katex && window.renderMath ? Promise.resolve() : need("katex").then(() => Promise.all([need("autorender"), need("math")])));
 const idle = (fn, ms = 300) => setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2000 }) : fn()), ms);
 let toastTimer = null;
 function toast(...kids) {
@@ -1524,6 +1540,11 @@ function crossword(a) {
 // ------------------------------------------------------------------ an activity, ready to show
 function renderAct(a, L, ctx = {}) {
   if (a.kind === "goal") return goalStep(L, ctx);
+  if ((a.kind === "concept_map" || a.kind === "complete_map") && typeof dagre === "undefined") {  // the layout library first
+    const box = h("div", { class: "empty", style: { padding: "40px 0" } }, h("span", { class: "spin" }), " Drawing the map…");
+    needDagre().then(() => { if (box.isConnected) box.replaceWith(renderAct(a, L, ctx)); }, () => box.replaceChildren("The map cannot be drawn right now."));
+    return box;
+  }
   if (a.kind === "notes") return notesStep(L, ctx);
   const fn = RENDER[a.kind];
   try {
@@ -2104,7 +2125,7 @@ async function pageLecture(key, rest) {
   if (rest[0] === "t") view.pendingT = parseFloat(rest[1]);
   root.afterShow = () => {
     view.showTab(rest[0] === "t" ? "watch" : rest[0] || "watch", rest[1]);
-    idle(() => { prefetch(L.next); prefetch(L.prev); }, 1500);  // the neighbours open at once
+    idle(() => { prefetch(L.next); prefetch(L.prev); needDagre().catch(() => {}); }, 1500);  // the neighbours open at once
   };
   return root;
 }
@@ -2142,7 +2163,7 @@ async function render() {
     else if (r.page === "concept") el = await pageConcept(r.arg);
     else if (r.page === "glossary") el = await pageGlossary();
     else if (r.page === "map") el = await pageLectureMap(r.arg ? [r.arg] : []);
-    else if (r.page === "concepts") el = await pageConceptMap(r.arg, r.rest);
+    else if (r.page === "concepts") { await needDagre().catch(() => {}); el = await pageConceptMap(r.arg, r.rest); }
     else if (r.page === "review") el = await pageReview();
     else if (r.page === "ask") el = pageAsk();
     else el = pageHome();
@@ -2455,6 +2476,7 @@ function pageAsk() {
   }).catch(() => {});
   page.afterShow = () => {
     status();
+    idle(() => needMath().catch(() => {}), 800);  // KaTeX ready before the first answer completes
     if (S.askDraft) { input.value = S.askDraft; S.askDraft = null; }
     if (S.askNow) { const q = S.askNow; S.askNow = null; send(q); }
     input.focus({ preventScroll: true });
@@ -2577,7 +2599,7 @@ function askTurn(q, lec) {
       byLec.size ? h("div", { class: "sources" }, h("span", {}, "Sources"), [...byLec.values()].map((c) => h("a", { href: timeHref(c.lecture, c.start), title: `Watch lecture ${c.lecture} at ${clock(c.start)}` }, `Lecture ${c.lecture} · ${lecInfo(String(c.lecture)).title}`))) : null,
       res.error ? dev(res.error) : null,
       timing ? h("details", { class: "dev" }, h("summary", {}, `timing: total ${timing.total} s, first step ${timing.first_step} s, first draft ${timing.first_draft} s`), h("pre", { style: "white-space:pre-wrap" }, JSON.stringify(timing, null, 1))) : null);
-    if (window.renderMath) window.renderMath(ans);  // formulas typeset once the answer is complete
+    needMath().then(() => window.renderMath(ans), () => {});  // formulas typeset once the answer is complete
     follow();
   };
   const body = JSON.stringify({ question: q, lecture: lec || null });
