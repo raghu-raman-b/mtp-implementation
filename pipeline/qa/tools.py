@@ -109,17 +109,23 @@ def where_defined(kb: Knowledge, d: dict) -> tuple[str, float, str]:
     return d["lecture"], seg.get("start", d.get("start", 0)), d["segment"]
 
 
+def is_defined(c: dict) -> bool:
+    """True only for a concept the course defines (the "defined" field); a connecting concept's definition text
+    is model-written and is never shown to the answering model or the learner."""
+    return bool(c.get("defined")) and bool(c.get("definition"))
+
+
 def card_text(kb: Knowledge, cid: str, shown: set) -> list[str]:
     c = kb.concepts[cid]
     other = list(dict.fromkeys(c.get("aliases", []) + c.get("acronyms", [])))
     out = [f"CONCEPT {c['name']}" + (f" (also called: {', '.join(other)})" if other else "")]
-    if c.get("definition"):
+    if is_defined(c):
         src = c.get("definition_facts") or c.get("defining_facts") or []
         out.append(f"Definition: {c['definition']}" + (f" [built from {', '.join(src)}]" if src else ""))
         shown.update(f for f in src if f in kb.facts)
-    else:
-        out.append("Definition: none (the course uses this term but does not define it).")
-    if c.get("defined_in"):
+    else:   # a connecting concept: its model-written definition never leaves the knowledge layer
+        out.append("Definition: none (the course uses this term but does not define it; its facts follow).")
+    if is_defined(c) and c.get("defined_in"):
         places = [where_defined(kb, d) for d in c["defined_in"]]
         out.append("Defined in: " + "; ".join(f"{lecture_ref(kb, k)} at {fmt_time(t)} [{ref}]" for k, t, ref in places))
         shown.update(ref for _, _, ref in places)
@@ -128,6 +134,9 @@ def card_text(kb: Knowledge, cid: str, shown: set) -> list[str]:
     if len(path) > 1:
         out.append("Lectures that lead up to it, in order: " + " -> ".join(path))
     facts = [f for f in c.get("facts", []) if f in kb.facts]
+    if not is_defined(c):       # the facts that speak of it most directly come first
+        lead = [f for f in c.get("defining_facts", []) if f in facts]
+        facts = lead + [f for f in facts if f not in lead]
     rels = c.get("relations", {})
     rel_lines, rel_facts = [], []
     for direction in ("out", "in"):
@@ -192,14 +201,15 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
     n_facts = sum(1 for s in shown if '/F' in s)
     summary = f"card of {names}" + (f" (matched '{matched}', {how})" if how != "exact" else "") + \
               f"; {n_facts} facts"
-    cards = [{"id": c, "name": kb.concept_name(c), "defined": bool(kb.concepts[c].get("definition")),
-              "defined_in": list(dict.fromkeys(d["lecture"] for d in kb.concepts[c].get("defined_in", [])))}
+    cards = [{"id": c, "name": kb.concept_name(c), "defined": is_defined(kb.concepts[c]),
+              "defined_in": list(dict.fromkeys(d["lecture"] for d in kb.concepts[c].get("defined_in", [])))
+              if is_defined(kb.concepts[c]) else []}
              for c in cids[:CARDS_PER_NAME]]
     ks = lectures_of(kb, [s for s in shown if "/F" in s])
     defined = [c["defined"] for c in cards]
     label = f'Looked up "{" / ".join(c["name"] for c in cards)}": ' + (
         "definition found" if all(defined) else "a definition found" if any(defined)
-        else "the course uses it without defining it") + (f", {n_facts} facts from {in_lectures(ks)}" if n_facts else "")
+        else "facts found") + (f", {n_facts} facts from {in_lectures(ks)}" if n_facts else "")
     return ToolResult("\n".join(lines).strip(), summary, shown, found=True, label=label,
                       detail={"name": name, "known": True, "matched": matched, "how": how, "concepts": cards,
                               "facts": n_facts, "lectures": ks})
@@ -279,10 +289,13 @@ def lecture_dependencies(kb: Knowledge, lecture=None, **_) -> ToolResult:
         for c in key[:DEP_CONCEPTS]:
             C = kb.concepts.get(c, {})
             also = [j for j in earlier(c) if j != first(c)]
-            out.append(f"- {C.get('name', c)} ({uses[c]} uses; first defined in lecture {first(c)}"
-                       + (f", also in {', '.join(also)}" if also else "") + "): "
-                       + (C.get("definition") or "(no definition written)"))
-            for f in [f for f in C.get("defining_facts", []) if f in kb.facts][:2]:
+            out.append(f"- {C.get('name', c)} ({uses[c]} uses; {'first defined' if is_defined(C) else 'first met'} in lecture {first(c)}"
+                       + (f", also in {', '.join(also)}" if also else "") + ")"
+                       + (": " + C["definition"] if is_defined(C) else ""))
+            dfs = [f for f in C.get("defining_facts", []) if f in kb.facts]
+            if not is_defined(C):   # no definition to show: its facts stand in, defining ones first
+                dfs += [f for f in C.get("facts", []) if f in kb.facts and f not in dfs]
+            for f in dfs[:2]:
                 out.append("    " + fact_line(kb, f))
                 shown.add(f)
         if len(key) > DEP_CONCEPTS:

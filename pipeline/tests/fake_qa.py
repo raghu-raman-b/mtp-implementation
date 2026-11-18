@@ -88,8 +88,9 @@ def check(ok: bool, what: str):
 
 
 def snapshot(folder: Path) -> dict:
+    """Size and mtime of every file under folder, except output/logs/ (a shared llama-server writes there)."""
     return {str(p.relative_to(folder)): (p.stat().st_size, p.stat().st_mtime_ns)
-            for p in folder.rglob("*") if p.is_file()}
+            for p in folder.rglob("*") if p.is_file() and p.relative_to(folder).parts[:1] != ("logs",)}
 
 
 def free_port() -> int:
@@ -380,8 +381,36 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
 
     print("two calls in one message", flush=True)
     n0 = len(server.bodies)
-    r = ask("How do HMDs and tracking relate?")
-    tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"]
+    from qa import Knowledge as _K, run_tool as _rt
+    _kb = _K.load(COURSE)
+    SECRET = "SECRETDEF connecting concept definition text"
+    tid = next(c for c, v in _kb.concepts.items() if v["name"] == "tracking")
+    sid = next(c for c, v in _kb.concepts.items() if v["name"] == "stereoscopy")
+    saved = {c: dict(_kb.concepts[c]) for c in (tid, sid)}
+    for c in (tid, sid):                  # make them connecting concepts, with a definition that must not leak
+        _kb.concepts[c].update(defined=False, definition=SECRET + " " + _kb.concepts[c]["name"])
+    try:
+        r = ask("How do HMDs and tracking relate?")
+        tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"]
+        cc = _rt(_kb, "check_concept", {"name": "tracking"})
+        dp = _rt(_kb, "lecture_dependencies", {"lecture": "6"})
+        transcript = json.dumps(server.bodies[n0:]) + cc.text + dp.text + json.dumps([(s["result_summary"], s.get("label")) for s in r["steps"]])
+        facts_of_c = [f for f in saved[tid].get("facts", []) if f in _kb.facts]
+        check(SECRET not in transcript and "Definition: none" in cc.text and "built from" not in cc.text
+              and "Defined in:" not in cc.text and all(f in cc.text for f in facts_of_c[:3]) and facts_of_c
+              and cc.detail["concepts"][0]["defined"] is False
+              and "definition found" not in cc.label and "facts found" in cc.label,
+              f"connecting concept: no definition text anywhere, facts shown, defined false ({cc.label!r})")
+        check(SECRET not in dp.text and "- stereoscopy (2 uses; first met in lecture 2)" in dp.text
+              and "2/S2/F3" in dp.text, "lecture_dependencies: a connecting concept shows facts, no definition")
+    finally:
+        for c, v in saved.items():
+            _kb.concepts[c].clear()
+            _kb.concepts[c].update(v)
+    dd = _rt(_kb, "check_concept", {"name": "stereoscopy"})
+    check("Definition: Stereoscopy" in dd.text and dd.detail["concepts"][0]["defined"] is True
+          and "definition found" in dd.label and "first defined in lecture 2" in
+          _rt(_kb, "lecture_dependencies", {"lecture": "6"}).text, f"a defined concept keeps its definition ({dd.label!r})")
     check(tools_of(r) == ["check_concept", "check_concept"]
           and [s["args"]["name"] for s in r["steps"]] == ["HMDs", "tracking"]
           and [m["tool_call_id"] for m in tm] == ["call_check_concept_0", "call_check_concept_1"],
