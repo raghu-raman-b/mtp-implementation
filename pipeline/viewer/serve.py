@@ -44,6 +44,8 @@ Routes
                                     with "connecting"; no definition for a connecting one). 404 for a connecting concept
     GET  /api/coursemap             the lecture graph for the course map (lectures, direct links, prerequisites)
     GET  /api/review                the spaced-review cards of activities/course.json
+    GET  /api/samples               viewer/sample_questions.json, the Ask screen's sample questions ({"questions": [{"q",
+                                    "category", "lecture"}]}), sent as it is (ETag); 404 without the file
     GET  /data/knowledge/<file>     a knowledge/ file (concepts.json, facts.json, ..., lectures/lec_<n>.json);
                                     fact_embeddings.json is not served
     GET  /data/activities/<file>    an activities/ file (lec_<n>.json, course.json)
@@ -1050,6 +1052,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_payload(C.coursemap(), head_only=head_only)
             if path == "/api/review":
                 return self.send_payload(C.review(), head_only=head_only)
+            if path == "/api/samples":
+                f = HERE / "sample_questions.json"
+                if not f.is_file():
+                    return self.not_found("no sample questions", head_only)
+                return self.send_static(f, "application/json; charset=utf-8", head_only)
             if path == "/api/course":
                 return self.send_json(C.course_info(), head_only=head_only)
             if path == "/api/qa_status":
