@@ -35,7 +35,7 @@ sys.path.insert(0, str(PIPE))
 G = OUT / "graphrag"
 G.mkdir(exist_ok=True)
 EXTRACT = G / "extractions.jsonl"
-PARALLEL = 3            # the server is shared with another agent: leave it slots
+PARALLEL = 6            # all 6 server slots (the first 176 units ran with 3 while the server was shared)
 TD, RD, CD = "<|>", "##", "<|COMPLETE|>"
 TYPES = ["concept", "technology", "device", "method", "phenomenon", "person", "organization", "metric"]
 
