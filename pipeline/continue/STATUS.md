@@ -1,3 +1,11 @@
+PIPELINE v3 STATUS - DEMO PREP WAVE 1  (updated 10:15 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
+
+RUNNING (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only for connecting concepts, S3 KaTeX offline,
+  S6 part titles (Gemma 4 12B, local GPU), S7 code-only failure inventory (O2 dropped: no Opus-decided merges)
+WAITING: user's design pick (gates O1)
+NEXT: O1 design build (~11:00-15:45), O3 baselines (GPU after S6, ~17:00), O5 DEMO_PLAN, O4 docs (+ Windows setup,
+  what-fails table from S7) ~19:00, rehearsal
+
 PIPELINE v3 STATUS - DEMO PREP  (updated 00:05 IST, 18 Nov; full state + decisions: pipeline/continue/PROMPT.md)
 
 DONE: docs v3 (pipeline/docs/pipeline.html, sources docs/src/); remote-model demo setup (model on the instance, app on

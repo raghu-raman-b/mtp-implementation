@@ -129,6 +129,22 @@ only when the user asks.
   iPhone OS) via a reviewed merge list + remap (code); the FOV alias on horizontal field of view; odd alias lists
   (fragments/generic words); KaTeX for formulas in answers (vendored, offline). Warm-up at start is done (setup merge).
 
+### UPDATE 2026-11-18 10:15 IST (user) — supersedes the FINAL TASK LIST below where they differ
+- **O2 dropped.** No Opus-decided merge list or alias removal list: a stronger model must not decide changes to pipeline
+  outputs (memory `no-stronger-model-fixes`). Duplicates/aliases are not fixable by display rules (no pipeline signal).
+  Instead **S7 (Sonnet)**: code-only failure inventory `analysis/failures/inventory.{py,json,md}` (every failure kind:
+  activities, crosswords, recaps, duplicates/aliases by code rules, 2c flags, 0a, part titles; with how each was handled:
+  fixed in the pipeline / display rule / hidden / not fixed) -> O4 turns it into the docs' "what fails where" table.
+- Part titles contract: `output/<course>/stage_4e_part_titles/titles.json` = {"run", "segments": {"1/S0": {"title"|null,
+  "ok", "problems"}}}; failed titles stay null (no one fills them in). S1 exposes `title` per segment in /api/view.
+- O3: ours does not need a rerun (layer unchanged); GPU order S6 -> O3 -> O5.
+- **O4 also documents the demo setup on a Windows machine** (user, 10:15): setup_windows.ps1, run_demo.ps1 (-Check,
+  -Bench, -Push), python -m demo, tunnel to the instance; mark it untested on real Windows until the rehearsal.
+- Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
+  (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
+- Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;
+  O5 17:00-18:30; O4 17:00-19:00; rehearsal after the user's docs + slides.
+
 ### FINAL TASK LIST (user-approved 2026-11-18 00:25; supersedes "Next" below). Sonnet = simple, Opus = complex.
 Baselines: finish GraphRAG (run it WITH source text units, and also without) + add two ablations of ours
 (facts only = fact_lookup alone; graph only = concept cards/prerequisites/overview/goals, no fact search) + RAG with
