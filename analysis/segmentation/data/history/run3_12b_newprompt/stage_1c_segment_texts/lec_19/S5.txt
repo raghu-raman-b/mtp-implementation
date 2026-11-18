@@ -1,0 +1,100 @@
+[19/71] So, what are the key concerns when we are talking of a VR software from the developer's point of view?
+[19/72] We can understand that in terms of some key components that the software should support for a developer to build a proper VR experience.
+[19/73] In order to understand that, we can think of the whole software system as an abstraction which is a virtual world generation or virtual world generator abstraction.
+[19/74] We can call it VWG.
+[19/75] The idea is schematically illustrated here in this accompanying figure.
+[19/76] We have this VWG here, which is nothing but a black box.
+[19/77] At this stage, we do not know how things work inside.
+[19/78] So, it receives input from low-level systems.
+[19/79] That is on the left-hand side input.
+[19/80] Such systems can be head tracker to estimate user's head position and orientation, keyboard, mouse, game controller, and other inputs.
+[19/81] And such input events are assumed to arrive in a queue ready to be processed.
+[19/82] So, there can be multiple input events coming simultaneously, but those need to be arranged in a queue so that they can be processed systematically.
+[19/83] So, we have input side: head tracker, game controller, keyboard, mouse, and many other inputs can be there.
+[19/84] They arrive to this VWG kept in a queue to be processed.
+[19/85] Now, the key role of the VWG is to maintain enough of an internal reality.
+[19/86] So, it should appear to be real to the user.
+[19/87] Now, to do that, it should be able to maintain internal reality so that renderers can extract information to calculate outputs for respective displays.
+[19/88] So, from the input side, whatever information is coming, the role of VWG is to convert it to output so that it appears to be real.
+[19/89] So, there is a match between input and output.
+[19/90] So, the role of VR VWG is to maintain that match.
+[19/91] Now, how can it be done?
+[19/92] So, in order to maintain that match.
+[19/93] So, the output devices have to be synced with the input data.
+[19/94] So, we can have several types of output devices such as visual renderer which generates visual display, aural renderer generates aural display to be sensed with our ears, haptic renderer generates haptic display to be sensed with our skin, and there can be many such other renderers as we have discussed during our VR hardware discussion.
+[19/95] Now to maintain that match, VWG must support a few things.
+[19/96] What are those things?
+[19/97] First is virtual world.
+[19/98] Now when we say that visual display renders a visual scene comprising a virtual world, that world may appear real or it can be synthetically created.
+[19/99] So virtual world can be completely synthetic.
+[19/100] So that means it requires defining numerous triangles in a 3D space, essentially a triangular mesh we have to create.
+[19/101] So later on when we talk about how to create such scenes as part of a discussion on computer graphics, we will understand what these triangular meshes are, why they are required, and how they are represented.
+[19/102] However, it is sufficient at this stage to know that in order to be able to create a synthetic scene, we need to maintain such a mesh of triangles.
+[19/103] And not only that, along with that we need to maintain material properties that indicate how they interact with light, sound, forces and so on.
+[19/104] So, the physical properties of the surfaces we also need to maintain.
+[19/105] Now, these are typical problems in computer graphics.
+[19/106] Computer graphics addresses computer-generated images from synthetic models, and the software that is meant to help the developer build an application should support computer graphics operations.
+[19/107] So, that is the first requirement.
+[19/108] Alternatively, we can have a virtual world that is recorded physical world so the world is realistic.
+[19/109] Now in order to do that, we can capture the real world using cameras and that relies on computer vision techniques and also as we have discussed earlier, simultaneous localization and mapping or SLAM techniques.
+[19/110] So in order to create a real-looking virtual world, we may require support for such SLAM or computer vision in our software for the developer to utilize and create applications accordingly.
+[19/111] Now, there can be other possibilities of creating a virtual world as well.
+[19/112] Many possibilities, in fact, exist in between.
+[19/113] One such possibility can be that camera images may be taken of a real object and mapped onto a synthetic object in the virtual world.
+[19/114] This is called texture mapping, which is a very common problem or operation in computer graphics.
+[19/115] So our software ideally should support texture mapping operations as well.
+[19/116] So that is about the creation of a virtual world.
+[19/117] Another thing is motion.
+[19/118] Now there is something called matched motion.
+[19/119] Let us try to understand what it is and what kind of support, in the software we should have.
+[19/120] Now, the basic operation of the VWG is to maintain correspondence between user motions in the real and virtual world, that is what a VWG is supposed to do.
+[19/121] Now, it may so happen that in the real world, users' motions are confined to a safe region.
+[19/122] Which may not be the case in the virtual world.
+[19/123] So, there is something called a matched zone that is a place where real and virtual worlds perfectly align.
+[19/124] So, this is a part of the, say, virtual world, but the user can move within this space in the real world and this movement is translated to the other parts of the virtual world.
+[19/125] So, this region where the user's physical movement is restricted and which is also a part of the virtual world is called a matched zone.
+[19/126] Now, when implementing an application, when implementing an immersive experience, if it is not carefully done, then there can be a mismatch of obstacles.
+[19/127] Say, for example, a user can be blocked in the virtual world, but not in the real world.
+[19/128] So, within that zone, there is no physical obstacle, but in the virtual world, there may be some virtual obstacle.
+[19/129] What happens in such a case?
+[19/130] Or vice versa, that is, there is a physical obstacle in the matched zone, whereas there is no such obstacle in the virtual world.
+[19/131] What happens in such a case?
+[19/132] So, that is a challenge to deal with.
+[19/133] Which motions from the real world should be reflected in the virtual world?
+[19/134] That is how we can resolve such challenges by addressing these types of fundamental questions.
+[19/135] Now, the motion that should be reflected in the virtual world varies among VR experiences.
+[19/136] Head motions must be matched so that the visual renderer uses the correct viewpoint in the virtual world.
+[19/137] We have already discussed this before.
+[19/138] Other body parts in such cases may be less critical, but sometimes they may be important.
+[19/139] So, if a user needs to perform hand-eye coordination or looks at other parts of the body during the experience, then the user expects the other parts also to move in accordance with the head movement or in accordance with the movement in the virtual world.
+[19/140] So, in such cases, body part tracking and the corresponding matched motion with the head movement is required.
+[19/141] In many VR experiences, users want to move well outside of the matched zone.
+[19/142] Which motivates locomotion.
+[19/143] So, moving oneself in the virtual world while motion is not matched in the real world.
+[19/144] That is, we have already briefly talked about what happens in such cases.
+[19/145] For example, suppose you want to explore a virtual city while remaining seated in the real world.
+[19/146] So there can be different ways to do that.
+[19/147] You can pull up a menu, point to where you want to go, and the teleportation operation can be performed, which can send you to the desired location in the city although you have not made any physical movement.
+[19/148] So, these types of issues in matched motion happen when you are may be doing one kind of physical motion in the matched zone whereas there can be a different kind of virtual motion and how do I create a correspondence between the two.
+[19/149] That is where the challenge is and that is where a typical VR software should have support for developers to address those challenges.
+[19/150] Then user locomotion is another concern which is closely related to the earlier one.
+[19/151] A popular option to move oneself in the virtual world by operating a game controller, mouse or keyboard is there.
+[19/152] Say for example, by pressing buttons or moving knobs, the user in the virtual world could be walking, running, jumping, swimming.
+[19/153] That is the avatar of the user in the virtual world can perform all these activities without moving physically.
+[19/154] Can also climb. a board or a vehicle in virtual world and operate its controls to move yourself.
+[19/155] That is another metaphor, vehicle metaphor can be used while the user is sitting.
+[19/156] That is possible.
+[19/157] But these operations, although convenient, so user does not need to actually physically move.
+[19/158] This may lead to cyber sickness.
+[19/159] So, we have talked about these things. during our discussion on cyber sickness that there is a mismatch between the user's physical motion and virtual motion which may lead to cyber sickness, which increases with the exposure duration and also with other factors.
+[19/160] So, support for user locomotion is also important different sorts of locomotion so that sickness can be addressed.
+[19/161] So, that support is also part should be part of the VR software.
+[19/162] So with that, we have come to the end of this part of the lecture where we have briefly covered the idea of VR software: what the software is and what the key components are.
+[19/163] Now for the key components, we have talked about a few key components that a software, VR software, should support primarily from the developer's point of view.
+[19/164] So there are a few more components which we need to discuss.
+[19/165] We will take it up in the next lecture along with The different software packages, tools, and SDKs that are available to build and deploy VR systems on different platforms.
+[19/166] So we will continue our discussion on VR software in the next part of the lecture.
+[19/167] Till then, thank you and goodbye.
+[19/168] I hope you have enjoyed.
+[19/169] Looking forward to meeting you in the next part of the lecture.
+[19/170] Happy learning.

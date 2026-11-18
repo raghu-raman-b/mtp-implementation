@@ -1,0 +1,146 @@
+
+<!-- ======================================================================= PART 3 -->
+<div class="part-head" data-part="II · The pipeline"><span class="num">Part II · The pipeline</span><h2 id="stages" data-toc="Stage by stage">Stage by stage</h2>
+<p>Each stage below gives what it does and why, its inputs and outputs, the command, the model and config, how long
+it took on the VR course, its prompt in full (click to open), a real input and output from lecture 30, and the
+changes made to it with the reason. All paths are under <code>pipeline/</code>; outputs under
+<code>pipeline/output/nptel_vr/</code>.</p></div>
+
+<div class="callout note"><span class="tag">Common to every model stage</span>
+<ul>
+<li><b>One client</b> (<code>scripts/llm/</code>) for vLLM and llama.cpp, both through the OpenAI chat API. A config file
+(<code>configs/*.json</code>) sets the engine, model, sampling, thinking budget and server flags.</li>
+<li><b>Answers are constrained</b> to a JSON schema built by code, then parsed and checked. A failed check is sent back
+to the model with the problems listed (“Your answer has these problems: … Answer again in the same format, fixing
+these problems and changing nothing else.”), up to the config's <code>retries</code>. When every attempt fails, the
+attempt with the fewest problems is kept and marked <code>unresolved</code> (decision D12).</li>
+<li><b>Every answer is cached</b> in the stage's <code>llm/cache.jsonl</code> under a hash of the request (engine, model
+path and request body: prompt, schema, sampling, token limits). The same request is never sent twice; a prompt
+change reruns only the requests it changes. Every call is logged in <code>llm/calls.jsonl</code> (tokens, time, errors).</li>
+<li><b>All requests of a stage go out at once</b> (<code>generate_many</code>), and the server batches them: up to 128 at a
+time on the 96 GB GPU. Qwen 3.8 27B FP8 on vLLM produced about 1,650–1,850 output tokens per second with the batch
+full, and about 45 tokens per second for a single request (<code>ec2_sync/queue/logs/</code> <span class="local">(local)</span>).</li>
+<li><b>Prompts</b> are plain text files in <code>prompts/</code> with <code>{placeholders}</code>. Most begin with the
+course block (<code>prompts/course_meta.txt</code>: the course outline and syllabus from <code>course.json</code>), so the
+engine reuses its cached prefix across calls.</li>
+</ul></div>
+{{PROMPT:course_meta.txt}}
+
+<!-- ------------------------------------------------------------------ 0a -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-code)">0a</span><h3 id="s0a" data-toc="0a · Preprocess">Preprocess: subtitles to timed sentences</h3><span class="worker w-code">code</span></div>
+<p>Every later stage works with sentences: the segmenter reads them, segments are runs of them, facts cite them, and
+their times turn a citation into a moment of the video. Stage 0a joins all subtitle cues of a lecture into one
+stream, splits it at sentence ends and gives each sentence an ID and the times of the cues it came from.</p>
+<dl class="facts-grid">
+<dt>In</dt><dd><code>input/nptel_vr/input/subs/**/lec_&lt;n&gt;.srt</code> (human-written subtitles: their punctuation is trusted)</dd>
+<dt>Out</dt><dd><code>stage_0a_preprocess/lec_&lt;n&gt;.json</code> sentences <code>{"30/0": "Hello and welcome …"}</code>;
+<code>times/lec_&lt;n&gt;.json</code> <code>{"30/0": {"start", "end"}}</code>; <code>times/cues/</code> the cue timeline;
+<code>times/meta.json</code> the speaking rate (VR: 143 words per minute)</dd>
+<dt>Command</dt><dd><code>python scripts/s0a_preprocess.py nptel_vr</code></dd>
+<dt>Model</dt><dd>none</dd>
+<dt>Time</dt><dd>seconds: “63 lectures, 11893 sentences (364 with a boundary inside a cue), median 143.0 words per minute” (<code>output/logs/qwen_vllm_0a.log</code>)</dd>
+<dt>Code</dt><dd><code>scripts/s0a_preprocess.py</code>, <code>scripts/lectures.py</code> (lecture keys: <code>lec_24b.srt</code> → <code>24b</code>, <code>tut_1</code>)</dd>
+</dl>
+<p><b>The rule.</b> A sentence ends at <code>.</code>, <code>?</code> or <code>!</code> (with any closing quote or bracket),
+followed by a space and a capital letter, a digit or an opening quote. <code>Dr.</code>, <code>Prof.</code>, <code>e.g.</code>,
+<code>i.e.</code>, <code>vs.</code>, <code>Fig.</code>, <code>Eq.</code> are not ends; <code>MR.</code> (mixed reality) is. A lowercase word
+after a full stop does not start a sentence: in the VR course that full stop is the mistake (286 times, “…technologies.
+which, …”). A sentence keeps an exact time only where it starts or ends at a cue's edge; otherwise that side is
+<code>null</code>, and no time is made up.</p>
+<div class="split">
+<div><span class="lbl">In · lec_30.srt</span><pre data-lang="text">{{S:srt30}}</pre></div>
+<div><span class="lbl">Out · sentences and times</span><pre data-lang="json">{{S:sent30}}</pre></div>
+</div>
+<h4>Changes and why</h4>
+<ul>
+<li><b>Rule-based splitter, kept after a comparison with pySBD</b> on six courses: it finds 94–99.7% of pySBD's
+boundaries, and where they disagree ours was right in the samples read (pySBD splits “…this is the result is n by ‖ n.”).
+<code>analysis/preprocessing/report.md</code>.</li>
+<li><b>MIT caption conventions</b> (speaker labels, sound tags, the OCW licence notice) handled so the same code runs on
+five other courses; the VR output stayed byte-identical.</li>
+<li><b>Times of a segment boundary inside a cue</b>, three versions: forward from the nearest exact time (VR median
+error 1.4 s, max 14.4 s), both sides from the nearest exact sentence times (0.9 / 7.4 s), then <b>both sides from the
+edges of the cue the boundary is in</b> (0.4 / 5.8 s; in Programming in C the max fell from 264 s to 12 s). Only
+segment boundaries are estimated (in stage 1b); sentences keep <code>null</code>. Example, lecture 57 sentence 206, 4
+words into a 33-word cue from 2129.808 s to 2146.991 s: forward 2131.49 s, backward 2134.82 s, estimate 2133.16 s.</li>
+</ul>
+
+<!-- ------------------------------------------------------------------ 1 -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-gen)">1a–1c</span><h3 id="s1" data-toc="1 · Segmentation">Segmentation: one sub-goal per segment</h3><span class="worker w-gen">Qwen 3.8 27B</span><span class="worker w-code">code checks</span></div>
+<p>A learner should be able to watch a segment on its own and come away able to do one thing. Stage 1a asks the model,
+once per lecture, where each sub-goal starts and what it is. Stage 1b checks the answer in code and, when a check
+fails, sends it back with the problem. Code never merges, splits or moves a cut itself. Stage 1c writes one text file
+per segment for the next stages.</p>
+<dl class="facts-grid">
+<dt>In</dt><dd>0a sentences; <code>course.json</code> (outline and syllabus); <code>titles.tsv</code></dd>
+<dt>Out</dt><dd><code>stage_1a_segmentation/raw/lec_&lt;n&gt;.json</code> (the answer, its reasoning, tokens);
+<code>stage_1b_verify_segments/segment_maps/lec_&lt;n&gt;.json</code> (segment → first and last sentence, start, end,
+sub-goal, <code>estimated</code> when a time is estimated); <code>retry/lec_&lt;n&gt;.json</code> (every attempt);
+<code>report.json</code>; <code>stage_1c_segment_texts/lec_&lt;n&gt;/S&lt;k&gt;.txt</code></dd>
+<dt>Command</dt><dd><code>python scripts/s1a_segmentation.py nptel_vr --llm configs/qwen38_27b_vllm.json [--only 1-5] [--sequential]</code><br>
+<code>python scripts/s1b_verify_segments.py nptel_vr --llm configs/qwen38_27b_vllm.json [--only 1-5]</code> (without <code>--llm</code>: checks only)<br>
+<code>python scripts/s1c_segment_texts.py nptel_vr [--only 1-5]</code></dd>
+<dt>Model</dt><dd>Qwen 3.8 27B FP8 on vLLM, <code>configs/qwen38_27b_vllm.json</code>: temperature 1.0, top_p 0.95, top_k 20, thinking capped at 16,384 tokens, 32 parallel requests</dd>
+<dt>Time</dt><dd>1a: 63 calls in 1,113 s (19 min), 6,613 input and 12,572 output tokens per call on average (16 calls ran to the thinking cap). 1b: 37 retry calls, about 8 minutes. RTX PRO 6000, 2026-11-12.</dd>
+<dt>Result</dt><dd>63/63 lectures pass; 386 segments, 3–12 per lecture, median 4.1 min, longest 14.5 min; 33 lectures retried for size (29 once, 4 twice); 1 segment still flagged and kept by the model (41/S9, 1 min 39 s)</dd>
+</dl>
+
+<h4>The prompts</h4>
+<p>The 1a prompt is the task first, then the course block, the lecture's title, the definitions (sub-goal, segment,
+what is not a sub-goal, where to cut, standing alone), a working method, the answer format and the transcript
+numbered from <code>[1]</code>. The answer is <code>{"reasoning", "segments": [{"start", "subgoal"}]}</code>: the reasoning
+comes first so the model commits to why, and 1b sends it back in a retry. The two retry prompts are appended to the
+conversation: the 1a prompt, the model's last answer, then the retry. The model is told which segments “look too
+small” or “look too big”, never the bounds or the durations, and it may keep a segment it judges right.</p>
+{{PROMPT:segmentation.txt}}
+{{PROMPT:segmentation_structural_retry.txt}}
+{{PROMPT:segmentation_logical_retry.txt}}
+
+<h4>1b's checks</h4>
+<div class="tablewrap"><table>
+<tr><th>Check</th><th>Kind</th><th>On a failure</th></tr>
+<tr><td>The answer is a non-empty list; integer starts; the first segment starts at sentence 1; starts in range and increasing; segments exhaustive, exclusive, contiguous, non-empty</td><td>structural (hard)</td><td>up to 2 structural retries per answer; an answer that fails is never kept</td></tr>
+<tr><td>A segment under 2 minutes (not the last) or over 15 minutes</td><td>logical (soft)</td><td>up to 2 logical retries per lecture; the kept answer is the valid one with the fewest flagged segments</td></tr>
+</table></div>
+
+<h4>A real run: lecture 30</h4>
+<p>1a's answer cut the lecture into six segments. The fifth, on head-related transfer functions, was 1.9 minutes:</p>
+<pre data-lang="json">{{S:seg30_first}}</pre>
+<p>1b flagged it and sent the logical retry with this problem line:</p>
+<pre data-lang="text" class="wrap">{{S:seg30_problem}}</pre>
+<p>The model did not just glue the small segment to its neighbour. It moved the cut back to sentence 131, where the
+binaural cues begin (the prompt numbers sentences from 1, so its sentence 131 is ID <code>30/130</code>), so the HRTF material became part of a 5-minute segment on rendering localized sound:</p>
+<pre data-lang="json">{{S:seg30_retry}}</pre>
+<p>The kept segment map and the report line:</p>
+<pre data-lang="json">{{S:segmap30}}</pre>
+<pre data-lang="json">{{S:report30}}</pre>
+<p>1c writes each segment as one sentence per line, the format later stages read:</p>
+<pre data-lang="text">{{S:segtext30}}</pre>
+
+<h4>Changes and why</h4>
+<div class="tablewrap"><table>
+<tr><th>Run</th><th>Model</th><th>What changed</th><th class="n">Segments</th><th class="n">Over 15 min</th><th class="n">Longest</th></tr>
+<tr><td>1</td><td>Gemma 4 E4B</td><td>v1/v2's prompt, unchanged</td><td class="n">557</td><td class="n">2</td><td class="n">18.3 min</td></tr>
+<tr><td>2</td><td>Gemma 4 E4B</td><td>new prompt: segments by sub-goal; bridges go to the next segment; stand alone</td><td class="n">622</td><td class="n">2</td><td class="n">16.8 min</td></tr>
+<tr><td>3</td><td>Gemma 4 12B</td><td>same prompt, larger model</td><td class="n">355</td><td class="n">12</td><td class="n">27.9 min</td></tr>
+<tr><td>4</td><td>Gemma 4 12B</td><td>task first; course outline; sub-goals defined by the course's goals; stand alone limited to real dependencies</td><td class="n">431</td><td class="n">6</td><td class="n">30.8 min</td></tr>
+<tr><td>4 + 1b</td><td>Gemma 4 12B</td><td>verification with retries (“look too small / too big”)</td><td class="n">391</td><td class="n">0</td><td class="n">14.6 min</td></tr>
+<tr class="total"><td>current</td><td>Qwen 3.8 27B</td><td>run 4's prompt with a reasoning field; 1b</td><td class="n">386</td><td class="n">0</td><td class="n">14.5 min</td></tr>
+</table></div>
+<ul>
+<li><b>A small model ignores the finer rules; a capable one applies them literally.</b> The 4B labelled greetings as
+sub-goals and cut list items apart; the 12B followed “stand alone” into 28-minute segments (“Therefore, Segment 2 and 3
+must be merged.”). The fix was rules it cannot over-apply: “Connectives are not dependencies. … Never merge segments
+or move a cut because of a connective.”</li>
+<li><b>Length is checked in code, not prompted.</b> A 6–15 minute rule in the prompt was considered and dropped: run 1's median segment was 2.4 minutes (557 segments), so code would have done the segmenting. Two retry wordings were tested on 8
+lectures; the one with a direction (“see whether small ones together make a more meaningful sub-goal”) kept the
+lecturer's structure better than the bare “check them”.</li>
+<li><b>Run to run, about three quarters of the cuts reproduce</b>: boundary F1 0.75 between seeds of the same pipeline,
+WindowDiff 0.15. The disagreement is in lectures that enumerate items (lecture 8: six qualities of immersion). Qwen 27B
+against Gemma 12B: F1 0.76, about the same as Gemma against itself. Later stages should not treat a boundary as exact.</li>
+<li><b>A dependency judge was tried and left out</b> (<code>prompts/segmentation_judge.txt</code>, below): no false alarm on
+6 controls, but 2 of 10 borderline segments flipped between two runs. Decision of 2026-11-11: not part of the pipeline.</li>
+</ul>
+{{PROMPT:segmentation_judge.txt}}
+<p class="small muted">Sources: <code>analysis/segmentation/report.md</code>; notebook <code>pipeline/pipeline.ipynb</code>, run notes
+“Segmentation on Qwen 3.8 27B (2026-11-12, EC2)”.</p>

@@ -21,6 +21,99 @@ the project venv by itself, and starts and stops the model server in the `llm-en
 | `--fresh` | ignore cached LLM answers |
 | `--keep-server` | leave the local generator running for the next run |
 
+## LIR v2.1 (in progress)
+
+v2 rebuilds the LIR on stricter rules: every item cites sentences by address (`L05/S0412`), code checks only sources
+and structure, the judge checks every item (one rewrite, then dropped), and every decision is logged with its reason.
+It has two layers: the knowledge (parts, key points, key terms, a concept registry with canonical definitions, facets,
+links, goals, lecture map) and the activities built on it (recall, quiz, summary, concept map, open questions, spaced
+review). v2.1 merges the calls (one per part, window, registry group or lecture), caps thinking per step and runs each
+part and lecture as soon as its inputs are ready. The full design, the outputs and the status of each step are in
+`pipeline2/TASKS.md`.
+
+```bash
+python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --only 1-10
+python3 generate_lir2.py --lecture ../dataset/virtual_and_augmented_reality --config lir2_config_small.toml
+python3 tests/smoke_pipeline2.py      # plumbing check with a fake model: no GPU, under a minute
+```
+
+Output: `lir-v2/<course>/` (`course.json`, `Lxx.json`, `activities/Lxx.json`, `decisions.jsonl`, `embeddings.json`;
+schema in `lir2_schema.py`); build files and `report.md` (time per step, calls, judge pass rates, drops) in
+`output/<course>/v2/`. The generator writes; the verifier runs the registry and the links; the judge checks every item
+and rewrites failures once. Two setups run the same pipeline:
+
+| Setup | Config | Writes | Verifies and judges |
+|---|---|---|---|
+| large | `lir2_config.toml` | Qwen 3.8 27B FP8 | the same server |
+| small | `lir2_config_small.toml` | Gemma 4 E4B | Gemma 4 12B (a second vLLM server on the same GPU) |
+
+Thinking is capped per step (`[think]`: 8k for writing steps, 4k for judges), ended by vLLM with a closing phrase so
+the answer is never cut. Requests go to the server in priority order: the critical path first (parts, key points, key
+terms, registry, facets), the rest fills the GPU around it.
+
+Engines (`engine` per role): `vllm` (a Hugging Face repo), `llamacpp` (an `org/repo:file.gguf`), `openai` (an API
+model name). On the RTX PRO 6000 (96 GB), Qwen 27B with thinking on and a JSON schema, total output tokens per second:
+
+| Requests at once | llama.cpp, Q8 GGUF | vLLM, FP8 |
+|--:|--:|--:|
+| 1 | 45 | 45 |
+| 32 | 338 | 752 |
+| 64 | | ~1,400 |
+| 128 | | 1,353 per wave, ~1,750 steady |
+
+### On EC2 (or any big NVIDIA GPU)
+
+```bash
+git clone https://github.com/raghu-raman-b/mtp-implementation.git && cd mtp-implementation/lir-construction
+bash setup_ec2.sh                 # 15-20 min on a fresh instance; HF_TOKEN=... for faster downloads
+```
+
+`setup_ec2.sh` installs ffmpeg, ninja and tmux, the pipeline venv (`.venv`, torch for CUDA 13), vLLM 0.32.0 in
+`~/vllm-venv`, downloads Qwen 3.8 27B FP8, Gemma 4 E4B and 12B and the embedding model, and runs the smoke test. It is
+safe to rerun. `LLAMA=1` also builds llama.cpp and downloads the Q8 GGUF. Stopping (not terminating) the instance
+keeps all of it; an AMI of a set-up instance starts ready.
+
+A run, with a live dashboard and a stats report per setup:
+
+```bash
+bash run_v2.sh --setups small,large --courses vr   # VR on the small setup, then on the large one
+bash run_v2.sh                                     # large setup, VR then Deep Learning; --only 1-3, --name, --resume
+```
+
+Setups run one after another, and the courses of a setup one at a time (the whole GPU for one course). It opens a tmux
+session `lir2` (Ctrl-b d detaches, `tmux attach -t lir2` comes back) with a dashboard per setup (GPU, vLLM throughput,
+KV cache, progress), a window per course, the server logs and a control window. Each run gets its own folder, so
+nothing earlier is overwritten:
+
+```
+runs/<name>/<setup>/report.md, charts/     time, requests and tokens per type, GPU and server stats, what was
+                                           built; rerun python3 run_report.py runs/<name>/<setup> at any time
+runs/<name>/<setup>/<course>/lir/          the LIR
+runs/<name>/<setup>/<course>/build/        answer cache, step outputs, calls.jsonl (every request), report.md
+runs/<name>/<setup>/server.csv             GPU and vLLM metrics every 5 s (run_monitor.py)
+```
+
+By hand: `python3 serve_lir2.py --config <config>` starts the server(s), `generate_lir2.py ... --config <config>
+--keep-server` runs a course against them, `python3 serve_lir2.py --config <config> --stop` stops them.
+
+To read a v2 build and evaluate it by hand (CPU only; videos from `media/`, as for the v1 viewer):
+
+```bash
+python3 view_lir2.py runs/v2-20261103-0755       # every setup and course in the run; no argument: all of runs/
+# http://localhost:8001/?dev=1
+```
+
+`viewer2/` shows the same learner pages as `viewer/`, built from `Lxx.json` and `activities/Lxx.json`. In dev mode
+each item (goal, objectives, key points, terms, recap, review and quiz items, recall, open questions, links, concepts
+and facets) shows its cited sentences, concept tags and judge verdicts, and takes a hand-eval mark (✓ / ✗ / ? and a
+note). Marks are saved in `runs/<name>/<setup>/<course>/hand_eval.json`; `#/eval` counts them by kind. The first page
+of each lecture lists what the build dropped there and why, and the concept-map page lists every link found, kept
+or dropped.
+
+The answer cache (`output/<course>/v2/cache/`, or the run's `build/cache/`) makes a rerun only recompute what changed;
+commit it or copy it back to keep the answers. Captions for lectures without subtitles (VR L04, L05) are kept in
+`output/<course>/v2/subs/`, because YouTube often refuses cloud machines.
+
 ## Running on another PC
 
 The LIR, the viewer and the LLM answer cache are in the repo; the videos are not (9 GB for the two courses, over GitHub's file limit).

@@ -1,0 +1,40 @@
+[58/144] This is the software side; that is how we can implement the graphic functions or graphic operations.
+[58/145] On the hardware side, let us try to understand in a little more detail how GPUs are useful on the hardware side to make this process more efficient, to make this process faster.
+[58/146] So, let us have a look at the role of the GPU in computer graphics in general and how that helps in virtual reality immersive experience in particular.
+[58/147] So, the first thing that we should notice is the need for parallelism.
+[58/148] Now, graphics operations are highly parallel.
+[58/149] For example, modeling transformation: here what happens is that we apply transformations, such as rotation, to vertices; transformations in the form of matrices to the vertices.
+[58/150] Now, a transformation is essentially a multiplication of a transformation matrix with the vertex vector.
+[58/151] And this same vector-matrix multiplication is done for all vertices together.
+[58/152] And ideally, we want to do it simultaneously.
+[58/153] So, there is a parallelism involved here.
+[58/154] So, we can have a significant gain in performance if we perform such multiplications on all vectors at the same time.
+[58/155] If it is not done at the same time, then it will be much, much slower, and that significant gain is important in real-time rendering because millions of vertices need to be processed per second.
+[58/156] The number may be even more when we are talking of a realistic immersive experience.
+[58/157] Now, CPUs generally cannot take advantage of this inherent parallelism.
+[58/158] Traditionally, the way CPUs used to be made, because they are not designed to do that.
+[58/159] Of course, modern CPUs come with some such features, but they are traditionally not very good at taking care of large-scale parallel activities.
+[58/160] So, modern graphics systems come with a separate graphics card, as we have already discussed earlier, containing their own processing unit and memory elements.
+[58/161] And this processing unit is called a graphics processing unit or GPU, which is designed to deal with the inherent parallelism in graphics operations.
+[58/162] Now, GPUs are typically multicore systems; that means they contain a large number of cores or unit processing elements, as shown here.
+[58/163] You can see multiple cores are there in a GPU; they work on Single instructions: all the cores work simultaneously on an instruction and produce data simultaneously.
+[58/164] So, each core is capable of performing simple integer and floating-point arithmetic operations only, and multiple cores group together to form what are called streaming multiprocessor units.
+[58/165] So, we can have Broadly, we can view a GPU as organized in this way, as shown in this figure.
+[58/166] We have the host, then input assemblers and a thread execution manager; then this manager allocates to different streaming multiprocessors.
+[58/167] There can be a large number of such multiprocessors. which has a parallel data cache where the multiprocessor can produce its data.
+[58/168] There is an element called texture storage, which essentially stores some information about predefined colors, surface colors, or predetermined surface colors.
+[58/169] Then, these elements are accessed through the load and store information.
+[58/170] The elements can access whatever data is produced; it can be sent to the global memory through the load information or store information, or the global memory content may be sent to this or accessed by these units through the load information.
+[58/171] And each streaming multiprocessor has multiple cores, as shown here.
+[58/172] So, a streaming multiprocessor contains several streaming processors or cores.
+[58/173] So, how does it work?
+[58/174] Now, most graphic systems assume a scene is made of triangles.
+[58/175] The scene that we are trying to render is made of triangles.
+[58/176] That means surfaces are converted to meshes, triangular meshes.
+[58/177] Remember our discussion on object representation, where we said that eventually everything gets converted to meshes, irrespective of how a developer defines an object.
+[58/178] So, the graphics processing unit assumes that the mesh is available as input.
+[58/179] Now, through the APIs supported in the graphics library, triangles are sent to the GPU one vertex at a time.
+[58/180] So, graphics libraries come with APIs using which such triangles in the mesh can be sent to the GPU one vertex at a time, and the GPU assembles vertices into triangles.
+[58/181] Then the GPU performs modeling transformations on the vertices.
+[58/182] So, multiple vertices are simultaneously transformed by multiplying the same matrix, the same transformation matrix, to all the set of vertices.
+[58/183] The output is a stream of triangles, which are the transformed triangles from local coordinate to world coordinate.

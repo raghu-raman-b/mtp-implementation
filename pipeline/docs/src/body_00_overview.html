@@ -1,0 +1,204 @@
+
+<header class="hero" id="top">
+  <span class="kicker">Pipeline v3 · documentation · as of 2026-11-17</span>
+  <h1>From lecture video to a course that answers back</h1>
+  <p class="lead">Pipeline v3 reads a course's subtitles and builds a <b>knowledge layer</b>: the facts each lecture
+  teaches, the concepts they name, how those concepts relate, what each lecture is for and which lectures need which.
+  On top of it sit <b>activities</b> checked by a judge, and a <b>question box</b> that answers only from the course
+  and cites the lecture and the minute. Every claim traces back to a sentence of a lecture.</p>
+  <div class="tiles" aria-label="The VR course as built">
+    <div class="tile"><b>63</b><span>lectures of NPTEL <i>Foundation for Virtual and Augmented Reality Systems</i></span></div>
+    <div class="tile"><b>386</b><span>segments, each one sub-goal</span></div>
+    <div class="tile"><b>2,006</b><span>facts, each citing its sentences</span></div>
+    <div class="tile"><b>3,122</b><span>concepts after the synonym merge</span></div>
+    <div class="tile"><b>1,316</b><span>with a written definition (the glossary)</span></div>
+    <div class="tile"><b>7,427</b><span>relationships between concepts</span></div>
+    <div class="tile"><b>1,168</b><span>activities of ten kinds; the six model-made kinds judged</span></div>
+    <div class="tile"><b>4.5 s</b><span>median answer time (vLLM, 17 questions)</span></div>
+  </div>
+  <p class="small muted">Every number and example on this page comes from a file in the repository, a commit
+  message, or local run logs not in git (<code>ec2_sync/</code>, <code>output/*/qa/</code>), marked <span class="local">(local)</span> where cited; the path is given next to it. The course is the VR course (<code>pipeline/output/nptel_vr/</code>), as
+  rebuilt on 2026-11-17 (commit <code>d3896b9</code>). Where something was not measured, the page says so.</p>
+  <div class="callout note"><span class="tag">How to read this page</span>
+  <p><b>Part I</b> gives the whole pipeline in five minutes, how it came to be (v1, v2, v3), how it compares with
+  simpler approaches, and every argument for the design. <b>Part II</b> goes stage by stage: what each does, its prompt
+  in full, a real input and output, its time and the changes made to it. <b>Part III</b> lists every evaluation set
+  and what fails where. <b>Part IV</b> is how to run it and the reference (Python API, command lines, HTTP routes,
+  configs, the demo). <b>Part V</b> is the known limits, the fixes coming next and future work; the <b>Appendix</b>
+  indexes every prompt and schema and defines the terms. Select any text and press <b>Highlight</b> to keep it; your highlights are listed under <b>✎ Highlights</b>, bottom right.</p></div>
+</header>
+
+<!-- ======================================================================= PART 1 -->
+<div class="part-head" data-part="I · Overview and story"><span class="num">Part I · Overview and story</span>
+<p class="lead" style="margin-top:12px">What the pipeline is, how it came to be this way, and why it is built as it is.</p></div>
+<h2 id="overview" data-toc="The pipeline in five minutes">The pipeline in five minutes</h2>
+<p>A course goes in as subtitle files. It comes out as a folder, <code>knowledge/</code>, that a program can query,
+plus activities built from it. The heavy model work happens once, on a GPU server. Answering a learner's question
+later needs only a small model and the folder.</p>
+
+<figure class="wide">
+  <div class="legend"><span class="w-code" style="--c:var(--c-code)">code only</span><span style="--c:var(--c-gen)">Qwen 3.8 27B FP8 (vLLM, GPU server)</span><span style="--c:var(--c-emb)">embedding model (Qwen3-Embedding-0.6B)</span><span style="--c:var(--c-qa)">Gemma 4 12B (answers questions)</span><span class="lg-skip" style="--c:var(--c-skip)">built, switched off</span></div>
+  <div class="frame">
+  <svg viewBox="0 0 1040 590" role="img" aria-labelledby="ovt">
+    <title id="ovt">The pipeline: five build phases feed the knowledge layer, which activities, question answering and the viewer read</title>
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+    <text x="8" y="22" class="t-m mut">BUILT ONCE, OFFLINE (about 11 GPU hours for 63 lectures, measured stage by stage)</text>
+    <!-- columns -->
+    <g>
+      <rect x="8" y="34" width="190" height="296" rx="14" class="col"/>
+      <text x="22" y="60" class="t-l">0 · Preprocess</text><text x="22" y="79" class="t-s mut">subtitles to sentences</text>
+      <rect x="18" y="96" width="170" height="64" rx="9" class="box2"/>
+      <text x="30" y="116" class="t-s ink2">in: SRT subtitles,</text><text x="30" y="133" class="t-s ink2">titles.tsv, course.json</text><text x="30" y="150" class="t-s ink2">(written by hand)</text>
+      <rect x="18" y="172" width="170" height="52" rx="9" class="k-code sw"/>
+      <text x="30" y="193" class="t-mono">0a</text><text x="30" y="212" class="t-s">11,893 sentences</text>
+    </g>
+    <g>
+      <rect x="214" y="34" width="190" height="296" rx="14" class="col"/>
+      <text x="228" y="60" class="t-l">1 · Segment</text><text x="228" y="79" class="t-s mut">one sub-goal each</text>
+      <rect x="224" y="96" width="170" height="52" rx="9" class="k-gen sw"/><text x="236" y="117" class="t-mono">1a</text><text x="236" y="136" class="t-s">one call per lecture</text>
+      <rect x="224" y="158" width="170" height="52" rx="9" class="k-code sw"/><text x="236" y="179" class="t-mono">1b</text><text x="236" y="198" class="t-s">checks and retries</text>
+      <rect x="224" y="220" width="170" height="52" rx="9" class="k-code sw"/><text x="236" y="241" class="t-mono">1c</text><text x="236" y="260" class="t-s">segment texts</text>
+      <text x="228" y="312" class="t-s mut">386 segments</text>
+    </g>
+    <g>
+      <rect x="420" y="34" width="190" height="296" rx="14" class="col"/>
+      <text x="434" y="60" class="t-l">2 · Per segment</text><text x="434" y="79" class="t-s mut">facts, then concepts</text>
+      <rect x="430" y="96" width="170" height="52" rx="9" class="k-gen sw"/><text x="442" y="117" class="t-mono">2a facts</text><text x="442" y="136" class="t-s">2,006, with evidence</text>
+      <rect x="430" y="158" width="170" height="52" rx="9" class="k-skip sw"/><text x="442" y="179" class="t-mono">2b fact judge</text><text x="442" y="198" class="t-s mut">off: did more harm</text>
+      <rect x="430" y="220" width="170" height="52" rx="9" class="k-gen sw"/><text x="442" y="241" class="t-mono">2c concepts</text><text x="442" y="260" class="t-s">5,805 + 7,502 triples</text>
+    </g>
+    <g>
+      <rect x="626" y="34" width="190" height="296" rx="14" class="col"/>
+      <text x="640" y="60" class="t-l">3 · Registry</text><text x="640" y="79" class="t-s mut">names joined</text>
+      <rect x="636" y="96" width="170" height="52" rx="9" class="k-emb sw"/><text x="648" y="117" class="t-mono">3a candidates</text><text x="648" y="136" class="t-s">names + embeddings</text>
+      <rect x="636" y="158" width="170" height="52" rx="9" class="k-gen sw"/><text x="648" y="179" class="t-mono">3b same?</text><text x="648" y="198" class="t-s">425 clusters judged</text>
+      <rect x="636" y="220" width="170" height="52" rx="9" class="k-code sw"/><text x="648" y="241" class="t-mono">3c merge</text><text x="648" y="260" class="t-s">3,122 concepts</text>
+    </g>
+    <g>
+      <rect x="832" y="34" width="200" height="296" rx="14" class="col"/>
+      <text x="846" y="60" class="t-l">4 · Course layer</text><text x="846" y="79" class="t-s mut">definitions, goals, graph</text>
+      <rect x="842" y="96" width="180" height="50" rx="9" class="k-gen sw"/><text x="854" y="116" class="t-mono">4a definitions</text><text x="854" y="134" class="t-s">1,316 defined</text>
+      <rect x="842" y="153" width="180" height="50" rx="9" class="k-gen sw"/><text x="854" y="173" class="t-mono">4b goals</text><text x="854" y="191" class="t-s">125 objectives</text>
+      <rect x="842" y="210" width="180" height="50" rx="9" class="k-code sw"/><text x="854" y="230" class="t-mono">4c lecture graph</text><text x="854" y="248" class="t-s">83 direct links</text>
+      <rect x="842" y="267" width="180" height="50" rx="9" class="k-emb sw"/><text x="854" y="287" class="t-mono">4d assemble</text><text x="854" y="305" class="t-s">checked: 206,903 refs</text>
+    </g>
+    <g class="arrow" marker-end="url(#ah)">
+      <path d="M198 182 H212" class="arrow" marker-end="url(#ah)"/><path d="M404 182 H418" class="arrow" marker-end="url(#ah)"/>
+      <path d="M610 182 H624" class="arrow" marker-end="url(#ah)"/><path d="M816 182 H830" class="arrow" marker-end="url(#ah)"/>
+    </g>
+    <path d="M932 330 V398 H812" class="arrow" marker-end="url(#ah)"/>
+    <!-- layer -->
+    <rect x="200" y="370" width="610" height="66" rx="14" class="k-acc sw"/>
+    <text x="220" y="396" class="t-l c-acc">knowledge/ — the layer (31 MB)</text>
+    <text x="220" y="419" class="t-s ink2">facts · concept cards · names · relationships · goals · graph</text>
+    <path d="M400 436 L190 480" class="arrow" marker-end="url(#ah)"/><path d="M515 436 V480" class="arrow" marker-end="url(#ah)"/><path d="M630 436 L850 480" class="arrow" marker-end="url(#ah)"/>
+    <text x="8" y="470" class="t-m mut">READ BY</text>
+    <rect x="30" y="484" width="320" height="94" rx="12" class="k-gen sw"/>
+    <text x="46" y="508" class="t-l">5 · Activities (offline)</text>
+    <text x="46" y="530" class="t-s">Qwen writes · code checks · judge</text>
+    <text x="46" y="550" class="t-s">1,168 activities, 1,316 review cards</text>
+    <text x="46" y="569" class="t-s mut">→ activities/, shown by the viewer</text>
+    <rect x="365" y="484" width="300" height="94" rx="12" class="k-qa sw"/>
+    <text x="381" y="508" class="t-l">Question answering</text>
+    <text x="381" y="530" class="t-s">Gemma 4 12B, 5 tools over the layer</text>
+    <text x="381" y="550" class="t-s">answers cite “(lecture N, m:ss)”</text>
+    <text x="381" y="569" class="t-s mut">online, per question</text>
+    <rect x="680" y="484" width="352" height="94" rx="12" class="k-code sw"/>
+    <text x="696" y="508" class="t-l">Viewer</text>
+    <text x="696" y="530" class="t-s">video by segment, transcript, concepts, maps,</text>
+    <text x="696" y="550" class="t-s">glossary, activities, the question box</text>
+    <text x="696" y="569" class="t-s mut">online, standard-library Python + one page</text>
+  </svg>
+  </div>
+  <figcaption>The whole pipeline. Each box is one script, <code>pipeline/scripts/s&lt;id&gt;_*.py</code>. A model is used
+  only where judgement is needed (blue); everything else is code. Numbers are the VR course as built.</figcaption>
+</figure>
+
+<h3 id="ov-stages" data-toc="Every stage in one line">Every stage in one line</h3>
+<div class="tablewrap"><table>
+<tr><th>Stage</th><th>What it does</th><th>Who</th><th>Out (VR course)</th><th class="n">Time</th></tr>
+<tr><td><a href="#s0a">0a</a></td><td>Subtitle cues become numbered sentences with start and end times</td><td>code</td><td>11,893 sentences</td><td class="n">seconds</td></tr>
+<tr><td><a href="#s1">1a</a></td><td>The model cuts each lecture into segments, one sub-goal each</td><td>Qwen</td><td>429 proposed</td><td class="n">19 min</td></tr>
+<tr><td><a href="#s1">1b</a></td><td>Code checks the cuts; segments under 2 or over 15 min go back to the model</td><td>code + Qwen</td><td>386 segments</td><td class="n">≈ 8 min</td></tr>
+<tr><td><a href="#s1">1c</a></td><td>One text file per segment</td><td>code</td><td>386 files</td><td class="n">seconds</td></tr>
+<tr><td><a href="#s2a">2a</a></td><td>The facts each segment teaches, each citing its sentences</td><td>Qwen</td><td>2,006 facts</td><td class="n">86 min</td></tr>
+<tr><td><a href="#s2b">2b</a></td><td>A judge checks each fact on eight properties (switched off: passes facts through)</td><td>—</td><td>2,006 facts</td><td class="n">seconds</td></tr>
+<tr><td><a href="#s2c">2c</a></td><td>Concepts named in a segment's facts, then the relationships the facts state</td><td>Qwen</td><td>5,805 concepts, 7,502 triples</td><td class="n">3 h 53 min*</td></tr>
+<tr><td><a href="#s3">3a</a></td><td>Same normalised name merged; similar entries grouped into clusters</td><td>code + embedder</td><td>3,384 entries, 425 clusters</td><td class="n">&lt; 1 min</td></tr>
+<tr><td><a href="#s3">3b</a></td><td>The model sorts each cluster into "same concept" groups</td><td>Qwen</td><td>262 merges</td><td class="n">24 min</td></tr>
+<tr><td><a href="#s3">3c</a></td><td>One concept per group; relationships rebuilt through the merge map</td><td>code</td><td>3,122 concepts, 7,427 relationships</td><td class="n">1 s</td></tr>
+<tr><td><a href="#s4a">4a</a></td><td>One definition per concept, from its facts</td><td>Qwen</td><td>1,316 defined</td><td class="n">1 h 47 min</td></tr>
+<tr><td><a href="#s4b">4b</a></td><td>Objectives and a goal per lecture, then the course goals</td><td>Qwen</td><td>125 objectives, 8 course goals</td><td class="n">6.5 min</td></tr>
+<tr><td><a href="#s4c">4c</a></td><td>Which lectures need which, from the concepts they use and define</td><td>code</td><td>83 direct links</td><td class="n">&lt; 1 s</td></tr>
+<tr><td><a href="#s4d">4d</a></td><td>The <code>knowledge/</code> folder, checked against its schema and for broken references</td><td>code + embedder</td><td>72 files</td><td class="n">3 s†</td></tr>
+<tr><td><a href="#s5">5</a></td><td>Ten kinds of activity and review cards; code checks, a judge, one rewrite</td><td>Qwen + code</td><td>1,168 activities</td><td class="n">2 h 10 min + 34 min</td></tr>
+<tr class="total"><td colspan="4">Sum of the measured stage times, plus 30 min of reruns (recap re-judge 22 min, odd-one-out rerun 8 min)</td><td class="n">≈ 10.8 h + 0.5 h ≈ 11.3 h</td></tr>
+</table></div>
+<p class="small muted">Times are wall time on one RTX PRO 6000 Blackwell (96 GB) on EC2, from <code>ec2_sync/queue/queue.log</code> <span class="local">(local)</span>
+(the 2026-11-17 rebuild), <code>pipeline/output/logs/qwen_vllm_1a.log</code> and the notebook's run notes. * 2c ran on an
+L40S (46 GB) during the 2026-11-13 MVP run, with 32 parallel requests; it was not rerun on the larger GPU. † With the
+fact embeddings already cached. <a href="#timing">Time estimates</a> has the details.</p>
+
+<div class="callout why"><span class="tag">The idea in one paragraph</span>
+<p>Do the expensive, careful work once: cut each lecture where its goals change, extract what it teaches as facts
+with evidence, name the concepts, join their names across lectures, write one definition per concept, and work out
+which lectures depend on which. Store it all with IDs that lead back to sentences and times. Then every later use
+(an answer, a quiz, a concept map, a list of prerequisites) is a small, checkable step over that store, and every
+claim it makes can be shown at the moment of the video where it was said.</p></div>
+
+<h3 id="datamodel" data-toc="One lecture as data">One lecture as data</h3>
+<p>Every object has an ID that says where it lives, and every one traces down to sentences. This is lecture 30,
+<i>Auditory Sense &amp; Immersive Experience</i>, followed from one sentence to the course goal.</p>
+<figure class="wide"><div class="frame">
+<svg viewBox="0 0 1040 450" role="img" aria-labelledby="dmt">
+  <title id="dmt">The data model, traced through lecture 30</title>
+  <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+  <rect x="8" y="14" width="320" height="112" rx="12" class="k-code sw"/>
+  <text x="22" y="38" class="t-mono">30/157 · 0a</text><text x="22" y="60" class="t-m">Sentence</text>
+  <text x="22" y="84" class="t-s ink2">“And it depends on the size and</text><text x="22" y="104" class="t-s ink2">shape of the head, ears…” 25:12</text>
+  <rect x="360" y="14" width="320" height="112" rx="12" class="k-gen sw"/>
+  <text x="374" y="38" class="t-mono">30/S4 · 1a–1b</text><text x="374" y="60" class="t-m">Segment</text>
+  <text x="374" y="84" class="t-s ink2">sentences 130–162, 21:01–26:06</text><text x="374" y="104" class="t-s ink2">sub-goal “Explain how binaural…”</text>
+  <rect x="712" y="14" width="320" height="112" rx="12" class="k-gen sw"/>
+  <text x="726" y="38" class="t-mono">30/S4/F6 · 2a</text><text x="726" y="60" class="t-m">Fact</text>
+  <text x="726" y="84" class="t-s ink2">“Head-related transfer functions</text><text x="726" y="104" class="t-s ink2">(HRTF) depend on…” 153, 157, 158</text>
+  <rect x="8" y="160" width="320" height="112" rx="12" class="k-gen sw"/>
+  <text x="22" y="184" class="t-mono">30/S4/C8 · 2c</text><text x="22" y="206" class="t-m">Segment concept</text>
+  <text x="22" y="230" class="t-s ink2">head-related transfer function,</text><text x="22" y="250" class="t-s ink2">alias HRTF, defined: true</text>
+  <rect x="360" y="160" width="320" height="112" rx="12" class="k-acc sw"/>
+  <text x="374" y="184" class="t-mono">C1574 · 3, 4a</text><text x="374" y="206" class="t-m">Concept</text>
+  <text x="374" y="230" class="t-s ink2">one per course: its definition,</text><text x="374" y="250" class="t-s ink2">its card, its review card</text>
+  <rect x="712" y="160" width="320" height="112" rx="12" class="k-gen sw"/>
+  <text x="726" y="184" class="t-mono">R3343 · 2c, 3c</text><text x="726" y="206" class="t-m">Relationship</text>
+  <text x="726" y="230" class="t-s ink2">HRTF “can be used to synthesize”</text><text x="726" y="250" class="t-s ink2">binaural sound (C1575)</text>
+  <path d="M328 70 H358" class="arrow" marker-end="url(#ah2)"/><path d="M680 70 H710" class="arrow" marker-end="url(#ah2)"/>
+  <path d="M872 126 V143 H168 V158" class="arrow" marker-end="url(#ah2)"/>
+  <path d="M328 216 H358" class="arrow" marker-end="url(#ah2)"/><path d="M680 216 H710" class="arrow" marker-end="url(#ah2)"/>
+  <text x="8" y="306" class="t-m mut">GOALS (4b) AND THE LECTURE GRAPH (4c)</text>
+  <rect x="8" y="320" width="240" height="110" rx="12" class="k-gen sw"/>
+  <text x="22" y="344" class="t-mono">30/O2</text><text x="22" y="366" class="t-m">Objective</text><text x="22" y="390" class="t-s ink2">segments S3, S4: binaural</text><text x="22" y="410" class="t-s ink2">localization</text>
+  <rect x="266" y="320" width="240" height="110" rx="12" class="k-gen sw"/>
+  <text x="280" y="344" class="t-mono">30/G</text><text x="280" y="366" class="t-m">Lecture goal</text><text x="280" y="390" class="t-s ink2">auditory perception for</text><text x="280" y="410" class="t-s ink2">immersive XR audio</text>
+  <rect x="524" y="320" width="240" height="110" rx="12" class="k-gen sw"/>
+  <text x="538" y="344" class="t-mono">G4</text><text x="538" y="366" class="t-m">Course goal</text><text x="538" y="390" class="t-s ink2">perception shapes XR</text><text x="538" y="410" class="t-s ink2">design (9 lectures)</text>
+  <path d="M248 375 H264" class="arrow" marker-end="url(#ah2)"/><path d="M506 375 H522" class="arrow" marker-end="url(#ah2)"/>
+  <rect x="782" y="320" width="250" height="110" rx="12" class="k-code sw"/>
+  <text x="796" y="344" class="t-mono">29 → 30 · 4c</text><text x="796" y="366" class="t-m">Lecture link (direct)</text><text x="796" y="390" class="t-s ink2">uses what 29 defines:</text><text x="796" y="410" class="t-s ink2">presence, frequency, …</text>
+</svg></div>
+<figcaption>IDs: sentence <code>30/157</code> (lecture/index), segment <code>30/S4</code>, fact <code>30/S4/F6</code>, segment
+concept <code>30/S4/C8</code>, concept <code>C1574</code>, relationship <code>R3343</code>, objective <code>30/O2</code>, lecture
+goal <code>30/G</code>, course goal <code>G4</code>. The values are from <code>knowledge/concepts.json</code>,
+<code>knowledge/facts.json</code>, <code>stage_4b_goals/</code> and <code>stage_4c_lecture_graph/needed/lec_30.json</code>.</figcaption></figure>
+
+<div class="tablewrap"><table>
+<tr><th>Thing</th><th>ID</th><th>Holds</th><th>Made in</th></tr>
+<tr><td>Sentence</td><td><code>30/157</code></td><td>text, start and end time (null when it starts inside a subtitle cue)</td><td>0a</td></tr>
+<tr><td>Segment</td><td><code>30/S4</code></td><td>first and last sentence, start, end, sub-goal</td><td>1a–1c</td></tr>
+<tr><td>Fact</td><td><code>30/S4/F6</code></td><td>text, evidence (sentence IDs)</td><td>2a (2b)</td></tr>
+<tr><td>Segment concept</td><td><code>30/S4/C8</code></td><td>name, aliases, facts, defined (true/false)</td><td>2c</td></tr>
+<tr><td>Segment relationship</td><td><code>30/S4/R7</code></td><td>subject, label, object (segment concepts), facts</td><td>2c</td></tr>
+<tr><td>Concept</td><td><code>C1574</code></td><td>name, aliases, facts, lectures, segments, <code>defined_in</code>, how each segment concept was merged in, definition</td><td>3, 4a</td></tr>
+<tr><td>Relationship</td><td><code>R3343</code></td><td>subject and object (concept IDs), label, facts, segments</td><td>3c</td></tr>
+<tr><td>Objective / lecture goal / course goal</td><td><code>30/O2</code>, <code>30/G</code>, <code>G4</code></td><td>goal, achieves, its segments / objectives / lectures</td><td>4b</td></tr>
+<tr><td>Lecture link</td><td><code>29 → 30</code></td><td>the concepts lecture 30 uses that 29 defines; direct, indirect or weak</td><td>4c</td></tr>
+</table></div>

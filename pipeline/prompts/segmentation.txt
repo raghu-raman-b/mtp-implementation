@@ -1,0 +1,43 @@
+TASK
+Divide the transcript of one lecture into segments. Each segment is the part of the lecture in which the learner achieves one sub-goal, and each segment must be one that a learner can watch independently of the others.
+
+{course}
+
+THIS LECTURE
+This lecture is titled "{lecture_title}".
+
+SEGMENTS AND SUB-GOALS
+- The course has goals: what a learner should understand and be able to do by the end of it. The outline and syllabus above describe them. Every lecture moves the learner a step closer to them.
+- A sub-goal is one such step that this lecture achieves: something the learner can do after that part of the lecture that they could not do before, such as explain a concept, describe how a system works, compare two approaches or solve a type of problem. Taken in order, the sub-goals of a lecture are the learner's task list for that lecture.
+- A sub-goal is a whole step toward the course goals, not a piece of one. The examples, illustrations, details and digressions the lecturer uses to achieve a sub-goal are part of that sub-goal.
+- A segment is the run of consecutive sentences in which the lecturer achieves one sub-goal.
+
+WHAT IS NOT A SUB-GOAL
+- Some parts of a lecture are about the lecture itself, not about the course goals: the greeting, the course name, the lecturer introducing themselves, a recap of the previous lecture, an outline of this lecture, the closing summary, a preview of the next lecture and the goodbye. These are not sub-goals.
+- The opening remarks belong to the first segment, never to a segment of their own. The closing remarks belong to the last segment, or may be the last segment on their own; its "subgoal" then says what they do ("Summarize the main points of the lecture.").
+
+WHERE TO CUT
+- Cut where a sub-goal has been achieved and closed: the lecturer has finished it, often with a concluding remark ("So, that is how tracking works."), and moves on to the next one.
+- A bridge belongs to the segment that follows it. A bridge is a sentence that leads into the next part: it announces, motivates or asks about what comes next ("Now, let us see how we can measure presence.", "So, what is the problem with this approach?", "Next, we will talk about displays."). The new segment starts at the bridge, not after it. A concluding remark stays with the part it concludes.
+- Never cut inside an explanation, a derivation, a worked example, or between a question and its answer.
+
+EACH SEGMENT MUST STAND ALONE
+- A learner must be able to follow any segment by itself, without having seen the segment before it.
+- What breaks this is a real dependency: the segment needs something that only the previous segment explains and that the segment itself never names or restates. Examples: "these three values" when the values are not given again, "this algorithm" when the algorithm is never named, "the matrix we just computed" when the segment works with that matrix without saying what it is.
+- Connectives are not dependencies. A segment may open with "So,", "Now,", "Given this background,", "Now that we know what presence is," or a short recap of what came before, as long as what it builds on is named. A segment may also build on what earlier parts taught when it names it ("Head-mounted displays, which we discussed earlier, ..."). Never merge segments or move a cut because of a connective.
+- If a segment has a real dependency, look for a cut a few sentences away that avoids it, such as at the bridge. Merge it with the previous segment only when its sub-goal cannot be understood apart from the previous one.
+
+HOW TO WORK
+1. Read the whole transcript. Decide what this lecture contributes to the course goals, and list its sub-goals in the order they are achieved.
+2. For each sub-goal, find the sentence where it begins (with its bridge) and the sentence where it is closed.
+3. Check every segment: it achieves one whole sub-goal; it ends where that sub-goal is closed; it starts with its own bridge; it has no real dependency on the segment before it; the opening remarks are in the first segment.
+
+ANSWER
+Answer with a JSON object with two fields, in this order:
+"reasoning": in a few sentences, why you chose this segmentation: the sub-goals you found and why you cut where you did, including any cut you moved or segments you merged because of a dependency.
+"segments": a list with one object per segment, in order. "start" is the number of the segment's first sentence; the first segment starts at 1. "subgoal" says in one short sentence what the learner can do after the segment, starting with a verb ("Explain why ...", "Describe how ...").
+Answer with the JSON only. Example of the format:
+{"reasoning": "The lecture first defines extended reality and then explains presence. I cut at sentence 38, where the lecturer asks how a headset creates presence, because that question is the bridge into the second sub-goal.", "segments": [{"start": 1, "subgoal": "Explain what extended reality means and how VR, AR and MR relate to it."}, {"start": 38, "subgoal": "Describe how a head-mounted display creates a sense of presence."}]}
+
+Transcript (one sentence per line, each with its number in brackets):
+{transcript}

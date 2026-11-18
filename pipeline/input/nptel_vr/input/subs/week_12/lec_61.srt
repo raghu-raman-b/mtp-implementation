@@ -1,0 +1,975 @@
+1
+00:00:24,128 --> 00:00:29,493
+Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems.
+
+2
+00:00:30,454 --> 00:00:34,117
+We have started our discussion on linking theory to practice.
+
+3
+00:00:34,698 --> 00:00:37,700
+So, in this part of the lecture, we will continue our discussion.
+
+4
+00:00:39,662 --> 00:00:53,595
+So, here our focus is on linking theory to implementation, and in order to do that, we are talking about an implementation platform, that is the Unity environment, the Unity developer environment.
+
+5
+00:00:54,048 --> 00:01:03,460
+which includes an editor interface through which a developer can create a system, build it, and deploy it.
+
+6
+00:01:05,042 --> 00:01:18,479
+So, we will continue our discussion on this Unity developer interface and how it provides the support required for building an XR experience.
+
+7
+00:01:20,722 --> 00:01:21,743
+So, our objective
+
+8
+00:01:22,364 --> 00:01:26,069
+was, in the previous part of the lecture, we talked about the objective.
+
+9
+00:01:26,370 --> 00:01:40,609
+As I mentioned, the objective is to get support for graphics pipeline operations so that a developer does not need to worry too much about how to implement the pipeline stages.
+
+10
+00:01:42,031 --> 00:01:48,600
+So, let us see how the Unity developer environment provides that support.
+
+11
+00:01:48,620 --> 00:01:52,185
+Now, important graphics support that is offered by Unity
+
+12
+00:01:53,650 --> 00:01:58,016
+is render pipeline support.
+
+13
+00:01:58,036 --> 00:02:01,660
+So, Unity provides support to implement the entire pipeline.
+
+14
+00:02:04,624 --> 00:02:08,389
+Camera and view transform support, that is, of course, one stage of the pipeline.
+
+15
+00:02:08,408 --> 00:02:13,276
+Lighting, another stage of the pipeline, is supported.
+
+16
+00:02:13,296 --> 00:02:18,983
+Meshes, materials, textures, and shaders are different components of the pipeline.
+
+17
+00:02:22,186 --> 00:02:40,972
+Creating an environment, that is, a world scene or world coordinate system scene creation, special environments like skies, and different visual effects that you can implement on your system.
+
+18
+00:02:43,535 --> 00:02:49,003
+So, it is not that Unity only provides support for the pipeline, but it also lets the user
+
+19
+00:02:49,507 --> 00:02:53,811
+have customized control over individual stages of the pipeline.
+
+20
+00:02:55,874 --> 00:03:01,519
+So, let us first talk about the pipeline implementation support.
+
+21
+00:03:01,539 --> 00:03:06,104
+So, Unity provides three pre-built render pipelines.
+
+22
+00:03:07,025 --> 00:03:08,687
+One is the built-in render pipeline.
+
+23
+00:03:10,088 --> 00:03:12,611
+It has limited options for customization.
+
+24
+00:03:13,391 --> 00:03:16,915
+So, whatever is there, you have to work with that.
+
+25
+00:03:17,553 --> 00:03:21,517
+Then, Unity supports the Universal Render Pipeline, or URP.
+
+26
+00:03:22,337 --> 00:03:26,101
+Now, this is a quick and easy way to customize.
+
+27
+00:03:27,943 --> 00:03:35,169
+This pipeline is quick and easy to customize and lets you create optimized graphics across a wide range of platforms.
+
+28
+00:03:35,790 --> 00:03:42,296
+So, many stages are optimized, or optimization is taken care of by the pipeline implementation itself.
+
+29
+00:03:42,376 --> 00:03:45,619
+So, the developer need not bother about those aspects.
+
+30
+00:03:46,004 --> 00:03:52,233
+Here, you can recollect that we talked about resource optimization, how to optimize the resources.
+
+31
+00:03:52,674 --> 00:04:01,743
+So, these types of pipeline implementations actually take care of that concern to some extent by taking care of
+
+32
+00:04:01,743 --> 00:04:11,081
+optimization of the pipeline implementation so that resource requirements are minimized.
+
+33
+00:04:11,101 --> 00:04:14,847
+There is also a high definition render pipeline, HDRP.
+
+34
+00:04:15,873 --> 00:04:22,643
+It is also a customizable pipeline that lets you create cutting-edge, high-fidelity graphics on high-end platforms.
+
+35
+00:04:23,144 --> 00:04:31,015
+So this is specifically meant for photorealistic implementation, which requires a good amount of resources.
+
+36
+00:04:31,135 --> 00:04:43,072
+So it is typically meant for high-end platforms, high-end graphics workstations with good GPU support.
+
+37
+00:04:43,092 --> 00:04:44,935
+A developer can also create
+
+38
+00:04:45,708 --> 00:04:51,262
+a custom render pipeline using Unity's scriptable render pipeline APIs.
+
+39
+00:04:53,127 --> 00:05:02,451
+Now, here in the subsequent part of the lecture, we are going to focus on the built-in render pipeline and the features provided by this pipeline.
+
+40
+00:05:06,194 --> 00:05:10,979
+So first, let us try to understand how this pipeline supports object definition.
+
+41
+00:05:10,999 --> 00:05:14,803
+So object definition is the first stage we discussed in our graphics pipeline.
+
+42
+00:05:14,823 --> 00:05:18,187
+So let us see how Unity provides support for that.
+
+43
+00:05:20,229 --> 00:05:25,615
+Now Unity provides object definition support in the form of something called models.
+
+44
+00:05:26,676 --> 00:05:29,299
+These are nothing but files containing data
+
+45
+00:05:30,983 --> 00:05:34,609
+on the shape and appearance of 3D objects.
+
+46
+00:05:34,769 --> 00:05:37,794
+So, these files are essentially the object representation.
+
+47
+00:05:39,717 --> 00:05:46,628
+Essentially, the object definition is stored in files, which is the first stage of the pipeline we talked about earlier.
+
+48
+00:05:48,711 --> 00:05:56,383
+Now, the model files can contain a variety of data, including mesh, material, and texture.
+
+49
+00:05:58,017 --> 00:06:01,921
+They can also contain animation data for animated characters.
+
+50
+00:06:02,102 --> 00:06:13,715
+If an object represents a character which is animated, then animation-related data can also be stored in the model file.
+
+51
+00:06:13,735 --> 00:06:17,459
+Unity supports a number of standard and proprietary model file formats.
+
+52
+00:06:17,680 --> 00:06:24,227
+So, you can create models in different formats and still import them to Unity to make them work.
+
+53
+00:06:26,063 --> 00:06:32,651
+Such as .fbx format, .dae format, .dxf format, .obj format, and so on.
+
+54
+00:06:33,553 --> 00:06:38,539
+There are more than 10 such formats supported in Unity.
+
+55
+00:06:42,824 --> 00:06:48,952
+Now, these models contain data related to several things, including mesh, materials, and textures.
+
+56
+00:06:49,092 --> 00:06:52,797
+So, let us see what those data are.
+
+57
+00:06:53,992 --> 00:07:03,545
+3D meshes are the main graphics primitives of Unity, and we have seen how we can convert an object definition to a mesh representation.
+
+58
+00:07:03,765 --> 00:07:04,847
+We have discussed it earlier.
+
+59
+00:07:06,629 --> 00:07:09,233
+So, there is direct support for that in Unity.
+
+60
+00:07:09,974 --> 00:07:14,279
+Unity supports triangulated or quadrangulated polygonal meshes.
+
+61
+00:07:15,501 --> 00:07:21,349
+So, either triangles or quadrangles are supported.
+
+62
+00:07:23,135 --> 00:07:34,130
+The mesh renderer takes geometry from the mesh filter and renders it at the position defined by the game object's transform component.
+
+63
+00:07:35,692 --> 00:07:41,560
+This is how the workflow in Unity for rendering meshes works.
+
+64
+00:07:41,580 --> 00:07:45,866
+There is another kind of data stored in the model files, which is materials.
+
+65
+00:07:46,707 --> 00:07:51,353
+So, meshes describe shapes; how shapes
+
+66
+00:07:51,873 --> 00:07:57,862
+what is the shape of the object, whereas materials describe the appearance of the surface.
+
+67
+00:08:03,331 --> 00:08:10,562
+How a surface should be rendered, including references to the textures used, tiling information, color tints, and more.
+
+68
+00:08:11,884 --> 00:08:18,995
+So, essentially, the appearance of the object is encoded in the form of materials in the model file.
+
+69
+00:08:19,015 --> 00:08:19,956
+Then we have textures.
+
+70
+00:08:20,358 --> 00:08:23,562
+which are bitmap images applied over the mesh surface.
+
+71
+00:08:23,642 --> 00:08:27,187
+So, essentially, a way to assign colors to the surface.
+
+72
+00:08:29,089 --> 00:08:31,933
+A material may contain references to textures as well.
+
+73
+00:08:33,715 --> 00:08:40,664
+In addition to basic color, textures can represent many other aspects of a material's surface, such as reflectivity and roughness.
+
+74
+00:08:46,010 --> 00:08:48,053
+That is about object representation.
+
+75
+00:08:48,792 --> 00:08:59,261
+Let us see how it supports scene creation, essentially transferring objects from local coordinates to world coordinates.
+
+76
+00:08:59,281 --> 00:09:03,745
+So, Unity allows us to create an environment, as we have discussed in the previous part.
+
+77
+00:09:04,306 --> 00:09:10,431
+The editor interface provides tools to create environmental features such as landforms and vegetation.
+
+78
+00:09:13,454 --> 00:09:16,757
+Terrain features in the Unity editor can be utilized.
+
+79
+00:09:17,311 --> 00:09:24,538
+It consists of basic tools that let you create and modify the landscape in the Unity environment.
+
+80
+00:09:28,462 --> 00:09:32,065
+Essentially, you can manipulate the landscape in your scene.
+
+81
+00:09:32,806 --> 00:09:41,074
+There are also terrain tools, the Terrain Tools Preview package, which provides additional functionality on top of the built-in terrain features.
+
+82
+00:09:42,635 --> 00:09:43,656
+And we can also have
+
+83
+00:09:44,665 --> 00:09:49,630
+Also, make use of the Tree Editor, which lets you design trees directly in the editor.
+
+84
+00:09:50,752 --> 00:09:56,057
+Now, the latest Unity version supports the SpeedTree toolkit instead of the Tree Editor.
+
+85
+00:09:56,077 --> 00:09:59,781
+However, for previous earlier versions, the Tree Editor is still there.
+
+86
+00:10:02,765 --> 00:10:10,453
+Then there is a special type of scene that is the sky, a type of background that a camera draws before it renders a frame.
+
+87
+00:10:11,750 --> 00:10:16,736
+A developer can use a skybox to render a sky.
+
+88
+00:10:19,919 --> 00:10:25,969
+Now, a skybox is nothing but a cube with different textures on its faces so that you get the feel
+
+89
+00:10:25,969 --> 00:10:33,094
+of having a 360-degree environment where, whenever you move your head, you get to see something different.
+
+90
+00:10:38,620 --> 00:10:39,681
+So, Unity
+
+91
+00:10:40,555 --> 00:10:45,165
+The way Unity renders the skybox, the sky always renders at the back.
+
+92
+00:10:53,242 --> 00:10:57,491
+Then, let us have a look at the lighting stage support.
+
+93
+00:10:57,511 --> 00:11:01,399
+So, how Unity supports different lighting calculations.
+
+94
+00:11:02,392 --> 00:11:06,499
+Unity provides support for realistic lighting for game objects.
+
+95
+00:11:06,579 --> 00:11:16,816
+Here again, I would like to emphasize once more that when I use the term Unity, I am not referring to the Unity 3D game engine, which is a middleware.
+
+96
+00:11:17,377 --> 00:11:20,943
+I am referring to the Unity developers environment.
+
+97
+00:11:20,963 --> 00:11:25,851
+So, Unity provides support for realistic lighting for the game objects, and
+
+98
+00:11:26,489 --> 00:11:32,498
+we can specify the intensity, direction, and color of the light that falls on the game object.
+
+99
+00:11:33,660 --> 00:11:38,587
+We can even do more: render real-time shadows with shadow mapping.
+
+100
+00:11:40,610 --> 00:11:48,602
+Now, there are several visual effects that can be applied to the camera, game objects, light sources, and other elements of the game.
+
+101
+00:11:51,046 --> 00:11:54,471
+Some of those visual effects are, say, the halo effect,
+
+102
+00:11:56,341 --> 00:12:01,228
+where light areas around light sources can be created.
+
+103
+00:12:03,571 --> 00:12:10,521
+Typically, such effects are used to give the impression of small dust particles in the air.
+
+104
+00:12:10,541 --> 00:12:12,243
+Then we can have the lens flare effect.
+
+105
+00:12:12,984 --> 00:12:25,842
+This simulates the effect of lights refracting inside a camera lens and the line renderer effect, which takes an array of two or more points in 3D space and draws a straight line between
+
+106
+00:12:26,530 --> 00:12:35,166
+those points, which we can use to draw anything from a simple straight line to a complex spiral.
+
+107
+00:12:40,837 --> 00:12:46,969
+Another important stage in the 3D graphics pipeline is the view transformation or viewing pipeline.
+
+108
+00:12:49,042 --> 00:12:55,408
+So Unity supports the taking a snapshot analogy that we have discussed while talking about the 3D graphics pipeline.
+
+109
+00:12:55,908 --> 00:13:01,654
+Now, this concept is supported by the Unity interface, the Unity development environment.
+
+110
+00:13:03,135 --> 00:13:06,378
+So, this is done by the camera concept.
+
+111
+00:13:06,438 --> 00:13:12,243
+So, it allows us to set up a camera, and then accordingly it does other calculations on its own.
+
+112
+00:13:13,745 --> 00:13:16,247
+The developer does not need to do anything.
+
+113
+00:13:19,298 --> 00:13:28,246
+Now, a camera can be created by adding a camera component to a game object; that is the standard way of performing operations in Unity.
+
+114
+00:13:32,891 --> 00:13:37,035
+Now, finally, let us see what kind of libraries are supported by Unity.
+
+115
+00:13:37,415 --> 00:13:44,542
+So, of course, I said that the developer does not need to bother about the graphics pipeline implementation.
+
+116
+00:13:45,102 --> 00:13:48,225
+Now, the question is whether Unity itself implements the pipeline.
+
+117
+00:13:49,420 --> 00:13:52,384
+In fact, Unity does not implement the pipeline itself.
+
+118
+00:13:52,644 --> 00:13:55,848
+Instead, it relies on libraries, graphics libraries.
+
+119
+00:13:56,949 --> 00:14:02,536
+It takes recourse to library functions to implement the pipeline.
+
+120
+00:14:03,377 --> 00:14:07,943
+And several library functions are supported.
+
+121
+00:14:08,664 --> 00:14:10,566
+Several libraries are supported by Unity.
+
+122
+00:14:10,606 --> 00:14:13,149
+Let us have a look at what kind of library support is there.
+
+123
+00:14:15,372 --> 00:14:17,014
+Now, in order to do that, let us...
+
+124
+00:14:17,500 --> 00:14:22,025
+recollect our layered architecture of an XR system.
+
+125
+00:14:22,686 --> 00:14:26,751
+So, at the top we have the application layer where the developers are building the application.
+
+126
+00:14:27,712 --> 00:14:37,324
+Then we have software development kits or SDKs which provide specific library APIs through which the developer can enhance the experience.
+
+127
+00:14:38,345 --> 00:14:40,447
+Then we have the middleware game engine.
+
+128
+00:14:40,487 --> 00:14:41,689
+So, in our case it is Unity.
+
+129
+00:14:43,851 --> 00:14:46,815
+Unity takes help of native rendering libraries
+
+130
+00:14:47,285 --> 00:14:50,830
+to render or to implement the graphics pipeline.
+
+131
+00:14:51,491 --> 00:14:55,618
+Below it, the operating system and below that the hardware including the GPU.
+
+132
+00:14:56,078 --> 00:15:08,758
+So, in this layered architecture, the native library support or native libraries fall below the Unity layer.
+
+133
+00:15:09,519 --> 00:15:12,343
+And what are the libraries that are supported by Unity?
+
+134
+00:15:14,547 --> 00:15:15,368
+DirectX,
+
+135
+00:15:16,310 --> 00:15:27,600
+which is primarily in Windows environment, Metal, Apple systems, OpenGL, Open Library, Open Graphics Library and Vulkan.
+
+136
+00:15:29,702 --> 00:15:31,184
+These libraries are supported.
+
+137
+00:15:31,344 --> 00:15:35,468
+Along with that, many more libraries are also supported, but these are the major ones.
+
+138
+00:15:36,489 --> 00:15:42,094
+And depending on the availability of the API on a particular platform, the corresponding library can be supported.
+
+139
+00:15:43,795 --> 00:15:45,777
+So, essentially, at this layer, we have
+
+140
+00:15:46,718 --> 00:15:56,708
+at this layer of native library support, we have support for DirectX, OpenGL, Metal, Vulkan, and many such libraries.
+
+141
+00:15:58,429 --> 00:16:07,618
+So, to use Unity's default graphics APIs, Unity provides APIs, graphics APIs which in turn access the library APIs.
+
+142
+00:16:08,439 --> 00:16:15,966
+Now, to use the default APIs, what a developer needs to do is to open the player settings
+
+143
+00:16:16,604 --> 00:16:18,586
+editor interface.
+
+144
+00:16:19,727 --> 00:16:35,823
+It can be accessed using this option: edit project settings, then select the player category, and then we can navigate to other settings and make sure the AutoGraphics API is checked or selected.
+
+145
+00:16:37,204 --> 00:16:42,409
+When AutoGraphics API for a platform is checked, the player build
+
+146
+00:16:42,878 --> 00:16:50,611
+includes a set of built-in graphics APIs and uses the appropriate one at runtime to produce the best-case scenario.
+
+147
+00:16:50,691 --> 00:16:54,918
+So, all the concerns related to implementations are taken care of by Unity.
+
+148
+00:16:55,459 --> 00:17:01,769
+The developer does not need to bother about which API to use or what is supported for a given platform.
+
+149
+00:17:03,232 --> 00:17:06,717
+Now, if this auto graphics API is not checked, then what happens?
+
+150
+00:17:06,777 --> 00:17:09,021
+The editor uses the first API in the list, and
+
+151
+00:17:11,244 --> 00:17:27,172
+if the default API is not supported by the specific platform, then Unity uses the next API in the AutoGraphics API list, and in this way, it continues until it finds the appropriate match.
+
+152
+00:17:29,797 --> 00:17:31,279
+So, that is about library support.
+
+153
+00:17:31,917 --> 00:17:35,223
+Let us also talk about some advanced rendering support.
+
+154
+00:17:35,584 --> 00:17:46,084
+We have not discussed these before, but let us see how Unity supports those advanced features, rendering features, which make the experience more realistic and more usable.
+
+155
+00:17:47,687 --> 00:17:48,889
+The first thing is physics.
+
+156
+00:17:50,933 --> 00:17:53,959
+Now, Unity helps to simulate physics in your project.
+
+157
+00:17:54,901 --> 00:18:01,129
+The application in your project ensures that the objects correctly accelerate and respond to collisions.
+
+158
+00:18:01,149 --> 00:18:03,573
+So, essentially, the physical laws are supported.
+
+159
+00:18:05,796 --> 00:18:19,234
+Now, Unity does this with the help of a component called the physics engine, which includes concepts of rigid bodies, colliders, joints, physics articulation, and character controllers.
+
+160
+00:18:19,614 --> 00:18:23,119
+So, these are all components essential to give a realistic feeling.
+
+161
+00:18:24,533 --> 00:18:25,555
+What are rigid bodies?
+
+162
+00:18:26,436 --> 00:18:27,718
+So, a rigid body is a concept.
+
+163
+00:18:28,139 --> 00:18:28,940
+It is a property.
+
+164
+00:18:31,324 --> 00:18:39,717
+It is a property that, when attached to a game object, allows the game object to respond to gravity.
+
+165
+00:18:41,299 --> 00:18:49,292
+That means when it falls or when it bounces back from some surface, it appears to be more realistic,
+
+166
+00:18:49,745 --> 00:18:54,551
+in accordance with our everyday experience, rather than something fantastic or something imaginary.
+
+167
+00:18:56,454 --> 00:18:59,878
+Of course, there are properties such as the isKinematic property.
+
+168
+00:19:00,379 --> 00:19:11,693
+If we use this property, by using this property, we can remove the object from physics engine control and allow it to be moved kinematically from a script.
+
+169
+00:19:11,773 --> 00:19:18,722
+That means it does not automatically follow the gravity property.
+
+170
+00:19:20,018 --> 00:19:29,171
+So, using is kinematic, we can control the kinematics; we can allow it to follow gravity, we may disallow it to follow gravity; it is up to us.
+
+171
+00:19:29,712 --> 00:19:34,358
+So, such flexibility is provided by Unity.
+
+172
+00:19:34,378 --> 00:19:37,763
+Then there is this colliders concept.
+
+173
+00:19:38,724 --> 00:19:42,870
+It defines the shape of a game object for the purpose of physical collisions.
+
+174
+00:19:45,365 --> 00:19:55,943
+These can be primitive colliders such as box collider, sphere collider, and capsule colliders, which are already there, or mesh collider, which is more processor-intensive but accurate.
+
+175
+00:19:55,983 --> 00:20:09,567
+So, essentially, a collider allows you to deal with objects or object shapes after they collide or after they have a collision with some other objects.
+
+176
+00:20:12,162 --> 00:20:20,252
+We can add static colliders to a game object without a rigid body component to create floors, walls, and other motionless elements of a scene.
+
+177
+00:20:21,634 --> 00:20:26,239
+Friction and bounce of a surface can be configured using physics materials.
+
+178
+00:20:30,064 --> 00:20:40,617
+A collider configured as a trigger using the isTrigger property does not behave as a solid object and will simply allow other colliders to pass through.
+
+179
+00:20:41,525 --> 00:20:50,109
+So, like rigid body, here also we can have flexibility whether to allow the physics laws to be governed, to be followed, or
+
+180
+00:20:50,109 --> 00:20:58,191
+to have our own laws to be followed while creating a scene, while creating an experience.
+
+181
+00:20:58,211 --> 00:21:03,920
+And for that, several properties are already mentioned which we can make use of.
+
+182
+00:21:07,145 --> 00:21:08,207
+Next is joints.
+
+183
+00:21:09,233 --> 00:21:13,939
+It connects a rigid body to another rigid body or to a fixed point in space.
+
+184
+00:21:15,420 --> 00:21:21,848
+Joints can apply forces that move the rigid bodies, and joint limits can restrict that movement.
+
+185
+00:21:21,868 --> 00:21:32,461
+So, using the concept of a joint, we can actually control the movement of specific objects, specific characters, in a more realistic way.
+
+186
+00:21:35,485 --> 00:21:36,726
+So, such joints
+
+187
+00:21:37,465 --> 00:21:46,315
+can be useful to emulate a ball and socket joint like a hip or shoulder, any skeletal joint, doors and finger joints, or a piece of elastic.
+
+188
+00:21:46,695 --> 00:21:54,063
+So, how they move overall, we can model that by using the concept of a joint.
+
+189
+00:21:57,607 --> 00:22:00,410
+A related concept is articulation, essentially.
+
+190
+00:22:01,951 --> 00:22:05,295
+The idea of physics articulation is implemented here.
+
+191
+00:22:05,562 --> 00:22:09,766
+which provides a realistic physics behavior that involves joints.
+
+192
+00:22:09,826 --> 00:22:19,816
+So, when we have joints, then how the overall structure comprising joints, structure, or object moves, that is the articulation.
+
+193
+00:22:23,179 --> 00:22:29,265
+We can configure articulations via the articulation body class or the corresponding articulation body component.
+
+194
+00:22:29,306 --> 00:22:30,827
+So, here we do not need to
+
+195
+00:22:31,415 --> 00:22:40,846
+go into the nitty-gritty of how to control each and every joint so that the overall articulation of the figure, or the shape, or the object appears to be realistic.
+
+196
+00:22:40,906 --> 00:22:48,515
+Instead, there is inbuilt support using which we can implement such constraints automatically.
+
+197
+00:22:54,903 --> 00:22:59,548
+Now, such articulation body class essentially allows us
+
+198
+00:23:01,975 --> 00:23:07,561
+to view the articulation bodies in the form of a logical tree.
+
+199
+00:23:08,121 --> 00:23:16,030
+So, essentially this supports assuming such a logical tree representation for overall articulation implementation.
+
+200
+00:23:18,032 --> 00:23:24,018
+Now, each parent-child relationship in that logical tree reflects mutually constrained relative motion.
+
+201
+00:23:25,319 --> 00:23:28,843
+So, essentially suppose we want to let
+
+202
+00:23:35,928 --> 00:23:39,493
+So, this figure, suppose I want to make it move.
+
+203
+00:23:39,993 --> 00:23:55,574
+So, each node is a joint, and the way the joints are related to the other joints and the way a joint can move with respect to the other joint, these things define the overall articulation.
+
+204
+00:23:56,776 --> 00:24:02,003
+And when you are dealing with such complex figures to move,
+
+205
+00:24:04,413 --> 00:24:15,262
+and try to make those move, then you do not need to actually bother about the nitty-gritty of such joint movements and relative constraints.
+
+206
+00:24:15,663 --> 00:24:22,809
+Instead, this articulation body class or articulation body component can take care of it on your behalf.
+
+207
+00:24:27,833 --> 00:24:30,635
+Also, Unity provides support for animation.
+
+208
+00:24:30,655 --> 00:24:33,778
+Unity has a rich and sophisticated animation system.
+
+209
+00:24:34,501 --> 00:24:40,008
+where you can get support for importing animation clips and or animation created within Unity.
+
+210
+00:24:41,170 --> 00:24:51,163
+You can also have this humanoid animation retargeting support, which is essentially the ability to apply animations from one character model onto another.
+
+211
+00:24:54,668 --> 00:25:02,078
+Now, Unity provides support for a simplified workflow for aligning animation clips.
+
+212
+00:25:02,986 --> 00:25:13,339
+convenient preview of animation clips, transitions and interactions between them, and management of complex interactions between animations with a visual programming tool.
+
+213
+00:25:13,840 --> 00:25:19,447
+All these are supported by Unity, animating different body parts with different logics.
+
+214
+00:25:19,467 --> 00:25:27,897
+So here again, animation is a quite complex task, and it goes through several stages like the 3D graphics pipeline stages we discussed earlier.
+
+215
+00:25:28,990 --> 00:25:35,702
+But as a developer, you do not need to bother about those stages, those computations, or the implementation of those things.
+
+216
+00:25:36,563 --> 00:25:45,899
+Unity provides support for directly dealing with animations without going into the nitty-gritty of how to implement that animation pipeline.
+
+217
+00:25:45,919 --> 00:25:52,551
+Also, if you recollect, we talked about engaging more senses to make the experience immersive.
+
+218
+00:25:53,240 --> 00:26:03,449
+Now, so far while talking of rendering, it is about visual senses, but Unity also provides support for dealing with the audio sense, your ears.
+
+219
+00:26:04,129 --> 00:26:07,172
+So, audio support is provided for an immersive experience.
+
+220
+00:26:09,714 --> 00:26:13,317
+Unity has dedicated components for audio perception and playback.
+
+221
+00:26:16,780 --> 00:26:22,285
+The primary component is attached to a game object to make it play a sound.
+
+222
+00:26:23,800 --> 00:26:25,402
+which is the audio source.
+
+223
+00:26:25,643 --> 00:26:30,830
+This is the primary component attached to a game object to make it play a sound.
+
+224
+00:26:31,791 --> 00:26:40,162
+Now, it allows you to play back an audio clip when triggered through a mixer, code, or by default.
+
+225
+00:26:44,949 --> 00:26:50,196
+An audio clip can be any standard audio file such as MP3, WAV, and so on.
+
+226
+00:26:53,112 --> 00:26:57,036
+Audio listener is another component supported by Unity.
+
+227
+00:26:57,216 --> 00:27:03,804
+It listens to all audio playing in the scene and transfers it to the computer speakers.
+
+228
+00:27:05,546 --> 00:27:09,109
+It acts like ears in the game, internal ears in the game.
+
+229
+00:27:11,953 --> 00:27:15,216
+All audio you hear is with respect to the positioning of this listener.
+
+230
+00:27:17,519 --> 00:27:22,444
+And only one audio listener should be there in the scene by default, attached to the camera.
+
+231
+00:27:24,263 --> 00:27:28,027
+So you have audio source, audio listener, and also you have audio filters.
+
+232
+00:27:30,670 --> 00:27:40,081
+Essentially, as the name suggests, such components output the audio source after some modification.
+
+233
+00:27:40,241 --> 00:27:48,851
+So essentially, the output of the audio source or the intake of an audio listener can be modified with audio filters for various sound effects.
+
+234
+00:27:50,513 --> 00:27:51,975
+Each filter comes with
+
+235
+00:27:52,647 --> 00:27:54,289
+comes as its own component.
+
+236
+00:27:55,970 --> 00:28:11,765
+This is the internal organization of Unity, but the overall idea is that with filters you can modify the audio option you already have, and you can generate different effects, audio effects.
+
+237
+00:28:13,086 --> 00:28:15,488
+So, let us summarize what we have covered so far.
+
+238
+00:28:17,510 --> 00:28:20,933
+So, we talked about some useful features for the developer,
+
+239
+00:28:22,381 --> 00:28:26,014
+which includes the implementation of various pipelines that Unity supports,
+
+240
+00:28:26,014 --> 00:28:35,618
+different pipeline options, support for advanced graphics and audio, including physics support, audio support, and so on.
+
+241
+00:28:38,983 --> 00:28:48,996
+We will continue our discussion in the next part of this lecture, where we will talk about the scripting support and also we will talk about support for SDKs.
+
+242
+00:28:51,440 --> 00:28:58,374
+So, I hope that you could follow the lecture, you could follow the flow and the topics.
+
+243
+00:28:59,215 --> 00:29:02,482
+Looking forward to meeting you all again in the next part of this lecture.
+
+244
+00:29:03,504 --> 00:29:05,668
+Thank you, goodbye, and happy learning.

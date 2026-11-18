@@ -1,0 +1,5542 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L58",
+ "index": 58,
+ "title": "VR resource optimization",
+ "source_file": "lec_58.srt",
+ "timing_source": "srt",
+ "youtube_id": "JImkF7OXGxY",
+ "duration_s": 2261.773,
+ "sentences": [
+  {
+   "id": "L58/S0000",
+   "start": 24.044,
+   "end": 29.889,
+   "text": "Hello and welcome to the NPTEL MOOCs course on Foundation for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L58/S0001",
+   "start": 31.971,
+   "end": 36.475,
+   "text": "We will be continuing our discussion on resource optimization."
+  },
+  {
+   "id": "L58/S0002",
+   "start": 37.176,
+   "end": 58.514,
+   "text": "In particular, we are focusing on VR resource optimization, that is, resource optimization concerns that are typically encountered when we are dealing with immersive experiences. So earlier, in this lecture, in the other parts of this lecture, we talked about the basic idea of computer graphics."
+  },
+  {
+   "id": "L58/S0003",
+   "start": 60.096,
+   "end": 66.263,
+   "text": "We know that rendering is the most challenging part of an immersive experience generation from the point of view of the system."
+  },
+  {
+   "id": "L58/S0004",
+   "start": 67.705,
+   "end": 74.072,
+   "text": "So, we need to have a basic understanding of the rendering process, which is the field of computer graphics that deals with this."
+  },
+  {
+   "id": "L58/S0005",
+   "start": 75.094,
+   "end": 94.073,
+   "text": "So, we are talking about computer graphics. Earlier we talked about the basic idea of the computer graphics field, what it is. We learned about a few terminologies, and we also introduced the 3D graphics pipeline and the stages in the pipeline."
+  },
+  {
+   "id": "L58/S0006",
+   "start": 94.834,
+   "end": 110.751,
+   "text": "Among those stages, there are five stages as we have seen. Among those, we have covered so far four stages: the first stage, object representation; the second one, modeling transformation; the third one, lighting; and the fourth one, viewing transformation."
+  },
+  {
+   "id": "L58/S0007",
+   "start": 113.735,
+   "end": 135.121,
+   "text": "In this lecture, what we are going to do is basically talk about the fifth and the last stage of the graphics pipeline, and also we will be talking about how to implement the pipeline implementation aspect from both the software point of view, where implementation can be considered in the form of libraries, and"
+  },
+  {
+   "id": "L58/S0008",
+   "start": 135.121,
+   "end": 142.999,
+   "text": "from the hardware point of view, that is, how the GPUs or graphics processing units help in faster rendering."
+  },
+  {
+   "id": "L58/S0009",
+   "start": 145.223,
+   "end": 152.879,
+   "text": "So, just to put the matter into perspective, this is the 3D graphics pipeline."
+  },
+  {
+   "id": "L58/S0010",
+   "start": 153.861,
+   "end": 183.533,
+   "text": "This is the first stage, object representation, which takes place in the local coordinate system, Then modeling or geometric transformation transforms from the local coordinate to the world coordinate system, then lighting, takes place in the world coordinate system. Then the view pipeline, comprising a viewing transformation that is a transformation from world to 3D view coordinate system, then a clipping operation which is a"
+  },
+  {
+   "id": "L58/S0011",
+   "start": 184.238,
+   "end": 186.501,
+   "text": "process which happens in the 3D view coordinate system."
+  },
+  {
+   "id": "L58/S0012",
+   "start": 186.902,
+   "end": 191.088,
+   "text": "Then hidden surface removal again happens in the 3D view coordinate system."
+  },
+  {
+   "id": "L58/S0013",
+   "start": 191.929,
+   "end": 198.459,
+   "text": "Then projection transformation, that is transformation from 3D view coordinate to 2D view coordinate system."
+  },
+  {
+   "id": "L58/S0014",
+   "start": 201.704,
+   "end": 209.976,
+   "text": "Then window to viewport transformation, that is transforming from 2D view coordinate system to a device coordinate system."
+  },
+  {
+   "id": "L58/S0015",
+   "start": 210.563,
+   "end": 226.6,
+   "text": "So, today in this part of the lecture, we are going to talk about the fifth stage, that is scan conversion, where we transform the device coordinate description to a screen coordinate description that is on the pixel grid."
+  },
+  {
+   "id": "L58/S0016",
+   "start": 230.605,
+   "end": 238.393,
+   "text": "So, this stage, stage 5, is called the rendering stage, or it may also be called the scan conversion stage."
+  },
+  {
+   "id": "L58/S0017",
+   "start": 240.348,
+   "end": 244.692,
+   "text": "So, all the terms are synonymous."
+  },
+  {
+   "id": "L58/S0018",
+   "start": 244.712,
+   "end": 249.257,
+   "text": "Now, what is the basic problem that is dealt with in this stage?"
+  },
+  {
+   "id": "L58/S0019",
+   "start": 250.298,
+   "end": 266.375,
+   "text": "Now, through the four stages, what we have done so far is to describe and transform a 3D scene to a 2D viewport, which is defined on a device coordinate system."
+  },
+  {
+   "id": "L58/S0020",
+   "start": 267.376,
+   "end": 276.395,
+   "text": "Now, when we are talking of a device coordinate system, essentially, the system is a continuous coordinate system."
+  },
+  {
+   "id": "L58/S0021",
+   "start": 276.455,
+   "end": 280.581,
+   "text": "That means the coordinate values can be any real number."
+  },
+  {
+   "id": "L58/S0022",
+   "start": 282.825,
+   "end": 314.748,
+   "text": "However, when we are talking about a device or display device, we know that it has a pixel grid which is used to render the image. Now, The problem here is to map from a continuous coordinate system, that is the device coordinate system, to a discrete coordinate system where the coordinates can only be integer values."
+  },
+  {
+   "id": "L58/S0023",
+   "start": 314.768,
+   "end": 326.48,
+   "text": "Because on a pixel grid, the points must have integer coordinates, whereas in the viewport description, points can have any real number as coordinates."
+  },
+  {
+   "id": "L58/S0024",
+   "start": 326.52,
+   "end": 332.286,
+   "text": "So, the objective is to transform from this continuous space to the discrete pixel grid space."
+  },
+  {
+   "id": "L58/S0025",
+   "start": 333.467,
+   "end": 337.652,
+   "text": "The idea can be understood from this illustration here."
+  },
+  {
+   "id": "L58/S0026",
+   "start": 337.892,
+   "end": 345.2,
+   "text": "As you can see, suppose each of these intersections represents a pixel."
+  },
+  {
+   "id": "L58/S0027",
+   "start": 347.062,
+   "end": 347.963,
+   "text": "So, you have a line."
+  },
+  {
+   "id": "L58/S0028",
+   "start": 352.482,
+   "end": 355.747,
+   "text": "And we want to represent it on this pixel grid."
+  },
+  {
+   "id": "L58/S0029",
+   "start": 357.47,
+   "end": 366.964,
+   "text": "Now, as you can see, the line can pass through either a pixel or the interval between pixels."
+  },
+  {
+   "id": "L58/S0030",
+   "start": 368.326,
+   "end": 371.251,
+   "text": "So, any real number is allowed as a coordinate."
+  },
+  {
+   "id": "L58/S0031",
+   "start": 371.271,
+   "end": 373.674,
+   "text": "So, that is shown in the dotted line."
+  },
+  {
+   "id": "L58/S0032",
+   "start": 374.175,
+   "end": 385.737,
+   "text": "However, when we are trying to render it on the display device, we have to choose the right pixels to color so that it represents the line."
+  },
+  {
+   "id": "L58/S0033",
+   "start": 386.798,
+   "end": 401.155,
+   "text": "That means we can choose, suppose, this pixel, then this one, then this one, this one, and this one instead of the points that lie in between pixels."
+  },
+  {
+   "id": "L58/S0034",
+   "start": 403.117,
+   "end": 421.315,
+   "text": "So, essentially, we are mapping from any real value to integer values representing the nearest pixel, and this process of mapping is the fifth stage, that is rendering or scan conversion, or even it is called rasterization sometimes."
+  },
+  {
+   "id": "L58/S0035",
+   "start": 424.439,
+   "end": 434.093,
+   "text": "So, we need to map from the viewport, that is the continuous space, to the pixel grid, that is the discrete coordinate space."
+  },
+  {
+   "id": "L58/S0036",
+   "start": 434.495,
+   "end": 444.066,
+   "text": "And these mapping algorithms or techniques are collectively known as the rendering stage, often called the scan conversion stage or rasterization stage."
+  },
+  {
+   "id": "L58/S0037",
+   "start": 447.95,
+   "end": 449.412,
+   "text": "Now, how is it done?"
+  },
+  {
+   "id": "L58/S0038",
+   "start": 450.192,
+   "end": 453.136,
+   "text": "So, let us start with the simple case of point rendering."
+  },
+  {
+   "id": "L58/S0039",
+   "start": 454.237,
+   "end": 455.318,
+   "text": "Here, it is very simple."
+  },
+  {
+   "id": "L58/S0040",
+   "start": 455.919,
+   "end": 468.877,
+   "text": "If we have a real number as a coordinate to represent the point, then we can round off the real coordinates to the nearest integer values."
+  },
+  {
+   "id": "L58/S0041",
+   "start": 469.458,
+   "end": 484.141,
+   "text": "For example, 2.3 and 2.6 can be rounded up to 2 and 3, which will be the mapping from the device space to the discrete space."
+  },
+  {
+   "id": "L58/S0042",
+   "start": 487.967,
+   "end": 498.457,
+   "text": "However, that is good for points, but not good for other shapes, such as lines, circles, and any other geometric shapes."
+  },
+  {
+   "id": "L58/S0043",
+   "start": 502.382,
+   "end": 512.214,
+   "text": "Now, line rendering is one of the most common activities that take place in image rendering under the purview of computer graphics."
+  },
+  {
+   "id": "L58/S0044",
+   "start": 512.354,
+   "end": 517.539,
+   "text": "So, line rendering is the basis of any image rendering."
+  },
+  {
+   "id": "L58/S0045",
+   "start": 520.169,
+   "end": 532.609,
+   "text": "Now if we want to render a line using a very naive intuitive method, then what happens is that we have to go for lots of calculations which are floating point operations."
+  },
+  {
+   "id": "L58/S0046",
+   "start": 533.41,
+   "end": 538.058,
+   "text": "Now as we all know, floating point operations slow down a computer."
+  },
+  {
+   "id": "L58/S0047",
+   "start": 539.62,
+   "end": 546.852,
+   "text": "So, the objective is to have efficient algorithms that can render a line by avoiding floating point operations."
+  },
+  {
+   "id": "L58/S0048",
+   "start": 547.237,
+   "end": 552.966,
+   "text": "One such algorithm is Bresenham's line drawing algorithm, a quite popular and well-known algorithm."
+  },
+  {
+   "id": "L58/S0049",
+   "start": 556.051,
+   "end": 567.028,
+   "text": "So, using this algorithm, what we want to do is find out the pixels that approximately represent the line as shown in this figure."
+  },
+  {
+   "id": "L58/S0050",
+   "start": 568.63,
+   "end": 571.354,
+   "text": "So, we have the dotted line as the actual line."
+  },
+  {
+   "id": "L58/S0051",
+   "start": 571.394,
+   "end": 574.459,
+   "text": "We need to identify pixels that will represent the line."
+  },
+  {
+   "id": "L58/S0052",
+   "start": 575.131,
+   "end": 579.998,
+   "text": "And how do we find that without taking recourse to floating point operations?"
+  },
+  {
+   "id": "L58/S0053",
+   "start": 580.018,
+   "end": 586.307,
+   "text": "So, one such popular algorithm is Bresenham's line drawing algorithm."
+  },
+  {
+   "id": "L58/S0054",
+   "start": 586.327,
+   "end": 593.417,
+   "text": "I am just referring to this algorithm to give you some idea of what kind of computations take place in this fifth stage."
+  },
+  {
+   "id": "L58/S0055",
+   "start": 596.481,
+   "end": 602.269,
+   "text": "So, let us try to go through the algorithm for slopes which lie between 0 and 1."
+  },
+  {
+   "id": "L58/S0056",
+   "start": 606.181,
+   "end": 607.522,
+   "text": "or between minus 1 and 0."
+  },
+  {
+   "id": "L58/S0057",
+   "start": 607.582,
+   "end": 609.944,
+   "text": "So, effectively between minus 1 and plus 1."
+  },
+  {
+   "id": "L58/S0058",
+   "start": 612.607,
+   "end": 619.753,
+   "text": "So, minor modification may be needed for any other slope."
+  },
+  {
+   "id": "L58/S0059",
+   "start": 619.773,
+   "end": 635.547,
+   "text": "Now, here the input is the two line endpoints, this one and this one, and the output is the set of pixels p to render the line segment."
+  },
+  {
+   "id": "L58/S0060",
+   "start": 635.982,
+   "end": 639.005,
+   "text": "That is the set of pixels that approximate the line."
+  },
+  {
+   "id": "L58/S0061",
+   "start": 640.947,
+   "end": 665.213,
+   "text": "Now, at the beginning of the algorithm, we need to compute a few parameters, namely delta x, that is the difference between the two end point x coordinates, delta y, the difference between the two end point y coordinates, and p, a decision parameter which is twice delta y minus delta x. Then we start by initializing something, that is,"
+  },
+  {
+   "id": "L58/S0062",
+   "start": 666.678,
+   "end": 696.128,
+   "text": "x equal to the first endpoint, y equal to the first endpoint, and add this to the set of pixels p. Then, if the decision parameter value p is less than 0, that is this value that we have seen, then we increment x by 1 and reset the decision parameter as the older value plus twice delta y. Otherwise, we"
+  },
+  {
+   "id": "L58/S0063",
+   "start": 696.496,
+   "end": 716.702,
+   "text": "increment x by 1 and y by 1 and reset the value as p plus twice delta y minus twice delta x. And this goes on in a loop until we reach the other endpoint."
+  },
+  {
+   "id": "L58/S0064",
+   "start": 716.722,
+   "end": 722.79,
+   "text": "So, at every loop instance, we add the computed coordinate value to the set of pixels."
+  },
+  {
+   "id": "L58/S0065",
+   "start": 724.272,
+   "end": 733.202,
+   "text": "Now, here you can see that the entire operation is done based on integer arithmetic, addition, multiplication, and so on."
+  },
+  {
+   "id": "L58/S0066",
+   "start": 737.306,
+   "end": 748.759,
+   "text": "So, this actually speeds up the rendering of lines, and this is one instance where we can have an efficient algorithm for faster line rendering."
+  },
+  {
+   "id": "L58/S0067",
+   "start": 748.799,
+   "end": 753.604,
+   "text": "There are similar algorithms possible for other shapes as well."
+  },
+  {
+   "id": "L58/S0068",
+   "start": 754.681,
+   "end": 764.653,
+   "text": "So, this algorithm is efficient because it avoids floating point operations such as rounding off and division, and also sometimes floating point multiplication."
+  },
+  {
+   "id": "L58/S0069",
+   "start": 764.673,
+   "end": 778.81,
+   "text": "And avoiding these operations is very important to speed up the rendering because, at any given instant, we need to render a large number of lines or line segments simultaneously."
+  },
+  {
+   "id": "L58/S0070",
+   "start": 779.19,
+   "end": 783.996,
+   "text": "So, speeding up certainly makes the system more efficient."
+  },
+  {
+   "id": "L58/S0071",
+   "start": 788.178,
+   "end": 794.865,
+   "text": "Now, this algorithm we need to invoke for every line segment, and there may be thousands at any instant."
+  },
+  {
+   "id": "L58/S0072",
+   "start": 796.827,
+   "end": 816.227,
+   "text": "For interactive graphics, where we can change the display based on user input such as in virtual reality, the computational need increases manifold because With every input, we need to change the scene, which means again redrawing hundreds of thousands of lines."
+  },
+  {
+   "id": "L58/S0073",
+   "start": 819.734,
+   "end": 824.301,
+   "text": "So, such algorithms exist for other geometric shapes."
+  },
+  {
+   "id": "L58/S0074",
+   "start": 824.441,
+   "end": 836.861,
+   "text": "Of course, those are a little bit more complex as compared to the line rendering shapes, such as circle, ellipse, fill area, or other polygons."
+  },
+  {
+   "id": "L58/S0075",
+   "start": 836.881,
+   "end": 837.622,
+   "text": "We will skip those."
+  },
+  {
+   "id": "L58/S0076",
+   "start": 838.083,
+   "end": 846.636,
+   "text": "We will not go into the details of those algorithms, and you may refer to the reference mentioned at the end."
+  },
+  {
+   "id": "L58/S0077",
+   "start": 847.51,
+   "end": 854.277,
+   "text": "For more details, the basic idea is that we need some algorithm to efficiently render it on the screen."
+  },
+  {
+   "id": "L58/S0078",
+   "start": 854.998,
+   "end": 865.469,
+   "text": "That means efficiently mapping the original shape to the set of pixels that will represent it on the screen."
+  },
+  {
+   "id": "L58/S0079",
+   "start": 865.489,
+   "end": 868.372,
+   "text": "And our objective is to do it as fast as possible."
+  },
+  {
+   "id": "L58/S0080",
+   "start": 868.452,
+   "end": 873.197,
+   "text": "That means reducing the floating point operations as much as possible."
+  },
+  {
+   "id": "L58/S0081",
+   "start": 873.898,
+   "end": 875.88,
+   "text": "So for a line, we can completely eliminate them."
+  },
+  {
+   "id": "L58/S0082",
+   "start": 876.434,
+   "end": 884.503,
+   "text": "But for other shapes, we may not be able to completely eliminate them, but we can minimize the number of operations."
+  },
+  {
+   "id": "L58/S0083",
+   "start": 884.523,
+   "end": 890.01,
+   "text": "Now, there is one more concept we need to keep in mind, which is the aliasing effect."
+  },
+  {
+   "id": "L58/S0084",
+   "start": 890.03,
+   "end": 902.545,
+   "text": "Remember that we are trying to get a set of pixels, such as in this line, which approximate the original line shown here in this figure."
+  },
+  {
+   "id": "L58/S0085",
+   "start": 902.985,
+   "end": 906.289,
+   "text": "The original line is shown as a dotted line."
+  },
+  {
+   "id": "L58/S0086",
+   "start": 906.539,
+   "end": 914.269,
+   "text": "Whereas the approximated line is shown as the thick continuous line."
+  },
+  {
+   "id": "L58/S0087",
+   "start": 917.914,
+   "end": 937.113,
+   "text": "Now, as you can see, the approximate line does not exactly look like the original line because we are not exactly rendering the points on the line, but rendering pixels that are closer to those points on the line or closest to those points on the line."
+  },
+  {
+   "id": "L58/S0088",
+   "start": 937.113,
+   "end": 940.852,
+   "text": "So, the shape may get distorted."
+  },
+  {
+   "id": "L58/S0089",
+   "start": 942.654,
+   "end": 951.007,
+   "text": "So, some distortion may occur in the original shape after scan conversion; this is called aliasing."
+  },
+  {
+   "id": "L58/S0090",
+   "start": 951.027,
+   "end": 961.302,
+   "text": "Now, what we need are additional operations to remove or reduce such distortion so that the end effect is better."
+  },
+  {
+   "id": "L58/S0091",
+   "start": 962.075,
+   "end": 967.041,
+   "text": "Now, these operations collectively are known as anti-aliasing operations."
+  },
+  {
+   "id": "L58/S0092",
+   "start": 967.401,
+   "end": 977.594,
+   "text": "So, there again, some sort of complex algorithms are there to take care of, or rather minimize, the effect of aliasing."
+  },
+  {
+   "id": "L58/S0093",
+   "start": 977.614,
+   "end": 987.986,
+   "text": "If we do not do anything, then this aliasing may lead to distortion which will be visible with change in resolution, and that will certainly reduce the quality of experience."
+  },
+  {
+   "id": "L58/S0094",
+   "start": 988.006,
+   "end": 1002.403,
+   "text": "So, anti-aliasing is essential, and it introduces even more computations to the overall computation of pixel intensities along with the other stages."
+  },
+  {
+   "id": "L58/S0095",
+   "start": 1008.09,
+   "end": 1014.017,
+   "text": "So, the previous discussion was only meant to give some idea of the amount of computations."
+  },
+  {
+   "id": "L58/S0096",
+   "start": 1014.117,
+   "end": 1020.364,
+   "text": "Of course, here we skipped actual things at many places to keep things simple."
+  },
+  {
+   "id": "L58/S0097",
+   "start": 1023.685,
+   "end": 1038.262,
+   "text": "We ignored many things particularly relevant for VR because, in VR, we are interested in a realistic experience where the complexity of the rendering is much more as compared to what we have seen in our discussion."
+  },
+  {
+   "id": "L58/S0098",
+   "start": 1038.782,
+   "end": 1050.197,
+   "text": "Also, the scene is dynamic; it is changing based on user input, and those things we have not taken care of or discussed in the preceding discussion on the 3D graphics pipeline."
+  },
+  {
+   "id": "L58/S0099",
+   "start": 1050.277,
+   "end": 1057.982,
+   "text": "So together all of these increase the computational complexity even more."
+  },
+  {
+   "id": "L58/S0100",
+   "start": 1058.542,
+   "end": 1065.929,
+   "text": "So, in VR we require rich realistic content, and a simple lighting model may not be a good option."
+  },
+  {
+   "id": "L58/S0101",
+   "start": 1067.451,
+   "end": 1082.785,
+   "text": "A high degree of interaction is present in VR, which we have not taken into account in our 3D graphics pipeline discussion, and there will be motion which is achieved through animation or video."
+  },
+  {
+   "id": "L58/S0102",
+   "start": 1085.245,
+   "end": 1113.075,
+   "text": "So, all these together increase the computation for rendering in a VR environment manifold, and clearly that is the challenge: how to take care of such a computationally complex rendering process without letting the user perceive any lag or distortion."
+  },
+  {
+   "id": "L58/S0103",
+   "start": 1115.958,
+   "end": 1118.622,
+   "text": "That is what we are interested in doing."
+  },
+  {
+   "id": "L58/S0104",
+   "start": 1120.565,
+   "end": 1125.152,
+   "text": "So, from the preceding discussion, we got some idea of the computational complexity involved."
+  },
+  {
+   "id": "L58/S0105",
+   "start": 1125.172,
+   "end": 1132.563,
+   "text": "Now, let us shift our focus to the implementation of such graphics pipelines for the benefit of the developer."
+  },
+  {
+   "id": "L58/S0106",
+   "start": 1134.786,
+   "end": 1139.153,
+   "text": "Earlier, we outlined the theoretical background of computer graphics."
+  },
+  {
+   "id": "L58/S0107",
+   "start": 1139.653,
+   "end": 1148.166,
+   "text": "Now, a programmer, a CG programmer, need not always implement the stages of the pipeline; that would be too much effort."
+  },
+  {
+   "id": "L58/S0108",
+   "start": 1152.415,
+   "end": 1161.733,
+   "text": "Instead, the programmer can use APIs, application programming interfaces, provided by graphics libraries."
+  },
+  {
+   "id": "L58/S0109",
+   "start": 1161.814,
+   "end": 1165.098,
+   "text": "So, there are already some implementations in the form of libraries."
+  },
+  {
+   "id": "L58/S0110",
+   "start": 1165.278,
+   "end": 1173.609,
+   "text": "Programmers can import those libraries into the programming environment and use the APIs provided in those libraries to take care of the graphics-related concerns."
+  },
+  {
+   "id": "L58/S0111",
+   "start": 1174.79,
+   "end": 1187.106,
+   "text": "Examples of such graphics libraries are OpenGL, which stands for Open Graphics Library, Vulkan, Direct3D, and so on."
+  },
+  {
+   "id": "L58/S0112",
+   "start": 1191.44,
+   "end": 1201.149,
+   "text": "Now, these APIs are predefined sets of functions which, when invoked with appropriate arguments or parameters, perform specific tasks."
+  },
+  {
+   "id": "L58/S0113",
+   "start": 1203.411,
+   "end": 1218.105,
+   "text": "So, these APIs eliminate the need to know every detail of the underlying system or platform, such as the processor details, memory details, OS details, and operating system details, and so on, to build a graphics application."
+  },
+  {
+   "id": "L58/S0114",
+   "start": 1218.558,
+   "end": 1227.632,
+   "text": "If we are trying to build everything from scratch, we must have knowledge of these details, the hardware details on which our graphic system will work."
+  },
+  {
+   "id": "L58/S0115",
+   "start": 1227.652,
+   "end": 1232.74,
+   "text": "However, that would be too much work every time somebody wants to develop a graphic application."
+  },
+  {
+   "id": "L58/S0116",
+   "start": 1234.082,
+   "end": 1246.742,
+   "text": "Instead, they can take recourse to libraries and use the APIs provided in the libraries to deal with the lower-level tasks involved in computer graphics."
+  },
+  {
+   "id": "L58/S0117",
+   "start": 1248.46,
+   "end": 1255.588,
+   "text": "For example, let us consider this OpenGL function glColor3frgb."
+  },
+  {
+   "id": "L58/S0118",
+   "start": 1258.131,
+   "end": 1265.198,
+   "text": "This function is used to assign colors to a 3D point."
+  },
+  {
+   "id": "L58/S0119",
+   "start": 1265.218,
+   "end": 1277.472,
+   "text": "Here, the programmer does not require to know the details such as how color is defined in the system, how many bits are there, what are the minimum values, maximum values, and all those things."
+  },
+  {
+   "id": "L58/S0120",
+   "start": 1278.7,
+   "end": 1300.827,
+   "text": "how such information is stored and accessed, what kind of hardware support is provided to store it in the form of memory organization, and how to access that, what kind of instructions are provided to access that content of the memory, and how the OS manages the call to that memory."
+  },
+  {
+   "id": "L58/S0121",
+   "start": 1300.867,
+   "end": 1312.91,
+   "text": "All these details are not needed to be known by the programmer to assign color to a point if the programmer chooses to use a library."
+  },
+  {
+   "id": "L58/S0122",
+   "start": 1314.613,
+   "end": 1325.219,
+   "text": "Another piece of information required is which processor handles the task, whether CPU or GPU, and accordingly, instructions need to be executed."
+  },
+  {
+   "id": "L58/S0123",
+   "start": 1325.219,
+   "end": 1328.45,
+   "text": "But then, the programmer does not need to know all these details."
+  },
+  {
+   "id": "L58/S0124",
+   "start": 1330.232,
+   "end": 1341.373,
+   "text": "He can simply use this function, and the function takes care of all these details and returns the color to the programmer, the desired color to the programmer."
+  },
+  {
+   "id": "L58/S0125",
+   "start": 1342.234,
+   "end": 1347.361,
+   "text": "That means to the application the programmer is using to call the function."
+  },
+  {
+   "id": "L58/S0126",
+   "start": 1349.824,
+   "end": 1373.428,
+   "text": "So, that is how a programmer can think of implementing the pipeline, not by starting from scratch, but by knowing about different graphics libraries and knowing about the API supported by those libraries, and then choosing the one that suits the requirements and then using the APIs provided in that library."
+  },
+  {
+   "id": "L58/S0127",
+   "start": 1373.449,
+   "end": 1377.553,
+   "text": "Now, let us try to put it in the perspective of the overall virtual reality system."
+  },
+  {
+   "id": "L58/S0128",
+   "start": 1380.317,
+   "end": 1387.986,
+   "text": "Now, if we try to understand the system in a layered architecture form, then we have, at the top, the VR application layer."
+  },
+  {
+   "id": "L58/S0129",
+   "start": 1390.649,
+   "end": 1394.054,
+   "text": "Below that is the software development kit or SDK layer."
+  },
+  {
+   "id": "L58/S0130",
+   "start": 1396.298,
+   "end": 1401.846,
+   "text": "Below it will be the VR engine or the game engines."
+  },
+  {
+   "id": "L58/S0131",
+   "start": 1404.851,
+   "end": 1415.087,
+   "text": "So, when I say this layer, that means the application layer calls the SDK layer, and the SDK layer calls the VR engine layer."
+  },
+  {
+   "id": "L58/S0132",
+   "start": 1416.485,
+   "end": 1425.517,
+   "text": "Now, below the VR engine layer lie the native rendering libraries, such as OpenGL or Vulkan or Direct3D, such libraries."
+  },
+  {
+   "id": "L58/S0133",
+   "start": 1426.117,
+   "end": 1440.736,
+   "text": "The VR engine, in turn, calls the library APIs to perform the rendering activities, and below it is the operating system layer and finally the hardware layer, including the GPU."
+  },
+  {
+   "id": "L58/S0134",
+   "start": 1442.058,
+   "end": 1468.215,
+   "text": "So, essentially, if a VR system developer wants to Do something with the graphic system, then the developer does not need to bother much if he has access to such a layered system where he can take recourse to software development kits which access the VR engine. So the developer has to install the engine and import the"
+  },
+  {
+   "id": "L58/S0135",
+   "start": 1468.215,
+   "end": 1479.067,
+   "text": "development kit within the engine. Then whatever graphical operation is done, those are done through the APIs provided in the native rendering library."
+  },
+  {
+   "id": "L58/S0136",
+   "start": 1479.567,
+   "end": 1491.742,
+   "text": "The job of the VR engine is to let the developer deal with graphics through those APIs without letting the developer directly access the native rendering libraries."
+  },
+  {
+   "id": "L58/S0137",
+   "start": 1493.384,
+   "end": 1499.752,
+   "text": "And, of course, the native libraries sit on top of the operating system, which sits on top of the hardware layer."
+  },
+  {
+   "id": "L58/S0138",
+   "start": 1501.454,
+   "end": 1515.719,
+   "text": "So, this is how we can visualize the implementation and use of graphics libraries in the context of VR system development, VR system deployment, or, in other words, immersive experience."
+  },
+  {
+   "id": "L58/S0139",
+   "start": 1518.642,
+   "end": 1527.47,
+   "text": "This is the software side; that is how we can implement the graphic functions or graphic operations."
+  },
+  {
+   "id": "L58/S0140",
+   "start": 1527.49,
+   "end": 1539.191,
+   "text": "On the hardware side, let us try to understand in a little more detail how GPUs are useful on the hardware side to make this process more efficient, to make this process faster."
+  },
+  {
+   "id": "L58/S0141",
+   "start": 1543.818,
+   "end": 1555.454,
+   "text": "So, let us have a look at the role of the GPU in computer graphics in general and how that helps in virtual reality immersive experience in particular."
+  },
+  {
+   "id": "L58/S0142",
+   "start": 1557.837,
+   "end": 1561.342,
+   "text": "So, the first thing that we should notice is the need for parallelism."
+  },
+  {
+   "id": "L58/S0143",
+   "start": 1561.663,
+   "end": 1564.026,
+   "text": "Now, graphics operations are highly parallel."
+  },
+  {
+   "id": "L58/S0144",
+   "start": 1565.66,
+   "end": 1578.539,
+   "text": "For example, modeling transformation: here what happens is that we apply transformations, such as rotation, to vertices; transformations in the form of matrices to the vertices."
+  },
+  {
+   "id": "L58/S0145",
+   "start": 1579.881,
+   "end": 1586.891,
+   "text": "Now, a transformation is essentially a multiplication of a transformation matrix with the vertex vector."
+  },
+  {
+   "id": "L58/S0146",
+   "start": 1589.455,
+   "end": 1595.143,
+   "text": "And this same vector-matrix multiplication is done for all vertices together."
+  },
+  {
+   "id": "L58/S0147",
+   "start": 1595.444,
+   "end": 1597.847,
+   "text": "And ideally, we want to do it simultaneously."
+  },
+  {
+   "id": "L58/S0148",
+   "start": 1597.867,
+   "end": 1603.975,
+   "text": "So, there is a parallelism involved here."
+  },
+  {
+   "id": "L58/S0149",
+   "start": 1603.995,
+   "end": 1612.766,
+   "text": "So, we can have a significant gain in performance if we perform such multiplications on all vectors at the same time."
+  },
+  {
+   "id": "L58/S0150",
+   "start": 1614.428,
+   "end": 1626.72,
+   "text": "If it is not done at the same time, then it will be much, much slower, and that significant gain is important in real-time rendering because millions of vertices need to be processed per second."
+  },
+  {
+   "id": "L58/S0151",
+   "start": 1628.842,
+   "end": 1633.107,
+   "text": "The number may be even more when we are talking of a realistic immersive experience."
+  },
+  {
+   "id": "L58/S0152",
+   "start": 1636.011,
+   "end": 1641.377,
+   "text": "Now, CPUs generally cannot take advantage of this inherent parallelism."
+  },
+  {
+   "id": "L58/S0153",
+   "start": 1641.737,
+   "end": 1646.663,
+   "text": "Traditionally, the way CPUs used to be made, because they are not designed to do that."
+  },
+  {
+   "id": "L58/S0154",
+   "start": 1647.183,
+   "end": 1657.634,
+   "text": "Of course, modern CPUs come with some such features, but they are traditionally not very good at taking care of large-scale parallel activities."
+  },
+  {
+   "id": "L58/S0155",
+   "start": 1659.896,
+   "end": 1668.425,
+   "text": "So, modern graphics systems come with a separate graphics card, as we have already discussed earlier, containing their own processing unit and memory elements."
+  },
+  {
+   "id": "L58/S0156",
+   "start": 1670.127,
+   "end": 1679.866,
+   "text": "And this processing unit is called a graphics processing unit or GPU, which is designed to deal with the inherent parallelism in graphics operations."
+  },
+  {
+   "id": "L58/S0157",
+   "start": 1681.908,
+   "end": 1705.423,
+   "text": "Now, GPUs are typically multicore systems; that means they contain a large number of cores or unit processing elements, as shown here. You can see multiple cores are there in a GPU; they work on Single instructions: all the cores work simultaneously on an instruction and produce data simultaneously."
+  },
+  {
+   "id": "L58/S0158",
+   "start": 1707.845,
+   "end": 1721.718,
+   "text": "So, each core is capable of performing simple integer and floating-point arithmetic operations only, and multiple cores group together to form what are called streaming multiprocessor units."
+  },
+  {
+   "id": "L58/S0159",
+   "start": 1726.922,
+   "end": 1736.431,
+   "text": "So, we can have Broadly, we can view a GPU as organized in this way, as shown in this figure."
+  },
+  {
+   "id": "L58/S0160",
+   "start": 1737.272,
+   "end": 1747.548,
+   "text": "We have the host, then input assemblers and a thread execution manager; then this manager allocates to different streaming multiprocessors."
+  },
+  {
+   "id": "L58/S0161",
+   "start": 1749.752,
+   "end": 1751.895,
+   "text": "There can be a large number of such multiprocessors."
+  },
+  {
+   "id": "L58/S0162",
+   "start": 1754.744,
+   "end": 1758.891,
+   "text": "which has a parallel data cache where the multiprocessor can produce its data."
+  },
+  {
+   "id": "L58/S0163",
+   "start": 1760.153,
+   "end": 1776.779,
+   "text": "There is an element called texture storage, which essentially stores some information about predefined colors, surface colors, or predetermined surface colors."
+  },
+  {
+   "id": "L58/S0164",
+   "start": 1776.799,
+   "end": 1781.967,
+   "text": "Then, these elements are accessed through the load and store information."
+  },
+  {
+   "id": "L58/S0165",
+   "start": 1784.056,
+   "end": 1801.904,
+   "text": "The elements can access whatever data is produced; it can be sent to the global memory through the load information or store information, or the global memory content may be sent to this or accessed by these units through the load information."
+  },
+  {
+   "id": "L58/S0166",
+   "start": 1801.924,
+   "end": 1807.633,
+   "text": "And each streaming multiprocessor has multiple cores, as shown here."
+  },
+  {
+   "id": "L58/S0167",
+   "start": 1809.892,
+   "end": 1814.158,
+   "text": "So, a streaming multiprocessor contains several streaming processors or cores."
+  },
+  {
+   "id": "L58/S0168",
+   "start": 1817.082,
+   "end": 1817.843,
+   "text": "So, how does it work?"
+  },
+  {
+   "id": "L58/S0169",
+   "start": 1818.564,
+   "end": 1822.489,
+   "text": "Now, most graphic systems assume a scene is made of triangles."
+  },
+  {
+   "id": "L58/S0170",
+   "start": 1822.529,
+   "end": 1825.473,
+   "text": "The scene that we are trying to render is made of triangles."
+  },
+  {
+   "id": "L58/S0171",
+   "start": 1825.853,
+   "end": 1829.879,
+   "text": "That means surfaces are converted to meshes, triangular meshes."
+  },
+  {
+   "id": "L58/S0172",
+   "start": 1830.099,
+   "end": 1842.457,
+   "text": "Remember our discussion on object representation, where we said that eventually everything gets converted to meshes, irrespective of how a developer defines an object."
+  },
+  {
+   "id": "L58/S0173",
+   "start": 1842.477,
+   "end": 1849.723,
+   "text": "So, the graphics processing unit assumes that the mesh is available as input."
+  },
+  {
+   "id": "L58/S0174",
+   "start": 1851.365,
+   "end": 1857.491,
+   "text": "Now, through the APIs supported in the graphics library, triangles are sent to the GPU one vertex at a time."
+  },
+  {
+   "id": "L58/S0175",
+   "start": 1857.511,
+   "end": 1869.582,
+   "text": "So, graphics libraries come with APIs using which such triangles in the mesh can be sent to the GPU one vertex at a time, and the GPU assembles vertices into triangles."
+  },
+  {
+   "id": "L58/S0176",
+   "start": 1874.692,
+   "end": 1878.096,
+   "text": "Then the GPU performs modeling transformations on the vertices."
+  },
+  {
+   "id": "L58/S0177",
+   "start": 1881.099,
+   "end": 1891.851,
+   "text": "So, multiple vertices are simultaneously transformed by multiplying the same matrix, the same transformation matrix, to all the set of vertices."
+  },
+  {
+   "id": "L58/S0178",
+   "start": 1891.871,
+   "end": 1901.222,
+   "text": "The output is a stream of triangles, which are the transformed triangles from local coordinate to world coordinate."
+  },
+  {
+   "id": "L58/S0179",
+   "start": 1902.805,
+   "end": 1905.889,
+   "text": "Next, the GPU computes the vertex color."
+  },
+  {
+   "id": "L58/S0180",
+   "start": 1907.792,
+   "end": 1915.743,
+   "text": "Now, the color can be computed by vector dot products, as we have demonstrated during our discussion on the simple lighting model."
+  },
+  {
+   "id": "L58/S0181",
+   "start": 1917.685,
+   "end": 1923.754,
+   "text": "So, the GPU performs such dot products for multiple vertices together simultaneously."
+  },
+  {
+   "id": "L58/S0182",
+   "start": 1926.698,
+   "end": 1942.885,
+   "text": "After that, each colored vertex is projected onto the view plane; that is the projection transformation, which involves the viewing transformation and projection transformation together."
+  },
+  {
+   "id": "L58/S0183",
+   "start": 1943.726,
+   "end": 1949.693,
+   "text": "So, the output is the stream of triangles in the screen or device coordinates ready to be converted to pixels."
+  },
+  {
+   "id": "L58/S0184",
+   "start": 1950.414,
+   "end": 1957.703,
+   "text": "So, this projection includes all three transformations: view transformation, projection transformation, and viewport transformation."
+  },
+  {
+   "id": "L58/S0185",
+   "start": 1958.257,
+   "end": 1971.915,
+   "text": "And the composite matrix is multiplied with vertices to get this final stream of triangles in the screen or device coordinates, which is a continuous coordinate space."
+  },
+  {
+   "id": "L58/S0186",
+   "start": 1971.936,
+   "end": 1975.741,
+   "text": "Now, each device space triangle overlaps some pixels on the screen."
+  },
+  {
+   "id": "L58/S0187",
+   "start": 1978.184,
+   "end": 1985.614,
+   "text": "In this rasterization stage, these pixels are determined, as we have discussed in stage 5."
+  },
+  {
+   "id": "L58/S0188",
+   "start": 1987.265,
+   "end": 1989.168,
+   "text": "Now, there are many rasterization algorithms."
+  },
+  {
+   "id": "L58/S0189",
+   "start": 1991.311,
+   "end": 1998.001,
+   "text": "All exploit one crucial observation: that is, each pixel can be treated independently from all other pixels."
+  },
+  {
+   "id": "L58/S0190",
+   "start": 1999.903,
+   "end": 2001.506,
+   "text": "Again, that is inherent parallelism."
+  },
+  {
+   "id": "L58/S0191",
+   "start": 2001.526,
+   "end": 2004.71,
+   "text": "So, this leads to handling all pixels in parallel."
+  },
+  {
+   "id": "L58/S0192",
+   "start": 2007.494,
+   "end": 2012.682,
+   "text": "So, given the device space triangles, we can determine the color of all the pixels simultaneously."
+  },
+  {
+   "id": "L58/S0193",
+   "start": 2014.636,
+   "end": 2022.425,
+   "text": "Now, during the pixel processing stage, two more activities take place: surface texturing and hidden surface removal."
+  },
+  {
+   "id": "L58/S0194",
+   "start": 2024.587,
+   "end": 2039.743,
+   "text": "The simplest texturing method is to texture images that are already captured and stored, and apply the texture images to the geometry that we are trying to render."
+  },
+  {
+   "id": "L58/S0195",
+   "start": 2040.124,
+   "end": 2045.971,
+   "text": "That means we simply replace the computed color with the color of the texture at the corresponding texture point."
+  },
+  {
+   "id": "L58/S0196",
+   "start": 2048.935,
+   "end": 2052.359,
+   "text": "So, the pixel color is replaced by the texture color; that is the simplest method."
+  },
+  {
+   "id": "L58/S0197",
+   "start": 2056.464,
+   "end": 2060.569,
+   "text": "In order to do that, GPUs store textures in high-speed memory."
+  },
+  {
+   "id": "L58/S0198",
+   "start": 2061.71,
+   "end": 2064.454,
+   "text": "So, each pixel calculation must access it."
+  },
+  {
+   "id": "L58/S0199",
+   "start": 2064.922,
+   "end": 2076.938,
+   "text": "Now, access is very regular; that means nearby pixels tend to access nearby texture image locations, and specialized memory caches are there to reduce the access time."
+  },
+  {
+   "id": "L58/S0200",
+   "start": 2079.541,
+   "end": 2084.728,
+   "text": "Note that here we have this texture storage as part of the graphics card."
+  },
+  {
+   "id": "L58/S0201",
+   "start": 2087.65,
+   "end": 2102.802,
+   "text": "Also, for hidden surface removal, GPUs implement a special algorithm called the depth buffer algorithm, which requires another storage that is called the depth buffer."
+  },
+  {
+   "id": "L58/S0202",
+   "start": 2104.705,
+   "end": 2122.144,
+   "text": "So, GPUs contain such a depth buffer as a dedicated memory, which stores the depth information for each point in a 3D scene before they are projected onto a 2D plane."
+  },
+  {
+   "id": "L58/S0203",
+   "start": 2122.164,
+   "end": 2124.006,
+   "text": "Depth is with respect to the pixel."
+  },
+  {
+   "id": "L58/S0204",
+   "start": 2124.931,
+   "end": 2131.659,
+   "text": "Now, this memory, the depth buffer memory, stores distances of the viewer from each pixel."
+  },
+  {
+   "id": "L58/S0205",
+   "start": 2135.144,
+   "end": 2154.027,
+   "text": "So, that is how GPUs work, and as you can see, GPUs are designed to take care of inherent parallelism; all the components that are there in the GPU are designed in that way, so that parallelly, the operations can be applied on all the vertices or a large number of vertices simultaneously to speed up things."
+  },
+  {
+   "id": "L58/S0206",
+   "start": 2155.103,
+   "end": 2186.986,
+   "text": "So, in summary, what we have learned is that we have learned the overall 3D graphics pipeline, which is for static images, its stages, also learned how to implement the pipeline in software via libraries, and how GPUs can support the pipeline implementation by exploiting the inherent parallelism in the pipeline stages."
+  },
+  {
+   "id": "L58/S0207",
+   "start": 2188.988,
+   "end": 2204.644,
+   "text": "In the next part of the lecture, we are going to talk about how all these ideas are put into practice, how all this knowledge helped us determine the complexity of a problem involved, and how we can try to address the complexities by taking recourse to different technologies."
+  },
+  {
+   "id": "L58/S0208",
+   "start": 2206.266,
+   "end": 2209.389,
+   "text": "So, I hope you could follow the topic."
+  },
+  {
+   "id": "L58/S0209",
+   "start": 2209.97,
+   "end": 2212.853,
+   "text": "Some parts, of course, we did not discuss in detail."
+  },
+  {
+   "id": "L58/S0210",
+   "start": 2215.229,
+   "end": 2223.002,
+   "text": "So, I again urge you to go to the reference material for more details for a better understanding."
+  },
+  {
+   "id": "L58/S0211",
+   "start": 2223.022,
+   "end": 2233.238,
+   "text": "However, our overall purpose was to give you some idea of the kind of computations involved and how we can utilize that knowledge in building the system."
+  },
+  {
+   "id": "L58/S0212",
+   "start": 2234.163,
+   "end": 2246.516,
+   "text": "We have seen for libraries how we can place them so that the life of a developer becomes easier and the pipeline stages are implemented, without the developer needing to know every nitty-gritty of a graphics system."
+  },
+  {
+   "id": "L58/S0213",
+   "start": 2247.598,
+   "end": 2253.284,
+   "text": "Also, we have briefly touched upon how GPUs help in the efficient implementation of the graphics pipeline."
+  },
+  {
+   "id": "L58/S0214",
+   "start": 2255.686,
+   "end": 2258.329,
+   "text": "So, looking forward to meeting you again in the next part of the lecture."
+  },
+  {
+   "id": "L58/S0215",
+   "start": 2258.95,
+   "end": 2261.773,
+   "text": "Until then, thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L58/P01",
+   "first": "L58/S0000",
+   "last": "L58/S0017",
+   "start": 24.044,
+   "end": 244.692,
+   "objective": "Describe the structure of the 3D graphics pipeline, from object representation through scan conversion",
+   "objective_id": "L58/O1",
+   "key_points": [
+    {
+     "id": "L58/P01/K1",
+     "text": "Rendering is recognized as the most challenging process in generating immersive experiences (VR) (3).",
+     "sources": [
+      "L58/S0003"
+     ],
+     "concept_ids": [
+      "C0003",
+      "C0016",
+      "C0034",
+      "C0036",
+      "C0061",
+      "C0250",
+      "C0285",
+      "C0392",
+      "C0394",
+      "C0395",
+      "C0396",
+      "C0425",
+      "C0609",
+      "C0627",
+      "C0725",
+      "C1126"
+     ]
+    },
+    {
+     "id": "L58/P01/K2",
+     "text": "The 3D graphics pipeline comprises multiple transformations, including modeling, lighting, and viewing transformations, before reaching the final stage (6, 10).",
+     "sources": [
+      "L58/S0006",
+      "L58/S0010"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0481",
+      "C1163",
+      "C1167",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L58/P01/K3",
+     "text": "The final stage of the graphics pipeline, scan conversion (or rendering stage), transforms device coordinates into screen pixel grid descriptions (15, 16).",
+     "sources": [
+      "L58/S0015",
+      "L58/S0016"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0470",
+      "C0481",
+      "C1146",
+      "C1165",
+      "C1188",
+      "C1281"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P01/T1",
+     "surface": "3D graphics pipeline",
+     "name": "Three dimensional graphics pipeline",
+     "abbreviation": "3D",
+     "abbreviation_at": "L58/S0009",
+     "definition": "The three dimensional graphics pipeline is a series of stages used to generate an immersive experience, starting from object representation and ending in scan conversion.",
+     "sources": [
+      "L58/S0005",
+      "L58/S0009",
+      "L58/S0010"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L58/P01/T2",
+     "surface": "object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation is the first stage of the graphics pipeline, which takes place in the local coordinate system and establishes how objects are defined.",
+     "sources": [
+      "L58/S0006",
+      "L58/S0010"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L58/P01/T3",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the second stage of the graphics pipeline that transforms an object from its local coordinate system into the world coordinate system.",
+     "sources": [
+      "L58/S0006",
+      "L58/S0010"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L58/P01/T4",
+     "surface": "lighting",
+     "name": "Lighting",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Lighting is a stage in the graphics pipeline where the illumination of objects takes place, typically occurring within the world coordinate system.",
+     "sources": [
+      "L58/S0006",
+      "L58/S0010"
+     ],
+     "concept_id": "C1167",
+     "concept_name": "Lighting"
+    },
+    {
+     "id": "L58/P01/T5",
+     "surface": "viewing transformation",
+     "name": "Viewing transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Viewing transformation is a stage in the view pipeline that performs the transformation from the world coordinate system to the three dimensional view coordinate system.",
+     "sources": [
+      "L58/S0006",
+      "L58/S0010"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L58/P01/T6",
+     "surface": "GPUs or graphics processing units",
+     "name": "Graphics processing unit",
+     "abbreviation": "GPU",
+     "abbreviation_at": "L58/S0008",
+     "definition": "A graphics processing unit (GPU) is hardware that assists in faster rendering, helping with the high computational demands of immersive experiences.",
+     "sources": [
+      "L58/S0008"
+     ],
+     "concept_id": "C0280",
+     "concept_name": "Graphics processing unit"
+    },
+    {
+     "id": "L58/P01/T7",
+     "surface": "local coordinate system",
+     "name": "Local coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The local coordinate system is the space in which the object representation takes place, serving as the initial frame of reference for an object.",
+     "sources": [
+      "L58/S0010"
+     ],
+     "concept_id": "C1160",
+     "concept_name": "Local coordinate system"
+    },
+    {
+     "id": "L58/P01/T8",
+     "surface": "world coordinate system",
+     "name": "World coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate system is the space used during modeling transformation and lighting, establishing the common spatial environment for all objects.",
+     "sources": [
+      "L58/S0010"
+     ],
+     "concept_id": "C1161",
+     "concept_name": "World coordinate system"
+    },
+    {
+     "id": "L58/P01/T9",
+     "surface": "view pipeline",
+     "name": "View pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view pipeline is a sequence of transformations that begins with viewing transformation and results in the establishment of the three dimensional view coordinate system.",
+     "sources": [
+      "L58/S0010"
+     ],
+     "concept_id": "C1168",
+     "concept_name": "Viewing pipeline"
+    },
+    {
+     "id": "L58/P01/T10",
+     "surface": "clipping operation",
+     "name": "Clipping operation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Clipping operation is a process which happens in the 3D view coordinate system.",
+     "sources": [
+      "L58/S0010",
+      "L58/S0011"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L58/P01/T11",
+     "surface": "hidden surface removal",
+     "name": "Hidden surface removal",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Hidden surface removal is a process that happens in the 3D view coordinate system.",
+     "sources": [
+      "L58/S0012"
+     ],
+     "concept_id": "C1169",
+     "concept_name": "Hidden surface removal"
+    },
+    {
+     "id": "L58/P01/T12",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Projection transformation is a stage that converts geometry from the three dimensional view coordinate system into the two dimensional view coordinate system.",
+     "sources": [
+      "L58/S0013"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L58/P01/T13",
+     "surface": "window to viewport transformation",
+     "name": "Window to viewport transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Window to viewport transformation is the process of transforming coordinates from the two dimensional view coordinate system to the device coordinate system.",
+     "sources": [
+      "L58/S0014"
+     ],
+     "concept_id": "C1173",
+     "concept_name": "Window to viewport transformation"
+    },
+    {
+     "id": "L58/P01/T14",
+     "surface": "scan conversion",
+     "name": "Scan conversion",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Scan conversion is the final stage, sometimes called the rendering stage, where the device coordinate description is transformed into a screen coordinate description on the pixel grid.",
+     "sources": [
+      "L58/S0015",
+      "L58/S0016"
+     ],
+     "concept_id": "C1165",
+     "concept_name": "Scan conversion"
+    }
+   ]
+  },
+  {
+   "id": "L58/P02",
+   "first": "L58/S0018",
+   "last": "L58/S0036",
+   "start": 244.712,
+   "end": 444.066,
+   "objective": "Understand how continuous coordinate systems are mapped onto discrete pixel grids through the rendering stage",
+   "objective_id": "L58/O1",
+   "key_points": [
+    {
+     "id": "L58/P02/K1",
+     "text": "The viewport utilizes a continuous coordinate system, meaning coordinates can be any real number, while display devices operate on a discrete integer pixel grid.",
+     "sources": [
+      "L58/S0020",
+      "L58/S0021",
+      "L58/S0023"
+     ],
+     "concept_ids": [
+      "C0256",
+      "C0538",
+      "C1146",
+      "C1189",
+      "C1252",
+      "C1255"
+     ]
+    },
+    {
+     "id": "L58/P02/K2",
+     "text": "The primary goal is to transform coordinates from the continuous device system to the discrete pixel grid system.",
+     "sources": [
+      "L58/S0024",
+      "L58/S0035"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0538",
+      "C1146"
+     ]
+    },
+    {
+     "id": "L58/P02/K3",
+     "text": "The process of mapping continuous values to integer pixel values is called rendering, scan conversion, or rasterization.",
+     "sources": [
+      "L58/S0034",
+      "L58/S0036"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0441",
+      "C1146",
+      "C1165"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P02/T1",
+     "surface": "2D viewport",
+     "name": "2D viewport",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A 2D viewport is the target area onto which a 3D scene is described and transformed, and it is defined on a device coordinate system.",
+     "sources": [
+      "L58/S0019"
+     ],
+     "concept_id": "C1254",
+     "concept_name": "2D viewport"
+    },
+    {
+     "id": "L58/P02/T2",
+     "surface": "device coordinate system",
+     "name": "Device coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The device coordinate system is a continuous coordinate system, meaning that its coordinate values can be any real number.",
+     "sources": [
+      "L58/S0019",
+      "L58/S0020"
+     ],
+     "concept_id": "C1164",
+     "concept_name": "Device coordinate system"
+    },
+    {
+     "id": "L58/P02/T3",
+     "surface": "continuous coordinate system",
+     "name": "Continuous coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A continuous coordinate system is defined such that its coordinate values can be any real number.",
+     "sources": [
+      "L58/S0020",
+      "L58/S0021"
+     ],
+     "concept_id": "C1255",
+     "concept_name": "Continuous coordinate system"
+    },
+    {
+     "id": "L58/P02/T4",
+     "surface": "device or display device",
+     "name": "Display device",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A display device is a hardware component that possesses a pixel grid which is utilized to render the final image.",
+     "sources": [
+      "L58/S0022"
+     ],
+     "concept_id": "C1228",
+     "concept_name": "Display device"
+    },
+    {
+     "id": "L58/P02/T5",
+     "surface": "pixel grid",
+     "name": "Pixel grid",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The pixel grid is the physical structure on the display device, where intersections represent pixels and points must possess integer coordinates.",
+     "sources": [
+      "L58/S0022",
+      "L58/S0023",
+      "L58/S0026"
+     ],
+     "concept_id": "C1146",
+     "concept_name": "Pixel grid"
+    },
+    {
+     "id": "L58/P02/T6",
+     "surface": "discrete coordinate system",
+     "name": "Discrete coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A discrete coordinate system is one where the coordinates used must be integer values, corresponding to the locations on a pixel grid.",
+     "sources": [
+      "L58/S0022",
+      "L58/S0023"
+     ],
+     "concept_id": "C1146",
+     "concept_name": "Pixel grid"
+    },
+    {
+     "id": "L58/P02/T7",
+     "surface": "rasterization",
+     "name": "Rasterization",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Rasterization is a process, also called rendering or scan conversion, that maps points from a continuous space (like the viewport) onto a discrete pixel grid space.",
+     "sources": [
+      "L58/S0034",
+      "L58/S0036"
+     ],
+     "concept_id": "C0441",
+     "concept_name": "Rasterization"
+    }
+   ]
+  },
+  {
+   "id": "L58/P03",
+   "first": "L58/S0037",
+   "last": "L58/S0066",
+   "start": 447.95,
+   "end": 748.759,
+   "objective": "Explain how to render lines using Bresenham's algorithm while avoiding floating point operations",
+   "objective_id": "L58/O1",
+   "key_points": [
+    {
+     "id": "L58/P03/K1",
+     "text": "Point rendering is simplified by rounding real coordinates to the nearest integer values (38, 40, 41).",
+     "sources": [
+      "L58/S0038",
+      "L58/S0040",
+      "L58/S0041"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C1256"
+     ]
+    },
+    {
+     "id": "L58/P03/K2",
+     "text": "Traditional line rendering involves floating point operations, which can slow down a computer (45, 46).",
+     "sources": [
+      "L58/S0045",
+      "L58/S0046"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0394",
+      "C1257"
+     ]
+    },
+    {
+     "id": "L58/P03/K3",
+     "text": "Bresenham's line drawing algorithm is an efficient method to render lines using only integer arithmetic (48, 65, 66).",
+     "sources": [
+      "L58/S0048",
+      "L58/S0065",
+      "L58/S0066"
+     ],
+     "concept_ids": [
+      "C1119",
+      "C1258"
+     ]
+    },
+    {
+     "id": "L58/P03/K4",
+     "text": "The algorithm requires initial parameters: delta x, delta y, and a decision parameter p (61).",
+     "sources": [
+      "L58/S0061"
+     ],
+     "concept_ids": [
+      "C1119",
+      "C1259",
+      "C1260",
+      "C1261"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P03/T1",
+     "surface": "point rendering",
+     "name": "Point rendering",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Point rendering is a simple technique where real-number coordinates representing a point are rounded off to the nearest integer values to map the coordinates from device space to discrete space.",
+     "sources": [
+      "L58/S0038",
+      "L58/S0039",
+      "L58/S0040",
+      "L58/S0041"
+     ],
+     "concept_id": "C1256",
+     "concept_name": "Point rendering"
+    },
+    {
+     "id": "L58/P03/T2",
+     "surface": "line rendering",
+     "name": "Line rendering",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Line rendering is a common activity in computer graphics that involves rendering lines as the basis of image rendering. The objective of efficient line rendering is to avoid slow floating point operations.",
+     "sources": [
+      "L58/S0043",
+      "L58/S0044",
+      "L58/S0045",
+      "L58/S0046",
+      "L58/S0047"
+     ],
+     "concept_id": "C1257",
+     "concept_name": "Line rendering"
+    },
+    {
+     "id": "L58/P03/T3",
+     "surface": "Bresenham's line drawing algorithm",
+     "name": "Bresenham's line drawing algorithm",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Bresenham's line drawing algorithm is a popular and efficient method used to find the pixels that approximate a line segment, specifically by performing calculations using only integer arithmetic to avoid slowing floating point operations.",
+     "sources": [
+      "L58/S0048",
+      "L58/S0053",
+      "L58/S0054",
+      "L58/S0061",
+      "L58/S0063",
+      "L58/S0066"
+     ],
+     "concept_id": "C1258",
+     "concept_name": "Bresenham's line drawing algorithm"
+    },
+    {
+     "id": "L58/P03/T4",
+     "surface": "delta x",
+     "name": "Delta x",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Delta x is a parameter computed at the start of the algorithm, representing the difference between the x coordinates of the two line endpoints.",
+     "sources": [
+      "L58/S0061"
+     ],
+     "concept_id": "C1259",
+     "concept_name": "Delta x"
+    },
+    {
+     "id": "L58/P03/T5",
+     "surface": "delta y",
+     "name": "Delta y",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Delta y is a parameter computed at the start of the algorithm, representing the difference between the y coordinates of the two line endpoints.",
+     "sources": [
+      "L58/S0061"
+     ],
+     "concept_id": "C1260",
+     "concept_name": "Delta y"
+    },
+    {
+     "id": "L58/P03/T6",
+     "surface": "p",
+     "name": "Decision parameter",
+     "abbreviation": "p",
+     "abbreviation_at": "L58/S0061",
+     "definition": "The decision parameter (p) is a value computed at the beginning of the algorithm, initially set as twice delta y minus delta x, and it determines whether x or both x and y are incremented in subsequent loop iterations.",
+     "sources": [
+      "L58/S0061",
+      "L58/S0062",
+      "L58/S0063"
+     ],
+     "concept_id": "C1261",
+     "concept_name": "Decision parameter"
+    }
+   ]
+  },
+  {
+   "id": "L58/P04",
+   "first": "L58/S0067",
+   "last": "L58/S0102",
+   "start": 748.799,
+   "end": 1113.075,
+   "objective": "Explain the importance of minimizing floating point operations and implementing anti-aliasing to handle computational complexity in rendering",
+   "objective_id": "L58/O1",
+   "key_points": [
+    {
+     "id": "L58/P04/K1",
+     "text": "Efficient rendering algorithms, such as those for lines, avoid floating point operations (like rounding and division) to speed up simultaneous rendering of many elements.",
+     "sources": [
+      "L58/S0068",
+      "L58/S0069"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C1119"
+     ]
+    },
+    {
+     "id": "L58/P04/K2",
+     "text": "Aliasing is the distortion that occurs when approximating continuous shapes using discrete pixels, meaning the rendered image does not exactly match the original form.",
+     "sources": [
+      "L58/S0087",
+      "L58/S0089"
+     ],
+     "concept_ids": [
+      "C0133",
+      "C0394",
+      "C0622",
+      "C1138",
+      "C1146"
+     ]
+    },
+    {
+     "id": "L58/P04/K3",
+     "text": "Anti-aliasing operations are additional computations required to remove or minimize the distortion caused by aliasing, thus improving the final visual quality.",
+     "sources": [
+      "L58/S0090",
+      "L58/S0091"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0622",
+      "C1263"
+     ]
+    },
+    {
+     "id": "L58/P04/K4",
+     "text": "The computational requirements for virtual reality increase manifold due to the need for rich, dynamic, highly interactive, and complex scenes.",
+     "sources": [
+      "L58/S0072",
+      "L58/S0098",
+      "L58/S0101"
+     ],
+     "concept_ids": [
+      "C0003",
+      "C0059",
+      "C0060",
+      "C0061"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P04/T1",
+     "surface": "interactive graphics",
+     "name": "Interactive graphics",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Interactive graphics refers to a display system where the scene or content is changed based on input provided by the user.",
+     "sources": [
+      "L58/S0072"
+     ],
+     "concept_id": "C1262",
+     "concept_name": "Interactive graphics"
+    },
+    {
+     "id": "L58/P04/T2",
+     "surface": "aliasing",
+     "name": "Aliasing",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Aliasing is the distortion that can occur in an original shape after scan conversion, which happens because pixels are used to approximate the exact points on a line or shape.",
+     "sources": [
+      "L58/S0089"
+     ],
+     "concept_id": "C0622",
+     "concept_name": "Aliasing"
+    },
+    {
+     "id": "L58/P04/T3",
+     "surface": "anti-aliasing operations",
+     "name": "Anti-aliasing",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Anti-aliasing is a set of additional operations used to remove or reduce distortion caused by aliasing so that the end effect is better.",
+     "sources": [
+      "L58/S0090",
+      "L58/S0091"
+     ],
+     "concept_id": "C1263",
+     "concept_name": "Anti-aliasing"
+    }
+   ]
+  },
+  {
+   "id": "L58/P05",
+   "first": "L58/S0103",
+   "last": "L58/S0126",
+   "start": 1115.958,
+   "end": 1373.428,
+   "objective": "Describe how graphics libraries and APIs allow developers to implement complex pipelines without knowing low-level system details",
+   "objective_id": "L58/O2",
+   "key_points": [
+    {
+     "id": "L58/P05/K1",
+     "text": "A programmer does not need to implement every stage of a graphics pipeline from scratch due to the effort involved.",
+     "sources": [
+      "L58/S0107"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0718",
+      "C0918",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L58/P05/K2",
+     "text": "Programmers can utilize APIs (Application Programming Interfaces) provided by established graphics libraries, such as OpenGL, Vulkan, and Direct3D.",
+     "sources": [
+      "L58/S0108",
+      "L58/S0111"
+     ],
+     "concept_ids": [
+      "C0427",
+      "C0474",
+      "C0918",
+      "C1264",
+      "C1265",
+      "C1266"
+     ]
+    },
+    {
+     "id": "L58/P05/K3",
+     "text": "These APIs abstract the complexity, eliminating the need for the programmer to know detailed system information (like processor, memory, or OS details) to create a graphics application.",
+     "sources": [
+      "L58/S0113"
+     ],
+     "concept_ids": [
+      "C0427",
+      "C0446",
+      "C0538",
+      "C0918"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P05/T1",
+     "surface": "API, application programming interfaces",
+     "name": "Application programming interface (API)",
+     "abbreviation": "API",
+     "abbreviation_at": "L58/S0108",
+     "definition": "Application programming interface (API) is a predefined set of functions provided by graphics libraries that, when invoked with appropriate arguments or parameters, performs specific tasks for the programmer.",
+     "sources": [
+      "L58/S0108",
+      "L58/S0112"
+     ],
+     "concept_id": "C0427",
+     "concept_name": "Application programming interface"
+    },
+    {
+     "id": "L58/P05/T2",
+     "surface": "graphics libraries",
+     "name": "Graphics library",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Graphics library is a set of existing implementations that a programmer can import into a programming environment to use APIs that take care of graphics-related concerns and deal with lower-level tasks involved in computer graphics.",
+     "sources": [
+      "L58/S0108",
+      "L58/S0110",
+      "L58/S0116",
+      "L58/S0121",
+      "L58/S0126"
+     ],
+     "concept_id": "C1264",
+     "concept_name": "Graphics library"
+    },
+    {
+     "id": "L58/P05/T3",
+     "surface": "OpenGL",
+     "name": "Open graphics library",
+     "abbreviation": "OpenGL",
+     "abbreviation_at": "L58/S0111",
+     "definition": "Open Graphics Library is an example of a graphics library, which provides functions, such as glColor3frgb, that allow programmers to perform specific graphics tasks.",
+     "sources": [
+      "L58/S0111",
+      "L58/S0117"
+     ],
+     "concept_id": "C0474",
+     "concept_name": "Open Graphics Library"
+    },
+    {
+     "id": "L58/P05/T4",
+     "surface": "Vulkan",
+     "name": "Vulkan",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Vulkan is mentioned as an example of a graphics library that programmers can use to manage graphics-related concerns.",
+     "sources": [
+      "L58/S0111"
+     ],
+     "concept_id": "C1265",
+     "concept_name": "Vulkan"
+    },
+    {
+     "id": "L58/P05/T5",
+     "surface": "Direct3D",
+     "name": "Direct3D",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Direct3D is mentioned as an example of a graphics library that programmers can use to manage graphics-related concerns.",
+     "sources": [
+      "L58/S0111"
+     ],
+     "concept_id": "C1266",
+     "concept_name": "Direct3D"
+    },
+    {
+     "id": "L58/P05/T6",
+     "surface": "CPU",
+     "name": "CPU",
+     "abbreviation": "CPU",
+     "abbreviation_at": "L58/S0122",
+     "definition": "CPU is one of the processors that handles a graphics task, alongside the GPU, where instructions need to be executed.",
+     "sources": [
+      "L58/S0122"
+     ],
+     "concept_id": "C1267",
+     "concept_name": "Central processing unit"
+    },
+    {
+     "id": "L58/P05/T7",
+     "surface": "GPU",
+     "name": "GPU",
+     "abbreviation": "GPU",
+     "abbreviation_at": "L58/S0122",
+     "definition": "GPU is one of the processors that handles a graphics task, alongside the CPU, where instructions need to be executed.",
+     "sources": [
+      "L58/S0122"
+     ],
+     "concept_id": "C0280",
+     "concept_name": "Graphics processing unit"
+    }
+   ]
+  },
+  {
+   "id": "L58/P06",
+   "first": "L58/S0127",
+   "last": "L58/S0139",
+   "start": 1373.449,
+   "end": 1527.47,
+   "objective": "Explain the layered architectural components used in VR system graphics",
+   "objective_id": "L58/O2",
+   "key_points": [
+    {
+     "id": "L58/P06/K1",
+     "text": "A VR system is organized into a hierarchical layered architecture, starting with the VR application layer and progressing down through the SDK, VR engine, native rendering libraries, operating system, and hardware.",
+     "sources": [
+      "L58/S0128",
+      "L58/S0133"
+     ],
+     "concept_ids": [
+      "C0003",
+      "C0016",
+      "C0034",
+      "C0036",
+      "C0061",
+      "C0250",
+      "C0285",
+      "C0390",
+      "C0392",
+      "C0394",
+      "C0395",
+      "C0396",
+      "C0398",
+      "C0425",
+      "C0444",
+      "C0449",
+      "C0538",
+      "C0609",
+      "C0627",
+      "C0725",
+      "C1055",
+      "C1126",
+      "C1268",
+      "C1269"
+     ]
+    },
+    {
+     "id": "L58/P06/K2",
+     "text": "Native rendering libraries (such as OpenGL or Vulkan) are accessed by the VR engine to perform rendering activities, sitting on top of the operating system.",
+     "sources": [
+      "L58/S0133",
+      "L58/S0137"
+     ],
+     "concept_ids": [
+      "C0003",
+      "C0016",
+      "C0034",
+      "C0036",
+      "C0061",
+      "C0250",
+      "C0285",
+      "C0390",
+      "C0392",
+      "C0394",
+      "C0395",
+      "C0396",
+      "C0425",
+      "C0474",
+      "C0538",
+      "C0609",
+      "C0627",
+      "C0725",
+      "C1126",
+      "C1265",
+      "C1269"
+     ]
+    },
+    {
+     "id": "L58/P06/K3",
+     "text": "The VR engine abstracts complex graphics operations, allowing developers to use provided APIs without directly needing to access native rendering libraries.",
+     "sources": [
+      "L58/S0134",
+      "L58/S0136"
+     ],
+     "concept_ids": [
+      "C0003",
+      "C0016",
+      "C0034",
+      "C0036",
+      "C0061",
+      "C0250",
+      "C0285",
+      "C0390",
+      "C0392",
+      "C0394",
+      "C0395",
+      "C0396",
+      "C0425",
+      "C0427",
+      "C0609",
+      "C0627",
+      "C0725",
+      "C1126",
+      "C1269"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P06/T1",
+     "surface": "VR application layer",
+     "name": "VR application layer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The VR application layer is the top layer of the overall virtual reality system architecture. It is the layer that calls the SDK layer.",
+     "sources": [
+      "L58/S0128"
+     ],
+     "concept_id": "C0444",
+     "concept_name": "Application software"
+    },
+    {
+     "id": "L58/P06/T2",
+     "surface": "Software Development Kit layer",
+     "name": "Software development kit layer",
+     "abbreviation": "SDK",
+     "abbreviation_at": "L58/S0129",
+     "definition": "The Software Development Kit layer lies beneath the application layer. It acts as a component that is called by the application layer and, in turn, calls the VR engine layer.",
+     "sources": [
+      "L58/S0129",
+      "L58/S0131"
+     ],
+     "concept_id": "C1268",
+     "concept_name": "Software development kit layer"
+    },
+    {
+     "id": "L58/P06/T3",
+     "surface": "VR engine layer",
+     "name": "VR engine",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The VR engine is a layer that sits below the SDK layer. Its job is to allow developers to handle graphics through specific APIs without needing direct access to the native rendering libraries.",
+     "sources": [
+      "L58/S0130",
+      "L58/S0131",
+      "L58/S0136"
+     ],
+     "concept_id": "C0390",
+     "concept_name": "VR engine"
+    },
+    {
+     "id": "L58/P06/T4",
+     "surface": "native rendering libraries",
+     "name": "Native rendering library",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A native rendering library is a component that lies below the VR engine layer and provides APIs for performing rendering activities.",
+     "sources": [
+      "L58/S0132",
+      "L58/S0133"
+     ],
+     "concept_id": "C1269",
+     "concept_name": "Native rendering library"
+    },
+    {
+     "id": "L58/P06/T5",
+     "surface": "operating system layer",
+     "name": "Operating system layer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The Operating System layer is positioned within the architectural stack, sitting on top of the hardware layer and underneath the native libraries.",
+     "sources": [
+      "L58/S0133",
+      "L58/S0137"
+     ],
+     "concept_id": "C1270",
+     "concept_name": "Operating system layer"
+    },
+    {
+     "id": "L58/P06/T6",
+     "surface": "hardware layer",
+     "name": "Hardware layer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The Hardware layer is the foundational component of the system, including devices such as the Graphics Processing Unit (GPU).",
+     "sources": [
+      "L58/S0133",
+      "L58/S0137"
+     ],
+     "concept_id": "C1271",
+     "concept_name": "Hardware layer"
+    }
+   ]
+  },
+  {
+   "id": "L58/P07",
+   "first": "L58/S0140",
+   "last": "L58/S0159",
+   "start": 1527.49,
+   "end": 1736.431,
+   "objective": "Describe how the inherent parallelism of graphics operations requires specialized GPUs for high-performance VR rendering",
+   "objective_id": "L58/O3",
+   "key_points": [
+    {
+     "id": "L58/P07/K1",
+     "text": "Key point: \"Graphics operations, such as modeling transformations (applying matrices to vertices), are highly parallel and are ideally performed simultaneously on all vertices.\" (cited sentences)",
+     "sources": [
+      "L58/S0142",
+      "L58/S0144",
+      "L58/S0146",
+      "L58/S0147"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1159"
+     ]
+    },
+    {
+     "id": "L58/P07/K2",
+     "text": "Traditional Central Processing Units (CPUs) are not optimally designed to efficiently manage large-scale parallel activities.",
+     "sources": [
+      "L58/S0152",
+      "L58/S0153",
+      "L58/S0154"
+     ],
+     "concept_ids": [
+      "C0445",
+      "C1267"
+     ]
+    },
+    {
+     "id": "L58/P07/K3",
+     "text": "Graphics Processing Units (GPUs) are dedicated hardware components designed to exploit the inherent parallelism in graphics operations.",
+     "sources": [
+      "L58/S0155",
+      "L58/S0156"
+     ],
+     "concept_ids": [
+      "C0280",
+      "C1055",
+      "C1143",
+      "C1272",
+      "C1284"
+     ]
+    },
+    {
+     "id": "L58/P07/K4",
+     "text": "GPUs operate as multicore systems, where numerous cores perform simple integer and floating-point arithmetic operations simultaneously.",
+     "sources": [
+      "L58/S0157",
+      "L58/S0158"
+     ],
+     "concept_ids": [
+      "C0280",
+      "C0538",
+      "C1143"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P07/T1",
+     "surface": "GPU",
+     "name": "Graphics processing unit",
+     "abbreviation": "GPU",
+     "abbreviation_at": "L58/S0140",
+     "definition": "The Graphics Processing Unit is a specialized processing unit built to manage the inherent parallelism found in graphics operations. It is typically a multicore system designed to process vast amounts of data simultaneously.",
+     "sources": [
+      "L58/S0140",
+      "L58/S0156",
+      "L58/S0159"
+     ],
+     "concept_id": "C0280",
+     "concept_name": "Graphics processing unit"
+    },
+    {
+     "id": "L58/P07/T2",
+     "surface": "parallelism",
+     "name": "Parallelism",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Parallelism refers to the ability to perform multiple tasks or operations simultaneously. Graphics operations are highly parallel because functions, such as transformations, can be applied to all vertices at the same time.",
+     "sources": [
+      "L58/S0142",
+      "L58/S0143",
+      "L58/S0146",
+      "L58/S0147",
+      "L58/S0149"
+     ],
+     "concept_id": "C1272",
+     "concept_name": "Parallelism"
+    },
+    {
+     "id": "L58/P07/T3",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the process of applying geometric changes, such as rotation, to vertices. This is achieved by multiplying the vertex vector by a specific transformation matrix.",
+     "sources": [
+      "L58/S0144",
+      "L58/S0145"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    }
+   ]
+  },
+  {
+   "id": "L58/P08",
+   "first": "L58/S0160",
+   "last": "L58/S0183",
+   "start": 1737.272,
+   "end": 1949.693,
+   "objective": "Describe the fundamental architecture of a GPU and trace the steps of the 3D rendering pipeline",
+   "objective_id": "L58/O3",
+   "key_points": [
+    {
+     "id": "L58/P08/K1",
+     "text": "GPU processing relies on multiple Streaming Multiprocessors (SMs), which contain multiple cores and utilize parallel data caches.",
+     "sources": [
+      "L58/S0160",
+      "L58/S0161",
+      "L58/S0162",
+      "L58/S0166",
+      "L58/S0167"
+     ],
+     "concept_ids": [
+      "C0280",
+      "C1143",
+      "C1273"
+     ]
+    },
+    {
+     "id": "L58/P08/K2",
+     "text": "The rendering process begins by converting scene surfaces into triangular meshes, which are fed to the GPU.",
+     "sources": [
+      "L58/S0169",
+      "L58/S0170",
+      "L58/S0171",
+      "L58/S0172",
+      "L58/S0173"
+     ],
+     "concept_ids": [
+      "C0280",
+      "C0394",
+      "C0408",
+      "C0888",
+      "C1143"
+     ]
+    },
+    {
+     "id": "L58/P08/K3",
+     "text": "The GPU performs modeling transformations on vertices using matrix multiplication, outputting transformed triangles (local to world coordinates).",
+     "sources": [
+      "L58/S0175",
+      "L58/S0176",
+      "L58/S0177",
+      "L58/S0178"
+     ],
+     "concept_ids": [
+      "C0280",
+      "C0481",
+      "C0653",
+      "C1143",
+      "C1159",
+      "C1198"
+     ]
+    },
+    {
+     "id": "L58/P08/K4",
+     "text": "Vertex color is computed (e.g., using vector dot products) and subsequently projected onto the view plane (screen coordinates).",
+     "sources": [
+      "L58/S0179",
+      "L58/S0180",
+      "L58/S0181",
+      "L58/S0182",
+      "L58/S0183"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C1071",
+      "C1091",
+      "C1230",
+      "C1279",
+      "C1280"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P08/T1",
+     "surface": "streaming multiprocessor",
+     "name": "Streaming multiprocessor",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A streaming multiprocessor is a component of the GPU that receives allocation from a thread execution manager and contains several streaming processors or cores.",
+     "sources": [
+      "L58/S0160",
+      "L58/S0161",
+      "L58/S0167"
+     ],
+     "concept_id": "C1273",
+     "concept_name": "Streaming multiprocessor"
+    },
+    {
+     "id": "L58/P08/T2",
+     "surface": "parallel data cache",
+     "name": "Parallel data cache",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The parallel data cache is a location within the multiprocessor where the multiprocessor can produce its data.",
+     "sources": [
+      "L58/S0162"
+     ],
+     "concept_id": "C1274",
+     "concept_name": "Parallel data cache"
+    },
+    {
+     "id": "L58/P08/T3",
+     "surface": "texture storage",
+     "name": "Texture storage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Texture storage is an element that stores information about predefined or surface colors.",
+     "sources": [
+      "L58/S0163"
+     ],
+     "concept_id": "C1275",
+     "concept_name": "Texture storage"
+    },
+    {
+     "id": "L58/P08/T4",
+     "surface": "global memory",
+     "name": "Global memory",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Global memory is a data storage unit that elements can access or send data to through load or store information.",
+     "sources": [
+      "L58/S0165"
+     ],
+     "concept_id": "C1276",
+     "concept_name": "Global memory"
+    },
+    {
+     "id": "L58/P08/T5",
+     "surface": "core",
+     "name": "Core",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A core, or streaming processor, is one of the multiple processing units contained within a streaming multiprocessor.",
+     "sources": [
+      "L58/S0166",
+      "L58/S0167"
+     ],
+     "concept_id": "C1277",
+     "concept_name": "Core"
+    },
+    {
+     "id": "L58/P08/T6",
+     "surface": "triangle",
+     "name": "Triangle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A triangle is the basic geometric shape used to make up a scene, where surfaces are converted into triangular meshes.",
+     "sources": [
+      "L58/S0169",
+      "L58/S0170",
+      "L58/S0171",
+      "L58/S0178"
+     ],
+     "concept_id": "C1278",
+     "concept_name": "Triangle"
+    },
+    {
+     "id": "L58/P08/T7",
+     "surface": "mesh",
+     "name": "Mesh",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A mesh is a collection of triangles that results from converting surfaces into a standardized triangular mesh format for the GPU.",
+     "sources": [
+      "L58/S0171",
+      "L58/S0173"
+     ],
+     "concept_id": "C0408",
+     "concept_name": "Triangular mesh"
+    },
+    {
+     "id": "L58/P08/T8",
+     "surface": "graphics processing unit",
+     "name": "Graphics processing unit",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The graphics processing unit is the hardware that assumes a mesh as input and performs the rendering pipeline by assembling vertices into triangles, transforming them, and computing their color.",
+     "sources": [
+      "L58/S0173",
+      "L58/S0174",
+      "L58/S0175",
+      "L58/S0176",
+      "L58/S0177",
+      "L58/S0179",
+      "L58/S0181",
+      "L58/S0182",
+      "L58/S0183"
+     ],
+     "concept_id": "C0280",
+     "concept_name": "Graphics processing unit"
+    },
+    {
+     "id": "L58/P08/T9",
+     "surface": "vertex",
+     "name": "Vertex",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A vertex is a data point that is sent to the GPU one at a time and is used by the GPU to assemble triangles and undergo various transformations.",
+     "sources": [
+      "L58/S0174",
+      "L58/S0175",
+      "L58/S0176",
+      "L58/S0177"
+     ],
+     "concept_id": "C1091",
+     "concept_name": "Vertex"
+    },
+    {
+     "id": "L58/P08/T10",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the process performed by the GPU where multiple vertices are simultaneously transformed by multiplying the same transformation matrix.",
+     "sources": [
+      "L58/S0176",
+      "L58/S0177"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L58/P08/T11",
+     "surface": "transformation matrix",
+     "name": "Transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A transformation matrix is the same matrix multiplied by a set of vertices to simultaneously transform them during modeling transformations.",
+     "sources": [
+      "L58/S0177"
+     ],
+     "concept_id": "C1200",
+     "concept_name": "Transformation matrix"
+    },
+    {
+     "id": "L58/P08/T12",
+     "surface": "vertex color",
+     "name": "Vertex color",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Vertex color is the color assigned to a vertex, which can be computed by the GPU using vector dot products.",
+     "sources": [
+      "L58/S0179",
+      "L58/S0180"
+     ],
+     "concept_id": "C1279",
+     "concept_name": "Vertex color"
+    },
+    {
+     "id": "L58/P08/T13",
+     "surface": "vector dot products",
+     "name": "Vector dot product",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A vector dot product is a method used by the GPU to compute the color of multiple vertices simultaneously.",
+     "sources": [
+      "L58/S0180",
+      "L58/S0181"
+     ],
+     "concept_id": "C1280",
+     "concept_name": "Vector dot product"
+    },
+    {
+     "id": "L58/P08/T14",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The projection transformation is the process where each colored vertex is projected onto the view plane, which involves combining the viewing and projection transformations.",
+     "sources": [
+      "L58/S0182"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L58/P08/T15",
+     "surface": "device coordinates",
+     "name": "Device coordinates",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Device coordinates are the final coordinates of the triangles, which are ready to be converted to pixels on the screen.",
+     "sources": [
+      "L58/S0183"
+     ],
+     "concept_id": "C1281",
+     "concept_name": "Device coordinates"
+    }
+   ]
+  },
+  {
+   "id": "L58/P09",
+   "first": "L58/S0184",
+   "last": "L58/S0215",
+   "start": 1950.414,
+   "end": 2261.773,
+   "objective": "Explain how GPUs exploit inherent parallelism to implement the 3D graphics pipeline stages",
+   "objective_id": "L58/O3",
+   "key_points": [
+    {
+     "id": "L58/P09/K1",
+     "text": "Rasterization algorithms exploit inherent parallelism because each pixel can be treated independently of all others.",
+     "sources": [
+      "L58/S0189",
+      "L58/S0190"
+     ],
+     "concept_ids": [
+      "C0441",
+      "C1119",
+      "C1146",
+      "C1272",
+      "C1284"
+     ]
+    },
+    {
+     "id": "L58/P09/K2",
+     "text": "Surface texturing involves replacing the computed pixel color with the color found at the corresponding texture point.",
+     "sources": [
+      "L58/S0195",
+      "L58/S0196"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0969",
+      "C1146",
+      "C1286"
+     ]
+    },
+    {
+     "id": "L58/P09/K3",
+     "text": "Hidden surface removal uses a depth buffer, a dedicated memory that stores the distance of the viewer from each pixel.",
+     "sources": [
+      "L58/S0201",
+      "L58/S0202",
+      "L58/S0204"
+     ],
+     "concept_ids": [
+      "C0446",
+      "C1146",
+      "C1169",
+      "C1288"
+     ]
+    },
+    {
+     "id": "L58/P09/K4",
+     "text": "Key point: \"GPUs are designed to exploit inherent parallelism, allowing operations to be applied to all vertices or a large number of vertices simultaneously to increase processing speed.\" (cited sentences)",
+     "sources": [
+      "L58/S0205"
+     ],
+     "concept_ids": [
+      "C0280",
+      "C1143",
+      "C1272",
+      "C1284"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L58/P09/T1",
+     "surface": "continuous coordinate space",
+     "name": "Continuous coordinate space",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Continuous coordinate space is a coordinate system where triangles exist after being transformed and before the rasterization process determines which pixels they cover.",
+     "sources": [
+      "L58/S0185"
+     ],
+     "concept_id": "C1282",
+     "concept_name": "Continuous coordinate space"
+    },
+    {
+     "id": "L58/P09/T2",
+     "surface": "rasterization stage",
+     "name": "Rasterization stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Rasterization stage is the part of the graphics pipeline where the specific pixels on a screen or device are determined by which pixels are overlapped by device space triangles.",
+     "sources": [
+      "L58/S0187"
+     ],
+     "concept_id": "C1283",
+     "concept_name": "Rasterization stage"
+    },
+    {
+     "id": "L58/P09/T3",
+     "surface": "inherent parallelism",
+     "name": "Inherent parallelism",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Inherent parallelism is the observation that each pixel in a rendering process can be treated independently from all other pixels, allowing for simultaneous processing.",
+     "sources": [
+      "L58/S0189",
+      "L58/S0190"
+     ],
+     "concept_id": "C1284",
+     "concept_name": "Inherent parallelism"
+    },
+    {
+     "id": "L58/P09/T4",
+     "surface": "pixel processing stage",
+     "name": "Pixel processing stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Pixel processing stage is the part of the graphics pipeline where surface texturing and hidden surface removal occur to determine the final color and visibility of each pixel.",
+     "sources": [
+      "L58/S0193"
+     ],
+     "concept_id": "C1285",
+     "concept_name": "Pixel processing stage"
+    },
+    {
+     "id": "L58/P09/T5",
+     "surface": "surface texturing",
+     "name": "Surface texturing",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Surface texturing is a method where the computed color of a pixel is replaced by the color of a stored texture image at the corresponding texture point.",
+     "sources": [
+      "L58/S0193",
+      "L58/S0195",
+      "L58/S0196"
+     ],
+     "concept_id": "C1286",
+     "concept_name": "Surface texturing"
+    },
+    {
+     "id": "L58/P09/T6",
+     "surface": "texture images",
+     "name": "Texture image",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Texture image is a captured and stored image applied to geometry during rendering to replace the geometry's computed color with the color of the texture at the corresponding point.",
+     "sources": [
+      "L58/S0194"
+     ],
+     "concept_id": "C0969",
+     "concept_name": "Texture image"
+    },
+    {
+     "id": "L58/P09/T7",
+     "surface": "depth buffer algorithm",
+     "name": "Depth buffer algorithm",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Depth buffer algorithm is a special method implemented by GPUs to perform hidden surface removal by utilizing depth buffer storage.",
+     "sources": [
+      "L58/S0201"
+     ],
+     "concept_id": "C1287",
+     "concept_name": "Depth buffer algorithm"
+    },
+    {
+     "id": "L58/P09/T8",
+     "surface": "depth buffer",
+     "name": "Depth buffer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Depth buffer is a dedicated memory in the GPU that stores depth information, such as the distance of the viewer from each pixel, for points in a 3D scene before they are projected onto a 2D plane.",
+     "sources": [
+      "L58/S0201",
+      "L58/S0202",
+      "L58/S0204"
+     ],
+     "concept_id": "C1288",
+     "concept_name": "Depth buffer"
+    },
+    {
+     "id": "L58/P09/T9",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "3D graphics pipeline is the overall sequence of stages used to render static images, which GPUs support by exploiting inherent parallelism in its stages.",
+     "sources": [
+      "L58/S0205",
+      "L58/S0206"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L58/O1",
+   "text": "describe the structure of the 3D graphics pipeline, including coordinate mapping, applying Bresenham's algorithm, and implementing anti-aliasing to handle computational complexity",
+   "part_ids": [
+    "L58/P01",
+    "L58/P02",
+    "L58/P03",
+    "L58/P04"
+   ]
+  },
+  {
+   "id": "L58/O2",
+   "text": "explain how graphics libraries and APIs abstract low-level system details and describe the layered architectural components used in VR system graphics",
+   "part_ids": [
+    "L58/P05",
+    "L58/P06"
+   ]
+  },
+  {
+   "id": "L58/O3",
+   "text": "describe the fundamental architecture of a GPU and explain how specialized hardware exploits parallelism to implement the 3D graphics pipeline for high-performance VR rendering",
+   "part_ids": [
+    "L58/P07",
+    "L58/P08",
+    "L58/P09"
+   ]
+  }
+ ],
+ "lecture_goal": "Analyze the computational and architectural trade-offs required to efficiently render complex scenes in a virtual reality environment.",
+ "flags": [
+  "links: answer unusable (['server rejected the request (400): {\"error\":{\"message\":\"This model\\'s maximum context length is 65536 tokens. However, your prompt contains at least 65537 input tokens, which exceeds this limit even without any output tokens. Please reduce the length of the input prompt. (parameter=input_tokens, value=65537)\",\"type\":\"BadRequestError\",\"param\":\"input_tokens\",\"code\":400}}'])"
+ ],
+ "origin": [
+  {
+   "item": "L58/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "f81f44b44851f1142442",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 6577,
+   "output_tokens": 1944,
+   "latency_s": 77.29,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "380c23bd01c488b3c255",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1131,
+   "output_tokens": 488,
+   "latency_s": 45.28,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "6ef0f7434abeca738c9f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 886,
+   "output_tokens": 538,
+   "latency_s": 46.41,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "ffecceb0b5e1df507b66",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 821,
+   "output_tokens": 1015,
+   "latency_s": 70.33,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "487017e78662b9fb9728",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1032,
+   "output_tokens": 1145,
+   "latency_s": 74.95,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "e67f3c9dbe2713472c4a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 922,
+   "output_tokens": 1160,
+   "latency_s": 76.62,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "7a7ba00573a63b36deca",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1290,
+   "output_tokens": 1165,
+   "latency_s": 76.25,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "28fdad5a76423ffd726e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 715,
+   "output_tokens": 1173,
+   "latency_s": 75.88,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "678f2ea1eb1ff3e04080",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 881,
+   "output_tokens": 1239,
+   "latency_s": 77.74,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "331f1dc163bde27b618a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1217,
+   "output_tokens": 1270,
+   "latency_s": 78.07,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "944273e68ef7381f6a3d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1263,
+   "output_tokens": 1440,
+   "latency_s": 300.78,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/terms/37-66",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "b5ebd23e10c07cb9217f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1410,
+   "output_tokens": 1275,
+   "latency_s": 51.99,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "747e5f44ce3ea99b4582",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1520,
+   "output_tokens": 1976,
+   "latency_s": 78.0,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e579d7d547127af1ad5c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1067,
+   "output_tokens": 1900,
+   "latency_s": 377.45,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "4a1e3c73645f2dc17ddd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1265,
+   "output_tokens": 2110,
+   "latency_s": 71.46,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/terms/160-183",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "b81b709f37ee65a45717",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1166,
+   "output_tokens": 3756,
+   "latency_s": 122.65,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "22ac0c8ef1a3bd2578c2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1121,
+   "output_tokens": 1285,
+   "latency_s": 303.17,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "9c78483b4cd8fc56df58",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1392,
+   "output_tokens": 1308,
+   "latency_s": 44.63,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/terms/103-126",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "433e6c0637a03e428c6a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1313,
+   "output_tokens": 2623,
+   "latency_s": 84.7,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f66197d67631e8647a34",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1433,
+   "output_tokens": 2237,
+   "latency_s": 398.72,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c6077d39004288c8e43f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1005,
+   "output_tokens": 2741,
+   "latency_s": 451.42,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/terms/67-102",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "3993857a3df60c4eb76d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1572,
+   "output_tokens": 1705,
+   "latency_s": 53.78,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "2d8ff0ac3b96d3e80231",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1687,
+   "output_tokens": 1969,
+   "latency_s": 62.17,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "09415681a83ea0ca8fb8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1280,
+   "output_tokens": 1623,
+   "latency_s": 52.74,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "bd8d80a6f23fab46a810",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 899,
+   "output_tokens": 4335,
+   "latency_s": 595.59,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/terms/0-17",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "fe5f3309a1167c11eec5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1201,
+   "output_tokens": 3294,
+   "latency_s": 107.34,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ad63b131b015e47709a7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1020,
+   "output_tokens": 3258,
+   "latency_s": 488.56,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a5f549c7439cb2b86ceb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1332,
+   "output_tokens": 3252,
+   "latency_s": 497.23,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/terms/18-36",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "e481b1cd5a17eb52a65d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1098,
+   "output_tokens": 2232,
+   "latency_s": 68.08,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "30758cd60b8b44b954fa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1166,
+   "output_tokens": 2266,
+   "latency_s": 69.09,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c737e7afd13de95fed17",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 813,
+   "output_tokens": 4324,
+   "latency_s": 587.85,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "f63dff7b449c57ff207e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1083,
+   "output_tokens": 1491,
+   "latency_s": 38.92,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/terms/127-139",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "6f9235cf7d94e7303258",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 987,
+   "output_tokens": 2283,
+   "latency_s": 57.0,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1a248f4b2d316974ba01",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1532,
+   "output_tokens": 4538,
+   "latency_s": 644.12,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6594f2405880fa285e9b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1710,
+   "output_tokens": 4972,
+   "latency_s": 478.88,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "21d113e17b5d0e50e0ee",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1446,
+   "output_tokens": 4453,
+   "latency_s": 374.25,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "7b9b215281326ced4322",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1162,
+   "output_tokens": 778,
+   "latency_s": 254.94,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8cb39b709305e996323f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1424,
+   "output_tokens": 4217,
+   "latency_s": 482.71,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2983e4d974cd7830879a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1671,
+   "output_tokens": 4777,
+   "latency_s": 598.75,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b6e8dad95f325b466974",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1223,
+   "output_tokens": 4564,
+   "latency_s": 574.96,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1a47ef1854af71da4fa2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1190,
+   "output_tokens": 4547,
+   "latency_s": 562.82,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "f9ed185471c067148808",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 847,
+   "output_tokens": 639,
+   "latency_s": 301.95,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6f94454be1d1b457e51f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1193,
+   "output_tokens": 685,
+   "latency_s": 250.15,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "b25d16ead5bb7b575ca9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1601,
+   "output_tokens": 1844,
+   "latency_s": 41.47,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/terms/184-215",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "51eedd323f63db4d6721",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1494,
+   "output_tokens": 2540,
+   "latency_s": 57.87,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "febb7ab037bd215fff83",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1282,
+   "output_tokens": 2516,
+   "latency_s": 401.19,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "61d55008ee5801e12ab2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 974,
+   "output_tokens": 967,
+   "latency_s": 287.55,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d7d784c8ce3df4ca2e8d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1341,
+   "output_tokens": 4361,
+   "latency_s": 568.9,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "06d093f7de3f46861b13",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 871,
+   "output_tokens": 1171,
+   "latency_s": 287.26,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b67ad72caf9aab14fadc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 970,
+   "output_tokens": 3579,
+   "latency_s": 381.24,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "5f43e3f22bcadea2cb8a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 899,
+   "output_tokens": 2144,
+   "latency_s": 253.56,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "a6a0aef49e7c011b28a2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 1,
+   "input_tokens": 1779,
+   "output_tokens": 16515,
+   "latency_s": 1693.87,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "26a8342894912f7d7a8d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1318,
+   "output_tokens": 1850,
+   "latency_s": 369.61,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "172c1d4ce9f10ce8393f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1797,
+   "output_tokens": 4508,
+   "latency_s": 499.65,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3ca06d3e4b2bac08fb33",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1269,
+   "output_tokens": 3198,
+   "latency_s": 404.28,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cc1d867bc78f97fd2448",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 981,
+   "output_tokens": 4274,
+   "latency_s": 464.81,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1ce8d89949b23df6f6a5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 896,
+   "output_tokens": 4229,
+   "latency_s": 472.96,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "929201d03b5ae76cc231",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 869,
+   "output_tokens": 839,
+   "latency_s": 209.86,
+   "cached": false
+  },
+  {
+   "item": "L58/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "8ea31e23cde4a63f3a7a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 398,
+   "output_tokens": 1398,
+   "latency_s": 31.63,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "248975d066e5e7ae4dc4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1266,
+   "output_tokens": 1798,
+   "latency_s": 40.9,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/terms/140-159",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "14c7300d7f035188b135",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1160,
+   "output_tokens": 1991,
+   "latency_s": 45.23,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b5e6e53acb9ee2413dc1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 899,
+   "output_tokens": 4345,
+   "latency_s": 478.07,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "bf4563958102c06aa1fd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1774,
+   "output_tokens": 4566,
+   "latency_s": 511.07,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d6b0e01d0c0a1fc00243",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1248,
+   "output_tokens": 4460,
+   "latency_s": 360.4,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1c911095a31ff13f9b76",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1677,
+   "output_tokens": 4612,
+   "latency_s": 281.04,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "0fb42aca01dc9c734e24",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1041,
+   "output_tokens": 4288,
+   "latency_s": 254.92,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e1be56b089fbb729bf7a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1016,
+   "output_tokens": 4307,
+   "latency_s": 384.83,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cfcb1fb2cd960fbfd714",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1674,
+   "output_tokens": 1795,
+   "latency_s": 369.96,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "62ab4cafbe78f5d24d14",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1267,
+   "output_tokens": 1440,
+   "latency_s": 345.82,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f4dca057829a578ee287",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1600,
+   "output_tokens": 4366,
+   "latency_s": 652.45,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "937405d3161086826f98",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1805,
+   "output_tokens": 2547,
+   "latency_s": 436.98,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "37dfb7e8f53441f820e7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1509,
+   "output_tokens": 3683,
+   "latency_s": 543.48,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d3f3fd891c5612581299",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1287,
+   "output_tokens": 1356,
+   "latency_s": 307.97,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f90a649322a002dea5b6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 862,
+   "output_tokens": 926,
+   "latency_s": 284.58,
+   "cached": false
+  },
+  {
+   "item": "L58/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1062a9ccf977cd8f2263",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1541,
+   "output_tokens": 2972,
+   "latency_s": 235.88,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8a4b54e2cdd0e5118393",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1484,
+   "output_tokens": 4278,
+   "latency_s": 307.54,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9e5f55535b5d98ab133f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1479,
+   "output_tokens": 3635,
+   "latency_s": 266.82,
+   "cached": false
+  },
+  {
+   "item": "registry/vertex color",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "dcd5a3a72e5d95816b81",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 477,
+   "output_tokens": 860,
+   "latency_s": 39.5,
+   "cached": false
+  },
+  {
+   "item": "registry/stream multiprocessor",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "7ffb38fef27c7ada9214",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 498,
+   "output_tokens": 875,
+   "latency_s": 40.25,
+   "cached": false
+  },
+  {
+   "item": "registry/raster stage",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "0ecd6f973e7f6be8472a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 440,
+   "output_tokens": 863,
+   "latency_s": 39.68,
+   "cached": false
+  },
+  {
+   "item": "registry/operat system lay",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "ab4352a4e4c20a4db7a8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 528,
+   "output_tokens": 978,
+   "latency_s": 44.93,
+   "cached": false
+  },
+  {
+   "item": "registry/line render",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "814a221c0b8121266f9c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 550,
+   "output_tokens": 1106,
+   "latency_s": 51.67,
+   "cached": false
+  },
+  {
+   "item": "registry/depth buff algorithm",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "b6627b7738fdd4e0bed7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 542,
+   "output_tokens": 998,
+   "latency_s": 46.05,
+   "cached": false
+  },
+  {
+   "item": "registry/parallelism",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "538684e49f0a227984e2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 503,
+   "output_tokens": 1319,
+   "latency_s": 61.34,
+   "cached": false
+  },
+  {
+   "item": "registry/delta x",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "47205e88d52d65fd33f0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 529,
+   "output_tokens": 2289,
+   "latency_s": 105.59,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "ca78449b849fd4dedb24",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 909,
+   "output_tokens": 1404,
+   "latency_s": 676.37,
+   "cached": false
+  },
+  {
+   "item": "registry/continuou coordinate system",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "5748d40dcb88c3e1b0d4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 454,
+   "output_tokens": 4140,
+   "latency_s": 190.14,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "38ede5df27938eba8442",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1200,
+   "output_tokens": 967,
+   "latency_s": 153.59,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "73753669bb7bf7fc0878",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 957,
+   "output_tokens": 1372,
+   "latency_s": 244.68,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "608a6020e856603b9472",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1277,
+   "output_tokens": 1099,
+   "latency_s": 263.58,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/facets/2",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "afd2c8d9a7052634ef5a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3017,
+   "output_tokens": 2496,
+   "latency_s": 103.83,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "f3d376b798cf830a77f1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 9273,
+   "output_tokens": 2626,
+   "latency_s": 109.49,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "99b757f6f29e73e990b8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4548,
+   "output_tokens": 2779,
+   "latency_s": 115.12,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "87b8969e5802a3d4b27a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12008,
+   "output_tokens": 2898,
+   "latency_s": 119.4,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "9e45c58f3f1415e159fb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 27958,
+   "output_tokens": 3139,
+   "latency_s": 127.92,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "b071f33e0b1194c41cdb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3361,
+   "output_tokens": 3175,
+   "latency_s": 129.82,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "797ffdbee00eec2fba03",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 8358,
+   "output_tokens": 3458,
+   "latency_s": 139.23,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "212b0038872af9a9737a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 10737,
+   "output_tokens": 3651,
+   "latency_s": 146.34,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "a277319a62d0788daab3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12080,
+   "output_tokens": 3861,
+   "latency_s": 152.97,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "a681c5d2a2bb2e265924",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 18007,
+   "output_tokens": 4070,
+   "latency_s": 160.45,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "94fa1314343fcb0a43f7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 29593,
+   "output_tokens": 4127,
+   "latency_s": 162.02,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "7176d80bf7115207d909",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12531,
+   "output_tokens": 4358,
+   "latency_s": 169.33,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "c7694223e2f29ae682dc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12079,
+   "output_tokens": 4686,
+   "latency_s": 178.09,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "40e033b7deea5e642262",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 26069,
+   "output_tokens": 4964,
+   "latency_s": 186.01,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "2afadb4e4d73bcad1005",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 6835,
+   "output_tokens": 5010,
+   "latency_s": 187.12,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c7594df82f62bdcb27e9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1274,
+   "output_tokens": 4733,
+   "latency_s": 1042.55,
+   "cached": false
+  },
+  {
+   "item": "L58/P05/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a83bc416f684c25105ed",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1436,
+   "output_tokens": 4712,
+   "latency_s": 1048.62,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "06798e4fcf80fc2cbf14",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1801,
+   "output_tokens": 4877,
+   "latency_s": 1056.83,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "35fc01f7eb1d64f97b6d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1487,
+   "output_tokens": 4840,
+   "latency_s": 1087.31,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "975bdd16fb62d2aff375",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2371,
+   "output_tokens": 5331,
+   "latency_s": 1093.44,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9e4bffcde9be6445cc42",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2343,
+   "output_tokens": 5165,
+   "latency_s": 1108.75,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cf68abcbaa0dda82e188",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2449,
+   "output_tokens": 5766,
+   "latency_s": 1113.4,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fe0ba29c0de080c4595d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2032,
+   "output_tokens": 5297,
+   "latency_s": 1116.92,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e5e816b9317d2ba1d09c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2538,
+   "output_tokens": 5372,
+   "latency_s": 1122.7,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "19e547139709edcf9b7d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 904,
+   "output_tokens": 1425,
+   "latency_s": 341.86,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "f096fa3a2a51621a2a1f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1253,
+   "output_tokens": 1719,
+   "latency_s": 385.84,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "34a86f5ff048bd01d687",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1196,
+   "output_tokens": 3633,
+   "latency_s": 561.5,
+   "cached": false
+  },
+  {
+   "item": "L58/P03/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1a4c830e6e1b6e99ff65",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1153,
+   "output_tokens": 1357,
+   "latency_s": 238.14,
+   "cached": false
+  },
+  {
+   "item": "L58/P07/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8af3c167af5b84f444ac",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 916,
+   "output_tokens": 1430,
+   "latency_s": 256.06,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "2f1c912c812ac9cb4363",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1289,
+   "output_tokens": 4710,
+   "latency_s": 652.96,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "41a6c8aa3fd8f32809b3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1127,
+   "output_tokens": 4329,
+   "latency_s": 610.87,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "2753ecc15f8be5037958",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1272,
+   "output_tokens": 4285,
+   "latency_s": 601.33,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c0037822b84f4daed1b3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1797,
+   "output_tokens": 4576,
+   "latency_s": 640.09,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "41446cbc3cc858d0bfa7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1264,
+   "output_tokens": 4545,
+   "latency_s": 624.15,
+   "cached": false
+  },
+  {
+   "item": "L58/P09/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "61ab2f061c2ec208cd2b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1197,
+   "output_tokens": 1068,
+   "latency_s": 73.98,
+   "cached": false
+  },
+  {
+   "item": "L58/P01/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c369d330011b9eb5c7a4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1069,
+   "output_tokens": 2742,
+   "latency_s": 186.63,
+   "cached": false
+  },
+  {
+   "item": "L58/P06/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "df32e9e8cd9f1ce09533",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 945,
+   "output_tokens": 3488,
+   "latency_s": 258.89,
+   "cached": false
+  },
+  {
+   "item": "L58/P04/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "89de2ec02e10029fc246",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1563,
+   "output_tokens": 3472,
+   "latency_s": 227.12,
+   "cached": false
+  },
+  {
+   "item": "L58/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a39715995978a212583f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 969,
+   "output_tokens": 4468,
+   "latency_s": 300.21,
+   "cached": false
+  },
+  {
+   "item": "L58/P08/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ce428aa91de7b1c8295b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1018,
+   "output_tokens": 4359,
+   "latency_s": 284.83,
+   "cached": false
+  },
+  {
+   "item": "L58/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "7c9ad2be012ee960afbb",
+   "thinking": true,
+   "validator": {
+    "passed": false,
+    "errors": [
+     "server rejected the request (400): {\"error\":{\"message\":\"This model's maximum context length is 65536 tokens. However, your prompt contains at least 65537 input tokens, which exceeds this limit even without any output tokens. Please reduce the length of the input prompt. (parameter=input_tokens, value=65537)\",\"type\":\"BadRequestError\",\"param\":\"input_tokens\",\"code\":400}}"
+    ]
+   },
+   "retries": 0,
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "latency_s": 0.0,
+   "cached": false
+  },
+  {
+   "item": "L58/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "7d12aa9027c40a7a5d2d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 17707,
+   "output_tokens": 2134,
+   "latency_s": 48.22,
+   "cached": false
+  },
+  {
+   "item": "L58/oq/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3e6eb82747e9a27785c0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 17716,
+   "output_tokens": 1107,
+   "latency_s": 407.52,
+   "cached": false
+  },
+  {
+   "item": "L58/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "91641ccb92c9af2d03eb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1169,
+   "output_tokens": 614,
+   "latency_s": 18.4,
+   "cached": false
+  },
+  {
+   "item": "L58/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3c6867610fff4780d5e6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1489,
+   "output_tokens": 2490,
+   "latency_s": 80.96,
+   "cached": false
+  }
+ ]
+}

@@ -1,0 +1,326 @@
+51/S0  Explain how the natural walking-speed model motivates optimizing VR navigation experience by limiting exposure duration to reduce cybersickness.
+  C0   natural walking model [defined]  facts F0, F1, F2
+  C1   virtual reality (VR)  facts F0, F1, F2, F3
+  C2   virtual reality tour (system-controlled virtual reality tour)  facts F0, F1
+  C3   optic flow (visual speed) [defined]  facts F0
+  C4   perceived instantaneous walking speed  facts F0
+  C5   perception of movement  facts F0
+  C6   virtual world  facts F0, F1, F2
+  C7   experience optimization  facts F1
+  C8   presence  facts F1
+  C9   virtual reality navigation experience  facts F2
+  C10  cyber sickness  facts F2, F3
+  C11  exposure duration (duration of exposure, VR session duration)  facts F2, F3
+  C12  virtual reality environment  facts F3
+  R0   natural walking model | is a model for | virtual reality tour  (F0, F1)
+  R1   natural walking model | is intended to provide a realistic walking experience by displaying | optic flow  (F0)
+  R2   optic flow | matches | perceived instantaneous walking speed  (F0)
+  R3   natural walking model | produces | perception of movement  (F0)
+  R4   optic flow | is the rate at which scenes change in | virtual world  (F0)
+  R5   natural walking model | does not provide anything related to | experience optimization  (F1)
+  R6   natural walking model | can only be used to enhance | presence  (F1)
+  R7   presence | is enhanced in | virtual world  (F1)
+  R8   natural walking model | is used to optimize | virtual reality navigation experience  (F2)
+  R9   exposure duration | is controlled to address | cyber sickness  (F2)
+  R10  exposure duration | is the duration of exposure in | virtual world  (F2)
+  R11  cyber sickness | is correlated with | exposure duration  (F3)
+  R12  cyber sickness | has a symptom degree that rises proportionally with increases in | exposure duration  (F3)
+  R13  exposure duration | when shorter helps eliminate or at least minimize the onset of | cyber sickness  (F3)
+  checks: reverse 4; no_triple 2
+
+51/S1  Describe the factors that determine VR exposure duration and the semi-interactive tour assumptions used to limit interaction time.
+  C0   virtual reality exposure duration (duration of VR exposure, duration of exposure to a virtual world, overall exposure duration, exposure time)  facts F0, F1, F2, F4, F5
+  C1   virtual reality (VR)  facts F0, F1, F6, F7
+  C2   virtual world (virtual environment, VR environment)  facts F0, F1, F2, F3, F4, F5, F7
+  C3   virtual world size (size of the virtual world, geographical area)  facts F0, F1, F2
+  C4   virtual travel speed (travelling speed, navigation speed)  facts F0, F2, F3
+  C5   travel time (travelling time)  facts F0, F2, F5
+  C6   interaction time  facts F0, F6
+  C7   virtual object  facts F0, F6, F7
+  C8   teleportation (teleportation-type movement) [defined]  facts F4
+  C9   virtual terrain (terrain)  facts F5
+  C10  point of interest (POIs, points of interest)  facts F5, F7
+  C11  distance between points of interest (distances between points of interest)  facts F5
+  C12  mental map  facts F5
+  C13  wayfinding  facts F5
+  C14  system-controlled virtual reality tool  facts F6
+  C15  semi-interactive tour [defined]  facts F7
+  C16  system-controlled navigation scenario  facts F7
+  R0   virtual reality exposure duration | depends on | virtual world size  (F0)
+  R1   virtual reality exposure duration | depends on | virtual travel speed  (F0)
+  R2   virtual reality exposure duration | depends on | travel time  (F0)
+  R3   virtual reality exposure duration | depends on | interaction time  (F0)
+  R4   interaction time | is spent inspecting, selecting, or manipulating | virtual object  (F0)
+  R5   virtual world size | when larger, leads to a longer | virtual reality exposure duration  (F1)
+  R6   virtual travel speed | when increased, reduces | virtual reality exposure duration  (F2)
+  R7   virtual travel speed | when higher, lowers | travel time  (F2)
+  R8   virtual travel speed | cannot be modified arbitrarily to provide a realistic walking experience in | virtual world  (F3)
+  R9   teleportation | is a movement in | virtual world  (F4)
+  R10  teleportation | can be the best choice for reducing | virtual reality exposure duration  (F4)
+  R11  virtual terrain | when manipulated, can reduce | travel time  (F5)
+  R12  virtual terrain | when manipulated, can reduce | virtual reality exposure duration  (F5)
+  R13  distance between points of interest | when adjusted, can reduce | travel time  (F5)
+  R14  distance between points of interest | when adjusted, can reduce | virtual reality exposure duration  (F5)
+  R15  virtual terrain | when arbitrarily changed, can hamper | mental map  (F5)
+  R16  virtual terrain | when arbitrarily changed, can hamper | wayfinding  (F5)
+  R17  interaction time | is required to interact with | virtual object  (F6)
+  R18  interaction time | can be ignored in | system-controlled virtual reality tool  (F6)
+  R19  semi-interactive tour | is a | system-controlled navigation scenario  (F7)
+  R20  semi-interactive tour | is a | virtual reality  (F7)
+  R21  semi-interactive tour | is limited to interacting with a small set of | virtual object  (F7)
+  R22  virtual object | in a semi-interactive tour, interaction is limited to a small set at | point of interest  (F7)
+  R23  semi-interactive tour | allows interaction with after a navigation task is complete, but not with other | virtual object  (F7)
+  checks: name_not_in_facts 4; reverse 4
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+51/S2  State the two path-optimization problems for controlling exposure duration: minimum time to visit all POIs or maximum POIs within a time limit.
+  C0   semi-interactive virtual tour (virtual tour, virtual reality tour, VR tour, semi-interactive virtual reality tour)  facts F0, F1, F2
+  C1   point of interest (POI, POIs)  facts F0, F1
+  C2   interaction time  facts F0, F1
+  C3   virtual reality (VR)  facts F1, F2
+  C4   exposure duration (duration of exposure)  facts F1, F2
+  C5   optimum path [defined]  facts F1
+  C6   cyber sickness  facts F2
+  R0   interaction time | can be limited in | semi-interactive virtual tour  (F0)
+  R1   interaction time | at each in a semi-interactive virtual tour can be limited to an estimate in advance of the maximum time an average user needs to interact with that | point of interest  (F0)
+  R2   semi-interactive virtual tour | after the interaction time at a point of interest expires automatically forces the user to move to another | point of interest  (F0)
+  R3   exposure duration | in a semi-interactive virtual reality tour can be optimized under a limit on | interaction time  (F1)
+  R4   exposure duration | in a semi-interactive virtual reality tour can be optimized by finding | optimum path  (F1)
+  R5   optimum path | minimizes the total navigation and interaction time required to experience all | point of interest  (F1)
+  R6   optimum path | maximizes the number of experienced within a fixed time limit for navigation and interaction | point of interest  (F1)
+  R7   semi-interactive virtual tour | is a tour in | virtual reality  (F1, F2)
+  R8   exposure duration | in a virtual reality tour, when optimized, is expected to optimize the prevalence and onset of | cyber sickness  (F2)
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+51/S3  Formulate the minimum-time all-POI tour problem as a weighted graph and state the path optimization objective.
+  C0   virtual world  facts F0, F1, F3
+  C1   virtual experience  facts F0
+  C2   weighted graph (graph)  facts F0, F1, F3, F4
+  C3   vertex set [defined]  facts F0, F2
+  C4   point of interest (POI, POIs)  facts F0, F3, F4
+  C5   weighted edge  facts F0
+  C6   vertex (node)  facts F2, F3, F4
+  C7   edge weight [defined]  facts F2
+  C8   Euclidean distance  facts F2
+  C9   infinity symbol  facts F2
+  C10  path  facts F4
+  C11  optimum travel path problem [defined]  facts F4
+  R0   virtual world | is a part of | virtual experience  (F0)
+  R1   virtual world | is represented as | weighted graph  (F0, F3)
+  R2   weighted graph | is used to represent | virtual world  (F1)
+  R3   weighted graph | consists of | vertex set  (F0)
+  R4   weighted graph | consists of | weighted edge  (F0)
+  R5   vertex set | is the set of all | point of interest  (F0)
+  R6   weighted edge | is between | point of interest  (F0)
+  R7   edge weight | for directly connected vertices, is | Euclidean distance  (F2)
+  R8   edge weight | for vertices that are not directly connected, is represented by | infinity symbol  (F2)
+  R9   edge weight | is assigned for a pair of | vertex  (F2)
+  R10  edge weight | is assigned for vertices in the | vertex set  (F2)
+  R11  Euclidean distance | is between | vertex  (F2)
+  R12  vertex | is in the | vertex set  (F2)
+  R13  point of interest | is mapped to a | vertex  (F3)
+  R14  optimum travel path problem | is to find a | path  (F4)
+  R15  optimum travel path problem | is to cover all | point of interest  (F4)
+  R16  path | is in the | weighted graph  (F4)
+  R17  path | covers all | vertex  (F4)
+  R18  vertex | is a | point of interest  (F4)
+  checks: reverse 4
+
+51/S4  Derive the travel-time estimate between directly connected POIs using the natural walking-speed model.
+  C0   travel-time algorithm  facts F0
+  C1   directly connected node pair (directly connected nodes, directly connected vertex pair)  facts F0, F4
+  C2   natural walking-speed model (natural walking model) [defined]  facts F0, F1, F3, F4, F5
+  C3   travel time (time to travel, total travel time) [defined]  facts F0, F2
+  C4   perceived instantaneous walking speed [defined]  facts F1
+  C5   visual gain  facts F1
+  C6   actual instantaneous realistic walking speed (V act)  facts F1, F2
+  C7   speed [defined]  facts F2
+  C8   distance element (dx)  facts F2
+  C9   instantaneous time (dt)  facts F2
+  C10  distance (D)  facts F2, F4
+  C11  integral  facts F2, F4
+  C12  instantaneous step frequency (f)  facts F3
+  C13  height (h)  facts F3, F5
+  C14  fourier-series expansion  facts F4
+  C15  travel-time estimate (tau D) [defined]  facts F4
+  C16  V naught [defined]  facts F4, F5
+  R0   travel-time algorithm | computes as its first stage | travel time  (F0)
+  R1   travel-time algorithm | uses in its first stage to compute travel time between a directly connected node pair | natural walking-speed model  (F0)
+  R2   travel time | is between a | directly connected node pair  (F0, F2)
+  R3   travel time | is computed using | natural walking-speed model  (F0)
+  R4   natural walking-speed model | defines perceived instantaneous walking speed as visual gain multiplied by | actual instantaneous realistic walking speed  (F1)
+  R5   perceived instantaneous walking speed | in the natural walking-speed model is visual gain multiplied by | actual instantaneous realistic walking speed  (F1)
+  R6   visual gain | in the natural walking-speed model is multiplied by actual instantaneous realistic walking speed to give perceived instantaneous walking speed | actual instantaneous realistic walking speed  (F1)
+  R7   speed | is distance element divided by | instantaneous time  (F2)
+  R8   instantaneous time | for a distance element is distance element divided by 2.1 times | actual instantaneous realistic walking speed  (F2)
+  R9   travel time | over a distance between directly connected nodes is the | integral  (F2)
+  R10  travel time | is over a | distance  (F2)
+  R11  distance | is between a | directly connected node pair  (F2)
+  R12  integral | is taken from 0 to | distance  (F2)
+  R13  natural walking-speed model | has as a variable | instantaneous step frequency  (F3)
+  R14  natural walking-speed model | has as a variable | height  (F3)
+  R15  integral | is solved with simplifications, rearrangements, and | fourier-series expansion  (F4)
+  R16  integral | is solved to produce | travel-time estimate  (F4)
+  R17  travel-time estimate | is for a | directly connected node pair  (F4)
+  R18  travel-time estimate | is under | natural walking-speed model  (F4)
+  R19  travel-time estimate | for a directly connected node pair under the natural walking model is distance divided by | V naught  (F4)
+  R20  distance | in the travel-time estimate under the natural walking model for a directly connected node pair is divided by | V naught  (F4)
+  R21  natural walking-speed model | uses in its travel-time estimate | V naught  (F4, F5)
+  R22  V naught | is a constant for a given | height  (F5)
+  checks: name_not_in_facts 1; no_shared_fact 1; no_triple 1
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+51/S5  Explain how to sum edge travel times for a complete tour and transform the incomplete POI graph into a TSP instance with hypothetical shortest-path edges.
+  C0   path  facts F0, F1, F2, F3, F4
+  C1   graph  facts F0, F1, F2, F3, F4, F5
+  C2   vertex (node)  facts F0, F1, F2, F3, F4
+  C3   total travel time [defined]  facts F0, F1
+  C4   edge weight [defined]  facts F0, F4
+  C5   euclidean distance  facts F0, F4
+  C6   travel-time minimisation problem [defined]  facts F1, F3, F4, F5
+  C7   travelling salesman problem (TSP) [defined]  facts F1, F2
+  C8   complete graph  facts F2, F3
+  C9   shortest path [defined]  facts F2, F4
+  C10  edge  facts F2, F4
+  C11  hamiltonian path [defined]  facts F3
+  C12  hypothetical edge [defined]  facts F4, F5
+  C13  modified edge weight [defined]  facts F4
+  C14  shortest path length [defined]  facts F4, F5
+  C15  connected  facts F5
+  R0   path | is in | graph  (F0)
+  R1   graph | contains | vertex  (F0)
+  R2   total travel time | is for | path  (F0)
+  R3   total travel time | is the sum of | edge weight  (F0)
+  R4   edge weight | is between consecutive | vertex  (F0)
+  R5   edge weight | is | euclidean distance  (F0)
+  R6   travel-time minimisation problem | uses | graph  (F1, F3, F4)
+  R7   travel-time minimisation problem | aims to find a | path  (F1)
+  R8   path | in the objective contains all | vertex  (F1)
+  R9   travel-time minimisation problem | aims to minimise | total travel time  (F1)
+  R10  travel-time minimisation problem | is a variation of | travelling salesman problem  (F1)
+  R11  travelling salesman problem | is posed on a | complete graph  (F2)
+  R12  travelling salesman problem | asks for the | shortest path  (F2)
+  R13  shortest path | visits each exactly once and returns to the starting | vertex  (F2)
+  R14  shortest path | is defined by the total weight of the | edge  (F2)
+  R15  graph | is not assumed to be a | complete graph  (F3)
+  R16  graph | may contain no | hamiltonian path  (F3)
+  R17  hamiltonian path | is a | path  (F3)
+  R18  hamiltonian path | covers all | vertex  (F3)
+  R19  hamiltonian path | visits each exactly once | vertex  (F3)
+  R20  hypothetical edge | is introduced for non-directly-connected pairs of | vertex  (F4)
+  R21  modified edge weight | is, if the vertices are directly connected, | euclidean distance  (F4)
+  R22  modified edge weight | is, if the vertices are not directly connected, | shortest path length  (F4)
+  R23  shortest path length | is the sum of the | edge weight  (F4)
+  R24  shortest path length | is in the | shortest path  (F4)
+  R25  shortest path length | is well-defined because the graph is | connected  (F5)
+  checks: name_not_in_facts 1
+
+51/S6  Describe the algorithm that converts the POI graph to a complete time-weighted TSP, solves it, and restores a valid original-graph path, while noting the cybersickness-threshold limitation.
+  C0   algorithm [defined]  facts F0, F1, F2, F3, F4, F5
+  C1   graph [defined]  facts F0, F1, F2, F3, F4, F5
+  C2   vertex set  facts F0
+  C3   edge set  facts F0
+  C4   optimal time (minimum travel time)  facts F0, F3, F5
+  C5   optimal path (minimum-time path)  facts F0, F3, F4
+  C6   complete graph [defined]  facts F1, F2
+  C7   edge  facts F1, F4
+  C8   vertex  facts F1, F2, F5
+  C9   shortest path  facts F1, F4
+  C10  euclidean distance  facts F2
+  C11  edge weight  facts F2
+  C12  travel time  facts F2, F5
+  C13  complete time-weighted graph [defined]  facts F2, F3
+  C14  travelling salesman problem (TSP)  facts F3, F4, F5
+  C15  travelling salesman problem solver (TSP solver)  facts F3, F4
+  C16  cybersickness time threshold  facts F5
+  C17  terrain  facts F5
+  C18  virtual environment  facts F5
+  R0   algorithm | takes as input | graph  (F0)
+  R1   graph | has | vertex set  (F0)
+  R2   graph | has | edge set  (F0)
+  R3   algorithm | produces | optimal time  (F0)
+  R4   algorithm | produces | optimal path  (F0)
+  R5   optimal path | covers all | vertex  (F0)
+  R6   algorithm | converts a graph into | complete graph  (F1)
+  R7   complete graph | keeps every directly connected | edge  (F1)
+  R8   complete graph | adds a hypothetical | edge  (F1)
+  R9   edge | for a hypothetical edge, has length equal to the | shortest path  (F1)
+  R10  shortest path | is between vertices in | graph  (F1)
+  R11  algorithm | replaces edge weights with | travel time  (F2)
+  R12  algorithm | produces | complete time-weighted graph  (F2)
+  R13  complete time-weighted graph | has as edge weights | travel time  (F2)
+  R14  complete time-weighted graph | has edge weights that are not | euclidean distance  (F2)
+  R15  edge weight | before replacement is | euclidean distance  (F2)
+  R16  complete time-weighted graph | can be solved with | travelling salesman problem solver  (F3)
+  R17  complete time-weighted graph | does not require a new | algorithm  (F3)
+  R18  travelling salesman problem solver | returns | optimal time  (F3)
+  R19  travelling salesman problem solver | returns | optimal path  (F3)
+  R20  optimal time | is for the modified | graph  (F3)
+  R21  optimal path | is for the modified | graph  (F3)
+  R22  travelling salesman problem solver | returns an | optimal path  (F4)
+  R23  optimal path | may contain a hypothetical | edge  (F4)
+  R24  edge | for a hypothetical edge, may be absent from the original | graph  (F4)
+  R25  algorithm | post-processes | optimal path  (F4)
+  R26  edge | if its endpoints were not directly connected in G, is replaced with | shortest path  (F4)
+  R27  shortest path | is between the replaced endpoints in | graph  (F4)
+  R28  optimal time | is for covering all | vertex  (F5)
+  R29  optimal time | is computed by | algorithm  (F5)
+  R30  algorithm | maps the original graph to a | travelling salesman problem  (F5)
+  R31  optimal time | may exceed, when the terrain or virtual environment is large, | cybersickness time threshold  (F5)
+  checks: name_not_in_facts 1; no_shared_fact 1; reverse 4; no_triple 2
+
+51/S7  Summarize the lecture’s graph-theoretic TSP approach and preview the next fixed-time, maximum-POI optimization problem.
+  C0   cybersickness  facts F0, F6
+  C1   virtual world  facts F0, F1
+  C2   point of interest (points of interest)  facts F0, F1, F2, F6
+  C3   time limit  facts F0, F6
+  C4   minimum-time approach (minimum time) [defined]  facts F0, F1, F3, F4, F6
+  C5   graph [defined]  facts F1, F2
+  C6   vertex (node)  facts F1, F3
+  C7   edge  facts F1
+  C8   euclidean distance  facts F1
+  C9   weight  facts F1, F4
+  C10  complete graph  facts F4
+  C11  travelling salesman problem (TSP)  facts F2, F4, F5
+  C12  travel time (travel times)  facts F3, F4, F6
+  C13  natural walking speed model  facts F3
+  C14  hypothetical edge [defined]  facts F3, F4, F5
+  C15  shortest path  facts F3
+  C16  travelling salesman problem solver (TSP solver) [defined]  facts F4, F5
+  C17  optimum time  facts F4
+  C18  optimal path  facts F4, F5
+  C19  final solution path [defined]  facts F5
+  C20  threshold  facts F6
+  C21  alternative path optimization approach  facts F6
+  R0   minimum-time approach | is an approach to minimizing the possibility of | cybersickness  (F0)
+  R1   alternative path optimization approach | is an approach to minimizing the possibility of | cybersickness  (F0)
+  R2   minimum-time approach | seeks to cover all | point of interest  (F0)
+  R3   alternative path optimization approach | seeks to cover the maximum possible | point of interest  (F0)
+  R4   alternative path optimization approach | uses a given | time limit  (F0)
+  R5   virtual world | is represented as a | graph  (F1)
+  R6   graph | has as nodes | point of interest  (F1)
+  R7   vertex | is a | point of interest  (F1)
+  R8   edge | when directly connected, is weighted by | euclidean distance  (F1)
+  R9   euclidean distance | is between | point of interest  (F1)
+  R10  edge | when directly connected, joins | point of interest  (F1)
+  R11  graph | need not be a | complete graph  (F1)
+  R12  travelling salesman problem | is the standard classical problem for covering all | point of interest  (F2)
+  R13  travelling salesman problem | is mapped from the problem in the | graph  (F2)
+  R14  travel time | between pairs of vertices is computed using | natural walking speed model  (F3)
+  R15  natural walking speed model | gives the travel time between directly connected | vertex  (F3)
+  R16  hypothetical edge | is introduced when vertices are not directly connected and represents the | shortest path  (F3)
+  R17  shortest path | is between | vertex  (F3)
+  R18  travel time | along the shortest path is computed using | natural walking speed model  (F3)
+  R19  travel time | becomes the weight of a | complete graph  (F4)
+  R20  complete graph | is formed by adding | hypothetical edge  (F4)
+  R21  complete graph | is given as input to a | travelling salesman problem solver  (F4)
+  R22  travelling salesman problem solver | outputs | optimum time  (F4)
+  R23  travelling salesman problem solver | outputs | optimal path  (F4)
+  R24  optimal path | produced by the travelling salesman problem solver may contain | hypothetical edge  (F5)
+  R25  hypothetical edge | must be removed before | final solution path  (F5)
+  R26  minimum-time approach | may produce a | travel time  (F6)
+  R27  travel time | may be beyond | threshold  (F6)
+  R28  cybersickness | may occur beyond | threshold  (F6)
+  R29  alternative path optimization approach | uses a | time limit  (F6)
+  checks: name_not_in_facts 2; no_shared_fact 4; no_triple 1
+

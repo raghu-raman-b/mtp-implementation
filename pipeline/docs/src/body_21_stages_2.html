@@ -1,0 +1,137 @@
+
+<!-- ------------------------------------------------------------------ 2a -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-gen)">2a</span><h3 id="s2a" data-toc="2a · Facts">Facts: what each segment teaches</h3><span class="worker w-gen">Qwen 3.8 27B</span></div>
+<p>A <b>fact</b> is one complete point of subject knowledge that the lecturer teaches in the segment: something a
+student should know after it and could be asked about in an exam. Facts are the store everything else is built from,
+so each one must be worth looking up on its own and must cite every sentence that states it. One request per segment.</p>
+<dl class="facts-grid">
+<dt>In</dt><dd>the segment's sentences numbered <code>[1]…[n]</code> (1c), its sub-goal (1b), the course block and lecture title</dd>
+<dt>Out</dt><dd><code>stage_2a_fact_extraction/fact_maps/lec_&lt;n&gt;.json</code> <code>{"30/S4/F1": {"text", "evidence": ["30/133", …]}}</code>;
+<code>fact_text/</code> one line per fact; <code>checks/</code> per segment: coverage, flags</dd>
+<dt>Command</dt><dd><code>python scripts/s2a_fact_extraction.py nptel_vr --llm configs/qwen38_27b_vllm.json [--only 1-5] [--sequential]</code></dd>
+<dt>Model</dt><dd>Qwen 3.8 27B FP8, <code>configs/qwen38_27b_vllm.json</code> (thinking up to 16,384 tokens)</dd>
+<dt>Time</dt><dd>386 segments in 5,140 s (1 h 26 min), every answer valid on the first try; EC2 queue job of 2026-11-12, RTX PRO 6000</dd>
+<dt>Result</dt><dd>2,006 facts; 62% of sentences cited by some fact; flags: long 117, bare acronym 84, pointing 52, acronym 1</dd>
+</dl>
+<p>The prompt states the eight properties of a fact (significant, whole, established, grounded, self-contained, terms
+in full, on the subject, faithful), asks for subject–relation–predicate sentences, and gives two worked examples
+from other subjects with the reasons sentences were left out. Code maps the local numbers back to sentence IDs.</p>
+{{PROMPT:fact_extraction.txt}}
+<h4>Lecture 30, segment S4</h4>
+<pre data-lang="text" class="wrap">{{S:facttext30}}</pre>
+<pre data-lang="json">{{S:facts30}}</pre>
+<p>The code checks (<code>scripts/fact_checks.py</code>) on the same segment: 85% of its 33 sentences are cited; F3 and F5
+are flagged for “this”, F7 for writing “HRTFs” without the full term.</p>
+<details><summary>checks/lec_30.json, segment 30/S4</summary><pre data-lang="json">{{S:factchecks30}}</pre></details>
+<div class="tablewrap"><table>
+<tr><th>Check</th><th>What it does</th><th>Effect</th></tr>
+<tr><td>exact repeats</td><td>facts with the same content words in the same order</td><td>collapsed into one, citing all sentences</td></tr>
+<tr><td>coverage</td><td>share of the segment's sentences cited</td><td>report (under-extraction)</td></tr>
+<tr><td><code>pointing</code></td><td>“this”, “the slide”, a leading “It”</td><td>sent to 2b's rewrite (2b is off: report only)</td></tr>
+<tr><td><code>acronym</code></td><td>an acronym in brackets the segment never uses</td><td>sent to 2b's rewrite (report only)</td></tr>
+<tr><td><code>bare_acronym</code>, <code>same_evidence</code>, <code>similar</code>, <code>long</code></td><td>acronym without its full term; same sentences as another fact; near duplicate; over about 50 words</td><td>report</td></tr>
+</table></div>
+<h4>Changes and why</h4>
+<p>The first definition, of 2026-11-11, asked for <i>atomic</i> facts, “a single teachable proposition”, and wrote every
+term in full with no acronyms at all:</p>
+<details><summary>The old prompt (first 30 lines) <span class="meta">git show 1305a56:pipeline/prompts/fact_extraction.txt</span></summary>
+<pre data-lang="prompt">{{S:old_fact_prompt.txt}}</pre></details>
+<div class="split">
+<div class="before"><span class="lbl">Old definition · lecture 1 (Gemma 4 12B)</span><pre data-lang="text" class="wrap">{{S:oldfacts1}}</pre>
+<p>Talk about the course counted as facts, a definition split into three, 65 facts for lecture 1 on Qwen.</p></div>
+<div class="after"><span class="lbl">New definition · lecture 1 (Qwen 27B)</span><pre data-lang="text" class="wrap">{{S:newfacts1}}</pre>
+<p>20 facts for lecture 1. “Whole: one fact per point, not per detail”; “On the subject, not on the course”.</p></div>
+</div>
+<ul>
+<li><b>Significant and Whole added, Atomic dropped</b> (2026-11-12): atomic facts were thin and the judge could not tell
+a split definition from two points. Lecture 1 went from 65 facts to 20.</li>
+<li><b>Acronyms in brackets</b> instead of never: the learner and the question box need “extended reality (XR)”, and the
+alias later becomes the concept's acronym.</li>
+<li><b>Thinking budget.</b> On lectures 1, 4, 16 a 6,144-token budget gave 64 facts in 196 s, 16,384 gave 62 in 493 s;
+the larger budget was kept for 2a (its cache would not answer a changed request).</li>
+<li><b>Not yet measured:</b> what 2a misses. A read of 15 segments found 5 missed points, 1 major
+(<code>analysis/fact_judge/missed.json</code>). Concepts that 2a leaves out can never become concepts (plan, weak point 2).</li>
+</ul>
+
+<!-- ------------------------------------------------------------------ 2b -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-skip)">2b</span><h3 id="s2b" data-toc="2b · Fact judge (off)">Fact verification, and why it is switched off</h3><span class="worker w-skip">built · off</span></div>
+<p>Stage 2b was designed to judge each segment's facts against the eight properties with a second model (Sage-A1.5,
+a 35B mixture-of-experts, on port 8095), and have the extractor rewrite or remove the ones that fail. It is built and
+tested. In the course as built it runs with <code>--no-judge</code>: the 2a facts pass through unchanged, keeping
+their IDs, and each judgement reads “not judged”.</p>
+<dl class="facts-grid">
+<dt>In</dt><dd>2a facts and 2a's cached conversation (the rewrite continues it exactly)</dd>
+<dt>Out</dt><dd><code>stage_2b_verify_facts/fact_maps/</code>, <code>fact_text/</code>, <code>judgements/</code> (verdicts, rewrites, the outcome of each fact), <code>checks/</code></dd>
+<dt>Command</dt><dd><code>python scripts/s2b_verify_facts.py nptel_vr --llm configs/qwen38_27b_vllm.json --no-judge</code> (as built)<br>
+<code>python scripts/s2b_verify_facts.py nptel_vr --llm configs/qwen38_27b_vllm.json --judge configs/sage_a15_vllm.json --only 1,4,16</code> (with the judge)</dd>
+<dt>Model</dt><dd>judge Sage-A1.5 FP8, <code>configs/sage_a15_vllm.json</code> (with its <code>verification</code> chat-template switch and system prompt); rewriter: 2a's config</dd>
+<dt>Time</dt><dd>pass-through: seconds. With the judge, lectures 1, 4, 16: 12 judge calls in 5 min 49 s, then 5 rewrite calls in 6 min</dd>
+</dl>
+{{PROMPT:fact_judge_system.txt}}
+{{PROMPT:fact_judge.txt}}
+{{PROMPT:fact_rewrite.txt}}
+<h4>Why it is off: block 1's measurement</h4>
+<p>Block 1 measured the judge on the 62 facts of lectures 1, 4 and 16 against a hand-made gold set (55 pass, 7 fail),
+34 facts made wrong on purpose, and three runs with different seeds (<code>analysis/fact_judge/report.md</code>):</p>
+<div class="tablewrap"><table>
+<tr><th>Measure</th><th class="n">base</th><th class="n">seed 1</th><th class="n">seed 2</th><th>Target</th></tr>
+<tr><td>Seeded (blatant) errors caught</td><td class="n">32/34</td><td class="n">30/34</td><td class="n">32/34</td><td>≥ 90%</td></tr>
+<tr><td>False alarms on gold-pass facts, judge and code checks</td><td class="n">7/55</td><td class="n">6/55</td><td class="n">8/55</td><td>≤ 10%</td></tr>
+<tr><td><b>Real (gold) failures caught</b></td><td class="n"><b>1/7</b></td><td class="n"><b>1/7</b></td><td class="n"><b>0/7</b></td><td>(none set)</td></tr>
+<tr><td>Facts whose verdict flips over three runs</td><td class="n" colspan="3">9/62 (15%)</td><td>≤ 5%</td></tr>
+</table></div>
+<div class="callout bad"><span class="tag">The reviewer's finding (Fable, gate review 1)</span>
+<p><i>“2b's net effect on the 62 facts is negative … Of 8 facts acted on, 7 are gold-pass. … 0 of 7 gold failures
+properly fixed, 6 never touched.”</i> A sentence that tracking is also called sensing was removed on a verdict that
+flips; the lecturer's “may not be required” stayed “is not required”. The judge checks that words are present, not
+how strong or wide a statement is: the right reason for a Faithful failure appeared in 2 of 30 verdicts.</p></div>
+<p>On 2026-11-13 the MVP skipped the judge (<code>--no-judge</code>), at the user's decision after that review. Block 1
+continues separately: the judge and rewrite prompts were revised with the reviewer's exact text (changes 1–7), the
+gold gained 13 subtle seeded errors and labels for the 8 rewrites (changes 8, 9). The rerun is pending. The cost of
+leaving it off is visible: facts like 1/S0/F0 (“The full forms of the abbreviations are …”) stay in the store.</p>
+
+<!-- ------------------------------------------------------------------ 2c -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-gen)">2c</span><h3 id="s2c" data-toc="2c · Concepts">Concepts and relationships per segment</h3><span class="worker w-gen">Qwen 3.8 27B</span></div>
+<p>One conversation per segment. Turn 1 lists the <b>concepts</b> the segment's facts name: terms of the subject a
+textbook glossary would list, each with its name, aliases, the facts that name it and whether the facts
+<b>define</b> it. Code checks the list. Turn 2 gets the checked names back and lists the <b>relationships</b> the
+facts state, as triples whose subject, label and object read as one sentence.</p>
+<dl class="facts-grid">
+<dt>In</dt><dd>the segment's facts numbered <code>[1]…[n]</code>, its sub-goal, the course block</dd>
+<dt>Out</dt><dd><code>stage_2c_concepts/concept_maps/lec_&lt;n&gt;.json</code> <code>{"30/S4/C8": {"name", "aliases", "facts", "defined"}}</code>;
+<code>relations/lec_&lt;n&gt;.json</code> <code>{"30/S4/R7": {"subject", "label", "object", "facts"}}</code>; <code>text/</code>; <code>checks/</code> (and <code>checks/summary.json</code>)</dd>
+<dt>Command</dt><dd><code>python scripts/s2c_concepts.py nptel_vr --llm configs/qwen38_27b_vllm_6k.json [--only 1,4,16] [--seed 1 --out DIR]</code></dd>
+<dt>Model</dt><dd>Qwen 3.8 27B FP8, <code>configs/qwen38_27b_vllm_6k.json</code> (thinking 6,144 tokens: “6k is optimal for speed and quality”, the user's choice of 2026-11-13)</dd>
+<dt>Time</dt><dd>3 h 53 min on an L40S 46 GB with 32 parallel requests (2026-11-13); 779 calls, 2,890,550 input and 4,914,805 output tokens</dd>
+<dt>Result</dt><dd>347 segments with facts; 5,805 segment concepts (1,306 defined), 7,502 relationships; turn 1 retried in 63 segments, turn 2 in 22; nothing unresolved</dd>
+</dl>
+{{PROMPT:concept_extraction.txt}}
+{{PROMPT:concept_relations.txt}}
+<h4>Lecture 30, segment S4</h4>
+<pre data-lang="json">{{S:concepts30}}</pre>
+<pre data-lang="json">{{S:relations30}}</pre>
+<h4>Code checks</h4>
+<div class="tablewrap"><table>
+<tr><th>Check</th><th>Flags</th><th>On failure</th><th class="n">Course</th></tr>
+<tr><td><code>out_of_range</code></td><td>a fact number outside 1..n</td><td>retry (both turns)</td><td class="n">—</td></tr>
+<tr><td><code>name_is_acronym</code>, <code>empty_name</code>, <code>alias_not_written</code></td><td>a name that is an acronym; an empty name; an alias no fact writes</td><td>retry (turn 1)</td><td class="n">—</td></tr>
+<tr><td><code>vague_label</code>, <code>self_triple</code>, <code>duplicate_triple</code></td><td>“is related to”; a triple to itself; a repeated triple</td><td>retry (turn 2)</td><td class="n">—</td></tr>
+<tr><td><code>reverse</code></td><td>a triple whose reverse is also there</td><td>report</td><td class="n">437</td></tr>
+<tr><td><code>name_not_in_facts</code></td><td>a name none of its own facts writes (often a coined name)</td><td>report</td><td class="n">322</td></tr>
+<tr><td><code>no_triple</code></td><td>a concept in no triple</td><td>report</td><td class="n">184</td></tr>
+<tr><td><code>no_shared_fact</code></td><td>a triple none of whose facts names both ends</td><td>report</td><td class="n">113</td></tr>
+<tr><td><code>acronym_in_name</code></td><td>“VR headset”: code cannot tell it from “PlayStation VR”</td><td>report</td><td class="n">38</td></tr>
+</table></div>
+<p class="small muted">Counts from <code>stage_2c_concepts/checks/summary.json</code>. Retries changed little: across all retried
+answers, 9 concepts were lost and 9 added, 18 triples lost and 144 added.</p>
+<h4>Changes and why</h4>
+<ul>
+<li><b>Names are full terms; acronyms are only aliases</b> (D8, 2026-11-13): “virtual reality headset”, not “VR headset”.
+Without it, an acronym name joins unrelated concepts in stage 3 (v1's “Error rates”).</li>
+<li><b>Every answer is checked and retried with the problems shown</b> (D12), and the best attempt is kept when none
+passes. The <code>appears</code> test was fixed for apostrophes and “X (Y) Z” forms: on the trial's answers false
+alarms fell from 8 to 0 (<code>alias_not_written</code>) and from 9 to 4 (<code>name_not_in_facts</code>).</li>
+<li><b>Labels are free text</b> (the user's choice of 2026-11-12, D6), so the same relation can appear under several
+wordings: stage 3c finds 827 concept pairs with more than one label.</li>
+<li><b>Relationships only within a segment</b> (D4): bounded prompts, at the cost of links between segments.</li>
+</ul>

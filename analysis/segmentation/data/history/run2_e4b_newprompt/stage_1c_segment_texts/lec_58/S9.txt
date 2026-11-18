@@ -1,0 +1,18 @@
+[58/193] Now, there are many rasterization algorithms.
+[58/194] All exploit one crucial observation: that is, each pixel can be treated independently from all other pixels.
+[58/195] Again, that is inherent parallelism.
+[58/196] So, this leads to handling all pixels in parallel.
+[58/197] So, given the device space triangles, we can determine the color of all the pixels simultaneously.
+[58/198] Now, during the pixel processing stage, two more activities take place: surface texturing and hidden surface removal.
+[58/199] The simplest texturing method is to texture images that are already captured and stored, and apply the texture images to the geometry that we are trying to render.
+[58/200] That means we simply replace the computed color with the color of the texture at the corresponding texture point.
+[58/201] So, the pixel color is replaced by the texture color; that is the simplest method.
+[58/202] In order to do that, GPUs store textures in high-speed memory.
+[58/203] So, each pixel calculation must access it.
+[58/204] Now, access is very regular; that means nearby pixels tend to access nearby texture image locations, and specialized memory caches are there to reduce the access time.
+[58/205] Note that here we have this texture storage as part of the graphics card.
+[58/206] Also, for hidden surface removal, GPUs implement a special algorithm called the depth buffer algorithm, which requires another storage that is called the depth buffer.
+[58/207] So, GPUs contain such a depth buffer as a dedicated memory, which stores the depth information for each point in a 3D scene before they are projected onto a 2D plane.
+[58/208] Depth is with respect to the pixel.
+[58/209] Now, this memory, the depth buffer memory, stores distances of the viewer from each pixel.
+[58/210] So, that is how GPUs work, and as you can see, GPUs are designed to take care of inherent parallelism; all the components that are there in the GPU are designed in that way, so that parallelly, the operations can be applied on all the vertices or a large number of vertices simultaneously to speed up things.

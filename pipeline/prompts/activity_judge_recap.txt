@@ -1,0 +1,44 @@
+TASK
+You check the recap of one segment of a lecture of a university course before learners see it. The recap was written from the segment's facts below and is shown right after the segment and again when the learner revises; the learner never sees the facts. It has two parts: the key points (what to remember, one idea each) and the summary text (what the segment explains as a whole and how its ideas hang together). Decide for each point and for the text whether it meets the criteria below. A part that fails is rewritten once.
+
+{course}
+
+THE SEGMENT
+Lecture: {lecture_title}
+What the segment teaches: {subgoal}
+The larger step of the lecture it belongs to: {objective}
+
+THE FACTS
+What the segment teaches, one fact per line, each with its number in brackets.
+
+{facts}
+
+THE CRITERIA
+For each point and for the text:
+1. supported. Everything it says is stated by the facts of the segment. It fails when it adds anything from outside, even something true. If the support is in a fact of the segment that the point does not cite, the point passes; give the number of the fact to add in "check".
+2. faithful. A learner who remembers it believes what the facts say, no more and no less. Judge the meaning, not the wording: a paraphrase, a shorter phrase, or a different everyday word for the same thing passes, and so does leaving out a detail the point does not need. It fails only when a learner would come away believing something the facts do not say: a term is swapped for a different concept ("mass" turned into "weight"), a hedge or condition that changes what is true is dropped ("can", "usually", "typically", "if the list is already sorted"), examples ("such as") are turned into a complete list, one side of a comparison is lost, or the statement is made clearly stronger, weaker or wider than the fact. For the text it also fails when it joins two ideas with a cause or a purpose that neither the facts nor the lines under THE SEGMENT give.
+3. stands_alone. It can be read without the segment and without the other points: its subject is named in full (not "the method", "the algorithm", "it" or "these" when nothing in the same sentence says which).
+4. clear. Plain, grammatical and short enough to remember: a point is one sentence of about twenty words at most; the text is two to four sentences.
+5. no_source_talk. It does not speak of the lecturer, the lecture, the segment, the video or the facts ("in this segment", "as we saw", "the lecturer explains"). A convention the course itself sets, stated as such ("in this course, the two terms are used for the same thing"), is not source talk.
+For each point also:
+6. one_idea. The point holds one idea that the segment is there to teach. It fails when it repeats the idea of an earlier point (name that point; only the later one fails), when it packs unrelated ideas into one sentence, or when it is only an example, a figure or an aside and the segment is not about that.
+For the text also:
+7. summary. The text reads as one explanation of what the segment teaches: it says what the segment is about and how its ideas connect. It fails when it is the points again one after the other with little changed, or when it leaves out the main thing named under "What the segment teaches".
+8. coverage. The points and the text together leave out no fact that a learner needs for what the segment teaches. It fails only when you can name such a fact by its number; examples, figures and asides may be left out.
+
+HOW TO CHECK
+First the points, in order: put each point next to the facts it cites and compare the wording part by part, noting every word that sets how strong or how wide the statement is. Then the text: compare each sentence with the facts, then compare the text with the points. Fail a criterion only for a problem you can point to and quote. When you are still in doubt: on criteria 1 and 2 fail the part (it is then only reworded); on the others pass it.
+
+THE RECAP
+The points with their numbers and the numbers of the facts each cites, then the text.
+
+{recap}
+
+ANSWER
+Answer with a JSON object with one field, "verdicts": a list with one entry per point, in the order given, followed by one entry for the text, each with these fields in this order:
+"item": the number of the point; 0 for the text.
+"check": the words of the facts whose meaning the point or the text changes or goes beyond, each with its fact number; "none" if there are none.
+"reason": one or two sentences. If it fails: what is wrong, quoting the words concerned and giving the fact numbers, and what a repaired version would say. The writer is given only this text, so it must be enough to repair the part. If it passes: which facts carry it.
+"failed": the names of the criteria it fails, from "supported", "faithful", "stands_alone", "clear", "no_source_talk", "one_idea" (points only), "summary", "coverage" (text only); an empty list if it fails none.
+"pass": true if "failed" is empty, otherwise false.
+Answer with the JSON only.

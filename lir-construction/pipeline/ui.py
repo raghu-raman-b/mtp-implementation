@@ -8,8 +8,11 @@ The overall bar is weighted by how long each stage usually takes, so its ETA is 
 """
 from __future__ import annotations
 
+import json
+import os
 import threading
 import time
+from pathlib import Path
 
 from rich.console import Console, Group
 from rich.live import Live
@@ -60,6 +63,8 @@ class UI:
         self._prior_total_s: float | None = None
         self._lock = threading.Lock()
         self.live = None
+        self.done_stages: list[tuple[str, float]] = []   # (stage, wall seconds), for StatusWriter
+        self.last_warn = ""
 
     # ------------------------------------------------------------ lifecycle
     def __enter__(self):
@@ -96,6 +101,7 @@ class UI:
         style = STYLE.get(kind, "white")
         if msg.lstrip().startswith("!"):
             style = STYLE["warn"]
+            self.last_warn = msg.strip()
         self.console.print(Text(msg, style=style))
 
     def table(self, title: str, header: list[str], rows: list[list], styles: list[str] | None = None):
@@ -127,6 +133,7 @@ class UI:
         with self._lock:
             self._done_weight += self._weights.get(stage, 0)
             self._cur, self._cur_frac = None, 0.0
+            self.done_stages.append((stage, wall))
         if self._stage is not None:
             self.stage.update(self._stage, completed=self.stage.tasks[0].total)
         self.log(f"  ✓ {STAGE_LABEL.get(stage, stage)} done in {wall:.1f}s", "ok")
@@ -180,6 +187,57 @@ class UI:
     def video_progress(self, done: int, current: str):
         if self._video is not None:
             self.video.update(self._video, completed=done, current=current)
+
+
+class StatusWriter:
+    """Writes the run's progress to a JSON file every 2 s, for the run_v2.sh dashboard (scripts/dashboard.py)."""
+
+    def __init__(self, ui: UI, path: Path, course, n_lectures: int):
+        self.ui, self.path, self.course, self.n = ui, Path(path), course, n_lectures
+        self.records: list = []
+        self.state = "running"
+        self.t0 = time.time()
+        self._stop = threading.Event()
+
+    def snapshot(self) -> dict:
+        ui = self.ui
+        task = ui.stage.tasks[0] if ui.stage.tasks else None
+        ov = ui.overall.tasks[0]
+        recs = list(self.records)
+        video_s = sum(l.duration for l in self.course.lectures)
+        return {"course_id": self.course.course_id, "title": self.course.title, "lectures": self.n,
+                "video_s": video_s,
+                "state": self.state, "pid": os.getpid(), "t0": self.t0, "now": time.time(),
+                "stage": STAGE_LABEL.get(ui._cur, ui._cur or ""),
+                "batch": task.description if task else "", "batch_done": task.completed if task else 0,
+                "batch_total": task.total if task else 0,
+                "overall_pct": ov.percentage, "eta": ov.fields.get("eta", "?"),
+                "stages_done": [[STAGE_LABEL.get(s, s), w] for s, w in ui.done_stages],
+                "all_stages": [STAGE_LABEL.get(s, s) for s in ui._weights],
+                "calls": len(recs), "input_tokens": sum(r["input_tokens"] for r in recs),
+                "output_tokens": sum(r["output_tokens"] for r in recs), "last_warn": ui.last_warn}
+
+    def write(self):
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self.path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(self.snapshot()), encoding="utf-8")
+            tmp.replace(self.path)
+        except Exception:
+            pass
+
+    def _loop(self):
+        while not self._stop.wait(2.0):
+            self.write()
+
+    def __enter__(self):
+        threading.Thread(target=self._loop, daemon=True).start()
+        return self
+
+    def __exit__(self, exc_type, *_):
+        self._stop.set()
+        self.state = "failed" if exc_type else "done"
+        self.write()
 
 
 def _fmt(s: float) -> str:

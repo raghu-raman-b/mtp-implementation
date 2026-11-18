@@ -1,0 +1,19 @@
+[62/119] There is also the concept of coroutines.
+[62/120] A coroutine allows a developer to spread tasks across several frames.
+[62/121] This is nothing but a method that can pause execution and return control to Unity, but then continue where it left off on the following frame.
+[62/122] It is important to note that coroutines are not threads.
+[62/123] They are not designed to behave like threads.
+[62/124] Synchronous operations that run within a coroutine still execute on the main thread.
+[62/125] So, there are no individual threads spawned out of the execution of the coroutines.
+[62/126] For example, consider the task of gradually reducing an object's opacity value until it becomes invisible.
+[62/127] So, here what can be done is, in the script, we can have a function like this, fade, where the color is original color, then for certain condition, entry controlled condition, we are gradually fading. the alpha or opacity value so that reducing the value so that it eventually fades.
+[62/128] Now, the fade method does not have the effect one might expect.
+[62/129] To make the fading visible, we must reduce the alpha of the fade over a sequence of frames to display the intermediate values that Unity renders.
+[62/130] So here, now this earlier function, what happened is that we are calling the fade function, but that function may not be perceivable; the effect of that function may not be perceivable because it is called only once.
+[62/131] Instead, if we can use it as a coroutine, say IEnumerator fade, then across frames the fading takes place.
+[62/132] So, then over a period of time we can perceive the change in the opacity value and then correspondingly how the object is disappearing gradually over a period of time.
+[62/133] So, this is possible only when we implement the idea as coroutines rather than a single call function.
+[62/134] Now, in order to do that, we first need to define the function in this way, then we can have this update function as this coroutine, start coroutine mode, so that the fading is done on a frame-by-frame basis.
+[62/135] So, you can see the difference in how we In order to have the effect, we modified the original implementation of the fade function shown here, this is the original one to these two functions which are modified from the original ones.
+[62/136] So, unless we implement it in this way, then this original fade function will be called only once, maybe for the subsequent frame, but then that effect will not be perceivable.
+[62/137] Whereas, if we do it over a consecutive set of frames, then it will be perceivable, and the only way to do that is through the use of the concept of coroutines.

@@ -1,0 +1,6375 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L57",
+ "index": 57,
+ "title": "VR resource optimization",
+ "source_file": "lec_57.srt",
+ "timing_source": "srt",
+ "youtube_id": "BHrAySy5laY",
+ "duration_s": 2526.39,
+ "sentences": [
+  {
+   "id": "L57/S0000",
+   "start": 24.179,
+   "end": 29.988,
+   "text": "Hello and welcome to the NPTEL MOOC's course on Foundations for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L57/S0001",
+   "start": 31.21,
+   "end": 35.497,
+   "text": "We will be continuing our discussion on resource optimization."
+  },
+  {
+   "id": "L57/S0002",
+   "start": 36.579,
+   "end": 54.55,
+   "text": "In particular, we are talking about resource optimization from the point of view of rendering, which is a very important component in any extended reality applications including virtual reality and augmented reality applications."
+  },
+  {
+   "id": "L57/S0003",
+   "start": 58.295,
+   "end": 73.438,
+   "text": "So, we will primarily focus on immersive experience, as we have already stated earlier, and we are going to relate the discussion to VR resource optimization in particular."
+  },
+  {
+   "id": "L57/S0004",
+   "start": 75.24,
+   "end": 97.616,
+   "text": "Although such concerns equally apply to AR, However, the emphasis is more on resource optimization in the context of VR because realistic scene generation is more important there and that requires more resources as compared to AR experiences."
+  },
+  {
+   "id": "L57/S0005",
+   "start": 99.098,
+   "end": 115.528,
+   "text": "In order to understand resource optimization concerns, we started our discussion on computer graphics, which deals with the rendering process, rendering on a computer screen or any display device such as HMDs."
+  },
+  {
+   "id": "L57/S0006",
+   "start": 117.911,
+   "end": 124.118,
+   "text": "So, we learned about the basic idea of computer graphics, including the 3D graphics pipeline stages."
+  },
+  {
+   "id": "L57/S0007",
+   "start": 126.36,
+   "end": 146.656,
+   "text": "Also, so far we have covered three of those stages, namely the first stage, object representation; the second stage, modeling transformation; and the third stage, lighting calculation or calculation of intensities at the pixel point pixel positions."
+  },
+  {
+   "id": "L57/S0008",
+   "start": 146.676,
+   "end": 157.572,
+   "text": "In this part of the lecture, we are going to talk about the fourth stage of the pipeline, that is, view transformation."
+  },
+  {
+   "id": "L57/S0009",
+   "start": 157.592,
+   "end": 163.08,
+   "text": "So, just to put things into perspective, we have this 3D graphics pipeline."
+  },
+  {
+   "id": "L57/S0010",
+   "start": 171.683,
+   "end": 177.889,
+   "text": "Now, here we have object representation, the first stage, which takes place in the local coordinate reference frame."
+  },
+  {
+   "id": "L57/S0011",
+   "start": 178.589,
+   "end": 179.55,
+   "text": "We already covered it."
+  },
+  {
+   "id": "L57/S0012",
+   "start": 180.191,
+   "end": 196.046,
+   "text": "Then we have modeling transformation, the second stage, also known as geometric transformation, which transfers the object definition from local coordinates to the definition in a world coordinate scene."
+  },
+  {
+   "id": "L57/S0013",
+   "start": 196.066,
+   "end": 205.557,
+   "text": "Then we have the third stage, that is lighting calculation, which as per our pipeline discussion, takes place in the world coordinate scene."
+  },
+  {
+   "id": "L57/S0014",
+   "start": 207.578,
+   "end": 215.105,
+   "text": "Now, this lighting calculation is quite complex, and we talked about one simple lighting model."
+  },
+  {
+   "id": "L57/S0015",
+   "start": 217.948,
+   "end": 229.298,
+   "text": "In this part, today's part of the lecture, we are going to cover the fourth stage, that is the viewing pipeline, comprising all these transformations and other processes."
+  },
+  {
+   "id": "L57/S0016",
+   "start": 231.758,
+   "end": 234.121,
+   "text": "And later on, we will cover the scan conversion."
+  },
+  {
+   "id": "L57/S0017",
+   "start": 237.084,
+   "end": 243.651,
+   "text": "So, let us get the idea of the fourth stage, that is view transformation."
+  },
+  {
+   "id": "L57/S0018",
+   "start": 244.813,
+   "end": 250.659,
+   "text": "Here again, our emphasis will be on giving you the basic idea rather than going into the intricate details."
+  },
+  {
+   "id": "L57/S0019",
+   "start": 250.939,
+   "end": 257.867,
+   "text": "So, we will try to confine our discussion to a bare minimum level."
+  },
+  {
+   "id": "L57/S0020",
+   "start": 260.411,
+   "end": 261.713,
+   "text": "So, what is the basic idea?"
+  },
+  {
+   "id": "L57/S0021",
+   "start": 263.995,
+   "end": 275.367,
+   "text": "The idea is that when we see an image on a screen, any screen including HMD, we are basically seeing a projection of a portion of the 3D scene."
+  },
+  {
+   "id": "L57/S0022",
+   "start": 276.047,
+   "end": 282.193,
+   "text": "So, we have a 3D scene which we have constructed and illuminated with our earlier stages."
+  },
+  {
+   "id": "L57/S0023",
+   "start": 282.814,
+   "end": 302.057,
+   "text": "Now, when we say that we are trying to render it on a computer screen, then essentially what we are doing is Selecting a portion of it and then projecting it from a 3D scene to a 2D display plane or 2D view plane."
+  },
+  {
+   "id": "L57/S0024",
+   "start": 304.901,
+   "end": 308.287,
+   "text": "So, this is similar to taking a photograph."
+  },
+  {
+   "id": "L57/S0025",
+   "start": 308.367,
+   "end": 315.759,
+   "text": "So, if you are a photographer or if you know something about capturing photos, what do we do?"
+  },
+  {
+   "id": "L57/S0026",
+   "start": 316.1,
+   "end": 317.402,
+   "text": "We typically have a camera."
+  },
+  {
+   "id": "L57/S0027",
+   "start": 317.855,
+   "end": 320.039,
+   "text": "Any camera, even your smartphone camera."
+  },
+  {
+   "id": "L57/S0028",
+   "start": 320.439,
+   "end": 326.93,
+   "text": "So, when we try to capture a photo, first we look at the scene with our naked eye; that is the 3D scene."
+  },
+  {
+   "id": "L57/S0029",
+   "start": 326.95,
+   "end": 332.459,
+   "text": "Then we look at the same scene using the camera screen."
+  },
+  {
+   "id": "L57/S0030",
+   "start": 336.005,
+   "end": 339.17,
+   "text": "Then we capture a portion of the scene."
+  },
+  {
+   "id": "L57/S0031",
+   "start": 339.19,
+   "end": 344.888,
+   "text": "So, the scene, our field of view covers a wide range of a wide portion of the scene."
+  },
+  {
+   "id": "L57/S0032",
+   "start": 345.049,
+   "end": 352.156,
+   "text": "However, we do not capture the entire thing; we capture only the portion which is within the field of view of the camera."
+  },
+  {
+   "id": "L57/S0033",
+   "start": 353.177,
+   "end": 358.702,
+   "text": "And we set the camera in such a way that our area of interest is captured."
+  },
+  {
+   "id": "L57/S0034",
+   "start": 360.183,
+   "end": 364.688,
+   "text": "Now, when we say captured, that means we are able to see it on our screen."
+  },
+  {
+   "id": "L57/S0035",
+   "start": 364.708,
+   "end": 372.195,
+   "text": "Now, the screen is a 2D plane, whereas the scene, the portion of the scene that we have captured, is in the 3D space."
+  },
+  {
+   "id": "L57/S0036",
+   "start": 372.867,
+   "end": 384.179,
+   "text": "So, then there is a transformation, a projection transformation, which transforms from 3D space to a 2D screen."
+  },
+  {
+   "id": "L57/S0037",
+   "start": 384.199,
+   "end": 392.948,
+   "text": "The same thing we try to simulate in computer graphics with a set of stages, which are the viewing pipeline stages."
+  },
+  {
+   "id": "L57/S0038",
+   "start": 397.132,
+   "end": 400.596,
+   "text": "So, view transformation essentially is this viewing pipeline."
+  },
+  {
+   "id": "L57/S0039",
+   "start": 401.2,
+   "end": 413.616,
+   "text": "It has its own sub-stages that simulate the process of capturing a photo."
+  },
+  {
+   "id": "L57/S0040",
+   "start": 413.636,
+   "end": 429.016,
+   "text": "So first, we do a viewing transformation, a 3D viewing transformation, where the 3D world coordinate description of the scene gets transformed to a 3D view coordinate description."
+  },
+  {
+   "id": "L57/S0041",
+   "start": 429.036,
+   "end": 430.718,
+   "text": "So we define a view coordinate system."
+  },
+  {
+   "id": "L57/S0042",
+   "start": 433.853,
+   "end": 435.895,
+   "text": "So, this is a 3D view coordinate."
+  },
+  {
+   "id": "L57/S0043",
+   "start": 436.336,
+   "end": 445.407,
+   "text": "So, we define a view coordinate system, then perform a transformation operation that transforms the 3D world coordinates into the view coordinate system."
+  },
+  {
+   "id": "L57/S0044",
+   "start": 445.467,
+   "end": 450.894,
+   "text": "Now, this is akin to saying that we are looking at the scene through the camera lens."
+  },
+  {
+   "id": "L57/S0045",
+   "start": 452.215,
+   "end": 462.848,
+   "text": "When we capture a photo, before that, we see the scene using the camera mechanism, the camera viewing mechanism provided."
+  },
+  {
+   "id": "L57/S0046",
+   "start": 463.334,
+   "end": 472.728,
+   "text": "So, looking at the scene through the camera viewing mechanism and looking at the scene through our naked eyes, these two are different things."
+  },
+  {
+   "id": "L57/S0047",
+   "start": 473.789,
+   "end": 488.591,
+   "text": "And when we are looking at the scene through the camera viewing mechanism, essentially the scene gets transformed from the world coordinate system to a view coordinate system that is defined by the camera or, in other words, the camera parameters."
+  },
+  {
+   "id": "L57/S0048",
+   "start": 488.711,
+   "end": 490.253,
+   "text": "So, that is what happens here."
+  },
+  {
+   "id": "L57/S0049",
+   "start": 491.735,
+   "end": 502.633,
+   "text": "The second thing is a projection transformation that projects the 3D view coordinate scene to a view plane, which is a 2D plane."
+  },
+  {
+   "id": "L57/S0050",
+   "start": 506.019,
+   "end": 515.193,
+   "text": "So, this is the projection transformation from the 3D view coordinate system to the 2D view coordinate system or 2D view plane."
+  },
+  {
+   "id": "L57/S0051",
+   "start": 517.368,
+   "end": 522.832,
+   "text": "And then finally, there is another transformation, which is the window-to-viewport transformation, that happens here."
+  },
+  {
+   "id": "L57/S0052",
+   "start": 522.832,
+   "end": 537.974,
+   "text": "Here, we transform from a 2D view plane description of the scene, or the projected scene, to a 2D device coordinate space."
+  },
+  {
+   "id": "L57/S0053",
+   "start": 540.917,
+   "end": 547.105,
+   "text": "Now, here, there are two more operations that take place: one is clipping, and one is hidden surface removal."
+  },
+  {
+   "id": "L57/S0054",
+   "start": 547.928,
+   "end": 559.464,
+   "text": "Clipping takes place in the 3D view coordinate system, as per our way of understanding the pipeline, and hidden surface removal again takes place in the 3D view coordinate system."
+  },
+  {
+   "id": "L57/S0055",
+   "start": 560.165,
+   "end": 570.339,
+   "text": "Just to emphasize here is that the way we are explaining the pipeline, it is not necessary that this sequence should be followed in implementation."
+  },
+  {
+   "id": "L57/S0056",
+   "start": 570.379,
+   "end": 577.108,
+   "text": "So, different implementations can alter the sequence of the stages or sub-stages."
+  },
+  {
+   "id": "L57/S0057",
+   "start": 577.527,
+   "end": 586.356,
+   "text": "So, this sequence of stages or sub-stages is not sacrosanct; it may be changed depending on the implementation."
+  },
+  {
+   "id": "L57/S0058",
+   "start": 586.376,
+   "end": 601.751,
+   "text": "So, we have three transformations: viewing transformation, projection transformation, and window-to-viewport transformation; and two operations: clipping and hidden surface removal."
+  },
+  {
+   "id": "L57/S0059",
+   "start": 603.252,
+   "end": 606.235,
+   "text": "Together, they constitute the viewing pipeline."
+  },
+  {
+   "id": "L57/S0060",
+   "start": 609.151,
+   "end": 612.374,
+   "text": "That is the fourth stage of the 3D graphics pipeline."
+  },
+  {
+   "id": "L57/S0061",
+   "start": 615.057,
+   "end": 618.6,
+   "text": "Now, let us try to understand these transformations in brief."
+  },
+  {
+   "id": "L57/S0062",
+   "start": 620.542,
+   "end": 629.992,
+   "text": "So, let us start with the first one, which is the 3D viewing transformation, where we transform from a 3D world coordinate description to a 3D view coordinate description."
+  },
+  {
+   "id": "L57/S0063",
+   "start": 630.952,
+   "end": 643.546,
+   "text": "This is to simulate the camera photo-taking analogy, looking at the same scene, not with our bare eyes, but with the camera viewing mechanism."
+  },
+  {
+   "id": "L57/S0064",
+   "start": 644.828,
+   "end": 651.678,
+   "text": "So, first, we need to define the view coordinate system, and then we perform the transformation."
+  },
+  {
+   "id": "L57/S0065",
+   "start": 652.199,
+   "end": 658.568,
+   "text": "And this definition of the view coordinate system depends on the parameters, the camera parameters."
+  },
+  {
+   "id": "L57/S0066",
+   "start": 659.95,
+   "end": 663.095,
+   "text": "So, the setup is something like this."
+  },
+  {
+   "id": "L57/S0067",
+   "start": 663.175,
+   "end": 666.36,
+   "text": "So, this is the point in the world coordinate scene."
+  },
+  {
+   "id": "L57/S0068",
+   "start": 670.34,
+   "end": 678.793,
+   "text": "This is the world coordinate system reference frame within which all the scene points are defined."
+  },
+  {
+   "id": "L57/S0069",
+   "start": 679.334,
+   "end": 705.992,
+   "text": "Now, we have to define a view coordinate system having its own axes u, n, and v. So, essentially what we are trying to do is transfer this point in the world coordinate to this view coordinate scene, the 3D view coordinate scene."
+  },
+  {
+   "id": "L57/S0070",
+   "start": 706.012,
+   "end": 708.616,
+   "text": "So, we are given the camera parameters."
+  },
+  {
+   "id": "L57/S0071",
+   "start": 708.857,
+   "end": 709.898,
+   "text": "What are those parameters?"
+  },
+  {
+   "id": "L57/S0072",
+   "start": 710.038,
+   "end": 725.021,
+   "text": "The camera position serves as the origin, which can be represented by this origin vector with respect to the world coordinate scene."
+  },
+  {
+   "id": "L57/S0073",
+   "start": 725.041,
+   "end": 751.18,
+   "text": "So, this is the vector. Then, Second is the view of point, again, can be another vector, the view of point, and the view direction we can define with respect to the vector. And third is the center of interest or the look-at point P. This is the center of interest or the look-at point."
+  },
+  {
+   "id": "L57/S0074",
+   "start": 752.441,
+   "end": 756.726,
+   "text": "So, before taking a photo, we typically focus on a look-at point."
+  },
+  {
+   "id": "L57/S0075",
+   "start": 757.178,
+   "end": 759.58,
+   "text": "or center of interest, and then capture the photo."
+  },
+  {
+   "id": "L57/S0076",
+   "start": 759.6,
+   "end": 762.583,
+   "text": "So, that idea is taken here."
+  },
+  {
+   "id": "L57/S0077",
+   "start": 764.746,
+   "end": 769.39,
+   "text": "Now, from these parameters, we can set up the view coordinate system."
+  },
+  {
+   "id": "L57/S0078",
+   "start": 770.732,
+   "end": 771.793,
+   "text": "We will skip the details."
+  },
+  {
+   "id": "L57/S0079",
+   "start": 773.254,
+   "end": 777.819,
+   "text": "For those details, you can refer to the material cited at the end of the lecture."
+  },
+  {
+   "id": "L57/S0080",
+   "start": 779.04,
+   "end": 804.114,
+   "text": "So, we can simply say that to determine the parameters, to determine the view coordinate system, we need to determine the three orthogonal axes N, V, and U. N can be obtained; N is the unit basis vector opposite to the looking direction and can be obtained with respect to the origin vector and the"
+  },
+  {
+   "id": "L57/S0081",
+   "start": 804.114,
+   "end": 815.738,
+   "text": "look-up direction, that is the N vector, and then the unit vector we can obtain by its value."
+  },
+  {
+   "id": "L57/S0082",
+   "start": 818.789,
+   "end": 848.087,
+   "text": "Then, that is the first axis N. Then, the second one we can determine is the V unit basis vector along the V up direction, that is, we can first get the V up direction, that is V up minus O, and then we get the unit basis vector as this ratio."
+  },
+  {
+   "id": "L57/S0083",
+   "start": 849.299,
+   "end": 884.251,
+   "text": "Once these two, n and v, are obtained—remember n is obtained using the origin vector and the look-at point, v is obtained using the view up point and the origin point—and once these two are determined, we can determine u, the third axis and the third unit basis vector, as u simply is the cross product of v and n."
+  },
+  {
+   "id": "L57/S0084",
+   "start": 884.251,
+   "end": 898.24,
+   "text": "So, that is how we can determine the three mutually orthogonal axes, and these three axes together define the view coordinate system."
+  },
+  {
+   "id": "L57/S0085",
+   "start": 900.447,
+   "end": 920.23,
+   "text": "Now, once we have the view coordinate system, that is the three axes, we can transform the world coordinate description to the view coordinate description by two basic transformation operations: translation and rotation."
+  },
+  {
+   "id": "L57/S0086",
+   "start": 921.031,
+   "end": 929.34,
+   "text": "So, the composite transformation matrix is the dot product of these two transformation matrices."
+  },
+  {
+   "id": "L57/S0087",
+   "start": 930.147,
+   "end": 959.85,
+   "text": "r and t, and then any point in the view coordinate system is obtained from the corresponding point in the void coordinate system after the point vector is multiplied with this composite transformation matrix comprising r and t. So, if a point P is here and if we want to transform it to a point in"
+  },
+  {
+   "id": "L57/S0088",
+   "start": 960.303,
+   "end": 965.289,
+   "text": "the view coordinate system, then we can do so using this formulation."
+  },
+  {
+   "id": "L57/S0089",
+   "start": 969.033,
+   "end": 985.551,
+   "text": "Again here, how to, what is the matrix for M that is the composite matrix, or rather what are the individual matrices for R and T? These details we are skipping."
+  },
+  {
+   "id": "L57/S0090",
+   "start": 986.628,
+   "end": 990.232,
+   "text": "You can refer to the material cited at the end for those details."
+  },
+  {
+   "id": "L57/S0091",
+   "start": 993.176,
+   "end": 994.858,
+   "text": "So, that is about view transformation."
+  },
+  {
+   "id": "L57/S0092",
+   "start": 994.878,
+   "end": 1019.411,
+   "text": "So, we define a view coordinate system with respect to three camera parameters, and then we use that information to transform a point from the void coordinate system to the view coordinate system, and those matrices are formed on the basis of those axis vectors and their scalar components."
+  },
+  {
+   "id": "L57/S0093",
+   "start": 1024.318,
+   "end": 1028.344,
+   "text": "Next is projection transformation."
+  },
+  {
+   "id": "L57/S0094",
+   "start": 1028.364,
+   "end": 1037.416,
+   "text": "After view transformation, we project 3D objects in the view coordinate system, the 3D view coordinate system, onto a 2D view plane."
+  },
+  {
+   "id": "L57/S0095",
+   "start": 1040.221,
+   "end": 1049.664,
+   "text": "So, this is our world coordinate description; it gets transformed to a 2D view plane description."
+  },
+  {
+   "id": "L57/S0096",
+   "start": 1051.266,
+   "end": 1059.98,
+   "text": "So, in between, we first transform it to a 3D view coordinate description, and from there we project it to a 2D view plane description."
+  },
+  {
+   "id": "L57/S0097",
+   "start": 1060.261,
+   "end": 1061.623,
+   "text": "So, this is the view plane."
+  },
+  {
+   "id": "L57/S0098",
+   "start": 1065.088,
+   "end": 1070.196,
+   "text": "So, such view planes are usually defined as a rectangular area."
+  },
+  {
+   "id": "L57/S0099",
+   "start": 1070.8,
+   "end": 1074.603,
+   "text": "which is often called a clipping window."
+  },
+  {
+   "id": "L57/S0100",
+   "start": 1074.623,
+   "end": 1079.308,
+   "text": "So, there are different terminologies used to refer to more or less the same concept."
+  },
+  {
+   "id": "L57/S0101",
+   "start": 1083.691,
+   "end": 1102.967,
+   "text": "Now, in order to perform projection, apart from the clipping window, we also define a 3D volume, a 3D region in the scene that is basically what portion of the scene we are going to project."
+  },
+  {
+   "id": "L57/S0102",
+   "start": 1104.548,
+   "end": 1106.11,
+   "text": "This is known as the view volume."
+  },
+  {
+   "id": "L57/S0103",
+   "start": 1107.07,
+   "end": 1112.135,
+   "text": "So, the view volume defines the portion of the scene that we are going to project on the view plane."
+  },
+  {
+   "id": "L57/S0104",
+   "start": 1114.637,
+   "end": 1124.025,
+   "text": "Objects that are inside this view volume are projected on the view plane, and objects that are outside are discarded."
+  },
+  {
+   "id": "L57/S0105",
+   "start": 1124.045,
+   "end": 1133.81,
+   "text": "Now, when we say that we are discarding objects that are outside of this view volume but part of the scene, we call that a clipping process."
+  },
+  {
+   "id": "L57/S0106",
+   "start": 1136.474,
+   "end": 1142.242,
+   "text": "So, clipping takes place, as per our description of the pipeline, before we perform the projection."
+  },
+  {
+   "id": "L57/S0107",
+   "start": 1145.306,
+   "end": 1157.743,
+   "text": "Now, when we say we want to perform projection, projection can be of different types, and we also have to determine the computation based on the type of projection that we want to have."
+  },
+  {
+   "id": "L57/S0108",
+   "start": 1158.702,
+   "end": 1161.928,
+   "text": "So, one type is perspective projection."
+  },
+  {
+   "id": "L57/S0109",
+   "start": 1162.428,
+   "end": 1182.904,
+   "text": "Here, the projectors, which are lines emanating from the object in the 3D view coordinate system and intersecting the view plane, these projectors are not parallel to each other; they tend to converge to a center of projection."
+  },
+  {
+   "id": "L57/S0110",
+   "start": 1184.403,
+   "end": 1185.184,
+   "text": "Something like this."
+  },
+  {
+   "id": "L57/S0111",
+   "start": 1185.305,
+   "end": 1188.57,
+   "text": "So, this is the object, suppose."
+  },
+  {
+   "id": "L57/S0112",
+   "start": 1190.173,
+   "end": 1198.387,
+   "text": "Now, if we extend some lines from these vertices of the object, and this is the view plane."
+  },
+  {
+   "id": "L57/S0113",
+   "start": 1199.148,
+   "end": 1209.887,
+   "text": "So, they intersect the view plane; the points where they intersect define the projection of that 3D object on the 2D view plane."
+  },
+  {
+   "id": "L57/S0114",
+   "start": 1210.542,
+   "end": 1221.557,
+   "text": "In the case of perspective projection, those lines tend to meet at a distance or converge at a distance."
+  },
+  {
+   "id": "L57/S0115",
+   "start": 1223.119,
+   "end": 1228.006,
+   "text": "That is called the center of projection or point of projection."
+  },
+  {
+   "id": "L57/S0116",
+   "start": 1235.937,
+   "end": 1243.638,
+   "text": "So, this perspective projection gives us realistic rendering, a realistic feeling."
+  },
+  {
+   "id": "L57/S0117",
+   "start": 1244.439,
+   "end": 1249.886,
+   "text": "So, if we want to generate a realistic scene, then we should stick to perspective projection."
+  },
+  {
+   "id": "L57/S0118",
+   "start": 1251.088,
+   "end": 1254.232,
+   "text": "Now, there is another type of projection that is called parallel projection."
+  },
+  {
+   "id": "L57/S0119",
+   "start": 1254.352,
+   "end": 1265.507,
+   "text": "Here, the projectors are parallel to each other; that is, the center of projection or the point of projection is at infinity, which means they never meet."
+  },
+  {
+   "id": "L57/S0120",
+   "start": 1266.466,
+   "end": 1270.632,
+   "text": "This is something like that, as illustrated here."
+  },
+  {
+   "id": "L57/S0121",
+   "start": 1270.852,
+   "end": 1279.265,
+   "text": "The idea is something as illustrated in this figure, where we have an object; projectors are shown here."
+  },
+  {
+   "id": "L57/S0122",
+   "start": 1280.066,
+   "end": 1287.136,
+   "text": "They intersect the view plane and give us this projection."
+  },
+  {
+   "id": "L57/S0123",
+   "start": 1287.176,
+   "end": 1291.663,
+   "text": "However, the projectors are parallel to each other, so they do not meet."
+  },
+  {
+   "id": "L57/S0124",
+   "start": 1294.782,
+   "end": 1302.454,
+   "text": "And we say that in such cases, we call that parallel projection, where we say that the projectors meet at infinity."
+  },
+  {
+   "id": "L57/S0125",
+   "start": 1307.521,
+   "end": 1323.405,
+   "text": "So, for parallel projection, the view volume, if we want to generate an effect resulting from parallel projection, then we wish to have a view volume that is a rectangular parallelepiped-shaped region as shown here."
+  },
+  {
+   "id": "L57/S0126",
+   "start": 1327.03,
+   "end": 1333.0,
+   "text": "And this volume defines the objects that are to be projected on the clipping window."
+  },
+  {
+   "id": "L57/S0127",
+   "start": 1333.02,
+   "end": 1345.36,
+   "text": "So, typically such volumes have one face as the clipping window, as shown here, and then we have other faces."
+  },
+  {
+   "id": "L57/S0128",
+   "start": 1350.132,
+   "end": 1354.917,
+   "text": "For perspective projection, such a view volume takes the shape of a frustum, as shown here."
+  },
+  {
+   "id": "L57/S0129",
+   "start": 1355.097,
+   "end": 1358.982,
+   "text": "Again, one side of the frustum is the clipping window."
+  },
+  {
+   "id": "L57/S0130",
+   "start": 1359.042,
+   "end": 1367.211,
+   "text": "Our objective is that whatever objects are within this frustum are to be projected on this clipping window."
+  },
+  {
+   "id": "L57/S0131",
+   "start": 1371.716,
+   "end": 1374.939,
+   "text": "Now, there is a concept called a canonical view volume."
+  },
+  {
+   "id": "L57/S0132",
+   "start": 1375.279,
+   "end": 1377.642,
+   "text": "So, remember we talked about the clipping operation."
+  },
+  {
+   "id": "L57/S0133",
+   "start": 1378.178,
+   "end": 1382.143,
+   "text": "That is, discarding objects that are outside the view volume."
+  },
+  {
+   "id": "L57/S0134",
+   "start": 1382.784,
+   "end": 1398.184,
+   "text": "Now, to discard the objects, if we go by the naive method, the simplest most intuitive method, then we have to compute the intersection of the view volume boundaries with the object boundaries."
+  },
+  {
+   "id": "L57/S0135",
+   "start": 1399.125,
+   "end": 1419.212,
+   "text": "Now, if we are dealing with arbitrarily shaped view volumes such as the frustums, then typically calculation of those surfaces and of view volume boundary intersection points turns out to be quite computation intensive."
+  },
+  {
+   "id": "L57/S0136",
+   "start": 1422.616,
+   "end": 1431.387,
+   "text": "In order to simplify that, we take recourse to a concept called canonical view volume, which is used to simplify the pipeline computations."
+  },
+  {
+   "id": "L57/S0137",
+   "start": 1432.608,
+   "end": 1455.09,
+   "text": "The idea is that we use a normalized cube to define the view volume. That means whatever view volume is defined, whether for parallel or perspective projection of arbitrary shape and size, we convert those to a normalized cube."
+  },
+  {
+   "id": "L57/S0138",
+   "start": 1457.173,
+   "end": 1472.193,
+   "text": "Now, for parallel projection, such a canonical view volume can be obtained by scaling the arbitrarily defined view volume for the parallel projection."
+  },
+  {
+   "id": "L57/S0139",
+   "start": 1474.115,
+   "end": 1474.976,
+   "text": "The idea is shown here."
+  },
+  {
+   "id": "L57/S0140",
+   "start": 1476.677,
+   "end": 1490.793,
+   "text": "This is a view volume defined for parallel projection arbitrarily, and this is a transformed view volume which is called the canonical view volume for parallel projection, which is a unit cube."
+  },
+  {
+   "id": "L57/S0141",
+   "start": 1492.195,
+   "end": 1498.773,
+   "text": "For perspective projection, the computation is a little bit higher."
+  },
+  {
+   "id": "L57/S0142",
+   "start": 1499.474,
+   "end": 1510.79,
+   "text": "So, here we need to convert the frustum to a parallel canonical view volume, that is, a normalized unit cube."
+  },
+  {
+   "id": "L57/S0143",
+   "start": 1514.315,
+   "end": 1529.684,
+   "text": "So, to convert a frustum to a normalized unit cube such as this requires scaling as well as shearing operations to change the shape along with the change in size."
+  },
+  {
+   "id": "L57/S0144",
+   "start": 1530.885,
+   "end": 1540.716,
+   "text": "So, here the amount of computation involved in such a transformation is a bit more as compared to parallel projection."
+  },
+  {
+   "id": "L57/S0145",
+   "start": 1545.221,
+   "end": 1549.786,
+   "text": "Now, let us quickly talk about the two projections: how to perform the projections."
+  },
+  {
+   "id": "L57/S0146",
+   "start": 1549.806,
+   "end": 1556.842,
+   "text": "Like before, here also we take recourse to matrices projection transformation matrices."
+  },
+  {
+   "id": "L57/S0147",
+   "start": 1556.862,
+   "end": 1563.209,
+   "text": "So, we multiply the point vectors with the transformation matrix to get the requisite projection."
+  },
+  {
+   "id": "L57/S0148",
+   "start": 1564.25,
+   "end": 1567.234,
+   "text": "So, for parallel projection we have a matrix like this."
+  },
+  {
+   "id": "L57/S0149",
+   "start": 1567.494,
+   "end": 1580.289,
+   "text": "This is a very simplified representation of the matrix where D is the distance of the clipping window from the origin of the 3D view coordinate system."
+  },
+  {
+   "id": "L57/S0150",
+   "start": 1580.309,
+   "end": 1613.132,
+   "text": "So, then we have such a representation in a 4 by 4 matrix and to get a projected point on this clipping window, what we need to do is, we need to have this point vector defined in the 3D view coordinate system, we multiply it with the projection matrix to get this"
+  },
+  {
+   "id": "L57/S0151",
+   "start": 1615.036,
+   "end": 1618.94,
+   "text": "transformed point in the form of a point vector."
+  },
+  {
+   "id": "L57/S0152",
+   "start": 1619.0,
+   "end": 1625.567,
+   "text": "However, here we have this homogeneous factor w which is typically not equal to 1."
+  },
+  {
+   "id": "L57/S0153",
+   "start": 1627.028,
+   "end": 1637.319,
+   "text": "So, to get to the Cartesian points what we need to do is basically to divide the obtained coordinate values by this homogeneous factor."
+  },
+  {
+   "id": "L57/S0154",
+   "start": 1637.339,
+   "end": 1657.613,
+   "text": "So, to get Cartesian value along the x direction, we need to divide this corresponding vector value by the homogeneous coordinate, similarly for y and z. We need to do this additional computation here."
+  },
+  {
+   "id": "L57/S0155",
+   "start": 1661.077,
+   "end": 1663.76,
+   "text": "What about perspective projection transformation?"
+  },
+  {
+   "id": "L57/S0156",
+   "start": 1663.78,
+   "end": 1669.866,
+   "text": "So, we have a point here, we want to project it on the clipping window here."
+  },
+  {
+   "id": "L57/S0157",
+   "start": 1670.858,
+   "end": 1675.964,
+   "text": "and D is, as usual, the distance of the window from the view coordinate origin."
+  },
+  {
+   "id": "L57/S0158",
+   "start": 1678.306,
+   "end": 1682.891,
+   "text": "Here, D is the distance of the window from the center of projection."
+  },
+  {
+   "id": "L57/S0159",
+   "start": 1682.931,
+   "end": 1687.296,
+   "text": "Now, the center of projection may typically be assumed to be at the origin."
+  },
+  {
+   "id": "L57/S0160",
+   "start": 1687.496,
+   "end": 1689.358,
+   "text": "So, accordingly, the setup can be made."
+  },
+  {
+   "id": "L57/S0161",
+   "start": 1689.458,
+   "end": 1691.881,
+   "text": "However, that is not necessarily the case always."
+  },
+  {
+   "id": "L57/S0162",
+   "start": 1693.102,
+   "end": 1699.369,
+   "text": "But let us assume that D is the distance from the clipping window to the center of projection."
+  },
+  {
+   "id": "L57/S0163",
+   "start": 1699.389,
+   "end": 1714.118,
+   "text": "So, in that case, we have a perspective projection matrix in this form shown here, which is a bit more complex as compared to the parallel projection matrix."
+  },
+  {
+   "id": "L57/S0164",
+   "start": 1716.522,
+   "end": 1718.105,
+   "text": "And then we follow the same procedure."
+  },
+  {
+   "id": "L57/S0165",
+   "start": 1718.305,
+   "end": 1721.39,
+   "text": "We have this point vector in the 3D view coordinate system."
+  },
+  {
+   "id": "L57/S0166",
+   "start": 1722.151,
+   "end": 1747.153,
+   "text": "We multiply it with the projection matrix, here the perspective projection matrix, to get the projected point in the homogeneous coordinate form, and then to get to the Cartesian coordinate form we need to divide by the homogeneous factor, as we have done before for parallel projection."
+  },
+  {
+   "id": "L57/S0167",
+   "start": 1747.173,
+   "end": 1748.754,
+   "text": "This is for perspective projection."
+  },
+  {
+   "id": "L57/S0168",
+   "start": 1748.774,
+   "end": 1755.962,
+   "text": "So, here again, we are skipping many different types of projections under each of these categories, that is, parallel and perspective."
+  },
+  {
+   "id": "L57/S0169",
+   "start": 1756.735,
+   "end": 1762.785,
+   "text": "Here, we are just trying to give you a very broad idea of projection and how it can be done."
+  },
+  {
+   "id": "L57/S0170",
+   "start": 1766.931,
+   "end": 1783.738,
+   "text": "So, then, let us try to enumerate the sequence of transformations that are involved to project a point P in the world coordinate system to a point on the 2D view plane."
+  },
+  {
+   "id": "L57/S0171",
+   "start": 1787.161,
+   "end": 1793.33,
+   "text": "So, first it gets transformed to the view coordinate system, the 3D view coordinate system."
+  },
+  {
+   "id": "L57/S0172",
+   "start": 1794.632,
+   "end": 1806.049,
+   "text": "Then the view volume in which the point lies is transformed to a canonical view volume, which is typically the case before we perform the clipping operation."
+  },
+  {
+   "id": "L57/S0173",
+   "start": 1808.072,
+   "end": 1814.822,
+   "text": "And finally, the point in the canonical view volume is projected onto the view plane."
+  },
+  {
+   "id": "L57/S0174",
+   "start": 1815.258,
+   "end": 1816.96,
+   "text": "through the projection transformation."
+  },
+  {
+   "id": "L57/S0175",
+   "start": 1817.02,
+   "end": 1843.554,
+   "text": "So, if P' is the final point that we obtain on the view plane, the 2D view plane, then we can compute P' in terms of the original point P in the world coordinate scene and multiplying P with the transformation matrices for view coordinate, world coordinate to 3D view coordinate transformation matrix, then"
+  },
+  {
+   "id": "L57/S0176",
+   "start": 1843.554,
+   "end": 1851.375,
+   "text": "a matrix to transform to the canonical view volume, and finally the projection transformation matrix."
+  },
+  {
+   "id": "L57/S0177",
+   "start": 1854.318,
+   "end": 1867.773,
+   "text": "So, these are the matrices we need to multiply together to get a composite matrix representing the overall projection from the world coordinate scene to the 2D view plane."
+  },
+  {
+   "id": "L57/S0178",
+   "start": 1872.018,
+   "end": 1874.02,
+   "text": "That is up to projection to the view plane."
+  },
+  {
+   "id": "L57/S0179",
+   "start": 1874.54,
+   "end": 1877.887,
+   "text": "Now, there is one more projection, which is window to viewport."
+  },
+  {
+   "id": "L57/S0180",
+   "start": 1878.248,
+   "end": 1879.13,
+   "text": "Now, what is a window?"
+  },
+  {
+   "id": "L57/S0181",
+   "start": 1880.834,
+   "end": 1884.202,
+   "text": "A window is the same as a normalized clipping window."
+  },
+  {
+   "id": "L57/S0182",
+   "start": 1884.222,
+   "end": 1888.752,
+   "text": "So, typically there is another term for this view plane, which is window."
+  },
+  {
+   "id": "L57/S0183",
+   "start": 1889.353,
+   "end": 1892.059,
+   "text": "This is actually a normalized clipping window."
+  },
+  {
+   "id": "L57/S0184",
+   "start": 1898.182,
+   "end": 1909.352,
+   "text": "The viewport, on the other hand, is not defined on the view plane; it is defined in the device space, that is, a portion of the final screen where the scene will be rendered."
+  },
+  {
+   "id": "L57/S0185",
+   "start": 1911.114,
+   "end": 1917.62,
+   "text": "So, this is defined with respect to the screen origin and the screen dimensions or display origin and display dimensions."
+  },
+  {
+   "id": "L57/S0186",
+   "start": 1917.7,
+   "end": 1922.545,
+   "text": "The viewport has nothing to do with the display; it is an abstract intermediate representation."
+  },
+  {
+   "id": "L57/S0187",
+   "start": 1923.005,
+   "end": 1927.429,
+   "text": "The window has nothing to do with the display; it is an abstract intermediate representation."
+  },
+  {
+   "id": "L57/S0188",
+   "start": 1927.898,
+   "end": 1936.171,
+   "text": "The viewport is defined with respect to the display origin or screen origin and screen dimensions."
+  },
+  {
+   "id": "L57/S0189",
+   "start": 1936.191,
+   "end": 1947.528,
+   "text": "So, we need to map from this abstract representation in the window to a device-specific representation in the viewport."
+  },
+  {
+   "id": "L57/S0190",
+   "start": 1947.548,
+   "end": 1955.56,
+   "text": "In other words, given a point on the window, we need to transform it to a point on the viewport."
+  },
+  {
+   "id": "L57/S0191",
+   "start": 1957.261,
+   "end": 1968.252,
+   "text": "So, if a point is represented in the form W x W y on the window, we want to map it to a point V x V y on the viewport."
+  },
+  {
+   "id": "L57/S0192",
+   "start": 1968.272,
+   "end": 1970.795,
+   "text": "So, here I will just talk about the transformation matrix."
+  },
+  {
+   "id": "L57/S0193",
+   "start": 1971.375,
+   "end": 1977.161,
+   "text": "I will not dwell on how these matrices or how this matrix is particularly obtained."
+  },
+  {
+   "id": "L57/S0194",
+   "start": 1977.882,
+   "end": 1986.711,
+   "text": "That can be obtained by simple geometric operations and correspondence between the two representations."
+  },
+  {
+   "id": "L57/S0195",
+   "start": 1987.653,
+   "end": 1993.541,
+   "text": "For the derivation again, I would like to request you to refer to the material cited at the end."
+  },
+  {
+   "id": "L57/S0196",
+   "start": 1997.086,
+   "end": 2016.512,
+   "text": "So, the transformation matrix can be represented in the form of this 3 by 3 matrix, where Sx is defined in terms of the viewport dimensions and window dimensions."
+  },
+  {
+   "id": "L57/S0197",
+   "start": 2017.96,
+   "end": 2032.182,
+   "text": "Sy is similarly defined with respect to the viewport dimensions and window dimensions along the y-axis; Sx is the dimensions along the x-axis."
+  },
+  {
+   "id": "L57/S0198",
+   "start": 2032.202,
+   "end": 2043.36,
+   "text": "Then Tx can be computed in terms of Sx and the window dimension and viewport dimension along x."
+  },
+  {
+   "id": "L57/S0199",
+   "start": 2044.623,
+   "end": 2051.913,
+   "text": "Ty can be computed in terms of Sy and again the window and viewport dimensions along y."
+  },
+  {
+   "id": "L57/S0200",
+   "start": 2051.913,
+   "end": 2079.588,
+   "text": "So, once these are computed, then we can have this transformation matrix T v p, and to get to the point, to get the transformed point, what we need to do is basically multiply the point with this transformation matrix."
+  },
+  {
+   "id": "L57/S0201",
+   "start": 2081.891,
+   "end": 2087.44,
+   "text": "So, we have this point vector transformation matrix; after multiplication, it will yield the transformed point."
+  },
+  {
+   "id": "L57/S0202",
+   "start": 2090.284,
+   "end": 2098.997,
+   "text": "So, to get the transformed point, we have this window point W x, W y."
+  },
+  {
+   "id": "L57/S0203",
+   "start": 2099.399,
+   "end": 2128.798,
+   "text": "We multiply it with the transformation matrix to get the transformed point as shown here, and to get to the Cartesian points, what we need to do is divide the obtained point with this homogeneous factor W. So, here the representation is again homogeneous coordinate representation, and to get back to the Cartesian point, we need to divide the obtained point with"
+  },
+  {
+   "id": "L57/S0204",
+   "start": 2129.808,
+   "end": 2146.991,
+   "text": "the homogeneous factor W. Here we should note that there are two more processes that take place in this stage, which we have mentioned earlier: one is clipping, one is hidden surface removal."
+  },
+  {
+   "id": "L57/S0205",
+   "start": 2147.432,
+   "end": 2162.44,
+   "text": "So, in clipping, what happens is that we define a view volume; the objects that lie outside the view volume are removed or eliminated. Only the objects that are inside are retained."
+  },
+  {
+   "id": "L57/S0206",
+   "start": 2163.481,
+   "end": 2177.675,
+   "text": "So, it is done before projection because then the projection operations need to be applied on a fewer number of vertices, and the corresponding computational complexity will be diminished or reduced."
+  },
+  {
+   "id": "L57/S0207",
+   "start": 2177.695,
+   "end": 2183.241,
+   "text": "So, the idea is illustrated in this figure here."
+  },
+  {
+   "id": "L57/S0208",
+   "start": 2186.604,
+   "end": 2189.447,
+   "text": "As you can see, suppose this object; we have this view volume."
+  },
+  {
+   "id": "L57/S0209",
+   "start": 2189.917,
+   "end": 2192.181,
+   "text": "This portion of the object is outside."
+  },
+  {
+   "id": "L57/S0210",
+   "start": 2192.201,
+   "end": 2195.746,
+   "text": "So, we have to determine this portion of the object and remove it."
+  },
+  {
+   "id": "L57/S0211",
+   "start": 2196.367,
+   "end": 2198.331,
+   "text": "In this case, the whole object is outside."
+  },
+  {
+   "id": "L57/S0212",
+   "start": 2199.613,
+   "end": 2207.926,
+   "text": "So, we just discard the whole object, whereas in this case the whole object is inside, so we need to retain the whole object."
+  },
+  {
+   "id": "L57/S0213",
+   "start": 2208.727,
+   "end": 2216.059,
+   "text": "So, this process of discarding objects, that is, identifying which part to keep and which part to discard, is the clipping process."
+  },
+  {
+   "id": "L57/S0214",
+   "start": 2219.161,
+   "end": 2223.846,
+   "text": "Now, another operation that takes place in this stage is hidden surface removal."
+  },
+  {
+   "id": "L57/S0215",
+   "start": 2225.928,
+   "end": 2241.363,
+   "text": "Although with clipping we are removing objects that lie outside, sometimes even within the view volume, it is possible that with respect to the viewer position, some portion of the objects or some objects altogether are not visible."
+  },
+  {
+   "id": "L57/S0216",
+   "start": 2243.205,
+   "end": 2260.464,
+   "text": "So, in such cases, we need to remove either fully or partially objects that are inside the view volume, but not visible or not supposed to be visible with respect to a particular viewer position or view position."
+  },
+  {
+   "id": "L57/S0217",
+   "start": 2260.484,
+   "end": 2261.686,
+   "text": "The idea is illustrated here."
+  },
+  {
+   "id": "L57/S0218",
+   "start": 2262.166,
+   "end": 2267.915,
+   "text": "So, both these objects are within the view volume, and we ideally need to project them."
+  },
+  {
+   "id": "L57/S0219",
+   "start": 2269.097,
+   "end": 2288.642,
+   "text": "However, if the viewer is looking at these two objects from this direction, then you can see that this surface will be occluded by this front object with respect to the viewer or viewing direction."
+  },
+  {
+   "id": "L57/S0220",
+   "start": 2288.662,
+   "end": 2291.485,
+   "text": "So, then projecting this surface makes no sense."
+  },
+  {
+   "id": "L57/S0221",
+   "start": 2292.586,
+   "end": 2302.375,
+   "text": "So, to further reduce computational complexity, we ideally should remove this surface before projecting the other vertices onto the view plane."
+  },
+  {
+   "id": "L57/S0222",
+   "start": 2305.578,
+   "end": 2318.83,
+   "text": "So, this process of identifying objects that are not visible to a viewer or from a particular viewing position is called hidden surface removal."
+  },
+  {
+   "id": "L57/S0223",
+   "start": 2320.452,
+   "end": 2346.235,
+   "text": "So, object A is partially blocked from the viewer by B, and if the viewer position changes to this direction, then object B will be partially blocked by object A. So, for realistic image generation as well as to reduce computation, the blocked portion of A should be eliminated before the scene is rendered."
+  },
+  {
+   "id": "L57/S0224",
+   "start": 2347.897,
+   "end": 2364.288,
+   "text": "And in order to do that, we need to remove these surfaces or these surface points from further processing in the pipeline stages. That is known as hidden surface removal."
+  },
+  {
+   "id": "L57/S0225",
+   "start": 2364.388,
+   "end": 2378.245,
+   "text": "That type of removal of surfaces or surface points that ideally should not be rendered with respect to the viewing position is called hidden surface removal."
+  },
+  {
+   "id": "L57/S0226",
+   "start": 2380.488,
+   "end": 2386.075,
+   "text": "There are a number of algorithms for each of these operations, namely clipping and hidden surface removal."
+  },
+  {
+   "id": "L57/S0227",
+   "start": 2387.658,
+   "end": 2394.687,
+   "text": "They have their own complexities and, of course, introduce more and more computations into the overall process."
+  },
+  {
+   "id": "L57/S0228",
+   "start": 2395.488,
+   "end": 2404.219,
+   "text": "However, as is the case with our previous topics, we will skip those here for simplicity."
+  },
+  {
+   "id": "L57/S0229",
+   "start": 2404.58,
+   "end": 2412.11,
+   "text": "Our objective is just to give you some idea of the amount of computation involved, not to get into the details of the actual computations."
+  },
+  {
+   "id": "L57/S0230",
+   "start": 2414.092,
+   "end": 2423.799,
+   "text": "But for those of you who might be interested in learning more, please refer to the material cited at the end for more such details."
+  },
+  {
+   "id": "L57/S0231",
+   "start": 2426.283,
+   "end": 2429.928,
+   "text": "So, let us summarize what we have learned so far."
+  },
+  {
+   "id": "L57/S0232",
+   "start": 2431.29,
+   "end": 2438.481,
+   "text": "So, in this part of the lecture, we covered one more stage of the graphics pipeline, that is the fourth stage, which is the viewing transformation."
+  },
+  {
+   "id": "L57/S0233",
+   "start": 2439.442,
+   "end": 2467.246,
+   "text": "Essentially, it is a pipeline in itself involving multiple transformations: view transformation, which transforms a world coordinate scene to a 3D view coordinate scene; projection transformation, which transforms a 3D view coordinate scene to a 2D view plane description; and finally, viewport transformation, which transforms a 2D view plane description to a 2D device space description."
+  },
+  {
+   "id": "L57/S0234",
+   "start": 2469.548,
+   "end": 2478.456,
+   "text": "Also, we mentioned two operations: clipping and hidden surface removal. What are those operations, and what needs to be done to carry out those operations?"
+  },
+  {
+   "id": "L57/S0235",
+   "start": 2479.177,
+   "end": 2486.689,
+   "text": "In the next part of the lecture, we will cover the remaining stage of the pipeline, which is the fifth stage: scan conversion."
+  },
+  {
+   "id": "L57/S0236",
+   "start": 2487.59,
+   "end": 2493.78,
+   "text": "Along with that, we will have some more discussion on the implications of the knowledge that we have gained so far."
+  },
+  {
+   "id": "L57/S0237",
+   "start": 2495.122,
+   "end": 2502.133,
+   "text": "So, I hope that you could follow the topic and understand the topic that we discussed."
+  },
+  {
+   "id": "L57/S0238",
+   "start": 2502.233,
+   "end": 2504.436,
+   "text": "Of course, we have skipped a lot of details."
+  },
+  {
+   "id": "L57/S0239",
+   "start": 2504.922,
+   "end": 2508.667,
+   "text": "Those details are not relevant for the present course of discussion."
+  },
+  {
+   "id": "L57/S0240",
+   "start": 2509.067,
+   "end": 2518.6,
+   "text": "However, for those of you who are more interested, please refer to the material cited at the end of this whole discussion."
+  },
+  {
+   "id": "L57/S0241",
+   "start": 2518.62,
+   "end": 2521.824,
+   "text": "So, I look forward to meeting you in the next part of the lecture."
+  },
+  {
+   "id": "L57/S0242",
+   "start": 2523.426,
+   "end": 2526.39,
+   "text": "Until then, thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L57/P01",
+   "first": "L57/S0000",
+   "last": "L57/S0007",
+   "start": 24.179,
+   "end": 146.656,
+   "objective": "Relate VR resource optimization challenges to the core concepts of computer graphics and rendering",
+   "objective_id": "L57/O1",
+   "key_points": [
+    {
+     "id": "L57/P01/K1",
+     "text": "Resource optimization in this context focuses primarily on immersive experiences and VR applications.",
+     "sources": [
+      "L57/S0003"
+     ],
+     "concept_ids": [
+      "C0003",
+      "C0016",
+      "C0034",
+      "C0036",
+      "C0061",
+      "C0250",
+      "C0285",
+      "C0392",
+      "C0395",
+      "C0396",
+      "C0425",
+      "C0609",
+      "C0627",
+      "C0725",
+      "C1051",
+      "C1053",
+      "C1126",
+      "C1133"
+     ]
+    },
+    {
+     "id": "L57/P01/K2",
+     "text": "Realistic scene generation in VR requires more resources compared to AR experiences.",
+     "sources": [
+      "L57/S0004"
+     ],
+     "concept_ids": [
+      "C0002",
+      "C0003",
+      "C0016",
+      "C0034",
+      "C0036",
+      "C0061",
+      "C0250",
+      "C0285",
+      "C0301",
+      "C0302",
+      "C0392",
+      "C0395",
+      "C0396",
+      "C0425",
+      "C0458",
+      "C0502",
+      "C0609",
+      "C0627",
+      "C0725",
+      "C0888",
+      "C1126",
+      "C1133"
+     ]
+    },
+    {
+     "id": "L57/P01/K3",
+     "text": "Computer graphics deals with the rendering process on display devices like HMDs.",
+     "sources": [
+      "L57/S0005"
+     ],
+     "concept_ids": [
+      "C0082",
+      "C0093",
+      "C0167",
+      "C0256",
+      "C0258",
+      "C0394",
+      "C0409"
+     ]
+    },
+    {
+     "id": "L57/P01/K4",
+     "text": "The 3D graphics pipeline involves stages including object representation, modeling transformation, and lighting calculation.",
+     "sources": [
+      "L57/S0007"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0481",
+      "C1137",
+      "C1140",
+      "C1159",
+      "C1166",
+      "C1167",
+      "C1188",
+      "C1229"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P01/T1",
+     "surface": "rendering",
+     "name": "Rendering",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Rendering is a core component of extended reality applications that deals with creating graphics on a computer screen or a display device.",
+     "sources": [
+      "L57/S0002",
+      "L57/S0005"
+     ],
+     "concept_id": "C0394",
+     "concept_name": "Rendering"
+    },
+    {
+     "id": "L57/P01/T2",
+     "surface": "virtual reality",
+     "name": "Virtual reality",
+     "abbreviation": "VR",
+     "abbreviation_at": "L57/S0003",
+     "definition": "Virtual reality is a specific type of extended reality application, which is the primary focus for the resource optimization discussion.",
+     "sources": [
+      "L57/S0002",
+      "L57/S0003"
+     ],
+     "concept_id": "C0003",
+     "concept_name": "Virtual reality"
+    },
+    {
+     "id": "L57/P01/T3",
+     "surface": "augmented reality",
+     "name": "Augmented reality",
+     "abbreviation": "AR",
+     "abbreviation_at": "L57/S0004",
+     "definition": "Augmented reality is an extended reality application that is often compared to virtual reality in the context of resource optimization.",
+     "sources": [
+      "L57/S0002",
+      "L57/S0004"
+     ],
+     "concept_id": "C0002",
+     "concept_name": "Augmented Reality"
+    },
+    {
+     "id": "L57/P01/T4",
+     "surface": "immersive experience",
+     "name": "Immersive experience",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Immersive experience is a primary focus of the discussion regarding resource optimization in extended reality.",
+     "sources": [
+      "L57/S0003"
+     ],
+     "concept_id": "C0039",
+     "concept_name": "Immersive experience"
+    },
+    {
+     "id": "L57/P01/T5",
+     "surface": "computer graphics",
+     "name": "Computer graphics",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Computer graphics is the field that focuses on the rendering process, which involves displaying graphics on a computer screen or a display device.",
+     "sources": [
+      "L57/S0005",
+      "L57/S0006"
+     ],
+     "concept_id": "C0409",
+     "concept_name": "Computer graphics"
+    },
+    {
+     "id": "L57/P01/T6",
+     "surface": "display device",
+     "name": "Display device",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Display device is any screen on which rendering takes place, such as a computer screen or an HMD.",
+     "sources": [
+      "L57/S0005"
+     ],
+     "concept_id": "C1228",
+     "concept_name": "Display device"
+    },
+    {
+     "id": "L57/P01/T7",
+     "surface": "object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation is the first stage of the 3D graphics pipeline, which deals with how objects are represented.",
+     "sources": [
+      "L57/S0007"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L57/P01/T8",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the second stage of the 3D graphics pipeline.",
+     "sources": [
+      "L57/S0007"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L57/P01/T9",
+     "surface": "lighting calculation",
+     "name": "Lighting calculation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Lighting calculation is the third stage of the 3D graphics pipeline, which involves calculating the intensities at pixel positions.",
+     "sources": [
+      "L57/S0007"
+     ],
+     "concept_id": "C1229",
+     "concept_name": "Lighting calculation"
+    }
+   ]
+  },
+  {
+   "id": "L57/P02",
+   "first": "L57/S0008",
+   "last": "L57/S0039",
+   "start": 146.676,
+   "end": 413.616,
+   "objective": "Explain how view transformation projects a portion of a 3D scene onto a 2D screen, similar to how a camera captures a photo",
+   "objective_id": "L57/O2",
+   "key_points": [
+    {
+     "id": "L57/P02/K1",
+     "text": "Rendering involves selecting a portion of the 3D scene and then projecting that portion from 3D space onto a 2D view plane.",
+     "sources": [
+      "L57/S0023"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0470",
+      "C0888",
+      "C1230"
+     ]
+    },
+    {
+     "id": "L57/P02/K2",
+     "text": "The process of view transformation simulates how a camera captures only the portion of a wide 3D scene that falls within its field of view,.",
+     "sources": [
+      "L57/S0032",
+      "L57/S0036"
+     ],
+     "concept_ids": [
+      "C0178",
+      "C0340",
+      "C0470",
+      "C0481",
+      "C0888",
+      "C1163"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P02/T1",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "3D graphics pipeline is a sequence of stages that processes a 3D scene. It includes stages such as object representation, modeling transformation, lighting calculation, view transformation, and scan conversion.",
+     "sources": [
+      "L57/S0009"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L57/P02/T2",
+     "surface": "Object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation is the first stage of the 3D graphics pipeline, which operates within the object's local coordinate reference frame.",
+     "sources": [
+      "L57/S0010"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L57/P02/T3",
+     "surface": "Modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation, also known as geometric transformation, is the second stage that moves an object definition from its local coordinates into the world coordinate scene.",
+     "sources": [
+      "L57/S0012"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L57/P02/T4",
+     "surface": "Lighting calculation",
+     "name": "Lighting calculation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Lighting calculation is the third stage of the pipeline, and it is performed using the definitions found within the world coordinate scene.",
+     "sources": [
+      "L57/S0013"
+     ],
+     "concept_id": "C1229",
+     "concept_name": "Lighting calculation"
+    },
+    {
+     "id": "L57/P02/T5",
+     "surface": "Viewing pipeline",
+     "name": "Viewing pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewing pipeline is the fourth stage, which encompasses all the transformations and other processes required to ultimately transform the 3D scene into a viewable image.",
+     "sources": [
+      "L57/S0015",
+      "L57/S0037",
+      "L57/S0038"
+     ],
+     "concept_id": "C1168",
+     "concept_name": "Viewing pipeline"
+    },
+    {
+     "id": "L57/P02/T6",
+     "surface": "View transformation",
+     "name": "View transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "View transformation is the fourth stage of the 3D graphics pipeline, which is essentially the viewing pipeline that simulates the process of capturing a photograph.",
+     "sources": [
+      "L57/S0015",
+      "L57/S0017",
+      "L57/S0038"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L57/P02/T7",
+     "surface": "Field of view",
+     "name": "Field of view",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The field of view is the wide range of the scene that is captured, meaning only the portion of the scene that falls within this range is captured and rendered.",
+     "sources": [
+      "L57/S0031"
+     ],
+     "concept_id": "C0178",
+     "concept_name": "Field of view"
+    },
+    {
+     "id": "L57/P02/T8",
+     "surface": "Projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Projection transformation is a necessary transformation that converts elements from three dimensional space onto a two dimensional screen.",
+     "sources": [
+      "L57/S0036"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    }
+   ]
+  },
+  {
+   "id": "L57/P03",
+   "first": "L57/S0040",
+   "last": "L57/S0060",
+   "start": 413.636,
+   "end": 612.374,
+   "objective": "Describe the sequence of transformations and operations that constitute the 3D viewing pipeline",
+   "objective_id": "L57/O2",
+   "key_points": [
+    {
+     "id": "L57/P03/K1",
+     "text": "The 3D viewing transformation converts 3D world coordinates into 3D view coordinates (camera perspective).",
+     "sources": [
+      "L57/S0040",
+      "L57/S0043",
+      "L57/S0044"
+     ],
+     "concept_ids": [
+      "C0340",
+      "C0470",
+      "C0481",
+      "C1163",
+      "C1231"
+     ]
+    },
+    {
+     "id": "L57/P03/K2",
+     "text": "The projection transformation converts the 3D view coordinates into a 2D view plane.",
+     "sources": [
+      "L57/S0049",
+      "L57/S0050"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0478",
+      "C0481",
+      "C1171",
+      "C1230"
+     ]
+    },
+    {
+     "id": "L57/P03/K3",
+     "text": "The window-to-viewport transformation shifts the 2D projected scene description to a 2D device coordinate space.",
+     "sources": [
+      "L57/S0051",
+      "L57/S0052"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0888",
+      "C1164",
+      "C1173",
+      "C1250",
+      "C1252"
+     ]
+    },
+    {
+     "id": "L57/P03/K4",
+     "text": "The viewing pipeline includes three transformations (viewing, projection, window-to-viewport) and two operations (clipping and hidden surface removal).",
+     "sources": [
+      "L57/S0058",
+      "L57/S0059"
+     ],
+     "concept_ids": [
+      "C0469",
+      "C0478",
+      "C0481",
+      "C1168",
+      "C1169",
+      "C1250",
+      "C1252"
+     ]
+    },
+    {
+     "id": "L57/P03/K5",
+     "text": "The sequence of pipeline stages is not mandatory and can be altered depending on the specific implementation.",
+     "sources": [
+      "L57/S0055",
+      "L57/S0056",
+      "L57/S0057"
+     ],
+     "concept_ids": [
+      "C0718",
+      "C1188"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P03/T1",
+     "surface": "viewing transformation",
+     "name": "Viewing transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewing transformation transforms the 3D world coordinate description of the scene into a 3D view coordinate description. This transformation is defined by the camera parameters.",
+     "sources": [
+      "L57/S0040",
+      "L57/S0043",
+      "L57/S0047"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L57/P03/T2",
+     "surface": "view coordinate system",
+     "name": "View coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A view coordinate system is the specific system that the 3D world coordinates are transformed into when looking at the scene through a camera viewing mechanism.",
+     "sources": [
+      "L57/S0041",
+      "L57/S0043",
+      "L57/S0047"
+     ],
+     "concept_id": "C1170",
+     "concept_name": "View coordinate system"
+    },
+    {
+     "id": "L57/P03/T3",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The projection transformation projects the 3D view coordinate scene from the 3D view coordinate system onto a 2D plane, known as the view plane.",
+     "sources": [
+      "L57/S0049",
+      "L57/S0050"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L57/P03/T4",
+     "surface": "view plane",
+     "name": "View plane",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view plane is the 2D plane to which the 3D view coordinate scene is projected during the projection transformation.",
+     "sources": [
+      "L57/S0050",
+      "L57/S0052"
+     ],
+     "concept_id": "C1230",
+     "concept_name": "View plane"
+    },
+    {
+     "id": "L57/P03/T5",
+     "surface": "window-to-viewport transformation",
+     "name": "Window-to-viewport transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The window-to-viewport transformation converts the 2D description of the scene from the view plane to the 2D coordinate space of the device.",
+     "sources": [
+      "L57/S0051",
+      "L57/S0052"
+     ],
+     "concept_id": "C1173",
+     "concept_name": "Window to viewport transformation"
+    },
+    {
+     "id": "L57/P03/T6",
+     "surface": "clipping",
+     "name": "Clipping",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Clipping is one of the operations that takes place within the pipeline, specifically within the 3D view coordinate system.",
+     "sources": [
+      "L57/S0053",
+      "L57/S0054"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L57/P03/T7",
+     "surface": "hidden surface removal",
+     "name": "Hidden surface removal",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Hidden surface removal is one of the operations that takes place in the 3D view coordinate system to process the scene.",
+     "sources": [
+      "L57/S0053",
+      "L57/S0054"
+     ],
+     "concept_id": "C1169",
+     "concept_name": "Hidden surface removal"
+    },
+    {
+     "id": "L57/P03/T8",
+     "surface": "viewing pipeline",
+     "name": "Viewing pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewing pipeline is the process, which constitutes the fourth stage of the 3D graphics pipeline, made up of three transformations (viewing, projection, window-to-viewport) and two operations (clipping and hidden surface removal).",
+     "sources": [
+      "L57/S0058",
+      "L57/S0059",
+      "L57/S0060"
+     ],
+     "concept_id": "C1168",
+     "concept_name": "Viewing pipeline"
+    },
+    {
+     "id": "L57/P03/T9",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 3D graphics pipeline is a larger framework that includes the viewing pipeline as its fourth stage.",
+     "sources": [
+      "L57/S0060"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    }
+   ]
+  },
+  {
+   "id": "L57/P04",
+   "first": "L57/S0061",
+   "last": "L57/S0091",
+   "start": 615.057,
+   "end": 994.858,
+   "objective": "Describe the process of transforming 3D world coordinates into 3D view coordinates using camera parameters",
+   "objective_id": "L57/O2",
+   "key_points": [
+    {
+     "id": "L57/P04/K1",
+     "text": "The 3D viewing transformation converts from a 3D world coordinate description to a 3D view coordinate description, simulating a camera taking a photo of the scene.",
+     "sources": [
+      "L57/S0062",
+      "L57/S0063"
+     ],
+     "concept_ids": [
+      "C0340",
+      "C0470",
+      "C0481",
+      "C0888",
+      "C1163",
+      "C1190",
+      "C1231"
+     ]
+    },
+    {
+     "id": "L57/P04/K2",
+     "text": "The view coordinate system is defined by specific camera parameters: the camera position (origin), the view point, and the look-at point P.",
+     "sources": [
+      "L57/S0072",
+      "L57/S0073"
+     ],
+     "concept_ids": [
+      "C0149",
+      "C0340",
+      "C0538",
+      "C1108",
+      "C1170",
+      "C1189",
+      "C1232",
+      "C1233",
+      "C1234"
+     ]
+    },
+    {
+     "id": "L57/P04/K3",
+     "text": "The three mutually orthogonal axes (N, V, U) that define the view coordinate system are calculated using the given camera parameters.",
+     "sources": [
+      "L57/S0080",
+      "L57/S0083",
+      "L57/S0084"
+     ],
+     "concept_ids": [
+      "C0340",
+      "C0538",
+      "C1091",
+      "C1170",
+      "C1189",
+      "C1214",
+      "C1232",
+      "C1235",
+      "C1237",
+      "C1238"
+     ]
+    },
+    {
+     "id": "L57/P04/K4",
+     "text": "The transformation from world to view coordinates is achieved by applying a composite transformation matrix that combines rotation and translation operations.",
+     "sources": [
+      "L57/S0085",
+      "L57/S0086"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1195",
+      "C1196",
+      "C1200"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P04/T1",
+     "surface": "3D viewing transformation",
+     "name": "3D viewing transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "3D viewing transformation is the process of changing a coordinate description from a 3D world to a 3D view coordinate description.",
+     "sources": [
+      "L57/S0062"
+     ],
+     "concept_id": "C1231",
+     "concept_name": "3D viewing transformation"
+    },
+    {
+     "id": "L57/P04/T2",
+     "surface": "view coordinate system",
+     "name": "View coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view coordinate system is the coordinate setup defined by the camera parameters, consisting of three mutually orthogonal axes (N, V, and U).",
+     "sources": [
+      "L57/S0064",
+      "L57/S0069",
+      "L57/S0077",
+      "L57/S0084"
+     ],
+     "concept_id": "C1170",
+     "concept_name": "View coordinate system"
+    },
+    {
+     "id": "L57/P04/T3",
+     "surface": "camera parameters",
+     "name": "Camera parameter",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Camera parameter is a specific value used to define the view coordinate system, including the camera position, the view point, and the look-at point.",
+     "sources": [
+      "L57/S0065",
+      "L57/S0070"
+     ],
+     "concept_id": "C1232",
+     "concept_name": "Camera parameter"
+    },
+    {
+     "id": "L57/P04/T4",
+     "surface": "world coordinate system reference frame",
+     "name": "World coordinate system reference frame",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate system reference frame is the established frame of reference where all the points of the scene are defined.",
+     "sources": [
+      "L57/S0068"
+     ],
+     "concept_id": "C1191",
+     "concept_name": "World coordinate reference frame"
+    },
+    {
+     "id": "L57/P04/T5",
+     "surface": "camera position",
+     "name": "Camera position",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The camera position serves as the origin of the view coordinate system, represented by a vector relative to the world coordinate scene.",
+     "sources": [
+      "L57/S0072"
+     ],
+     "concept_id": "C1233",
+     "concept_name": "Camera position"
+    },
+    {
+     "id": "L57/P04/T6",
+     "surface": "look-at point P",
+     "name": "Look-at point",
+     "abbreviation": "P",
+     "abbreviation_at": "L57/S0073",
+     "definition": "The look-at point, or center of interest, is the focus point that the camera typically targets before capturing an image.",
+     "sources": [
+      "L57/S0073",
+      "L57/S0074"
+     ],
+     "concept_id": "C1234",
+     "concept_name": "Look-at point"
+    },
+    {
+     "id": "L57/P04/T7",
+     "surface": "three orthogonal axes N, V, and U",
+     "name": "Unit basis vector",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Unit basis vector is a mutually perpendicular vector (N, V, or U) that together with the others defines the view coordinate system.",
+     "sources": [
+      "L57/S0080",
+      "L57/S0083",
+      "L57/S0084"
+     ],
+     "concept_id": "C1236",
+     "concept_name": "Unit basis vector"
+    },
+    {
+     "id": "L57/P04/T8",
+     "surface": "N",
+     "name": "N",
+     "abbreviation": "N",
+     "abbreviation_at": "L57/S0080",
+     "definition": "N is the unit basis vector that is opposite to the looking direction and is determined using the origin vector and the look-up direction.",
+     "sources": [
+      "L57/S0080",
+      "L57/S0081"
+     ],
+     "concept_id": "C1235",
+     "concept_name": "N vector"
+    },
+    {
+     "id": "L57/P04/T9",
+     "surface": "V unit basis vector",
+     "name": "V unit basis vector",
+     "abbreviation": "V",
+     "abbreviation_at": "L57/S0082",
+     "definition": "The V unit basis vector is determined along the view up direction, calculated by taking the difference between the view up point and the origin point and then normalizing the resulting vector.",
+     "sources": [
+      "L57/S0082"
+     ],
+     "concept_id": "C1237",
+     "concept_name": "V unit basis vector"
+    },
+    {
+     "id": "L57/P04/T10",
+     "surface": "U",
+     "name": "U",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "U is the third unit basis vector, determined by calculating the cross product of the V and N vectors.",
+     "sources": [
+      "L57/S0083"
+     ],
+     "concept_id": "C1238",
+     "concept_name": "U vector"
+    },
+    {
+     "id": "L57/P04/T11",
+     "surface": "translation and rotation",
+     "name": "Composite transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Composite transformation matrix is the matrix obtained from the dot product of the translation and rotation matrices used to transform world coordinates to view coordinates.",
+     "sources": [
+      "L57/S0085"
+     ],
+     "concept_id": "C1196",
+     "concept_name": "Composite transformation matrix"
+    },
+    {
+     "id": "L57/P04/T12",
+     "surface": "composite transformation matrix",
+     "name": "Composite transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The composite transformation matrix is the resulting matrix obtained by taking the dot product of the individual rotation and translation transformation matrices.",
+     "sources": [
+      "L57/S0086",
+      "L57/S0087"
+     ],
+     "concept_id": "C1196",
+     "concept_name": "Composite transformation matrix"
+    }
+   ]
+  },
+  {
+   "id": "L57/P05",
+   "first": "L57/S0092",
+   "last": "L57/S0106",
+   "start": 994.878,
+   "end": 1142.242,
+   "objective": "Describe the process of transforming 3D objects from world description to a 2D view plane description",
+   "objective_id": "L57/O2",
+   "key_points": [
+    {
+     "id": "L57/P05/K1",
+     "text": "The pipeline involves transforming a world coordinate description to a 3D view coordinate description, followed by projection onto a 2D view plane description.",
+     "sources": [
+      "L57/S0095",
+      "L57/S0096",
+      "L57/S0097"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0478",
+      "C0481",
+      "C1190",
+      "C1230",
+      "C1239"
+     ]
+    },
+    {
+     "id": "L57/P05/K2",
+     "text": "View planes are typically defined as a rectangular area, often referred to as the clipping window.",
+     "sources": [
+      "L57/S0098",
+      "L57/S0099"
+     ],
+     "concept_ids": [
+      "C0469",
+      "C1240",
+      "C1250"
+     ]
+    },
+    {
+     "id": "L57/P05/K3",
+     "text": "The view volume is a 3D region defining the portion of the scene that will be projected onto the view plane.",
+     "sources": [
+      "L57/S0101",
+      "L57/S0102",
+      "L57/S0103"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0888",
+      "C1230",
+      "C1241"
+     ]
+    },
+    {
+     "id": "L57/P05/K4",
+     "text": "The clipping process discards objects that are outside the view volume but still part of the scene, and this occurs before projection.",
+     "sources": [
+      "L57/S0104",
+      "L57/S0105",
+      "L57/S0106"
+     ],
+     "concept_ids": [
+      "C0320",
+      "C0469",
+      "C0478",
+      "C0888",
+      "C1137",
+      "C1241"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P05/T1",
+     "surface": "view coordinate system",
+     "name": "View coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view coordinate system is a system defined using three camera parameters, which is used to transform a point from the world coordinate system into the view coordinate system.",
+     "sources": [
+      "L57/S0092"
+     ],
+     "concept_id": "C1170",
+     "concept_name": "View coordinate system"
+    },
+    {
+     "id": "L57/P05/T2",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Projection transformation is the step that occurs after the view transformation, where 3D objects are cast onto a 2D view plane.",
+     "sources": [
+      "L57/S0093"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L57/P05/T3",
+     "surface": "view plane",
+     "name": "View plane",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view plane is the surface onto which 3D objects, which were described in the view coordinate system, are projected to create a 2D view.",
+     "sources": [
+      "L57/S0094",
+      "L57/S0096",
+      "L57/S0097"
+     ],
+     "concept_id": "C1230",
+     "concept_name": "View plane"
+    },
+    {
+     "id": "L57/P05/T4",
+     "surface": "world coordinate description",
+     "name": "World coordinate description",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "World coordinate description is how a 3D object is defined initially, before it has been transformed to a 2D view plane description.",
+     "sources": [
+      "L57/S0095"
+     ],
+     "concept_id": "C1190",
+     "concept_name": "World coordinate description"
+    },
+    {
+     "id": "L57/P05/T5",
+     "surface": "2D view plane description",
+     "name": "2D view plane description",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "2D view plane description is the final description of the object once its 3D coordinates have been projected onto the 2D view plane.",
+     "sources": [
+      "L57/S0095",
+      "L57/S0096"
+     ],
+     "concept_id": "C1239",
+     "concept_name": "2D view plane description"
+    },
+    {
+     "id": "L57/P05/T6",
+     "surface": "clipping window",
+     "name": "Clipping window",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The clipping window is usually a rectangular area that is defined for projection and is related to the process of clipping.",
+     "sources": [
+      "L57/S0099"
+     ],
+     "concept_id": "C1240",
+     "concept_name": "Clipping window"
+    },
+    {
+     "id": "L57/P05/T7",
+     "surface": "view volume",
+     "name": "View volume",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view volume is a defined three-dimensional region within the scene that dictates which portion of the scene is going to be projected onto the view plane.",
+     "sources": [
+      "L57/S0101",
+      "L57/S0102",
+      "L57/S0103"
+     ],
+     "concept_id": "C1241",
+     "concept_name": "View volume"
+    },
+    {
+     "id": "L57/P05/T8",
+     "surface": "clipping process",
+     "name": "Clipping process",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The clipping process is the action of discarding objects or parts of objects that exist within the scene but fall outside of the defined view volume.",
+     "sources": [
+      "L57/S0104",
+      "L57/S0105"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    }
+   ]
+  },
+  {
+   "id": "L57/P06",
+   "first": "L57/S0107",
+   "last": "L57/S0144",
+   "start": 1145.306,
+   "end": 1540.716,
+   "objective": "Compare perspective and parallel projection types, and explain the function of the canonical view volume",
+   "objective_id": "L57/O3",
+   "key_points": [
+    {
+     "id": "L57/P06/K1",
+     "text": "Perspective projection uses converging, non-parallel projectors that meet at a center of projection, which results in a realistic feeling.",
+     "sources": [
+      "L57/S0109",
+      "L57/S0115",
+      "L57/S0116"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C1242",
+      "C1243"
+     ]
+    },
+    {
+     "id": "L57/P06/K2",
+     "text": "In parallel projection, the projectors are parallel to each other, meaning the center of projection is located at infinity.",
+     "sources": [
+      "L57/S0119"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C1243",
+      "C1244"
+     ]
+    },
+    {
+     "id": "L57/P06/K3",
+     "text": "The view volume for parallel projection is a rectangular parallelepiped, whereas the view volume for perspective projection is a frustum.",
+     "sources": [
+      "L57/S0125",
+      "L57/S0128"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C0612",
+      "C1241",
+      "C1242",
+      "C1244"
+     ]
+    },
+    {
+     "id": "L57/P06/K4",
+     "text": "A canonical view volume, defined as a normalized cube, is used to simplify complex view volume clipping operations.",
+     "sources": [
+      "L57/S0136",
+      "L57/S0137"
+     ],
+     "concept_ids": [
+      "C0469",
+      "C1241",
+      "C1245"
+     ]
+    },
+    {
+     "id": "L57/P06/K5",
+     "text": "Converting a frustum to a canonical unit cube for perspective projection requires both scaling and shearing operations, which is more complex than parallel projection.",
+     "sources": [
+      "L57/S0143",
+      "L57/S0144"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C0612",
+      "C1242",
+      "C1244"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P06/T1",
+     "surface": "projection",
+     "name": "Projection",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Projection is a process that can be of different types, requiring specific computations based on the type of projection desired.",
+     "sources": [
+      "L57/S0107"
+     ],
+     "concept_id": "C0478",
+     "concept_name": "Projection"
+    },
+    {
+     "id": "L57/P06/T2",
+     "surface": "perspective projection",
+     "name": "Perspective projection",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Perspective projection is a type where the projectors, which are lines emanating from an object, converge to a center of projection, which gives a realistic rendering feel.",
+     "sources": [
+      "L57/S0108",
+      "L57/S0109",
+      "L57/S0115",
+      "L57/S0116",
+      "L57/S0117"
+     ],
+     "concept_id": "C1242",
+     "concept_name": "Perspective projection"
+    },
+    {
+     "id": "L57/P06/T3",
+     "surface": "center of projection",
+     "name": "Center of projection",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The center of projection is the point to which the lines (projectors) emanating from an object tend to converge in perspective projection, or conversely, is considered to be at infinity in parallel projection.",
+     "sources": [
+      "L57/S0109",
+      "L57/S0114",
+      "L57/S0115",
+      "L57/S0119"
+     ],
+     "concept_id": "C1243",
+     "concept_name": "Center of projection"
+    },
+    {
+     "id": "L57/P06/T4",
+     "surface": "view plane",
+     "name": "View plane",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view plane is the 2D surface where the points intersected by extended lines from the object's vertices define the object's projection.",
+     "sources": [
+      "L57/S0112",
+      "L57/S0113"
+     ],
+     "concept_id": "C1230",
+     "concept_name": "View plane"
+    },
+    {
+     "id": "L57/P06/T5",
+     "surface": "parallel projection",
+     "name": "Parallel projection",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Parallel projection is a type where the projectors are parallel to each other, meaning the center of projection is considered to be at infinity and they never meet.",
+     "sources": [
+      "L57/S0118",
+      "L57/S0119",
+      "L57/S0123",
+      "L57/S0124"
+     ],
+     "concept_id": "C1244",
+     "concept_name": "Parallel projection"
+    },
+    {
+     "id": "L57/P06/T6",
+     "surface": "view volume",
+     "name": "View volume",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view volume is the region that defines the objects which are to be projected onto the clipping window, and its shape varies depending on whether the projection is parallel or perspective.",
+     "sources": [
+      "L57/S0125",
+      "L57/S0130"
+     ],
+     "concept_id": "C1241",
+     "concept_name": "View volume"
+    },
+    {
+     "id": "L57/P06/T7",
+     "surface": "clipping window",
+     "name": "Clipping window",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The clipping window is typically one face of the view volume, and it is the surface onto which the objects defined within the view volume are projected.",
+     "sources": [
+      "L57/S0126",
+      "L57/S0127",
+      "L57/S0129",
+      "L57/S0130"
+     ],
+     "concept_id": "C1240",
+     "concept_name": "Clipping window"
+    },
+    {
+     "id": "L57/P06/T8",
+     "surface": "frustum",
+     "name": "Frustum",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A frustum is the shape that the view volume takes when using perspective projection, and one side of this volume serves as the clipping window.",
+     "sources": [
+      "L57/S0128",
+      "L57/S0129"
+     ],
+     "concept_id": "C0612",
+     "concept_name": "View frustum"
+    },
+    {
+     "id": "L57/P06/T9",
+     "surface": "canonical view volume",
+     "name": "Canonical view volume",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A canonical view volume is a standardized, typically normalized cube that arbitrary view volumes (whether from parallel or perspective projection) are converted into to simplify pipeline computations.",
+     "sources": [
+      "L57/S0131",
+      "L57/S0136"
+     ],
+     "concept_id": "C1245",
+     "concept_name": "Canonical view volume"
+    },
+    {
+     "id": "L57/P06/T10",
+     "surface": "clipping operation",
+     "name": "Clipping operation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The clipping operation is the process of discarding objects that fall outside the defined boundaries of the view volume.",
+     "sources": [
+      "L57/S0132",
+      "L57/S0133"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L57/P06/T11",
+     "surface": "normalized cube",
+     "name": "Normalized cube",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A normalized cube is the unit cube structure used to define the canonical view volume, which allows any arbitrary view volume to be converted into a standard shape for simplification.",
+     "sources": [
+      "L57/S0137",
+      "L57/S0140"
+     ],
+     "concept_id": "C1245",
+     "concept_name": "Canonical view volume"
+    }
+   ]
+  },
+  {
+   "id": "L57/P07",
+   "first": "L57/S0145",
+   "last": "L57/S0178",
+   "start": 1545.221,
+   "end": 1874.02,
+   "objective": "Apply matrix transformations to perform parallel and perspective projections of 3D points",
+   "objective_id": "L57/O3",
+   "key_points": [
+    {
+     "id": "L57/P07/K1",
+     "text": "Projection techniques, including parallel and perspective, rely on the use of transformation matrices (146).",
+     "sources": [
+      "L57/S0146"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C0481"
+     ]
+    },
+    {
+     "id": "L57/P07/K2",
+     "text": "Both parallel and perspective projections require multiplying the point vector by the projection matrix, followed by dividing the resulting coordinate values by the homogeneous factor (w) (150, 166).",
+     "sources": [
+      "L57/S0150",
+      "L57/S0166"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C0987",
+      "C1242",
+      "C1246",
+      "C1247"
+     ]
+    },
+    {
+     "id": "L57/P07/K3",
+     "text": "The transformation from a point in the world coordinate system to the 2D view plane involves three sequential steps: transforming to the view coordinate system, transforming to the canonical view volume, and finally projecting onto the view plane (171, 172, 173).",
+     "sources": [
+      "L57/S0171",
+      "L57/S0172",
+      "L57/S0173"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0538",
+      "C1161",
+      "C1170",
+      "C1189",
+      "C1230",
+      "C1241",
+      "C1245"
+     ]
+    },
+    {
+     "id": "L57/P07/K4",
+     "text": "The overall projection from the world coordinate scene to the 2D view plane can be represented by a single composite matrix formed by multiplying all necessary transformation matrices (177).",
+     "sources": [
+      "L57/S0177"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C0481",
+      "C0888",
+      "C1140",
+      "C1196",
+      "C1199",
+      "C1230"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P07/T1",
+     "surface": "projection transformation matrices",
+     "name": "Projection matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A projection matrix is used to perform projection by multiplying point vectors, which yields the requisite projected output.",
+     "sources": [
+      "L57/S0146",
+      "L57/S0147"
+     ],
+     "concept_id": "C1246",
+     "concept_name": "Projection matrix"
+    },
+    {
+     "id": "L57/P07/T2",
+     "surface": "parallel projection",
+     "name": "Parallel projection",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Parallel projection is a specific type of projection for which a defined matrix is used to project a point onto the clipping window.",
+     "sources": [
+      "L57/S0148",
+      "L57/S0149",
+      "L57/S0150"
+     ],
+     "concept_id": "C1244",
+     "concept_name": "Parallel projection"
+    },
+    {
+     "id": "L57/P07/T3",
+     "surface": "3D view coordinate system",
+     "name": "3D view coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 3D view coordinate system is the coordinate space where a point vector must be defined before it can be multiplied by a projection matrix.",
+     "sources": [
+      "L57/S0150",
+      "L57/S0165",
+      "L57/S0171"
+     ],
+     "concept_id": "C1170",
+     "concept_name": "View coordinate system"
+    },
+    {
+     "id": "L57/P07/T4",
+     "surface": "homogeneous factor w",
+     "name": "Homogeneous factor",
+     "abbreviation": "w",
+     "abbreviation_at": "L57/S0152",
+     "definition": "The homogeneous factor is a value, typically not equal to one, that coordinate values must be divided by to convert the projected coordinates into standard Cartesian points.",
+     "sources": [
+      "L57/S0152",
+      "L57/S0153",
+      "L57/S0154",
+      "L57/S0166"
+     ],
+     "concept_id": "C1247",
+     "concept_name": "Homogeneous factor"
+    },
+    {
+     "id": "L57/P07/T5",
+     "surface": "Cartesian points",
+     "name": "Cartesian value",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A Cartesian value is the final coordinate value obtained by dividing the homogeneous coordinate values by the homogeneous factor.",
+     "sources": [
+      "L57/S0153",
+      "L57/S0154",
+      "L57/S0166"
+     ],
+     "concept_id": "C1248",
+     "concept_name": "Cartesian value"
+    },
+    {
+     "id": "L57/P07/T6",
+     "surface": "perspective projection transformation",
+     "name": "Perspective projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Perspective projection transformation is a specific method of projection, which utilizes a more complex matrix compared to parallel projection.",
+     "sources": [
+      "L57/S0155",
+      "L57/S0163",
+      "L57/S0166"
+     ],
+     "concept_id": "C1249",
+     "concept_name": "Perspective projection transformation"
+    },
+    {
+     "id": "L57/P07/T7",
+     "surface": "center of projection",
+     "name": "Center of projection",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The center of projection is the specific reference point used to determine the distance of the clipping window when performing perspective projection.",
+     "sources": [
+      "L57/S0158",
+      "L57/S0159"
+     ],
+     "concept_id": "C1243",
+     "concept_name": "Center of projection"
+    },
+    {
+     "id": "L57/P07/T8",
+     "surface": "view volume",
+     "name": "View volume",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view volume is the volume that contains the point P and must be transformed to the canonical view volume prior to the clipping operation.",
+     "sources": [
+      "L57/S0172"
+     ],
+     "concept_id": "C1241",
+     "concept_name": "View volume"
+    },
+    {
+     "id": "L57/P07/T9",
+     "surface": "canonical view volume",
+     "name": "Canonical view volume",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The canonical view volume is the standardized volume to which the view volume is transformed, typically preceding the clipping operation.",
+     "sources": [
+      "L57/S0172"
+     ],
+     "concept_id": "C1245",
+     "concept_name": "Canonical view volume"
+    },
+    {
+     "id": "L57/P07/T10",
+     "surface": "composite matrix",
+     "name": "Composite matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A composite matrix is the single matrix obtained by multiplying together all necessary transformation matrices, representing the overall projection from the world coordinate scene to the two dimensional view plane.",
+     "sources": [
+      "L57/S0177"
+     ],
+     "concept_id": "C1196",
+     "concept_name": "Composite transformation matrix"
+    }
+   ]
+  },
+  {
+   "id": "L57/P08",
+   "first": "L57/S0179",
+   "last": "L57/S0204",
+   "start": 1874.54,
+   "end": 2146.991,
+   "objective": "Map points from an abstract window representation to a device-specific viewport representation using a transformation matrix",
+   "objective_id": "L57/O3",
+   "key_points": [
+    {
+     "id": "L57/P08/K1",
+     "text": "The window is defined as a normalized clipping window and is an abstract intermediate representation (181, 183, 187).",
+     "sources": [
+      "L57/S0181",
+      "L57/S0183",
+      "L57/S0187"
+     ],
+     "concept_ids": [
+      "C0469",
+      "C1140",
+      "C1240",
+      "C1250",
+      "C1251",
+      "C1253"
+     ]
+    },
+    {
+     "id": "L57/P08/K2",
+     "text": "The viewport is defined in device space as a portion of the final screen, relating to screen/display origins and dimensions (184, 185, 188).",
+     "sources": [
+      "L57/S0184",
+      "L57/S0185",
+      "L57/S0188"
+     ],
+     "concept_ids": [
+      "C0256",
+      "C1164",
+      "C1252"
+     ]
+    },
+    {
+     "id": "L57/P08/K3",
+     "text": "Key point: A transformation matrix is used to map a point from the window (Wx, Wy) to a point on the viewport (Vx, Vy) (190, 191, 192).",
+     "sources": [
+      "L57/S0190",
+      "L57/S0191",
+      "L57/S0192"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1200",
+      "C1250",
+      "C1252"
+     ]
+    },
+    {
+     "id": "L57/P08/K4",
+     "text": "The transformed point is obtained by multiplying the point vector with the transformation matrix, and then dividing by the homogeneous factor W to achieve Cartesian coordinates (200, 203).",
+     "sources": [
+      "L57/S0200",
+      "L57/S0203"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0987",
+      "C1114",
+      "C1200",
+      "C1247"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P08/T1",
+     "surface": "window",
+     "name": "Window",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A window is synonymous with a normalized clipping window and functions as an abstract intermediate representation that does not relate directly to the display.",
+     "sources": [
+      "L57/S0180",
+      "L57/S0181",
+      "L57/S0183",
+      "L57/S0187"
+     ],
+     "concept_id": "C1250",
+     "concept_name": "Window"
+    },
+    {
+     "id": "L57/P08/T2",
+     "surface": "normalized clipping window",
+     "name": "Normalized clipping window",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A normalized clipping window is a view plane representation that functions as the window itself.",
+     "sources": [
+      "L57/S0181",
+      "L57/S0183"
+     ],
+     "concept_id": "C1251",
+     "concept_name": "Normalized clipping window"
+    },
+    {
+     "id": "L57/P08/T3",
+     "surface": "viewport",
+     "name": "Viewport",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewport is a portion of the final screen defined in device space, which serves as an abstract intermediate representation during rendering.",
+     "sources": [
+      "L57/S0184",
+      "L57/S0185",
+      "L57/S0186",
+      "L57/S0188"
+     ],
+     "concept_id": "C1252",
+     "concept_name": "Viewport"
+    },
+    {
+     "id": "L57/P08/T4",
+     "surface": "device space",
+     "name": "Device space",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Device space is the location where the viewport is defined, referencing a portion of the final screen where the scene will be rendered.",
+     "sources": [
+      "L57/S0184"
+     ],
+     "concept_id": "C1164",
+     "concept_name": "Device coordinate system"
+    },
+    {
+     "id": "L57/P08/T5",
+     "surface": "abstract intermediate representation",
+     "name": "Abstract intermediate representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "An abstract intermediate representation is a conceptual stage, such as the viewport or the window, that is not tied to the final display.",
+     "sources": [
+      "L57/S0186",
+      "L57/S0187"
+     ],
+     "concept_id": "C1253",
+     "concept_name": "Abstract intermediate representation"
+    },
+    {
+     "id": "L57/P08/T6",
+     "surface": "transformation matrix",
+     "name": "Transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A transformation matrix is a matrix used to map points from the abstract window representation to the device-specific representation in the viewport.",
+     "sources": [
+      "L57/S0192",
+      "L57/S0196",
+      "L57/S0200",
+      "L57/S0201"
+     ],
+     "concept_id": "C1200",
+     "concept_name": "Transformation matrix"
+    },
+    {
+     "id": "L57/P08/T7",
+     "surface": "homogeneous coordinate representation",
+     "name": "Homogeneous coordinate representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Homogeneous coordinate representation is a representation where the obtained point must be divided with the homogeneous factor W to get back to a Cartesian point.",
+     "sources": [
+      "L57/S0203"
+     ],
+     "concept_id": "C1194",
+     "concept_name": "Homogeneous coordinate system"
+    },
+    {
+     "id": "L57/P08/T8",
+     "surface": "clipping",
+     "name": "Clipping",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Clipping is one of the two processes that take place when mapping points from the window to the viewport.",
+     "sources": [
+      "L57/S0204"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L57/P08/T9",
+     "surface": "hidden surface removal",
+     "name": "Hidden surface removal",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Hidden surface removal is one of the two processes that take place when mapping points from the window to the viewport.",
+     "sources": [
+      "L57/S0204"
+     ],
+     "concept_id": "C1169",
+     "concept_name": "Hidden surface removal"
+    }
+   ]
+  },
+  {
+   "id": "L57/P09",
+   "first": "L57/S0205",
+   "last": "L57/S0226",
+   "start": 2147.432,
+   "end": 2386.075,
+   "objective": "Explain the roles of clipping and hidden surface removal in optimizing graphics rendering performance",
+   "objective_id": "L57/O4",
+   "key_points": [
+    {
+     "id": "L57/P09/K1",
+     "text": "Clipping removes objects that lie outside the defined view volume before projection to reduce computational complexity.",
+     "sources": [
+      "L57/S0205",
+      "L57/S0206"
+     ],
+     "concept_ids": [
+      "C0320",
+      "C0469",
+      "C0478",
+      "C1137",
+      "C1241"
+     ]
+    },
+    {
+     "id": "L57/P09/K2",
+     "text": "Hidden surface removal eliminates surfaces that are not visible to the viewer due to occlusion by other objects.",
+     "sources": [
+      "L57/S0215",
+      "L57/S0222"
+     ],
+     "concept_ids": [
+      "C1137",
+      "C1169"
+     ]
+    },
+    {
+     "id": "L57/P09/K3",
+     "text": "Both clipping and hidden surface removal are optimization processes used to reduce the computational load during rendering.",
+     "sources": [
+      "L57/S0206",
+      "L57/S0211",
+      "L57/S0221"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0469",
+      "C1051",
+      "C1169"
+     ]
+    },
+    {
+     "id": "L57/P09/K4",
+     "text": "The clipping process involves identifying which portion of an object to keep and which portion to discard.",
+     "sources": [
+      "L57/S0213"
+     ],
+     "concept_ids": [
+      "C0469",
+      "C1137"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P09/T1",
+     "surface": "clipping",
+     "name": "Clipping",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Clipping is a process that defines a view volume and removes or eliminates any objects that lie outside of that view volume, while retaining only the objects that are inside.",
+     "sources": [
+      "L57/S0205",
+      "L57/S0213",
+      "L57/S0226"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L57/P09/T2",
+     "surface": "view volume",
+     "name": "View volume",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view volume is a defined space used in the clipping process to determine which objects are retained and which are removed from the rendering scene.",
+     "sources": [
+      "L57/S0205"
+     ],
+     "concept_id": "C1241",
+     "concept_name": "View volume"
+    },
+    {
+     "id": "L57/P09/T3",
+     "surface": "hidden surface removal",
+     "name": "Hidden surface removal",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Hidden surface removal is a process used to identify and eliminate objects or portions of objects that are within the view volume but are not visible due to being occluded by other objects from the viewer's position.",
+     "sources": [
+      "L57/S0214",
+      "L57/S0215",
+      "L57/S0222",
+      "L57/S0225",
+      "L57/S0226"
+     ],
+     "concept_id": "C1169",
+     "concept_name": "Hidden surface removal"
+    }
+   ]
+  },
+  {
+   "id": "L57/P10",
+   "first": "L57/S0227",
+   "last": "L57/S0242",
+   "start": 2387.658,
+   "end": 2526.39,
+   "objective": "Describe the stages and transformations within the graphics pipeline's viewing transformation",
+   "objective_id": "L57/O4",
+   "key_points": [
+    {
+     "id": "L57/P10/K1",
+     "text": "The viewing transformation is the fourth stage of the graphics pipeline, which involves multiple internal transformations.",
+     "sources": [
+      "L57/S0232",
+      "L57/S0233"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0481",
+      "C1163",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L57/P10/K2",
+     "text": "The viewing transformation consists of three specific operations: view transformation, projection transformation, and viewport transformation.",
+     "sources": [
+      "L57/S0233"
+     ],
+     "concept_ids": [
+      "C0478",
+      "C0481",
+      "C1163",
+      "C1171",
+      "C1173",
+      "C1252"
+     ]
+    },
+    {
+     "id": "L57/P10/K3",
+     "text": "Clipping and hidden surface removal are two key operations mentioned as part of the graphics pipeline.",
+     "sources": [
+      "L57/S0234"
+     ],
+     "concept_ids": [
+      "C0469",
+      "C0470",
+      "C1169"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L57/P10/T1",
+     "surface": "view transformation",
+     "name": "View transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The view transformation is a transformation that transforms a world coordinate scene to a 3D view coordinate scene.",
+     "sources": [
+      "L57/S0233"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L57/P10/T2",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The projection transformation is a transformation that transforms a 3D view coordinate scene to a 2D view plane description.",
+     "sources": [
+      "L57/S0233"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L57/P10/T3",
+     "surface": "viewport transformation",
+     "name": "Viewport transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewport transformation is a transformation that transforms a 2D view plane description to a 2D device space description.",
+     "sources": [
+      "L57/S0233"
+     ],
+     "concept_id": "C1173",
+     "concept_name": "Window to viewport transformation"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L57/O1",
+   "text": "relate VR resource optimization challenges to core computer graphics concepts",
+   "part_ids": [
+    "L57/P01"
+   ]
+  },
+  {
+   "id": "L57/O2",
+   "text": "explain how the 3D viewing pipeline projects a scene onto a 2D screen using various transformations",
+   "part_ids": [
+    "L57/P02",
+    "L57/P03",
+    "L57/P04",
+    "L57/P05"
+   ]
+  },
+  {
+   "id": "L57/O3",
+   "text": "differentiate between and apply perspective and parallel projections, and describe viewport mapping",
+   "part_ids": [
+    "L57/P06",
+    "L57/P07",
+    "L57/P08"
+   ]
+  },
+  {
+   "id": "L57/O4",
+   "text": "analyze the role of clipping and hidden surface removal in optimizing the graphics rendering pipeline",
+   "part_ids": [
+    "L57/P09",
+    "L57/P10"
+   ]
+  }
+ ],
+ "lecture_goal": "master the fundamental concepts and transformations within the graphics pipeline for VR resource optimization.",
+ "flags": [
+  "links: answer unusable (['answer is not valid JSON for the schema: Expecting value: line 1 column 1 (char 0)'])"
+ ],
+ "origin": [
+  {
+   "item": "L57/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "19dffcee41a131d005a3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7233,
+   "output_tokens": 1793,
+   "latency_s": 66.47,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "8d69a174109dba393862",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 559,
+   "output_tokens": 448,
+   "latency_s": 36.99,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "8b0a85e8337b0e85fefb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 962,
+   "output_tokens": 475,
+   "latency_s": 39.82,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "ed22b5952c3f270e8633",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1042,
+   "output_tokens": 490,
+   "latency_s": 41.24,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "ca5ec19d1fd2d58040a6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 702,
+   "output_tokens": 562,
+   "latency_s": 47.9,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "98e097fc9829a1ac17ca",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 889,
+   "output_tokens": 577,
+   "latency_s": 49.4,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "c84e50c0333d898972ec",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1090,
+   "output_tokens": 1096,
+   "latency_s": 81.44,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "2867f02f5c9e982667f5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1236,
+   "output_tokens": 1126,
+   "latency_s": 82.44,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "18bc05795a4e5fef17a6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 763,
+   "output_tokens": 1204,
+   "latency_s": 85.88,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "18bc05e57ad6607188bc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1255,
+   "output_tokens": 1281,
+   "latency_s": 90.68,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "acc42cbc0b1701600cfc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1335,
+   "output_tokens": 1297,
+   "latency_s": 90.8,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "bdc9a70d773f00c32426",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 626,
+   "output_tokens": 1333,
+   "latency_s": 251.56,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "f97a492865d389ce3e36",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 910,
+   "output_tokens": 1983,
+   "latency_s": 69.82,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/terms/0-7",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "df2436d57ff251e7eb58",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 836,
+   "output_tokens": 2652,
+   "latency_s": 94.84,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "018a27170f38a9bc465e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1068,
+   "output_tokens": 2219,
+   "latency_s": 378.31,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "44ba1f107b4c262392dd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1232,
+   "output_tokens": 2212,
+   "latency_s": 385.96,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "f6a3fc30b45253d62d25",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1324,
+   "output_tokens": 1161,
+   "latency_s": 43.71,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/terms/205-226",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "32225fc12f4d6f188422",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1238,
+   "output_tokens": 1327,
+   "latency_s": 50.05,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fbf0aeb80331d8421c60",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 847,
+   "output_tokens": 1629,
+   "latency_s": 326.8,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "e153f1e17ae78c3d4e87",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1088,
+   "output_tokens": 1172,
+   "latency_s": 44.61,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/terms/92-106",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "f345112ae647cb9156c9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 984,
+   "output_tokens": 2113,
+   "latency_s": 78.89,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fdf143a7977264b291de",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1053,
+   "output_tokens": 2493,
+   "latency_s": 409.17,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "033d80ff2787022edb69",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1302,
+   "output_tokens": 1843,
+   "latency_s": 71.14,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/terms/40-60",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "0c374c3f7b47b09107f9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1166,
+   "output_tokens": 2423,
+   "latency_s": 91.65,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "de490ed947b934d1498c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1145,
+   "output_tokens": 1516,
+   "latency_s": 326.28,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "5f87659da75993393462",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1413,
+   "output_tokens": 1418,
+   "latency_s": 45.51,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "5e9e3560398bb56366b0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 819,
+   "output_tokens": 1207,
+   "latency_s": 294.93,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/terms/8-39",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "ef0ea4825598966f31c1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1380,
+   "output_tokens": 2299,
+   "latency_s": 72.77,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "4c8e38d308fbb8f1236f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1095,
+   "output_tokens": 1415,
+   "latency_s": 46.25,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/terms/227-242",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "f79f89335664eec7b686",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1038,
+   "output_tokens": 1567,
+   "latency_s": 51.25,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0e25e1a212e572e0c273",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1400,
+   "output_tokens": 1567,
+   "latency_s": 318.29,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "4fb7b47ec09f0ee8af68",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1656,
+   "output_tokens": 1863,
+   "latency_s": 63.57,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/terms/61-91",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "3436485709d90a5fe345",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1536,
+   "output_tokens": 2660,
+   "latency_s": 91.45,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "875c3c84e36f80eca23a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1416,
+   "output_tokens": 3840,
+   "latency_s": 561.68,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "38ae78f48930f72aa931",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1678,
+   "output_tokens": 1807,
+   "latency_s": 54.73,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c22927e02103df8067ba",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1511,
+   "output_tokens": 3734,
+   "latency_s": 531.26,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/terms/145-178",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "721bb2eeb580d431be4c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1512,
+   "output_tokens": 3137,
+   "latency_s": 97.18,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "de4b07393c5707dc1e10",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1757,
+   "output_tokens": 1718,
+   "latency_s": 56.34,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/terms/107-144",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "7bb66b1fc705a0a388f9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1613,
+   "output_tokens": 2614,
+   "latency_s": 85.71,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "ac4cc9fedad8859d8921",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1020,
+   "output_tokens": 1806,
+   "latency_s": 438.53,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3cb7d55626f4265daf03",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1113,
+   "output_tokens": 4841,
+   "latency_s": 636.71,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0127dc3cacdedbb46911",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1141,
+   "output_tokens": 4345,
+   "latency_s": 728.84,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a4f96bdc926cc3300d1c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1141,
+   "output_tokens": 4614,
+   "latency_s": 760.63,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3f49b2e85df9cdbe8cba",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1412,
+   "output_tokens": 4614,
+   "latency_s": 625.88,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0f30a685be4acb93e2e6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 879,
+   "output_tokens": 2504,
+   "latency_s": 348.8,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "eafbc50133f81d504e67",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1511,
+   "output_tokens": 4368,
+   "latency_s": 447.89,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "343a6abbb05ce5e17ca5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1927,
+   "output_tokens": 4763,
+   "latency_s": 476.05,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "23c028cd77a157df6b32",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1808,
+   "output_tokens": 4520,
+   "latency_s": 527.57,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6f43d9a3a8e6cab49eef",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2027,
+   "output_tokens": 4764,
+   "latency_s": 585.17,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fd1eeb22a5e865051067",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1038,
+   "output_tokens": 1104,
+   "latency_s": 357.52,
+   "cached": false
+  },
+  {
+   "item": "L57/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "1d34b1407d4bfd0fe959",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 431,
+   "output_tokens": 486,
+   "latency_s": 10.75,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "4f461cbb664d8e587e40",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1483,
+   "output_tokens": 2142,
+   "latency_s": 48.52,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/terms/179-204",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "fd2414deebe3dea93c00",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1322,
+   "output_tokens": 2700,
+   "latency_s": 62.5,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "215559c9212c974c77d2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 763,
+   "output_tokens": 1527,
+   "latency_s": 328.87,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c7c5881eecb2cd2d16a8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 958,
+   "output_tokens": 761,
+   "latency_s": 291.3,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c460cfab3ce27ebd93cf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 850,
+   "output_tokens": 4340,
+   "latency_s": 588.54,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "0d9de55b92f4467dc2fe",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1062,
+   "output_tokens": 941,
+   "latency_s": 315.01,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "e284705439e053608a46",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 884,
+   "output_tokens": 2946,
+   "latency_s": 527.27,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "893d380027511d4d2f66",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1485,
+   "output_tokens": 4355,
+   "latency_s": 582.06,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "9ee26ba3b76c847329aa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1400,
+   "output_tokens": 4267,
+   "latency_s": 511.26,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "58464cd942f8bc6f13c2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1297,
+   "output_tokens": 3121,
+   "latency_s": 440.44,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f1213a4e3bd6771c1465",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1572,
+   "output_tokens": 4697,
+   "latency_s": 439.75,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "286013461acc69ce468c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 788,
+   "output_tokens": 4251,
+   "latency_s": 360.37,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7bc871013311196d96de",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 973,
+   "output_tokens": 4267,
+   "latency_s": 351.67,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8bd827a3f2c29bace6f1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 759,
+   "output_tokens": 4353,
+   "latency_s": 376.42,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b51fad82752059f2c07b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1122,
+   "output_tokens": 636,
+   "latency_s": 184.94,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "68bcfc0659db38b5f5b5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 878,
+   "output_tokens": 1333,
+   "latency_s": 233.91,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "55e843deacceba433ba4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1347,
+   "output_tokens": 1460,
+   "latency_s": 292.5,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "71467adf44857ff029d4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1460,
+   "output_tokens": 4387,
+   "latency_s": 489.66,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ea2e6e581967496b50da",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1384,
+   "output_tokens": 4352,
+   "latency_s": 521.93,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "41ff4bd9cab38037b51f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1085,
+   "output_tokens": 4214,
+   "latency_s": 469.51,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "687a75b25efa29ffe6a0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1111,
+   "output_tokens": 2647,
+   "latency_s": 238.4,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "92de094675be03c3affa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1159,
+   "output_tokens": 3306,
+   "latency_s": 445.65,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a4aa139df8e4d4e15a11",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1530,
+   "output_tokens": 3182,
+   "latency_s": 415.36,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9f0d6902b3f693aceb9b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1318,
+   "output_tokens": 4430,
+   "latency_s": 534.03,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "aafb4fafd7c06b2144f0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1572,
+   "output_tokens": 4022,
+   "latency_s": 549.6,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "28381eca11d145188c62",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1129,
+   "output_tokens": 1849,
+   "latency_s": 388.51,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "888a172c7e40e226740d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1441,
+   "output_tokens": 2570,
+   "latency_s": 480.35,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "88051b0d8e485ed517c2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1612,
+   "output_tokens": 2710,
+   "latency_s": 510.65,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "01cb0275c1afe4e80d0f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1930,
+   "output_tokens": 4312,
+   "latency_s": 540.72,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f650ded465fe9ad8da72",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2025,
+   "output_tokens": 4414,
+   "latency_s": 501.04,
+   "cached": false
+  },
+  {
+   "item": "L57/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0159a83d31a98031b1d7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1771,
+   "output_tokens": 2445,
+   "latency_s": 302.77,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a1ac5e6a5c9a873fcf12",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1809,
+   "output_tokens": 4385,
+   "latency_s": 392.12,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c6e85eae67bed46b8f45",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 527,
+   "output_tokens": 870,
+   "latency_s": 132.24,
+   "cached": false
+  },
+  {
+   "item": "registry/parallel projection",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "5c8fb3d537f6554aa597",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 603,
+   "output_tokens": 923,
+   "latency_s": 41.9,
+   "cached": false
+  },
+  {
+   "item": "registry/cent projection",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "cbc89f7966c2c2e9f6ea",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 543,
+   "output_tokens": 994,
+   "latency_s": 44.93,
+   "cached": false
+  },
+  {
+   "item": "registry/camera paramet",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "01b83ccb93e901613d14",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 452,
+   "output_tokens": 1038,
+   "latency_s": 48.57,
+   "cached": false
+  },
+  {
+   "item": "registry/canonical view volume",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "acce3a115dec91077bb5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 618,
+   "output_tokens": 1144,
+   "latency_s": 52.36,
+   "cached": false
+  },
+  {
+   "item": "registry/view plane",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "92e46262f7be40fbd897",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 804,
+   "output_tokens": 1860,
+   "latency_s": 87.55,
+   "cached": false
+  },
+  {
+   "item": "registry/n",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "1c4a0fd36e141d14ffff",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 801,
+   "output_tokens": 2175,
+   "latency_s": 101.23,
+   "cached": false
+  },
+  {
+   "item": "registry/clipp window",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "0f60b95fbd0e9835f471",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1008,
+   "output_tokens": 2466,
+   "latency_s": 114.42,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "6bca2e286c54d955f375",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 739,
+   "output_tokens": 1198,
+   "latency_s": 671.86,
+   "cached": false
+  },
+  {
+   "item": "registry/homogeneou factor",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "08329b6c399700c55980",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 679,
+   "output_tokens": 3030,
+   "latency_s": 148.15,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "373939cc1f84b6df5ff2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1329,
+   "output_tokens": 1637,
+   "latency_s": 137.86,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fb638da67034480cdc82",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 586,
+   "output_tokens": 749,
+   "latency_s": 116.6,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "36c9cc3092d5c81d5731",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 836,
+   "output_tokens": 4320,
+   "latency_s": 867.6,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b5627d61d1c014096567",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1200,
+   "output_tokens": 875,
+   "latency_s": 209.83,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "38e38719b4086b2764a5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1380,
+   "output_tokens": 4287,
+   "latency_s": 369.34,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "fde6804a071c422c800e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 779,
+   "output_tokens": 2018,
+   "latency_s": 299.75,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "da451bb4b5ed2dd25cb0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1259,
+   "output_tokens": 1071,
+   "latency_s": 296.36,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "3de6ec6fd904c5879a69",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1407,
+   "output_tokens": 1924,
+   "latency_s": 372.05,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "3d28d7095fe059f2ef17",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 677,
+   "output_tokens": 4209,
+   "latency_s": 535.06,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3e1defdae9c2c8be36f1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 926,
+   "output_tokens": 1879,
+   "latency_s": 145.74,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "771b6604b5a10baf89a4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1465,
+   "output_tokens": 2223,
+   "latency_s": 174.12,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "746e51fb0dd6566aa07c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1236,
+   "output_tokens": 633,
+   "latency_s": 29.16,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/facets/2",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "68810ab3b623c4d3d8b8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 565,
+   "output_tokens": 701,
+   "latency_s": 31.03,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "866b18bd941f163a9532",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2340,
+   "output_tokens": 1303,
+   "latency_s": 50.34,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "762525440223430bf8ca",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2256,
+   "output_tokens": 1423,
+   "latency_s": 54.49,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "89d4832a4a5a0132c5cf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2312,
+   "output_tokens": 1744,
+   "latency_s": 65.19,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "26b9154f9544aa181414",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4460,
+   "output_tokens": 2153,
+   "latency_s": 78.4,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "e66fe349dc8e23ea8f10",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 11447,
+   "output_tokens": 3014,
+   "latency_s": 107.07,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "c73582582363871e74ac",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 5745,
+   "output_tokens": 3331,
+   "latency_s": 118.31,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "e35e78c41cbf2476399b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7469,
+   "output_tokens": 3776,
+   "latency_s": 133.45,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "673a9896592b9e795855",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 27544,
+   "output_tokens": 3792,
+   "latency_s": 133.64,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "85ef1ca2830ec37e102d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7894,
+   "output_tokens": 3937,
+   "latency_s": 138.15,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "9d9c3f99e595e714851f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7899,
+   "output_tokens": 4128,
+   "latency_s": 143.99,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "1b8a446e972697e530cd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7265,
+   "output_tokens": 4148,
+   "latency_s": 144.5,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "04ab756cc01db6e7ffd7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 10202,
+   "output_tokens": 4414,
+   "latency_s": 151.77,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "0a2ed7b1c15134e6681c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 8976,
+   "output_tokens": 4422,
+   "latency_s": 151.81,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "0d3b8c34dbd153c81b8b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 10594,
+   "output_tokens": 4579,
+   "latency_s": 155.97,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "d9c5851b6d8ddac68975",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 10456,
+   "output_tokens": 4876,
+   "latency_s": 162.69,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a88d15c867138f4a1d04",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1874,
+   "output_tokens": 2697,
+   "latency_s": 977.22,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a634b6aa5f776ddf8fc9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1254,
+   "output_tokens": 2813,
+   "latency_s": 993.56,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f05b39e83e06cebee7eb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1136,
+   "output_tokens": 4456,
+   "latency_s": 1167.71,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "16d51b7a5b3da5396b47",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1842,
+   "output_tokens": 4890,
+   "latency_s": 1199.47,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "dfd21b3c53cf6f4a8a02",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2460,
+   "output_tokens": 4962,
+   "latency_s": 1203.95,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e36ba4efd59dd5a92046",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1720,
+   "output_tokens": 5004,
+   "latency_s": 1206.57,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "87aec0cce103cf449225",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2100,
+   "output_tokens": 5042,
+   "latency_s": 1208.89,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d257df24ec3c4c2da14e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1535,
+   "output_tokens": 5142,
+   "latency_s": 1214.89,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f71b38e49966b760dd9a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2315,
+   "output_tokens": 5400,
+   "latency_s": 1230.36,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f2e0b86ba9b980dab89b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1923,
+   "output_tokens": 5819,
+   "latency_s": 1261.58,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "8f565bba9a4896d610bd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1291,
+   "output_tokens": 1238,
+   "latency_s": 397.71,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "21509d6f93b418c96960",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 783,
+   "output_tokens": 3283,
+   "latency_s": 543.82,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "db02aad499f1a009538f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1036,
+   "output_tokens": 1597,
+   "latency_s": 391.09,
+   "cached": false
+  },
+  {
+   "item": "L57/P06/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "54c6f8eaca770c40c9f3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1263,
+   "output_tokens": 588,
+   "latency_s": 244.23,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "7209a212ee8e4966c5de",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1026,
+   "output_tokens": 1861,
+   "latency_s": 453.45,
+   "cached": false
+  },
+  {
+   "item": "L57/P10/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "14f812276c6006ee5456",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 735,
+   "output_tokens": 992,
+   "latency_s": 199.65,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "099796e33dae2d1cf985",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1429,
+   "output_tokens": 3061,
+   "latency_s": 547.82,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "b298d8b665a482d00380",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1426,
+   "output_tokens": 3728,
+   "latency_s": 596.6,
+   "cached": false
+  },
+  {
+   "item": "L57/P09/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "4cbfadb81760d43a77fa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 934,
+   "output_tokens": 764,
+   "latency_s": 209.17,
+   "cached": false
+  },
+  {
+   "item": "L57/P08/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cf4d29186d83572ac869",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 977,
+   "output_tokens": 969,
+   "latency_s": 245.05,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "91dd507e441deea8650c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1154,
+   "output_tokens": 4152,
+   "latency_s": 646.81,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "71b162655159f9823caf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 741,
+   "output_tokens": 4289,
+   "latency_s": 639.75,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "096b8523895aff003006",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1605,
+   "output_tokens": 4574,
+   "latency_s": 665.31,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "8c73ff4bfb8470b7b3a4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1234,
+   "output_tokens": 4570,
+   "latency_s": 630.65,
+   "cached": false
+  },
+  {
+   "item": "L57/P05/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "035819d365d7720ec1bc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 686,
+   "output_tokens": 1774,
+   "latency_s": 148.76,
+   "cached": false
+  },
+  {
+   "item": "L57/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c83ba4331bcaf6a15cf8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1026,
+   "output_tokens": 1930,
+   "latency_s": 159.83,
+   "cached": false
+  },
+  {
+   "item": "L57/P07/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "32e7f88ff6b1cd45d7b3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1394,
+   "output_tokens": 1981,
+   "latency_s": 142.1,
+   "cached": false
+  },
+  {
+   "item": "L57/P01/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8f2ece2834cdd0698734",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 928,
+   "output_tokens": 2191,
+   "latency_s": 172.35,
+   "cached": false
+  },
+  {
+   "item": "L57/P04/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ec584a31be19faa9f54f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1392,
+   "output_tokens": 4333,
+   "latency_s": 401.85,
+   "cached": false
+  },
+  {
+   "item": "L57/P03/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a57bc21396fbafd28c82",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1069,
+   "output_tokens": 4453,
+   "latency_s": 343.12,
+   "cached": false
+  },
+  {
+   "item": "L57/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "5c6bf845fa83e1754fd4",
+   "thinking": true,
+   "validator": {
+    "passed": false,
+    "errors": [
+     "answer is not valid JSON for the schema: Expecting value: line 1 column 1 (char 0)"
+    ]
+   },
+   "retries": 2,
+   "input_tokens": 182412,
+   "output_tokens": 6144,
+   "latency_s": 792.16,
+   "cached": false
+  },
+  {
+   "item": "L57/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "7d698d6ea546956e30f4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 18587,
+   "output_tokens": 1950,
+   "latency_s": 52.94,
+   "cached": false
+  },
+  {
+   "item": "L57/oq/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2de3b28bfa7c7d3ea569",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 19111,
+   "output_tokens": 1144,
+   "latency_s": 115.14,
+   "cached": false
+  },
+  {
+   "item": "L57/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "037cdd36b378bedac566",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 789,
+   "output_tokens": 545,
+   "latency_s": 16.48,
+   "cached": false
+  },
+  {
+   "item": "L57/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c28793841c749d15dfb1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1047,
+   "output_tokens": 1885,
+   "latency_s": 70.41,
+   "cached": false
+  }
+ ]
+}

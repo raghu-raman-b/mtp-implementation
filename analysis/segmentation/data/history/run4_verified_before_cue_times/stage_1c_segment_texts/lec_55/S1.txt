@@ -1,0 +1,67 @@
+[55/22] So let us have a basic understanding of what happens in this pipeline.
+[55/23] First, we define objects that will be part of the image on display.
+[55/24] So if you recollect our previous discussion, we mentioned that when we see something on a screen, it comprises objects which may or may not include interface level objects.
+[55/25] However, the idea is that first we need to define these objects that together constitute the image that is rendered on a screen.
+[55/26] For example, suppose I want to show this cube on the screen.
+[55/27] So, then I need to define this cube somewhere.
+[55/28] So that is the first stage, that is representing the object.
+[55/29] So from the representation, the final rendering takes place.
+[55/30] Then in the second stage, we perform something called modeling transformation.
+[55/31] When we are saying that we define the object, essentially what we do is we are defining the objects in their own coordinate system which is often called the local coordinate system, local to the object definition.
+[55/32] Now, when we are trying to render a scene, the scene is made up of multiple objects, each object defined in its own coordinate.
+[55/33] So, we need to put them together in a common coordinate system to construct the overall image.
+[55/34] So, essentially we put them together in a common coordinate system to construct the image that is called the world coordinate system.
+[55/35] So there is a transformation from the local coordinate system to the world coordinate system, and that is the second stage: the modeling transformation.
+[55/36] Like here, so each of these individual objects that you can see here is defined in its own coordinate system.
+[55/37] Multiple objects are there of different shapes, sizes, orientations, everything.
+[55/38] Now, to construct a scene, we are putting them together.
+[55/39] And while doing so, we are essentially bringing them together in a common coordinate system applicable to all objects, and that coordinate system is the world coordinate system.
+[55/40] So, modeling transformation transforms objects from their local coordinate system definition to objects in the world coordinate system definition.
+[55/41] The third stage is the lighting stage, the lighting or illumination stage.
+[55/42] Once the 3D scene is constructed by putting the objects together, we can assign color to the objects.
+[55/43] Say here, this is the object definition.
+[55/44] It is barely the boundaries shown here.
+[55/45] However, when we assign color, we get something like this.
+[55/46] As you can see, without assigning color, we do not perceive the 3D nature of the scene.
+[55/47] It is there, but once we assign color, it becomes more prominent.
+[55/48] The perception becomes better.
+[55/49] So, essentially, assigning color is very important, and that we do in a separate stage called the lighting or illumination stage.
+[55/50] In our pipeline, we will be doing this as the third stage of the pipeline.
+[55/51] Then, there is a fourth stage called viewing transformation, which maps the colored 3D scene to 2D device coordinates.
+[55/52] So, essentially, what happens is that we try to simulate the process of taking a snapshot of a scene with a camera.
+[55/53] When we look at a scene with our eyes, that is in a 3D world coordinate system.
+[55/54] Now, when we are looking at it through the camera eyepiece, that is, we are looking at it through a different mechanism, and then when we take a snapshot, that is on a 2D plane we are seeing it.
+[55/55] So, essentially, transforming from the 3D world coordinate scene to a 2D space, which we are calling the device space or device coordinate system.
+[55/56] The idea is shown here.
+[55/57] Suppose this is the camera.
+[55/58] This is the object in the world coordinate system or the scene in the world coordinate system.
+[55/59] Now, this is the device coordinate system, that is, the equivalent to the screen.
+[55/60] Note the term equivalent.
+[55/61] It is not the same as the screen, as we shall see later, but it is the equivalent.
+[55/62] Now, with the camera, we are taking a snapshot, meaning we are viewing this same 3D scene on a 2D plane as shown here.
+[55/63] And this is the viewing transformation, transferring from the 3D world coordinate scene to the 2D device coordinate space.
+[55/64] Then there is the final or the fifth stage, which is scan conversion.
+[55/65] Now, we said that we are through view transformation; we are actually transferring from a 3D world coordinate scene to a 2D device coordinate space.
+[55/66] Although we are using the term device coordinate, in reality, when we talk of rendering something on a computer display, we know that the display consists of a pixel grid.
+[55/67] Now, a pixel grid means there are discrete points.
+[55/68] So, essentially, the device coordinate ideally should be a discrete space.
+[55/69] Whereas, in our earlier projection, we have assumed earlier transformation we have assumed that from a 3D world coordinate scene we are transforming to a device coordinate space which is a continuous space.
+[55/70] That means any point can take any real number as its coordinate.
+[55/71] However, when we are actually rendering it on a pixel grid, we know that only integer coordinates are allowed because it is a discrete space.
+[55/72] So, essentially, what we need to do is transform the device coordinate space description to a discrete space or the pixel grid description; that is the fifth stage or scan conversion.
+[55/73] So, the image is transformed here from the device space to the pixel grid.
+[55/74] So, suppose this is the device space description of the image, that is, a straight line as you can see.
+[55/75] Now, intermediate points can take any real number in this device space because there is no restriction on the kind of values that the points can take.
+[55/76] However, when we are talking of a pixel grid as shown here, we know that pixels, each pixel coordinate is represented by an integer.
+[55/77] It is a discrete space.
+[55/78] So, points on the line must be mapped to pixels.
+[55/79] In other words, the real values of the points, that is, the coordinates of the points, must be mapped to integer values represented by the pixels.
+[55/80] This is the scan conversion or the fifth stage of the 3D graphics pipeline.
+[55/81] So, putting everything together, we can say that this 3D graphics pipeline contains five stages: object representation, first stage; then modeling transformation, second stage; lighting, third stage.
+[55/82] Now, the fourth stage, although we said view transformation, essentially it is a kind of pipeline itself that comprises multiple stages.
+[55/83] So, let us call it the viewing pipeline, that is the fourth stage, and finally, scan conversion or the fifth stage.
+[55/84] The viewing pipeline comprises several sub-stages, such as viewing transformation.
+[55/85] So, we will go through each of these stages in brief to get the idea.
+[55/86] Then there is a process called clipping.
+[55/87] Another process called hidden surface removal, then one more transformation, projection transformation, and finally, window-to-viewport transformation.
+[55/88] So, together, all these stages basically transform a scene in the world coordinate system to a scene in the device coordinate system.

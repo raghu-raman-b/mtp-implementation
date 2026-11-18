@@ -1,0 +1,16 @@
+# The rewritten facts judged again (block 1, test only)
+
+Segments with a rewrite: 4; facts judged: 30; rewrites: 8; rewrites that still fail: 2/8 (25%) (judge or code checks). Facts that were kept in 2b and fail now: 1.
+
+- **1/S0/F1** (rewrite of 1/S0/F1): passes. Extended reality (XR), virtual reality (VR), augmented reality (AR), and mixed reality (MR) can refer to different things to different people: for some, magical movie scenes; for some, three-dimensional (3D) or four-dimensional (4D) movie-theater documentaries about extinct animals; and, for virtual reality (VR), the most common perception is that a user wears a headset that blocks vision and is transported to a virtual world.
+- **1/S3/F4** (rewrite of 1/S3/F4): passes. The term metaverse has heavily stimulated and spurred growth in the extended reality field.
+- **1/S3/F5** (rewrite of 1/S3/F5): passes. The metaverse is not merely an application of virtual reality, mixed reality, or augmented reality technology.
+- **1/S3/F6** (rewrite of 1/S3/F5): fails. One broad point of view about the metaverse is that humans are going to reimagine the way they interact with the digital world. Judge: Fails property 2 because it is about the same point as fact 1/S3/F7; the lecturer introduces one broad point of view and then elaborates it, so the two facts split one point into a broad statement and its details.
+- **4/S1/F0** (rewrite of 4/S1/F0): fails. A system can be categorized as a virtual reality (VR) system and distinguished from other systems when it has the three characteristics of an artificial environment, sensory experience by computer-generated stimuli, and user actions that partially determine what happens in the environment. Judge: Fails property 2: it holds the three characteristics of a VR system (artificial environment, sensory experience, user interaction) which could be asked about separately and are detailed in facts F1, F2, F3, and F4; it reads as a summary of the segment rather than a single complete point.
+- **4/S1/F3** (rewrite of 4/S1/F3): passes. The sensory experience characteristic of a virtual reality (VR) system is that the system provides computer-generated stimuli to the user's sensory organs, such as eyes and ears, so the user can immersively experience the artificial or synthetic environment, and immersive experience is a hallmark of a virtual reality system.
+- **16/S1/F9** (rewrite of 16/S1/F9): passes. In virtual reality (VR), tracking the surrounding environment can alert the user to physical objects not represented in the virtual world, such as a wall, to reduce harm; for alerting the user to physical objects not represented in the virtual world, tracking the user is not useful, and the surrounding environment must be tracked.
+- **16/S1/F11** (rewrite of 16/S1/F11): passes. In applications such as telepresence, a large part of the physical world can be brought into the virtual world through live capture; augmenting the virtual world with a live capture of the real world is generally classified as augmented virtuality and is a form of tracking the surrounding environment.
+
+Kept facts that fail in this call (the noise of one more judge call):
+
+- **1/S3/F7**: Fails property 2 because it is a detail of the same point as fact 1/S3/F6, which the lecturer elaborates in sentences 48-50; it is not one complete point on its own.

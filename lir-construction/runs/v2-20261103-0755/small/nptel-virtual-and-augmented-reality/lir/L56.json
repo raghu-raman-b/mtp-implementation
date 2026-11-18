@@ -1,0 +1,5561 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L56",
+ "index": 56,
+ "title": "VR resource optimization",
+ "source_file": "lec_56.srt",
+ "timing_source": "srt",
+ "youtube_id": "oGrok_rXa7Y",
+ "duration_s": 2609.382,
+ "sentences": [
+  {
+   "id": "L56/S0000",
+   "start": 23.96,
+   "end": 28.986,
+   "text": "Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L56/S0001",
+   "start": 29.887,
+   "end": 37.895,
+   "text": "We are going to continue our discussion on resource optimization, specifically in the context of virtual reality."
+  },
+  {
+   "id": "L56/S0002",
+   "start": 37.915,
+   "end": 48.647,
+   "text": "So, if we quickly recap what we have done so far, earlier we talked about the basic idea of computer graphics."
+  },
+  {
+   "id": "L56/S0003",
+   "start": 49.588,
+   "end": 71.872,
+   "text": "Now, why are we talking about computer graphics? Because the key component of any immersive experience is the rendering part, how the scene is rendered in front of the eyes of the user on the display device, and the idea of rendering is covered in the discipline of computer graphics."
+  },
+  {
+   "id": "L56/S0004",
+   "start": 73.194,
+   "end": 84.493,
+   "text": "So, it is essential to know the complexities involved in rendering, and in order to do that, we need to know or at least we should have some idea of computer graphics."
+  },
+  {
+   "id": "L56/S0005",
+   "start": 85.194,
+   "end": 87.776,
+   "text": "So, we started our discussion on computer graphics."
+  },
+  {
+   "id": "L56/S0006",
+   "start": 88.097,
+   "end": 90.579,
+   "text": "We have gone through some basic terminologies."
+  },
+  {
+   "id": "L56/S0007",
+   "start": 91.22,
+   "end": 105.154,
+   "text": "Then, after covering the basic idea, we covered the idea of the 3D graphics pipeline and also the stages constituting the pipeline."
+  },
+  {
+   "id": "L56/S0008",
+   "start": 105.174,
+   "end": 109.738,
+   "text": "We have also covered the first stage of the pipeline, that is, the object representation."
+  },
+  {
+   "id": "L56/S0009",
+   "start": 110.005,
+   "end": 125.086,
+   "text": "Note that although we are talking about this as the first stage, in object representation, there is no computation as such related to intensity calculation or determination of the pixel intensities."
+  },
+  {
+   "id": "L56/S0010",
+   "start": 126.308,
+   "end": 133.077,
+   "text": "So, we may or may not call it the first stage, but for the sake of simplicity, we are calling it the first stage of the graphics pipeline."
+  },
+  {
+   "id": "L56/S0011",
+   "start": 134.778,
+   "end": 142.685,
+   "text": "Now, in this lecture, what we are going to do is cover the second and third stages of the graphics pipeline."
+  },
+  {
+   "id": "L56/S0012",
+   "start": 142.786,
+   "end": 145.688,
+   "text": "So, two more stages will be covered in this lecture."
+  },
+  {
+   "id": "L56/S0013",
+   "start": 146.049,
+   "end": 154.436,
+   "text": "But before we do that, let us quickly have a relook at the 3D graphics pipeline as discussed in the previous lecture."
+  },
+  {
+   "id": "L56/S0014",
+   "start": 156.859,
+   "end": 161.443,
+   "text": "So, we have these five stages: object representation, first stage."
+  },
+  {
+   "id": "L56/S0015",
+   "start": 161.693,
+   "end": 165.818,
+   "text": "which happens in the local coordinate system."
+  },
+  {
+   "id": "L56/S0016",
+   "start": 168.341,
+   "end": 169.843,
+   "text": "We have already talked about this one."
+  },
+  {
+   "id": "L56/S0017",
+   "start": 171.144,
+   "end": 187.624,
+   "text": "The second stage is modeling transformation, in which the local coordinate description is transformed to a world coordinate description; that is, local to world transformation, local to world coordinate transformation."
+  },
+  {
+   "id": "L56/S0018",
+   "start": 188.424,
+   "end": 189.726,
+   "text": "Third is the lighting stage."
+  },
+  {
+   "id": "L56/S0019",
+   "start": 192.71,
+   "end": 197.038,
+   "text": "which takes place in the world coordinate reference frame."
+  },
+  {
+   "id": "L56/S0020",
+   "start": 198.6,
+   "end": 216.692,
+   "text": "Then we have the fourth stage, that is the viewing pipeline, containing several sub-stages starting with viewing transformation, where again we transform from world coordinate system to a 3D view coordinate system."
+  },
+  {
+   "id": "L56/S0021",
+   "start": 218.056,
+   "end": 230.713,
+   "text": "This is followed by clipping, an operation taking place in the 3D view coordinate system, followed by hidden surface removal, another operation taking place again in the 3D view coordinate system."
+  },
+  {
+   "id": "L56/S0022",
+   "start": 232.295,
+   "end": 249.004,
+   "text": "Then we have projection transformation, where we transform from 3D view coordinate to 2D view coordinate system, and then we have window to viewport transformation, where we transfer the scene description in the 2D view coordinate system to a device coordinate system."
+  },
+  {
+   "id": "L56/S0023",
+   "start": 252.048,
+   "end": 265.764,
+   "text": "The fifth and final stage is scan conversion, where we transfer or transform from the device coordinate scene description to screen coordinate or pixel grid description of the scene."
+  },
+  {
+   "id": "L56/S0024",
+   "start": 267.066,
+   "end": 268.768,
+   "text": "So, these are the five stages."
+  },
+  {
+   "id": "L56/S0025",
+   "start": 270.368,
+   "end": 284.609,
+   "text": "Out of these, we have already covered the first one, and we are going to cover these two stages, namely modeling transformation and the lighting, or the second and third stages, in this part of the lecture."
+  },
+  {
+   "id": "L56/S0026",
+   "start": 286.892,
+   "end": 292.541,
+   "text": "So, let us start with stage 2, that is modeling or geometric transformation."
+  },
+  {
+   "id": "L56/S0027",
+   "start": 292.581,
+   "end": 298.89,
+   "text": "So, both terms are used; either modeling transformation can be used, or we can use the term geometric transformation."
+  },
+  {
+   "id": "L56/S0028",
+   "start": 301.317,
+   "end": 303.92,
+   "text": "Now, what is the basic idea behind this stage?"
+  },
+  {
+   "id": "L56/S0029",
+   "start": 305.381,
+   "end": 307.444,
+   "text": "Earlier, we talked about object representation."
+  },
+  {
+   "id": "L56/S0030",
+   "start": 307.464,
+   "end": 313.15,
+   "text": "Now, these object representation techniques allow us to represent objects individually."
+  },
+  {
+   "id": "L56/S0031",
+   "start": 313.611,
+   "end": 325.924,
+   "text": "So, for each object, we can have an individual definition of the object, and that definition is often called the local or object coordinate system description of the object."
+  },
+  {
+   "id": "L56/S0032",
+   "start": 327.524,
+   "end": 342.447,
+   "text": "So, essentially, we can think of each object as having its own coordinate reference frame in which the object is defined; that is, its position, dimension, and so on are defined."
+  },
+  {
+   "id": "L56/S0033",
+   "start": 342.467,
+   "end": 348.497,
+   "text": "Now, in order to construct a scene, what we need to do is put multiple objects together."
+  },
+  {
+   "id": "L56/S0034",
+   "start": 348.697,
+   "end": 355.708,
+   "text": "Now, each individual object is defined in its own coordinate system, or its local coordinate system."
+  },
+  {
+   "id": "L56/S0035",
+   "start": 357.747,
+   "end": 366.275,
+   "text": "We need to redefine the object in a common coordinate system where all the objects can be put together and defined."
+  },
+  {
+   "id": "L56/S0036",
+   "start": 367.076,
+   "end": 376.425,
+   "text": "So, objects need to be assembled together in a different setting, which we can call the scene or world coordinate system."
+  },
+  {
+   "id": "L56/S0037",
+   "start": 381.991,
+   "end": 389.781,
+   "text": "So, essentially, what we do is basically taking the object from its local coordinate description to a scene or world coordinate description."
+  },
+  {
+   "id": "L56/S0038",
+   "start": 389.881,
+   "end": 392.645,
+   "text": "The idea is illustrated here."
+  },
+  {
+   "id": "L56/S0039",
+   "start": 394.727,
+   "end": 403.798,
+   "text": "So, suppose we have object 1 and object 2, each having its own coordinate system as shown here."
+  },
+  {
+   "id": "L56/S0040",
+   "start": 404.439,
+   "end": 431.064,
+   "text": "Now, using these two objects, we are constructing a scene which comprises this shape resembling the English letter H. So, as you can see, in order to construct this H, we have used multiple instances of object 1 and object 2 and that too in different shapes, sizes, orientations, and so on."
+  },
+  {
+   "id": "L56/S0041",
+   "start": 432.266,
+   "end": 452.768,
+   "text": "Say, for example, this is one instance of object 1, a second instance of object 1, a third instance of object 1, a fourth instance of object 1."
+  },
+  {
+   "id": "L56/S0042",
+   "start": 453.929,
+   "end": 458.534,
+   "text": "So, these are all object 1 and these are all object 2."
+  },
+  {
+   "id": "L56/S0043",
+   "start": 463.878,
+   "end": 486.376,
+   "text": "So, there are four instances of object 1 and three instances of object 2 used to create this particular shape, and if you compare the definition to the final position or shape or orientation of the objects, you can see a lot of changes."
+  },
+  {
+   "id": "L56/S0044",
+   "start": 487.638,
+   "end": 498.336,
+   "text": "So, this is what we are calling transformation from local coordinate definition to world coordinate definition or scene coordinate definition."
+  },
+  {
+   "id": "L56/S0045",
+   "start": 501.539,
+   "end": 515.48,
+   "text": "So, this modeling transformation, the second stage, implies applying some operations on the object definition in local coordinates to transform to the world or scene coordinate system."
+  },
+  {
+   "id": "L56/S0046",
+   "start": 517.102,
+   "end": 521.168,
+   "text": "All these operations can be derived from a set of basic operations."
+  },
+  {
+   "id": "L56/S0047",
+   "start": 523.813,
+   "end": 526.217,
+   "text": "which are the basic transformations."
+  },
+  {
+   "id": "L56/S0048",
+   "start": 526.237,
+   "end": 527.619,
+   "text": "What are those basic transformations?"
+  },
+  {
+   "id": "L56/S0049",
+   "start": 527.659,
+   "end": 551.252,
+   "text": "We are all familiar with those transformations, such as translation, rotation by some angle either in a clockwise or anticlockwise direction around an axis, scaling, that is reduction or increase in the size of the object, and shearing, that is changing the shape of the object."
+  },
+  {
+   "id": "L56/S0050",
+   "start": 552.914,
+   "end": 567.801,
+   "text": "So, These four constitute the basic transformations, and we can use combinations of these four to create any sort of transformation required to construct a scene."
+  },
+  {
+   "id": "L56/S0051",
+   "start": 570.324,
+   "end": 576.552,
+   "text": "Now, typically, each transformation is represented in the form of a matrix."
+  },
+  {
+   "id": "L56/S0052",
+   "start": 578.405,
+   "end": 586.376,
+   "text": "But the matrix representation of transformations happens in a different setting, that is typically called a homogeneous coordinate system."
+  },
+  {
+   "id": "L56/S0053",
+   "start": 587.979,
+   "end": 596.07,
+   "text": "So, for example, for a 2D transformation, that is a transformation happening in a 2D plane, we can have 3 by 3 matrices."
+  },
+  {
+   "id": "L56/S0054",
+   "start": 596.651,
+   "end": 604.422,
+   "text": "For a 3D transformation, that is a transformation happening in 3D, we can have 4 by 4 matrices and so on."
+  },
+  {
+   "id": "L56/S0055",
+   "start": 604.442,
+   "end": 608.007,
+   "text": "So, one extra dimension is added in the homogeneous coordinate system."
+  },
+  {
+   "id": "L56/S0056",
+   "start": 610.417,
+   "end": 624.776,
+   "text": "So, for example, for translation, we can have this 3 by 3 matrix for 2D translation, where Tx and Ty are the amounts of translation along the x and y directions."
+  },
+  {
+   "id": "L56/S0057",
+   "start": 625.397,
+   "end": 631.084,
+   "text": "For rotation in 2D, we have this 3 by 3 matrix; phi is the angle of rotation."
+  },
+  {
+   "id": "L56/S0058",
+   "start": 632.286,
+   "end": 640.834,
+   "text": "For scaling in 2D, we can have this 3 by 3 matrix, where Sx and Sy are scaling factors along the x and y directions."
+  },
+  {
+   "id": "L56/S0059",
+   "start": 643.297,
+   "end": 649.005,
+   "text": "For shearing in 2D, the corresponding 3 by 3 matrix is shown here."
+  },
+  {
+   "id": "L56/S0060",
+   "start": 649.806,
+   "end": 655.735,
+   "text": "Here Sx, Shx and Shy are the shearing factors along the x and y directions."
+  },
+  {
+   "id": "L56/S0061",
+   "start": 658.078,
+   "end": 664.347,
+   "text": "Similarly, we can have the matrix representation of transformations for 3D operations."
+  },
+  {
+   "id": "L56/S0062",
+   "start": 665.669,
+   "end": 682.896,
+   "text": "Now, The matrix representation is a convenient way to represent transformations, and using these matrices we can transform points from an object's own local coordinate system to a world coordinate system."
+  },
+  {
+   "id": "L56/S0063",
+   "start": 683.997,
+   "end": 684.678,
+   "text": "So, how does it work?"
+  },
+  {
+   "id": "L56/S0064",
+   "start": 685.759,
+   "end": 693.249,
+   "text": "Given a point (x, y), we can assume that it is in the local coordinate system where the object is defined."
+  },
+  {
+   "id": "L56/S0065",
+   "start": 694.07,
+   "end": 696.533,
+   "text": "We can represent it as a column vector."
+  },
+  {
+   "id": "L56/S0066",
+   "start": 699.23,
+   "end": 724.815,
+   "text": "Then we can multiply the transformation matrix with the column vector to get the new point in the form of another column vector, P dash, which we can obtain using the transformation matrix S and the original point P to get the new point."
+  },
+  {
+   "id": "L56/S0067",
+   "start": 727.225,
+   "end": 742.302,
+   "text": "So, effectively, the transformation refers to a matrix multiplication of the points which are on the surface of the object to the new points that ideally should be in the world coordinate system."
+  },
+  {
+   "id": "L56/S0068",
+   "start": 744.244,
+   "end": 753.655,
+   "text": "There is one issue, though: sometimes to construct a world coordinate scene, we need to perform multiple geometric or modeling transformations on an object."
+  },
+  {
+   "id": "L56/S0069",
+   "start": 753.854,
+   "end": 768.85,
+   "text": "That is, not only the basic operations, but multiple operations may be required, and there we need to go for a composite transformation matrix rather than basic transformation matrices like translation, rotation, scaling, or shearing."
+  },
+  {
+   "id": "L56/S0070",
+   "start": 770.972,
+   "end": 793.724,
+   "text": "Just to illustrate the idea, or rather the issue, let us consider one example: an object, which is a rectangle shown here, ABCD, is defined in the local coordinate system which is used to define a chimney of the house in the world coordinate system."
+  },
+  {
+   "id": "L56/S0071",
+   "start": 793.785,
+   "end": 802.615,
+   "text": "So, this rectangle is used to define a chimney-like shape in this house shown in the world coordinate scene."
+  },
+  {
+   "id": "L56/S0072",
+   "start": 803.396,
+   "end": 810.804,
+   "text": "So, in order to do that, in order to construct this scene with the chimney in its place, What do we need to do?"
+  },
+  {
+   "id": "L56/S0073",
+   "start": 811.125,
+   "end": 827.026,
+   "text": "What we need to do is basically transform ABCD, the original rectangle in its local coordinate scene, to A dash, B dash, C dash, D dash, that is this chimney-like shape."
+  },
+  {
+   "id": "L56/S0074",
+   "start": 829.189,
+   "end": 833.975,
+   "text": "Now, that is not possible with only a single basic transformation."
+  },
+  {
+   "id": "L56/S0075",
+   "start": 833.995,
+   "end": 842.23,
+   "text": "So, using either translation only, rotation only, scaling only, or shearing only, we will not be able to do this."
+  },
+  {
+   "id": "L56/S0076",
+   "start": 842.471,
+   "end": 848.541,
+   "text": "We will not be able to transfer or transform ABCD to A dash, B dash, C dash, and D dash."
+  },
+  {
+   "id": "L56/S0077",
+   "start": 850.905,
+   "end": 853.95,
+   "text": "We actually require two basic transformations together."
+  },
+  {
+   "id": "L56/S0078",
+   "start": 854.752,
+   "end": 857.196,
+   "text": "One is scaling and one is translation."
+  },
+  {
+   "id": "L56/S0079",
+   "start": 860.642,
+   "end": 864.929,
+   "text": "So, in order to perform the transformation, we need to go through stages."
+  },
+  {
+   "id": "L56/S0080",
+   "start": 865.31,
+   "end": 872.45,
+   "text": "The first stage is to determine the basic matrices for individual transformations, that is, scaling and translation."
+  },
+  {
+   "id": "L56/S0081",
+   "start": 873.892,
+   "end": 883.906,
+   "text": "As we can see, from here to this shape in the world coordinate scene, the object is halved in length while the height remains the same."
+  },
+  {
+   "id": "L56/S0082",
+   "start": 884.046,
+   "end": 893.259,
+   "text": "That means the scaling factor along the x direction must be half, and the scaling factor along the y direction should be 1."
+  },
+  {
+   "id": "L56/S0083",
+   "start": 894.541,
+   "end": 913.774,
+   "text": "So, the scaling matrix should be of this form 0.5 0 0 1 0 0 0 0 1 where Sx equals 0.5, the scaling factor along the x direction, and Sy equals 1 since there is no change."
+  },
+  {
+   "id": "L56/S0084",
+   "start": 917.941,
+   "end": 919.163,
+   "text": "Also, we need to translate."
+  },
+  {
+   "id": "L56/S0085",
+   "start": 920.987,
+   "end": 935.325,
+   "text": "So, vertex-wise, if we look, we can see that vertex D(0, 0), that is the origin, has been translated to D dash, that is 55 in the world coordinate scene."
+  },
+  {
+   "id": "L56/S0086",
+   "start": 935.825,
+   "end": 948.578,
+   "text": "So, the translation matrix should be this one: 1 0 5, 0 1 5, 0 0 1, that is Tx equals 5, Ty equals 5."
+  },
+  {
+   "id": "L56/S0087",
+   "start": 951.258,
+   "end": 955.703,
+   "text": "Translation along the x-axis should be 5, translation along the y-axis should be 5."
+  },
+  {
+   "id": "L56/S0088",
+   "start": 959.388,
+   "end": 962.031,
+   "text": "So, now we have identified the two basic matrices."
+  },
+  {
+   "id": "L56/S0089",
+   "start": 962.311,
+   "end": 969.6,
+   "text": "So, the second step is to obtain the composite matrix, the composite transformation matrix where both are used."
+  },
+  {
+   "id": "L56/S0090",
+   "start": 972.564,
+   "end": 979.172,
+   "text": "So, the first transformation applied to the object is the rightmost in the sequence."
+  },
+  {
+   "id": "L56/S0091",
+   "start": 981.143,
+   "end": 983.547,
+   "text": "The next transformation is placed on the left."
+  },
+  {
+   "id": "L56/S0092",
+   "start": 984.128,
+   "end": 989.156,
+   "text": "This is how we can obtain the composite matrix."
+  },
+  {
+   "id": "L56/S0093",
+   "start": 991.459,
+   "end": 994.144,
+   "text": "And we continue in this way until the last transformation."
+  },
+  {
+   "id": "L56/S0094",
+   "start": 994.164,
+   "end": 997.99,
+   "text": "Since we have only two, after the first two steps, we can stop."
+  },
+  {
+   "id": "L56/S0095",
+   "start": 998.03,
+   "end": 1003.939,
+   "text": "That is, the first transformation, whatever it is, we put it on the right-hand side."
+  },
+  {
+   "id": "L56/S0096",
+   "start": 1004.5,
+   "end": 1005.582,
+   "text": "That is T1."
+  },
+  {
+   "id": "L56/S0097",
+   "start": 1006.102,
+   "end": 1009.686,
+   "text": "Then the next transformation is placed on the left of this transformation."
+  },
+  {
+   "id": "L56/S0098",
+   "start": 1009.706,
+   "end": 1012.749,
+   "text": "So if the next one is T2, then we put it in this way."
+  },
+  {
+   "id": "L56/S0099",
+   "start": 1012.769,
+   "end": 1021.659,
+   "text": "So right-to-left arrangement of transformations that are applied."
+  },
+  {
+   "id": "L56/S0100",
+   "start": 1026.984,
+   "end": 1030.127,
+   "text": "And then we perform a matrix multiplication of those transformations."
+  },
+  {
+   "id": "L56/S0101",
+   "start": 1030.147,
+   "end": 1041.801,
+   "text": "So if we do the same for our example, We can obtain the composite matrix by multiplying these two: translation followed by scaling."
+  },
+  {
+   "id": "L56/S0102",
+   "start": 1042.843,
+   "end": 1046.067,
+   "text": "So, right to left, then we multiply these two."
+  },
+  {
+   "id": "L56/S0103",
+   "start": 1050.813,
+   "end": 1064.61,
+   "text": "So, if we follow the same, then we can see that scaling is the first transformation applied, followed by translation, and we arrange them from right to left as mentioned previously."
+  },
+  {
+   "id": "L56/S0104",
+   "start": 1066.328,
+   "end": 1080.895,
+   "text": "And then we take a multiplication, we perform a multiplication of the matrices to get a composite transformation matrix in this form; that is the composite transformation matrix."
+  },
+  {
+   "id": "L56/S0105",
+   "start": 1083.406,
+   "end": 1090.537,
+   "text": "In the third step, what we do is obtain the new coordinate positions by multiplying the current vertices with the composite matrix."
+  },
+  {
+   "id": "L56/S0106",
+   "start": 1090.957,
+   "end": 1128.399,
+   "text": "Current vertices are given here: A, B, C, D. The composite matrix is this one. Current vertex, if it is A, then A dash would be given by multiplying M with A. Similarly, multiplying M with B we get B dashed as shown here; C dashed in a similar fashion we can get, and D dashed similarly we will get like this,"
+  },
+  {
+   "id": "L56/S0107",
+   "start": 1128.399,
+   "end": 1142.05,
+   "text": "by multiplying M with current vertex D. So, this is how we can obtain the transformed points."
+  },
+  {
+   "id": "L56/S0108",
+   "start": 1143.7,
+   "end": 1145.062,
+   "text": "in the world coordinate scene."
+  },
+  {
+   "id": "L56/S0109",
+   "start": 1147.204,
+   "end": 1155.134,
+   "text": "One thing we should note here is that matrix multiplication is not commutative, and the sequence is very important."
+  },
+  {
+   "id": "L56/S0110",
+   "start": 1155.254,
+   "end": 1170.973,
+   "text": "So, if we are unable to formulate the sequence in the proper order, like right to left as we have discussed previously, then if the sequence is wrong, it may lead to an incorrect result."
+  },
+  {
+   "id": "L56/S0111",
+   "start": 1172.388,
+   "end": 1180.136,
+   "text": "So, the order in which we put the transformations before multiplying them is very important."
+  },
+  {
+   "id": "L56/S0112",
+   "start": 1183.26,
+   "end": 1212.279,
+   "text": "Nevertheless, without going into further details of all the complexities involved in modeling or geometric transformation, we can say that modeling transformation involves multiplication of a transformation matrix, whether it is a basic matrix or a composite matrix, with the vertices to get a transformed vertex in the world coordinate scene."
+  },
+  {
+   "id": "L56/S0113",
+   "start": 1212.299,
+   "end": 1213.48,
+   "text": "That is about stage 2."
+  },
+  {
+   "id": "L56/S0114",
+   "start": 1214.321,
+   "end": 1217.524,
+   "text": "Let us talk about stage 3, that is, color computation."
+  },
+  {
+   "id": "L56/S0115",
+   "start": 1221.388,
+   "end": 1228.921,
+   "text": "So, in the third stage, what we do is basically we try to assign colors to the objects in the scene."
+  },
+  {
+   "id": "L56/S0116",
+   "start": 1229.742,
+   "end": 1240.533,
+   "text": "If a color is not assigned, then we will not be able to perceive depth, which will affect our perception of the 3D scene."
+  },
+  {
+   "id": "L56/S0117",
+   "start": 1240.973,
+   "end": 1245.438,
+   "text": "So, essentially, the quality of experience will reduce, as shown in this example."
+  },
+  {
+   "id": "L56/S0118",
+   "start": 1246.639,
+   "end": 1249.061,
+   "text": "The top one is without assigning proper color."
+  },
+  {
+   "id": "L56/S0119",
+   "start": 1250.062,
+   "end": 1262.085,
+   "text": "Some color is there, but it is not done properly, and the bottom figure shows If we assign colors properly, then we can get a more realistic perception."
+  },
+  {
+   "id": "L56/S0120",
+   "start": 1267.093,
+   "end": 1271.82,
+   "text": "Now, in order to do that, we use lighting or shading models."
+  },
+  {
+   "id": "L56/S0121",
+   "start": 1274.344,
+   "end": 1283.918,
+   "text": "The term lighting model and the term shading model are distinctly used in the context of computer graphics, although they may physically represent more or less similar things."
+  },
+  {
+   "id": "L56/S0122",
+   "start": 1285.248,
+   "end": 1290.579,
+   "text": "But here the terms are differentiated in terms of the computation involved."
+  },
+  {
+   "id": "L56/S0123",
+   "start": 1290.599,
+   "end": 1296.291,
+   "text": "Lighting models are those that involve more computation as compared to shading models."
+  },
+  {
+   "id": "L56/S0124",
+   "start": 1296.451,
+   "end": 1304.708,
+   "text": "Shading models are used to reduce computation but without compromising on the quality of experience."
+  },
+  {
+   "id": "L56/S0125",
+   "start": 1306.949,
+   "end": 1309.653,
+   "text": "Here, let us focus our attention on lighting models."
+  },
+  {
+   "id": "L56/S0126",
+   "start": 1309.673,
+   "end": 1317.866,
+   "text": "Shading models are essentially approximations of color assignment, approximations of methods used to assign colors using the lighting models."
+  },
+  {
+   "id": "L56/S0127",
+   "start": 1319.528,
+   "end": 1321.231,
+   "text": "So, they also rely on lighting models."
+  },
+  {
+   "id": "L56/S0128",
+   "start": 1321.251,
+   "end": 1329.784,
+   "text": "So, let us try to understand the lighting model that will give a holistic understanding of this color assignment process."
+  },
+  {
+   "id": "L56/S0129",
+   "start": 1330.591,
+   "end": 1341.526,
+   "text": "So, lighting models compute colors in terms of continuous intensity values; essentially, these are real numbers typically within the range 0 to 1."
+  },
+  {
+   "id": "L56/S0130",
+   "start": 1341.887,
+   "end": 1345.091,
+   "text": "So, typically a normalized real number."
+  },
+  {
+   "id": "L56/S0131",
+   "start": 1347.194,
+   "end": 1355.346,
+   "text": "Now, these real numbers are mapped to computer-supported discrete values."
+  },
+  {
+   "id": "L56/S0132",
+   "start": 1356.968,
+   "end": 1360.513,
+   "text": "So, we will come back to this point at the end of this lecture."
+  },
+  {
+   "id": "L56/S0133",
+   "start": 1362.94,
+   "end": 1368.49,
+   "text": "In order to understand the lighting model, let us first try to quickly understand the idea of color."
+  },
+  {
+   "id": "L56/S0134",
+   "start": 1370.073,
+   "end": 1379.129,
+   "text": "Now, a source emits light. Say, for example, this is a scenario: here there is a direct light source; it emits light."
+  },
+  {
+   "id": "L56/S0135",
+   "start": 1379.149,
+   "end": 1383.717,
+   "text": "The emitted light energy falls upon a point on the surface, say here."
+  },
+  {
+   "id": "L56/S0136",
+   "start": 1386.92,
+   "end": 1392.628,
+   "text": "Sometimes, emitted light falls on the point after getting reflected from surrounding surfaces."
+  },
+  {
+   "id": "L56/S0137",
+   "start": 1392.688,
+   "end": 1401.982,
+   "text": "So, this light, after getting reflected from here, comes and falls on the same point."
+  },
+  {
+   "id": "L56/S0138",
+   "start": 1402.002,
+   "end": 1404.024,
+   "text": "The incident light then reflects."
+  },
+  {
+   "id": "L56/S0139",
+   "start": 1404.345,
+   "end": 1411.375,
+   "text": "So, whatever light is incident at this point gets reflected and comes to our, or the viewer's, eye."
+  },
+  {
+   "id": "L56/S0140",
+   "start": 1413.937,
+   "end": 1418.802,
+   "text": "The intensity of light reaching the viewer's eye results in color perception."
+  },
+  {
+   "id": "L56/S0141",
+   "start": 1418.822,
+   "end": 1425.649,
+   "text": "Whatever the intensity of this reflected light is determines what color the viewer is going to perceive."
+  },
+  {
+   "id": "L56/S0142",
+   "start": 1428.291,
+   "end": 1433.977,
+   "text": "Now, in computer graphics, we are interested in simulating this process through a lighting model."
+  },
+  {
+   "id": "L56/S0143",
+   "start": 1434.057,
+   "end": 1448.394,
+   "text": "So, to compute the intensity of this reflected light, essentially the color of the surface point from where the light is coming, we simulate the process using a lighting model in computer graphics."
+  },
+  {
+   "id": "L56/S0144",
+   "start": 1451.537,
+   "end": 1454.3,
+   "text": "Now, there are many such models."
+  },
+  {
+   "id": "L56/S0145",
+   "start": 1455.021,
+   "end": 1458.265,
+   "text": "Let us understand the process."
+  },
+  {
+   "id": "L56/S0146",
+   "start": 1458.325,
+   "end": 1462.049,
+   "text": "Let us go through one simple lighting model."
+  },
+  {
+   "id": "L56/S0147",
+   "start": 1463.25,
+   "end": 1471.139,
+   "text": "In this model, the light intensity reaching the viewer from a surface point can be modeled as the sum of three intensities."
+  },
+  {
+   "id": "L56/S0148",
+   "start": 1473.061,
+   "end": 1474.302,
+   "text": "Ambient light intensity."
+  },
+  {
+   "id": "L56/S0149",
+   "start": 1475.935,
+   "end": 1490.853,
+   "text": "which you can represent with I amb, then diffuse reflection intensity of direct light I diffuse, I diff and specular reflection intensity of direct light that is I spec."
+  },
+  {
+   "id": "L56/S0150",
+   "start": 1491.454,
+   "end": 1492.655,
+   "text": "The idea is illustrated here."
+  },
+  {
+   "id": "L56/S0151",
+   "start": 1493.456,
+   "end": 1502.787,
+   "text": "So, whatever light falls on the surface of this object after getting reflected from surrounding surfaces that is called ambient light."
+  },
+  {
+   "id": "L56/S0152",
+   "start": 1503.138,
+   "end": 1514.089,
+   "text": "If light is coming directly from the source and getting reflected in a diffuse manner then that is the diffuse light component."
+  },
+  {
+   "id": "L56/S0153",
+   "start": 1514.109,
+   "end": 1528.584,
+   "text": "If the light comes from the source and gets reflected with a specular effect that is a shiny bright spot effect then that is the specular reflection component."
+  },
+  {
+   "id": "L56/S0154",
+   "start": 1529.925,
+   "end": 1542.132,
+   "text": "So, each type of light will have its own intensity and these three intensities together after combining these three intensities they come to the viewer's eye."
+  },
+  {
+   "id": "L56/S0155",
+   "start": 1542.753,
+   "end": 1560.516,
+   "text": "And correspondingly we can have the simple lighting model which says that the intensity of the incident light on the viewer's eye is the sum of the incident light due to ambient component, due to diffuse component and due to specular component."
+  },
+  {
+   "id": "L56/S0156",
+   "start": 1562.302,
+   "end": 1569.894,
+   "text": "This is the simplistic way of looking at the lighting model."
+  },
+  {
+   "id": "L56/S0157",
+   "start": 1569.914,
+   "end": 1576.223,
+   "text": "Now, the reflected light intensity is a fraction of the incident light intensity."
+  },
+  {
+   "id": "L56/S0158",
+   "start": 1576.243,
+   "end": 1580.069,
+   "text": "Whatever falls, a fraction of it gets reflected and comes to the viewer's eye."
+  },
+  {
+   "id": "L56/S0159",
+   "start": 1581.451,
+   "end": 1587.921,
+   "text": "Now, this fraction is determined by a surface property known as reflection coefficient or reflectivity."
+  },
+  {
+   "id": "L56/S0160",
+   "start": 1591.9,
+   "end": 1613.025,
+   "text": "We define three coefficients for the simple lighting model corresponding to three types of incident lights that is diffuse reflection coefficient for ambient light Ka, diffuse reflection coefficient for direct light Kd and specular reflection coefficient for direct light Ks."
+  },
+  {
+   "id": "L56/S0161",
+   "start": 1615.648,
+   "end": 1648.415,
+   "text": "Now, the values of each of these reflectivity or reflection coefficients vary between 0.0 to 1.0; that is, if the value is close to 0 or 0, then it represents a dull surface with no reflection, as most of the light gets absorbed by the surface. And if it is close to 1 or 1, that means a shiny, mirror-like surface where all light gets reflected."
+  },
+  {
+   "id": "L56/S0162",
+   "start": 1648.475,
+   "end": 1657.55,
+   "text": "So, if we want to generate different effects between dull and shiny surfaces, we can vary these coefficients accordingly."
+  },
+  {
+   "id": "L56/S0163",
+   "start": 1660.953,
+   "end": 1686.889,
+   "text": "Now, to compute the intensity contribution due to the ambient light, what we need to do is simply multiply the ambient light intensity falling on the surface point with the reflectivity for the ambient light, that is Ka, to get the fraction of the ambient light that comes to the viewer's eye."
+  },
+  {
+   "id": "L56/S0164",
+   "start": 1689.251,
+   "end": 1691.254,
+   "text": "So, this is I_a equal to K_a I_a."
+  },
+  {
+   "id": "L56/S0165",
+   "start": 1692.775,
+   "end": 1696.88,
+   "text": "For the diffuse reflection component, it is slightly more complicated."
+  },
+  {
+   "id": "L56/S0166",
+   "start": 1696.96,
+   "end": 1705.37,
+   "text": "Here, we need to take into account the surface normal at the surface point from where the light gets reflected and the light source direction."
+  },
+  {
+   "id": "L56/S0167",
+   "start": 1707.152,
+   "end": 1749.078,
+   "text": "So, let the surface normal be n, a vector, and the light source direction be L, another vector. Then we can compute the diffuse reflection component coming to the user's or viewer's eye as Kd Is, where Is is the source light intensity and the dot product of these two vectors, N dot L, if N dot L is greater than 0; otherwise, it is 0, which means there is no reflection."
+  },
+  {
+   "id": "L56/S0168",
+   "start": 1754.266,
+   "end": 1757.511,
+   "text": "Now, specular component calculation is even more complex."
+  },
+  {
+   "id": "L56/S0169",
+   "start": 1758.993,
+   "end": 1762.999,
+   "text": "Here we are going to talk about one approximate model."
+  },
+  {
+   "id": "L56/S0170",
+   "start": 1764.194,
+   "end": 1770.8,
+   "text": "named after its inventor Phong."
+  },
+  {
+   "id": "L56/S0171",
+   "start": 1770.82,
+   "end": 1777.586,
+   "text": "So, the component is I spec equal to KDIS cos NS phi."
+  },
+  {
+   "id": "L56/S0172",
+   "start": 1777.606,
+   "end": 1793.34,
+   "text": "Phi is, as you can see in this figure, the angle between the viewer direction and the ideal specular reflection direction; that is, if it is a mirror, then the direction of the reflected light."
+  },
+  {
+   "id": "L56/S0173",
+   "start": 1795.75,
+   "end": 1805.881,
+   "text": "Now, we can see from here that cos phi equal to V dot r, another dot product of the two vectors."
+  },
+  {
+   "id": "L56/S0174",
+   "start": 1807.082,
+   "end": 1811.406,
+   "text": "V is the viewer direction vector, r is the ideal specular reflection direction vector."
+  },
+  {
+   "id": "L56/S0175",
+   "start": 1812.628,
+   "end": 1822.618,
+   "text": "So, we can say I specular is Ks Is, where Is is the source light intensity and Ks is the reflectivity for the specular component."
+  },
+  {
+   "id": "L56/S0176",
+   "start": 1824.961,
+   "end": 1831.25,
+   "text": "V dot r Ns if V dot r is greater than 0, otherwise it is 0."
+  },
+  {
+   "id": "L56/S0177",
+   "start": 1833.312,
+   "end": 1877.923,
+   "text": "Now, this r, the ideal specular reflection direction, we can represent with the surface normal at that point, the normal vector at that point that is N, and the light source light direction vector L as r equal to twice L dot N multiplied by N minus L. So, we can replace R here with this expression to finally come up with the component as a dot product of the vectors L, N, and V. So,"
+  },
+  {
+   "id": "L56/S0178",
+   "start": 1877.923,
+   "end": 1883.487,
+   "text": "we need to know these vectors in order to be able to compute the specular component."
+  },
+  {
+   "id": "L56/S0179",
+   "start": 1887.905,
+   "end": 1908.836,
+   "text": "Now, whatever we have discussed so far assumes that no matter where the light source is, if its emission intensity, if the intensity of the emitted light at the source is IS, then the same intensity will come to the surface point irrespective of the distance between the source and the surface point."
+  },
+  {
+   "id": "L56/S0180",
+   "start": 1908.917,
+   "end": 1910.779,
+   "text": "But in practice, that typically never happens."
+  },
+  {
+   "id": "L56/S0181",
+   "start": 1914.084,
+   "end": 1917.169,
+   "text": "Typically, light intensity diminishes."
+  },
+  {
+   "id": "L56/S0182",
+   "start": 1917.706,
+   "end": 1919.208,
+   "text": "over distance."
+  },
+  {
+   "id": "L56/S0183",
+   "start": 1921.011,
+   "end": 1927.701,
+   "text": "So, we need to take care of this factor that is intensity attenuation over distance."
+  },
+  {
+   "id": "L56/S0184",
+   "start": 1928.342,
+   "end": 1940.12,
+   "text": "So, there are two ways to take care of it: one is radial intensity attenuation, that is, the radial factor accounts for the effect of diminishing light intensity over distance."
+  },
+  {
+   "id": "L56/S0185",
+   "start": 1940.14,
+   "end": 1972.854,
+   "text": "Typically, an inverse quadratic function is used to compute this factor in the form f, that is, attenuation factor for radial attenuation, as given by this expression inverse quadratic function where d is the distance between the source and the surface point; a0, a1, a2 these are coefficients varied to produce a better realistic effect."
+  },
+  {
+   "id": "L56/S0186",
+   "start": 1972.874,
+   "end": 1974.375,
+   "text": "So, we can control these values."
+  },
+  {
+   "id": "L56/S0187",
+   "start": 1976.667,
+   "end": 1988.463,
+   "text": "Also, angular intensity attenuation can be taken care of, can be considered primarily if we are interested in generating spotlight effects such as shown here."
+  },
+  {
+   "id": "L56/S0188",
+   "start": 1991.167,
+   "end": 2005.847,
+   "text": "If we want to have an effect like this, where within a region only those elements will be visible or brightly visible and outside that spotlight zone things will be darker."
+  },
+  {
+   "id": "L56/S0189",
+   "start": 2006.384,
+   "end": 2012.492,
+   "text": "If we want to generate such type of effect, then we can make use of intensity attenuation factor."
+  },
+  {
+   "id": "L56/S0190",
+   "start": 2014.095,
+   "end": 2024.549,
+   "text": "A commonly used function to determine the factor is this given here: attenuation factor angular."
+  },
+  {
+   "id": "L56/S0191",
+   "start": 2025.07,
+   "end": 2033.742,
+   "text": "It is 0 if the surface point is outside the angular limit theta, that is, the range of the spotlight cone."
+  },
+  {
+   "id": "L56/S0192",
+   "start": 2035.426,
+   "end": 2050.592,
+   "text": "And if it is within that angular limit, then it varies in the form cos A1 phi where A1 is the angular attenuation exponent, having a positive value, and we can vary this value to achieve different effects."
+  },
+  {
+   "id": "L56/S0193",
+   "start": 2053.538,
+   "end": 2055.521,
+   "text": "So, this is for angular attenuation."
+  },
+  {
+   "id": "L56/S0194",
+   "start": 2056.042,
+   "end": 2069.054,
+   "text": "So, if we take into account this attenuation factor, that is, the light source intensity changes based on the distance of the surface point from the light source."
+  },
+  {
+   "id": "L56/S0195",
+   "start": 2072.518,
+   "end": 2077.225,
+   "text": "Then, taking into account this attenuation, we can modify the simple lighting model."
+  },
+  {
+   "id": "L56/S0196",
+   "start": 2077.284,
+   "end": 2080.529,
+   "text": "Earlier it was simply IM plus ID plus ISPEC."
+  },
+  {
+   "id": "L56/S0197",
+   "start": 2081.11,
+   "end": 2095.819,
+   "text": "Now we can say IM; here we are not taking into account the intensity attenuation, but for diffuse and specular reflection, we are doing that by multiplying these two factors with the sum of these two components."
+  },
+  {
+   "id": "L56/S0198",
+   "start": 2096.679,
+   "end": 2104.87,
+   "text": "Now, if these are one, that means the factor is uniform, meaning we are not taking them into account; then it boils down to the earlier formulation."
+  },
+  {
+   "id": "L56/S0199",
+   "start": 2106.072,
+   "end": 2115.484,
+   "text": "If it is not one, then the effect is taken care of."
+  },
+  {
+   "id": "L56/S0200",
+   "start": 2115.504,
+   "end": 2125.107,
+   "text": "Also, when we are thinking of assigning colors, so, the colored light model is a slightly different way."
+  },
+  {
+   "id": "L56/S0201",
+   "start": 2126.068,
+   "end": 2136.923,
+   "text": "Emitted light intensity has three components in such a case, rather than a single component; in a colored light source, these correspond to the primary colors red, green, and blue."
+  },
+  {
+   "id": "L56/S0202",
+   "start": 2137.564,
+   "end": 2144.433,
+   "text": "Now, these three intensities combine together to give the perception of any color."
+  },
+  {
+   "id": "L56/S0203",
+   "start": 2146.817,
+   "end": 2152.204,
+   "text": "So, the source intensity is a three-element vector Is: Isr, Isg, Isb."
+  },
+  {
+   "id": "L56/S0204",
+   "start": 2152.775,
+   "end": 2154.637,
+   "text": "corresponding to the three primary colors."
+  },
+  {
+   "id": "L56/S0205",
+   "start": 2155.318,
+   "end": 2174.12,
+   "text": "Reflection coefficients also need to be specified as three-element vectors: k equal to one for red, one for green, one for blue; kd again one for red, green, blue; and ks one for red, green, and blue."
+  },
+  {
+   "id": "L56/S0206",
+   "start": 2176.243,
+   "end": 2191.732,
+   "text": "So, when we compute color, we have to individually compute these components, and then once these three are generated together, we perceive the color."
+  },
+  {
+   "id": "L56/S0207",
+   "start": 2192.973,
+   "end": 2196.156,
+   "text": "Now, so far we have talked about a single light source."
+  },
+  {
+   "id": "L56/S0208",
+   "start": 2196.176,
+   "end": 2199.179,
+   "text": "What happens when there are multiple light sources?"
+  },
+  {
+   "id": "L56/S0209",
+   "start": 2200.28,
+   "end": 2202.402,
+   "text": "Let us assume that there are n light sources."
+  },
+  {
+   "id": "L56/S0210",
+   "start": 2203.182,
+   "end": 2205.945,
+   "text": "So, in such a case, we need to further revise the model."
+  },
+  {
+   "id": "L56/S0211",
+   "start": 2206.065,
+   "end": 2211.69,
+   "text": "It will be IP equal to I ambient plus summation."
+  },
+  {
+   "id": "L56/S0212",
+   "start": 2212.09,
+   "end": 2234.258,
+   "text": "A summation term is introduced, i from 1 to n, that is, for each light source we have to calculate this part, and then we have to add those up, and each of these we need to compute for individual colors for the colored light sources."
+  },
+  {
+   "id": "L56/S0213",
+   "start": 2234.899,
+   "end": 2243.329,
+   "text": "So, if we have multiple colored light sources, then this needs to be done for individual colors for the colored light sources."
+  },
+  {
+   "id": "L56/S0214",
+   "start": 2244.676,
+   "end": 2249.58,
+   "text": "So, you can get some idea of the kind of computations involved in assigning colors."
+  },
+  {
+   "id": "L56/S0215",
+   "start": 2250.901,
+   "end": 2256.166,
+   "text": "In the previous case, we have seen the computation involved in transformation."
+  },
+  {
+   "id": "L56/S0216",
+   "start": 2256.226,
+   "end": 2259.309,
+   "text": "Now, we are seeing the computation involved in assigning colors."
+  },
+  {
+   "id": "L56/S0217",
+   "start": 2260.89,
+   "end": 2262.892,
+   "text": "The other part is intensity mapping."
+  },
+  {
+   "id": "L56/S0218",
+   "start": 2262.952,
+   "end": 2273.181,
+   "text": "So, the lighting model computes an intensity value for a pixel, but then that value can be anything between 0 and 1."
+  },
+  {
+   "id": "L56/S0219",
+   "start": 2273.92,
+   "end": 2274.862,
+   "text": "An infinite range."
+  },
+  {
+   "id": "L56/S0220",
+   "start": 2275.523,
+   "end": 2282.053,
+   "text": "However, devices do not support arbitrary ranges; they have a finite range of values."
+  },
+  {
+   "id": "L56/S0221",
+   "start": 2282.073,
+   "end": 2293.371,
+   "text": "Say, for example, an 8-bit display will support 2 to the power 8 or 256 colors for each of the pixels."
+  },
+  {
+   "id": "L56/S0222",
+   "start": 2293.451,
+   "end": 2296.656,
+   "text": "So, we have 256 values supported by the device."
+  },
+  {
+   "id": "L56/S0223",
+   "start": 2299.2,
+   "end": 2303.911,
+   "text": "But then, the range 0 to 1 is infinite; any value can be generated."
+  },
+  {
+   "id": "L56/S0224",
+   "start": 2303.931,
+   "end": 2322.416,
+   "text": "So, what we need to do is we find the nearest value to IP from the device-supported intensity values, say I k, then the frame buffer stores the bit pattern for I k at the pixel location."
+  },
+  {
+   "id": "L56/S0225",
+   "start": 2322.436,
+   "end": 2330.387,
+   "text": "So, how to do that? Essentially, what we need to know, what we need to do, is determine the n number of device-supported levels."
+  },
+  {
+   "id": "L56/S0226",
+   "start": 2333.152,
+   "end": 2346.909,
+   "text": "Then we need to determine the minimum device-supported intensity value I naught using a photometer, and we know that the maximum value can be 1."
+  },
+  {
+   "id": "L56/S0227",
+   "start": 2347.35,
+   "end": 2352.236,
+   "text": "So, we have I naught and 1 known, and n, the number of levels supported."
+  },
+  {
+   "id": "L56/S0228",
+   "start": 2352.837,
+   "end": 2361.447,
+   "text": "Then there is a factor r which we need to compute using the equation I n equal to I r to the power n I naught."
+  },
+  {
+   "id": "L56/S0229",
+   "start": 2361.648,
+   "end": 2375.28,
+   "text": "Now, this equation is formed based on one of our psychophysiological properties, that is, we can perceive relative change between two intensity values rather than absolute change in the intensity values."
+  },
+  {
+   "id": "L56/S0230",
+   "start": 2378.403,
+   "end": 2387.391,
+   "text": "Based on that, we can formulate this equation as successive intensity values to be represented by this."
+  },
+  {
+   "id": "L56/S0231",
+   "start": 2387.962,
+   "end": 2410.257,
+   "text": "i1 equal to r to the power n i0, r to the power 1 i0, i2 equal to r square i0, i3 equal to r cube i0 and so on up to the nth value."
+  },
+  {
+   "id": "L56/S0232",
+   "start": 2413.662,
+   "end": 2432.222,
+   "text": "Now, once R is determined, we need to calculate these values I0, I1, I2, I3, store that in a table, and for each such value we assign a bit pattern and also store that along with those values."
+  },
+  {
+   "id": "L56/S0233",
+   "start": 2433.424,
+   "end": 2450.307,
+   "text": "Then we determine the device intensities and bit patterns and store them in a table, and finally, when we compute using a lighting model pixel intensity, we map the computed intensity to the nearest device intensity."
+  },
+  {
+   "id": "L56/S0234",
+   "start": 2450.327,
+   "end": 2485.211,
+   "text": "So, we have a table storing I0, I1, I2, IN and corresponding bit patterns, bit pattern 1, bit pattern 2, bit pattern 3, n. So, once we have the computed value, we map it to the table; that means we map it to the nearest intensity, and the corresponding bit pattern is obtained and"
+  },
+  {
+   "id": "L56/S0235",
+   "start": 2485.211,
+   "end": 2492.046,
+   "text": "stored in the frame buffer. That is how we map a computed value to the device-supported value."
+  },
+  {
+   "id": "L56/S0236",
+   "start": 2492.066,
+   "end": 2494.469,
+   "text": "So, let us summarize what we have covered so far."
+  },
+  {
+   "id": "L56/S0237",
+   "start": 2496.131,
+   "end": 2503.712,
+   "text": "In this part of the lecture, we have covered two more stages of the pipeline: modeling transformation and intensity calculation lighting."
+  },
+  {
+   "id": "L56/S0238",
+   "start": 2503.732,
+   "end": 2518.753,
+   "text": "In modeling transformation, we have seen that to transform a point from its local coordinate system to the world coordinate system, we first need to obtain the transformation matrix, which can be an individual basic matrix or a composite matrix."
+  },
+  {
+   "id": "L56/S0239",
+   "start": 2519.233,
+   "end": 2530.548,
+   "text": "A composite matrix is more common, and then we multiply the point vector with the composite matrix to determine the transformed point. That is one set of computations."
+  },
+  {
+   "id": "L56/S0240",
+   "start": 2530.568,
+   "end": 2543.768,
+   "text": "Once the point is transformed in the world coordinate scene, then for that point, we assign some color; that is, we compute the intensity of the light which gets reflected from that point and comes to the user's eye."
+  },
+  {
+   "id": "L56/S0241",
+   "start": 2544.91,
+   "end": 2552.201,
+   "text": "Note that here we are not actually computing color at the pixel level, but color in the 3D scene at the point level."
+  },
+  {
+   "id": "L56/S0242",
+   "start": 2553.022,
+   "end": 2555.807,
+   "text": "And in order to do that, we need a lighting model."
+  },
+  {
+   "id": "L56/S0243",
+   "start": 2556.508,
+   "end": 2569.926,
+   "text": "We have quickly gone through a simple lighting model to get some idea, and we have also talked about how to map the color computed with the lighting model to a color supported by the device."
+  },
+  {
+   "id": "L56/S0244",
+   "start": 2571.207,
+   "end": 2579.636,
+   "text": "The mapping table is device-specific. For a given display, the table is fixed, and we need to map it to the supported value."
+  },
+  {
+   "id": "L56/S0245",
+   "start": 2580.858,
+   "end": 2585.082,
+   "text": "In the next part of the lecture, we are going to cover the remaining stages of the pipeline."
+  },
+  {
+   "id": "L56/S0246",
+   "start": 2586.226,
+   "end": 2591.534,
+   "text": "I hope you could follow the topics and understand the concepts covered here."
+  },
+  {
+   "id": "L56/S0247",
+   "start": 2592.075,
+   "end": 2596.322,
+   "text": "For more detail, of course, we are keeping things at a very broad, simple level."
+  },
+  {
+   "id": "L56/S0248",
+   "start": 2596.702,
+   "end": 2602.391,
+   "text": "For more details, you can always refer to the material referenced at the end of this lecture."
+  },
+  {
+   "id": "L56/S0249",
+   "start": 2604.154,
+   "end": 2606.618,
+   "text": "So, looking forward to meeting you in the next part of the lecture."
+  },
+  {
+   "id": "L56/S0250",
+   "start": 2607.339,
+   "end": 2609.382,
+   "text": "Thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L56/P01",
+   "first": "L56/S0000",
+   "last": "L56/S0012",
+   "start": 23.96,
+   "end": 145.688,
+   "objective": "Identify the upcoming stages of the 3D graphics pipeline (the second and third stages)",
+   "objective_id": "L56/O1",
+   "key_points": [
+    {
+     "id": "L56/P01/K1",
+     "text": "The rendering process, which dictates how a scene is displayed, is the key component of any immersive experience and is studied within computer graphics.",
+     "sources": [
+      "L56/S0003"
+     ],
+     "concept_ids": [
+      "C0039",
+      "C0256",
+      "C0258",
+      "C0394",
+      "C0409",
+      "C0888"
+     ]
+    },
+    {
+     "id": "L56/P01/K2",
+     "text": "The object representation stage, although discussed as the first stage, does not involve computation related to intensity calculation or the determination of pixel intensities. (cited sentences)",
+     "sources": [
+      "L56/S0009"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C1137",
+      "C1140",
+      "C1146",
+      "C1166",
+      "C1188"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P01/T1",
+     "surface": "computer graphics",
+     "name": "Computer graphics",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Computer graphics is the discipline that deals with the rendering part, which determines how a scene is depicted in front of a user's eyes on a display device.",
+     "sources": [
+      "L56/S0003",
+      "L56/S0004"
+     ],
+     "concept_id": "C0409",
+     "concept_name": "Computer graphics"
+    },
+    {
+     "id": "L56/P01/T2",
+     "surface": "rendering",
+     "name": "Rendering",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Rendering is the key component of any immersive experience, representing the process of how a scene is displayed on a display device to the user.",
+     "sources": [
+      "L56/S0003",
+      "L56/S0004"
+     ],
+     "concept_id": "C0394",
+     "concept_name": "Rendering"
+    },
+    {
+     "id": "L56/P01/T3",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 3D graphics pipeline is a structured process composed of various stages that sequentially handle the ideas and components necessary for rendering.",
+     "sources": [
+      "L56/S0007"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L56/P01/T4",
+     "surface": "object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation is the content of the first stage of the graphics pipeline, focusing on the representation of objects without immediate computation related to intensity or pixel intensities.",
+     "sources": [
+      "L56/S0008",
+      "L56/S0009"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    }
+   ]
+  },
+  {
+   "id": "L56/P02",
+   "first": "L56/S0013",
+   "last": "L56/S0025",
+   "start": 146.049,
+   "end": 284.609,
+   "objective": "Identify and describe the modeling transformation and lighting stages of the 3D graphics pipeline",
+   "objective_id": "L56/O1",
+   "key_points": [
+    {
+     "id": "L56/P02/K1",
+     "text": "The 3D graphics pipeline consists of five stages: object representation, modeling transformation, lighting, viewing pipeline, and scan conversion.",
+     "sources": [
+      "L56/S0014",
+      "L56/S0018",
+      "L56/S0020",
+      "L56/S0023"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0481",
+      "C1137",
+      "C1140",
+      "C1159",
+      "C1165",
+      "C1166",
+      "C1167",
+      "C1168",
+      "C1188"
+     ]
+    },
+    {
+     "id": "L56/P02/K2",
+     "text": "Modeling transformation converts the object's description from a local coordinate system to a world coordinate system.",
+     "sources": [
+      "L56/S0017"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0538",
+      "C0653",
+      "C1137",
+      "C1159",
+      "C1160",
+      "C1161",
+      "C1189"
+     ]
+    },
+    {
+     "id": "L56/P02/K3",
+     "text": "The viewing pipeline, the fourth stage, involves transforming the scene from 3D view coordinates to 2D view coordinates.",
+     "sources": [
+      "L56/S0020",
+      "L56/S0022"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0481",
+      "C0888",
+      "C1168",
+      "C1188"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P02/T1",
+     "surface": "3D graphics pipeline",
+     "name": "3D graphics pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 3D graphics pipeline is a sequence of five stages that process a scene description. These stages include object representation, modeling transformation, lighting, viewing pipeline, and scan conversion.",
+     "sources": [
+      "L56/S0013",
+      "L56/S0024"
+     ],
+     "concept_id": "C0470",
+     "concept_name": "3D graphics pipeline"
+    },
+    {
+     "id": "L56/P02/T2",
+     "surface": "object representation",
+     "name": "Object representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Object representation is the first stage of the 3D graphics pipeline, and it occurs within the local coordinate system.",
+     "sources": [
+      "L56/S0014",
+      "L56/S0015"
+     ],
+     "concept_id": "C1166",
+     "concept_name": "Object representation"
+    },
+    {
+     "id": "L56/P02/T3",
+     "surface": "local coordinate system",
+     "name": "Local coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The local coordinate system is the environment where object representation takes place.",
+     "sources": [
+      "L56/S0015"
+     ],
+     "concept_id": "C1160",
+     "concept_name": "Local coordinate system"
+    },
+    {
+     "id": "L56/P02/T4",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the second stage in the graphics pipeline, responsible for transforming the local coordinate description into a world coordinate description.",
+     "sources": [
+      "L56/S0017"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L56/P02/T5",
+     "surface": "world coordinate description",
+     "name": "World coordinate description",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate description is the result of the modeling transformation, representing the local coordinate description transformed to a world coordinate system.",
+     "sources": [
+      "L56/S0017"
+     ],
+     "concept_id": "C1190",
+     "concept_name": "World coordinate description"
+    },
+    {
+     "id": "L56/P02/T6",
+     "surface": "lighting stage",
+     "name": "Lighting stage",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The lighting stage is the third stage of the graphics pipeline and takes place within the world coordinate reference frame.",
+     "sources": [
+      "L56/S0018",
+      "L56/S0019"
+     ],
+     "concept_id": "C1162",
+     "concept_name": "Lighting stage"
+    },
+    {
+     "id": "L56/P02/T7",
+     "surface": "world coordinate reference frame",
+     "name": "World coordinate reference frame",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate reference frame is the reference frame in which the lighting stage of the graphics pipeline takes place.",
+     "sources": [
+      "L56/S0019"
+     ],
+     "concept_id": "C1191",
+     "concept_name": "World coordinate reference frame"
+    },
+    {
+     "id": "L56/P02/T8",
+     "surface": "viewing pipeline",
+     "name": "Viewing pipeline",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The viewing pipeline is the fourth stage of the graphics pipeline, which contains several sub-stages starting with viewing transformation.",
+     "sources": [
+      "L56/S0020"
+     ],
+     "concept_id": "C1168",
+     "concept_name": "Viewing pipeline"
+    },
+    {
+     "id": "L56/P02/T9",
+     "surface": "viewing transformation",
+     "name": "Viewing transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Viewing transformation is a sub-stage of the viewing pipeline where the coordinate system is transformed from the world coordinate system to a 3D view coordinate system.",
+     "sources": [
+      "L56/S0020"
+     ],
+     "concept_id": "C1163",
+     "concept_name": "Viewing transformation"
+    },
+    {
+     "id": "L56/P02/T10",
+     "surface": "clipping",
+     "name": "Clipping",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Clipping is an operation in the 3D view coordinate system that is performed within the viewing pipeline.",
+     "sources": [
+      "L56/S0021"
+     ],
+     "concept_id": "C0469",
+     "concept_name": "Clipping"
+    },
+    {
+     "id": "L56/P02/T11",
+     "surface": "hidden surface removal",
+     "name": "Hidden surface removal",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Hidden surface removal is an operation that takes place within the 3D view coordinate system during the viewing pipeline.",
+     "sources": [
+      "L56/S0021"
+     ],
+     "concept_id": "C1169",
+     "concept_name": "Hidden surface removal"
+    },
+    {
+     "id": "L56/P02/T12",
+     "surface": "projection transformation",
+     "name": "Projection transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Projection transformation is a transformation that converts the scene from a 3D view coordinate to a 2D view coordinate system.",
+     "sources": [
+      "L56/S0022"
+     ],
+     "concept_id": "C1171",
+     "concept_name": "Projection transformation"
+    },
+    {
+     "id": "L56/P02/T13",
+     "surface": "2D view coordinate system",
+     "name": "2D view coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The 2D view coordinate system is the coordinate system resulting after the projection transformation.",
+     "sources": [
+      "L56/S0022"
+     ],
+     "concept_id": "C1172",
+     "concept_name": "2D view coordinate system"
+    },
+    {
+     "id": "L56/P02/T14",
+     "surface": "window to viewport transformation",
+     "name": "Window to viewport transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Window to viewport transformation is a transformation that transfers the scene description from the 2D view coordinate system to a device coordinate system.",
+     "sources": [
+      "L56/S0022"
+     ],
+     "concept_id": "C1173",
+     "concept_name": "Window to viewport transformation"
+    },
+    {
+     "id": "L56/P02/T15",
+     "surface": "device coordinate system",
+     "name": "Device coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The device coordinate system is the coordinate system into which the scene description is transferred during the window to viewport transformation.",
+     "sources": [
+      "L56/S0022"
+     ],
+     "concept_id": "C1164",
+     "concept_name": "Device coordinate system"
+    },
+    {
+     "id": "L56/P02/T16",
+     "surface": "scan conversion",
+     "name": "Scan conversion",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Scan conversion is the fifth and final stage of the graphics pipeline, where the scene description is transformed from the device coordinate to a screen coordinate or pixel grid description.",
+     "sources": [
+      "L56/S0023"
+     ],
+     "concept_id": "C1165",
+     "concept_name": "Scan conversion"
+    },
+    {
+     "id": "L56/P02/T17",
+     "surface": "screen coordinate description",
+     "name": "Screen coordinate description",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The screen coordinate description is the final representation of the scene that is achieved after the scan conversion stage, using a pixel grid description.",
+     "sources": [
+      "L56/S0023"
+     ],
+     "concept_id": "C1192",
+     "concept_name": "Screen coordinate description"
+    }
+   ]
+  },
+  {
+   "id": "L56/P03",
+   "first": "L56/S0026",
+   "last": "L56/S0113",
+   "start": 286.892,
+   "end": 1213.48,
+   "objective": "Apply geometric transformations using basic and composite matrices to position objects in a scene",
+   "objective_id": "L56/O2",
+   "key_points": [
+    {
+     "id": "L56/P03/K1",
+     "text": "Modeling transformation involves moving an object from its local coordinate system description to a common world or scene coordinate system.",
+     "sources": [
+      "L56/S0035",
+      "L56/S0036",
+      "L56/S0037"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C0538",
+      "C0653",
+      "C0888",
+      "C1137",
+      "C1159",
+      "C1160",
+      "C1189",
+      "C1199"
+     ]
+    },
+    {
+     "id": "L56/P03/K2",
+     "text": "The four basic transformations—translation, rotation, scaling, and shearing—can be combined to achieve any required geometric transformation.",
+     "sources": [
+      "L56/S0049",
+      "L56/S0050"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1159",
+      "C1195",
+      "C1196"
+     ]
+    },
+    {
+     "id": "L56/P03/K3",
+     "text": "Transformations are represented using matrices; homogeneous coordinates are used to add an extra dimension to facilitate operations like translation.",
+     "sources": [
+      "L56/S0051",
+      "L56/S0055"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1140",
+      "C1195"
+     ]
+    },
+    {
+     "id": "L56/P03/K4",
+     "text": "When multiple basic operations are needed, a composite transformation matrix is formed by multiplying the individual transformation matrices in a specific right-to-left sequence.",
+     "sources": [
+      "L56/S0068",
+      "L56/S0089",
+      "L56/S0099",
+      "L56/S0100"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1196",
+      "C1200"
+     ]
+    },
+    {
+     "id": "L56/P03/K5",
+     "text": "Matrix multiplication is not commutative, meaning the sequence (order) in which transformations are applied is critically important for achieving the correct result.",
+     "sources": [
+      "L56/S0109",
+      "L56/S0111"
+     ],
+     "concept_ids": [
+      "C0481",
+      "C1198"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P03/T1",
+     "surface": "geometric transformation",
+     "name": "Geometric transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Geometric transformation is the process of applying operations to an object's definition, which allows it to be transformed from its local coordinate system into the world or scene coordinate system.",
+     "sources": [
+      "L56/S0027",
+      "L56/S0045"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    },
+    {
+     "id": "L56/P03/T2",
+     "surface": "local coordinate system description",
+     "name": "Local coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The local coordinate system is the individual definition of an object, serving as a coordinate reference frame where the object's position and dimensions are defined.",
+     "sources": [
+      "L56/S0031",
+      "L56/S0032",
+      "L56/S0064",
+      "L56/S0070"
+     ],
+     "concept_id": "C1160",
+     "concept_name": "Local coordinate system"
+    },
+    {
+     "id": "L56/P03/T3",
+     "surface": "scene or world coordinate system",
+     "name": "World coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate system is the common coordinate system used to assemble multiple individual objects together, allowing them to be defined within a single scene.",
+     "sources": [
+      "L56/S0035",
+      "L56/S0036",
+      "L56/S0037",
+      "L56/S0071",
+      "L56/S0073"
+     ],
+     "concept_id": "C1161",
+     "concept_name": "World coordinate system"
+    },
+    {
+     "id": "L56/P03/T4",
+     "surface": "matrix representation",
+     "name": "Matrix representation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Matrix representation is a convenient mathematical method used to express transformations, which allows for the transformation of points from an object's local coordinate system to the world coordinate system.",
+     "sources": [
+      "L56/S0051",
+      "L56/S0062"
+     ],
+     "concept_id": "C1193",
+     "concept_name": "Matrix representation"
+    },
+    {
+     "id": "L56/P03/T5",
+     "surface": "homogeneous coordinate system",
+     "name": "Homogeneous coordinate system",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The homogeneous coordinate system is a specialized setting used for representing transformations by adding one extra dimension to the standard coordinate structure.",
+     "sources": [
+      "L56/S0052",
+      "L56/S0055"
+     ],
+     "concept_id": "C1194",
+     "concept_name": "Homogeneous coordinate system"
+    },
+    {
+     "id": "L56/P03/T6",
+     "surface": "translation",
+     "name": "Translation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Translation is a geometric operation represented by a 3 by 3 matrix where Tx and Ty represent the amounts of movement along the x and y directions.",
+     "sources": [
+      "L56/S0056"
+     ],
+     "concept_id": "C1195",
+     "concept_name": "Translation"
+    },
+    {
+     "id": "L56/P03/T7",
+     "surface": "composite transformation matrix",
+     "name": "Composite transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A composite transformation matrix is necessary when multiple geometric or modeling transformations are required for an object, allowing those operations to be combined into a single matrix.",
+     "sources": [
+      "L56/S0069",
+      "L56/S0089",
+      "L56/S0104"
+     ],
+     "concept_id": "C1196",
+     "concept_name": "Composite transformation matrix"
+    },
+    {
+     "id": "L56/P03/T8",
+     "surface": "translation matrix",
+     "name": "Translation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The translation matrix is a specific mathematical matrix format, such as 1 0 5, 0 1 5, 0 0 1, used to define translations along axes like the x and y axes.",
+     "sources": [
+      "L56/S0086"
+     ],
+     "concept_id": "C1197",
+     "concept_name": "Translation matrix"
+    },
+    {
+     "id": "L56/P03/T9",
+     "surface": "matrix multiplication",
+     "name": "Matrix multiplication",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Matrix multiplication is the mathematical process used to combine transformation matrices, and it is not commutative, meaning the sequence of multiplication is very important for achieving the correct result.",
+     "sources": [
+      "L56/S0100",
+      "L56/S0109"
+     ],
+     "concept_id": "C1198",
+     "concept_name": "Matrix multiplication"
+    },
+    {
+     "id": "L56/P03/T10",
+     "surface": "world coordinate scene",
+     "name": "World coordinate scene",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The world coordinate scene is the environment where the original vertices are moved to obtain the transformed points using the composite matrix.",
+     "sources": [
+      "L56/S0106",
+      "L56/S0108"
+     ],
+     "concept_id": "C1199",
+     "concept_name": "World coordinate scene"
+    },
+    {
+     "id": "L56/P03/T11",
+     "surface": "transformation matrix",
+     "name": "Transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A transformation matrix is a matrix, whether it is a basic matrix or a composite matrix, used in geometric transformation to multiply with vertices and yield a transformed vertex.",
+     "sources": [
+      "L56/S0112"
+     ],
+     "concept_id": "C1200",
+     "concept_name": "Transformation matrix"
+    },
+    {
+     "id": "L56/P03/T12",
+     "surface": "modeling transformation",
+     "name": "Modeling transformation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Modeling transformation is the process of obtaining a transformed vertex by multiplying a transformation matrix, whether basic or composite, with the vertices.",
+     "sources": [
+      "L56/S0112"
+     ],
+     "concept_id": "C1159",
+     "concept_name": "Modeling transformation"
+    }
+   ]
+  },
+  {
+   "id": "L56/P04",
+   "first": "L56/S0114",
+   "last": "L56/S0132",
+   "start": 1214.321,
+   "end": 1360.513,
+   "objective": "Compare lighting models and shading models to understand color assignment processes necessary for realistic depth perception",
+   "objective_id": "L56/O3",
+   "key_points": [
+    {
+     "id": "L56/P04/K1",
+     "text": "Assigning color is necessary for the perception of depth within a 3D scene.",
+     "sources": [
+      "L56/S0116"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0542",
+      "C0888"
+     ]
+    },
+    {
+     "id": "L56/P04/K2",
+     "text": "Lighting models involve more computational complexity than shading models.",
+     "sources": [
+      "L56/S0123"
+     ],
+     "concept_ids": [
+      "C1167",
+      "C1201",
+      "C1202"
+     ]
+    },
+    {
+     "id": "L56/P04/K3",
+     "text": "Shading models function as approximations of color assignment methods derived from lighting models to reduce computation.",
+     "sources": [
+      "L56/S0124",
+      "L56/S0126"
+     ],
+     "concept_ids": [
+      "C0258",
+      "C0766",
+      "C1167",
+      "C1201",
+      "C1202"
+     ]
+    },
+    {
+     "id": "L56/P04/K4",
+     "text": "Lighting models compute colors using continuous intensity values, which are typically normalized real numbers (0 to 1).",
+     "sources": [
+      "L56/S0129",
+      "L56/S0130"
+     ],
+     "concept_ids": [
+      "C1167",
+      "C1201"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P04/T1",
+     "surface": "lighting models",
+     "name": "Lighting model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A lighting model is a method that computes colors using continuous intensity values (real numbers, typically between 0 and 1), and it involves more computation compared to shading models.",
+     "sources": [
+      "L56/S0123",
+      "L56/S0126",
+      "L56/S0129",
+      "L56/S0130"
+     ],
+     "concept_id": "C1201",
+     "concept_name": "Lighting model"
+    },
+    {
+     "id": "L56/P04/T2",
+     "surface": "shading models",
+     "name": "Shading model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A shading model is an approximation of color assignment that relies on lighting models and is designed to reduce computation without significantly compromising the quality of the experience.",
+     "sources": [
+      "L56/S0124",
+      "L56/S0126",
+      "L56/S0127"
+     ],
+     "concept_id": "C1202",
+     "concept_name": "Shading model"
+    }
+   ]
+  },
+  {
+   "id": "L56/P05",
+   "first": "L56/S0133",
+   "last": "L56/S0178",
+   "start": 1362.94,
+   "end": 1883.487,
+   "objective": "Analyze and calculate the intensity of reflected light using simple lighting models in computer graphics",
+   "objective_id": "L56/O3",
+   "key_points": [
+    {
+     "id": "L56/P05/K1",
+     "text": "Color perception is determined by the intensity of the light reflected from a surface point to the viewer's eye.,",
+     "sources": [
+      "L56/S0140",
+      "L56/S0141"
+     ],
+     "concept_ids": [
+      "C0542",
+      "C0583",
+      "C1167"
+     ]
+    },
+    {
+     "id": "L56/P05/K2",
+     "text": "The simple lighting model calculates reflected light intensity as the sum of three components: ambient, diffuse, and specular reflection.,",
+     "sources": [
+      "L56/S0147",
+      "L56/S0155"
+     ],
+     "concept_ids": [
+      "C0582",
+      "C1167",
+      "C1201",
+      "C1203"
+     ]
+    },
+    {
+     "id": "L56/P05/K3",
+     "text": "Reflection coefficients ($K_a, K_d, K_s$) determine the reflectivity of a surface, with values ranging from 0.0 (dull) to 1.0 (shiny).,",
+     "sources": [
+      "L56/S0160",
+      "L56/S0161"
+     ],
+     "concept_ids": [
+      "C0582",
+      "C1074",
+      "C1094",
+      "C1207"
+     ]
+    },
+    {
+     "id": "L56/P05/K4",
+     "text": "Diffuse reflection intensity is calculated using the dot product of the surface normal and the light source direction.",
+     "sources": [
+      "L56/S0167"
+     ],
+     "concept_ids": [
+      "C0582",
+      "C1167",
+      "C1205",
+      "C1211",
+      "C1212"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P05/T1",
+     "surface": "lighting model",
+     "name": "Lighting model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A lighting model is a method used in computer graphics to simulate the process of light interacting with surfaces, helping to compute the intensity and resulting color of a surface point.",
+     "sources": [
+      "L56/S0133",
+      "L56/S0142",
+      "L56/S0143",
+      "L56/S0156"
+     ],
+     "concept_id": "C1201",
+     "concept_name": "Lighting model"
+    },
+    {
+     "id": "L56/P05/T2",
+     "surface": "simple lighting model",
+     "name": "Simple lighting model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The simple lighting model models the light intensity reaching a surface point as the sum of three components: ambient light, diffuse reflection, and specular reflection.",
+     "sources": [
+      "L56/S0146",
+      "L56/S0147",
+      "L56/S0155",
+      "L56/S0156"
+     ],
+     "concept_id": "C1203",
+     "concept_name": "Simple lighting model"
+    },
+    {
+     "id": "L56/P05/T3",
+     "surface": "ambient light intensity",
+     "name": "Ambient light intensity",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Ambient light is the light that falls on the surface of an object after getting reflected from surrounding surfaces.",
+     "sources": [
+      "L56/S0147",
+      "L56/S0148",
+      "L56/S0151",
+      "L56/S0163"
+     ],
+     "concept_id": "C1204",
+     "concept_name": "Ambient light intensity"
+    },
+    {
+     "id": "L56/P05/T4",
+     "surface": "diffuse reflection intensity",
+     "name": "Diffuse reflection intensity",
+     "abbreviation": "I diff",
+     "abbreviation_at": "L56/S0149",
+     "definition": "Diffuse light component is the light that comes directly from a source and gets reflected in a non-shiny, diffuse manner.",
+     "sources": [
+      "L56/S0147",
+      "L56/S0149",
+      "L56/S0152",
+      "L56/S0155"
+     ],
+     "concept_id": "C1205",
+     "concept_name": "Diffuse reflection intensity"
+    },
+    {
+     "id": "L56/P05/T5",
+     "surface": "specular reflection intensity",
+     "name": "Specular reflection intensity",
+     "abbreviation": "I spec",
+     "abbreviation_at": "L56/S0149",
+     "definition": "Specular reflection component is the light that comes from the source and gets reflected with a shiny, bright spot effect.",
+     "sources": [
+      "L56/S0147",
+      "L56/S0149",
+      "L56/S0153",
+      "L56/S0155"
+     ],
+     "concept_id": "C1206",
+     "concept_name": "Specular reflection intensity"
+    },
+    {
+     "id": "L56/P05/T6",
+     "surface": "reflection coefficient or reflectivity",
+     "name": "Reflection coefficient",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The reflection coefficient, or reflectivity, is a surface property that determines what fraction of incident light gets reflected and reaches the viewer's eye.",
+     "sources": [
+      "L56/S0159",
+      "L56/S0160",
+      "L56/S0161",
+      "L56/S0162"
+     ],
+     "concept_id": "C1207",
+     "concept_name": "Reflection coefficient"
+    },
+    {
+     "id": "L56/P05/T7",
+     "surface": "diffuse reflection coefficient for ambient light",
+     "name": "Diffuse reflection coefficient for ambient light",
+     "abbreviation": "Ka",
+     "abbreviation_at": "L56/S0160",
+     "definition": "Diffuse reflection coefficient for ambient light is a reflectivity value between 0.0 and 1.0 that determines the fraction of ambient light intensity that comes to the viewer's eye.",
+     "sources": [
+      "L56/S0160",
+      "L56/S0163",
+      "L56/S0164"
+     ],
+     "concept_id": "C1208",
+     "concept_name": "Diffuse reflection coefficient for ambient light"
+    },
+    {
+     "id": "L56/P05/T8",
+     "surface": "diffuse reflection coefficient for direct light",
+     "name": "Diffuse reflection coefficient for direct light",
+     "abbreviation": "Kd",
+     "abbreviation_at": "L56/S0160",
+     "definition": "This coefficient determines the portion of direct light that reflects diffusely off a surface.",
+     "sources": [
+      "L56/S0160",
+      "L56/S0167"
+     ],
+     "concept_id": "C1209",
+     "concept_name": "Diffuse reflection coefficient for direct light"
+    },
+    {
+     "id": "L56/P05/T9",
+     "surface": "specular reflection coefficient for direct light",
+     "name": "Specular reflection coefficient for direct light",
+     "abbreviation": "Ks",
+     "abbreviation_at": "L56/S0160",
+     "definition": "This coefficient determines the portion of direct light that reflects specularly (as a shiny spot) off a surface.",
+     "sources": [
+      "L56/S0160",
+      "L56/S0175",
+      "L56/S0176"
+     ],
+     "concept_id": "C1210",
+     "concept_name": "Specular reflection coefficient for direct light"
+    },
+    {
+     "id": "L56/P05/T10",
+     "surface": "surface normal",
+     "name": "Surface normal",
+     "abbreviation": "n",
+     "abbreviation_at": "L56/S0167",
+     "definition": "The surface normal is a vector representing the orientation of the surface at a specific point, which is needed to calculate how light is reflected.",
+     "sources": [
+      "L56/S0166",
+      "L56/S0167",
+      "L56/S0177"
+     ],
+     "concept_id": "C1211",
+     "concept_name": "Surface normal"
+    },
+    {
+     "id": "L56/P05/T11",
+     "surface": "light source direction",
+     "name": "Light source direction",
+     "abbreviation": "L",
+     "abbreviation_at": "L56/S0167",
+     "definition": "The light source direction is a vector that describes the direction from which the light is coming toward the surface point.",
+     "sources": [
+      "L56/S0167",
+      "L56/S0177"
+     ],
+     "concept_id": "C1212",
+     "concept_name": "Light source direction"
+    },
+    {
+     "id": "L56/P05/T12",
+     "surface": "Phong",
+     "name": "Phong",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Phong is the inventor of an approximate model used to calculate the specular reflection component of light intensity.",
+     "sources": [
+      "L56/S0170"
+     ],
+     "concept_id": "C1213",
+     "concept_name": "Phong"
+    },
+    {
+     "id": "L56/P05/T13",
+     "surface": "viewer direction",
+     "name": "Viewer direction",
+     "abbreviation": "V",
+     "abbreviation_at": "L56/S0173",
+     "definition": "The viewer direction is a vector that points toward the viewer's eye from the surface point.",
+     "sources": [
+      "L56/S0172",
+      "L56/S0173"
+     ],
+     "concept_id": "C1214",
+     "concept_name": "Viewer direction"
+    },
+    {
+     "id": "L56/P05/T14",
+     "surface": "ideal specular reflection direction",
+     "name": "Ideal specular reflection direction",
+     "abbreviation": "r",
+     "abbreviation_at": "L56/S0173",
+     "definition": "The ideal specular reflection direction is the direction the light would reflect if the surface were a perfect mirror.",
+     "sources": [
+      "L56/S0172",
+      "L56/S0173",
+      "L56/S0177"
+     ],
+     "concept_id": "C1215",
+     "concept_name": "Ideal specular reflection direction"
+    }
+   ]
+  },
+  {
+   "id": "L56/P06",
+   "first": "L56/S0179",
+   "last": "L56/S0199",
+   "start": 1887.905,
+   "end": 2115.484,
+   "objective": "Apply radial and angular attenuation factors to modify simple lighting models for realistic VR effects",
+   "objective_id": "L56/O3",
+   "key_points": [
+    {
+     "id": "L56/P06/K1",
+     "text": "Light intensity typically diminishes over distance, requiring attenuation to be accounted for in simulations.",
+     "sources": [
+      "L56/S0180",
+      "L56/S0181",
+      "L56/S0183"
+     ],
+     "concept_ids": [
+      "C1167"
+     ]
+    },
+    {
+     "id": "L56/P06/K2",
+     "text": "Radial intensity attenuation, often modeled using an inverse quadratic function, accounts for diminishing light over distance.",
+     "sources": [
+      "L56/S0184",
+      "L56/S0185"
+     ],
+     "concept_ids": [
+      "C0766",
+      "C1167",
+      "C1217"
+     ]
+    },
+    {
+     "id": "L56/P06/K3",
+     "text": "Angular intensity attenuation, represented by functions like cos(A1*phi), is used to create spotlight effects within a defined cone.",
+     "sources": [
+      "L56/S0187",
+      "L56/S0190",
+      "L56/S0192"
+     ],
+     "concept_ids": [
+      "C0592",
+      "C0766",
+      "C1140",
+      "C1218",
+      "C1219"
+     ]
+    },
+    {
+     "id": "L56/P06/K4",
+     "text": "Attenuation factors modify the simple lighting model (e.g., IM + ID + ISPEC) by multiplying the diffuse and specular reflection components.",
+     "sources": [
+      "L56/S0195",
+      "L56/S0196",
+      "L56/S0197"
+     ],
+     "concept_ids": [
+      "C0582",
+      "C0987",
+      "C1071",
+      "C1167",
+      "C1201",
+      "C1203"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P06/T1",
+     "surface": "intensity attenuation over distance",
+     "name": "Intensity attenuation over distance",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Intensity attenuation over distance is a factor that accounts for the diminishing of light intensity as the distance between a light source and a surface point increases.",
+     "sources": [
+      "L56/S0183"
+     ],
+     "concept_id": "C1216",
+     "concept_name": "Intensity attenuation over distance"
+    },
+    {
+     "id": "L56/P06/T2",
+     "surface": "radial intensity attenuation",
+     "name": "Radial intensity attenuation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Radial intensity attenuation is a factor used to account for diminishing light intensity over distance. It is commonly computed using an inverse quadratic function.",
+     "sources": [
+      "L56/S0184",
+      "L56/S0185"
+     ],
+     "concept_id": "C1217",
+     "concept_name": "Radial intensity attenuation"
+    },
+    {
+     "id": "L56/P06/T3",
+     "surface": "angular intensity attenuation",
+     "name": "Angular intensity attenuation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Angular intensity attenuation is a factor used primarily for generating spotlight effects, where light intensity varies based on the surface point's position relative to the angular limit of the light source.",
+     "sources": [
+      "L56/S0187",
+      "L56/S0190",
+      "L56/S0191",
+      "L56/S0192"
+     ],
+     "concept_id": "C1218",
+     "concept_name": "Angular intensity attenuation"
+    },
+    {
+     "id": "L56/P06/T4",
+     "surface": "spotlight effects",
+     "name": "Spotlight effect",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Spotlight effect is a visual scenario where only elements within a specific region or cone are visible or brightly visible, while surrounding areas are darker.",
+     "sources": [
+      "L56/S0187",
+      "L56/S0188",
+      "L56/S0189"
+     ],
+     "concept_id": "C1219",
+     "concept_name": "Spotlight effect"
+    },
+    {
+     "id": "L56/P06/T5",
+     "surface": "intensity attenuation factor",
+     "name": "Intensity attenuation factor",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Intensity attenuation factor is a value used to modify the light source intensity based on the distance of the surface point from the light source to account for real-world light decay.",
+     "sources": [
+      "L56/S0189",
+      "L56/S0190",
+      "L56/S0191",
+      "L56/S0192",
+      "L56/S0194"
+     ],
+     "concept_id": "C1218",
+     "concept_name": "Angular intensity attenuation"
+    }
+   ]
+  },
+  {
+   "id": "L56/P07",
+   "first": "L56/S0200",
+   "last": "L56/S0214",
+   "start": 2115.504,
+   "end": 2249.58,
+   "objective": "Model the color perception and intensity calculations for single and multiple colored light sources",
+   "objective_id": "L56/O4",
+   "key_points": [
+    {
+     "id": "L56/P07/K1",
+     "text": "Colored light intensity is defined by three components (red, green, blue) rather than a single intensity value (201).",
+     "sources": [
+      "L56/S0201"
+     ],
+     "concept_ids": [
+      "C1167"
+     ]
+    },
+    {
+     "id": "L56/P07/K2",
+     "text": "Source intensity and reflection coefficients (k, kd, ks) must be specified as three-element vectors corresponding to RGB primary colors (203, 204, 205).",
+     "sources": [
+      "L56/S0203",
+      "L56/S0204",
+      "L56/S0205"
+     ],
+     "concept_ids": [
+      "C0582",
+      "C1156",
+      "C1207",
+      "C1221"
+     ]
+    },
+    {
+     "id": "L56/P07/K3",
+     "text": "The total intensity (Ip) under multiple light sources (n) is calculated by summing the ambient light plus the contributions of each light source (Ip = I_ambient + summation) (211).",
+     "sources": [
+      "L56/S0211",
+      "L56/S0212"
+     ],
+     "concept_ids": [
+      "C0584",
+      "C1167",
+      "C1211"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P07/T1",
+     "surface": "colored light model",
+     "name": "Colored light model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The colored light model is a specific way of thinking about assigning colors, where light intensity is composed of individual color components rather than a single component.",
+     "sources": [
+      "L56/S0200"
+     ],
+     "concept_id": "C1220",
+     "concept_name": "Colored light model"
+    },
+    {
+     "id": "L56/P07/T2",
+     "surface": "primary colors",
+     "name": "Source intensity",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Source intensity is a three-element vector consisting of components that correspond to the three primary colors (red, green, and blue) in a colored light source.",
+     "sources": [
+      "L56/S0201",
+      "L56/S0204"
+     ],
+     "concept_id": "C1221",
+     "concept_name": "Source intensity"
+    },
+    {
+     "id": "L56/P07/T3",
+     "surface": "emitted light intensity",
+     "name": "Emitted light intensity",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Emitted light intensity is composed of multiple components, corresponding to the primary colors (red, green, and blue), rather than just having a single value.",
+     "sources": [
+      "L56/S0201"
+     ],
+     "concept_id": "C1221",
+     "concept_name": "Source intensity"
+    },
+    {
+     "id": "L56/P07/T4",
+     "surface": "source intensity",
+     "name": "Source intensity",
+     "abbreviation": "Is",
+     "abbreviation_at": "L56/S0203",
+     "definition": "Source intensity is a three-element vector that represents the intensity of a light source corresponding to the three primary colors (red, green, and blue).",
+     "sources": [
+      "L56/S0203"
+     ],
+     "concept_id": "C1221",
+     "concept_name": "Source intensity"
+    }
+   ]
+  },
+  {
+   "id": "L56/P08",
+   "first": "L56/S0215",
+   "last": "L56/S0250",
+   "start": 2250.901,
+   "end": 2609.382,
+   "objective": "Explain how continuous intensity values generated by a lighting model are mapped to discrete, device-supported color levels",
+   "objective_id": "L56/O5",
+   "key_points": [
+    {
+     "id": "L56/P08/K1",
+     "text": "A primary challenge in rendering is mapping the infinite range of intensity values (0 to 1) computed by lighting models to the finite range supported by devices (e.g., 8-bit displays).",
+     "sources": [
+      "L56/S0218",
+      "L56/S0220"
+     ],
+     "concept_ids": [
+      "C0256",
+      "C0258",
+      "C0394",
+      "C1071",
+      "C1167",
+      "C1201",
+      "C1224"
+     ]
+    },
+    {
+     "id": "L56/P08/K2",
+     "text": "Color (intensity) is calculated in the 3D scene at the point level, which requires a lighting model, before being mapped to a device-supported color.",
+     "sources": [
+      "L56/S0241",
+      "L56/S0242"
+     ],
+     "concept_ids": [
+      "C0470",
+      "C0888",
+      "C0987",
+      "C0988",
+      "C1167",
+      "C1201"
+     ]
+    },
+    {
+     "id": "L56/P08/K3",
+     "text": "Intensity mapping involves calculating discrete intensity values and corresponding bit patterns using a psycho-physiologically derived equation.",
+     "sources": [
+      "L56/S0229",
+      "L56/S0230",
+      "L56/S0233"
+     ],
+     "concept_ids": [
+      "C1222"
+     ]
+    },
+    {
+     "id": "L56/P08/K4",
+     "text": "The rendering pipeline includes two covered stages: modeling transformation (using a composite matrix) and intensity calculation/lighting.",
+     "sources": [
+      "L56/S0237",
+      "L56/S0239",
+      "L56/S0240"
+     ],
+     "concept_ids": [
+      "C0394",
+      "C0481",
+      "C1159",
+      "C1167",
+      "C1188",
+      "C1196"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L56/P08/T1",
+     "surface": "intensity mapping",
+     "name": "Intensity mapping",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Intensity mapping is the process of finding the nearest value to the calculated pixel intensity from the list of intensity values that the display device supports, allowing for the storage of the corresponding bit pattern.",
+     "sources": [
+      "L56/S0217"
+     ],
+     "concept_id": "C1222",
+     "concept_name": "Intensity mapping"
+    },
+    {
+     "id": "L56/P08/T2",
+     "surface": "lighting model",
+     "name": "Lighting model",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A lighting model is a method that computes an intensity value for a pixel, resulting in a value that can theoretically fall within an infinite range, such as between 0 and 1.",
+     "sources": [
+      "L56/S0218",
+      "L56/S0242"
+     ],
+     "concept_id": "C1201",
+     "concept_name": "Lighting model"
+    },
+    {
+     "id": "L56/P08/T3",
+     "surface": "device-supported intensity values",
+     "name": "Device-supported intensity value",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A device-supported intensity value is a discrete value within the finite range that a display device is physically able to represent, in contrast to the infinite range of values generated by the lighting model.",
+     "sources": [
+      "L56/S0220",
+      "L56/S0221",
+      "L56/S0225",
+      "L56/S0226"
+     ],
+     "concept_id": "C1223",
+     "concept_name": "Device-supported intensity value"
+    },
+    {
+     "id": "L56/P08/T4",
+     "surface": "8-bit display",
+     "name": "Eight bit display",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "An eight bit display is a device that has a finite range of supported values, supporting 256 colors for each pixel.",
+     "sources": [
+      "L56/S0221"
+     ],
+     "concept_id": "C1224",
+     "concept_name": "Eight bit display"
+    },
+    {
+     "id": "L56/P08/T5",
+     "surface": "frame buffer",
+     "name": "Frame buffer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The frame buffer is the location where the bit pattern corresponding to the nearest device-supported intensity value is stored at a specific pixel location.",
+     "sources": [
+      "L56/S0224",
+      "L56/S0235"
+     ],
+     "concept_id": "C1152",
+     "concept_name": "Frame buffer"
+    },
+    {
+     "id": "L56/P08/T6",
+     "surface": "photometer",
+     "name": "Photometer",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A photometer is a device used to determine the minimum device-supported intensity value, known as I naught.",
+     "sources": [
+      "L56/S0226"
+     ],
+     "concept_id": "C1225",
+     "concept_name": "Photometer"
+    },
+    {
+     "id": "L56/P08/T7",
+     "surface": "factor r",
+     "name": "Factor r",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Factor r is a computational factor used in a specific equation to help determine the successive intensity values based on the psychophysiological property that humans perceive relative change in intensity.",
+     "sources": [
+      "L56/S0228"
+     ],
+     "concept_id": "C1226",
+     "concept_name": "Factor r"
+    },
+    {
+     "id": "L56/P08/T8",
+     "surface": "mapping table",
+     "name": "Mapping table",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A mapping table is a device-specific data structure that stores the set of supported device intensities along with the corresponding bit patterns for those values.",
+     "sources": [
+      "L56/S0232",
+      "L56/S0233",
+      "L56/S0234",
+      "L56/S0244"
+     ],
+     "concept_id": "C1227",
+     "concept_name": "Mapping table"
+    },
+    {
+     "id": "L56/P08/T9",
+     "surface": "transformation matrix",
+     "name": "Transformation matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A transformation matrix is a matrix used to obtain a transformed point, allowing a point to be converted from its local coordinate system to the world coordinate system.",
+     "sources": [
+      "L56/S0238"
+     ],
+     "concept_id": "C1200",
+     "concept_name": "Transformation matrix"
+    },
+    {
+     "id": "L56/P08/T10",
+     "surface": "composite matrix",
+     "name": "Composite matrix",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A composite matrix is a common type of transformation matrix that is multiplied by a point vector to determine the transformed point in a scene.",
+     "sources": [
+      "L56/S0238",
+      "L56/S0239"
+     ],
+     "concept_id": "C1196",
+     "concept_name": "Composite transformation matrix"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L56/O1",
+   "text": "identify the critical stages of the 3D graphics pipeline and describe the modeling and lighting stages",
+   "part_ids": [
+    "L56/P01",
+    "L56/P02"
+   ]
+  },
+  {
+   "id": "L56/O2",
+   "text": "apply geometric transformations using basic and composite matrices to accurately position objects within a scene",
+   "part_ids": [
+    "L56/P03"
+   ]
+  },
+  {
+   "id": "L56/O3",
+   "text": "compare lighting and shading models, analyze how to calculate reflected light intensity using simple models, and modify these models using attenuation factors for realistic VR effects",
+   "part_ids": [
+    "L56/P04",
+    "L56/P05",
+    "L56/P06"
+   ]
+  },
+  {
+   "id": "L56/O4",
+   "text": "model the color perception and intensity calculations required for single and multiple colored light sources",
+   "part_ids": [
+    "L56/P07"
+   ]
+  },
+  {
+   "id": "L56/O5",
+   "text": "explain how continuous intensity values generated by a lighting model are mapped and converted to discrete color levels supported by a device",
+   "part_ids": [
+    "L56/P08"
+   ]
+  }
+ ],
+ "lecture_goal": "Master the core principles of 3D graphics pipelines and lighting models necessary for efficient VR resource optimization.",
+ "flags": [
+  "links: answer unusable (['answer is not valid JSON for the schema: Expecting value: line 1 column 1 (char 0)'])"
+ ],
+ "origin": [
+  {
+   "item": "L56/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "ec589f4b6fb3069d7452",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7692,
+   "output_tokens": 1639,
+   "latency_s": 60.2,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "5267edd769bc124bc81c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 706,
+   "output_tokens": 480,
+   "latency_s": 39.24,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "2dc3b34b460142f9da0d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 931,
+   "output_tokens": 553,
+   "latency_s": 45.33,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "af09a0e2b99174897213",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 741,
+   "output_tokens": 1019,
+   "latency_s": 80.72,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "e1374883d4f3eb849282",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 668,
+   "output_tokens": 1244,
+   "latency_s": 93.2,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "236c4bc441e5677b2681",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1707,
+   "output_tokens": 1283,
+   "latency_s": 95.31,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "e8dcb98e7450f79b03b8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 658,
+   "output_tokens": 1321,
+   "latency_s": 96.92,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "a40ed82d383d609b39c1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1444,
+   "output_tokens": 1314,
+   "latency_s": 96.9,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "2d82b6a6e7d5e5f7a424",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2873,
+   "output_tokens": 1337,
+   "latency_s": 97.78,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "050db2d7d21918de5458",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 825,
+   "output_tokens": 1717,
+   "latency_s": 170.17,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/terms/200-214",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "75659c37fb8686321011",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 982,
+   "output_tokens": 2006,
+   "latency_s": 76.24,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "0f8f84587bf379e43feb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1091,
+   "output_tokens": 2306,
+   "latency_s": 87.28,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "09110bbbd661585fd0cd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1069,
+   "output_tokens": 3421,
+   "latency_s": 447.79,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "3c56e5d396c103623a13",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1311,
+   "output_tokens": 1809,
+   "latency_s": 67.78,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/terms/179-199",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "daff9a00dcc58d68fdba",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1208,
+   "output_tokens": 1921,
+   "latency_s": 71.63,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "128577cf58f9ca77f9ba",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 832,
+   "output_tokens": 1588,
+   "latency_s": 316.09,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/terms/114-132",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "028680681bed9cb99bd7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1019,
+   "output_tokens": 2012,
+   "latency_s": 80.27,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "18b9baaa2be0b7769901",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1097,
+   "output_tokens": 2901,
+   "latency_s": 111.86,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8012bc0961dc1a08e507",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1843,
+   "output_tokens": 1692,
+   "latency_s": 345.35,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "95eb193724096414914c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 748,
+   "output_tokens": 2051,
+   "latency_s": 371.45,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ada73696d5948dc9fcd3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1610,
+   "output_tokens": 1891,
+   "latency_s": 358.21,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "50656c4c7349199403e5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2105,
+   "output_tokens": 1884,
+   "latency_s": 60.44,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "721752d2b91e79740483",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1851,
+   "output_tokens": 1820,
+   "latency_s": 60.36,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "be79a0e07887383706a1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3054,
+   "output_tokens": 2085,
+   "latency_s": 407.64,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/terms/133-178",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "6b4f977640c4879e961d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1984,
+   "output_tokens": 3319,
+   "latency_s": 108.02,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/terms/215-250",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "ae9b1ff22ff6e1deedd9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1726,
+   "output_tokens": 3709,
+   "latency_s": 126.64,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/terms/26-65",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "fe2f559354514e99b040",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1709,
+   "output_tokens": 1895,
+   "latency_s": 66.55,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/terms/86-113",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "3f8288dd577194279859",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1323,
+   "output_tokens": 1904,
+   "latency_s": 66.85,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "cf36af8d34d220492711",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3296,
+   "output_tokens": 2349,
+   "latency_s": 81.7,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/terms/56-95",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "e4666ab1d0fb45bde148",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1740,
+   "output_tokens": 2404,
+   "latency_s": 83.59,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "d5297ba0ba890917d877",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 690,
+   "output_tokens": 4272,
+   "latency_s": 593.38,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "97bc20e7be43deab8f42",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 977,
+   "output_tokens": 3823,
+   "latency_s": 543.53,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6c3bf674df54e846c98f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1233,
+   "output_tokens": 3868,
+   "latency_s": 679.78,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/objective/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c0a96be4a21ad5b3eb6c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 594,
+   "output_tokens": 608,
+   "latency_s": 237.46,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b031afc272a56e62cb5c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 911,
+   "output_tokens": 3257,
+   "latency_s": 572.19,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "55ed2eca40ce6ff4008e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2623,
+   "output_tokens": 4877,
+   "latency_s": 469.99,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "f744b1703c3b923ad534",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2034,
+   "output_tokens": 4681,
+   "latency_s": 467.82,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "43685327431db2584d42",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3933,
+   "output_tokens": 5001,
+   "latency_s": 451.14,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "5bf44ba374532268b49f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 799,
+   "output_tokens": 4230,
+   "latency_s": 598.1,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d746f54565faf89436f7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1191,
+   "output_tokens": 1373,
+   "latency_s": 302.26,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "af04db1316f3423d11ea",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 619,
+   "output_tokens": 763,
+   "latency_s": 267.43,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "6f71691e422a8e0c1086",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1016,
+   "output_tokens": 1427,
+   "latency_s": 36.27,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/terms/13-25",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "cf2ca782e3e66b603a7e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 946,
+   "output_tokens": 3345,
+   "latency_s": 80.78,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "5b7cd20e8a961929346d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 736,
+   "output_tokens": 2501,
+   "latency_s": 454.77,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "f4c78e7d00ad42464d8a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1697,
+   "output_tokens": 1477,
+   "latency_s": 372.49,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "8d2971e6cfa92f749c4b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1443,
+   "output_tokens": 1982,
+   "latency_s": 407.97,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "1ebb687ee0ed2ca4f149",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3209,
+   "output_tokens": 4431,
+   "latency_s": 556.17,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b6a022de0d1a13ab53e3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 789,
+   "output_tokens": 1877,
+   "latency_s": 250.41,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cd8376ee8ded50066548",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1184,
+   "output_tokens": 3928,
+   "latency_s": 356.35,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "053de3d8d5529999bfb4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 768,
+   "output_tokens": 2037,
+   "latency_s": 265.43,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1bdf631b33a7374cb80f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1536,
+   "output_tokens": 5014,
+   "latency_s": 415.4,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "832d3594c2759419f200",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1761,
+   "output_tokens": 1216,
+   "latency_s": 214.29,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "11e1add44c1045dc337a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1495,
+   "output_tokens": 1575,
+   "latency_s": 243.06,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "390b7ab165a37576462d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3172,
+   "output_tokens": 4390,
+   "latency_s": 486.83,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "6f1397d8695eadd328d6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 740,
+   "output_tokens": 1026,
+   "latency_s": 233.18,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "45048609aef5ac58839b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 740,
+   "output_tokens": 1518,
+   "latency_s": 184.63,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "a6203386d8db06653638",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 2,
+   "input_tokens": 1906,
+   "output_tokens": 28672,
+   "latency_s": 2421.47,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "4cbb8e55d76ff6f00009",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 627,
+   "output_tokens": 1218,
+   "latency_s": 58.81,
+   "cached": false
+  },
+  {
+   "item": "L56/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "cd1e6b6cd8b02f7b2ddb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 369,
+   "output_tokens": 1210,
+   "latency_s": 26.86,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "b9b106a5bcc4758b58f2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 982,
+   "output_tokens": 1353,
+   "latency_s": 30.12,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/terms/0-12",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "3a3df9971b700b8c1022",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 938,
+   "output_tokens": 2191,
+   "latency_s": 48.86,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "92f4a4cdf1ad13108222",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1304,
+   "output_tokens": 3246,
+   "latency_s": 588.84,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b0fc9ff67655369da5d2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 847,
+   "output_tokens": 4353,
+   "latency_s": 259.16,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "025b1889be8a1302f780",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 616,
+   "output_tokens": 928,
+   "latency_s": 56.54,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "588218ba9fde10cff716",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 677,
+   "output_tokens": 1727,
+   "latency_s": 169.36,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "1e4da89ff4df75505ff7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1539,
+   "output_tokens": 3756,
+   "latency_s": 501.57,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "14aec885ca1e7b0c8311",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1426,
+   "output_tokens": 4333,
+   "latency_s": 626.9,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ffd6491587ddae68b3f7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2322,
+   "output_tokens": 4409,
+   "latency_s": 636.37,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cedc787d5cb5a2004433",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3621,
+   "output_tokens": 3414,
+   "latency_s": 538.57,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "dd63abfe59a3cd206d5d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2243,
+   "output_tokens": 4421,
+   "latency_s": 639.01,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "684de3540d66fc20c100",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1157,
+   "output_tokens": 2696,
+   "latency_s": 228.72,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ffd192ca9cbbf44600f3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1050,
+   "output_tokens": 1076,
+   "latency_s": 141.06,
+   "cached": false
+  },
+  {
+   "item": "L56/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "654ccf264a9c3d4e47fd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1474,
+   "output_tokens": 1816,
+   "latency_s": 178.5,
+   "cached": false
+  },
+  {
+   "item": "registry/world coordinate reference frame",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "0b3f224c9d9416efee1e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 410,
+   "output_tokens": 678,
+   "latency_s": 40.56,
+   "cached": false
+  },
+  {
+   "item": "registry/world coordinate scene",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "f0a660f77e7644fca62f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 507,
+   "output_tokens": 865,
+   "latency_s": 42.49,
+   "cached": false
+  },
+  {
+   "item": "registry/spotlight effect",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "61177f371fb4ca07bd22",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 548,
+   "output_tokens": 908,
+   "latency_s": 44.27,
+   "cached": false
+  },
+  {
+   "item": "registry/diffuse reflection intensity",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "4ee5b06e31a254fb6435",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 615,
+   "output_tokens": 1373,
+   "latency_s": 65.76,
+   "cached": false
+  },
+  {
+   "item": "registry/source intensity",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "501734d2373e1c0c5990",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 578,
+   "output_tokens": 1461,
+   "latency_s": 70.34,
+   "cached": false
+  },
+  {
+   "item": "registry/diffuse reflection coefficient ambient light",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "7603c395f677aa07abc5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1104,
+   "output_tokens": 1839,
+   "latency_s": 89.03,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c14704498e0d01080038",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1715,
+   "output_tokens": 1045,
+   "latency_s": 101.05,
+   "cached": false
+  },
+  {
+   "item": "registry/light model",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "0dc03b361f189296adfc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 948,
+   "output_tokens": 3708,
+   "latency_s": 173.22,
+   "cached": false
+  },
+  {
+   "item": "registry/composite transform matrix",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "879ca7658a47164f8d49",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1360,
+   "output_tokens": 4159,
+   "latency_s": 200.7,
+   "cached": false
+  },
+  {
+   "item": "registry/transl",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "4342b48d6059996d20f4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 493,
+   "output_tokens": 4272,
+   "latency_s": 204.06,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "786df5a60703f638b230",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 659,
+   "output_tokens": 621,
+   "latency_s": 109.06,
+   "cached": false
+  },
+  {
+   "item": "registry/intensity attenu over distance",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "2338779940e9d7ad3195",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 836,
+   "output_tokens": 4459,
+   "latency_s": 209.79,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/recap/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "25622f230d5e6d01be1d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1437,
+   "output_tokens": 2315,
+   "latency_s": 168.93,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "ebd6b9d11927b97de1ab",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 932,
+   "output_tokens": 3043,
+   "latency_s": 747.82,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/review/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "fdfc66c86643b39436a6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2866,
+   "output_tokens": 2804,
+   "latency_s": 200.81,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "578feaf90920a4bf3f3a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 706,
+   "output_tokens": 820,
+   "latency_s": 205.84,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "db3fb9ef5ff4f18da941",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2906,
+   "output_tokens": 1079,
+   "latency_s": 260.37,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "7f56e04aff5e6ba257dd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1477,
+   "output_tokens": 2737,
+   "latency_s": 396.24,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3c0b1aac9777aab425a1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1804,
+   "output_tokens": 3905,
+   "latency_s": 492.67,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "7a079641ba88e91c4011",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2243,
+   "output_tokens": 1169,
+   "latency_s": 41.95,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "dd073e869e2c1d5a14dc",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1274,
+   "output_tokens": 1461,
+   "latency_s": 50.99,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "18d3cc4929a92b66981a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3833,
+   "output_tokens": 1519,
+   "latency_s": 52.86,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "f6f3ba8d041258347c22",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7796,
+   "output_tokens": 1832,
+   "latency_s": 62.77,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "03bb13f7d7db24a11069",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4520,
+   "output_tokens": 2038,
+   "latency_s": 68.96,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "b063a33938b4e75ecb40",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 4222,
+   "output_tokens": 2209,
+   "latency_s": 74.27,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "108a11458b5d7ce53dcb",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3440,
+   "output_tokens": 3067,
+   "latency_s": 100.25,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "9c6cefbc6e608bfa3b47",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7265,
+   "output_tokens": 4008,
+   "latency_s": 129.48,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "d01537ab89d07bc93491",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 25735,
+   "output_tokens": 4465,
+   "latency_s": 142.59,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "86e0e2c27dc549041c2f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12290,
+   "output_tokens": 4496,
+   "latency_s": 143.47,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "9c5af996493fe200b599",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 9216,
+   "output_tokens": 4658,
+   "latency_s": 147.86,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "78d95ff15a61a4fc8bf1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 12167,
+   "output_tokens": 5559,
+   "latency_s": 167.92,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ef0f4004a6d41aa4198c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 801,
+   "output_tokens": 1671,
+   "latency_s": 791.25,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "089577f2486889cfc6df",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 844,
+   "output_tokens": 4477,
+   "latency_s": 1099.62,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "77e0a55c019367e03ec9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1024,
+   "output_tokens": 4517,
+   "latency_s": 1105.29,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c11bd13a23d87e4f63f6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1358,
+   "output_tokens": 4638,
+   "latency_s": 1120.39,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2f6f12a978e3a935cfac",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1313,
+   "output_tokens": 4645,
+   "latency_s": 1176.69,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "543d094ec0d10d1786dd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2218,
+   "output_tokens": 4235,
+   "latency_s": 1217.37,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "c727b35e32b0fbaf131b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3995,
+   "output_tokens": 5404,
+   "latency_s": 1233.7,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3fe851965de71c2da848",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3114,
+   "output_tokens": 5344,
+   "latency_s": 1258.94,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "a1096bf35c330c8f9ac8",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 609,
+   "output_tokens": 704,
+   "latency_s": 381.0,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "fbea6890d3d39e84bd15",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1576,
+   "output_tokens": 1340,
+   "latency_s": 354.5,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "92aa0bfb24dace77cb96",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2834,
+   "output_tokens": 1419,
+   "latency_s": 465.46,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "2b18f6734e1c5692fb9c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1813,
+   "output_tokens": 1425,
+   "latency_s": 440.73,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "1aa02ac06238ba4e64f9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 884,
+   "output_tokens": 3567,
+   "latency_s": 546.68,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "1009b7e55a2ccfcad935",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1085,
+   "output_tokens": 4094,
+   "latency_s": 657.05,
+   "cached": false
+  },
+  {
+   "item": "L56/P01/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9e291e41db288d85fd5f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 575,
+   "output_tokens": 937,
+   "latency_s": 299.47,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d4ef2fcdc8b9db20963b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 810,
+   "output_tokens": 4494,
+   "latency_s": 686.45,
+   "cached": false
+  },
+  {
+   "item": "L56/P08/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b0394b267df8b347bfb7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1435,
+   "output_tokens": 1084,
+   "latency_s": 293.72,
+   "cached": false
+  },
+  {
+   "item": "L56/P05/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "01c40b02a1ea3355f76e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1615,
+   "output_tokens": 1273,
+   "latency_s": 235.58,
+   "cached": false
+  },
+  {
+   "item": "L56/P06/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "120d78c48caceb17d0c6",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 847,
+   "output_tokens": 567,
+   "latency_s": 257.08,
+   "cached": false
+  },
+  {
+   "item": "L56/P03/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "b8096787c8d193e07626",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2802,
+   "output_tokens": 2052,
+   "latency_s": 296.11,
+   "cached": false
+  },
+  {
+   "item": "L56/P04/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a3ac983bb1c271ec0088",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 828,
+   "output_tokens": 3715,
+   "latency_s": 416.09,
+   "cached": false
+  },
+  {
+   "item": "L56/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "270ed6768b3b056ac86b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 764,
+   "output_tokens": 4278,
+   "latency_s": 428.72,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "54f81bb3f460c1b48760",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 1,
+   "input_tokens": 1409,
+   "output_tokens": 16498,
+   "latency_s": 1638.18,
+   "cached": false
+  },
+  {
+   "item": "L56/P07/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "69254a240e3e4df75efd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 625,
+   "output_tokens": 909,
+   "latency_s": 27.96,
+   "cached": false
+  },
+  {
+   "item": "L56/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "931007f7a5184d22472d",
+   "thinking": true,
+   "validator": {
+    "passed": false,
+    "errors": [
+     "answer is not valid JSON for the schema: Expecting value: line 1 column 1 (char 0)"
+    ]
+   },
+   "retries": 2,
+   "input_tokens": 143391,
+   "output_tokens": 6144,
+   "latency_s": 602.66,
+   "cached": false
+  },
+  {
+   "item": "L56/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "b7e1ab7cec9d4e7a2376",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 14904,
+   "output_tokens": 2728,
+   "latency_s": 76.54,
+   "cached": false
+  },
+  {
+   "item": "L56/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "050db0f6ca716ef83a0c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 733,
+   "output_tokens": 1082,
+   "latency_s": 29.71,
+   "cached": false
+  },
+  {
+   "item": "L56/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e5e891088385e0080df3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 995,
+   "output_tokens": 1855,
+   "latency_s": 61.03,
+   "cached": false
+  }
+ ]
+}

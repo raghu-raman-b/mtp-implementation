@@ -1,0 +1,147 @@
+17/S0  Explain what IMU sensors are and how their gyroscope, accelerometer, and magnetometer readings are used in tracking.
+  C0   inertial measurement unit (IMU) [defined]  facts F0, F1, F2
+  C1   gyroscope [defined]  facts F0, F1, F2
+  C2   accelerometer [defined]  facts F0, F1, F2
+  C3   magnetometer [defined]  facts F0, F1, F2
+  C4   head-mounted display (HMD)  facts F0
+  C5   angular velocity  facts F1, F2
+  C6   linear acceleration  facts F1
+  C7   magnetic field strength  facts F1
+  C8   tracking (sensor tracking, tracking estimation)  facts F2
+  C9   drift error  facts F2
+  R0   inertial measurement unit | mainly contains | gyroscope  (F0)
+  R1   inertial measurement unit | mainly contains | accelerometer  (F0)
+  R2   inertial measurement unit | mainly contains | magnetometer  (F0)
+  R3   inertial measurement unit | is typically part of | head-mounted display  (F0)
+  R4   gyroscope | captures | angular velocity  (F1)
+  R5   accelerometer | captures | linear acceleration  (F1)
+  R6   magnetometer | captures | magnetic field strength  (F1)
+  R7   tracking | in an inertial measurement unit relies mainly on readings from | gyroscope  (F2)
+  R8   tracking | in an inertial measurement unit relies mainly on gyroscope readings of | angular velocity  (F2)
+  R9   accelerometer | does not directly contribute to | tracking  (F2)
+  R10  magnetometer | does not directly contribute to | tracking  (F2)
+  R11  accelerometer | can be used to detect | drift error  (F2)
+  R12  magnetometer | can be used to detect | drift error  (F2)
+
+17/S1  Describe how calibration maps cheap sensor readings to ideal values by estimating a mathematical relationship from paired samples using least-squares regression.
+  C0   calibration [defined]  facts F0, F1, F2, F4, F5
+  C1   inertial measurement unit (IMU)  facts F0, F1, F3
+  C2   gyroscope  facts F0
+  C3   angular velocity  facts F0
+  C4   measured angular velocity  facts F0, F1, F2, F3, F4, F5
+  C5   actual angular velocity  facts F0, F1, F2, F3, F4, F5
+  C6   measurement error [defined]  facts F0, F1
+  C7   calibration model  facts F2
+  C8   linear relationship  facts F2
+  C9   paired samples [defined]  facts F3, F4
+  C10  benchmark sensor  facts F3
+  C11  linear least squares regression [defined]  facts F4
+  C12  calibrated value [defined]  facts F5
+  R0   calibration | is performed on | inertial measurement unit  (F0, F1)
+  R1   gyroscope | provides | angular velocity  (F0)
+  R2   measured angular velocity | can differ from | actual angular velocity  (F0)
+  R3   measurement error | is measured angular velocity minus | actual angular velocity  (F0)
+  R4   measurement error | is actual angular velocity subtracted from | measured angular velocity  (F0)
+  R5   calibration | aims to minimize | measurement error  (F1)
+  R6   calibration | aims to make measured angular velocity as close as possible to | actual angular velocity  (F1)
+  R7   calibration | aims to make actual angular velocity as close as possible to | measured angular velocity  (F1)
+  R8   calibration model | assumes | linear relationship  (F2)
+  R9   linear relationship | is assumed between measured angular velocity and | actual angular velocity  (F2)
+  R10  linear relationship | is assumed between actual angular velocity and | measured angular velocity  (F2)
+  R11  calibration | uses | paired samples  (F3)
+  R12  calibration | uses paired samples from | inertial measurement unit  (F3)
+  R13  calibration | uses paired samples from | benchmark sensor  (F3)
+  R14  paired samples | come from | inertial measurement unit  (F3)
+  R15  paired samples | come from | benchmark sensor  (F3)
+  R16  inertial measurement unit | produces | measured angular velocity  (F3)
+  R17  benchmark sensor | produces as a close but not exact value of | actual angular velocity  (F3)
+  R18  calibration | compares | paired samples  (F4)
+  R19  calibration | minimizes the sum of squared differences between the expression C1 + C2 measured angular velocity and | actual angular velocity  (F4)
+  R20  calibration | uses | linear least squares regression  (F4)
+  R21  calibration | transforms the cheap sensor reading into | calibrated value  (F5)
+  R22  calibrated value | is defined as C1 + C2 | measured angular velocity  (F5)
+  R23  calibrated value | maps the measured angular velocity to the closest possible match with | actual angular velocity  (F5)
+  checks: no_shared_fact 3
+
+17/S2  Explain how registration sets the initial orientation and integration updates the current orientation by summing calibrated angular velocity samples over time.
+  C0   registration [defined]  facts F0, F1, F2, F3
+  C1   initial orientation (initial pose) [defined]  facts F0, F1, F3
+  C2   sensor  facts F0, F3, F4
+  C3   initial alignment [defined]  facts F0, F1
+  C4   headset  facts F1
+  C5   tracking system  facts F1
+  C6   fiducial marker  facts F2
+  C7   reflector  facts F2
+  C8   tag  facts F2
+  C9   computer vision  facts F2
+  C10  integration [defined]  facts F3
+  C11  current sensor orientation [defined]  facts F3
+  C12  calibrated angular velocity sample [defined]  facts F3, F4
+  C13  sampling interval  facts F3, F4
+  C14  sensor data stream  facts F3
+  C15  angular velocity sample  facts F4
+  C16  gyroscopic sensor  facts F4
+  C17  orientation  facts F4
+  R0   registration | finds | initial orientation  (F0)
+  R1   registration | finds the initial orientation of | sensor  (F0)
+  R2   registration | sets | initial alignment  (F0)
+  R3   headset | is facing a direction that is taken as | initial orientation  (F1)
+  R4   tracking system | is turned on when the direction of the headset is taken as | initial orientation  (F1)
+  R5   initial alignment | is set to the forward direction under the assumption used to understand | registration  (F1)
+  R6   registration | can be aided by | fiducial marker  (F2)
+  R7   registration | can be aided by | reflector  (F2)
+  R8   registration | can be aided by | tag  (F2)
+  R9   registration | can be performed using | computer vision  (F2)
+  R10  registration | is simpler when aided by | fiducial marker  (F2)
+  R11  registration | is simpler when aided by | reflector  (F2)
+  R12  registration | is simpler when aided by | tag  (F2)
+  R13  integration | computes | current sensor orientation  (F3)
+  R14  integration | computes the current sensor orientation by adding to | initial orientation  (F3)
+  R15  current sensor orientation | is the current orientation of a | sensor  (F3)
+  R16  initial orientation | is estimated during | registration  (F3)
+  R17  calibrated angular velocity sample | is multiplied by | sampling interval  (F3)
+  R18  sensor data stream | is the data stream of a | sensor  (F3)
+  R19  calibrated angular velocity sample | is a | angular velocity sample  (F4)
+  R20  calibrated angular velocity sample | is from a | gyroscopic sensor  (F4)
+  R21  calibrated angular velocity sample | indicates a change in | orientation  (F4)
+  R22  calibrated angular velocity sample | indicates a change in orientation equal to itself multiplied by | sampling interval  (F4)
+  checks: reverse 4
+
+17/S3  Describe how drift correction uses multiple sensors and a gain parameter to combine orientations and reduce estimation error.
+  C0   drift correction [defined]  facts F0, F1, F2
+  C1   sensor  facts F0, F1
+  C2   drift  facts F0
+  C3   gyroscope  facts F1, F2
+  C4   camera  facts F1, F2
+  C5   inertial measurement unit (IMU)  facts F1
+  C6   accelerometer  facts F1
+  C7   magnetometer  facts F1
+  C8   orientation  facts F2
+  C9   drift-corrected orientation [defined]  facts F2
+  C10  gain parameter (alpha) [defined]  facts F2
+  R0   drift correction | usually uses | sensor  (F0)
+  R1   drift correction | in general requires at least two | sensor  (F0)
+  R2   drift correction | is done to estimate and correct | drift  (F0)
+  R3   sensor | has values that are blended to estimate and correct | drift  (F0)
+  R4   drift correction | may use | gyroscope  (F1)
+  R5   drift correction | may use | camera  (F1)
+  R6   drift correction | may use | sensor  (F1)
+  R7   gyroscope | may be used together with | camera  (F1)
+  R8   gyroscope | is a kind of | sensor  (F1)
+  R9   camera | is an example of | sensor  (F1)
+  R10  inertial measurement unit | can provide readings from | accelerometer  (F1)
+  R11  inertial measurement unit | can provide readings from | magnetometer  (F1)
+  R12  accelerometer | in an inertial measurement unit, can be used in addition to the values of | gyroscope  (F1)
+  R13  magnetometer | in an inertial measurement unit, can be used in addition to the values of | gyroscope  (F1)
+  R14  drift correction | in a classic approach, combines | orientation  (F2)
+  R15  drift correction | in a classic approach, computes | drift-corrected orientation  (F2)
+  R16  drift correction | in a classic approach, uses | gain parameter  (F2)
+  R17  orientation | is obtained by integrating the values of | gyroscope  (F2)
+  R18  orientation | is obtained with | camera  (F2)
+  R19  drift-corrected orientation | is computed by combining | orientation  (F2)
+  R20  drift-corrected orientation | is computed using | gain parameter  (F2)
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+17/S4  Summarize the main points of the lecture and preview the next part on sensing technologies.
+  (no facts)
+

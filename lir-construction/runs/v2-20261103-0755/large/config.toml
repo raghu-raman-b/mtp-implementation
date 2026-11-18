@@ -1,0 +1,67 @@
+# LIR v2.1, large setup: Qwen 3.8 27B FP8 for every role, one vLLM server. Small setup: lir2_config_small.toml.
+# See pipeline2/TASKS.md. Edit and rerun generate_lir2.py; cached answers are kept per model, prompt and settings.
+#
+# A role's model is a Hugging Face repo (engine "vllm"), an "org/repo:file.gguf" (engine "llamacpp"), or an OpenAI
+# model name (engine "openai"). Roles that name the same model share one server (the first role's settings apply).
+# The generator writes; the verifier runs the registry and the links; the judge checks every item and rewrites the
+# ones that fail, once (pipeline2/context.py DEFAULT_STEPS).
+
+[generator]
+engine = "vllm"
+model = "Qwen/Qwen3.8-27B-FP8"
+slots = 128                     # requests in flight (vLLM --max-num-seqs); the client sends no more, in priority order
+max_model_len = 65536           # longest prompt + answer (thinking included)
+max_tokens = 0                  # per-step thinking budgets below cap the thinking; the answer gets 8192 more
+sampling = { temperature = 0.6, top_p = 0.95, top_k = 20, min_p = 0.0, presence_penalty = 0.0 }  # Qwen, precise tasks
+reasoning_parser = "qwen3"
+# the words vLLM writes when a call's thinking reaches its budget; the answer follows
+think_end = "\n\nI have thought enough; now I give the final answer.\n</think>\n\n"
+gpu_memory_utilization = 0.92
+
+[verifier]
+engine = "vllm"
+model = "Qwen/Qwen3.8-27B-FP8"
+
+[judge]
+engine = "vllm"
+model = "Qwen/Qwen3.8-27B-FP8"
+
+[think]                         # thinking budget per step, in tokens (defaults: pipeline2/context.py DEFAULT_THINK)
+parts = 8192
+annotate = 8192
+terms = 8192
+facets = 8192
+links = 8192
+activities = 8192
+oq = 8192
+judge = 4096
+registry = 4096
+goals = 4096
+recall = 4096
+calibrate = 4096
+
+[engine]
+vllm = "~/vllm-venv/bin/vllm"   # built by setup_ec2.sh; or the VLLM environment variable
+prefix_caching = true           # calls on one part share its transcript as the prompt start
+priority = true                 # vLLM --scheduling-policy priority; the critical path goes first
+vllm_args = []                  # no MTP drafts: total throughput first (MTP: 2.4x one request, half the requests)
+llama_server = "~/llama.cpp/build/bin/llama-server"     # engine "llamacpp" only
+exclusive_gpu = false           # true: one model on the GPU at a time (12 GB card)
+extra_args = []                 # more llama-server flags
+
+[steps]                         # which role runs a step (defaults in pipeline2/context.py DEFAULT_STEPS)
+# facets = "verifier"
+
+[api]
+env_file = ".env"
+key_var = "OPEN_AI_API"
+base_url = "https://api.openai.com/v1"
+budget_usd = 2.28               # total across all runs (api_spend.json); no call is sent past it
+
+[api.prices."gpt-6-luna"]       # US$ per million tokens
+input = 0.10
+cached_input = 0.01
+output = 0.50
+
+[videos]
+height = 720

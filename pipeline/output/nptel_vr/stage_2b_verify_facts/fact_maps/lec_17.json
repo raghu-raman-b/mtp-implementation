@@ -1,0 +1,186 @@
+{
+ "17/S0/F0": {
+  "text": "An inertial measurement unit (IMU) is a composite hardware unit that mainly contains a gyroscope, an accelerometer, and a magnetometer, and is typically part of many modern devices, including mobile phones and head-mounted displays (HMDs).",
+  "evidence": [
+   "17/28",
+   "17/29",
+   "17/30",
+   "17/34"
+  ]
+ },
+ "17/S0/F1": {
+  "text": "In an inertial measurement unit (IMU), a gyroscope captures angular velocity, an accelerometer captures linear acceleration along the x, y, and z axes, and a magnetometer captures magnetic field strength along the x, y, and z axes.",
+  "evidence": [
+   "17/28",
+   "17/29",
+   "17/30",
+   "17/31",
+   "17/32",
+   "17/33"
+  ]
+ },
+ "17/S0/F2": {
+  "text": "Inertial measurement unit (IMU) sensor tracking relies mainly on gyroscope readings of angular velocity, while the accelerometer and magnetometer do not directly contribute to the tracking estimation but can be used to detect drift errors and take corrective measures.",
+  "evidence": [
+   "17/28",
+   "17/35",
+   "17/36",
+   "17/37"
+  ]
+ },
+ "17/S1/F0": {
+  "text": "In the calibration of inertial measurement unit (IMU) sensors, a gyroscope provides angular velocity, and the measured angular velocity (omega_g) can differ from the actual angular velocity (omega_a) because the devices and measurement technique are imperfect, so the measurement error is omega_g minus omega_a.",
+  "evidence": [
+   "17/38",
+   "17/39",
+   "17/41",
+   "17/43",
+   "17/44",
+   "17/46",
+   "17/47",
+   "17/48"
+  ]
+ },
+ "17/S1/F1": {
+  "text": "In the calibration stage for inertial measurement unit (IMU) sensors, the objective is to make the measured angular velocity (omega_g) and the actual angular velocity (omega_a) as close as possible, which means reducing the measurement error to as small a value as possible.",
+  "evidence": [
+   "17/38",
+   "17/39",
+   "17/43",
+   "17/50",
+   "17/63"
+  ]
+ },
+ "17/S1/F2": {
+  "text": "One simple calibration model assumes a linear relationship between measured angular velocity (omega_g) and actual angular velocity (omega_a), for example omega_g = a + b omega_a, where the ideal condition omega_g = omega_a corresponds to a = 0 and b = 1, but this ideal condition never happens in practice and the linear relationship is not the only possible relationship.",
+  "evidence": [
+   "17/39",
+   "17/43",
+   "17/51",
+   "17/53",
+   "17/55",
+   "17/57",
+   "17/58",
+   "17/59"
+  ]
+ },
+ "17/S1/F3": {
+  "text": "The presented calibration uses many, sometimes thousands, paired samples from two sensors: a cheap, inaccurate inertial measurement unit (IMU) sensor that produces the measured values (omega_g), and an expensive, highly accurate benchmark sensor that produces the actual values (omega_a), although the benchmark is very close rather than exact or ideal.",
+  "evidence": [
+   "17/38",
+   "17/39",
+   "17/43",
+   "17/64",
+   "17/65",
+   "17/66",
+   "17/67",
+   "17/68",
+   "17/69",
+   "17/73"
+  ]
+ },
+ "17/S1/F4": {
+  "text": "A simple calibration method compares the paired samples by computing, for n pairs, the sum of the squared differences between the expression C1 + C2 omega_g and the actual values omega_a, and it finds the constants C1 and C2 that minimize this sum; this classical optimization is linear least squares regression, one of many techniques that is used here for simplicity.",
+  "evidence": [
+   "17/39",
+   "17/43",
+   "17/70",
+   "17/72",
+   "17/73",
+   "17/74",
+   "17/75",
+   "17/76",
+   "17/77",
+   "17/78",
+   "17/79",
+   "17/80"
+  ]
+ },
+ "17/S1/F5": {
+  "text": "After the constants C1 and C2 are determined, calibration mathematically transforms the cheap sensor reading into a calibrated value omega_cal, defined as omega_cal = C1 + C2 omega_g, mapping the inexpensive measured angular velocity omega_g to the closest possible match with the actual value rather than by using an actually expensive or highly accurate sensor.",
+  "evidence": [
+   "17/39",
+   "17/43",
+   "17/75",
+   "17/81",
+   "17/82",
+   "17/83",
+   "17/84"
+  ]
+ },
+ "17/S2/F0": {
+  "text": "Registration is the step that finds the initial pose or initial orientation of the sensor or user and sets the initial alignment between the real and virtual worlds, represented as theta at t = 0.",
+  "evidence": [
+   "17/89",
+   "17/90",
+   "17/91",
+   "17/92"
+  ]
+ },
+ "17/S2/F1": {
+  "text": "A simplifying assumption for understanding registration is that the direction the headset is facing when the tracking system is turned on is taken as the initial orientation, with the initial alignment set to the forward direction.",
+  "evidence": [
+   "17/93",
+   "17/94"
+  ]
+ },
+ "17/S2/F2": {
+  "text": "Registration can be aided by fiducial markers, reflectors, or tags; it can also be performed without them using computer vision techniques, and the process is simpler when such aids are present.",
+  "evidence": [
+   "17/95",
+   "17/96",
+   "17/97"
+  ]
+ },
+ "17/S2/F3": {
+  "text": "Integration is the stage that computes the current sensor orientation theta_t at time t = k delta_t by adding to the initial orientation estimated during registration, theta_0, the sum of calibrated angular velocity samples W_cal_i times the sampling interval delta_t over the elapsed samples; the sensor data stream usually arrives at regular discrete intervals, and k is an integer.",
+  "evidence": [
+   "17/98",
+   "17/99",
+   "17/100",
+   "17/101",
+   "17/102",
+   "17/103",
+   "17/105",
+   "17/106",
+   "17/108",
+   "17/110"
+  ]
+ },
+ "17/S2/F4": {
+  "text": "A calibrated angular velocity sample W_cal_i is the angular velocity sample from a gyroscopic sensor at instant i, and it indicates a change in orientation equal to W_cal_i multiplied by the sampling interval delta_t.",
+  "evidence": [
+   "17/100",
+   "17/108",
+   "17/109"
+  ]
+ },
+ "17/S3/F0": {
+  "text": "Drift correction is usually done with the help of extra sensors and, in general, requires at least two sensors whose values are blended to estimate and correct drift.",
+  "evidence": [
+   "17/115",
+   "17/119",
+   "17/120"
+  ]
+ },
+ "17/S3/F1": {
+  "text": "For drift correction, a gyroscope may be used together with other sensors such as cameras, and in an inertial measurement unit (IMU), accelerometer and magnetometer readings can be used in addition to gyroscope values.",
+  "evidence": [
+   "17/115",
+   "17/116",
+   "17/117",
+   "17/118"
+  ]
+ },
+ "17/S3/F2": {
+  "text": "A classic approach to drift correction combines the two individually computed orientations at the same time instant using the expression theta_dk = alpha theta_gk + (1 - alpha) theta_ck, where theta_gk is the orientation obtained by integrating gyroscope values at the kth instant, theta_ck is the orientation obtained with a camera at the kth instant, theta_dk is the drift-corrected orientation, and alpha is the gain parameter, a normalized value between 0 and 1.",
+  "evidence": [
+   "17/120",
+   "17/121",
+   "17/122",
+   "17/123",
+   "17/127",
+   "17/128"
+  ]
+ }
+}

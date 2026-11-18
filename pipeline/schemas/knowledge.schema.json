@@ -1,0 +1,1083 @@
+{
+ "$comment": "The knowledge layer (output/<course>/knowledge/), checked by scripts/schema_check.py, which supports only the keywords used here. x-ref marks a string that refers to an ID of a kind, x-id a string that defines one; x-key-id and x-key-ref do the same for the keys of an object. Sentence IDs are defined by the first..last range of each segment in lectures/*.json. x-files names the definition each file of the layer is checked against.",
+ "x-files": {
+  "index.json": "index_file",
+  "names.json": "names_file",
+  "concepts.json": "concepts_file",
+  "relations.json": "relations_file",
+  "facts.json": "facts_file",
+  "fact_embeddings.json": "embeddings_file",
+  "lectures/*.json": "lecture_file",
+  "goals.json": "goals_file",
+  "lecture_graph.json": "lecture_graph_file",
+  "assumed.json": "assumed_file"
+ },
+ "$defs": {
+  "lecture": {
+   "type": "string",
+   "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)$",
+   "x-ref": "lecture"
+  },
+  "segment": {
+   "type": "string",
+   "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+$",
+   "x-ref": "segment"
+  },
+  "fact": {
+   "type": "string",
+   "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+/F\\d+$",
+   "x-ref": "fact"
+  },
+  "sentence": {
+   "type": "string",
+   "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/\\d+$",
+   "x-ref": "sentence"
+  },
+  "concept": {
+   "type": "string",
+   "pattern": "^C\\d{4,}$",
+   "x-ref": "concept"
+  },
+  "relation": {
+   "type": "string",
+   "pattern": "^R\\d{4,}$",
+   "x-ref": "relation"
+  },
+  "objective": {
+   "type": "string",
+   "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/O\\d+$",
+   "x-ref": "objective"
+  },
+  "lecture_goal": {
+   "type": "string",
+   "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/G$",
+   "x-ref": "lecture_goal"
+  },
+  "course_goal": {
+   "type": "string",
+   "pattern": "^G\\d+$",
+   "x-ref": "course_goal"
+  },
+  "lectures": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/lecture"
+   }
+  },
+  "segments": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/segment"
+   }
+  },
+  "facts": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/fact"
+   }
+  },
+  "concepts": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/concept"
+   }
+  },
+  "concept_kinds": {
+   "type": "object",
+   "properties": {
+    "introduced": {
+     "$ref": "#/$defs/concepts"
+    },
+    "met_again": {
+     "$ref": "#/$defs/concepts"
+    },
+    "defined_later": {
+     "$ref": "#/$defs/concepts"
+    },
+    "assumed": {
+     "$ref": "#/$defs/concepts"
+    }
+   },
+   "required": [
+    "introduced",
+    "met_again",
+    "defined_later",
+    "assumed"
+   ],
+   "additionalProperties": false
+  },
+  "prerequisites": {
+   "type": "object",
+   "properties": {
+    "direct": {
+     "$ref": "#/$defs/lectures"
+    },
+    "all": {
+     "$ref": "#/$defs/lectures"
+    }
+   },
+   "required": [
+    "direct",
+    "all"
+   ],
+   "additionalProperties": false
+  },
+  "index_file": {
+   "type": "object",
+   "properties": {
+    "course": {
+     "type": "string",
+     "minLength": 1
+    },
+    "title": {
+     "type": "string"
+    },
+    "lectures": {
+     "$ref": "#/$defs/lectures"
+    },
+    "files": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "string",
+      "minLength": 1
+     }
+    },
+    "counts": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "integer",
+      "minimum": 0
+     }
+    },
+    "embedding": {
+     "type": "object",
+     "properties": {
+      "model": {
+       "type": "string",
+       "minLength": 1
+      },
+      "dim": {
+       "type": "integer",
+       "minimum": 1
+      },
+      "file": {
+       "type": "string",
+       "minLength": 1
+      }
+     },
+     "required": [
+      "model",
+      "dim",
+      "file"
+     ],
+     "additionalProperties": false
+    },
+    "name_key": {
+     "type": "string",
+     "minLength": 1
+    },
+    "lecture_graph_params": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "course",
+    "title",
+    "lectures",
+    "files",
+    "counts",
+    "embedding",
+    "name_key",
+    "lecture_graph_params"
+   ],
+   "additionalProperties": false
+  },
+  "names_file": {
+   "type": "object",
+   "propertyNames": {
+    "minLength": 1
+   },
+   "additionalProperties": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "properties": {
+      "concept": {
+       "$ref": "#/$defs/concept"
+      },
+      "as": {
+       "enum": [
+        "name",
+        "alias",
+        "acronym"
+       ]
+      },
+      "text": {
+       "type": "string",
+       "minLength": 1
+      }
+     },
+     "required": [
+      "concept",
+      "as",
+      "text"
+     ],
+     "additionalProperties": false
+    },
+    "minItems": 1
+   }
+  },
+  "concepts_file": {
+   "type": "object",
+   "propertyNames": {
+    "pattern": "^C\\d{4,}$"
+   },
+   "additionalProperties": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "minLength": 1
+     },
+     "aliases": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "acronyms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "definition": {
+      "type": "string"
+     },
+     "defined": {
+      "type": "boolean"
+     },
+     "defined_in": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "lecture": {
+         "$ref": "#/$defs/lecture"
+        },
+        "segment": {
+         "$ref": "#/$defs/segment"
+        },
+        "start": {
+         "type": "number"
+        },
+        "end": {
+         "type": "number"
+        },
+        "facts": {
+         "$ref": "#/$defs/facts"
+        }
+       },
+       "required": [
+        "lecture",
+        "segment",
+        "start",
+        "end",
+        "facts"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "first_defined": {
+      "anyOf": [
+       {
+        "$ref": "#/$defs/lecture"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "facts": {
+      "$ref": "#/$defs/facts"
+     },
+     "defining_facts": {
+      "$ref": "#/$defs/facts"
+     },
+     "definition_facts": {
+      "$ref": "#/$defs/facts"
+     },
+     "misplaced": {
+      "$ref": "#/$defs/facts"
+     },
+     "relations": {
+      "type": "object",
+      "properties": {
+       "out": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "relation": {
+           "$ref": "#/$defs/relation"
+          },
+          "label": {
+           "type": "string"
+          },
+          "concept": {
+           "$ref": "#/$defs/concept"
+          },
+          "name": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "relation",
+          "label",
+          "concept",
+          "name"
+         ],
+         "additionalProperties": false
+        }
+       },
+       "in": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "relation": {
+           "$ref": "#/$defs/relation"
+          },
+          "label": {
+           "type": "string"
+          },
+          "concept": {
+           "$ref": "#/$defs/concept"
+          },
+          "name": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "relation",
+          "label",
+          "concept",
+          "name"
+         ],
+         "additionalProperties": false
+        }
+       }
+      },
+      "required": [
+       "out",
+       "in"
+      ],
+      "additionalProperties": false
+     },
+     "lectures": {
+      "$ref": "#/$defs/lectures"
+     },
+     "merged": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "segment_concept": {
+         "type": "string",
+         "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+/C\\d+$"
+        },
+        "name": {
+         "type": "string"
+        },
+        "how": {
+         "type": "string"
+        },
+        "reason": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "segment_concept",
+        "name",
+        "how",
+        "reason"
+       ],
+       "additionalProperties": false
+      }
+     }
+    },
+    "required": [
+     "name",
+     "aliases",
+     "acronyms",
+     "definition",
+     "defined",
+     "defined_in",
+     "first_defined",
+     "facts",
+     "defining_facts",
+     "definition_facts",
+     "misplaced",
+     "relations",
+     "lectures",
+     "merged"
+    ],
+    "additionalProperties": false
+   },
+   "x-key-id": "concept"
+  },
+  "relations_file": {
+   "type": "object",
+   "propertyNames": {
+    "pattern": "^R\\d{4,}$"
+   },
+   "additionalProperties": {
+    "type": "object",
+    "properties": {
+     "subject": {
+      "$ref": "#/$defs/concept"
+     },
+     "label": {
+      "type": "string",
+      "minLength": 1
+     },
+     "object": {
+      "$ref": "#/$defs/concept"
+     },
+     "facts": {
+      "$ref": "#/$defs/facts"
+     },
+     "segments": {
+      "$ref": "#/$defs/segments"
+     },
+     "from": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "subject",
+     "label",
+     "object",
+     "facts",
+     "segments",
+     "from"
+    ],
+    "additionalProperties": false
+   },
+   "x-key-id": "relation"
+  },
+  "facts_file": {
+   "type": "object",
+   "propertyNames": {
+    "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+/F\\d+$"
+   },
+   "additionalProperties": {
+    "type": "object",
+    "properties": {
+     "text": {
+      "type": "string",
+      "minLength": 1
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "$ref": "#/$defs/sentence"
+      },
+      "minItems": 1
+     },
+     "segment": {
+      "$ref": "#/$defs/segment"
+     },
+     "lecture": {
+      "$ref": "#/$defs/lecture"
+     },
+     "start": {
+      "type": "number"
+     },
+     "end": {
+      "type": "number"
+     },
+     "concepts": {
+      "$ref": "#/$defs/concepts"
+     }
+    },
+    "required": [
+     "text",
+     "evidence",
+     "segment",
+     "lecture",
+     "start",
+     "end",
+     "concepts"
+    ],
+    "additionalProperties": false
+   },
+   "x-key-id": "fact"
+  },
+  "embeddings_file": {
+   "type": "object",
+   "properties": {
+    "model": {
+     "type": "string",
+     "minLength": 1
+    },
+    "dim": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "vectors": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+/F\\d+$"
+     },
+     "additionalProperties": {
+      "type": "array",
+      "items": {
+       "type": "number"
+      },
+      "minItems": 1
+     },
+     "x-key-ref": "fact"
+    }
+   },
+   "required": [
+    "model",
+    "dim",
+    "vectors"
+   ],
+   "additionalProperties": false
+  },
+  "lecture_file": {
+   "type": "object",
+   "properties": {
+    "lecture": {
+     "type": "string",
+     "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)$",
+     "x-id": "lecture"
+    },
+    "title": {
+     "type": "string"
+    },
+    "segments": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "first": {
+        "type": "string",
+        "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/\\d+$"
+       },
+       "last": {
+        "type": "string",
+        "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/\\d+$"
+       },
+       "start": {
+        "type": "number"
+       },
+       "end": {
+        "type": "number"
+       },
+       "subgoal": {
+        "type": "string"
+       },
+       "objective": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/objective"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "facts": {
+        "$ref": "#/$defs/facts"
+       },
+       "concepts": {
+        "$ref": "#/$defs/concepts"
+       }
+      },
+      "required": [
+       "first",
+       "last",
+       "start",
+       "end",
+       "subgoal",
+       "objective",
+       "facts",
+       "concepts"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-id": "segment"
+    },
+    "concepts": {
+     "$ref": "#/$defs/concept_kinds"
+    },
+    "concept_map": {
+     "type": "object",
+     "properties": {
+      "concepts": {
+       "$ref": "#/$defs/concepts"
+      },
+      "relations": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/relation"
+       }
+      }
+     },
+     "required": [
+      "concepts",
+      "relations"
+     ],
+     "additionalProperties": false
+    },
+    "goal": {
+     "anyOf": [
+      {
+       "type": "object",
+       "properties": {
+        "id": {
+         "$ref": "#/$defs/lecture_goal"
+        },
+        "goal": {
+         "type": "string"
+        },
+        "achieves": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "id",
+        "goal",
+        "achieves"
+       ],
+       "additionalProperties": false
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "objectives": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "id": {
+        "$ref": "#/$defs/objective"
+       },
+       "goal": {
+        "type": "string"
+       },
+       "achieves": {
+        "type": "string"
+       },
+       "segments": {
+        "$ref": "#/$defs/segments"
+       }
+      },
+      "required": [
+       "id",
+       "goal",
+       "achieves",
+       "segments"
+      ],
+      "additionalProperties": false
+     }
+    },
+    "course_goals": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/course_goal"
+     }
+    },
+    "prerequisites": {
+     "$ref": "#/$defs/prerequisites"
+    }
+   },
+   "required": [
+    "lecture",
+    "title",
+    "segments",
+    "concepts",
+    "concept_map",
+    "goal",
+    "objectives",
+    "course_goals",
+    "prerequisites"
+   ],
+   "additionalProperties": false
+  },
+  "goals_file": {
+   "type": "object",
+   "properties": {
+    "reasoning": {
+     "type": "string"
+    },
+    "course_goals": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^G\\d+$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "goal": {
+        "type": "string",
+        "minLength": 1
+       },
+       "achieves": {
+        "type": "string"
+       },
+       "lectures": {
+        "type": "array",
+        "items": {
+         "$ref": "#/$defs/lecture"
+        },
+        "minItems": 1
+       }
+      },
+      "required": [
+       "goal",
+       "achieves",
+       "lectures"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-id": "course_goal"
+    },
+    "lecture_goals": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/G$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "lecture": {
+        "$ref": "#/$defs/lecture"
+       },
+       "goal": {
+        "type": "string",
+        "minLength": 1
+       },
+       "achieves": {
+        "type": "string"
+       },
+       "objectives": {
+        "type": "array",
+        "items": {
+         "$ref": "#/$defs/objective"
+        }
+       },
+       "course_goals": {
+        "type": "array",
+        "items": {
+         "$ref": "#/$defs/course_goal"
+        }
+       }
+      },
+      "required": [
+       "lecture",
+       "goal",
+       "achieves",
+       "objectives",
+       "course_goals"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-id": "lecture_goal"
+    },
+    "objectives": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/O\\d+$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "lecture": {
+        "$ref": "#/$defs/lecture"
+       },
+       "lecture_goal": {
+        "$ref": "#/$defs/lecture_goal"
+       },
+       "goal": {
+        "type": "string",
+        "minLength": 1
+       },
+       "achieves": {
+        "type": "string"
+       },
+       "segments": {
+        "$ref": "#/$defs/segments"
+       }
+      },
+      "required": [
+       "lecture",
+       "lecture_goal",
+       "goal",
+       "achieves",
+       "segments"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-id": "objective"
+    },
+    "segments": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)/S\\d+$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "lecture": {
+        "$ref": "#/$defs/lecture"
+       },
+       "subgoal": {
+        "type": "string"
+       },
+       "objective": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/objective"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "facts": {
+        "$ref": "#/$defs/facts"
+       },
+       "concepts": {
+        "$ref": "#/$defs/concepts"
+       }
+      },
+      "required": [
+       "lecture",
+       "subgoal",
+       "objective",
+       "facts",
+       "concepts"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-ref": "segment"
+    }
+   },
+   "required": [
+    "reasoning",
+    "course_goals",
+    "lecture_goals",
+    "objectives",
+    "segments"
+   ],
+   "additionalProperties": false
+  },
+  "lecture_graph_file": {
+   "type": "object",
+   "properties": {
+    "params": {
+     "type": "object",
+     "properties": {
+      "hub_share": {
+       "type": "number"
+      },
+      "hub_min_lectures": {
+       "type": "number"
+      },
+      "hub_floor": {
+       "type": "number"
+      },
+      "min_weight": {
+       "type": "number"
+      }
+     },
+     "required": [
+      "hub_share",
+      "hub_min_lectures",
+      "hub_floor",
+      "min_weight"
+     ],
+     "additionalProperties": false
+    },
+    "lectures": {
+     "$ref": "#/$defs/lectures"
+    },
+    "concepts": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^C\\d{4,}$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "lectures": {
+        "type": "integer",
+        "minimum": 0
+       },
+       "defined_in": {
+        "$ref": "#/$defs/lectures"
+       },
+       "weight": {
+        "type": "number"
+       }
+      },
+      "required": [
+       "lectures",
+       "defined_in",
+       "weight"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-ref": "concept"
+    },
+    "links": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "from": {
+        "$ref": "#/$defs/lecture"
+       },
+       "to": {
+        "$ref": "#/$defs/lecture"
+       },
+       "concepts": {
+        "type": "array",
+        "items": {
+         "$ref": "#/$defs/concept"
+        },
+        "minItems": 1
+       },
+       "redefined": {
+        "$ref": "#/$defs/concepts"
+       },
+       "weight": {
+        "type": "number"
+       },
+       "kind": {
+        "enum": [
+         "direct",
+         "indirect",
+         "weak"
+        ]
+       }
+      },
+      "required": [
+       "from",
+       "to",
+       "concepts",
+       "redefined",
+       "weight",
+       "kind"
+      ],
+      "additionalProperties": false
+     }
+    },
+    "prerequisites": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)$"
+     },
+     "additionalProperties": {
+      "$ref": "#/$defs/prerequisites"
+     },
+     "x-key-ref": "lecture"
+    },
+    "concept_kinds": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^(?:\\d+[a-z]?|tut_\\d+(?:_part\\d+)?)$"
+     },
+     "additionalProperties": {
+      "$ref": "#/$defs/concept_kinds"
+     },
+     "x-key-ref": "lecture"
+    },
+    "concept_paths": {
+     "type": "object",
+     "propertyNames": {
+      "pattern": "^C\\d{4,}$"
+     },
+     "additionalProperties": {
+      "type": "object",
+      "properties": {
+       "first_defined": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/lecture"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "path": {
+        "$ref": "#/$defs/lectures"
+       }
+      },
+      "required": [
+       "first_defined",
+       "path"
+      ],
+      "additionalProperties": false
+     },
+     "x-key-ref": "concept"
+    }
+   },
+   "required": [
+    "params",
+    "lectures",
+    "concepts",
+    "links",
+    "prerequisites",
+    "concept_kinds",
+    "concept_paths"
+   ],
+   "additionalProperties": false
+  },
+  "assumed_file": {
+   "type": "object",
+   "properties": {
+    "concepts": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "concept": {
+        "$ref": "#/$defs/concept"
+       },
+       "name": {
+        "type": "string"
+       },
+       "lectures": {
+        "$ref": "#/$defs/lectures"
+       }
+      },
+      "required": [
+       "concept",
+       "name",
+       "lectures"
+      ],
+      "additionalProperties": false
+     }
+    }
+   },
+   "required": [
+    "concepts"
+   ],
+   "additionalProperties": false
+  }
+ }
+}

@@ -1,0 +1,31 @@
+[58/162] Now, GPUs are typically multicore systems; that means they contain a large number of cores or unit processing elements, as shown here.
+[58/163] You can see multiple cores are there in a GPU; they work on Single instructions: all the cores work simultaneously on an instruction and produce data simultaneously.
+[58/164] So, each core is capable of performing simple integer and floating-point arithmetic operations only, and multiple cores group together to form what are called streaming multiprocessor units.
+[58/165] So, we can have Broadly, we can view a GPU as organized in this way, as shown in this figure.
+[58/166] We have the host, then input assemblers and a thread execution manager; then this manager allocates to different streaming multiprocessors.
+[58/167] There can be a large number of such multiprocessors. which has a parallel data cache where the multiprocessor can produce its data.
+[58/168] There is an element called texture storage, which essentially stores some information about predefined colors, surface colors, or predetermined surface colors.
+[58/169] Then, these elements are accessed through the load and store information.
+[58/170] The elements can access whatever data is produced; it can be sent to the global memory through the load information or store information, or the global memory content may be sent to this or accessed by these units through the load information.
+[58/171] And each streaming multiprocessor has multiple cores, as shown here.
+[58/172] So, a streaming multiprocessor contains several streaming processors or cores.
+[58/173] So, how does it work?
+[58/174] Now, most graphic systems assume a scene is made of triangles.
+[58/175] The scene that we are trying to render is made of triangles.
+[58/176] That means surfaces are converted to meshes, triangular meshes.
+[58/177] Remember our discussion on object representation, where we said that eventually everything gets converted to meshes, irrespective of how a developer defines an object.
+[58/178] So, the graphics processing unit assumes that the mesh is available as input.
+[58/179] Now, through the APIs supported in the graphics library, triangles are sent to the GPU one vertex at a time.
+[58/180] So, graphics libraries come with APIs using which such triangles in the mesh can be sent to the GPU one vertex at a time, and the GPU assembles vertices into triangles.
+[58/181] Then the GPU performs modeling transformations on the vertices.
+[58/182] So, multiple vertices are simultaneously transformed by multiplying the same matrix, the same transformation matrix, to all the set of vertices.
+[58/183] The output is a stream of triangles, which are the transformed triangles from local coordinate to world coordinate.
+[58/184] Next, the GPU computes the vertex color.
+[58/185] Now, the color can be computed by vector dot products, as we have demonstrated during our discussion on the simple lighting model.
+[58/186] So, the GPU performs such dot products for multiple vertices together simultaneously.
+[58/187] After that, each colored vertex is projected onto the view plane; that is the projection transformation, which involves the viewing transformation and projection transformation together.
+[58/188] So, the output is the stream of triangles in the screen or device coordinates ready to be converted to pixels.
+[58/189] So, this projection includes all three transformations: view transformation, projection transformation, and viewport transformation.
+[58/190] And the composite matrix is multiplied with vertices to get this final stream of triangles in the screen or device coordinates, which is a continuous coordinate space.
+[58/191] Now, each device space triangle overlaps some pixels on the screen.
+[58/192] In this rasterization stage, these pixels are determined, as we have discussed in stage 5.

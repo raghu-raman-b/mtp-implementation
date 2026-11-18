@@ -1,0 +1,2921 @@
+{
+ "lir_version": "2.1",
+ "course_id": "nptel-virtual-and-augmented-reality",
+ "lecture_id": "L48",
+ "index": 48,
+ "title": "System Implementation",
+ "source_file": "lec_48.srt",
+ "timing_source": "srt",
+ "youtube_id": "X5YNOMw_x4k",
+ "duration_s": 1274.704,
+ "sentences": [
+  {
+   "id": "L48/S0000",
+   "start": 24.078,
+   "end": 33.367,
+   "text": "Hello and welcome to the NPTEL MOOCs course on Foundations for Virtual and Augmented Reality Systems."
+  },
+  {
+   "id": "L48/S0001",
+   "start": 33.387,
+   "end": 38.972,
+   "text": "Today we are going to cover the remaining part of the implementation discussion that we are continuing."
+  },
+  {
+   "id": "L48/S0002",
+   "start": 39.412,
+   "end": 47.019,
+   "text": "So, we will also continue the implementation discussion today, and after today's part, the discussion will come to an end."
+  },
+  {
+   "id": "L48/S0003",
+   "start": 48.22,
+   "end": 53.325,
+   "text": "So, in order to understand this discussion, let us quickly recap."
+  },
+  {
+   "id": "L48/S0004",
+   "start": 54.082,
+   "end": 56.545,
+   "text": "the interactive system development life cycle."
+  },
+  {
+   "id": "L48/S0005",
+   "start": 59.668,
+   "end": 62.05,
+   "text": "So, the life cycle is shown here."
+  },
+  {
+   "id": "L48/S0006",
+   "start": 63.291,
+   "end": 65.394,
+   "text": "Now, we start with the feasibility study."
+  },
+  {
+   "id": "L48/S0007",
+   "start": 67.175,
+   "end": 69.978,
+   "text": "Then we have requirement gathering, analysis, and specification."
+  },
+  {
+   "id": "L48/S0008",
+   "start": 71.119,
+   "end": 80.629,
+   "text": "Then we have the design-prototype-evaluate cycle, followed by code design, coding and implementation, and code testing."
+  },
+  {
+   "id": "L48/S0009",
+   "start": 81.588,
+   "end": 86.075,
+   "text": "followed by empirical study, followed by deployment and maintenance."
+  },
+  {
+   "id": "L48/S0010",
+   "start": 86.095,
+   "end": 101.338,
+   "text": "Now, out of these stages, we primarily talked about the requirement gathering stage, the design-prototype-evaluation stage, and the empirical study stage."
+  },
+  {
+   "id": "L48/S0011",
+   "start": 102.28,
+   "end": 109.671,
+   "text": "So, in the design-prototype-evaluate cycle, there are three stages: design, prototyping, and quick evaluation of the prototype."
+  },
+  {
+   "id": "L48/S0012",
+   "start": 110.174,
+   "end": 122.272,
+   "text": "So, we have covered these; other things we did not cover because these are standard, whereas the ones that we covered had some differences from other software development."
+  },
+  {
+   "id": "L48/S0013",
+   "start": 122.933,
+   "end": 125.877,
+   "text": "So, we covered those in some detail."
+  },
+  {
+   "id": "L48/S0014",
+   "start": 127.78,
+   "end": 131.946,
+   "text": "Now, the issue is, what is required?"
+  },
+  {
+   "id": "L48/S0015",
+   "start": 133.208,
+   "end": 139.521,
+   "text": "So, before we move to the issue, let us quickly recap what happens in each stage."
+  },
+  {
+   "id": "L48/S0016",
+   "start": 139.541,
+   "end": 149.775,
+   "text": "So, in the requirement gathering stage, we gather functional and non-functional requirements, that is, usability requirements."
+  },
+  {
+   "id": "L48/S0017",
+   "start": 149.795,
+   "end": 161.41,
+   "text": "We may need to conduct different methods or approaches to collect the requirements, such as contextual inquiry, which we have discussed in detail."
+  },
+  {
+   "id": "L48/S0018",
+   "start": 163.617,
+   "end": 165.62,
+   "text": "Now, here two things are there."
+  },
+  {
+   "id": "L48/S0019",
+   "start": 166.341,
+   "end": 175.794,
+   "text": "One is the collection of requirements from end users and also clients."
+  },
+  {
+   "id": "L48/S0020",
+   "start": 177.596,
+   "end": 180.781,
+   "text": "Now, sometimes they are the same; sometimes they are different."
+  },
+  {
+   "id": "L48/S0021",
+   "start": 180.821,
+   "end": 182.383,
+   "text": "Most of the time, they are different."
+  },
+  {
+   "id": "L48/S0022",
+   "start": 183.324,
+   "end": 188.872,
+   "text": "So, based on the requirements, we have to decide on functional and non-functional requirements."
+  },
+  {
+   "id": "L48/S0023",
+   "start": 188.892,
+   "end": 194.011,
+   "text": "Usability requirements primarily come from end users."
+  },
+  {
+   "id": "L48/S0024",
+   "start": 197.195,
+   "end": 209.932,
+   "text": "Some other non-functional requirements may come from clients, and functional requirements also may come from both clients and end users."
+  },
+  {
+   "id": "L48/S0025",
+   "start": 210.513,
+   "end": 216.0,
+   "text": "Now, in order to identify all the requirements, all different types of requirements, it takes a long time."
+  },
+  {
+   "id": "L48/S0026",
+   "start": 218.849,
+   "end": 236.686,
+   "text": "It may span months to collect all the possible requirements or all the requirements that are generally expected by both the end users as well as the clients."
+  },
+  {
+   "id": "L48/S0027",
+   "start": 236.706,
+   "end": 248.097,
+   "text": "Then, once the requirements are gathered, we go to the interface design part, which comprises the design, prototype, and evaluate cycle."
+  },
+  {
+   "id": "L48/S0028",
+   "start": 249.123,
+   "end": 266.504,
+   "text": "Now, here in order to come up with a design, we may rely on intuition, or what we can do is start with design guidelines followed by brainstorming within the team to come up with a suitable design."
+  },
+  {
+   "id": "L48/S0029",
+   "start": 268.967,
+   "end": 278.218,
+   "text": "This is followed by prototype building, followed by quick evaluation using methods such as cognitive walkthrough or heuristic evaluation, and this goes on in a cycle."
+  },
+  {
+   "id": "L48/S0030",
+   "start": 281.928,
+   "end": 303.746,
+   "text": "Many times we may need to carry out the cycle so that eventually we come up with a stable interface design, meaning that further evaluation is not likely to throw up many new issues."
+  },
+  {
+   "id": "L48/S0031",
+   "start": 303.766,
+   "end": 305.249,
+   "text": "How long can this stage take?"
+  },
+  {
+   "id": "L48/S0032",
+   "start": 305.269,
+   "end": 307.092,
+   "text": "It can also take months."
+  },
+  {
+   "id": "L48/S0033",
+   "start": 307.696,
+   "end": 318.767,
+   "text": "Although each cycle execution may take less time, one or two days, since we have to carry it out multiple times and it is not possible to fully devote time only for this purpose, there may be other activities."
+  },
+  {
+   "id": "L48/S0034",
+   "start": 318.807,
+   "end": 328.396,
+   "text": "So, considering those, it may take between a couple of weeks to a month's time."
+  },
+  {
+   "id": "L48/S0035",
+   "start": 328.417,
+   "end": 330.559,
+   "text": "Then comes the coding part."
+  },
+  {
+   "id": "L48/S0036",
+   "start": 331.159,
+   "end": 349.778,
+   "text": "So, it starts with first the code design, which requires again coming up with the design brainstorming like interface design; here the design language is DFD, ER, or object-oriented approaches, UML, and so on."
+  },
+  {
+   "id": "L48/S0037",
+   "start": 353.924,
+   "end": 359.892,
+   "text": "Coming up with the proper design through several iterations and brainstorming again is time-consuming."
+  },
+  {
+   "id": "L48/S0038",
+   "start": 359.953,
+   "end": 366.514,
+   "text": "It may also take months, or at least a few weeks, a couple of weeks."
+  },
+  {
+   "id": "L48/S0039",
+   "start": 368.597,
+   "end": 374.084,
+   "text": "This is followed by implementation, coding, and testing."
+  },
+  {
+   "id": "L48/S0040",
+   "start": 375.606,
+   "end": 378.35,
+   "text": "Implementation involves coding and code testing."
+  },
+  {
+   "id": "L48/S0041",
+   "start": 380.934,
+   "end": 383.417,
+   "text": "So, you need to first code, then test it."
+  },
+  {
+   "id": "L48/S0042",
+   "start": 385.743,
+   "end": 394.033,
+   "text": "Primary level, secondary level; primary level may be review-based, secondary level may be a more systematic, structured way such as black box or white box testing."
+  },
+  {
+   "id": "L48/S0043",
+   "start": 396.035,
+   "end": 401.662,
+   "text": "That can be done at the unit levels, then they are integrated, then system-level testing, and so on."
+  },
+  {
+   "id": "L48/S0044",
+   "start": 401.982,
+   "end": 407.789,
+   "text": "So, this testing also is monotonous and time-consuming, and may take weeks."
+  },
+  {
+   "id": "L48/S0045",
+   "start": 412.214,
+   "end": 414.096,
+   "text": "The last one is usability testing."
+  },
+  {
+   "id": "L48/S0046",
+   "start": 415.747,
+   "end": 422.654,
+   "text": "That is, with code testing, we know that the system is executable, but we still do not know whether the system is usable."
+  },
+  {
+   "id": "L48/S0047",
+   "start": 423.855,
+   "end": 428.02,
+   "text": "We expect the system to be usable because we have followed the design-prototype-evaluate cycle."
+  },
+  {
+   "id": "L48/S0048",
+   "start": 428.04,
+   "end": 435.347,
+   "text": "However, whether that is true or there are still some gaps, we need to estimate through usability testing or an empirical study."
+  },
+  {
+   "id": "L48/S0049",
+   "start": 437.369,
+   "end": 443.796,
+   "text": "Now, in an empirical study, we need to identify participants, we need to set up, and we need to get participants' time."
+  },
+  {
+   "id": "L48/S0050",
+   "start": 445.075,
+   "end": 446.378,
+   "text": "It may also take weeks."
+  },
+  {
+   "id": "L48/S0051",
+   "start": 447.601,
+   "end": 453.975,
+   "text": "So, all these taken together take a long time."
+  },
+  {
+   "id": "L48/S0052",
+   "start": 454.998,
+   "end": 460.49,
+   "text": "One problem with the traditional approach that we have discussed so far is its rigidity."
+  },
+  {
+   "id": "L48/S0053",
+   "start": 462.154,
+   "end": 468.867,
+   "text": "That is, Every stage has to be completed before the next stage starts."
+  },
+  {
+   "id": "L48/S0054",
+   "start": 469.368,
+   "end": 486.331,
+   "text": "So, this may lead to time and cost overrun and even non-acceptance by the customer, that is the client, who may say that so much escalation in cost and time is not acceptable."
+  },
+  {
+   "id": "L48/S0055",
+   "start": 486.351,
+   "end": 502.933,
+   "text": "Now, why is that problematic? This rigidity, because it has a strict requirement at each So, for example, at the requirement gathering stage, all requirements have to be identified first."
+  },
+  {
+   "id": "L48/S0056",
+   "start": 502.953,
+   "end": 507.542,
+   "text": "Similarly, at the coding stage, all units have to be coded before they are sent to the testing phase."
+  },
+  {
+   "id": "L48/S0057",
+   "start": 507.862,
+   "end": 535.68,
+   "text": "So, this type of outlook, the view that every stage has to be completed, creates the problem. So, what it says, the traditional way of doing things says, is that we need to implement or we need to carry out or we need to execute all activities and requirements at a stage before"
+  },
+  {
+   "id": "L48/S0058",
+   "start": 535.68,
+   "end": 553.951,
+   "text": "we can go to the next stage and before deployment. So when we talk of the deployment stage, that means everything is perfectly done: all requirements identified, coding done, code tested, usability tested, then only we go for deployment."
+  },
+  {
+   "id": "L48/S0059",
+   "start": 553.971,
+   "end": 561.778,
+   "text": "Now, since each stage can take a long time, the eventual deployment may take a very, very long time."
+  },
+  {
+   "id": "L48/S0060",
+   "start": 563.879,
+   "end": 568.103,
+   "text": "Also, another requirement is: why does each stage require a long time?"
+  },
+  {
+   "id": "L48/S0061",
+   "start": 568.684,
+   "end": 577.311,
+   "text": "One is the execution of the stage; the other one is the need to keep documentation for each stage."
+  },
+  {
+   "id": "L48/S0062",
+   "start": 577.544,
+   "end": 580.749,
+   "text": "So, there are lots of documents required in each stage."
+  },
+  {
+   "id": "L48/S0063",
+   "start": 582.611,
+   "end": 583.432,
+   "text": "What are the documents?"
+  },
+  {
+   "id": "L48/S0064",
+   "start": 583.452,
+   "end": 589.06,
+   "text": "Say, for example, the feasibility study stage requires one."
+  },
+  {
+   "id": "L48/S0065",
+   "start": 591.944,
+   "end": 597.993,
+   "text": "Then, the requirement gathering stage requires an SRS, a detailed SRS or software requirement specification documentation."
+  },
+  {
+   "id": "L48/S0066",
+   "start": 599.255,
+   "end": 601.438,
+   "text": "Then the design phase requires a design document."
+  },
+  {
+   "id": "L48/S0067",
+   "start": 602.139,
+   "end": 607.146,
+   "text": "Now, this is about interface design."
+  },
+  {
+   "id": "L48/S0068",
+   "start": 616.323,
+   "end": 628.656,
+   "text": "Code design also requires documentation so that it is easier to understand and debug by other teams."
+  },
+  {
+   "id": "L48/S0069",
+   "start": 630.918,
+   "end": 643.832,
+   "text": "Testing documentation, code testing primarily, then a usability study report."
+  },
+  {
+   "id": "L48/S0070",
+   "start": 653.279,
+   "end": 665.658,
+   "text": "So, a lot of documents need to be prepared if we follow the standard approach, the standard interactive system development lifecycle."
+  },
+  {
+   "id": "L48/S0071",
+   "start": 668.562,
+   "end": 674.131,
+   "text": "So, we have already listed such documents that are required."
+  },
+  {
+   "id": "L48/S0072",
+   "start": 677.957,
+   "end": 682.223,
+   "text": "Just to recap, we need a feasibility study report."
+  },
+  {
+   "id": "L48/S0073",
+   "start": 690.657,
+   "end": 694.302,
+   "text": "SRS is for the requirement gathering, analysis, and specification stage."
+  },
+  {
+   "id": "L48/S0074",
+   "start": 694.562,
+   "end": 703.854,
+   "text": "SRS stands for software specification, software requirement specification, or system requirement specification."
+  },
+  {
+   "id": "L48/S0075",
+   "start": 709.361,
+   "end": 733.455,
+   "text": "Then we need design documents both for interface and interaction, as well as code; then we have a testing document for code, and we also need a usability study report."
+  },
+  {
+   "id": "L48/S0076",
+   "start": 746.024,
+   "end": 750.032,
+   "text": "Broadly, these five are required before we go for deployment."
+  },
+  {
+   "id": "L48/S0077",
+   "start": 751.535,
+   "end": 753.219,
+   "text": "This is clearly problematic."
+  },
+  {
+   "id": "L48/S0078",
+   "start": 753.299,
+   "end": 755.103,
+   "text": "It may lead to time and cost overruns."
+  },
+  {
+   "id": "L48/S0079",
+   "start": 755.704,
+   "end": 765.484,
+   "text": "So, in order to overcome this situation, we need to adopt a method that can deliver quickly."
+  },
+  {
+   "id": "L48/S0080",
+   "start": 766.105,
+   "end": 771.01,
+   "text": "So there comes the agile development framework or agile development approach."
+  },
+  {
+   "id": "L48/S0081",
+   "start": 771.03,
+   "end": 778.118,
+   "text": "The idea is that agile or fast development should be encouraged and should be implemented in practice."
+  },
+  {
+   "id": "L48/S0082",
+   "start": 778.138,
+   "end": 787.067,
+   "text": "And if we implement this development practice, then it ensures quick turnaround of projects, which are more acceptable to the clients."
+  },
+  {
+   "id": "L48/S0083",
+   "start": 789.269,
+   "end": 792.693,
+   "text": "So it eliminates unnecessary things and documentation."
+  },
+  {
+   "id": "L48/S0084",
+   "start": 794.054,
+   "end": 795.876,
+   "text": "It starts small, small."
+  },
+  {
+   "id": "L48/S0085",
+   "start": 797.172,
+   "end": 804.76,
+   "text": "That means when this approach is adopted, we do not try to do everything from the very beginning."
+  },
+  {
+   "id": "L48/S0086",
+   "start": 806.382,
+   "end": 812.148,
+   "text": "Not all requirements will be collected, nor will the entire system be developed and tested, and so on."
+  },
+  {
+   "id": "L48/S0087",
+   "start": 815.311,
+   "end": 816.953,
+   "text": "So, what is this process flow?"
+  },
+  {
+   "id": "L48/S0088",
+   "start": 819.856,
+   "end": 826.082,
+   "text": "It is more or less similar to the standard system, shown in a different way, that is conceptualization."
+  },
+  {
+   "id": "L48/S0089",
+   "start": 826.754,
+   "end": 834.504,
+   "text": "Then inception, which involves the creation of the team, arranging funds, resources, etc."
+  },
+  {
+   "id": "L48/S0090",
+   "start": 835.546,
+   "end": 852.508,
+   "text": "Then iteration, also known as sprint, which is the development cycle, followed by release, which includes testing, training, documentation, etc., followed by production, that is the ongoing support, followed by retirement, that is end-of-life activities."
+  },
+  {
+   "id": "L48/S0091",
+   "start": 854.429,
+   "end": 857.134,
+   "text": "So production roughly refers to deployment and maintenance."
+  },
+  {
+   "id": "L48/S0092",
+   "start": 858.656,
+   "end": 866.45,
+   "text": "Release refers to deployment, production refers to maintenance, and retirement is retirement."
+  },
+  {
+   "id": "L48/S0093",
+   "start": 873.101,
+   "end": 880.133,
+   "text": "So conceptualization and inception roughly refer to both the physical feasibility study as well as requirement gathering."
+  },
+  {
+   "id": "L48/S0094",
+   "start": 884.18,
+   "end": 891.267,
+   "text": "An iteration or sprint includes all the other stages, as we have seen in the interactive system development life cycle."
+  },
+  {
+   "id": "L48/S0095",
+   "start": 894.01,
+   "end": 932.517,
+   "text": "Now, this iteration or sprint typically requires four to six weeks each, as compared to the whole ISDLC, the Interactive System Development Life Cycle, which may take months, six to nine months, whereas each iteration or sprint for development in the agile approach may take four to six weeks."
+  },
+  {
+   "id": "L48/S0096",
+   "start": 932.577,
+   "end": 935.881,
+   "text": "And that is quite expected because we are not trying to do everything."
+  },
+  {
+   "id": "L48/S0097",
+   "start": 938.405,
+   "end": 945.574,
+   "text": "So, this sprint includes requirements, development, testing, and delivery."
+  },
+  {
+   "id": "L48/S0098",
+   "start": 947.157,
+   "end": 958.433,
+   "text": "So, requirements based on the product sprint backlog and customer stakeholder feedback, then followed by development, then testing including training and documentation, followed by delivery to production."
+  },
+  {
+   "id": "L48/S0099",
+   "start": 961.517,
+   "end": 965.102,
+   "text": "Four to six weeks is quite acceptable and manageable."
+  },
+  {
+   "id": "L48/S0100",
+   "start": 966.685,
+   "end": 967.566,
+   "text": "So, how do we make it work?"
+  },
+  {
+   "id": "L48/S0101",
+   "start": 969.629,
+   "end": 971.912,
+   "text": "How can we deliver within four to six weeks?"
+  },
+  {
+   "id": "L48/S0102",
+   "start": 972.693,
+   "end": 992.77,
+   "text": "It requires daily meetings or brainstorming by the development team, a live demo after each iteration to show the outcome of the iteration, and quick feedback regularly collected from stakeholders, customers, and shared with the team before the next sprint so that it can be addressed next time."
+  },
+  {
+   "id": "L48/S0103",
+   "start": 994.833,
+   "end": 1000.16,
+   "text": "The idea is to remain agile, that is, to be open to making changes based on feedback as quickly as possible."
+  },
+  {
+   "id": "L48/S0104",
+   "start": 1003.764,
+   "end": 1005.987,
+   "text": "So, that is the overall idea, the overall philosophy."
+  },
+  {
+   "id": "L48/S0105",
+   "start": 1006.726,
+   "end": 1021.9,
+   "text": "We try to make things produced faster, even if that means that not everything is implemented; only some of the identified requirements are implemented."
+  },
+  {
+   "id": "L48/S0106",
+   "start": 1021.94,
+   "end": 1036.193,
+   "text": "And as we keep on delivering, we keep on adding features, unlike the standard ISDLC method where we first complete the system and then deliver."
+  },
+  {
+   "id": "L48/S0107",
+   "start": 1037.202,
+   "end": 1053.637,
+   "text": "So, there are many popular agile methods or frameworks available, such as SCRUM, Extreme Programming, DAD (Disciplined Agile Delivery), DSDM (Dynamic System Development Method), and so on."
+  },
+  {
+   "id": "L48/S0108",
+   "start": 1054.298,
+   "end": 1071.291,
+   "text": "So, agile methods provide a better way to develop acceptable products, whereas ISDLC is primarily meant for understanding the overall flow rather than actually building practical systems within a reasonable time frame."
+  },
+  {
+   "id": "L48/S0109",
+   "start": 1071.311,
+   "end": 1077.86,
+   "text": "So, it is primarily for pedagogical purposes, whereas for practical purposes, agile frameworks are more suitable."
+  },
+  {
+   "id": "L48/S0110",
+   "start": 1081.445,
+   "end": 1096.984,
+   "text": "To read more on this agile framework, you can refer to the agile manifesto, available online, and agile development principles, again available online."
+  },
+  {
+   "id": "L48/S0111",
+   "start": 1097.004,
+   "end": 1099.887,
+   "text": "You can refer to these for further study."
+  },
+  {
+   "id": "L48/S0112",
+   "start": 1101.929,
+   "end": 1105.693,
+   "text": "So, with that, we have come to the conclusion of this lecture."
+  },
+  {
+   "id": "L48/S0113",
+   "start": 1107.135,
+   "end": 1108.056,
+   "text": "So, what have we learned?"
+  },
+  {
+   "id": "L48/S0114",
+   "start": 1108.757,
+   "end": 1116.906,
+   "text": "We have talked about the prototype-evaluate part of the design-prototype-evaluate cycle: how to build and evaluate prototypes."
+  },
+  {
+   "id": "L48/S0115",
+   "start": 1119.704,
+   "end": 1131.26,
+   "text": "Then we talked about empirical evaluation: how to finally evaluate usability, and also discussed the empirical evaluation using the case study of Majuli."
+  },
+  {
+   "id": "L48/S0116",
+   "start": 1132.902,
+   "end": 1146.301,
+   "text": "And finally, we talked about the agile development method, which is the more practical way of building interactive systems as compared to the standard system development life cycles."
+  },
+  {
+   "id": "L48/S0117",
+   "start": 1146.321,
+   "end": 1177.318,
+   "text": "So, this completes our discussion on In the system implementation part earlier, we talked about design. First, we talked about requirement gathering, then design, followed by implementation. So, all three aspects of building a system are now complete. In the next few lectures, we will learn different aspects of virtual and augmented reality systems. Primarily, we will devote our attention"
+  },
+  {
+   "id": "L48/S0118",
+   "start": 1178.142,
+   "end": 1181.866,
+   "text": "to understanding an important topic: optimization."
+  },
+  {
+   "id": "L48/S0119",
+   "start": 1181.986,
+   "end": 1188.514,
+   "text": "How do we optimize the experience as well as the system requirements?"
+  },
+  {
+   "id": "L48/S0120",
+   "start": 1190.296,
+   "end": 1195.763,
+   "text": "So, user experience optimization to manage psychophysiological constraints; we will talk about this."
+  },
+  {
+   "id": "L48/S0121",
+   "start": 1196.744,
+   "end": 1206.495,
+   "text": "Also, we will talk about adopting optimization approaches for resource or system optimization."
+  },
+  {
+   "id": "L48/S0122",
+   "start": 1211.133,
+   "end": 1232.498,
+   "text": "So, for further studies on some of these concepts that we talked about here, such as prototype building, prototype evaluation, empirical study, as well as agile methods, you can refer to this book: Human-Computer Interaction, User-Centric Computing for Design."
+  },
+  {
+   "id": "L48/S0123",
+   "start": 1233.659,
+   "end": 1252.687,
+   "text": "Also, you can refer to the NPTEL course on the design and implementation of human-computer interfaces, specifically weeks 4, 5, 10 to 12, for different discussions on the topics covered in this lecture."
+  },
+  {
+   "id": "L48/S0124",
+   "start": 1253.328,
+   "end": 1256.773,
+   "text": "So, with that, we come to the end of this lecture."
+  },
+  {
+   "id": "L48/S0125",
+   "start": 1257.755,
+   "end": 1266.587,
+   "text": "I hope you could follow the topics, understand the concepts, and are in a position to apply the learning to practical scenarios."
+  },
+  {
+   "id": "L48/S0126",
+   "start": 1267.58,
+   "end": 1270.981,
+   "text": "I look forward to meeting you all in the next lecture."
+  },
+  {
+   "id": "L48/S0127",
+   "start": 1271.746,
+   "end": 1274.704,
+   "text": "Until then, thank you, goodbye, and happy learning."
+  }
+ ],
+ "parts": [
+  {
+   "id": "L48/P01",
+   "first": "L48/S0000",
+   "last": "L48/S0051",
+   "start": 24.078,
+   "end": 453.975,
+   "objective": "Outline the sequential stages and details of the interactive system development life cycle",
+   "objective_id": "L48/O1",
+   "key_points": [
+    {
+     "id": "L48/P01/K1",
+     "text": "The system implementation lifecycle moves sequentially through requirement gathering, design-prototype-evaluate, coding, and empirical study.",
+     "sources": [
+      "L48/S0007",
+      "L48/S0008",
+      "L48/S0009",
+      "L48/S0010"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0538",
+      "C0707",
+      "C0713",
+      "C0718",
+      "C1033"
+     ]
+    },
+    {
+     "id": "L48/P01/K2",
+     "text": "Usability requirements are primarily gathered from end users, while functional and non-functional requirements may come from both end users and clients.",
+     "sources": [
+      "L48/S0023",
+      "L48/S0024"
+     ],
+     "concept_ids": [
+      "C0252",
+      "C0528",
+      "C0708",
+      "C0741",
+      "C0760",
+      "C0763"
+     ]
+    },
+    {
+     "id": "L48/P01/K3",
+     "text": "The design-prototype-evaluate cycle involves design, prototyping, and quick evaluation using methods such as cognitive walkthrough or heuristic evaluation.",
+     "sources": [
+      "L48/S0011",
+      "L48/S0029"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0705",
+      "C0903",
+      "C0919",
+      "C0932",
+      "C0935",
+      "C0937"
+     ]
+    },
+    {
+     "id": "L48/P01/K4",
+     "text": "Code testing can be conducted at primary (review-based) and secondary (systematic, like black or white box) levels.",
+     "sources": [
+      "L48/S0042"
+     ],
+     "concept_ids": [
+      "C0715",
+      "C0987",
+      "C0988",
+      "C1037"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L48/P01/T1",
+     "surface": "interactive system development life cycle",
+     "name": "Interactive system development life cycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Interactive system development life cycle is a process that involves several stages, including feasibility study, requirement gathering, analysis and specification, design-prototype-evaluate cycle, code design, coding and implementation, code testing, empirical study, deployment, and maintenance.",
+     "sources": [
+      "L48/S0004"
+     ],
+     "concept_id": "C1032",
+     "concept_name": "Standard interactive system development lifecycle"
+    },
+    {
+     "id": "L48/P01/T2",
+     "surface": "requirement gathering",
+     "name": "Requirement gathering",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Requirement gathering is a stage that involves gathering functional and non-functional requirements, which may include usability requirements, from both end users and clients.",
+     "sources": [
+      "L48/S0007",
+      "L48/S0010",
+      "L48/S0016"
+     ],
+     "concept_id": "C0707",
+     "concept_name": "Requirement gathering stage"
+    },
+    {
+     "id": "L48/P01/T3",
+     "surface": "design-prototype-evaluate cycle",
+     "name": "Design prototype evaluate cycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Design prototype evaluate cycle consists of three stages: design, prototyping, and quick evaluation of the prototype.",
+     "sources": [
+      "L48/S0008",
+      "L48/S0011"
+     ],
+     "concept_id": "C0705",
+     "concept_name": "Design prototype evaluate cycle"
+    },
+    {
+     "id": "L48/P01/T4",
+     "surface": "empirical study",
+     "name": "Empirical study",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Empirical study is one of the specific stages that is included in the overall interactive system development life cycle.",
+     "sources": [
+      "L48/S0009",
+      "L48/S0010",
+      "L48/S0048",
+      "L48/S0049"
+     ],
+     "concept_id": "C0713",
+     "concept_name": "Empirical study"
+    },
+    {
+     "id": "L48/P01/T5",
+     "surface": "contextual inquiry",
+     "name": "Contextual inquiry",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Contextual inquiry is one of the different methods or approaches that may be used to collect requirements.",
+     "sources": [
+      "L48/S0017"
+     ],
+     "concept_id": "C0709",
+     "concept_name": "Contextual inquiry"
+    },
+    {
+     "id": "L48/P01/T6",
+     "surface": "interface design",
+     "name": "Interface design",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Interface design is the part of the process that comprises the design, prototype, and evaluate cycle.",
+     "sources": [
+      "L48/S0027",
+      "L48/S0030",
+      "L48/S0036"
+     ],
+     "concept_id": "C0711",
+     "concept_name": "Interface design"
+    },
+    {
+     "id": "L48/P01/T7",
+     "surface": "cognitive walkthrough",
+     "name": "Cognitive walkthrough",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Cognitive walkthrough is a method that can be used for the quick evaluation of a prototype.",
+     "sources": [
+      "L48/S0029"
+     ],
+     "concept_id": "C0932",
+     "concept_name": "Cognitive walkthrough"
+    },
+    {
+     "id": "L48/P01/T8",
+     "surface": "heuristic evaluation",
+     "name": "Heuristic evaluation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Heuristic evaluation is a method that can be used for the quick evaluation of a prototype.",
+     "sources": [
+      "L48/S0029"
+     ],
+     "concept_id": "C0935",
+     "concept_name": "Heuristic evaluation"
+    },
+    {
+     "id": "L48/P01/T9",
+     "surface": "design language",
+     "name": "Design language",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A design language refers to methods and approaches, such as DFD, ER, or UML, used to come up with the proper design during code design.",
+     "sources": [
+      "L48/S0036"
+     ],
+     "concept_id": "C0773",
+     "concept_name": "Design language"
+    },
+    {
+     "id": "L48/P01/T10",
+     "surface": "implementation",
+     "name": "Implementation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Implementation is a stage in development that involves both the coding process and subsequent code testing.",
+     "sources": [
+      "L48/S0039",
+      "L48/S0040"
+     ],
+     "concept_id": "C0718",
+     "concept_name": "Coding and implementation stage"
+    },
+    {
+     "id": "L48/P01/T11",
+     "surface": "coding",
+     "name": "Coding",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Coding is the act of writing the code, which must be completed before the resulting code can be tested.",
+     "sources": [
+      "L48/S0040",
+      "L48/S0041"
+     ],
+     "concept_id": "C1033",
+     "concept_name": "Coding"
+    },
+    {
+     "id": "L48/P01/T12",
+     "surface": "code testing",
+     "name": "Code testing",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Code testing is the process of testing the code after it has been written, which ensures the system is executable.",
+     "sources": [
+      "L48/S0040",
+      "L48/S0041"
+     ],
+     "concept_id": "C0715",
+     "concept_name": "Code testing"
+    },
+    {
+     "id": "L48/P01/T13",
+     "surface": "primary level",
+     "name": "Primary level",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Primary level is a level of testing that may be review-based.",
+     "sources": [
+      "L48/S0042"
+     ],
+     "concept_id": "C1034",
+     "concept_name": "Primary level"
+    },
+    {
+     "id": "L48/P01/T14",
+     "surface": "secondary level",
+     "name": "Secondary level",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Secondary level is a level of testing that uses a systematic, structured way, such as black box or white box testing.",
+     "sources": [
+      "L48/S0042"
+     ],
+     "concept_id": "C1035",
+     "concept_name": "Secondary level"
+    },
+    {
+     "id": "L48/P01/T15",
+     "surface": "black box testing",
+     "name": "Black box",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Black box is a systematic and structured method of testing that falls under secondary level testing.",
+     "sources": [
+      "L48/S0042"
+     ],
+     "concept_id": "C1036",
+     "concept_name": "White box testing"
+    },
+    {
+     "id": "L48/P01/T16",
+     "surface": "white box testing",
+     "name": "White box",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "White box is a systematic and structured method of testing that falls under secondary level testing.",
+     "sources": [
+      "L48/S0042"
+     ],
+     "concept_id": "C1037",
+     "concept_name": "White box"
+    },
+    {
+     "id": "L48/P01/T17",
+     "surface": "system-level testing",
+     "name": "System-level testing",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "System-level testing is conducted after units have been integrated to verify the functioning of the entire system.",
+     "sources": [
+      "L48/S0043"
+     ],
+     "concept_id": "C1038",
+     "concept_name": "System-level testing"
+    },
+    {
+     "id": "L48/P01/T18",
+     "surface": "usability testing",
+     "name": "Usability testing",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Usability testing is the stage that determines whether a system is usable, complementing code testing which only proves the system is executable.",
+     "sources": [
+      "L48/S0045",
+      "L48/S0046",
+      "L48/S0048"
+     ],
+     "concept_id": "C0735",
+     "concept_name": "Usability testing"
+    }
+   ]
+  },
+  {
+   "id": "L48/P02",
+   "first": "L48/S0052",
+   "last": "L48/S0079",
+   "start": 454.998,
+   "end": 765.484,
+   "objective": "Explain the limitations and documentation burden of the traditional sequential system implementation lifecycle",
+   "objective_id": "L48/O1",
+   "key_points": [
+    {
+     "id": "L48/P02/K1",
+     "text": "The traditional approach is rigid, requiring that every stage be fully completed before the next stage begins (52, 53, 57).",
+     "sources": [
+      "L48/S0052",
+      "L48/S0053",
+      "L48/S0057"
+     ],
+     "concept_ids": [
+      "C1039"
+     ]
+    },
+    {
+     "id": "L48/P02/K2",
+     "text": "This rigidity can lead to significant time and cost overruns, resulting in non-acceptance by the customer (54, 78).",
+     "sources": [
+      "L48/S0054",
+      "L48/S0078"
+     ],
+     "concept_ids": []
+    },
+    {
+     "id": "L48/P02/K3",
+     "text": "The standard approach requires the preparation of numerous documents, including feasibility studies, SRS, design documents, and testing/usability reports (61, 65, 75, 76).",
+     "sources": [
+      "L48/S0061",
+      "L48/S0065",
+      "L48/S0075",
+      "L48/S0076"
+     ],
+     "concept_ids": [
+      "C0528",
+      "C0735",
+      "C0737",
+      "C0740",
+      "C1040",
+      "C1041"
+     ]
+    },
+    {
+     "id": "L48/P02/K4",
+     "text": "To overcome the drawbacks of the traditional method, a faster delivery method must be adopted (79).",
+     "sources": [
+      "L48/S0079"
+     ],
+     "concept_ids": []
+    }
+   ],
+   "terms": [
+    {
+     "id": "L48/P02/T1",
+     "surface": "traditional approach",
+     "name": "Traditional approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The traditional approach is a method where every single stage must be completed entirely before the next stage in the development process can begin.",
+     "sources": [
+      "L48/S0052",
+      "L48/S0053",
+      "L48/S0057"
+     ],
+     "concept_id": "C1039",
+     "concept_name": "Traditional approach"
+    },
+    {
+     "id": "L48/P02/T2",
+     "surface": "feasibility study",
+     "name": "Feasibility study report",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A feasibility study report is a document required during the feasibility study stage of the standard system development lifecycle.",
+     "sources": [
+      "L48/S0064",
+      "L48/S0072"
+     ],
+     "concept_id": "C1040",
+     "concept_name": "Feasibility study report"
+    },
+    {
+     "id": "L48/P02/T3",
+     "surface": "SRS",
+     "name": "Software requirement specification",
+     "abbreviation": "SRS",
+     "abbreviation_at": "L48/S0065",
+     "definition": "The Software Requirement Specification (SRS) is documentation created during the requirement gathering, analysis, and specification stage, detailing requirements for the software or system.",
+     "sources": [
+      "L48/S0065",
+      "L48/S0073",
+      "L48/S0074"
+     ],
+     "concept_id": "C0740",
+     "concept_name": "System specification"
+    },
+    {
+     "id": "L48/P02/T4",
+     "surface": "design document",
+     "name": "Design document",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A design document is a document prepared during the design phase that details requirements for interface, interaction, and code design.",
+     "sources": [
+      "L48/S0066",
+      "L48/S0075"
+     ],
+     "concept_id": "C1041",
+     "concept_name": "Design document"
+    },
+    {
+     "id": "L48/P02/T5",
+     "surface": "usability study report",
+     "name": "Usability study report",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "A usability study report is a document required after testing and before deployment in the standard system development lifecycle.",
+     "sources": [
+      "L48/S0069",
+      "L48/S0075"
+     ],
+     "concept_id": "C1042",
+     "concept_name": "Usability study report"
+    },
+    {
+     "id": "L48/P02/T6",
+     "surface": "standard interactive system development lifecycle",
+     "name": "Standard interactive system development lifecycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The standard interactive system development lifecycle is a system approach requiring that all activities and requirements must be executed at a specific stage before deployment can occur.",
+     "sources": [
+      "L48/S0070"
+     ],
+     "concept_id": "C1032",
+     "concept_name": "Standard interactive system development lifecycle"
+    }
+   ]
+  },
+  {
+   "id": "L48/P03",
+   "first": "L48/S0080",
+   "last": "L48/S0109",
+   "start": 766.105,
+   "end": 1077.86,
+   "objective": "Describe the core principles, process flow, and practical implementation of the Agile development approach",
+   "objective_id": "L48/O2",
+   "key_points": [
+    {
+     "id": "L48/P03/K1",
+     "text": "Agile development is encouraged to ensure quick project turnaround and increases client acceptability by eliminating unnecessary documentation.,",
+     "sources": [
+      "L48/S0081",
+      "L48/S0082"
+     ],
+     "concept_ids": []
+    },
+    {
+     "id": "L48/P03/K2",
+     "text": "The Agile process flow includes phases such as Conceptualization, Inception, Iteration (sprint), Release, Production, and Retirement.",
+     "sources": [
+      "L48/S0090"
+     ],
+     "concept_ids": [
+      "C1044",
+      "C1045",
+      "C1046",
+      "C1047",
+      "C1048",
+      "C1049"
+     ]
+    },
+    {
+     "id": "L48/P03/K3",
+     "text": "Agile focuses on starting small and continuously adding features incrementally, unlike standard ISDLC where the system is completed and then delivered.,",
+     "sources": [
+      "L48/S0085",
+      "L48/S0106"
+     ],
+     "concept_ids": [
+      "C0538",
+      "C0717",
+      "C1032"
+     ]
+    },
+    {
+     "id": "L48/P03/K4",
+     "text": "A typical Agile sprint lasts four to six weeks and requires daily meetings, live demos, and quick feedback from stakeholders.,",
+     "sources": [
+      "L48/S0095",
+      "L48/S0102"
+     ],
+     "concept_ids": [
+      "C0792",
+      "C1046"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L48/P03/T1",
+     "surface": "agile development framework or agile development approach",
+     "name": "Agile development approach",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Agile development approach is a development framework that encourages and implements fast development practices to ensure quick project turnaround for clients. This approach starts small by avoiding the collection of all requirements or the development of the entire system from the beginning.",
+     "sources": [
+      "L48/S0080",
+      "L48/S0081",
+      "L48/S0082",
+      "L48/S0083",
+      "L48/S0084",
+      "L48/S0085",
+      "L48/S0086"
+     ],
+     "concept_id": "C1043",
+     "concept_name": "Agile development approach"
+    },
+    {
+     "id": "L48/P03/T2",
+     "surface": "conceptualization",
+     "name": "Conceptualization",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Conceptualization is an early stage of the process flow, which roughly involves both the physical feasibility study and the gathering of system requirements.",
+     "sources": [
+      "L48/S0088",
+      "L48/S0093"
+     ],
+     "concept_id": "C1044",
+     "concept_name": "Conceptualization"
+    },
+    {
+     "id": "L48/P03/T3",
+     "surface": "inception",
+     "name": "Inception",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Inception is an initial stage that involves activities such as creating the project team and arranging necessary funds and resources, and it also roughly refers to the physical feasibility study and requirement gathering.",
+     "sources": [
+      "L48/S0089",
+      "L48/S0093"
+     ],
+     "concept_id": "C1045",
+     "concept_name": "Inception"
+    },
+    {
+     "id": "L48/P03/T4",
+     "surface": "iteration or sprint",
+     "name": "Iteration or sprint",
+     "abbreviation": "sprint",
+     "abbreviation_at": "L48/S0095",
+     "definition": "Iteration or sprint is a development cycle in the agile approach that typically lasts four to six weeks. This cycle includes requirements, development, testing, and delivery.",
+     "sources": [
+      "L48/S0090",
+      "L48/S0094",
+      "L48/S0095",
+      "L48/S0097"
+     ],
+     "concept_id": "C1046",
+     "concept_name": "Iteration or sprint"
+    },
+    {
+     "id": "L48/P03/T5",
+     "surface": "release",
+     "name": "Release",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Release is a stage in the agile process flow that includes testing, training, documentation, and refers specifically to deployment.",
+     "sources": [
+      "L48/S0090",
+      "L48/S0092",
+      "L48/S0098"
+     ],
+     "concept_id": "C1047",
+     "concept_name": "Release"
+    },
+    {
+     "id": "L48/P03/T6",
+     "surface": "production",
+     "name": "Production",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Production is a stage of the agile process flow that refers to ongoing support, which specifically entails system maintenance.",
+     "sources": [
+      "L48/S0090",
+      "L48/S0091",
+      "L48/S0092"
+     ],
+     "concept_id": "C1048",
+     "concept_name": "Production"
+    },
+    {
+     "id": "L48/P03/T7",
+     "surface": "retirement",
+     "name": "Retirement",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Retirement is the final stage of the process flow, which encompasses all end-of-life activities for the system.",
+     "sources": [
+      "L48/S0090"
+     ],
+     "concept_id": "C1049",
+     "concept_name": "Retirement"
+    },
+    {
+     "id": "L48/P03/T8",
+     "surface": "ISDLC",
+     "name": "Interactive system development life cycle",
+     "abbreviation": "ISDLC",
+     "abbreviation_at": "L48/S0095",
+     "definition": "The Interactive System Development Life Cycle is a standard method that may take months, unlike agile iterations. It is primarily meant for pedagogical purposes rather than building practical systems within a reasonable timeframe.",
+     "sources": [
+      "L48/S0095",
+      "L48/S0106",
+      "L48/S0108",
+      "L48/S0109"
+     ],
+     "concept_id": "C1032",
+     "concept_name": "Standard interactive system development lifecycle"
+    }
+   ]
+  },
+  {
+   "id": "L48/P04",
+   "first": "L48/S0110",
+   "last": "L48/S0127",
+   "start": 1081.445,
+   "end": 1274.704,
+   "objective": "Summarize the design process steps, evaluate system prototypes, and understand agile development methods",
+   "objective_id": "L48/O2",
+   "key_points": [
+    {
+     "id": "L48/P04/K1",
+     "text": "The system implementation process completes the three aspects of building a system: requirement gathering, design, and implementation.",
+     "sources": [
+      "L48/S0117"
+     ],
+     "concept_ids": [
+      "C0538",
+      "C0707",
+      "C0718"
+     ]
+    },
+    {
+     "id": "L48/P04/K2",
+     "text": "System implementation involves a design-prototype-evaluate cycle for building and evaluating prototypes, empirical usability evaluation (such as the Majuli case study), and agile development methods, which are more practical for building interactive systems than standard system development life cycles.",
+     "sources": [
+      "L48/S0114",
+      "L48/S0115",
+      "L48/S0116"
+     ],
+     "concept_ids": [
+      "C0490",
+      "C0508",
+      "C0528",
+      "C0538",
+      "C0705",
+      "C0713",
+      "C0718",
+      "C0904",
+      "C0919",
+      "C1043"
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "id": "L48/P04/T1",
+     "surface": "prototype-evaluate part of the design-prototype-evaluate cycle",
+     "name": "Prototype-evaluate part of the design-prototype-evaluate cycle",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Prototype-evaluate part of the design-prototype-evaluate cycle is the part of the design-prototype-evaluate cycle that focuses on how to build and evaluate prototypes.",
+     "sources": [
+      "L48/S0114"
+     ],
+     "concept_id": "C1050",
+     "concept_name": "Prototype-evaluate part of the design-prototype-evaluate cycle"
+    },
+    {
+     "id": "L48/P04/T2",
+     "surface": "empirical evaluation",
+     "name": "Empirical evaluation",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Empirical evaluation is the process used to finally assess the usability of a system.",
+     "sources": [
+      "L48/S0115"
+     ],
+     "concept_id": "C0713",
+     "concept_name": "Empirical study"
+    },
+    {
+     "id": "L48/P04/T3",
+     "surface": "agile development method",
+     "name": "Agile development method",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "The agile development method is described as a more practical way of building interactive systems when compared to standard system development life cycles.",
+     "sources": [
+      "L48/S0116"
+     ],
+     "concept_id": "C1043",
+     "concept_name": "Agile development approach"
+    },
+    {
+     "id": "L48/P04/T4",
+     "surface": "optimization",
+     "name": "Optimization",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "Optimization refers to the process of managing and improving both the system requirements and the user experience.",
+     "sources": [
+      "L48/S0118",
+      "L48/S0119",
+      "L48/S0120",
+      "L48/S0121"
+     ],
+     "concept_id": "C1051",
+     "concept_name": "Optimization"
+    },
+    {
+     "id": "L48/P04/T5",
+     "surface": "user experience optimization",
+     "name": "User experience optimization",
+     "abbreviation": null,
+     "abbreviation_at": null,
+     "definition": "User experience optimization is a process used to manage psychophysiological constraints.",
+     "sources": [
+      "L48/S0120"
+     ],
+     "concept_id": "C1052",
+     "concept_name": "Experience optimization"
+    }
+   ]
+  }
+ ],
+ "objectives": [
+  {
+   "id": "L48/O1",
+   "text": "you'll be able to outline the stages of the interactive system development life cycle and explain the limitations and documentation challenges associated with traditional sequential implementation",
+   "part_ids": [
+    "L48/P01",
+    "L48/P02"
+   ]
+  },
+  {
+   "id": "L48/O2",
+   "text": "you'll be able to describe the core principles and process flow of the Agile development approach, and summarize the steps for designing and evaluating system prototypes",
+   "part_ids": [
+    "L48/P03",
+    "L48/P04"
+   ]
+  }
+ ],
+ "lecture_goal": "compare and contrast traditional sequential system implementation with modern Agile development approaches.",
+ "flags": [],
+ "origin": [
+  {
+   "item": "L48/parts/w0",
+   "stage": "parts",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "segment.standalone",
+   "prompt_version": "3",
+   "input_hash": "b25f8c872f5e27ca99a1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3515,
+   "output_tokens": 1046,
+   "latency_s": 40.47,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "df8a29b8b28304f5bc57",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 969,
+   "output_tokens": 457,
+   "latency_s": 14.62,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "47b06b561e95bcf0b747",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 822,
+   "output_tokens": 679,
+   "latency_s": 22.74,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "578b3d0ef79b15cca349",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1526,
+   "output_tokens": 1181,
+   "latency_s": 55.58,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/annotate",
+   "stage": "annotate",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "part.annotate",
+   "prompt_version": "1",
+   "input_hash": "ed27e065c57d348edcae",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1102,
+   "output_tokens": 1274,
+   "latency_s": 61.91,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "17bcace7864ef23ceace",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1120,
+   "output_tokens": 1145,
+   "latency_s": 121.93,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "39746667b017872ff4b0",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1378,
+   "output_tokens": 1559,
+   "latency_s": 46.13,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/terms/52-79",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "852c493bb5fbf5f85e80",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1244,
+   "output_tokens": 2447,
+   "latency_s": 76.78,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "268c3482d34dc298a946",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1221,
+   "output_tokens": 1354,
+   "latency_s": 216.18,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "8bd9e444bf0ece7e08cf",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1484,
+   "output_tokens": 1246,
+   "latency_s": 46.47,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/terms/80-109",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "7358d6c3241b8c6fadba",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1380,
+   "output_tokens": 2423,
+   "latency_s": 87.95,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a3bc3397e85ab861e2d7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1650,
+   "output_tokens": 3579,
+   "latency_s": 341.35,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/annotate/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "2cbe6450d5ce593e1b15",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 858,
+   "output_tokens": 4295,
+   "latency_s": 418.62,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "4bc6c4938a6aeb368f47",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1915,
+   "output_tokens": 1839,
+   "latency_s": 66.31,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/terms/30-51",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "f0093dc9bab648edc8f5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1091,
+   "output_tokens": 2764,
+   "latency_s": 101.74,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/terms/0-39",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "8a3aa5f7cd5e9a0b4d3a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1525,
+   "output_tokens": 3560,
+   "latency_s": 132.02,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "38b98606cd0267905b64",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1290,
+   "output_tokens": 2525,
+   "latency_s": 410.2,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/key_points/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "ef13652502aa49b8f50d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 778,
+   "output_tokens": 1739,
+   "latency_s": 353.67,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "74a286599457394d8229",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1671,
+   "output_tokens": 4590,
+   "latency_s": 617.89,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "069bde46708e3676892b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2666,
+   "output_tokens": 5020,
+   "latency_s": 808.01,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d29e6956db56a1d6e25b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1039,
+   "output_tokens": 1356,
+   "latency_s": 316.39,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/annotate/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "12032304aee704def2dd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 820,
+   "output_tokens": 611,
+   "latency_s": 282.87,
+   "cached": false
+  },
+  {
+   "item": "L48/goals",
+   "stage": "goals",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "goals.lecture",
+   "prompt_version": "1",
+   "input_hash": "356c91eef29b76f6e58a",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 262,
+   "output_tokens": 662,
+   "latency_s": 15.15,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/activities",
+   "stage": "activities",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.part",
+   "prompt_version": "1",
+   "input_hash": "2d4fe40c147608f5d5fa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1157,
+   "output_tokens": 1491,
+   "latency_s": 33.77,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/terms/110-127",
+   "stage": "terms",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "terms.window",
+   "prompt_version": "1",
+   "input_hash": "e4f66a399f1750d919f5",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1100,
+   "output_tokens": 2131,
+   "latency_s": 47.85,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "aa59444eb0f149056c64",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1320,
+   "output_tokens": 1517,
+   "latency_s": 360.14,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "c0347e69b11dcff9e8ba",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2362,
+   "output_tokens": 4717,
+   "latency_s": 651.49,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6e850f560130e28c6afe",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1041,
+   "output_tokens": 2548,
+   "latency_s": 409.11,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/terms/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a0a2a193ad54eef049f9",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1155,
+   "output_tokens": 4533,
+   "latency_s": 509.19,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "e6c1c262264973334377",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1303,
+   "output_tokens": 4307,
+   "latency_s": 426.0,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "45d7dbcbe8f0f056c1c4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2162,
+   "output_tokens": 4904,
+   "latency_s": 415.12,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/terms/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "bb71b830f32f922898b4",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1052,
+   "output_tokens": 3415,
+   "latency_s": 404.79,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/terms/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "9089f8635b593ca2370b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1011,
+   "output_tokens": 4363,
+   "latency_s": 414.01,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "3830898b49a3a0acc121",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1477,
+   "output_tokens": 4373,
+   "latency_s": 616.32,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8ee356b6b7309c40ba09",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1644,
+   "output_tokens": 4404,
+   "latency_s": 677.79,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "cb4ac336a0ca0a54dd46",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2109,
+   "output_tokens": 4366,
+   "latency_s": 561.01,
+   "cached": false
+  },
+  {
+   "item": "L48/goals/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6146c38504eddac029ff",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 832,
+   "output_tokens": 1548,
+   "latency_s": 276.57,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/activities/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6dac4ac76edbd6255e8d",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1171,
+   "output_tokens": 2175,
+   "latency_s": 300.32,
+   "cached": false
+  },
+  {
+   "item": "registry/agile development approach",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "f7354e5089d4cffc0db2",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 518,
+   "output_tokens": 741,
+   "latency_s": 33.58,
+   "cached": false
+  },
+  {
+   "item": "registry/primary level",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "586d48b3831214d4f978",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 439,
+   "output_tokens": 915,
+   "latency_s": 41.46,
+   "cached": false
+  },
+  {
+   "item": "registry/feasibility study report",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "da297190c99c684b7945",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 475,
+   "output_tokens": 1011,
+   "latency_s": 46.03,
+   "cached": false
+  },
+  {
+   "item": "registry/release",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "c34d47b8a7f1c00ca512",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 602,
+   "output_tokens": 1173,
+   "latency_s": 53.19,
+   "cached": false
+  },
+  {
+   "item": "registry/black box",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "fddbb6c28c7a0cbbfdfa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 435,
+   "output_tokens": 1257,
+   "latency_s": 57.17,
+   "cached": false
+  },
+  {
+   "item": "registry/optim",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "315dac1f3bbc4bee031b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 650,
+   "output_tokens": 2384,
+   "latency_s": 108.6,
+   "cached": false
+  },
+  {
+   "item": "registry/user experience optim",
+   "stage": "registry",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "registry.group",
+   "prompt_version": "1",
+   "input_hash": "f71d19efd92c655aa089",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 915,
+   "output_tokens": 4323,
+   "latency_s": 199.74,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "9f2c03dd9c1492ad9d34",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1641,
+   "output_tokens": 4111,
+   "latency_s": 847.97,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/quiz/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "dcb151ee618bc3a5c00b",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1002,
+   "output_tokens": 3262,
+   "latency_s": 283.19,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/recap/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "d3c38a78e7cdbf191572",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1476,
+   "output_tokens": 1535,
+   "latency_s": 290.18,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "6567eee09e0b89c1ca93",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1745,
+   "output_tokens": 2153,
+   "latency_s": 298.0,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/activities/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "87552cb759b10834e97e",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1029,
+   "output_tokens": 4189,
+   "latency_s": 569.95,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/facets/1",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "82fd2d937e8215592e81",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7964,
+   "output_tokens": 1125,
+   "latency_s": 36.7,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "e6e57de1ef9e7ba9f5fe",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 8102,
+   "output_tokens": 3370,
+   "latency_s": 96.5,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "f65e219096ac5b301ece",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 13145,
+   "output_tokens": 3719,
+   "latency_s": 105.93,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "cdd55a054c0f8523ebd1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 21571,
+   "output_tokens": 4252,
+   "latency_s": 120.74,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/facets/0",
+   "stage": "facets",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "facets.part",
+   "prompt_version": "2",
+   "input_hash": "f6516a0d1d000b40cb19",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 18596,
+   "output_tokens": 5069,
+   "latency_s": 139.76,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0eea956ff659d94a8390",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1283,
+   "output_tokens": 4191,
+   "latency_s": 897.95,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "02bb9a5baac0899fe949",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2832,
+   "output_tokens": 4506,
+   "latency_s": 949.51,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "55353d5e3f5afce82420",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1139,
+   "output_tokens": 4638,
+   "latency_s": 991.32,
+   "cached": false
+  },
+  {
+   "item": "L48/P03/facets/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "a3e3da943c4e6323affd",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1789,
+   "output_tokens": 4788,
+   "latency_s": 996.96,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "4785a6e8b7509652d190",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 919,
+   "output_tokens": 3659,
+   "latency_s": 1076.11,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "dee8b26cdff2ba9defaa",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1623,
+   "output_tokens": 4280,
+   "latency_s": 1121.36,
+   "cached": false
+  },
+  {
+   "item": "L48/P02/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "0c3449686f57ba1f8b4f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 877,
+   "output_tokens": 838,
+   "latency_s": 559.29,
+   "cached": false
+  },
+  {
+   "item": "L48/P01/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "27a04a59655164579379",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 1437,
+   "output_tokens": 547,
+   "latency_s": 544.89,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/facets/rewrite",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.rewrite",
+   "prompt_version": "1",
+   "input_hash": "8b3d524b3fd7f9f8abd7",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 1,
+   "input_tokens": 1625,
+   "output_tokens": 14510,
+   "latency_s": 2293.13,
+   "cached": false
+  },
+  {
+   "item": "L48/P04/facets/rejudge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "ed0a24af3ffd3ad6c4f3",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 740,
+   "output_tokens": 779,
+   "latency_s": 108.61,
+   "cached": false
+  },
+  {
+   "item": "L48/links",
+   "stage": "links",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "links.lecture",
+   "prompt_version": "1",
+   "input_hash": "2d5fb5a8b5e2dbb3036f",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 35041,
+   "output_tokens": 10119,
+   "latency_s": 1043.67,
+   "cached": false
+  },
+  {
+   "item": "L48/links/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "59f78b07658128e6c548",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 36302,
+   "output_tokens": 5478,
+   "latency_s": 220.66,
+   "cached": false
+  },
+  {
+   "item": "L48/oq",
+   "stage": "oq",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.oq",
+   "prompt_version": "2",
+   "input_hash": "b81a43d062c7937101d1",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7715,
+   "output_tokens": 2043,
+   "latency_s": 43.73,
+   "cached": false
+  },
+  {
+   "item": "L48/oq/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8018fdced73927d06f00",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 7708,
+   "output_tokens": 638,
+   "latency_s": 28.99,
+   "cached": false
+  },
+  {
+   "item": "L48/recall",
+   "stage": "recall",
+   "model": "google/gemma-4-E4B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "act.recall",
+   "prompt_version": "2",
+   "input_hash": "d812c4e2aafa4930886c",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 2875,
+   "output_tokens": 667,
+   "latency_s": 19.77,
+   "cached": false
+  },
+  {
+   "item": "L48/recall/judge",
+   "stage": "judge",
+   "model": "google/gemma-4-12B-it (vLLM)",
+   "engine": "vllm",
+   "prompt_id": "judge.items",
+   "prompt_version": "1",
+   "input_hash": "8f8154893a9cc4c10559",
+   "thinking": true,
+   "validator": {
+    "passed": true,
+    "errors": []
+   },
+   "retries": 0,
+   "input_tokens": 3276,
+   "output_tokens": 1665,
+   "latency_s": 73.4,
+   "cached": false
+  }
+ ]
+}

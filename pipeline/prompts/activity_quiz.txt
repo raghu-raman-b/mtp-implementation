@@ -1,0 +1,46 @@
+TASK
+You write a short multiple-choice quiz on one segment of a lecture of a university course. The learner takes it right after the segment, to check what they understood. Every question is answered by the segment's facts below; the learner does not see the facts. A good question can be answered only by someone who understood the segment: not by picking the longest or the most careful-sounding option, and not by striking out options that are plainly wrong.
+
+{course}
+
+THE SEGMENT
+Lecture: {lecture_title}
+What the segment teaches: {subgoal}
+
+THE FACTS
+What the segment teaches, one fact per line, each with its number in brackets.
+
+{facts}
+
+MATERIAL FOR WRONG OPTIONS
+Related concepts of the course (with a short definition) and other facts of the same lecture. Use them only to make wrong options that a learner who misunderstood the segment might pick; do not ask about them.
+
+{related}
+
+THE QUESTIONS
+- Write {count} questions, each about a different point of the facts. When the facts are few, stay at the lower number: a question that asks again what another question asks is worse than one question fewer.
+- Ask about what matters for what the segment teaches: what a thing is, why, how it works, how two things differ, what follows from it. No trivia (a name, a date, a figure, the place of an item in a list) and no question about the lecture itself.
+- "facts": the numbers of the facts that answer the question. The correct option follows from those facts alone; add nothing from your own knowledge.
+- "question": one full question that ends with a question mark and stands alone: no "this", "the above", "in this segment", "according to the lecture", "is described as". It does not hand the answer over: no key word that then appears in the correct option and in none of the wrong ones.
+- "correct": the right answer, as short as it can be and still be right: a few words or one short clause. Keep a hedge of the fact ("can", "usually", "in most systems"). Leave out examples and side details; a detail the answer needs goes into the question.
+- "wrong": three wrong options. Write the correct option first, then build each wrong option to match it.
+  - Wrong for this question. A learner who knows the facts can say why each one is wrong. A statement that is true of something else is a good wrong option only when it is false as an answer to this question: read each wrong option against all the facts and the material above, and replace it if any of them makes it a possible answer.
+  - Tempting. What a learner who half understood might believe: a neighbouring concept of the same kind, the property of a sibling concept, a likely mix-up. Not something from another topic that anyone could strike out.
+  - Same form as the correct option: the same kind of thing, the same grammatical shape, the same number of parts (when the correct option says "X, so Y", so does each wrong one), the same level of detail and about the same length. At least one wrong option is as long as the correct one or longer.
+  - No tell-tale wording. No option made false by adding "only", "always", "never", "all", "none" or "must". Never "all of the above", "none of the above" or "both". At most one wrong option is the correct one with a detail reversed, and the four options are never the four combinations of two halves ("A and B", "A but not B", "B but not A", "neither"): the learner then picks the option that shares most with the others.
+- The four options end the same way, without a full stop.
+- "explanation": one or two sentences saying why the correct option is right, as a statement about the subject (not "the segment says" or "the facts state"). It may add why the most tempting wrong option is wrong.
+- Across the quiz: no question gives away the answer of another, and the same few statements are not passed around as the correct option of one question and the wrong options of the others, or the learner answers by elimination.
+
+Before you answer, test each question three ways. Cover the options: can a learner who knows the facts answer it without seeing them? Compare lengths: if the correct option is the longest, shorten it or lengthen a wrong one. Argue for each wrong option as a learner would: if one can be defended, replace it.
+
+EXAMPLES (other subjects)
+Facts: [1] Mitochondria produce most of a cell's ATP through cellular respiration.
+{"questions": [{"facts": [1], "question": "Which organelle produces most of a cell's ATP?", "correct": "The mitochondrion", "wrong": ["The ribosome", "The Golgi apparatus", "The cell nucleus"], "explanation": "Mitochondria make most of a cell's ATP through cellular respiration."}]}
+
+Facts: [1] A hash table finds a key in constant time on average because a hash function maps the key directly to its slot. [2] A balanced search tree finds a key in logarithmic time by comparing keys along a path from the root.
+{"questions": [{"facts": [1, 2], "question": "Why is finding a key in a hash table usually faster than in a balanced search tree?", "correct": "A hash function maps the key straight to its slot", "wrong": ["The table keeps its keys sorted, so half of them are skipped at each step", "Each comparison on the way down from the root rules out half of the keys", "The slots are read one after another until the key turns up"], "explanation": "A hash function computes the slot from the key itself, so no keys are compared on the way; a search tree has to compare keys along a path from the root."}]}
+
+ANSWER
+Answer with a JSON object with one field, "questions": a list of {count} questions, each with the fields "facts", "question", "correct", "wrong", "explanation" in this order.
+Answer with the JSON only.

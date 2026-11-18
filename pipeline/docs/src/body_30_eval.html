@@ -1,0 +1,106 @@
+
+<!-- ======================================================================= PART III -->
+<div class="part-head" data-part="III · Evaluation"><span class="num">Part III · Evaluation</span><h2 id="evaluation" data-toc="Evaluation: sets and results">Evaluation: every set, and what fails where</h2>
+<p>Every set used to test the pipeline, with its items written out (open each one), and the results stage by stage.
+Two rules held throughout (<code>pipeline/PLAN.md</code>): tests look for damage, not confirmation, and a set is written
+from the transcripts before the outputs it tests are read. Several planned sets are not written yet; the table says
+which.</p></div>
+
+<div class="tablewrap"><table>
+<tr><th>Set</th><th>Tests</th><th>Size</th><th>State</th></tr>
+<tr><td><a href="#ev-seg">Human segmentation of lecture 1</a></td><td>segmentation against a person</td><td class="n">7 segments</td><td>used before v1</td></tr>
+<tr><td><a href="#ev-seg">Seeds of 12 lectures</a></td><td>segmentation run to run</td><td class="n">12 lectures × 2–4</td><td>done</td></tr>
+<tr><td><a href="#ev-facts">Fact gold, seeded errors, subtle errors, rewrite gold, missed points</a></td><td>the fact judge (2b) and 2a</td><td class="n">62 + 34 + 13 + 8 + 5</td><td>done; rerun with the revised judge pending</td></tr>
+<tr><td>Concept gold for 4 segments (block 2)</td><td>2c precision and recall</td><td class="n">—</td><td>not written</td></tr>
+<tr><td>Pair gold, about 80 pairs (block 3)</td><td>candidate recall, wrong and missed merges</td><td class="n">—</td><td>not written</td></tr>
+<tr><td><a href="#ev-activities">Activity seed set (should fail / should pass)</a></td><td>the activity judge</td><td class="n">about 40 items</td><td>written; judge not yet run on it</td></tr>
+<tr><td><a href="#ev-qa">QA bench B01–B17</a></td><td>answer time, grounding, “not covered”</td><td class="n">17 × 6 variants</td><td>done</td></tr>
+<tr><td><a href="#ev-qa">Calibration queries</a></td><td>the “no close match” cut-off</td><td class="n">80</td><td>done</td></tr>
+<tr><td><a href="#ev-qa">MVP test questions</a></td><td>QA on the MVP layer</td><td class="n">36 (+20 rerun)</td><td>done</td></tr>
+<tr><td><a href="#ev-qa">Block 6 question set</a></td><td>QA correctness, scored</td><td class="n">85</td><td>first draft, unchecked, on a branch</td></tr>
+<tr><td><a href="#ev-baselines">Baseline tests</a></td><td>plain LLM, RAG, graph-only</td><td class="n">—</td><td>running (placeholder)</td></tr>
+</table></div>
+
+<h3 id="ev-seg" data-toc="Segmentation">Segmentation</h3>
+<p>Against a person, on one lecture (see <a href="#baselines-seg">the baseline comparison</a>): the one-pass LLM scored
+WindowDiff 0.09, TextTiling 0.28. Against itself, on 12 lectures with four seeds each (three for lecture 39, two for lecture 51; seed 0 is the pipeline's own
+run), before and after 1b's verification:</p>
+{{EVAL:seg_seeds}}
+<p class="small muted"><code>analysis/segmentation/data/run_to_run_lectures.csv</code>. F1: a cut counts as reproduced within 3 sentences; WD:
+WindowDiff, 0 is identical. <b>What fails where:</b> lectures that enumerate items (4, 8, 51) disagree on granularity;
+1b mostly removes the extremes (the longest segment of lecture 39 fell from 30.8 to under 15 minutes) and halves the
+spread of segment counts.</p>
+{{EVAL:seg_human}}
+
+<h3 id="ev-facts" data-toc="Facts and the fact judge">Facts and the fact judge</h3>
+<p>Block 1 built five sets on lectures 1, 4 and 16, labelled by Fable against the transcripts and the eight properties.
+The results are in <a href="#s2b">stage 2b</a>: the judge catches blatant errors (32 of 34) and misses real ones (1 of 7).</p>
+<div class="tablewrap"><table>
+<tr><th>Property (gold failures)</th><th>Caught in base / seed 1 / seed 2</th></tr>
+<tr><td>Faithful (3: a dropped hedge, “this field” named wrong, a statement made true by definition)</td><td>0 / 1 / 0</td></tr>
+<tr><td>Whole (4: a summary, a recap, one point split in two)</td><td>1 / 0 / 0</td></tr>
+<tr><td>Significant, Terms in full (1 fact, 1/S0/F1)</td><td>caught in base only</td></tr>
+</table></div>
+<p class="small muted">From <code>analysis/fact_judge/report.md</code>. The code checks against the same gold: <code>pointing</code> flagged 3 facts,
+all false alarms; <code>acronym</code> flagged none and missed “3D”, “4D”.</p>
+{{EVAL:gold_facts}}
+{{EVAL:seeded}}
+{{EVAL:subtle}}
+{{EVAL:gold_rewrites}}
+{{EVAL:missed}}
+<h4>What fails where, in the full course's facts and concepts</h4>
+<div class="tablewrap"><table>
+<tr><th>Stage</th><th>Flag or count</th><th class="n">Items</th><th>Source</th></tr>
+<tr><td>2a</td><td>fact over about 50 words (<code>long</code>)</td><td class="n">117</td><td rowspan="4">notebook run note “2a on all 63 lectures”</td></tr>
+<tr><td>2a</td><td>acronym without its full term</td><td class="n">84</td></tr>
+<tr><td>2a</td><td>pointing word (“this”)</td><td class="n">52</td></tr>
+<tr><td>2a</td><td>sentences cited by no fact</td><td class="n">38%</td></tr>
+<tr><td>2c</td><td><code>reverse</code> / <code>name_not_in_facts</code> / <code>no_triple</code> / <code>no_shared_fact</code> / <code>acronym_in_name</code></td><td class="n">437 / 322 / 184 / 113 / 38</td><td><code>stage_2c_concepts/checks/summary.json</code></td></tr>
+<tr><td>3</td><td>exact merges / model merges / kept apart / triples joined / self-loops dropped</td><td class="n">2,421 / 262 / 2,795 / 46 / 29</td><td><code>stage_3_registry/decisions.jsonl</code></td></tr>
+<tr><td>3</td><td>concept pairs with several labels</td><td class="n">827</td><td>3c log</td></tr>
+<tr><td>4a</td><td>defined / connecting</td><td class="n">1,316 / 1,806</td><td rowspan="2"><code>stage_4a_definitions/checks.json</code>, job log</td></tr>
+<tr><td>4a</td><td><code>defined_mismatch</code> / <code>misplaced</code> / capped at 40 facts</td><td class="n">276 / 29 / 15</td></tr>
+<tr><td>4b</td><td>segment in no objective (mostly closing summaries)</td><td class="n">60</td><td>job log</td></tr>
+<tr><td>4c</td><td>concepts used but never defined (assumed)</td><td class="n">2,074</td><td><code>stage_4c_lecture_graph/checks.json</code></td></tr>
+<tr><td>4d</td><td>broken references</td><td class="n">0 of 206,903</td><td><code>stage_4d_assemble/checks.json</code></td></tr>
+</table></div>
+
+<h3 id="ev-activities" data-toc="Activities">Activities</h3>
+<p>The judge's criteria are in each judge prompt (<a href="#s5-judge">stage 5</a>). Its failures by kind and criterion,
+first judgement, whole course:</p>
+{{EVAL:judge_crit}}
+<p>Report-only code flags on the kept items (<code>activities/checks.json</code>, <code>totals.flags</code>):</p>
+{{EVAL:code_flags}}
+{{EVAL:trial}}
+<details><summary>The seed set for measuring the activity judge <span class="meta">analysis/activities/review_prompts.md, section 8</span></summary>
+<p>Items of the MVP outputs (commit <code>fd91ee7</code>) the judge should fail, with the criterion, and items it must pass.
+The review asks to run the judge three times on these and report catches, false alarms and flips before it may drop
+anything. Not run yet.</p>
+<div class="tablewrap"><table>
+<tr><th>Kind</th><th>Should fail, with the criterion</th></tr>
+<tr><td>quiz</td><td>3/A3 Q2 one_answer; 57/A1 Q1, 28/A4 Q4 and Q5, 11/A1 Q2 and Q5 no_giveaway; 57/A12 Q1 worth_asking and no_source_talk; 2/A1 Q1 no_source_talk; 11/A9 Q4 clear; 57/A10 Q3 worth_asking (repeats Q1 and Q2)</td></tr>
+<tr><td>recap</td><td>27/A15 point 2 faithful; 41/A2 point 2 faithful, point 1 stands_alone; 41/A5 point 5 one_idea; 5/A2 text summary</td></tr>
+<tr><td>put in order</td><td>59/A5 and 30/A11 real_sequence; 1/A6 and 20/A11 one_order; 38/A12 and 11/A11 worth_doing; 33/A6 no_giveaway; 39/A19 one_order</td></tr>
+<tr><td>odd one out</td><td>15/A16 #2 in_facts or real_group; 29/A12 #2 and #3 one_answer; 24/A16 #2 and 1/A15 #1 near_miss; 9/A16 #2 and 34/A16 #3 no_giveaway; 50/A16 #1 no_source_talk; 4/A11 #3 one_answer</td></tr>
+<tr><td>open question</td><td>18/A27 Q2 answers_question; 18/A27 Q4 and 60/A15 Q4 open; 1/A16 Q1 one_thread; 1/A16 Q4 open</td></tr>
+<tr><td>crossword</td><td>51/A21 SHORTESTPATH and 60/A13 UNITYPREFAB from_text; 29/A11 the three ear parts unique; 16/A13 the four steps leads_to_answer; 58/A20 DELTAY readable; 21/A11 SCENEGRAPH readable (masked)</td></tr>
+<tr><th>Kind</th><th>Must pass</th></tr>
+<tr><td>all</td><td>quiz 9/A6, 30/A9, 17/A3; recap 9/A7, 18/A8; put in order 36/A5, 28/A3; odd one out 26/A18, 36/A15; open question 24/A17, 42/A22; crossword 30/A15, 36/A14</td></tr>
+</table></div></details>
+
+<h3 id="ev-qa" data-toc="Question answering">Question answering</h3>
+<p>The bench (<code>analysis/qa/bench.py</code>): 17 questions chosen to hit the weak points, run in six variants. Each cell
+is the time of each run and whether the answer said the course covers it. <b>What fails where:</b> comparisons are the
+slowest (two cards, long answers); turning thinking off makes the model skip the search and wrongly answer B17 “not
+covered”; B01–B03 are partly taught topics, answered “not covered as such” with the closest facts.</p>
+{{EVAL:bench}}
+{{EVAL:calib}}
+{{EVAL:mvpqa}}
+{{EVAL:qset}}
+<p>The questions of the demo plan, each verified on the rebuilt layer with its time and citations, are in
+<code>pipeline/continue/DEMO_PLAN.md</code> (12 questions and 3 optional).</p>
+
+<h3 id="ev-baselines" data-toc="Baseline tests (placeholder)">Baseline tests</h3>
+<div class="callout warn"><span class="tag">Placeholder · filled by a later pass</span>
+<p>The question set of the baseline tests (<code>baseline-tests/</code>: plain LLM, RAG over transcripts, graph-only) and
+their results go here, per question and per system. See also <a href="#baselines">Measured comparison</a> in Part I.</p></div>

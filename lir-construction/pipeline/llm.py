@@ -11,6 +11,7 @@ import copy
 import hashlib
 import json
 import os
+import queue
 import shutil
 import subprocess
 import threading
@@ -18,6 +19,7 @@ import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -27,7 +29,8 @@ from pydantic import BaseModel, ValidationError
 from .config import PORTS, BudgetExhausted, Config, Ledger, ModelSpec
 
 HERE = Path(__file__).resolve().parent.parent
-LLAMA_SERVER = Path.home() / "Documents/llama.cpp/build/bin/llama-server"
+ANSWER_CAP = 8192          # vLLM with a thinking budget: tokens allowed for the answer after the thinking
+LLAMA_SERVER = Path.home() / "Documents/llama.cpp/build/bin/llama-server"   # default; [engine] llama_server overrides
 TOOLBOX = "llm-engine"
 
 
@@ -43,13 +46,56 @@ def toolbox_prefix() -> list[str]:
 
 
 def stop_port(port: int):
-    """Stop a llama-server on this port (it may live inside the toolbox, outside our process group)."""
-    pattern = f"llama-server.*--port {port}"
+    """Stop a llama-server or vLLM server on this port (it may live inside the toolbox, outside our process group)."""
+    pattern = f"(llama-server|vllm serve).*--port {port}"
     subprocess.run(["pkill", "-f", pattern], check=False)
     for _ in range(60):
         if subprocess.run(["pgrep", "-f", pattern], capture_output=True).returncode:
             return
         time.sleep(1)
+
+
+class RequestRejected(RuntimeError):
+    """The server refused this one request (4xx); other requests are fine."""
+
+
+# ---------------------------------------------------------------------------- priorities
+_PRIO = threading.local()
+
+
+def set_priority(p: int | None):
+    """The priority of the calls this thread sends (lower goes first). Set by the v2.1 flow for each task."""
+    _PRIO.value = p
+
+
+def current_priority() -> int:
+    return getattr(_PRIO, "value", None) or 0
+
+
+class PriorityGate:
+    """At most `cap` requests in flight to one server; waiting requests go in priority order (then first come).
+    With cap = the server's max-num-seqs, vLLM never queues, so the order is decided here."""
+
+    def __init__(self, cap: int):
+        import heapq
+        self._heap, self._push, self._pop = [], heapq.heappush, heapq.heappop
+        self.cap, self.in_flight, self._n = cap, 0, 0
+        self._cv = threading.Condition()
+
+    def acquire(self, prio: int):
+        with self._cv:
+            self._n += 1
+            me = (prio, self._n)
+            self._push(self._heap, me)
+            self._cv.wait_for(lambda: self.in_flight < self.cap and self._heap[0] == me)
+            self._pop(self._heap)
+            self.in_flight += 1
+            self._cv.notify_all()
+
+    def release(self):
+        with self._cv:
+            self.in_flight -= 1
+            self._cv.notify_all()
 
 
 # ---------------------------------------------------------------------------- server
@@ -58,7 +104,7 @@ class Server:
 
     def __init__(self, spec: ModelSpec, cfg: Config, log_dir: Path, ledger: Ledger | None = None):
         self.spec, self.cfg, self.ledger = spec, cfg, ledger
-        self.engine = "llamacpp" if spec.local else "openai"
+        self.engine = spec.engine
         self.slots, self.ctx_total = spec.slots, spec.kv_tokens
         self.port = spec.port
         self.url = f"http://127.0.0.1:{self.port}" if spec.local else cfg.api.get("base_url", "https://api.openai.com/v1")
@@ -67,6 +113,7 @@ class Server:
         self.startup_s = 0.0
         self.key = cfg.api_key() if not spec.local else None
         self._start_lock = threading.Lock()
+        self.gate = PriorityGate(spec.slots) if spec.engine == "vllm" else None
         if not spec.local:
             cfg.prices(spec.name)  # fail early if the budget cannot be tracked
 
@@ -76,6 +123,8 @@ class Server:
 
     @property
     def model(self) -> str:
+        if self.engine == "vllm":
+            return f"{self.spec.name} (vLLM)"
         return (f"{self.spec.name} (llama.cpp, KV f16)" if self.spec.local
                 else f"{self.spec.name} (OpenAI API, reasoning {self.spec.reasoning_effort})")
 
@@ -89,9 +138,12 @@ class Server:
             return False
 
     def command(self) -> list[str]:
+        if self.engine == "vllm":
+            return self.vllm_command()
         from huggingface_hub import hf_hub_download
+        binary = self.cfg.engine.get("llama_server") or os.environ.get("LLAMA_SERVER") or str(LLAMA_SERVER)
         return toolbox_prefix() + [
-            str(LLAMA_SERVER), "-m", hf_hub_download(self.spec.repo, self.spec.file), "--no-mmproj", "-ngl", "99",
+            str(Path(binary).expanduser()), "-m", hf_hub_download(self.spec.repo, self.spec.file), "--no-mmproj", "-ngl", "99",
             # one unified KV pool (f16, not quantized) shared by all slots
             "-c", str(self.ctx_total), "-np", str(self.slots), "--kv-unified",
             "-fa", "on", "--jinja", "--reasoning", "on", "--reasoning-format", "deepseek",
@@ -99,7 +151,46 @@ class Server:
             "--reasoning-budget", str(self.think_budget),
             "--reasoning-budget-message", "I have thought enough; now I give the final answer.",
             "--host", "127.0.0.1", "--port", str(self.port), "--metrics",
-        ]
+        ] + [str(x) for x in self.cfg.engine.get("extra_args", [])]   # e.g. batch sizes for a big GPU
+
+    def opt(self, key: str, default=None):
+        """A server setting: the role's own value, else [engine], else the default."""
+        return self.spec.opts.get(key, self.cfg.engine.get(key, default))
+
+    @property
+    def think_end(self) -> str:
+        return self.opt("think_end", "")
+
+    def vllm_command(self) -> list[str]:
+        """vLLM: continuous batching, automatic prefix caching, text only (no vision or audio tower), thinking parsed
+        out and capped per request (thinking_token_budget, ended with `think_end`), priority scheduling."""
+        e = self.cfg.engine
+        binary = e.get("vllm") or os.environ.get("VLLM") or "vllm"
+        cmd = [str(Path(binary).expanduser()), "serve", self.spec.name, "--served-model-name", self.spec.name,
+               "--host", "127.0.0.1", "--port", str(self.port),
+               "--max-num-seqs", str(self.slots), "--max-model-len", str(self.spec.max_model_len),
+               "--gpu-memory-utilization", str(self.opt("gpu_memory_utilization", 0.92)),
+               # prefix caching on a hybrid model (Qwen 3.5+) keeps a linear-attention state every block: much memory
+               "--enable-prefix-caching" if self.opt("prefix_caching", True) else "--no-enable-prefix-caching",
+               "--reasoning-parser", str(self.opt("reasoning_parser", "qwen3")),
+               "--language-model-only", "--seed", "0"]
+        if self.think_end:   # the words that close a thinking that reached its budget
+            cmd += ["--reasoning-config", json.dumps({"reasoning_end_str": self.think_end})]
+        if self.opt("priority", False):
+            cmd += ["--scheduling-policy", "priority"]
+        if self.opt("max_num_batched_tokens"):
+            cmd += ["--max-num-batched-tokens", str(self.opt("max_num_batched_tokens"))]
+        return cmd + [str(x) for x in list(e.get("vllm_args", [])) + list(self.spec.opts.get("vllm_args", []))]
+
+    def env(self, cmd: list[str]) -> dict:
+        env = dict(os.environ)
+        if self.engine == "vllm":  # vLLM compiles kernels with tools from its venv (ninja) and CUDA's nvcc
+            env["PATH"] = f"{Path(cmd[0]).parent}:/usr/local/cuda/bin:{env.get('PATH', '')}"
+        elif not toolbox_prefix():  # llama-server needs the CUDA 13 runtime; outside the toolbox it is in the main venv
+            cu = HERE.parent / "lib/python3.14/site-packages/nvidia/cu13/lib"
+            if cu.exists():
+                env["LD_LIBRARY_PATH"] = f"{cu}:{env.get('LD_LIBRARY_PATH', '')}"
+        return env
 
     def start(self, log=print):
         if not self.spec.local:
@@ -117,19 +208,15 @@ class Server:
         if self.health():
             log(f"  using the {self.spec.role} server already running on port {self.port}")
             return
-        for p in PORTS.values():  # only one local model fits on the GPU at a time
-            if p != self.port:
-                stop_port(p)
+        if self.cfg.engine.get("exclusive_gpu", True):  # only one local model fits on a 12 GB card at a time
+            for p in PORTS.values():
+                if p != self.port:
+                    stop_port(p)
         t0 = time.time()
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         cmd = self.command()
         log(f"  starting {self.spec.role}: {self.spec.name}, {self.slots} slots, {self.ctx_total:,}-token KV pool")
-        env = dict(os.environ)
-        if not toolbox_prefix():  # llama-server needs the CUDA 13 runtime; outside the toolbox it is in the main venv
-            cu = HERE.parent / "lib/python3.14/site-packages/nvidia/cu13/lib"
-            if cu.exists():
-                env["LD_LIBRARY_PATH"] = f"{cu}:{env.get('LD_LIBRARY_PATH', '')}"
-        self.proc = subprocess.Popen(cmd, stdout=open(self.log_path, "a"), stderr=subprocess.STDOUT, env=env,
+        self.proc = subprocess.Popen(cmd, stdout=open(self.log_path, "a"), stderr=subprocess.STDOUT, env=self.env(cmd),
                                      start_new_session=True)
         atexit.register(self.stop)
         while not self.health():
@@ -156,7 +243,9 @@ class Server:
     def count_tokens(self, text: str) -> int:
         if not self.spec.local:
             return len(text) // 4
-        req = urllib.request.Request(self.url + "/tokenize", data=json.dumps({"content": text}).encode(),
+        body = ({"model": self.spec.name, "prompt": text, "add_special_tokens": False} if self.engine == "vllm"
+                else {"content": text})
+        req = urllib.request.Request(self.url + "/tokenize", data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=60) as r:
             return len(json.load(r)["tokens"])
@@ -197,6 +286,9 @@ class Call:
     required: bool = True
     ctx: dict = field(default_factory=dict)    # anything the caller wants back
     stage: str = ""                            # overrides the batch's stage name (cache file and cost report)
+    group: str = ""                            # calls in one group share a prompt start: run in order on one slot
+    think: Optional[int] = None                # vLLM: thinking budget in tokens (None: uncapped)
+    priority: Optional[int] = None             # lower goes first; None: the sending thread's priority
 
 
 @dataclass
@@ -237,8 +329,10 @@ class LLM:
     """Batching client with disk cache, retries with feedback, and per-call cost logging."""
 
     def __init__(self, server: Server, cache_dir: Path, workers: int, temperature: float = 0.0, log=print, ui=None,
-                 records: list | None = None):
+                 records: list | None = None, slot_offset: int = 0):
         self.server, self.workers, self.temperature, self.log, self.ui = server, workers, temperature, log, ui
+        # runs sharing one server each use their own slots (slot_offset .. slot_offset + workers - 1)
+        self.slot_offset = slot_offset
         self.cache_dir = cache_dir
         cache_dir.mkdir(parents=True, exist_ok=True)
         self.model = server.model
@@ -246,9 +340,13 @@ class LLM:
         self._lock = threading.Lock()
         self._caches: dict[str, dict] = {}
         # admission control: llama.cpp's slots share one KV pool, so cap the tokens in flight
-        self._budget = int(server.ctx_total * 0.85) if server.engine == "llamacpp" else 10 ** 12
+        # (a run using only some of the slots gets the same share of the pool)
+        share = min(1.0, workers / server.slots) if server.slots else 1.0
+        self._budget = int(server.ctx_total * 0.85 * share) if server.engine == "llamacpp" else 10 ** 12
         self._in_flight = 0
         self._cv = threading.Condition()
+        self._tl = threading.local()           # the server slot the current thread is pinned to (prefix cache)
+        self.calls_log: Path | None = None     # calls.jsonl: every request as it finishes (set by the v2 run)
 
     # -- disk cache: one JSONL per stage, keyed by input hash
     def _cache(self, stage: str) -> dict:
@@ -271,12 +369,18 @@ class LLM:
             with open(self.cache_dir / f"{stage}.jsonl", "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
-    def _hash(self, prompt: str, schema: dict, max_tokens: int) -> str:
-        blob = json.dumps([self.model, prompt, schema, max_tokens, self.temperature], sort_keys=True)
+    def _hash(self, prompt: str, schema: dict, max_tokens: int, think: int | None = None) -> str:
+        parts = [self.model, prompt, schema, max_tokens, self.temperature]
+        spec = self.server.spec
+        if spec.sampling or spec.max_tokens is not None:   # only then: older caches keep their keys
+            parts.append([spec.sampling, spec.max_tokens])
+        if think is not None:
+            parts.append(["think", think, self.server.think_end])
+        blob = json.dumps(parts, sort_keys=True)
         return hashlib.sha256(blob.encode()).hexdigest()[:20]
 
     # -- one HTTP call
-    def _post(self, prompt: str, schema: dict, max_tokens: int, stage: str = "") -> dict:
+    def _post(self, prompt: str, schema: dict, max_tokens: int, stage: str = "", call: Call | None = None) -> dict:
         if self.server.engine == "openai":
             return self._post_api(prompt, schema, max_tokens, stage)
         body = {
@@ -285,6 +389,33 @@ class LLM:
             "response_format": {"type": "json_schema", "json_schema": {"name": "answer", "schema": schema, "strict": True}},
             "chat_template_kwargs": {"enable_thinking": True},
         }
+        if self.server.engine == "vllm":   # vLLM reuses shared prompt starts by itself: no slots
+            spec = self.server.spec
+            body["model"] = spec.name
+            body.update(spec.sampling)
+            think = call.think if call is not None else None
+            prio = call.priority if call is not None and call.priority is not None else current_priority()
+            if think is not None:              # thinking capped; the answer gets ANSWER_CAP on top
+                body["thinking_token_budget"] = think
+                # never past the context: vLLM rejects a request whose prompt + max_tokens exceed max_model_len
+                room = spec.max_model_len - len(prompt) // 3 - 256
+                body["max_tokens"] = max(2048, min(think + ANSWER_CAP, room))
+            elif spec.max_tokens == 0:
+                body.pop("max_tokens")         # no cap: up to max_model_len
+            elif spec.max_tokens:
+                body["max_tokens"] = spec.max_tokens
+            if self.server.opt("priority", False):
+                body["priority"] = prio
+            req = urllib.request.Request(self.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
+                                         headers={"Content-Type": "application/json"})
+            self.server.gate.acquire(prio)
+            try:
+                return self._post_admitted(req)
+            finally:
+                self.server.gate.release()
+        slot = getattr(self._tl, "slot", None)
+        if slot is not None:
+            body["id_slot"] = slot
         req = urllib.request.Request(self.server.url + "/v1/chat/completions", data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json"})
         # rough prompt tokens + the most a call can generate (thinking is capped by the server's budget)
@@ -351,7 +482,10 @@ class LLM:
                     d = json.load(r)
                 break
             except urllib.error.HTTPError as e:
-                raise RuntimeError(f"server rejected the request ({e.code}): {e.read().decode(errors='replace')[:500]}")
+                msg = e.read().decode(errors="replace")[:500]
+                if 400 <= e.code < 500:   # this request only (too long, bad schema): the caller gets a failed outcome
+                    raise RequestRejected(f"server rejected the request ({e.code}): {msg}")
+                raise RuntimeError(f"server error ({e.code}): {msg}")
             except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
                 if attempt == 2:
                     raise
@@ -360,27 +494,43 @@ class LLM:
                 self.server.ensure_up(lambda m: self.log(m))
         msg = d["choices"][0]["message"]
         u = d.get("usage", {})
-        return {"content": (msg.get("content") or "").strip(), "reasoning": msg.get("reasoning_content") or "",
+        return {"content": (msg.get("content") or "").strip(),
+                "reasoning": msg.get("reasoning_content") or msg.get("reasoning") or "",
                 "input_tokens": u.get("prompt_tokens", 0), "output_tokens": u.get("completion_tokens", 0),
                 "latency_s": time.time() - t0, "finish": d["choices"][0].get("finish_reason")}
 
-    def _attempt(self, stage: str, call: Call, prompt: str, schema: dict, max_tokens: int) -> dict:
-        h = self._hash(prompt, schema, max_tokens)
+    def _log_call(self, rec: dict):
+        """One line per request (cache hits too) in calls.jsonl, written as the run goes."""
+        if self.calls_log is None:
+            return
+        with self._lock:
+            with open(self.calls_log, "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec) + "\n")
+
+    def _attempt(self, stage: str, call: Call, prompt: str, schema: dict, max_tokens: int, attempt: int = 0) -> dict:
+        h = self._hash(prompt, schema, max_tokens, call.think)
         hit = self._cache(stage).get(h)
+        base = {"stage": stage, "prompt_id": call.prompt_id, "lecture_id": call.lecture_id, "key": call.key,
+                "attempt": attempt}
         if hit:
+            self._log_call({**base, "cached": True, "t_end": time.time()})
             return {**hit, "cached": True, "latency_s": 0.0}
-        r = self._post(prompt, schema, max_tokens, stage)
-        if r["finish"] == "length" and not r["content"]:
+        t_start = time.time()
+        r = self._post(prompt, schema, max_tokens, stage, call)
+        if r["finish"] == "length" and not r["content"] and self.server.spec.max_tokens != 0 and call.think is None:
             # thinking used the whole budget; give it more room once
-            r2 = self._post(prompt, schema, max_tokens * 2, stage)
+            r2 = self._post(prompt, schema, max_tokens * 2, stage, call)
             r2["latency_s"] += r["latency_s"]
             r = r2
         rec = {"hash": h, "key": call.key, **r}
         self._cache_put(stage, rec)
+        rec2 = {**base, "model": self.model, "input_tokens": r["input_tokens"], "output_tokens": r["output_tokens"],
+                "usd": r.get("usd", 0.0), "latency_s": r["latency_s"], "t_start": t_start, "t_end": time.time(),
+                "finish": r.get("finish"), "reasoning_chars": len(r.get("reasoning") or ""),
+                "answer_chars": len(r.get("content") or ""), "cached": False}
         with self._lock:
-            self.records.append({"stage": stage, "lecture_id": call.lecture_id, "key": call.key, "model": self.model,
-                                 "input_tokens": r["input_tokens"], "output_tokens": r["output_tokens"],
-                                 "usd": r.get("usd", 0.0), "latency_s": r["latency_s"], "t_end": time.time()})
+            self.records.append(rec2)
+        self._log_call(rec2)
         return {**rec, "cached": False}
 
     def _run_one(self, stage: str, call: Call, max_retries: int) -> Outcome:
@@ -392,12 +542,15 @@ class LLM:
         lat = 0.0
         cached_all = True
         r = {"content": "", "reasoning": "", "hash": ""}
-        h0 = self._hash(call.prompt, schema, call.max_tokens)
+        h0 = self._hash(call.prompt, schema, call.max_tokens, call.think)
         for attempt in range(max_retries + 1):
             try:
-                r = self._attempt(stage, call, prompt, schema, call.max_tokens)
+                r = self._attempt(stage, call, prompt, schema, call.max_tokens, attempt)
             except BudgetExhausted as e:  # not sent: the caller decides what an unjudged item means
                 return Outcome(call, False, None, "", "", [f"budget: {e}"], attempt, tot_in, tot_out, lat, False, h0)
+            except RequestRejected as e:  # one bad request must not stop a long run: the step logs a failed item
+                self.log(f"    ! {call.key}: {e}")
+                return Outcome(call, False, None, "", "", [str(e)], attempt, tot_in, tot_out, lat, False, h0)
             tot_in += r["input_tokens"]
             tot_out += r["output_tokens"]
             lat += r["latency_s"]
@@ -416,22 +569,88 @@ class LLM:
         return Outcome(call, False, parsed, r["content"], r["reasoning"], errors, max_retries, tot_in, tot_out, lat,
                        cached_all, h0)
 
+    def one(self, stage: str, call: Call, max_retries: int = 2) -> Outcome:
+        """One call, sent from the calling thread (the v2.1 flow runs many threads; the server gate orders them)."""
+        return self._run_one(call.stage or stage, call, max_retries)
+
     def run(self, stage: str, calls: list[Call], desc: str, max_retries: int = 2) -> list[Outcome]:
-        """Send every call of a stage at once; return outcomes in the same order."""
+        """Send every call of a stage at once; return outcomes in the same order.
+
+        Calls with the same `group` share a prompt start: they run one after another on one server slot, so the
+        slot's prefix cache is reused. Ungrouped calls run independently."""
         if not calls:
             return []
         out: list[Optional[Outcome]] = [None] * len(calls)
         if self.ui:
             self.ui.calls(desc, len(calls))
         retries = 0
-        # longest prompts first, so the long tail does not start last
-        order = sorted(range(len(calls)), key=lambda i: -len(calls[i].prompt))
+        units: dict[str, list[int]] = {}
+        for i, c in enumerate(calls):
+            units.setdefault(c.group or f"\0{i}", []).append(i)
+        # longest work first, so the long tail does not start last
+        order = sorted(units.values(), key=lambda u: -sum(len(calls[i].prompt) for i in u))
+        slots = self._slot_queue()
+
+        def unit(idx: list[int]):
+            with self._pinned(slots, len(idx) > 1):
+                return [(i, self._run_one(calls[i].stage or stage, calls[i], max_retries)) for i in idx]
+
         with ThreadPoolExecutor(self.workers) as ex:
-            futs = {ex.submit(self._run_one, calls[i].stage or stage, calls[i], max_retries): i for i in order}
-            for f in as_completed(futs):
-                o = f.result()
-                out[futs[f]] = o
-                retries += o.retries
-                if self.ui:
-                    self.ui.advance(1, tokens=0 if o.cached else o.output_tokens, retries=retries)
+            for f in as_completed([ex.submit(unit, u) for u in order]):
+                for i, o in f.result():
+                    out[i] = o
+                    retries += o.retries
+                    if self.ui:
+                        self.ui.advance(1, tokens=0 if o.cached else o.output_tokens, retries=retries)
         return out  # type: ignore[return-value]
+
+    def run_jobs(self, stage: str, jobs: list[Callable], desc: str, max_retries: int = 2) -> list[Any]:
+        """Run jobs that each make several dependent calls on one shared prompt start (e.g. one window's candidates:
+        keep? -> name -> define -> check). A job is `fn(send)`, where `send(call)` returns the call's Outcome; all of a
+        job's calls run in order on one server slot. Returns the jobs' results in order."""
+        if not jobs:
+            return []
+        if self.ui:
+            self.ui.calls(desc, len(jobs))
+        slots = self._slot_queue()
+        stats = {"retries": 0}
+        lock = threading.Lock()
+
+        def send(call: Call) -> Outcome:
+            o = self._run_one(call.stage or stage, call, max_retries)
+            if self.ui:
+                with lock:
+                    stats["retries"] += o.retries
+                    self.ui.advance(0, tokens=0 if o.cached else o.output_tokens, retries=stats["retries"])
+            return o
+
+        def job(fn):
+            with self._pinned(slots, True):
+                return fn(send)
+
+        out: list[Any] = [None] * len(jobs)
+        with ThreadPoolExecutor(self.workers) as ex:
+            futs = {ex.submit(job, fn): k for k, fn in enumerate(jobs)}
+            for f in as_completed(futs):
+                out[futs[f]] = f.result()
+                if self.ui:
+                    self.ui.advance(1)
+        return out
+
+    # -- slot pinning: one slot per worker thread while it runs a group
+    def _slot_queue(self) -> "queue.Queue[int]":
+        q: queue.Queue[int] = queue.Queue()
+        for k in range(self.workers):
+            q.put(self.slot_offset + k)
+        return q
+
+    @contextmanager
+    def _pinned(self, slots: "queue.Queue[int]", pin: bool):
+        slot = slots.get()
+        # pin only on a local server whose slots match the workers (an out-of-range id_slot is an error)
+        self._tl.slot = slot if pin and self.server.engine == "llamacpp" and self.slot_offset + self.workers <= self.server.slots else None
+        try:
+            yield
+        finally:
+            self._tl.slot = None
+            slots.put(slot)

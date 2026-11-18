@@ -1,0 +1,66 @@
+
+== 1/9 GPU
+NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB, 12.0, 595.112.07
+  CUDA 13.2, build for sm_120, 97887 MiB
+
+== 2/9 model cache and Hugging Face token
+  Hugging Face cache: /home/ubuntu/.cache/huggingface -> /opt/dlami/nvme/huggingface (local NVMe, 1.6T free)
+  Hugging Face token: set
+
+== 3/9 system packages
+  git 2.43.0, cmake 3.28.3, tmux 3.4, Python 3.12.3
+
+== 4/9 Python venv (/home/ubuntu/demo-venv) and model downloads
+  downloading gemma-4-12B-it-qat-UD-Q4_K_XL.gguf and Qwen/Qwen3-Embedding-0.6B (pid 57083, log demo/logs/download.log)
+  torch 2.14.1+cu130 (CUDA available: True) sentence-transformers 6.1.0 transformers 5.15.0
+
+== 5/9 llama.cpp (/home/ubuntu/llama.cpp)
+  already built (69eb250670f471586fcec69caacd3c014aefb185 sm_120)
+  version: 0.4.1-dev (build 1, commit 69eb250)
+
+== 6/9 downloads and the demo config
+  /opt/dlami/nvme/huggingface/hub/models--unsloth--gemma-4-12B-it-qat-GGUF/snapshots/980b060c40a8539ac159e0501a3e0f66a6365af3/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf (6.3G)
+  /opt/dlami/nvme/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B/snapshots/97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3
+  gemma4_12b_demo.json: already set for this instance
+  model gemma-4-12b-qat, port 8096, 16 slots, context 131072, temperature 1.0, top_p 0.95, top_k 64, thinking True (budget 8192)
+
+== 7/9 videos
+  63 lectures: 0 video files in /home/ubuntu/mtp-implementation/pipeline/input/nptel_vr/media, 63 from YouTube
+  to play the files instead of YouTube, copy them from the PC (5.5 GB; from the repository root there):
+    rsync -a --info=progress2 pipeline/input/nptel_vr/media/ <instance>:~/mtp-implementation/pipeline/input/nptel_vr/media/
+
+== 8/9 servers (tmux sessions gemma and viewer)
+  started (log demo/logs/gemma.log, server log demo/logs/llm_server_8096.log)
+  11:18:47  waiting for the model server (0 s): 0.02.704.778 E srv  llama_server: exiting due to model loading error
+  model server ready at http://127.0.0.1:8096 (4 s)
+  viewer up at http://127.0.0.1:8765 (log demo/logs/viewer.log)
+
+== 9/9 warm-up: two questions through the viewer (the first warms the model and the embedder)
+  (the first question also loads the query embedder in the viewer: ~10-20 s more than the next ones)
+  Q: What is extended reality?
+  A: Extended reality (XR) is an umbrella term for all present or future immersive technologies (lecture 1, 11:38). It is not a specific technology itself, but rather covers technologies such as:
+  A: * Augmented reality (AR; lecture 1, 11:38; lecture 2, 1:51)
+  A: * Virtual reality (VR; lecture 1, 11:38; lecture 2, 1:51)
+  A: * Mixed reality (MR; lecture 1, 11:38)
+
+  A: The "X" in XR can be viewed as a variable, where values like A, V, and M represent AR, VR, and MR respectively (lecture 1, 11:38). The primary goal of XR systems is to explicitly extend the user's deeply embedded idea of reality (lecture 25, 14:17).
+     [1] lecture 1 at 11:38: Extended Reality (XR) is an umbrella term, not a specific technology, that covers all pres
+     [2] lecture 2 at 1:51: Although adoption statistics can be misleading, earlier use forecasts discussed in the cou
+     [3] lecture 1 at 11:38: The X in Extended Reality (XR) can be read as a variable, not only as part of 'extended', 
+     [4] lecture 25 at 14:17: Having a little bit of knowledge of perceptual psychology is always advisable for interact
+  3.6 s, 4 citations
+  Q: What is an HMD?
+  A: A head-mounted display (HMD) is a wearable, mobile visual display that integrates electronic, optical, mechanical, and audio components (lecture 14, 12:26; lecture 14, 12:31). It places images directly in front of the user's eyes using one or two small screens, where one screen provides monoscopic viewing and two screens provide stereoscopic viewing. While HMDs can be used as input to track head motion, their primary use is as a display device (lecture 14, 12:31).
+     [1] lecture 14 at 12:26: The three broad types of visual displays are head-mounted displays (HMDs), which are weara
+     [2] lecture 14 at 12:31: A head-mounted display (HMD) is a sophisticated piece of equipment that integrates electro
+     [3] lecture 14 at 12:31: A head-mounted display (HMD) places images directly in front of the user's eyes using one 
+     [4] lecture 14 at 12:31: Although head-mounted displays (HMDs) can be used as input to track head motion, their pri
+  3.6 s, 4 citations
+
+Ready in 1 min.
+  On your PC, forward the port (leave it running):
+    ssh -N -L 8765:127.0.0.1:8765 ubuntu@3.81.189.121
+  (with your key: ssh -i <key.pem> ...; if 8765 is taken on the PC, use -L 8766:127.0.0.1:8765 and open :8766)
+  then open http://localhost:8765/
+  Check everything:  bash ~/mtp-implementation/pipeline/demo/check_demo.sh
+  Sessions:          tmux attach -t gemma | tmux attach -t viewer   (Ctrl-b d to leave)

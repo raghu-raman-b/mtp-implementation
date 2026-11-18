@@ -1,0 +1,37 @@
+[56/218] The other part is intensity mapping.
+[56/219] So, the lighting model computes an intensity value for a pixel, but then that value can be anything between 0 and 1.
+[56/220] An infinite range.
+[56/221] However, devices do not support arbitrary ranges; they have a finite range of values.
+[56/222] Say, for example, an 8-bit display will support 2 to the power 8 or 256 colors for each of the pixels.
+[56/223] So, we have 256 values supported by the device.
+[56/224] But then, the range 0 to 1 is infinite; any value can be generated.
+[56/225] So, what we need to do is we find the nearest value to IP from the device-supported intensity values, say I k, then the frame buffer stores the bit pattern for I k at the pixel location.
+[56/226] So, how to do that?
+[56/227] Essentially, what we need to know, what we need to do, is determine the n number of device-supported levels.
+[56/228] Then we need to determine the minimum device-supported intensity value I naught using a photometer, and we know that the maximum value can be 1.
+[56/229] So, we have I naught and 1 known, and n, the number of levels supported.
+[56/230] Then there is a factor r which we need to compute using the equation I n equal to I r to the power n I naught.
+[56/231] Now, this equation is formed based on one of our psychophysiological properties, that is, we can perceive relative change between two intensity values rather than absolute change in the intensity values.
+[56/232] Based on that, we can formulate this equation as successive intensity values to be represented by this. i1 equal to r to the power n i0, r to the power 1 i0, i2 equal to r square i0, i3 equal to r cube i0 and so on up to the nth value.
+[56/233] Now, once R is determined, we need to calculate these values I0, I1, I2, I3, store that in a table, and for each such value we assign a bit pattern and also store that along with those values.
+[56/234] Then we determine the device intensities and bit patterns and store them in a table, and finally, when we compute using a lighting model pixel intensity, we map the computed intensity to the nearest device intensity.
+[56/235] So, we have a table storing I0, I1, I2, IN and corresponding bit patterns, bit pattern 1, bit pattern 2, bit pattern 3, n.
+[56/236] So, once we have the computed value, we map it to the table; that means we map it to the nearest intensity, and the corresponding bit pattern is obtained and stored in the frame buffer.
+[56/237] That is how we map a computed value to the device-supported value.
+[56/238] So, let us summarize what we have covered so far.
+[56/239] In this part of the lecture, we have covered two more stages of the pipeline: modeling transformation and intensity calculation lighting.
+[56/240] In modeling transformation, we have seen that to transform a point from its local coordinate system to the world coordinate system, we first need to obtain the transformation matrix, which can be an individual basic matrix or a composite matrix.
+[56/241] A composite matrix is more common, and then we multiply the point vector with the composite matrix to determine the transformed point.
+[56/242] That is one set of computations.
+[56/243] Once the point is transformed in the world coordinate scene, then for that point, we assign some color; that is, we compute the intensity of the light which gets reflected from that point and comes to the user's eye.
+[56/244] Note that here we are not actually computing color at the pixel level, but color in the 3D scene at the point level.
+[56/245] And in order to do that, we need a lighting model.
+[56/246] We have quickly gone through a simple lighting model to get some idea, and we have also talked about how to map the color computed with the lighting model to a color supported by the device.
+[56/247] The mapping table is device-specific.
+[56/248] For a given display, the table is fixed, and we need to map it to the supported value.
+[56/249] In the next part of the lecture, we are going to cover the remaining stages of the pipeline.
+[56/250] I hope you could follow the topics and understand the concepts covered here.
+[56/251] For more detail, of course, we are keeping things at a very broad, simple level.
+[56/252] For more details, you can always refer to the material referenced at the end of this lecture.
+[56/253] So, looking forward to meeting you in the next part of the lecture.
+[56/254] Thank you, goodbye, and happy learning.

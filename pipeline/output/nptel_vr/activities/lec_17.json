@@ -1,0 +1,3083 @@
+{
+ "lecture": "17",
+ "activities": [
+  {
+   "id": "17/A0",
+   "kind": "recall",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Before you start: recall",
+   "data": {
+    "items": [
+     {
+      "concept": "C0165",
+      "prompt": "What is sensor?",
+      "answer": "Sensor is a device that converts an energy source into electrical signals, or, in the human body, an organ that converts a stimulus into neural impulses; in XR hardware it is a tracking device that tracks a user's movements and extracts information from the real world.",
+      "from_lecture": "13"
+     },
+     {
+      "concept": "C0225",
+      "prompt": "What is tracking?",
+      "answer": "Tracking is the integral XR hardware component that keeps track of physical-world motion, translating user pose, position, and orientation—or real objects—into virtual motion or 3D content registered to a real-world anchor.",
+      "from_lecture": "13"
+     },
+     {
+      "concept": "C0302",
+      "prompt": "What is registration?",
+      "answer": "Registration is the step in the tracking process that estimates the initial position and orientation of the sensor or user, so the starting point is known before movement is tracked, and sets the initial alignment between the real and virtual worlds. It may be aided by fiducial markers, reflectors, or tags, or performed without them using computer vision.",
+      "from_lecture": "16"
+     },
+     {
+      "concept": "C0835",
+      "prompt": "What is calibration?",
+      "answer": "Calibration is the step in the tracking process that transforms the output of imperfect sensors so that it behaves as closely as possible to the natural or real value, reducing sensor error.",
+      "from_lecture": "16"
+     },
+     {
+      "concept": "C0836",
+      "prompt": "What is integration?",
+      "answer": "Integration is a stage of the tracking process that aggregates sensory measurements from multiple sensors or input data sources at discrete time points to combine the values and track sense organs, body parts, or the environment, and computes the current sensor orientation from the initial orientation estimated during registration and calibrated angular velocity samples.",
+      "from_lecture": "16"
+     },
+     {
+      "concept": "C0837",
+      "prompt": "What is drift correction?",
+      "answer": "Drift correction is a step in the tracking process that compensates for the difference between estimated and actual position and orientation of the user, sense organs, body parts, or objects in the environment, reducing estimation error. It is usually done by blending values from at least two sensors, such as a gyroscope and camera, to estimate and correct drift.",
+      "from_lecture": "16"
+     }
+    ]
+   },
+   "facts": [
+    "25/S3/F0",
+    "13/S3/F2",
+    "16/S0/F0",
+    "16/S0/F1",
+    "16/S0/F2",
+    "16/S0/F3",
+    "16/S3/F1",
+    "16/S3/F3",
+    "17/S2/F0",
+    "17/S2/F2",
+    "16/S3/F2",
+    "16/S3/F4",
+    "17/S2/F3",
+    "16/S3/F5",
+    "17/S3/F0",
+    "17/S3/F1"
+   ],
+   "concepts": [
+    "C0165",
+    "C0225",
+    "C0302",
+    "C0835",
+    "C0836",
+    "C0837"
+   ]
+  },
+  {
+   "id": "17/A1",
+   "kind": "quiz",
+   "scope": "segment",
+   "segment": "17/S0",
+   "title": "Quick quiz",
+   "data": {
+    "questions": [
+     {
+      "question": "What kind of hardware unit is an inertial measurement unit?",
+      "options": [
+       "A composite unit mainly containing a gyroscope, a magnetometer, and a microphone",
+       "A composite unit mainly containing a gyroscope, an accelerometer, and a magnetometer",
+       "A composite unit mainly containing a gyroscope, an accelerometer, and a camera",
+       "A composite unit mainly containing an accelerometer, a magnetometer, and a camera"
+      ],
+      "answer": 1,
+      "explanation": "An inertial measurement unit is a composite sensor unit whose main parts are a gyroscope, an accelerometer, and a magnetometer. Adding a camera or microphone describes other device components, not the main contents of an IMU.",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "question": "In an inertial measurement unit, what does the accelerometer capture?",
+      "options": [
+       "Magnetic field strength along the x, y, and z axes",
+       "Angular displacement along the x, y, and z axes",
+       "Angular velocity along the x, y, and z axes",
+       "Linear acceleration along the x, y, and z axes"
+      ],
+      "answer": 3,
+      "explanation": "The accelerometer measures linear acceleration along the x, y, and z axes. Angular velocity is measured by the gyroscope, and magnetic field strength is measured by the magnetometer.",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "question": "In IMU-based tracking, what can the accelerometer and magnetometer be used for?",
+      "options": [
+       "Estimating current orientation and replacing gyroscope readings",
+       "Registering initial pose and aligning real and virtual worlds",
+       "Measuring linear position and computing absolute scene coordinates",
+       "Detecting drift errors and taking corrective measures"
+      ],
+      "answer": 3,
+      "explanation": "The accelerometer and magnetometer do not directly provide the main tracking estimate; they can help detect drift and support correction. The other roles belong to gyroscope-based tracking, registration, or unsupported position measurement.",
+      "facts": [
+       "17/S0/F2"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S0/F0",
+    "17/S0/F1",
+    "17/S0/F2"
+   ],
+   "concepts": [
+    "C0005",
+    "C0664",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0418",
+    "C0841",
+    "C0842",
+    "C0225",
+    "C0843"
+   ]
+  },
+  {
+   "id": "17/A2",
+   "kind": "recap",
+   "scope": "segment",
+   "segment": "17/S0",
+   "title": "Recap",
+   "data": {
+    "text": "An inertial measurement unit combines a gyroscope, an accelerometer, and a magnetometer into one hardware unit. The gyroscope provides angular velocity, while the accelerometer and magnetometer provide linear acceleration and magnetic field strength. For IMU-based tracking, the gyroscope carries the main tracking estimate, and the accelerometer and magnetometer can be used to detect and correct drift.",
+    "points": [
+     "An inertial measurement unit (IMU) is a composite hardware unit mainly containing a gyroscope, accelerometer, and magnetometer.",
+     "In an inertial measurement unit, a gyroscope captures angular velocity, an accelerometer linear acceleration, and a magnetometer magnetic field strength.",
+     "Inertial measurement unit tracking mainly uses gyroscope angular velocity; accelerometer and magnetometer readings can detect and correct drift."
+    ]
+   },
+   "facts": [
+    "17/S0/F0",
+    "17/S0/F1",
+    "17/S0/F2"
+   ],
+   "concepts": [
+    "C0005",
+    "C0664",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0418",
+    "C0841",
+    "C0842",
+    "C0225",
+    "C0843"
+   ]
+  },
+  {
+   "id": "17/A3",
+   "kind": "quiz",
+   "scope": "segment",
+   "segment": "17/S1",
+   "title": "Quick quiz",
+   "data": {
+    "questions": [
+     {
+      "question": "What is the purpose of comparing an IMU gyro reading with a more accurate benchmark sensor during calibration?",
+      "options": [
+       "To choose the sampling interval used later when the angular velocity samples are integrated",
+       "To reduce the error between the measured angular velocity and the actual angular velocity",
+       "To estimate the user's position from visual landmarks and use that estimate for tracking",
+       "To detect drift by blending two independently computed orientations during the session"
+      ],
+      "answer": 1,
+      "explanation": "Calibration aims to make the measured angular velocity as close as possible to the actual angular velocity, thereby reducing the measurement error. It is not a drift-correction step, nor a pose estimation or sampling choice.",
+      "facts": [
+       "17/S1/F0",
+       "17/S1/F1"
+      ]
+     },
+     {
+      "question": "Why does the calibration procedure collect readings from both a cheap IMU and a more accurate benchmark sensor?",
+      "options": [
+       "To compare the IMU's gyro output with its accelerometer output for drift detection",
+       "To establish the initial orientation of the headset before any tracking begins",
+       "To average the two sensors' raw outputs into a single reading that is used for later tracking",
+       "To create paired samples in which the accurate readings provide the angular velocity values to be matched"
+      ],
+      "answer": 3,
+      "explanation": "The calibration needs many paired samples so that cheap sensor readings can be compared with much more accurate benchmark readings. It does not produce a single averaged sensor, use the accelerometer for drift detection here, or set the initial orientation.",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "question": "What quantity is minimized when the calibration constants are estimated from many paired samples?",
+      "options": [
+       "The sum of squared differences between C1 plus C2 times omega_a and omega_g",
+       "The difference between the calibrated value and the measured value",
+       "The sum of squared differences between C1 plus C2 times omega_g and omega_a",
+       "The sum of absolute differences between the measured angular velocity and the benchmark angular velocity"
+      ],
+      "answer": 2,
+      "explanation": "The simple method chooses C1 and C2 to minimize the total squared error between the transformed cheap reading and the benchmark reading. It uses squared differences, not absolute differences, and the target is the benchmark value rather than the original cheap reading.",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "question": "Once the calibration constants are determined, how is a new cheap IMU angular velocity reading converted into the calibrated angular velocity?",
+      "options": [
+       "By computing the average of the new reading and the stored benchmark reading",
+       "By computing C1 plus C2 times the new reading",
+       "By computing the stored benchmark reading as the calibrated value",
+       "By computing the difference between the new reading and the stored benchmark reading"
+      ],
+      "answer": 1,
+      "explanation": "After the constants are found, the calibrated value is the linear transform C1 + C2 times the cheap sensor's reading. The benchmark reading is not used directly, averaged in, or subtracted from the new reading.",
+      "facts": [
+       "17/S1/F5"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S1/F0",
+    "17/S1/F1",
+    "17/S1/F3",
+    "17/S1/F4",
+    "17/S1/F5"
+   ],
+   "concepts": [
+    "C0418",
+    "C0664",
+    "C0767",
+    "C0835",
+    "C0844",
+    "C0845",
+    "C0846",
+    "C0849",
+    "C0850",
+    "C0851",
+    "C0852"
+   ]
+  },
+  {
+   "id": "17/A4",
+   "kind": "recap",
+   "scope": "segment",
+   "segment": "17/S1",
+   "title": "Recap",
+   "data": {
+    "text": "IMU calibration makes an inaccurate angular velocity reading closer to an actual value. Paired samples from a cheap IMU and a more accurate benchmark sensor are used to find a simple mapping with least-squares regression. The resulting constants transform each cheap reading into a calibrated value that approximates the actual angular velocity.",
+    "points": [
+     "IMU calibration aims to reduce the error between measured and actual angular velocity.",
+     "One simple calibration model assumes a linear, non-ideal relation between measured and actual angular velocity.",
+     "Least squares fits C1+C2ωg to actual ωa using many cheap and benchmark paired samples.",
+     "Calibration maps cheap measured ωg to calibrated ωcal using C1 and C2, matching actual ωa closely."
+    ]
+   },
+   "facts": [
+    "17/S1/F0",
+    "17/S1/F1",
+    "17/S1/F2",
+    "17/S1/F3",
+    "17/S1/F4",
+    "17/S1/F5"
+   ],
+   "concepts": [
+    "C0418",
+    "C0664",
+    "C0767",
+    "C0835",
+    "C0844",
+    "C0845",
+    "C0846",
+    "C0847",
+    "C0848",
+    "C0849",
+    "C0850",
+    "C0851",
+    "C0852"
+   ]
+  },
+  {
+   "id": "17/A5",
+   "kind": "put_in_order",
+   "scope": "segment",
+   "segment": "17/S1",
+   "title": "Order the steps of the simple IMU calibration method",
+   "data": {
+    "items": [
+     {
+      "title": "Order the steps of the simple IMU calibration method",
+      "steps": [
+       "Using paired angular-velocity samples from a cheap IMU and an accurate benchmark sensor",
+       "Finding constants that minimize the sum of squared differences",
+       "Applying the constants to map the cheap measured reading to a calibrated value"
+      ],
+      "facts": [
+       "17/S1/F3",
+       "17/S1/F4",
+       "17/S1/F5"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S1/F3",
+    "17/S1/F4",
+    "17/S1/F5"
+   ],
+   "concepts": [
+    "C0664",
+    "C0844",
+    "C0845",
+    "C0849",
+    "C0850",
+    "C0835",
+    "C0851",
+    "C0852"
+   ]
+  },
+  {
+   "id": "17/A6",
+   "kind": "quiz",
+   "scope": "segment",
+   "segment": "17/S2",
+   "title": "Quick quiz",
+   "data": {
+    "questions": [
+     {
+      "question": "Which task does registration perform in an XR tracking system?",
+      "options": [
+       "It transforms measured gyroscopic readings into calibrated values in the tracking pipeline",
+       "It sets the initial orientation and real-to-virtual alignment in the tracking pipeline",
+       "It replaces the registered orientation with the latest gyroscopic reading in the tracking pipeline",
+       "It combines separate orientation estimates to compensate for drift in the tracking pipeline"
+      ],
+      "answer": 1,
+      "explanation": "Registration establishes the starting pose or orientation, including the initial alignment between the real and virtual worlds. Calibration and drift correction are later or separate sensor-processing steps, not the defining task of registration.",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "question": "What is added to the registered initial orientation to obtain the current sensor orientation?",
+      "options": [
+       "The average calibrated angular velocity sample multiplied by the sampling interval",
+       "The sum of measured angular velocity samples multiplied by the sampling interval",
+       "The sum of calibrated angular velocity samples multiplied by the sampling interval",
+       "The latest calibrated angular velocity sample multiplied by the sampling interval"
+      ],
+      "answer": 2,
+      "explanation": "Integration updates orientation by accumulating the orientation changes represented by calibrated angular velocity samples over the elapsed samples. Using only the latest sample, raw measured samples, or an average does not match the described accumulation.",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "question": "What does a calibrated angular velocity sample represent at one sampling instant?",
+      "options": [
+       "A camera-based reading that gives a drift correction when multiplied by the sampling interval",
+       "An accelerometer reading that gives a linear displacement when multiplied by the sampling interval",
+       "A gyroscopic reading that gives an orientation change when multiplied by the sampling interval",
+       "A magnetometer reading that gives a position change when multiplied by the sampling interval"
+      ],
+      "answer": 2,
+      "explanation": "A calibrated angular velocity sample comes from the gyroscopic sensor and, multiplied by the sampling interval, represents a change in orientation. Camera, magnetometer, and accelerometer readings are not the calibrated angular velocity sample used in this orientation update.",
+      "facts": [
+       "17/S2/F4"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S2/F0",
+    "17/S2/F3",
+    "17/S2/F4"
+   ],
+   "concepts": [
+    "C0165",
+    "C0302",
+    "C0853",
+    "C0854",
+    "C0836",
+    "C0858",
+    "C0859",
+    "C0860",
+    "C0861",
+    "C0335",
+    "C0862",
+    "C0863"
+   ]
+  },
+  {
+   "id": "17/A7",
+   "kind": "recap",
+   "scope": "segment",
+   "segment": "17/S2",
+   "title": "Recap",
+   "data": {
+    "text": "An IMU-based tracking system establishes a starting orientation and then keeps updating it. Registration first fixes the initial sensor orientation and real–virtual alignment, with the headset's startup facing direction serving as a simple default, and markers or computer vision can help that step. Integration then uses calibrated angular-velocity samples to accumulate orientation change from the initial orientation over time.",
+    "points": [
+     "Registration sets the initial orientation, simplified as the headset's startup facing direction, as real–virtual alignment at t = 0.",
+     "Fiducial markers, reflectors, or tags can aid registration and make it simpler, while computer vision can support it without them.",
+     "Integration updates the sensor orientation at k delta_t by summing calibrated angular-velocity sample changes from the initial orientation."
+    ]
+   },
+   "facts": [
+    "17/S2/F0",
+    "17/S2/F1",
+    "17/S2/F2",
+    "17/S2/F3",
+    "17/S2/F4"
+   ],
+   "concepts": [
+    "C0165",
+    "C0302",
+    "C0853",
+    "C0854",
+    "C0005",
+    "C0855",
+    "C0113",
+    "C0114",
+    "C0856",
+    "C0857",
+    "C0836",
+    "C0858",
+    "C0859",
+    "C0860",
+    "C0861",
+    "C0335",
+    "C0862",
+    "C0863"
+   ]
+  },
+  {
+   "id": "17/A8",
+   "kind": "quiz",
+   "scope": "segment",
+   "segment": "17/S3",
+   "title": "Quick quiz",
+   "data": {
+    "questions": [
+     {
+      "question": "Why does drift correction in general require at least two sensors?",
+      "options": [
+       "To compare their readings against a benchmark sensor",
+       "To blend their values into one corrected orientation estimate",
+       "To average raw movement data before tracking begins",
+       "To choose the most stable reading at each instant"
+      ],
+      "answer": 1,
+      "explanation": "Drift correction generally blends values from at least two sensors so the estimate can be corrected. Selecting one stable reading or comparing against a benchmark sensor describes other tracking or calibration concerns, not the drift-correction blend.",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "question": "In an IMU used for drift correction, which readings can supplement the gyroscope?",
+      "options": [
+       "Accelerometer and magnetometer readings",
+       "Calibrated and actual angular velocity readings",
+       "Raw movement data from the headset",
+       "Camera and magnetometer readings"
+      ],
+      "answer": 0,
+      "explanation": "Inside an IMU, accelerometer and magnetometer readings can supplement the gyroscope. Cameras may be used in other drift-correction setups, while calibrated and actual angular velocity readings belong to calibration rather than the IMU drift blend.",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "question": "In the classic drift-correction blend, which orientation does the gain parameter alpha multiply?",
+      "options": [
+       "The registered orientation",
+       "The gyroscope orientation",
+       "The camera-derived orientation",
+       "The drift-corrected orientation"
+      ],
+      "answer": 1,
+      "explanation": "In theta_dk = alpha theta_gk + (1 - alpha) theta_ck, alpha weights the gyroscope-derived orientation, while 1 - alpha weights the camera-derived orientation. The corrected orientation is the result of the blend, not the term multiplied by alpha.",
+      "facts": [
+       "17/S3/F2"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S3/F0",
+    "17/S3/F1",
+    "17/S3/F2"
+   ],
+   "concepts": [
+    "C0165",
+    "C0837",
+    "C0864",
+    "C0664",
+    "C0665",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0335",
+    "C0865",
+    "C0866"
+   ]
+  },
+  {
+   "id": "17/A9",
+   "kind": "recap",
+   "scope": "segment",
+   "segment": "17/S3",
+   "title": "Recap",
+   "data": {
+    "text": "Drift correction reduces orientation estimation error by using more than one sensor instead of relying on a single reading. A gyroscope may be paired with cameras, or an IMU may add accelerometer and magnetometer readings to the gyroscope. A classic method then combines the gyroscope-derived and camera-derived orientations at one instant using a gain parameter between 0 and 1.",
+    "points": [
+     "Drift correction is usually done by blending values from at least two sensors to estimate and correct drift.",
+     "A gyroscope may be combined with cameras, or an IMU can use accelerometer and magnetometer readings with it.",
+     "Classic drift correction at one instant blends gyroscope and camera orientations using gain α, 0 to 1."
+    ]
+   },
+   "facts": [
+    "17/S3/F0",
+    "17/S3/F1",
+    "17/S3/F2"
+   ],
+   "concepts": [
+    "C0165",
+    "C0837",
+    "C0864",
+    "C0664",
+    "C0665",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0335",
+    "C0865",
+    "C0866"
+   ]
+  },
+  {
+   "id": "17/A10",
+   "kind": "concept_map",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Concept map",
+   "data": {
+    "nodes": [
+     {
+      "id": "C0664",
+      "label": "inertial measurement unit"
+     },
+     {
+      "id": "C0767",
+      "label": "gyroscope"
+     },
+     {
+      "id": "C0768",
+      "label": "accelerometer"
+     },
+     {
+      "id": "C0769",
+      "label": "magnetometer"
+     },
+     {
+      "id": "C0005",
+      "label": "head-mounted display"
+     },
+     {
+      "id": "C0418",
+      "label": "angular velocity"
+     },
+     {
+      "id": "C0841",
+      "label": "linear acceleration"
+     },
+     {
+      "id": "C0842",
+      "label": "magnetic field strength"
+     },
+     {
+      "id": "C0225",
+      "label": "tracking"
+     },
+     {
+      "id": "C0843",
+      "label": "drift error"
+     },
+     {
+      "id": "C0835",
+      "label": "calibration"
+     },
+     {
+      "id": "C0844",
+      "label": "measured angular velocity"
+     },
+     {
+      "id": "C0845",
+      "label": "actual angular velocity"
+     },
+     {
+      "id": "C0846",
+      "label": "measurement error"
+     },
+     {
+      "id": "C0847",
+      "label": "calibration model"
+     },
+     {
+      "id": "C0848",
+      "label": "linear relationship"
+     },
+     {
+      "id": "C0849",
+      "label": "paired samples"
+     },
+     {
+      "id": "C0850",
+      "label": "benchmark sensor"
+     },
+     {
+      "id": "C0851",
+      "label": "linear least squares regression"
+     },
+     {
+      "id": "C0852",
+      "label": "calibrated value"
+     },
+     {
+      "id": "C0302",
+      "label": "registration"
+     },
+     {
+      "id": "C0853",
+      "label": "initial orientation"
+     },
+     {
+      "id": "C0165",
+      "label": "sensor"
+     },
+     {
+      "id": "C0854",
+      "label": "initial alignment"
+     },
+     {
+      "id": "C0855",
+      "label": "tracking system"
+     },
+     {
+      "id": "C0113",
+      "label": "fiducial marker"
+     },
+     {
+      "id": "C0856",
+      "label": "reflector"
+     },
+     {
+      "id": "C0857",
+      "label": "tag"
+     },
+     {
+      "id": "C0114",
+      "label": "computer vision"
+     },
+     {
+      "id": "C0836",
+      "label": "integration"
+     },
+     {
+      "id": "C0858",
+      "label": "current sensor orientation"
+     },
+     {
+      "id": "C0859",
+      "label": "calibrated angular velocity sample"
+     },
+     {
+      "id": "C0860",
+      "label": "sampling interval"
+     },
+     {
+      "id": "C0861",
+      "label": "sensor data stream"
+     },
+     {
+      "id": "C0862",
+      "label": "angular velocity sample"
+     },
+     {
+      "id": "C0863",
+      "label": "gyroscopic sensor"
+     },
+     {
+      "id": "C0335",
+      "label": "orientation"
+     },
+     {
+      "id": "C0837",
+      "label": "drift correction"
+     },
+     {
+      "id": "C0864",
+      "label": "drift"
+     },
+     {
+      "id": "C0665",
+      "label": "camera"
+     },
+     {
+      "id": "C0865",
+      "label": "drift-corrected orientation"
+     },
+     {
+      "id": "C0866",
+      "label": "gain parameter"
+     }
+    ],
+    "edges": [
+     {
+      "from": "C0664",
+      "to": "C0767",
+      "label": "mainly contains",
+      "relation": "R1649",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0768",
+      "label": "mainly contains",
+      "relation": "R1650",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0769",
+      "label": "mainly contains",
+      "relation": "R1651",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0005",
+      "label": "is typically part of",
+      "relation": "R1652",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0418",
+      "label": "captures",
+      "relation": "R1653",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0841",
+      "label": "captures",
+      "relation": "R1654",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0842",
+      "label": "captures",
+      "relation": "R1655",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "from": "C0225",
+      "to": "C0767",
+      "label": "in an inertial measurement unit relies mainly on readings from",
+      "relation": "R1656",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0225",
+      "to": "C0418",
+      "label": "in an inertial measurement unit relies mainly on gyroscope readings of",
+      "relation": "R1657",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0225",
+      "label": "does not directly contribute to",
+      "relation": "R1658",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0225",
+      "label": "does not directly contribute to",
+      "relation": "R1659",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0843",
+      "label": "can be used to detect",
+      "relation": "R1660",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0843",
+      "label": "can be used to detect",
+      "relation": "R1661",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0664",
+      "label": "is performed on",
+      "relation": "R1662",
+      "facts": [
+       "17/S1/F0",
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0418",
+      "label": "provides",
+      "relation": "R1663",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0844",
+      "to": "C0845",
+      "label": "can differ from",
+      "relation": "R1664",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0846",
+      "to": "C0845",
+      "label": "is measured angular velocity minus",
+      "relation": "R1665",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0846",
+      "to": "C0844",
+      "label": "is actual angular velocity subtracted from",
+      "relation": "R1666",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0846",
+      "label": "aims to minimize",
+      "relation": "R1667",
+      "facts": [
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0845",
+      "label": "aims to make measured angular velocity as close as possible to",
+      "relation": "R1668",
+      "facts": [
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0844",
+      "label": "aims to make actual angular velocity as close as possible to",
+      "relation": "R1669",
+      "facts": [
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0847",
+      "to": "C0848",
+      "label": "assumes",
+      "relation": "R1670",
+      "facts": [
+       "17/S1/F2"
+      ]
+     },
+     {
+      "from": "C0848",
+      "to": "C0845",
+      "label": "is assumed between measured angular velocity and",
+      "relation": "R1671",
+      "facts": [
+       "17/S1/F2"
+      ]
+     },
+     {
+      "from": "C0848",
+      "to": "C0844",
+      "label": "is assumed between actual angular velocity and",
+      "relation": "R1672",
+      "facts": [
+       "17/S1/F2"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0849",
+      "label": "uses",
+      "relation": "R1673",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0664",
+      "label": "uses paired samples from",
+      "relation": "R1674",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0850",
+      "label": "uses paired samples from",
+      "relation": "R1675",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0849",
+      "to": "C0664",
+      "label": "come from",
+      "relation": "R1676",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0849",
+      "to": "C0850",
+      "label": "come from",
+      "relation": "R1677",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0844",
+      "label": "produces",
+      "relation": "R1678",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0850",
+      "to": "C0845",
+      "label": "produces as a close but not exact value of",
+      "relation": "R1679",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0849",
+      "label": "compares",
+      "relation": "R1680",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0845",
+      "label": "minimizes the sum of squared differences between the expression C1 + C2 measured angular velocity and",
+      "relation": "R1681",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0851",
+      "label": "uses",
+      "relation": "R1682",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0852",
+      "label": "transforms the cheap sensor reading into",
+      "relation": "R1683",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "from": "C0852",
+      "to": "C0844",
+      "label": "is defined as C1 + C2",
+      "relation": "R1684",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "from": "C0852",
+      "to": "C0845",
+      "label": "maps the measured angular velocity to the closest possible match with",
+      "relation": "R1685",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0853",
+      "label": "finds",
+      "relation": "R1686",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0165",
+      "label": "finds the initial orientation of",
+      "relation": "R1687",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0854",
+      "label": "sets",
+      "relation": "R1688",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "from": "C0005",
+      "to": "C0853",
+      "label": "is facing a direction that is taken as",
+      "relation": "R1689",
+      "facts": [
+       "17/S2/F1"
+      ]
+     },
+     {
+      "from": "C0855",
+      "to": "C0853",
+      "label": "is turned on when the direction of the headset is taken as",
+      "relation": "R1690",
+      "facts": [
+       "17/S2/F1"
+      ]
+     },
+     {
+      "from": "C0854",
+      "to": "C0302",
+      "label": "is set to the forward direction under the assumption used to understand",
+      "relation": "R1691",
+      "facts": [
+       "17/S2/F1"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0113",
+      "label": "can be aided by",
+      "relation": "R1692",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0856",
+      "label": "can be aided by",
+      "relation": "R1693",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0857",
+      "label": "can be aided by",
+      "relation": "R1694",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0114",
+      "label": "can be performed using",
+      "relation": "R1695",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0113",
+      "label": "is simpler when aided by",
+      "relation": "R1696",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0856",
+      "label": "is simpler when aided by",
+      "relation": "R1697",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0857",
+      "label": "is simpler when aided by",
+      "relation": "R1698",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0836",
+      "to": "C0858",
+      "label": "computes",
+      "relation": "R1699",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0836",
+      "to": "C0853",
+      "label": "computes the current sensor orientation by adding to",
+      "relation": "R1700",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0858",
+      "to": "C0165",
+      "label": "is the current orientation of a",
+      "relation": "R1701",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0853",
+      "to": "C0302",
+      "label": "is estimated during",
+      "relation": "R1702",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0860",
+      "label": "is multiplied by",
+      "relation": "R1703",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0861",
+      "to": "C0165",
+      "label": "is the data stream of a",
+      "relation": "R1704",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0862",
+      "label": "is a",
+      "relation": "R1705",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0863",
+      "label": "is from a",
+      "relation": "R1706",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0335",
+      "label": "indicates a change in",
+      "relation": "R1707",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0860",
+      "label": "indicates a change in orientation equal to itself multiplied by",
+      "relation": "R1708",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0165",
+      "label": "usually uses",
+      "relation": "R1709",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0165",
+      "label": "in general requires at least two",
+      "relation": "R1710",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0864",
+      "label": "is done to estimate and correct",
+      "relation": "R1711",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0165",
+      "to": "C0864",
+      "label": "has values that are blended to estimate and correct",
+      "relation": "R1712",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0767",
+      "label": "may use",
+      "relation": "R1713",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0665",
+      "label": "may use",
+      "relation": "R1714",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0165",
+      "label": "may use",
+      "relation": "R1715",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0665",
+      "label": "may be used together with",
+      "relation": "R1716",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0165",
+      "label": "is a kind of",
+      "relation": "R1717",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0665",
+      "to": "C0165",
+      "label": "is an example of",
+      "relation": "R1718",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0768",
+      "label": "can provide readings from",
+      "relation": "R1719",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0769",
+      "label": "can provide readings from",
+      "relation": "R1720",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0767",
+      "label": "in an inertial measurement unit, can be used in addition to the values of",
+      "relation": "R1721",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0767",
+      "label": "in an inertial measurement unit, can be used in addition to the values of",
+      "relation": "R1722",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0335",
+      "label": "in a classic approach, combines",
+      "relation": "R1723",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0865",
+      "label": "in a classic approach, computes",
+      "relation": "R1724",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0866",
+      "label": "in a classic approach, uses",
+      "relation": "R1725",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0335",
+      "to": "C0767",
+      "label": "is obtained by integrating the values of",
+      "relation": "R1726",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0335",
+      "to": "C0665",
+      "label": "is obtained with",
+      "relation": "R1727",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0865",
+      "to": "C0335",
+      "label": "is computed by combining",
+      "relation": "R1728",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0865",
+      "to": "C0866",
+      "label": "is computed using",
+      "relation": "R1729",
+      "facts": [
+       "17/S3/F2"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S0/F0",
+    "17/S0/F1",
+    "17/S0/F2",
+    "17/S1/F0",
+    "17/S1/F1",
+    "17/S1/F2",
+    "17/S1/F3",
+    "17/S1/F4",
+    "17/S1/F5",
+    "17/S2/F0",
+    "17/S2/F1",
+    "17/S2/F2",
+    "17/S2/F3",
+    "17/S2/F4",
+    "17/S3/F0",
+    "17/S3/F1",
+    "17/S3/F2"
+   ],
+   "concepts": [
+    "C0664",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0005",
+    "C0418",
+    "C0841",
+    "C0842",
+    "C0225",
+    "C0843",
+    "C0835",
+    "C0844",
+    "C0845",
+    "C0846",
+    "C0847",
+    "C0848",
+    "C0849",
+    "C0850",
+    "C0851",
+    "C0852",
+    "C0302",
+    "C0853",
+    "C0165",
+    "C0854",
+    "C0855",
+    "C0113",
+    "C0856",
+    "C0857",
+    "C0114",
+    "C0836",
+    "C0858",
+    "C0859",
+    "C0860",
+    "C0861",
+    "C0862",
+    "C0863",
+    "C0335",
+    "C0837",
+    "C0864",
+    "C0665",
+    "C0865",
+    "C0866"
+   ]
+  },
+  {
+   "id": "17/A11",
+   "kind": "complete_map",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Complete the map",
+   "data": {
+    "nodes": [
+     {
+      "id": "C0664",
+      "label": "inertial measurement unit"
+     },
+     {
+      "id": "C0767",
+      "label": "gyroscope"
+     },
+     {
+      "id": "C0768",
+      "label": "accelerometer"
+     },
+     {
+      "id": "C0769",
+      "label": "magnetometer"
+     },
+     {
+      "id": "C0005",
+      "label": "head-mounted display"
+     },
+     {
+      "id": "C0418",
+      "label": "angular velocity"
+     },
+     {
+      "id": "C0841",
+      "label": "linear acceleration"
+     },
+     {
+      "id": "C0842",
+      "label": "magnetic field strength"
+     },
+     {
+      "id": "C0225",
+      "label": "tracking"
+     },
+     {
+      "id": "C0843",
+      "label": "drift error"
+     },
+     {
+      "id": "C0835",
+      "label": "calibration"
+     },
+     {
+      "id": "C0844",
+      "label": "measured angular velocity"
+     },
+     {
+      "id": "C0845",
+      "label": "actual angular velocity"
+     },
+     {
+      "id": "C0846",
+      "label": "measurement error"
+     },
+     {
+      "id": "C0847",
+      "label": "calibration model"
+     },
+     {
+      "id": "C0848",
+      "label": "linear relationship"
+     },
+     {
+      "id": "C0849",
+      "label": "paired samples"
+     },
+     {
+      "id": "C0850",
+      "label": "benchmark sensor"
+     },
+     {
+      "id": "C0851",
+      "label": "linear least squares regression"
+     },
+     {
+      "id": "C0852",
+      "label": "calibrated value"
+     },
+     {
+      "id": "C0302",
+      "label": "registration"
+     },
+     {
+      "id": "C0853",
+      "label": "initial orientation"
+     },
+     {
+      "id": "C0165",
+      "label": "sensor"
+     },
+     {
+      "id": "C0854",
+      "label": "initial alignment"
+     },
+     {
+      "id": "C0855",
+      "label": "tracking system"
+     },
+     {
+      "id": "C0113",
+      "label": "fiducial marker"
+     },
+     {
+      "id": "C0856",
+      "label": "reflector"
+     },
+     {
+      "id": "C0857",
+      "label": "tag"
+     },
+     {
+      "id": "C0114",
+      "label": "computer vision"
+     },
+     {
+      "id": "C0836",
+      "label": "integration"
+     },
+     {
+      "id": "C0858",
+      "label": "current sensor orientation"
+     },
+     {
+      "id": "C0859",
+      "label": "calibrated angular velocity sample"
+     },
+     {
+      "id": "C0860",
+      "label": "sampling interval"
+     },
+     {
+      "id": "C0861",
+      "label": "sensor data stream"
+     },
+     {
+      "id": "C0862",
+      "label": "angular velocity sample"
+     },
+     {
+      "id": "C0863",
+      "label": "gyroscopic sensor"
+     },
+     {
+      "id": "C0335",
+      "label": "orientation"
+     },
+     {
+      "id": "C0837",
+      "label": "drift correction"
+     },
+     {
+      "id": "C0864",
+      "label": "drift"
+     },
+     {
+      "id": "C0665",
+      "label": "camera"
+     },
+     {
+      "id": "C0865",
+      "label": "drift-corrected orientation"
+     },
+     {
+      "id": "C0866",
+      "label": "gain parameter"
+     }
+    ],
+    "edges": [
+     {
+      "from": "C0664",
+      "to": "C0767",
+      "label": "mainly contains",
+      "relation": "R1649",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0768",
+      "label": "mainly contains",
+      "relation": "R1650",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0769",
+      "label": "mainly contains",
+      "relation": "R1651",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0005",
+      "label": "is typically part of",
+      "relation": "R1652",
+      "facts": [
+       "17/S0/F0"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0418",
+      "label": "captures",
+      "relation": "R1653",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0841",
+      "label": "captures",
+      "relation": "R1654",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0842",
+      "label": "captures",
+      "relation": "R1655",
+      "facts": [
+       "17/S0/F1"
+      ]
+     },
+     {
+      "from": "C0225",
+      "to": "C0767",
+      "label": "in an inertial measurement unit relies mainly on readings from",
+      "relation": "R1656",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0225",
+      "to": "C0418",
+      "label": "in an inertial measurement unit relies mainly on gyroscope readings of",
+      "relation": "R1657",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0225",
+      "label": "does not directly contribute to",
+      "relation": "R1658",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0225",
+      "label": "does not directly contribute to",
+      "relation": "R1659",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0843",
+      "label": "can be used to detect",
+      "relation": "R1660",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0843",
+      "label": "can be used to detect",
+      "relation": "R1661",
+      "facts": [
+       "17/S0/F2"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0664",
+      "label": "is performed on",
+      "relation": "R1662",
+      "facts": [
+       "17/S1/F0",
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0418",
+      "label": "provides",
+      "relation": "R1663",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0844",
+      "to": "C0845",
+      "label": "can differ from",
+      "relation": "R1664",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0846",
+      "to": "C0845",
+      "label": "is measured angular velocity minus",
+      "relation": "R1665",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0846",
+      "to": "C0844",
+      "label": "is actual angular velocity subtracted from",
+      "relation": "R1666",
+      "facts": [
+       "17/S1/F0"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0846",
+      "label": "aims to minimize",
+      "relation": "R1667",
+      "facts": [
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0845",
+      "label": "aims to make measured angular velocity as close as possible to",
+      "relation": "R1668",
+      "facts": [
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0844",
+      "label": "aims to make actual angular velocity as close as possible to",
+      "relation": "R1669",
+      "facts": [
+       "17/S1/F1"
+      ]
+     },
+     {
+      "from": "C0847",
+      "to": "C0848",
+      "label": "assumes",
+      "relation": "R1670",
+      "facts": [
+       "17/S1/F2"
+      ]
+     },
+     {
+      "from": "C0848",
+      "to": "C0845",
+      "label": "is assumed between measured angular velocity and",
+      "relation": "R1671",
+      "facts": [
+       "17/S1/F2"
+      ]
+     },
+     {
+      "from": "C0848",
+      "to": "C0844",
+      "label": "is assumed between actual angular velocity and",
+      "relation": "R1672",
+      "facts": [
+       "17/S1/F2"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0849",
+      "label": "uses",
+      "relation": "R1673",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0664",
+      "label": "uses paired samples from",
+      "relation": "R1674",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0850",
+      "label": "uses paired samples from",
+      "relation": "R1675",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0849",
+      "to": "C0664",
+      "label": "come from",
+      "relation": "R1676",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0849",
+      "to": "C0850",
+      "label": "come from",
+      "relation": "R1677",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0844",
+      "label": "produces",
+      "relation": "R1678",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0850",
+      "to": "C0845",
+      "label": "produces as a close but not exact value of",
+      "relation": "R1679",
+      "facts": [
+       "17/S1/F3"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0849",
+      "label": "compares",
+      "relation": "R1680",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0845",
+      "label": "minimizes the sum of squared differences between the expression C1 + C2 measured angular velocity and",
+      "relation": "R1681",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0851",
+      "label": "uses",
+      "relation": "R1682",
+      "facts": [
+       "17/S1/F4"
+      ]
+     },
+     {
+      "from": "C0835",
+      "to": "C0852",
+      "label": "transforms the cheap sensor reading into",
+      "relation": "R1683",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "from": "C0852",
+      "to": "C0844",
+      "label": "is defined as C1 + C2",
+      "relation": "R1684",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "from": "C0852",
+      "to": "C0845",
+      "label": "maps the measured angular velocity to the closest possible match with",
+      "relation": "R1685",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0853",
+      "label": "finds",
+      "relation": "R1686",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0165",
+      "label": "finds the initial orientation of",
+      "relation": "R1687",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0854",
+      "label": "sets",
+      "relation": "R1688",
+      "facts": [
+       "17/S2/F0"
+      ]
+     },
+     {
+      "from": "C0005",
+      "to": "C0853",
+      "label": "is facing a direction that is taken as",
+      "relation": "R1689",
+      "facts": [
+       "17/S2/F1"
+      ]
+     },
+     {
+      "from": "C0855",
+      "to": "C0853",
+      "label": "is turned on when the direction of the headset is taken as",
+      "relation": "R1690",
+      "facts": [
+       "17/S2/F1"
+      ]
+     },
+     {
+      "from": "C0854",
+      "to": "C0302",
+      "label": "is set to the forward direction under the assumption used to understand",
+      "relation": "R1691",
+      "facts": [
+       "17/S2/F1"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0113",
+      "label": "can be aided by",
+      "relation": "R1692",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0856",
+      "label": "can be aided by",
+      "relation": "R1693",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0857",
+      "label": "can be aided by",
+      "relation": "R1694",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0114",
+      "label": "can be performed using",
+      "relation": "R1695",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0113",
+      "label": "is simpler when aided by",
+      "relation": "R1696",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0856",
+      "label": "is simpler when aided by",
+      "relation": "R1697",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0302",
+      "to": "C0857",
+      "label": "is simpler when aided by",
+      "relation": "R1698",
+      "facts": [
+       "17/S2/F2"
+      ]
+     },
+     {
+      "from": "C0836",
+      "to": "C0858",
+      "label": "computes",
+      "relation": "R1699",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0836",
+      "to": "C0853",
+      "label": "computes the current sensor orientation by adding to",
+      "relation": "R1700",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0858",
+      "to": "C0165",
+      "label": "is the current orientation of a",
+      "relation": "R1701",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0853",
+      "to": "C0302",
+      "label": "is estimated during",
+      "relation": "R1702",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0860",
+      "label": "is multiplied by",
+      "relation": "R1703",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0861",
+      "to": "C0165",
+      "label": "is the data stream of a",
+      "relation": "R1704",
+      "facts": [
+       "17/S2/F3"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0862",
+      "label": "is a",
+      "relation": "R1705",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0863",
+      "label": "is from a",
+      "relation": "R1706",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0335",
+      "label": "indicates a change in",
+      "relation": "R1707",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0859",
+      "to": "C0860",
+      "label": "indicates a change in orientation equal to itself multiplied by",
+      "relation": "R1708",
+      "facts": [
+       "17/S2/F4"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0165",
+      "label": "usually uses",
+      "relation": "R1709",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0165",
+      "label": "in general requires at least two",
+      "relation": "R1710",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0864",
+      "label": "is done to estimate and correct",
+      "relation": "R1711",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0165",
+      "to": "C0864",
+      "label": "has values that are blended to estimate and correct",
+      "relation": "R1712",
+      "facts": [
+       "17/S3/F0"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0767",
+      "label": "may use",
+      "relation": "R1713",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0665",
+      "label": "may use",
+      "relation": "R1714",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0165",
+      "label": "may use",
+      "relation": "R1715",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0665",
+      "label": "may be used together with",
+      "relation": "R1716",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0767",
+      "to": "C0165",
+      "label": "is a kind of",
+      "relation": "R1717",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0665",
+      "to": "C0165",
+      "label": "is an example of",
+      "relation": "R1718",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0768",
+      "label": "can provide readings from",
+      "relation": "R1719",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0664",
+      "to": "C0769",
+      "label": "can provide readings from",
+      "relation": "R1720",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0768",
+      "to": "C0767",
+      "label": "in an inertial measurement unit, can be used in addition to the values of",
+      "relation": "R1721",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0769",
+      "to": "C0767",
+      "label": "in an inertial measurement unit, can be used in addition to the values of",
+      "relation": "R1722",
+      "facts": [
+       "17/S3/F1"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0335",
+      "label": "in a classic approach, combines",
+      "relation": "R1723",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0865",
+      "label": "in a classic approach, computes",
+      "relation": "R1724",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0837",
+      "to": "C0866",
+      "label": "in a classic approach, uses",
+      "relation": "R1725",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0335",
+      "to": "C0767",
+      "label": "is obtained by integrating the values of",
+      "relation": "R1726",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0335",
+      "to": "C0665",
+      "label": "is obtained with",
+      "relation": "R1727",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0865",
+      "to": "C0335",
+      "label": "is computed by combining",
+      "relation": "R1728",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "from": "C0865",
+      "to": "C0866",
+      "label": "is computed using",
+      "relation": "R1729",
+      "facts": [
+       "17/S3/F2"
+      ]
+     }
+    ],
+    "blanks": [
+     {
+      "edge": 22,
+      "hide": "label",
+      "answer": "is assumed between measured angular velocity and",
+      "options": [
+       "is obtained with",
+       "can be performed using",
+       "is assumed between measured angular velocity and",
+       "is simpler when aided by"
+      ]
+     },
+     {
+      "edge": 45,
+      "hide": "label",
+      "answer": "can be aided by",
+      "options": [
+       "can differ from",
+       "aims to minimize",
+       "can be aided by",
+       "is a kind of"
+      ]
+     },
+     {
+      "edge": 47,
+      "hide": "label",
+      "answer": "is simpler when aided by",
+      "options": [
+       "finds the initial orientation of",
+       "aims to minimize",
+       "can differ from",
+       "is simpler when aided by"
+      ]
+     },
+     {
+      "edge": 78,
+      "hide": "label",
+      "answer": "is obtained with",
+      "options": [
+       "in a classic approach, computes",
+       "is computed using",
+       "is obtained with",
+       "minimizes the sum of squared differences between the expression C1 + C2 measured angular velocity and"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S0/F0",
+    "17/S0/F1",
+    "17/S0/F2",
+    "17/S1/F0",
+    "17/S1/F1",
+    "17/S1/F2",
+    "17/S1/F3",
+    "17/S1/F4",
+    "17/S1/F5",
+    "17/S2/F0",
+    "17/S2/F1",
+    "17/S2/F2",
+    "17/S2/F3",
+    "17/S2/F4",
+    "17/S3/F0",
+    "17/S3/F1",
+    "17/S3/F2"
+   ],
+   "concepts": [
+    "C0664",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0005",
+    "C0418",
+    "C0841",
+    "C0842",
+    "C0225",
+    "C0843",
+    "C0835",
+    "C0844",
+    "C0845",
+    "C0846",
+    "C0847",
+    "C0848",
+    "C0849",
+    "C0850",
+    "C0851",
+    "C0852",
+    "C0302",
+    "C0853",
+    "C0165",
+    "C0854",
+    "C0855",
+    "C0113",
+    "C0856",
+    "C0857",
+    "C0114",
+    "C0836",
+    "C0858",
+    "C0859",
+    "C0860",
+    "C0861",
+    "C0862",
+    "C0863",
+    "C0335",
+    "C0837",
+    "C0864",
+    "C0665",
+    "C0865",
+    "C0866"
+   ]
+  },
+  {
+   "id": "17/A12",
+   "kind": "match_pairs",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Match the terms",
+   "data": {
+    "pairs": [
+     {
+      "left": "registration",
+      "right": "The step in the tracking process that estimates the initial position and orientation of the sensor or user, so the starting point …",
+      "concept": "C0302",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F3",
+       "17/S2/F0",
+       "17/S2/F2"
+      ]
+     },
+     {
+      "left": "inertial measurement unit",
+      "right": "A self-contained composite hardware unit that mainly contains a gyroscope, accelerometer, and magnetometer to measure changes in orientation, translation velocity, or acceleration …",
+      "concept": "C0664",
+      "facts": [
+       "17/S0/F0",
+       "18/S8/F0"
+      ]
+     },
+     {
+      "left": "gyroscope",
+      "right": "An inertial sensor that captures angular velocity.",
+      "concept": "C0767",
+      "facts": [
+       "17/S0/F0",
+       "17/S0/F1",
+       "17/S0/F2",
+       "18/S8/F2"
+      ]
+     },
+     {
+      "left": "accelerometer",
+      "right": "An inertial sensor that captures linear acceleration along the x, y, and z axes, and in an inertial measurement unit its readings …",
+      "concept": "C0768",
+      "facts": [
+       "17/S0/F1",
+       "17/S0/F2",
+       "18/S8/F2"
+      ]
+     },
+     {
+      "left": "magnetometer",
+      "right": "A sensor that captures magnetic field strength along the x, y, and z axes and can be used to detect drift errors …",
+      "concept": "C0769",
+      "facts": [
+       "17/S0/F1",
+       "17/S0/F2"
+      ]
+     },
+     {
+      "left": "calibration",
+      "right": "The step in the tracking process that transforms the output of imperfect sensors so that it behaves as closely as possible to …",
+      "concept": "C0835",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F2"
+      ]
+     },
+     {
+      "left": "integration",
+      "right": "A stage of the tracking process that aggregates sensory measurements from multiple sensors or input data sources at discrete time points to …",
+      "concept": "C0836",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F4",
+       "17/S2/F3"
+      ]
+     },
+     {
+      "left": "drift correction",
+      "right": "A step in the tracking process that compensates for the difference between estimated and actual position and orientation of the user, sense …",
+      "concept": "C0837",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F5",
+       "17/S3/F0",
+       "17/S3/F1"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "16/S3/F1",
+    "16/S3/F3",
+    "17/S2/F0",
+    "17/S2/F2",
+    "17/S0/F0",
+    "18/S8/F0",
+    "17/S0/F1",
+    "17/S0/F2",
+    "18/S8/F2",
+    "16/S3/F2",
+    "16/S3/F4",
+    "17/S2/F3",
+    "16/S3/F5",
+    "17/S3/F0",
+    "17/S3/F1"
+   ],
+   "concepts": [
+    "C0302",
+    "C0664",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0835",
+    "C0836",
+    "C0837"
+   ]
+  },
+  {
+   "id": "17/A13",
+   "kind": "crossword",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Crossword",
+   "data": {
+    "width": 18,
+    "height": 23,
+    "entries": [
+     {
+      "number": 3,
+      "answer": "CALIBRATION",
+      "clue": "Tracking step that turns imperfect sensor readings into near-real measurements (11)",
+      "row": 5,
+      "col": 7,
+      "direction": "across",
+      "concept": "C0835",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F2"
+      ]
+     },
+     {
+      "number": 6,
+      "answer": "REGISTRATION",
+      "clue": "Tracking step finding initial position and orientation before movement (12)",
+      "row": 10,
+      "col": 1,
+      "direction": "across",
+      "concept": "C0302",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F3",
+       "17/S2/F0",
+       "17/S2/F2"
+      ]
+     },
+     {
+      "number": 7,
+      "answer": "MAGNETOMETER",
+      "clue": "Three-axis field-strength sensor used to detect drift in tracking (12)",
+      "row": 12,
+      "col": 0,
+      "direction": "across",
+      "concept": "C0769",
+      "facts": [
+       "17/S0/F1",
+       "17/S0/F2"
+      ]
+     },
+     {
+      "number": 9,
+      "answer": "ACCELEROMETER",
+      "clue": "Inertial sensor reading three-axis linear acceleration (13)",
+      "row": 16,
+      "col": 4,
+      "direction": "across",
+      "concept": "C0768",
+      "facts": [
+       "17/S0/F1",
+       "17/S0/F2",
+       "18/S8/F2"
+      ]
+     },
+     {
+      "number": 10,
+      "answer": "PAIREDSAMPLES",
+      "clue": "One-to-one IMU and benchmark-sensor readings compared for calibration (6,7)",
+      "row": 18,
+      "col": 4,
+      "direction": "across",
+      "concept": "C0849",
+      "facts": [
+       "17/S1/F3",
+       "17/S1/F4"
+      ]
+     },
+     {
+      "number": 1,
+      "answer": "INTEGRATION",
+      "clue": "Tracking stage combining initial orientation and calibrated angular-velocity readings to compute current orientation (11)",
+      "row": 0,
+      "col": 12,
+      "direction": "down",
+      "concept": "C0836",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F4",
+       "17/S2/F3"
+      ]
+     },
+     {
+      "number": 2,
+      "answer": "CALIBRATEDVALUE",
+      "clue": "Angular-velocity result made closest to actual via C1 + C2 omega_g (10,5)",
+      "row": 4,
+      "col": 8,
+      "direction": "down",
+      "concept": "C0852",
+      "facts": [
+       "17/S1/F5"
+      ]
+     },
+     {
+      "number": 4,
+      "answer": "DRIFTCORRECTION",
+      "clue": "Tracking step blending gyroscope and camera estimates to lower estimation error (5,10)",
+      "row": 6,
+      "col": 6,
+      "direction": "down",
+      "concept": "C0837",
+      "facts": [
+       "16/S3/F1",
+       "16/S3/F5",
+       "17/S3/F0",
+       "17/S3/F1"
+      ]
+     },
+     {
+      "number": 5,
+      "answer": "GAINPARAMETER",
+      "clue": "Normalized 0-to-1 coefficient combining gyroscope and camera orientation (4,9)",
+      "row": 7,
+      "col": 15,
+      "direction": "down",
+      "concept": "C0866",
+      "facts": [
+       "17/S3/F2"
+      ]
+     },
+     {
+      "number": 8,
+      "answer": "GYROSCOPE",
+      "clue": "Inertial sensor capturing angular velocity (9)",
+      "row": 14,
+      "col": 10,
+      "direction": "down",
+      "concept": "C0767",
+      "facts": [
+       "17/S0/F0",
+       "17/S0/F1",
+       "17/S0/F2",
+       "18/S8/F2"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "16/S3/F1",
+    "16/S3/F2",
+    "16/S3/F3",
+    "17/S2/F0",
+    "17/S2/F2",
+    "17/S0/F1",
+    "17/S0/F2",
+    "18/S8/F2",
+    "17/S1/F3",
+    "17/S1/F4",
+    "16/S3/F4",
+    "17/S2/F3",
+    "17/S1/F5",
+    "16/S3/F5",
+    "17/S3/F0",
+    "17/S3/F1",
+    "17/S3/F2",
+    "17/S0/F0"
+   ],
+   "concepts": [
+    "C0835",
+    "C0302",
+    "C0769",
+    "C0768",
+    "C0849",
+    "C0836",
+    "C0852",
+    "C0837",
+    "C0866",
+    "C0767"
+   ]
+  },
+  {
+   "id": "17/A14",
+   "kind": "odd_one_out",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Odd one out",
+   "data": {
+    "items": [
+     {
+      "options": [
+       "Camera",
+       "Gyroscope",
+       "Magnetometer",
+       "Accelerometer"
+      ],
+      "odd": 0,
+      "reason": "A gyroscope, accelerometer, and magnetometer are the main sensors contained in an inertial measurement unit, whereas a camera is a separate sensor used with a gyroscope for drift correction.",
+      "facts": [
+       "17/S0/F0",
+       "17/S3/F1"
+      ]
+     },
+     {
+      "options": [
+       "Tag",
+       "Computer Vision",
+       "Fiducial Marker",
+       "Reflector"
+      ],
+      "odd": 1,
+      "reason": "A fiducial marker, reflector, and tag are physical aids that make registration simpler, whereas computer vision is a technique by which registration can be performed without such aids.",
+      "facts": [
+       "17/S2/F2"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S0/F0",
+    "17/S3/F1",
+    "17/S2/F2"
+   ],
+   "concepts": [
+    "C0005",
+    "C0664",
+    "C0767",
+    "C0768",
+    "C0769",
+    "C0165",
+    "C0665",
+    "C0837",
+    "C0113",
+    "C0114",
+    "C0302",
+    "C0856",
+    "C0857"
+   ]
+  },
+  {
+   "id": "17/A15",
+   "kind": "put_in_order",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Order the stages from initial orientation to drift-corrected orientation",
+   "data": {
+    "items": [
+     {
+      "title": "Order the stages from initial orientation to drift-corrected orientation",
+      "steps": [
+       "Determining the initial orientation of the sensor or user",
+       "Adding calibrated angular-velocity changes over elapsed samples to the initial orientation",
+       "Blending the integrated gyroscope orientation with another sensor orientation"
+      ],
+      "facts": [
+       "17/S2/F0",
+       "17/S2/F3",
+       "17/S3/F2"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S2/F0",
+    "17/S2/F3",
+    "17/S3/F2"
+   ],
+   "concepts": [
+    "C0165",
+    "C0302",
+    "C0853",
+    "C0854",
+    "C0836",
+    "C0858",
+    "C0859",
+    "C0860",
+    "C0861",
+    "C0335",
+    "C0665",
+    "C0767",
+    "C0837",
+    "C0865",
+    "C0866"
+   ]
+  },
+  {
+   "id": "17/A16",
+   "kind": "open_question",
+   "scope": "lecture",
+   "segment": null,
+   "title": "Think it through",
+   "data": {
+    "questions": [
+     {
+      "question": "How does an IMU calibration process use many paired samples from a cheap IMU and a more accurate benchmark sensor to produce a calibrated angular velocity?",
+      "reference_answer": "The calibration collects many paired samples in which the cheap IMU produces measured angular velocity omega_g and the benchmark sensor produces a close estimate of the actual angular velocity omega_a. It finds constants C1 and C2 by linear least squares regression, minimizing the sum of squared differences between C1 + C2 omega_g and omega_a. The resulting calibrated value is omega_cal = C1 + C2 omega_g, which maps the cheap reading to the closest match with the actual value.",
+      "key_facts": [
+       "17/S1/F3",
+       "17/S1/F4",
+       "17/S1/F5"
+      ],
+      "concepts": [
+       "C0835",
+       "C0850",
+       "C0844",
+       "C0852"
+      ]
+     },
+     {
+      "question": "Why is registration required before integration can compute a sensor's current orientation in an XR tracking system?",
+      "reference_answer": "Registration is required because integration needs the initial orientation, theta_0, as the starting point before movement is accumulated. Registration finds this initial orientation and sets the initial alignment between the real and virtual worlds. Integration then computes the current sensor orientation at k delta_t by adding theta_0 to the sum of calibrated angular velocity samples W_cal_i times delta_t, where each sample indicates that orientation change.",
+      "key_facts": [
+       "17/S2/F0",
+       "17/S2/F3",
+       "17/S2/F4",
+       "16/S3/F3"
+      ],
+      "concepts": [
+       "C0302",
+       "C0836",
+       "C0853",
+       "C0859"
+      ]
+     },
+     {
+      "question": "Why are accelerometer and magnetometer readings useful in an IMU even though IMU-based tracking mainly uses gyroscope readings?",
+      "reference_answer": "Accelerometer and magnetometer readings are useful because, although they do not directly contribute to IMU tracking, they can detect drift error. IMU tracking relies mainly on gyroscope angular velocity readings, while the accelerometer captures linear acceleration and the magnetometer captures magnetic field strength. Drift correction can use those accelerometer and magnetometer readings in addition to gyroscope values.",
+      "key_facts": [
+       "17/S0/F1",
+       "17/S0/F2",
+       "17/S3/F1"
+      ],
+      "concepts": [
+       "C0768",
+       "C0769",
+       "C0767",
+       "C0843"
+      ]
+     },
+     {
+      "question": "How does a classic drift-correction approach combine orientations from a gyroscope and a camera to obtain a drift-corrected orientation?",
+      "reference_answer": "Drift correction usually uses at least two sensors whose values are blended to estimate and correct drift. In this classic approach, the gyroscope provides an integrated orientation theta_gk and the camera provides orientation theta_ck at the same instant. The method computes theta_dk = alpha theta_gk + (1 - alpha) theta_ck, where alpha is a normalized gain parameter between 0 and 1.",
+      "key_facts": [
+       "17/S3/F0",
+       "17/S3/F1",
+       "17/S3/F2"
+      ],
+      "concepts": [
+       "C0837",
+       "C0767",
+       "C0665",
+       "C0865"
+      ]
+     }
+    ]
+   },
+   "facts": [
+    "17/S1/F3",
+    "17/S1/F4",
+    "17/S1/F5",
+    "17/S2/F0",
+    "17/S2/F3",
+    "17/S2/F4",
+    "16/S3/F3",
+    "17/S0/F1",
+    "17/S0/F2",
+    "17/S3/F1",
+    "17/S3/F0",
+    "17/S3/F2"
+   ],
+   "concepts": [
+    "C0835",
+    "C0850",
+    "C0844",
+    "C0852",
+    "C0302",
+    "C0836",
+    "C0853",
+    "C0859",
+    "C0768",
+    "C0769",
+    "C0767",
+    "C0843",
+    "C0837",
+    "C0665",
+    "C0865",
+    "C0664",
+    "C0845",
+    "C0849",
+    "C0851",
+    "C0165",
+    "C0854",
+    "C0858",
+    "C0860",
+    "C0861",
+    "C0335",
+    "C0862",
+    "C0863",
+    "C0225",
+    "C0334",
+    "C0418",
+    "C0841",
+    "C0842",
+    "C0864",
+    "C0866"
+   ]
+  }
+ ]
+}

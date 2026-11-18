@@ -1,0 +1,239 @@
+55/S0  Introduce the graphics-pipeline context by recapping frame-buffer basics and explaining that frame-buffer values are computed in stages.
+  C0   color value  facts F0, F1
+  C1   frame buffer  facts F0, F1
+  C2   display processor  facts F0
+  C3   display controller  facts F0
+  C4   stage  facts F0, F1
+  C5   graphics pipeline [defined]  facts F1
+  R0   color value | is stored in | frame buffer  (F0, F1)
+  R1   color value | is computed by | display processor  (F0)
+  R2   display processor | is part of | display controller  (F0)
+  R3   color value | is computed in distinct | stage  (F0, F1)
+  R4   graphics pipeline | is the set of distinct | stage  (F1)
+
+55/S1  Describe the 3D graphics pipeline stages and the coordinate systems involved in transforming objects to pixels.
+  C0   three-dimensional graphics pipeline (3D graphics pipeline) [defined]  facts F0, F1, F2, F3, F4, F6, F8, F9
+  C1   pixel  facts F0, F8
+  C2   frame buffer  facts F0
+  C3   display mechanism  facts F0
+  C4   video controller  facts F0
+  C5   object representation [defined]  facts F1, F2
+  C6   local coordinate system [defined]  facts F2, F3, F9
+  C7   modeling transformation [defined]  facts F1, F3
+  C8   world coordinate system [defined]  facts F3, F4, F7, F9
+  C9   lighting (illumination) [defined]  facts F1, F4
+  C10  device coordinate system [defined]  facts F5, F7, F8, F9
+  C11  viewing pipeline [defined]  facts F1, F6, F7
+  C12  viewing transformation [defined]  facts F6, F7
+  C13  clipping  facts F6, F7
+  C14  hidden surface removal  facts F6, F7
+  C15  projection transformation [defined]  facts F6, F7
+  C16  window-to-viewport transformation [defined]  facts F6, F7
+  C17  three-dimensional view coordinate system (3D view coordinate system, view coordinate system)  facts F7, F9
+  C18  two-dimensional view coordinate system (2D view coordinate system)  facts F7, F9
+  C19  scan conversion [defined]  facts F1, F8
+  C20  screen coordinate system [defined]  facts F8, F9
+  R0   three-dimensional graphics pipeline | computes the intensity values for each | pixel  (F0)
+  R1   three-dimensional graphics pipeline | stores the computed intensity values in | frame buffer  (F0)
+  R2   three-dimensional graphics pipeline | uses the stored intensity values to drive | display mechanism  (F0)
+  R3   three-dimensional graphics pipeline | uses the stored intensity values to drive the display mechanism through | video controller  (F0)
+  R4   display mechanism | is driven through | video controller  (F0)
+  R5   three-dimensional graphics pipeline | contains as its first stage | object representation  (F1)
+  R6   three-dimensional graphics pipeline | contains as its second stage | modeling transformation  (F1)
+  R7   three-dimensional graphics pipeline | contains as its third stage | lighting  (F1)
+  R8   three-dimensional graphics pipeline | contains as its fourth stage | viewing pipeline  (F1, F6)
+  R9   three-dimensional graphics pipeline | contains as its fifth stage | scan conversion  (F1, F8)
+  R10  object representation | defines the objects in each object's own | local coordinate system  (F2)
+  R11  modeling transformation | transforms objects from | local coordinate system  (F3)
+  R12  modeling transformation | transforms objects to the common | world coordinate system  (F3)
+  R13  lighting | assigns color to the constructed scene in | world coordinate system  (F4)
+  R14  viewing pipeline | comprises | viewing transformation  (F6)
+  R15  viewing pipeline | comprises | clipping  (F6)
+  R16  viewing pipeline | comprises | hidden surface removal  (F6)
+  R17  viewing pipeline | comprises | projection transformation  (F6)
+  R18  viewing pipeline | comprises | window-to-viewport transformation  (F6)
+  R19  viewing transformation | maps the scene from | world coordinate system  (F7)
+  R20  viewing transformation | maps the scene to | three-dimensional view coordinate system  (F7)
+  R21  clipping | operates in | three-dimensional view coordinate system  (F7)
+  R22  hidden surface removal | operates in | three-dimensional view coordinate system  (F7)
+  R23  projection transformation | maps the scene from | three-dimensional view coordinate system  (F7)
+  R24  projection transformation | maps the scene to | two-dimensional view coordinate system  (F7)
+  R25  window-to-viewport transformation | maps the scene from | two-dimensional view coordinate system  (F7)
+  R26  window-to-viewport transformation | maps the scene to | device coordinate system  (F7)
+  R27  viewing pipeline | transforms a scene from | world coordinate system  (F7)
+  R28  viewing pipeline | transforms a scene to | device coordinate system  (F7)
+  R29  scan conversion | transforms the continuous description in | device coordinate system  (F8)
+  R30  scan conversion | transforms the continuous description into the discrete description in | screen coordinate system  (F8)
+  R31  pixel | has integer coordinates in | screen coordinate system  (F8)
+  R32  three-dimensional graphics pipeline | uses in transforming an object definition to a pixel-level scene description | local coordinate system  (F9)
+  R33  three-dimensional graphics pipeline | uses in transforming an object definition to a pixel-level scene description | world coordinate system  (F9)
+  R34  three-dimensional graphics pipeline | uses in transforming an object definition to a pixel-level scene description | three-dimensional view coordinate system  (F9)
+  R35  three-dimensional graphics pipeline | uses in transforming an object definition to a pixel-level scene description | two-dimensional view coordinate system  (F9)
+  R36  three-dimensional graphics pipeline | uses in transforming an object definition to a pixel-level scene description | device coordinate system  (F9)
+  R37  three-dimensional graphics pipeline | uses in transforming an object definition to a pixel-level scene description | screen coordinate system  (F9)
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+55/S2  Explain the trade-offs in object representation and list the broad categories of 3D object representation.
+  C0   three-dimensional object representation (3D object representation) [defined]  facts F0, F1
+  C1   three-dimensional graphics pipeline (3D graphics pipeline)  facts F0, F1
+  C2   pixel intensity (pixel intensities)  facts F1
+  C3   rendering  facts F1
+  C4   three-dimensional object representation technique (3D object representation technique)  facts F2, F3
+  C5   point sample rendering  facts F3
+  C6   boundary representation [defined]  facts F3
+  C7   space partitioning based representation [defined]  facts F3
+  C8   mesh representation  facts F3
+  C9   parametric representation  facts F3
+  C10  implicit representation  facts F3
+  C11  octree method  facts F3
+  C12  binary space partitioning method (BSP, BSP method)  facts F3
+  C13  constructive solid geometry method (CSG, CSG method)  facts F3
+  R0   three-dimensional object representation | has as a fundamental objective the efficiency in space and time of the operations of the subsequent stages of | three-dimensional graphics pipeline  (F0)
+  R1   pixel intensity | is computed in | three-dimensional graphics pipeline  (F1)
+  R2   pixel intensity | depends on | three-dimensional object representation  (F1)
+  R3   three-dimensional object representation | can, if its computation is not efficient, cause lags in or require expensive hardware for | rendering  (F1)
+  R4   point sample rendering | is a broad category of | three-dimensional object representation technique  (F3)
+  R5   boundary representation | is a broad category of | three-dimensional object representation technique  (F3)
+  R6   space partitioning based representation | is a broad category of | three-dimensional object representation technique  (F3)
+  R7   boundary representation | comprises | mesh representation  (F3)
+  R8   boundary representation | comprises | parametric representation  (F3)
+  R9   boundary representation | comprises | implicit representation  (F3)
+  R10  space partitioning based representation | comprises | octree method  (F3)
+  R11  space partitioning based representation | comprises | binary space partitioning method  (F3)
+  R12  space partitioning based representation | comprises | constructive solid geometry method  (F3)
+  checks: name_not_in_facts 1
+
+55/S3  Describe point-sample rendering and boundary/mesh representation as broad object-representation categories.
+  C0   point sample rendering [defined]  facts F0, F1, F2, F3
+  C1   boundary representation [defined]  facts F0, F4, F5
+  C2   space partitioning-based representation  facts F0
+  C3   data point (point, points)  facts F1, F2, F3
+  C4   attribute  facts F1
+  C5   input sensor  facts F2
+  C6   three-dimensional range scanner (3D range scanners)  facts F2
+  C7   range finder  facts F2
+  C8   computer vision technique  facts F2
+  C9   pixel  facts F3
+  C10  synthetic image  facts F3
+  C11  surface  facts F4, F5, F6, F7
+  C12  mesh representation [defined]  facts F5, F6, F7, F8
+  C13  polygon  facts F4, F5, F6, F7
+  C14  mesh [defined]  facts F5, F6
+  C15  vertex list  facts F5, F7
+  C16  edge list  facts F5
+  C17  vertex  facts F5
+  C18  edge  facts F5
+  C19  polygonal mesh  facts F6
+  C20  triangle  facts F6
+  C21  simple convex polygon  facts F6
+  C22  computer graphics  facts F8
+  C23  pipeline  facts F8
+  R0   point sample rendering | is one of the broad representation categories along with | boundary representation  (F0)
+  R1   point sample rendering | is one of the broad representation categories along with | space partitioning-based representation  (F0)
+  R2   boundary representation | is one of the broad representation categories along with | space partitioning-based representation  (F0)
+  R3   point sample rendering | represents captured scene information as a set of raw | data point  (F1)
+  R4   data point | carries captured scene information as an | attribute  (F1)
+  R5   point sample rendering | captures scene information in the form of | data point  (F2)
+  R6   point sample rendering | captures scene information using | input sensor  (F2)
+  R7   input sensor | includes | three-dimensional range scanner  (F2)
+  R8   input sensor | includes | range finder  (F2)
+  R9   input sensor | includes | computer vision technique  (F2)
+  R10  data point | is processed or mapped to a | pixel  (F3)
+  R11  pixel | is used to generate a | synthetic image  (F3)
+  R12  point sample rendering | generates a | synthetic image  (F3)
+  R13  boundary representation | represents objects by | surface  (F4)
+  R14  mesh representation | is a popular technique of | boundary representation  (F5)
+  R15  mesh representation | assumes object surfaces to be | polygon  (F5)
+  R16  polygon | form, when connected, a | mesh  (F5)
+  R17  mesh representation | represents an object as a | mesh  (F5)
+  R18  vertex list | stores | vertex  (F5)
+  R19  edge list | stores | edge  (F5)
+  R20  vertex list | is used in | mesh representation  (F5)
+  R21  edge list | is used in | mesh representation  (F5)
+  R22  mesh representation | approximates non-polygonal surfaces with | polygonal mesh  (F6)
+  R23  surface | can be approximated with a | polygonal mesh  (F6)
+  R24  polygonal mesh | is typically composed of | triangle  (F6)
+  R25  simple convex polygon | may also be used in a | polygonal mesh  (F6)
+  R26  polygon | in greater number gives a better approximation of | surface  (F7)
+  R27  polygon | in greater number makes | vertex list  (F7)
+  R28  mesh representation | is the most basic form of representation for any object in a rendered scene used in | computer graphics  (F8)
+  R29  mesh representation | is the form to which all other representations are converted at the end of the | pipeline  (F8)
+
+55/S4  Explain spline and parametric representation for curved surfaces.
+  C0   spline representation [defined]  facts F0, F1, F3, F5
+  C1   boundary representation  facts F0, F6
+  C2   curved surface  facts F0
+  C3   curve  facts F0, F2, F3, F4, F5
+  C4   parametric representation (parametric forms)  facts F0, F6
+  C5   scene  facts F1
+  C6   rendering  facts F1
+  C7   simple polygon  facts F1
+  C8   polynomial equation  facts F1
+  C9   polynomial representation [defined]  facts F2
+  C10  polynomial  facts F2, F3, F4
+  C11  point  facts F2, F3
+  C12  polynomial piece [defined]  facts F3, F5
+  C13  basis function (blending function) [defined]  facts F3
+  C14  curve segment  facts F3
+  C15  third-order polynomial  facts F4
+  C16  spline curve  facts F4
+  C17  mesh  facts F6
+  C18  implicit representation  facts F6
+  R0   spline representation | is a higher-level | boundary representation  (F0)
+  R1   spline representation | is a higher-level boundary representation for | curved surface  (F0)
+  R2   spline representation | is a higher-level boundary representation for | curve  (F0)
+  R3   spline representation | falls under | parametric representation  (F0)
+  R4   spline representation | is typically preferred by designers of | scene  (F1)
+  R5   spline representation | is used to construct | scene  (F1)
+  R6   scene | is constructed for | rendering  (F1)
+  R7   spline representation | is used to represent complex surfaces not representable by | simple polygon  (F1)
+  R8   spline representation | is used to represent complex surfaces not representable by | polynomial equation  (F1)
+  R9   polynomial representation | is a representation of | curve  (F2)
+  R10  curve | when more complex, is represented by a higher-degree | polynomial  (F2)
+  R11  point | is computed on a higher-degree | polynomial  (F2)
+  R12  curve | in spline representation, consists of lower-degree | polynomial piece  (F3)
+  R13  polynomial piece | is used instead of a single higher-degree complex | polynomial  (F3)
+  R14  polynomial piece | is also called | basis function  (F3)
+  R15  polynomial | is used to compute points on | curve segment  (F3)
+  R16  point | is computed on | curve segment  (F3)
+  R17  curve segment | is represented by | polynomial piece  (F3)
+  R18  third-order polynomial | is the most common form of | polynomial  (F4)
+  R19  polynomial | is used to construct | spline curve  (F4)
+  R20  polynomial piece | in spline representation, must join smoothly | curve  (F5)
+  R21  mesh | in boundary representation, is the most basic form of | boundary representation  (F6)
+  R22  boundary representation | when higher-level, uses | implicit representation  (F6)
+  R23  boundary representation | when higher-level, uses | parametric representation  (F6)
+  checks: name_not_in_facts 1; reverse 2
+  retried turn 1: 2 attempts, kept 2; lost nothing; added nothing
+
+55/S5  Describe space partitioning representation and specialized techniques for complex photorealistic objects.
+  C0   space partitioning representation [defined]  facts F0, F1, F2, F3
+  C1   object representation  facts F0
+  C2   three-dimensional space (3D space)  facts F0
+  C3   space partitioning tree [defined]  facts F1
+  C4   octree method  facts F2
+  C5   binary space partitioning  facts F2
+  C6   constructive solid geometry (constructive solid geometric methods)  facts F2
+  C7   fractal representation [defined]  facts F4
+  C8   particle system representation [defined]  facts F5
+  C9   skeletal model [defined]  facts F6
+  C10  animation  facts F6
+  C11  computer animation  facts F6
+  R0   space partitioning representation | is a broad category of | object representation  (F0)
+  R1   space partitioning representation | divides the object-occupied portion of | three-dimensional space  (F0)
+  R2   space partitioning tree | is used to create | space partitioning representation  (F1)
+  R3   space partitioning representation | includes | octree method  (F2)
+  R4   space partitioning representation | includes | binary space partitioning  (F2)
+  R5   space partitioning representation | includes | constructive solid geometry  (F2)
+  R6   skeletal model | is typically used in | animation  (F6)
+  R7   skeletal model | is typically used in | computer animation  (F6)
+  checks: name_not_in_facts 1; no_triple 2
+
+55/S6  Summarize the lecture's main points and note that implementation order of pipeline stages may vary.
+  C0   three-dimensional graphics pipeline (3D graphics pipeline)  facts F0
+  C1   pipeline stage (pipeline stages, stages)  facts F0
+  C2   sub-stage (sub-stages)  facts F0
+  R0   pipeline stage | is present in an implementation of | three-dimensional graphics pipeline  (F0)
+  R1   pipeline stage | has an order that may differ from the sequence used to show the computations in an implementation of | three-dimensional graphics pipeline  (F0)
+  R2   sub-stage | has an order that may differ from the sequence used to show the computations in an implementation of | three-dimensional graphics pipeline  (F0)
+

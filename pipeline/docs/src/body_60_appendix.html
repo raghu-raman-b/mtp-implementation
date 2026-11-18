@@ -1,0 +1,54 @@
+
+<!-- ======================================================================= APPENDIX -->
+<div class="part-head" data-part="Appendix"><span class="num">Appendix</span><h2 id="appendix" data-toc="Every prompt">Every prompt</h2>
+<p>All 30 files of <code>pipeline/prompts/</code>, with the stage that uses them. Each is shown in full in its stage's
+section; the link goes there.</p></div>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Stage</th><th>Writes or decides</th></tr>
+<tr><td><code>course_meta.txt</code></td><td><a href="#stages">all</a></td><td>the course block (outline, syllabus) inside other prompts</td></tr>
+<tr><td><code>segmentation.txt</code>, <code>segmentation_structural_retry.txt</code>, <code>segmentation_logical_retry.txt</code></td><td><a href="#s1">1a, 1b</a></td><td>segments and sub-goals; retries</td></tr>
+<tr><td><code>segmentation_judge.txt</code></td><td><a href="#s1">tested, not used</a></td><td>does a segment depend on the earlier part</td></tr>
+<tr><td><code>fact_extraction.txt</code></td><td><a href="#s2a">2a</a></td><td>facts with evidence</td></tr>
+<tr><td><code>fact_judge_system.txt</code>, <code>fact_judge.txt</code>, <code>fact_rewrite.txt</code></td><td><a href="#s2b">2b (off)</a></td><td>verdicts on eight properties; rewrites</td></tr>
+<tr><td><code>concept_extraction.txt</code>, <code>concept_relations.txt</code></td><td><a href="#s2c">2c</a></td><td>concepts; relationships</td></tr>
+<tr><td><code>concept_same.txt</code></td><td><a href="#s3">3b</a></td><td>same-concept groups</td></tr>
+<tr><td><code>concept_definition.txt</code></td><td><a href="#s4a">4a</a></td><td>definitions, defined, misplaced</td></tr>
+<tr><td><code>lecture_goals.txt</code>, <code>course_goals.txt</code></td><td><a href="#s4b">4b</a></td><td>objectives and lecture goals; course goals</td></tr>
+<tr><td><code>activity_quiz.txt</code>, <code>activity_recap.txt</code>, <code>activity_open_question.txt</code>, <code>activity_odd_one_out.txt</code>, <code>activity_put_in_order.txt</code>, <code>activity_crossword.txt</code></td><td><a href="#s5">5</a></td><td>the model-made activities</td></tr>
+<tr><td><code>activity_judge_*.txt</code> (six), <code>activity_rewrite.txt</code></td><td><a href="#s5-judge">5</a></td><td>verdicts per criterion; the rewrite turn</td></tr>
+<tr><td><code>qa_system.txt</code>, <code>qa_tools.json</code></td><td><a href="#qa">QA</a></td><td>the answering rules; the five tool descriptions</td></tr>
+</table></div>
+
+<h2 id="schemas" data-toc="Schemas">Schemas</h2>
+<details><summary>The activities contract <span class="meta">pipeline/schemas/activities.md</span></summary><pre data-lang="text" class="wrap">{{FILE:pipeline/schemas/activities.md}}</pre></details>
+<details><summary>The knowledge layer's JSON schema <span class="meta">pipeline/schemas/knowledge.schema.json</span></summary><pre data-lang="json">{{FILE:pipeline/schemas/knowledge.schema.json}}</pre></details>
+
+<h2 id="glossary" data-toc="Glossary of terms">Glossary of terms</h2>
+<div class="tablewrap"><table>
+<tr><th>Term</th><th>Meaning here</th></tr>
+<tr><td>sentence</td><td>a unit of the subtitles after stage 0a, ID <code>lecture/index</code>, with start and end times when they fall on a cue edge</td></tr>
+<tr><td>segment</td><td>the run of sentences in which the learner achieves one sub-goal; ID <code>30/S4</code></td></tr>
+<tr><td>sub-goal</td><td>what the learner can do after a segment, starting with a verb</td></tr>
+<tr><td>objective, lecture goal, course goal</td><td>the three levels above the sub-goals (4b): a run of segments, a lecture, several lectures</td></tr>
+<tr><td>fact</td><td>one complete point of subject knowledge a segment teaches, with the sentences that state it (its evidence)</td></tr>
+<tr><td>segment concept</td><td>a term named in one segment's facts (2c), with <code>defined</code> true when those facts say what it is</td></tr>
+<tr><td>concept</td><td>a course-wide term after the registry (3), ID <code>C0042</code>; defined or connecting</td></tr>
+<tr><td>defined concept</td><td>a concept the course explains; it has a written definition and is in the glossary (1,316)</td></tr>
+<tr><td>connecting concept</td><td>a concept the course only uses; it has a one-sentence role, stays on maps and cards, not in the glossary (1,806)</td></tr>
+<tr><td>relationship</td><td>a directed triple subject – label – object stated by facts; labels are free text</td></tr>
+<tr><td>lecture link</td><td>K → L when lecture L uses a concept K defines; direct, indirect or weak (4c)</td></tr>
+<tr><td>hub concept</td><td>a concept used by more than max(3, 25%) of the lectures; it weighs less in the lecture graph</td></tr>
+<tr><td>knowledge layer</td><td>the folder <code>knowledge/</code> stage 4d writes and checks</td></tr>
+<tr><td>unit</td><td>what one activity call covers: a segment (quiz, recap) or a lecture (the rest)</td></tr>
+<tr><td>code check (hard / soft)</td><td>a rule checked in code on a model answer; hard drops a still-failing item, soft keeps and flags it</td></tr>
+<tr><td>judge</td><td>a model call that checks finished items against named criteria</td></tr>
+<tr><td>unresolved</td><td>every attempt failed a check; the attempt with the fewest problems was kept</td></tr>
+<tr><td>request hash</td><td>the key of the answer cache: engine, model path and the request body</td></tr>
+<tr><td>round (QA)</td><td>one model call in the tool loop; round 0 chooses tools with thinking on</td></tr>
+<tr><td>covered</td><td>the answer's own verdict, from its last line: the course answers the question (yes or partly) or not</td></tr>
+<tr><td>F (Fable), O (Opus), U (user)</td><td>the roles of <code>PLAN.md</code>: Fable plans, writes prompts and gold, reviews; Opus writes scripts, tests and reports; the user decides the design</td></tr>
+<tr><td>gate</td><td>the end of a block: a report, a review by the <code>block-reviewer</code> agent, then “proceed” or “change”</td></tr>
+<tr><td>MVP</td><td>the full-course run of 2026-11-13 (tag <code>mvp-2026-11-13</code>), with 2b, 3b and model-written 4a skipped</td></tr>
+</table></div>
+<p class="small muted" style="margin-top:40px">This page: <code>pipeline/docs/pipeline.html</code>, written for the v3 pipeline as of
+2026-11-17 (main at <code>db10844</code>). One file, no network: styles, scripts and diagrams are inline.</p>

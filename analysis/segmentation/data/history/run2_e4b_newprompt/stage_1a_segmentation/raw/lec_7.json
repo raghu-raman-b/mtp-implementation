@@ -1,0 +1,43 @@
+{
+ "lecture": 7,
+ "model": "gemma-4-e4b",
+ "engine": "llamacpp",
+ "sentences": 156,
+ "ok": true,
+ "errors": [],
+ "answer": [
+  {
+   "start": 1,
+   "subgoal": "Describe the overall historical evolution and phases of Augmented Reality."
+  },
+  {
+   "start": 10,
+   "subgoal": "Describe the key technological advancements and innovations of the experimental phase of AR."
+  },
+  {
+   "start": 51,
+   "subgoal": "Explain the foundational academic research and precursor applications developed during the basic research phase."
+  },
+  {
+   "start": 73,
+   "subgoal": "Detail the types of technical developments and applications that characterized the tools and applications phase."
+  },
+  {
+   "start": 111,
+   "subgoal": "Analyze the turning points and factors driving the commercial adoption and growth of AR."
+  },
+  {
+   "start": 139,
+   "subgoal": "Summarize the main historical milestones and provide resources for further study on AR."
+  }
+ ],
+ "content": "[\n  {\n    \"start\": 1,\n    \"subgoal\": \"Describe the overall historical evolution and phases of Augmented Reality.\"\n  },\n  {\n    \"start\": 10,\n    \"subgoal\": \"Describe the key technological advancements and innovations of the experimental phase of AR.\"\n  },\n  {\n    \"start\": 51,\n    \"subgoal\": \"Explain the foundational academic research and precursor applications developed during the basic research phase.\"\n  },\n  {\n    \"start\": 73,\n    \"subgoal\": \"Detail the types of technical developments and applications that characterized the tools and applications phase.\"\n  },\n  {\n    \"start\": 111,\n    \"subgoal\": \"Analyze the turning points and factors driving the commercial adoption and growth of AR.\"\n  },\n  {\n    \"start\": 139,\n    \"subgoal\": \"Summarize the main historical milestones and provide resources for further study on AR.\"\n  }\n]",
+ "attempts": 1,
+ "history": [],
+ "finish": "stop",
+ "input_tokens": 4876,
+ "output_tokens": 1950,
+ "latency_s": 0.0,
+ "cached": true,
+ "reasoning": "Here's a thinking process to arrive at the desired JSON output:\n\n1.  **Understand the Goal and Constraints:**\n    *   **Goal:** Split a lecture transcript into self-contained, watchable segments.\n    *   **Output Format:** JSON list of objects, each having `\"start\"` (sentence number) and `\"subgoal\"` (verb-starting sentence summarizing what the learner can do).\n    *   **Key Rules (from the prompt):**\n        *   A segment achieves *one* sub-goal (a step toward the whole lecture's goal).\n        *   Sub-goals must be major sections/headings; single examples/asides are not sub-goals.\n        *   Opening/closing remarks are *not* segments themselves; they belong to the first/last segment.\n        *   Cut where a sub-goal is achieved and *closed*.\n        *   A bridge sentence belongs to the *next* segment.\n        *   Segments must stand alone (no reliance on immediately preceding context/pronouns whose meaning is only given earlier).\n\n2.  **Analyze the Transcript Structure (Step 1: Identify Sub-Goals):**\n    *   [1]-[4]: Introduction/Setting the stage (Goal: Talk about AR evolution).\n    *   [5]-[9]: Overall structure/Classification (4 phases).\n    *   [10]-[18]: Detailed description of the 4 Phases (Experimental, Basic Research, Tools/Applications, Commercial Application).\n    *   [19]-[35]: Major developments in the Experimental Phase.\n    *   [36]-[48]: Major developments in the Experimental Phase (Tom Furness/Aircraft).\n    *   [49]-[50]: Connection to VR/VIVED. (Still part of Phase 1 developments).\n    *   [51]-[65]: Major developments in the Basic Research Phase.\n    *   [66]-[72]: Precursors/Early mobile/handheld AR (part of Basic Research/Early Phase 2).\n    *   [73]-[110]: Major developments in the Tools/Applications Phase.\n    *   [111]-[138]: Major developments in the Commercial Application Phase.\n    *   [139]-[156]: Conclusion/Summary.\n\n3.  **Determine the Flow and Segment Breaks (Step 2 & 3: Find Cuts):**\n\n    *   **Segment 1: Introduction & Classification.** (Starts at 1, must include the lecture outline.)\n        *   Goal: Introduce AR evolution and define its phases.\n        *   Start: [1]\n        *   End: The framework is set up in [9] (\"Now, broadly, we can divide it into four phases.\").\n        *   *Check:* The next part [10] dives into Phase 1. This is a logical break.\n        *   *Subgoal:* Describe the overall historical evolution of Augmented Reality. (Covers 1-9).\n\n    *   **Segment 2: Experimental Phase (Introduction & Sutherland).**\n        *   Goal: Detail the earliest developments.\n        *   Start: [10] (Phase 1 begins here).\n        *   End: The detailed examples of Phase 1 are covered up to [35] (Sutherland's prototype).\n        *   *Bridge Check:* [36] introduces Tom Furness, continuing the Phase 1 examples. It's better to keep [36]-[48] with Phase 1.\n        *   *Let's extend Segment 2 to cover all of Phase 1.*\n        *   End: [48] (\"In fact, not only AR displays, those works actually led to major developments in VR displays as well.\"). This concludes the discussion of the Experimental Phase.\n        *   *Subgoal:* Describe the key developments during the experimental phase of AR. (Covers 10-48).\n\n    *   **Segment 3: Basic Research Phase.**\n        *   Goal: Detail the 1990s research.\n        *   Start: [51] (\"Now, once this experimentation phase is over, we enter the basic research phase.\"). This is the perfect start/bridge.\n        *   End: The discussion moves to the *next* phase, the Tools/Applications Phase. This starts with [73].\n        *   End: [72] (\"So, these are true AR-type applications... these are the precursors to this type of application.\"). This wraps up the early/precursor research.\n        *   *Subgoal:* Explain the foundational research and precursor technologies developed in the basic research phase. (Covers 51-72).\n\n    *   **Segment 4: Tools/Applications Phase.**\n        *   Goal: Detail the mid-90s to early 2000s practical applications.\n        *   Start: [73] (\"Now, by the mid-1990s. different things started happening.\") - *Wait, [74] is the formal start of this phase.* Let's use [73] as the start since it serves as a connective thought, but we must ensure it stands alone. [73] is fine (\"Now, by the mid-1990s. different things started happening.\").\n        *   End: The discussion moves to the Commercial Phase, starting at [111].\n        *   End: [110] (\"So as you can see several tools were developed during this phase related to tracking, related to mobile applications and related to applications on wearable devices.\"). This summarizes Phase 3.\n        *   *Subgoal:* Detail the technical advancements and applications developed during the tools and applications phase. (Covers 73-110).\n\n    *   **Segment 5: Commercial Application Phase.**\n        *   Goal: Explain the modern growth and key drivers.\n        *   Start: [111] (\"Finally, we come to the commercial application phase.\").\n        *   End: The lecture concludes with a summary/outlook. The main development points end at [138] (Future growth).\n        *   *Bridge Check:* [139] (\"So, with that, we have come to the end of this lecture.\") signals the closing remarks. We stop just before that.\n        *   End: [138] (\"So, from here we can only expect growth, further growth, and the story continues.\").\n        *   *Subgoal:* Analyze the turning points and growth factors of modern commercial AR adoption. (Covers 111-138).\n\n    *   **Segment 6: Conclusion/Review.**\n        *   Goal: Summarize the learning and provide resources.\n        *   Start: [139] (The closing remarks start here).\n        *   End: [156] (Final goodbyes).\n        *   *Subgoal:* Summarize the key milestones and learning points from the lecture. (Covers 139-156).\n\n4.  **Final Review and JSON Construction:** (Verify all rules are met: stand alone, single sub-goal, correct start/end points.)\n\n    *   S1: [1] to [9]. Goal: Introduce/Describe Phases.\n    *   S2: [10] to [48]. Goal: Experimental Phase.\n    *   S3: [51] to [72]. Goal: Basic Research Phase.\n    *   S4: [73] to [110]. Goal: Tools/Applications Phase.\n    *   S5: [111] to [138]. Goal: Commercial Phase.\n    *   S6: [139] to [156]. Goal: Summary/Conclusion.\n\n5.  **Generate JSON.** (Self-correction: Ensure the phrasing of the subgoal is strong and starts with a verb.)"
+}

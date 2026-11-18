@@ -1,0 +1,237 @@
+57/S0  Explain the basic idea of the viewing pipeline and identify its transformations and operations that support VR resource optimization.
+  C0   virtual reality (VR)  facts F0
+  C1   augmented reality (AR)  facts F0
+  C2   three-dimensional graphics pipeline (3D graphics pipeline)  facts F1
+  C3   viewing pipeline (view transformation) [defined]  facts F1, F2, F3, F4
+  C4   head-mounted display (HMD)  facts F2
+  C5   three-dimensional scene (3D scene)  facts F2, F3
+  C6   two-dimensional display (2D display)  facts F2
+  C7   view plane  facts F2, F3
+  C8   viewing transformation [defined]  facts F3
+  C9   view coordinate system (3D view coordinate system, 2D view coordinate system)  facts F3
+  C10  three-dimensional world coordinate system (3D world coordinate system)  facts F3
+  C11  projection transformation  facts F3
+  C12  two-dimensional view plane (2D view plane)  facts F3
+  C13  window-to-viewport transformation  facts F3
+  C14  two-dimensional device coordinate space (2D device coordinate space)  facts F3
+  C15  clipping  facts F3
+  C16  hidden surface removal  facts F3
+  R0   virtual reality | has more important realistic scene generation than | augmented reality  (F0)
+  R1   virtual reality | requires more resources for realistic scene generation than | augmented reality  (F0)
+  R2   viewing pipeline | is the fourth stage of | three-dimensional graphics pipeline  (F1)
+  R3   viewing pipeline | produces an image on | head-mounted display  (F2)
+  R4   viewing pipeline | selects a portion of | three-dimensional scene  (F2)
+  R5   viewing pipeline | projects the selected portion onto | two-dimensional display  (F2)
+  R6   viewing pipeline | projects the selected portion onto | view plane  (F2)
+  R7   viewing pipeline | consists of | viewing transformation  (F3)
+  R8   viewing pipeline | consists of | projection transformation  (F3)
+  R9   viewing pipeline | consists of | window-to-viewport transformation  (F3)
+  R10  viewing pipeline | consists of | clipping  (F3)
+  R11  viewing pipeline | consists of | hidden surface removal  (F3)
+  R12  viewing transformation | defines | view coordinate system  (F3)
+  R13  viewing transformation | transforms a scene from | three-dimensional world coordinate system  (F3)
+  R14  viewing transformation | transforms a scene to | view coordinate system  (F3)
+  R15  projection transformation | projects | three-dimensional scene  (F3)
+  R16  projection transformation | projects the scene to | two-dimensional view plane  (F3)
+  R17  projection transformation | projects the scene to | view coordinate system  (F3)
+  R18  window-to-viewport transformation | maps the projected scene to | two-dimensional device coordinate space  (F3)
+  R19  clipping | in the described pipeline takes place in | view coordinate system  (F3)
+  R20  hidden surface removal | in the described pipeline takes place in | view coordinate system  (F3)
+
+57/S1  Describe how the 3D viewing transformation uses camera parameters to define a view coordinate system and transform world coordinates into view coordinates.
+  C0   world coordinate system [defined]  facts F0, F2
+  C1   reference frame  facts F0
+  C2   point  facts F0, F4
+  C3   three-dimensional viewing transformation (3D viewing transformation, 3D transformation) [defined]  facts F1, F4
+  C4   world coordinates (3D world coordinate description)  facts F1, F4
+  C5   view coordinates (3D view coordinate description)  facts F1, F4
+  C6   scene  facts F1
+  C7   camera viewing mechanism  facts F1
+  C8   view coordinate system [defined]  facts F1, F2, F3, F4
+  C9   camera parameters [defined]  facts F1, F2
+  C10  camera position [defined]  facts F2
+  C11  origin vector (camera origin vector) [defined]  facts F2, F3
+  C12  view-up point  facts F2, F3
+  C13  vector  facts F2, F3, F4
+  C14  center of interest (look-at point)  facts F2, F3
+  C15  unit basis vector [defined]  facts F3
+  C16  looking direction  facts F3
+  C17  view-up direction  facts F3
+  C18  origin point  facts F3
+  C19  cross product  facts F3
+  C20  translation  facts F4
+  C21  rotation  facts F4
+  C22  composite transformation matrix [defined]  facts F4
+  C23  transformation matrix  facts F4
+  C24  matrix  facts F4
+  C25  view-coordinate axis vector  facts F4
+  C26  scalar component  facts F4
+  R0   world coordinate system | is | reference frame  (F0)
+  R1   point | is defined in | world coordinate system  (F0)
+  R2   three-dimensional viewing transformation | transforms | world coordinates  (F1)
+  R3   three-dimensional viewing transformation | transforms world coordinates into | view coordinates  (F1)
+  R4   three-dimensional viewing transformation | is used to simulate looking at | scene  (F1)
+  R5   three-dimensional viewing transformation | uses the camera viewing mechanism to simulate looking at | scene  (F1)
+  R6   three-dimensional viewing transformation | is performed after defining | view coordinate system  (F1, F4)
+  R7   view coordinate system | is defined from | camera parameters  (F1, F2)
+  R8   camera parameters | are used to set up | view coordinate system  (F2)
+  R9   camera parameters | comprise | camera position  (F2)
+  R10  camera parameters | comprise | view-up point  (F2)
+  R11  camera parameters | comprise | center of interest  (F2)
+  R12  camera position | is represented as | origin vector  (F2)
+  R13  origin vector | is in | world coordinate system  (F2)
+  R14  view-up point | is represented as | vector  (F2)
+  R15  view coordinate system | is defined by | unit basis vector  (F3)
+  R16  view coordinate system | has a basis vector opposite | looking direction  (F3)
+  R17  view coordinate system | has a basis vector obtained from | origin vector  (F3)
+  R18  view coordinate system | has a basis vector obtained from | center of interest  (F3)
+  R19  view coordinate system | has a basis vector along | view-up direction  (F3)
+  R20  view coordinate system | has a basis vector obtained from | vector  (F3)
+  R21  vector | is from | origin point  (F3)
+  R22  vector | is directed to | view-up point  (F3)
+  R23  view coordinate system | has a basis vector formed by | cross product  (F3)
+  R24  three-dimensional viewing transformation | is performed by | translation  (F4)
+  R25  three-dimensional viewing transformation | is performed by | rotation  (F4)
+  R26  three-dimensional viewing transformation | uses | composite transformation matrix  (F4)
+  R27  composite transformation matrix | is the product of | transformation matrix  (F4)
+  R28  transformation matrix | is a kind of | matrix  (F4)
+  R29  point | in view coordinates is obtained by multiplying its world-coordinate vector by | composite transformation matrix  (F4)
+  R30  transformation matrix | is formed from | view-coordinate axis vector  (F4)
+  R31  transformation matrix | is formed from | scalar component  (F4)
+  checks: reverse 4; no_triple 1
+
+57/S2  Explain projection transformation, including perspective and parallel projection, view volume and canonical view volume, and the matrix steps used to project points onto the view plane.
+  C0   projection transformation [defined]  facts F0, F13
+  C1   three-dimensional view coordinate system (3D view coordinate system)  facts F0, F4, F5, F11, F12, F13
+  C2   view plane (clipping window, 2D view plane) [defined]  facts F0, F1, F2, F4, F5, F6, F11, F12, F13
+  C3   view volume [defined]  facts F2, F3, F6, F7, F8, F9, F13
+  C4   clipping [defined]  facts F3, F13
+  C5   perspective projection [defined]  facts F4, F6, F8, F10, F12
+  C6   projector  facts F4, F5
+  C7   center of projection (point of projection) [defined]  facts F4, F5, F12
+  C8   parallel projection [defined]  facts F5, F6, F8, F9, F11, F12
+  C9   frustum  facts F6, F7, F10
+  C10  naive clipping method [defined]  facts F7
+  C11  canonical view volume [defined]  facts F8, F9, F10, F13
+  C12  unit cube  facts F8, F9, F10
+  C13  scaling  facts F9, F10
+  C14  shearing  facts F10
+  C15  point vector  facts F11, F12
+  C16  parallel projection matrix [defined]  facts F11, F12
+  C17  origin  facts F11, F12
+  C18  homogeneous coordinate value  facts F11, F12
+  C19  homogeneous factor (w)  facts F11, F12
+  C20  cartesian coordinate  facts F11, F12
+  C21  perspective projection matrix [defined]  facts F12
+  C22  world coordinate system  facts F13
+  R0   projection transformation | maps objects described in a | three-dimensional view coordinate system  (F0)
+  R1   projection transformation | maps objects to a | view plane  (F0)
+  R2   view volume | defines the portion of the scene that is projected onto the | view plane  (F2)
+  R3   clipping | is the process of discarding objects outside the | view volume  (F3)
+  R4   clipping | takes place before | projection transformation  (F3)
+  R5   perspective projection | is a projection type in which the projectors are not parallel and converge at a | center of projection  (F4)
+  R6   perspective projection | uses projectors from objects in a | three-dimensional view coordinate system  (F4)
+  R7   perspective projection | projects onto the | view plane  (F4)
+  R8   parallel projection | is a projection type in which the projectors are parallel and never meet at a | center of projection  (F5)
+  R9   parallel projection | uses projectors to the | view plane  (F5)
+  R10  parallel projection | has a rectangular parallelepiped-shaped | view volume  (F6)
+  R11  perspective projection | has a | frustum  (F6)
+  R12  view volume | has one face or side serving as the | view plane  (F6)
+  R13  naive clipping method | is computationally intensive for arbitrarily shaped | view volume  (F7)
+  R14  naive clipping method | is computationally intensive for arbitrarily shaped view volumes such as the | frustum  (F7)
+  R15  frustum | is an example of an arbitrarily shaped | view volume  (F7)
+  R16  canonical view volume | is a normalized | unit cube  (F8)
+  R17  view volume | is converted into a | canonical view volume  (F8)
+  R18  view volume | for parallel projection is converted into a | canonical view volume  (F8)
+  R19  view volume | for perspective projection is converted into a | canonical view volume  (F8)
+  R20  canonical view volume | for parallel projection is obtained by | scaling  (F9)
+  R21  view volume | for parallel projection is scaled into a | unit cube  (F9)
+  R22  canonical view volume | for perspective projection is obtained by converting the | frustum  (F10)
+  R23  canonical view volume | for perspective projection requires | scaling  (F10)
+  R24  canonical view volume | for perspective projection requires | shearing  (F10)
+  R25  frustum | is converted into a normalized | unit cube  (F10)
+  R26  parallel projection | is computed by multiplying a point vector in a three-dimensional view coordinate system by a | parallel projection matrix  (F11)
+  R27  parallel projection matrix | contains the distance D of the clipping window from the | origin  (F11)
+  R28  homogeneous coordinate value | is divided by the | homogeneous factor  (F11, F12)
+  R29  homogeneous coordinate value | is divided to obtain | cartesian coordinate  (F11, F12)
+  R30  perspective projection | is computed by multiplying a point vector in a three-dimensional view coordinate system by a | perspective projection matrix  (F12)
+  R31  perspective projection matrix | contains the distance D from the clipping window to the | center of projection  (F12)
+  R32  center of projection | is typically assumed to be at the | origin  (F12)
+  R33  world coordinate system | has its point transformed to the | three-dimensional view coordinate system  (F13)
+  R34  view volume | is transformed to a canonical view volume before | clipping  (F13)
+  R35  canonical view volume | has its point projected onto the | view plane  (F13)
+  R36  projection transformation | projects the point in the canonical view volume onto the | view plane  (F13)
+  checks: no_shared_fact 1; reverse 2; no_triple 2
+  retried turn 2: 2 attempts, kept 2; lost nothing; added nothing
+
+57/S3  Describe how the window-to-viewport transformation maps a projected point from an abstract window to a device-specific viewport.
+  C0   window (normalized clipping window, view plane) [defined]  facts F0, F1, F2, F3
+  C1   display (screen)  facts F0, F1
+  C2   viewport [defined]  facts F1, F2, F3
+  C3   device space  facts F1
+  C4   scene  facts F1
+  C5   window-to-viewport transformation [defined]  facts F2, F3, F4
+  C6   window point  facts F2, F4
+  C7   viewport point  facts F2, F4
+  C8   window-to-viewport transformation matrix (transformation matrix) [defined]  facts F3, F4
+  C9   homogeneous coordinate representation  facts F4
+  C10  cartesian point  facts F4
+  R0   window | is an abstract intermediate representation that has nothing to do with | display  (F0)
+  R1   viewport | is not defined on | window  (F1)
+  R2   viewport | is defined in | device space  (F1)
+  R3   viewport | is a portion of | display  (F1)
+  R4   viewport | is defined with respect to the origin and dimensions of | display  (F1)
+  R5   viewport | is the portion of the display where | scene  (F1)
+  R6   window-to-viewport transformation | maps a point from | window  (F2)
+  R7   window-to-viewport transformation | maps a point to | viewport  (F2)
+  R8   window-to-viewport transformation | maps a window point to a | viewport point  (F2)
+  R9   window point | is mapped to a viewport point by the | window-to-viewport transformation  (F2)
+  R10  window-to-viewport transformation matrix | is used in | window-to-viewport transformation  (F3)
+  R11  window-to-viewport transformation matrix | is defined in terms of the dimensions of | viewport  (F3)
+  R12  window-to-viewport transformation matrix | is defined in terms of the dimensions of | window  (F3)
+  R13  viewport point | is obtained by multiplying a window point vector by the | window-to-viewport transformation matrix  (F4)
+  R14  window point | is multiplied by the transformation matrix to obtain a viewport point in | homogeneous coordinate representation  (F4)
+  R15  cartesian point | is obtained by dividing the homogeneous result by W from | homogeneous coordinate representation  (F4)
+
+57/S4  Explain how clipping and hidden surface removal discard unnecessary geometry before projection and reduce rendering computation.
+  C0   clipping [defined]  facts F0
+  C1   view volume  facts F0, F1
+  C2   object  facts F0, F1
+  C3   projection  facts F0
+  C4   vertex (vertices)  facts F0
+  C5   computational complexity  facts F0, F1
+  C6   hidden surface removal [defined]  facts F1
+  C7   surface  facts F1
+  C8   surface point  facts F1
+  C9   viewer position  facts F1
+  C10  occlusion (occluded)  facts F1
+  C11  scene  facts F1
+  C12  rendering (rendered)  facts F1
+  R0   clipping | defines | view volume  (F0)
+  R1   clipping | discards | object  (F0)
+  R2   object | discarded by clipping is outside | view volume  (F0)
+  R3   clipping | is performed before | projection  (F0)
+  R4   projection | is applied to fewer | vertex  (F0)
+  R5   clipping | reduces | computational complexity  (F0)
+  R6   hidden surface removal | identifies and removes | object  (F1)
+  R7   hidden surface removal | identifies and removes | surface  (F1)
+  R8   hidden surface removal | identifies and removes | surface point  (F1)
+  R9   object | identified and removed by hidden surface removal is inside | view volume  (F1)
+  R10  surface | identified and removed by hidden surface removal is inside | view volume  (F1)
+  R11  surface point | identified and removed by hidden surface removal is inside | view volume  (F1)
+  R12  object | is not visible from a particular | viewer position  (F1)
+  R13  surface | is not visible from a particular | viewer position  (F1)
+  R14  surface point | is not visible from a particular | viewer position  (F1)
+  R15  object | is not visible because of | occlusion  (F1)
+  R16  surface | is not visible because of | occlusion  (F1)
+  R17  surface point | is not visible because of | occlusion  (F1)
+  R18  hidden surface removal | is performed before | rendering  (F1)
+  R19  rendering | is applied to | scene  (F1)
+  R20  hidden surface removal | reduces | computational complexity  (F1)
+  checks: name_not_in_facts 3
+
+57/S5  Summarize the main points of the lecture and preview the next pipeline stage.
+  C0   graphics pipeline  facts F0
+  C1   scan conversion  facts F0
+  R0   scan conversion | is the fifth stage of | graphics pipeline  (F0)
+
