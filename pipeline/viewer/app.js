@@ -1715,7 +1715,7 @@ function fileMedia(L, onState, onFail) {
     node: v, kind: "file",
     play() { const p = v.play(); return p && p.catch ? p.catch(() => { onState("blocked"); }) : null; },
     pause() { v.pause(); },
-    time() { return v.readyState >= 1 ? v.currentTime : pending != null ? pending : v.currentTime; },
+    time() { return pending != null ? pending : v.currentTime; },  // a seek not applied yet wins (metadata may still be loading)
     seek(t) { pending = t; if (v.readyState >= 1) { try { v.currentTime = t; } catch (e) { /* not seekable yet */ } pending = null; } },
     paused() { return v.paused; },
     rate(r) { v.playbackRate = r; },
