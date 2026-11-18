@@ -11,8 +11,11 @@ playback). Lecture 63's segment map is removed in the copy, so one lecture has n
 Servers listen on free ports (never 8094 or 8095, the SSH forward to the EC2).
 
 What it looks for (each line is what a broken viewer server would show):
-  static     the page, app.js, style.css or the vendored dagre or KaTeX (js, css, a woff2 font) or math.js not served, or served with the wrong type;
-             a path outside the viewer folder served (../)
+  static     the page, app.js, style.css or the vendored dagre or KaTeX (js, css, a woff2 font) or math.js or the
+             vendored Geist fonts (woff2) not served, or served with the wrong type; a path outside the viewer folder
+             served (../)
+  samples    /api/samples (viewer/sample_questions.json, the Ask screen's sample questions) not served as JSON with
+             {"questions": [{"q", "category", "lecture"}]}
   course     /api/course missing a lecture of titles.tsv, the layers not reported, a lecture's goal or flags wrong
   lecture    a lecture route failing; segments missing; knowledge not used where it exists (1-8), the 1b fallback
              not used where it does not (9-62); a lecture with no layer at all (63) failing instead of answering
@@ -38,11 +41,14 @@ What it looks for (each line is what a broken viewer server would show):
              card, in the glossary, with its definition anywhere in any route's JSON, or a map node (view, map.nodes,
              coursemap, activity maps) not flagged "connecting"; part titles not null without
              stage_4e_part_titles/titles.json, wrong with one (ok false -> null), or not picked up after a change
-  versioned  index.html without ?v= on its static files; a versioned file without the long immutable cache
+  versioned  index.html without ?v= on its static files (the fonts included); a versioned file without the long
+             immutable cache
   stream     /api/ask_stream: not one JSON event per line, the qa's step/draft/reset events not passed on in order,
              no final "done" with the answer; a qa without answer_stream or no qa: not a single "done" like /api/ask
   js         app.js not valid JavaScript (node --check, when node is installed); app.js fetching the big knowledge
-             files (/data/knowledge/...) instead of the lean routes
+             files (/data/knowledge/...) instead of the lean routes; the page loading fonts or scripts from outside
+             (Google Fonts, a CDN) instead of the vendored copies; answers not typeset with renderMath, or the sample
+             questions not read from /api/samples
   output     any file under the real output/ created or changed
 """
 from __future__ import annotations
@@ -319,7 +325,9 @@ def test_full(srv: Server, root: Path):
                         ("/static/vendor/katex/katex.min.js", "javascript"),
                         ("/static/vendor/katex/contrib/auto-render.min.js", "javascript"),
                         ("/static/vendor/katex/katex.min.css", "text/css"),
-                        ("/static/vendor/katex/fonts/KaTeX_Main-Regular.woff2", "font/woff2")):
+                        ("/static/vendor/katex/fonts/KaTeX_Main-Regular.woff2", "font/woff2"),
+                        ("/static/vendor/fonts/Geist-Variable.woff2", "font/woff2"),
+                        ("/static/vendor/fonts/GeistMono-Variable.woff2", "font/woff2")):
         code, hd, body = srv.get(path)
         check(code == 200 and ctype in hd.get("Content-Type", "") and len(body) > 100, f"{path} served ({code})")
     code, _, _ = srv.get("/static/../serve.py")
@@ -486,12 +494,24 @@ def test_lean(srv: Server, root: Path):
 
     test_display(srv, root)
 
+    print("samples", flush=True)
+    code, hd, body = srv.get("/api/samples")
+    try:
+        qs = json.loads(body)["questions"]
+    except (ValueError, KeyError, TypeError):
+        qs = None
+    check(code == 200 and "json" in hd.get("Content-Type", "") and qs and all(isinstance(q.get("q"), str) and q["q"]
+          and "category" in q and "lecture" in q for q in qs), f"/api/samples gives the sample questions ({code})")
+
     print("versioned", flush=True)
     code, hd, body = srv.get("/")
     import re as _re
     refs = _re.findall(r'/static/([\w./-]+)\?v=(\w+)"', body.decode())
-    check(code == 200 and {r[0] for r in refs} >= {"app.js", "style.css", "vendor/dagre.min.js"},
+    check(code == 200 and {r[0] for r in refs} >= {"app.js", "style.css", "vendor/dagre.min.js", "vendor/fonts/Geist-Variable.woff2",
+                                                   "vendor/fonts/GeistMono-Variable.woff2"},
           f"index.html names its static files with ?v= ({len(refs)})")
+    check("fonts.googleapis" not in body.decode() and not _re.search(r'src="https?:', body.decode()),
+          "the page loads no font or script from outside (vendored copies only)")
     code, hd, _ = srv.get(f"/static/{refs[0][0]}?v={refs[0][1]}")
     check(code == 200 and "immutable" in hd.get("Cache-Control", "") and "max-age=31536000" in hd.get("Cache-Control", ""),
           f"a versioned static file is cached for good ({hd.get('Cache-Control')})")
@@ -730,6 +750,8 @@ def main():
     js = (ROOT / "viewer" / "app.js").read_text()
     check("/data/knowledge" not in js and "/data/activities" not in js and "/api/ask_stream" in js,
           "app.js reads only the lean routes (no /data/knowledge files) and asks through /api/ask_stream")
+    check("renderMath(" in js and "/api/samples" in js and "fonts.googleapis" not in js,
+          "app.js typesets answers with renderMath, reads the sample questions from /api/samples, loads no outside font")
     print("output", flush=True)
     check(snapshot(ROOT / "output") == before, "nothing under the real output/ created or changed")
     if not a.keep and not FAILURES:
