@@ -159,6 +159,11 @@ only when the user asks.
 - **11:18**: O1 merged (b405a4c..14f4743; user waived the review: "it did the tests"). Screens in
   `analysis/viewer/design_c_screens/`; home 211->140 kB. Sample questions file is a placeholder until the baseline
   runner's demo_questions.json. Only the baseline runner is still running; docs at 15:03.
+- **11:30 plan (user)**: the baseline runner only finishes gpu_all.sh + run-side numbers, no judging. At 15:03 in
+  parallel: a fresh Opus judge (remaining ~335 answers, then summarize/figures/demo_questions by script), S8 `--no-qa`
+  (serve.py, python -m demo run, run_demo.ps1), O4 targeted docs: demo loading (no GPU / local GPU / EC2 / Windows),
+  what-fails table, baseline section (method, results, strengths/weaknesses of each, how ours overcomes them) after the
+  judge. Nothing about the viewer or part titles in the docs. Sample questions filled after the judge (~16:30).
 - Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
   (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
 - Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;
