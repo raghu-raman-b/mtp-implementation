@@ -7,7 +7,9 @@
 
     powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1
     powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Instance ubuntu@1.2.3.4 -Key C:\keys\demo.pem
+    powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -NoQa
 
+  -NoQa        no GPU instance, key, tunnel or embedder: the viewer without Ask (it shows "question answering is off")
   -Check       instead of starting: check a running demo (another window): tunnel, model, embedder vectors,
                viewer routes, one question with its timings
   -Bench       instead of starting: time the DEMO_PLAN questions through the running demo
@@ -25,6 +27,7 @@ param(
   [int]$Port = 8765,
   [switch]$LocalEmbed,
   [switch]$NoBrowser,
+  [switch]$NoQa,
   [switch]$Check,
   [switch]$Bench,
   [switch]$Push,
@@ -51,8 +54,9 @@ else {
   $a = @("-m", "demo", "run", "--port", "$Port")
   if ($Media) { $a += @("--media", $Media) }
   if ($NoBrowser) { $a += "--no-browser" }
+  if ($NoQa) { $a += "--no-qa" }
 }
-if (-not $Bench) {
+if (-not $Bench -and -not $NoQa) {
   if ($Instance) { $a += @("--instance", $Instance) }
   if ($Key) { $a += @("--key", $Key) }
   if ($LocalEmbed) { $a += "--local-embed" }
