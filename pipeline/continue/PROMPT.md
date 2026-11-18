@@ -140,6 +140,12 @@ only when the user asks.
 - O3: ours does not need a rerun (layer unchanged); GPU order S6 -> O3 -> O5.
 - **O4 also documents the demo setup on a Windows machine** (user, 10:15): setup_windows.ps1, run_demo.ps1 (-Check,
   -Bench, -Push), python -m demo, tunnel to the instance; mark it untested on real Windows until the rehearsal.
+- **10:25**: S1, S2, S3 merged. User picked **design C (Signal)** with changes (home: no stats, no course goals,
+  keep the 12-week route and the dev mode toggle; player: subtitles centred; an activity hides subtitles and controls
+  and blurs the video). Mockups + changes: `analysis/demo/design_c/`. O1 (Opus) building since 10:25 (C's Ask rail,
+  B's raw tool-call trace as a collapsed detail per step; null part title -> "Part N").
+  New schedule: S7 ~11:00, S6 ~11:30, O1 ~14:30 + review ~15:15, O3 11:30-17:00, O4 15:15-18:00 (baselines last),
+  O5 17:00-18:30.
 - Running since 10:10 (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only, S3 KaTeX, S6 part titles
   (local GPU), S7 failure inventory. Design pick: the user gives it soon (gates O1).
 - Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;

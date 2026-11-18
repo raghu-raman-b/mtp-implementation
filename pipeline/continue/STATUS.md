@@ -1,3 +1,11 @@
+PIPELINE v3 STATUS - DEMO PREP  (updated 10:25 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
+
+MERGED: S1 display rules (075f045), S2 QA facts-only (5ef2d4b), S3 KaTeX (7620342); design C mockups + user's changes
+  in analysis/demo/design_c/ (7021d51)
+RUNNING: O1 design C build (Opus, ~14:30 + review), S6 part titles (local GPU, ~11:30), S7 failure inventory (~11:00)
+NEXT: O3 baselines (GPU after S6, ~17:00); O4 docs from ~15:15 (baselines added after O3, ~18:00); O5 DEMO_PLAN
+  (GPU after O3, ~18:30); rehearsal after the user's docs + slides
+
 PIPELINE v3 STATUS - DEMO PREP WAVE 1  (updated 10:15 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
 
 RUNNING (Sonnet, worktrees): S1 serve.py display rules, S2 QA facts-only for connecting concepts, S3 KaTeX offline,
