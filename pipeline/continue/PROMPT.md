@@ -169,6 +169,16 @@ only when the user asks.
 - Schedule: S3 ~10:30, S2 ~10:45, S1 ~10:50, S7 ~11:15, S6 ~11:30; O1 11:00-15:45 (if picked by 11:00); O3 11:30-17:00;
   O5 17:00-18:30; O4 17:00-19:00; rehearsal after the user's docs + slides.
 
+- **2026-11-19 (new session)**: the 15:03 jobs never ran (session crons died with the session). Baseline GPU runs
+  had finished 11-18 ~13:11 (all 8 systems x 53 + repeats r2/r3 on 28 for ours/rag/rag_think); committed + pushed on
+  the baseline branch (6c20dff). **User: judge with Sonnet.** To keep one judge across systems, Sonnet re-judges all
+  592 answers (4 parallel Sonnet agents, packets todo_00-21 -> judge/sonnet_{A,B,C,D}.jsonl -> judgments.jsonl); the
+  257 Opus judgments moved to judgments_opus.jsonl and serve as a second-judge agreement check
+  (`judge_agreement.py` -> judge_agreement.md). Running in parallel: S8 `--no-qa` (Sonnet, worktree; serve.py
+  --no-qa, `python -m demo run --no-qa`, `run_demo.ps1 -NoQa`), O4 docs part 1 (Opus, worktree: demo loading in 4
+  setups + what-fails table). After judging: merge judgments, summarize.py, figures.py, run_stats.py,
+  judge_agreement.py; O4 part 2 (baseline section); sample_questions.json from demo_questions.json; merge all to main.
+
 ### FINAL TASK LIST (user-approved 2026-11-18 00:25; supersedes "Next" below). Sonnet = simple, Opus = complex.
 Baselines: finish GraphRAG (run it WITH source text units, and also without) + add two ablations of ours
 (facts only = fact_lookup alone; graph only = concept cards/prerequisites/overview/goals, no fact search) + RAG with

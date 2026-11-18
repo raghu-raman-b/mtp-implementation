@@ -1,3 +1,11 @@
+PIPELINE v3 STATUS - DEMO PREP, FINAL STEPS  (updated 19 Nov; full state: pipeline/continue/PROMPT.md)
+
+DONE: baseline GPU runs (all systems, repeats; committed 6c20dff on the baseline branch)
+RUNNING: Sonnet re-judges all 592 baseline answers (4 agents; Opus's 257 kept for agreement); S8 --no-qa (Sonnet);
+  O4 docs part 1: demo loading + what-fails table (Opus)
+NEXT: summary/tables/figures/demo_questions -> O4 part 2 (baseline section) -> sample questions -> merge to main
+DEFERRED (user): DEMO_PLAN rewrite, rehearsal after the user's docs + slides
+
 PIPELINE v3 STATUS - DEMO PREP  (updated 10:53 IST, 18 Nov; full state: pipeline/continue/PROMPT.md)
 
 MERGED: S1 display rules, S2 QA facts-only, S3 KaTeX, S6 part titles (386/386 ok, 49f7ef4), S7 failure inventory
