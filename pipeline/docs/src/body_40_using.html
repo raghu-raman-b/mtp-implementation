@@ -2,7 +2,7 @@
 <!-- ======================================================================= PART IV -->
 <div class="part-head" data-part="IV · Using it"><span class="num">Part IV · Using it</span><h2 id="using" data-toc="Running it">Running it</h2>
 <p>How long a run takes, how to get from a fresh clone to a running viewer, how to run or rerun one stage, the EC2
-workflow and the demo. Then the reference: the Python API, every command line, the HTTP routes, the configs and the
+workflow and the four ways to run the demo. Then the reference: the Python API, every command line, the HTTP routes, the configs and the
 environment variables. Commands run from <code>pipeline/</code> unless they say otherwise.</p></div>
 
 <h3 id="timing" data-toc="Time estimates">Time estimates</h3>
@@ -40,20 +40,10 @@ request alone. The lir-construction README measured the same model at 752 tokens
 <pre data-lang="bash">git clone --depth 1 --filter=blob:none --sparse https://github.com/raghu-raman-b/mtp-implementation.git
 cd mtp-implementation &amp;&amp; git sparse-checkout set pipeline
 cd pipeline
-python3 viewer/serve.py nptel_vr              # http://localhost:8765 ; add ?dev=1 for developer mode</pre>
+python3 viewer/serve.py nptel_vr --no-qa      # http://localhost:8765 ; add ?dev=1 for developer mode</pre>
 <p>Python 3.11 or newer (configs are read with <code>tomllib</code>). The viewer and most stages need only the standard
-library. The question box needs more:</p>
-<ul>
-<li>the query embedder: <code>torch</code> and <code>sentence-transformers</code> (the local PC runs <code>torch==2.14.1</code>,
-<code>sentence-transformers==6.1.0</code>, <code>transformers==5.15.0</code>; <code>Qwen/Qwen3-Embedding-0.6B</code> downloads on first use);</li>
-<li>a model server: llama.cpp's <code>llama-server</code> and the Gemma 4 12B QAT GGUF (6.72 GB). The local config
-<code>configs/gemma4_12b_llamacpp.json</code> names this PC's binary, model path and toolbox; on another machine edit
-<code>binary</code> and <code>model_path</code>, or point <code>QA_CONFIG</code> at another config. On an Ubuntu GPU machine,
-<code>demo/setup_demo.sh</code> does all of it (<a href="#demo">Demo</a>).</li>
-</ul>
-<pre data-lang="bash">python3 viewer/serve.py nptel_vr --warm       # loads the layer, the embedder and the model at start
-python3 -m qa "What is an HMD?" --lecture 4    # one question from the command line
-python3 -m qa --stop                           # stop the model server it started</pre>
+library. The question box (Ask) needs a model server and the query embedder; the four ways to run it, from no GPU to
+a cloud instance and a Windows laptop, are in <a href="#demo">Running the demo</a>.</p>
 
 <h3 id="run-stage" data-toc="Running one stage">Running one stage, or the whole course</h3>
 <p>Each stage is one script with the course name, an optional <code>--only</code> and, for model stages, <code>--llm
@@ -129,12 +119,180 @@ are merged into <code>pipeline/output/</code> (the local cache must be a prefix 
 (<code>tests/fake_*.py</code>).</li>
 </ul>
 
-<h3 id="demo" data-toc="The demo">The demo</h3>
-<span class="redesign">As of 2026-11-17 · being redesigned</span>
-<p>As on main: the viewer and its question box run on one GPU instance, and the laptop reaches it through an SSH port
-forward. <code>demo/setup_demo.sh</code> sets it all up; <code>demo/check_demo.sh</code> checks it end to end
-(<code>pipeline/demo/README.md</code>). Another agent is changing this setup to keep only the model on the server
-(<a href="#deploy">the design</a>).</p>
+<h3 id="demo" data-toc="Running the demo">Running the demo: four setups</h3>
+<p>The viewer, the layers and the videos always run on the machine that shows the page. The setups differ in where
+the model that answers questions runs, or whether there is one. Commands run from <code>pipeline/</code>; the
+PowerShell scripts run from the repository folder. Ports: 8765 the viewer; 8092 the local llama-server; on an
+instance 8096 the model server and 8097 the query embedder, reached through an SSH tunnel on the same port numbers.</p>
+<div class="tablewrap"><table>
+<tr><th>Setup</th><th>Ask</th><th>Model and query embedder</th><th>This machine needs</th><th>Start</th></tr>
+<tr><td><a href="#demo-nogpu">1. No GPU</a></td><td>off</td><td>none</td><td>Python 3.11 or newer</td><td><code>python3 viewer/serve.py nptel_vr --no-qa</code></td></tr>
+<tr><td><a href="#demo-local">2. Local GPU</a></td><td>on</td><td>Gemma 4 12B on llama-server here, started by <code>qa</code>; the embedder here</td><td>an NVIDIA GPU (12 GB is enough), llama.cpp, the GGUF, torch and sentence-transformers</td><td><code>python3 viewer/serve.py nptel_vr --warm</code></td></tr>
+<tr><td><a href="#demo-remote">3. Remote GPU instance</a></td><td>on</td><td>on the instance (llama.cpp or vLLM, and the embedder), through an SSH tunnel</td><td>Python 3.11 or newer, numpy, an SSH client</td><td>instance: <code>demo/ec2_model_server.sh --engine llamacpp</code>; here: <code>python -m demo run</code></td></tr>
+<tr><td><a href="#demo-windows">4. Windows laptop</a></td><td>on</td><td>as in 3</td><td>Python 3.11 or newer (3.12 recommended), the OpenSSH client</td><td><code>setup_windows.ps1</code> once, then <code>run_demo.ps1</code></td></tr>
+</table></div>
+<div class="callout warn"><span class="tag">Not yet run for real · as of 2026-11-19</span>
+<p>Setups 3 and 4 have run only with the local PC standing in for the instance and a simulated 250 ms tunnel
+(<code>analysis/demo/remote_setup.md</code>): <code>ec2_model_server.sh</code> has not run on a real instance (no apt, no
+llama.cpp build, no downloads, no server start), its vLLM branch has not run at all, and the PowerShell scripts are
+<b>untested on real Windows until the rehearsal</b>. The rehearsal's checklist is in <code>remote_setup.md</code>,
+“Checklist for the user”.</p></div>
+
+<h4 id="demo-nogpu">1. No GPU: the viewer only, Ask off</h4>
+<p>Every page works (lectures, activities, maps, glossary, videos); the question box is off, so nothing loads a model,
+the embedder or numpy. Any OS with Python 3.11 or newer. <code>--no-qa</code> (the viewer, the launcher and
+<code>run_demo.ps1</code>) is new on 2026-11-19.</p>
+<pre data-lang="bash">python3 viewer/serve.py nptel_vr --no-qa                                      # any OS
+python -m demo run --no-qa                                                     # the same through the launcher
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -NoQa      # Windows, after setup_windows.ps1</pre>
+<p><b>Videos</b> (5.5 GB) are not in git and are optional: the viewer reads <code>input/nptel_vr/media/</code> or the folder
+given with <code>--media</code>, and plays a lecture without a file from YouTube (by the <code>youtube_id</code> in
+<code>titles.tsv</code>; the machine then needs internet). <code>--prefer-youtube</code> (or <code>?yt=1</code>) uses YouTube
+even when the files are there.</p>
+
+<h4 id="demo-local">2. Local GPU: llama-server started by <code>qa</code></h4>
+<p>How the local PC runs it, with Gemma 4 12B QAT on its 12 GB RTX 5070 (median 4.9 s per question). Needs:</p>
+<ul>
+<li>an NVIDIA GPU and llama.cpp's <code>llama-server</code> built for it (the PC runs commit <code>69eb250</code>, built
+2026-09-15, the <code>LLAMA_REF</code> of the instance script);</li>
+<li>the model <code>unsloth/gemma-4-12B-it-qat-GGUF</code>, file <code>gemma-4-12B-it-qat-UD-Q4_K_XL.gguf</code> (revision
+<code>980b060</code>, 6.72 GB);</li>
+<li>the query embedder in the same Python: numpy, <code>torch==2.14.1</code>, <code>sentence-transformers==6.1.0</code>,
+<code>transformers==5.15.0</code>; <code>Qwen/Qwen3-Embedding-0.6B</code> (1.2 GB) downloads on first use;</li>
+<li>the config <code>configs/gemma4_12b_llamacpp.json</code> (port 8092, 6 slots, 131,072 context, q8_0 KV cache,
+thinking budget 8,192). It names this PC's <code>binary</code> and <code>model_path</code> and runs the server in the Fedora
+toolbox <code>llm-engine</code>. On another machine set <code>binary</code> and <code>model_path</code> and set
+<code>toolbox</code> to <code>""</code> (else the start stops: “toolbox is set in the config but the toolbox command is not
+installed”), or give another config with <code>QA_CONFIG</code>.</li>
+</ul>
+<pre data-lang="bash">python3 viewer/serve.py nptel_vr --warm          # Ask on; loads the layer, the embedder and the model at start
+python3 -m qa "What is an HMD?" --lecture 4      # one question from the command line
+python3 -m qa --stop                             # stop the llama-server on the config's port</pre>
+<p><b>How <code>qa</code> starts and stops its server.</b> The local config does not set <code>"launch": false</code>, so the
+client launches: at the first question, or at start with <code>--warm</code>, it checks the config's port. When nothing
+answers it starts <code>llama-server</code> with the config's flags (inside the toolbox when one is set) in a session of
+its own, logs to <code>output/logs/llm_server_8092.log</code>, waits for <code>/health</code> and attaches. A server that
+already answers on the port is used as it is; one that serves another model is refused. The server is left running
+when the viewer or <code>python -m qa</code> exits, so the next start does not wait for the load. <code>python3 -m qa
+--stop</code> stops it (<code>pkill</code> of llama-server on the config's port; Linux and macOS only, and not for a config
+that points at another machine). Without <code>--warm</code>, the first question that searches the facts waits 20–23 s
+for the embedder to load.</p>
+
+<h4 id="demo-remote">3. Remote GPU instance: the model there, everything else here</h4>
+<p>The instance only serves the model and the query embedder, both on 127.0.0.1 (no port open but SSH). The viewer,
+<code>qa</code>'s tool loop, the layer and the videos run on the laptop; only the model's requests (a few thousand
+tokens of text per call) and the embedder's queries cross the tunnel (<a href="#deploy">the design</a>,
+<code>pipeline/demo/README.md</code> section A).</p>
+<p><b>The instance needs</b> an NVIDIA GPU with the AMI “Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 24.04)”
+(driver, CUDA toolkit, Python 3.12; on Ubuntu 22.04 install python3.12 and set <code>PYTHON=python3.12</code>), a
+security group with SSH only, a 100 GB root volume. For llama.cpp any NVIDIA GPU with 16 GB or more (a g6.xlarge with
+an L4 or a g5.xlarge with an A10G is enough). For vLLM 40 GB or more (an L40S, an A100, the RTX PRO 6000: it serves the
+BF16 checkpoint, 24 GB of weights; <code>FORCE=1</code> overrides the check) and a Hugging Face token with access to
+<code>google/gemma-4-12B-it</code> (<code>HF_TOKEN</code> or <code>pipeline/.hf_token</code>). vLLM was benchmarked at a
+median of 4.5 s and a maximum of 6.6 s per question on the RTX PRO 6000, with the viewer on the same machine
+(<code>configs/gemma4_12b_vllm_demo.json</code>, <code>analysis/qa/STATE.md</code>).</p>
+<pre data-lang="bash"># from the laptop: copy the ~150 kB the instance needs to ~/mtp-demo/pipeline, run the setup there in tmux "setup",
+# and show its output (--no-start: copy only)
+python -m demo push --instance ubuntu@&lt;ip&gt; --key ~/demo.pem --engine llamacpp      # or --engine vllm
+
+# or on the instance itself
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --engine llamacpp     # or --engine vllm; no flag: it asks
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --status              # which ports answer, the tmux sessions, the tunnel command
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --stop                # stops both servers (tmux model and embed)</pre>
+<p><b><code>ec2_model_server.sh</code></b>, in eight steps: the GPU (and the 40 GB check for vLLM), the Hugging Face cache on
+the local NVMe when there is one, the token; the missing system packages (tmux, curl, python3-venv; for llama.cpp also
+git, cmake and build tools); <code>~/demo-venv</code> with torch and sentence-transformers at the versions the facts were
+embedded with, while the model and the embedder download; the engine (llama-server built for this GPU at the PC's
+llama.cpp commit, or vLLM in <code>~/vllm-venv</code>); the demo config set for this instance
+(<code>configs/gemma4_12b_demo.json</code> or <code>gemma4_12b_vllm_demo.json</code>); tmux <code>model</code> (the model server
+on 127.0.0.1:8096, started by <code>scripts/llm/serve.py</code> from the config) and tmux <code>embed</code>
+(<code>demo/embed_server.py</code> on 127.0.0.1:8097); two warm-up requests (a short one, then one with the qa tools and
+thinking); the tunnel command and the laptop's command. It is safe to rerun: what is installed, built or downloaded
+is reused, a server that answers is kept, and switching the engine stops the other one first. <code>--no-embed</code>
+serves no embedder (the laptop then embeds on its CPU with <code>--local-embed</code>). The other options are
+environment variables listed at the top of the script (<code>TORCH_CPU=1</code>, <code>NO_NVME=1</code>,
+<code>LLAMA_REF=master</code>, <code>VLLM_PKG</code>, <code>PYTHON</code>, <code>FORCE=1</code>). The README expects about
+20 minutes the first time and 2–3 after (not yet measured on an instance). Stopping the instance wipes the NVMe and
+with it the model cache: the next start downloads again.</p>
+<p><b>The laptop</b> (Linux or macOS; Windows in setup 4):</p>
+<pre data-lang="bash">pip install -r demo/requirements-local.txt                                      # numpy
+python -m demo setup --instance ubuntu@&lt;ip&gt; --key ~/demo.pem --media ~/videos    # saves demo/local.json, checks this machine
+python -m demo run                       # tunnel + viewer + browser; Ctrl+C stops the viewer and the tunnel
+python -m demo check                     # in a second terminal: PASS / FAIL lines, ALL PASS at the end
+python -m demo bench --warmup            # the demo questions through the stream, timed
+python -m demo tunnel                    # only the tunnel, in the foreground</pre>
+<ul>
+<li><b>setup</b> saves the instance, key, videos folder and <code>--local-embed</code> in <code>demo/local.json</code>
+(gitignored; the other commands take them as defaults) and checks Python 3.11 or newer, numpy (and sentence-transformers
+with <code>--local-embed</code>), <code>ssh</code> on the path, the key file, the videos in the folder, and the course layer.</li>
+<li><b>run</b> opens the tunnel <code>ssh -N -L 8096:127.0.0.1:8096 -L 8097:127.0.0.1:8097 user@host</code> (ServerAliveInterval
+15, ExitOnForwardFailure; opened again when it drops), waits up to 30 minutes for the model server (it may still be
+loading), reads the engine from the served model's name (<code>gemma-4-12b-qat</code> llama.cpp, <code>gemma-4-12b</code> vLLM),
+writes that engine's demo config with <code>url</code> = the tunnel to <code>demo/logs/qa_remote_&lt;engine&gt;.json</code>,
+checks that the embedder serves the layer's model, starts <code>viewer/serve.py --warm</code> with <code>QA_CONFIG</code>,
+<code>QA_EMBED_URL</code> and <code>QA_KEEP_WARM=1</code>, waits until <code>/api/qa_status</code> says ready, and opens the
+browser. The instance keeps serving after Ctrl+C. Options: <code>--port</code> (8765; the next free port when taken),
+<code>--media</code>, <code>--prefer-youtube</code>, <code>--no-browser</code>, <code>--no-tunnel</code> (the ports are already
+forwarded), <code>--model-port N</code> (when 8096 is taken on the laptop), <code>--local-embed</code>,
+<code>--wait-model</code> (1800 s), <code>--wait-warm</code> (180 s), <code>--no-qa</code>.</li>
+<li><b>check</b> prints PASS, FAIL or SKIP per item and exits with 1 on a failure: the viewer answers; the model server is
+healthy through the tunnel (with its time) and serves a demo model; question answering is warm; the embedding server
+serves the layer's model, and its vectors for 24 fact texts equal the layer's (cosine ≥ 0.999); the viewer routes
+<code>/</code>, <code>/api/home</code>, <code>/api/view/4</code>, <code>/api/glossary</code>; one question (“What is an HMD?”,
+<code>--question</code>) answered through the stream with at least one citation, with its times. With the PC standing in
+for the instance through the simulated 250 ms tunnel: ALL PASS, health check 505 ms, minimum cosine 0.99977, first
+words after 4.19 s, done in 7.64 s, 4 citations (<code>remote_setup.md</code>).</li>
+<li><b>bench</b> asks the 12 questions of <code>DEMO_PLAN.md</code> (the list in <code>launcher.py</code>) through
+<code>/api/ask_stream</code> and prints, per question and as medians, the seconds to the first event, the first step, the
+answer's start, the first words and the end. <code>--warmup</code> asks an off-stage question first; <code>--runs N</code>;
+<code>--out FILE</code> appends one JSON line per question; several <code>--url</code> compare setups question by question.</li>
+<li><b>push</b> and <b>tunnel</b>: above; both take <code>--instance</code>, <code>--key</code>, <code>--ssh-port</code>.</li>
+</ul>
+<p><b>The network, first.</b> Time SSH to the instance before choosing it: <code>time (ssh -i key.pem ubuntu@&lt;ip&gt; "head -c
+2000000 /dev/urandom" | wc -c)</code> should take under about 2 s. From the user's network, SSH to us-east-1 ran at about
+40 kB/s: pick an instance in a region near the venue. Each new connection through the tunnel costs a round trip, so
+<code>qa</code> keeps its connections to both servers open (<code>scripts/llm/http_pool.py</code>); through the simulated
+250 ms tunnel the first byte of a round came after 338 ms instead of 589 ms.</p>
+
+<h4 id="demo-windows">4. Windows laptop</h4>
+<div class="callout warn"><span class="tag">Untested on real Windows until the rehearsal</span>
+<p>The two scripts are ASCII only and carry little logic; the logic is <code>python -m demo</code>, which ran on Linux.
+Nothing here has run on Windows yet.</p></div>
+<p><b>Needs</b>: Windows 10 (1809 or later) or 11 with the OpenSSH client (built in; else, in PowerShell as
+administrator, <code>Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0</code>); Python 3.11 or newer
+(<code>winget install -e --id Python.Python.3.12</code>, or python.org with “Add to PATH”, then a new terminal); the
+repository (the sparse clone of <code>pipeline/</code>, about 330 MB, or a copy of the folder); optionally the videos
+(<code>pipeline/input/nptel_vr/media/</code>, 5.5 GB, anywhere on the laptop); the instance's key (.pem). The instance is
+set up as in setup 3.</p>
+<pre data-lang="powershell"># once: a venv in %USERPROFILE%\mtp-demo-venv (numpy), the key's permissions, the settings in pipeline\demo\local.json
+powershell -ExecutionPolicy Bypass -File pipeline\demo\setup_windows.ps1 -Instance ubuntu@&lt;ip&gt; -Key C:\keys\demo.pem -Media D:\demo\media
+
+# the instance, from the laptop (instead of python -m demo push)
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Push -Engine llamacpp     # or -Engine vllm
+
+# demo day
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1            # tunnel + viewer + browser; Ctrl+C stops
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Check     # a second window: ALL PASS expected
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Bench     # the demo questions, timed (with the warm-up)
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -NoQa      # no instance: the viewer with Ask off</pre>
+<ul>
+<li><b>setup_windows.ps1</b>, five steps: finds Python 3.11 or newer (<code>py -3.12</code>, <code>-3.13</code>, <code>-3.11</code>,
+<code>python</code> …); makes the venv and installs <code>requirements-local.txt</code> (numpy; with <code>-LocalEmbed</code>
+also torch for the CPU and sentence-transformers, about 1 GB, for an instance started with <code>--no-embed</code>);
+checks the OpenSSH client; narrows the key's permissions to the user (<code>icacls</code>: Windows OpenSSH refuses a key
+others can read); runs <code>python -m demo setup</code>. <code>-Venv</code> moves the venv. Safe to rerun.</li>
+<li><b>run_demo.ps1</b> runs <code>python -m demo</code> with the venv's Python: <code>run</code> by default, or
+<code>-Check</code>, <code>-Bench</code> (with <code>--warmup</code>), <code>-Push</code> (<code>-Engine</code>); it takes
+<code>-Instance</code>, <code>-Key</code>, <code>-Media</code>, <code>-Port</code> (8765), <code>-NoBrowser</code>,
+<code>-LocalEmbed</code>, <code>-NoQa</code>; a parameter given wins over the saved settings.</li>
+<li><code>-ExecutionPolicy Bypass</code> runs the scripts without changing the system's policy. “UNPROTECTED PRIVATE KEY
+FILE”: rerun <code>setup_windows.ps1</code> with <code>-Key</code>. Port 8096 taken on the laptop: <code>python -m demo run
+--model-port 18096</code>. More in <code>pipeline/demo/README.md</code>, A4.</li>
+</ul>
+
+<details><summary>The older setup: everything on the instance <span class="meta">demo/setup_demo.sh, check_demo.sh; README section B</span></summary>
+<p>The viewer and the question box both run on one GPU instance, and the laptop opens the page through
+<code>ssh -L 8765</code>. Still in the repository, unchanged.</p>
 <pre data-lang="bash">rsync -a --exclude __pycache__ --exclude 'input/*/media' --exclude 'output/logs' --exclude 'output/*/qa' \
       --exclude 'demo/logs' --exclude '.hf_token' pipeline demo:mtp-implementation/            # about 170 MB
 ssh demo "tmux new -d -s setup 'bash ~/mtp-implementation/pipeline/demo/setup_demo.sh 2&gt;&amp;1 | tee ~/setup_demo.log'"
@@ -152,15 +310,8 @@ the model server, the viewer's routes, a Range request on a video, every lecture
 answered with citations. On 2026-11-17 on an RTX PRO 6000: ALL PASS; “What is an HMD?” in 2.9 s with 4 citations
 (<code>analysis/mvp/demo_ec2_2026-11-17/check_demo.txt</code>).</li>
 <li><b>demo_tool.py</b>: helpers for both (fill the config, wait for the model, count media, ask, HTTP checks); standard library only.</li>
-<li><b>Videos</b> (5.5 GB) are optional: without them each lecture plays from YouTube. <code>--prefer-youtube</code> (or
-<code>?yt=1</code>) uses YouTube even when files are there, so video never crosses the tunnel.</li>
-<li><b>vLLM instead of llama.cpp</b>: <code>configs/gemma4_12b_vllm_demo.json</code>, benchmarked at median 4.5 s, max 6.6 s on the
-RTX PRO 6000; start steps in <code>analysis/qa/STATE.md</code>.</li>
-<li><b>Demo day</b>: choose a region near the venue and time the tunnel first (<code>time (ssh demo "head -c 2000000
-/dev/urandom" | wc -c)</code>, under about 2 s); from the user's network to us-east-1 SSH ran at about 40 kB/s. Warm the
-fact search with one off-stage question (the first use of the embedder took 20–23 s). The walk and the verified
-questions are in <code>pipeline/continue/DEMO_PLAN.md</code>.</li>
-</ul>
+</ul></details>
+<p>The walk and the verified questions for the demo are in <code>pipeline/continue/DEMO_PLAN.md</code>.</p>
 
 <!-- ------------------------------------------------------------------ reference -->
 <h2 id="reference" data-toc="Reference">Reference</h2>
@@ -233,7 +384,9 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>scripts/s5_activities.py</code></td><td><code>course [--llm CFG] [--only …] [--kinds quiz,recap,…] [--seed N] [--out DIR] [--check] [--judge] [--judge-rewrite] [--judge-llm CFG]</code></td></tr>
 <tr><td><code>python -m scripts.llm.serve</code></td><td><code>CONFIG [--smoke]</code></td></tr>
 <tr><td><code>python -m qa</code></td><td><code>"question" [--lecture N] [--course C] [--config FILE] [--think | --no-think] [--json]</code>; <code>--stop</code></td></tr>
-<tr><td><code>viewer/serve.py</code></td><td><code>course [--port 8765] [--host] [--root] [--media] [--output DIR] [--activities NAME] [--qa-path] [--warm] [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]</code></td></tr>
+<tr><td><code>viewer/serve.py</code></td><td><code>course [--port 8765] [--host] [--root] [--media] [--output DIR] [--activities NAME] [--qa-path] [--warm] [--no-qa] [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]</code></td></tr>
+<tr><td><code>python -m demo</code></td><td><code>setup | run | check | bench | push | tunnel</code> (<a href="#demo-remote">Running the demo</a>); <code>run --no-qa</code></td></tr>
+<tr><td><code>demo/ec2_model_server.sh</code></td><td><code>--engine llamacpp|vllm [--no-embed]</code>; <code>--status</code>; <code>--stop</code></td></tr>
 <tr><td><code>analysis/qa/bench.py</code></td><td><code>cd pipeline &amp;&amp; python3 ../analysis/qa/bench.py TAG [IDS…] [--runs N] [--variant shipped|fast|think]</code> (runs B01–B17)</td></tr>
 </table></div>
 
@@ -244,8 +397,8 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>GET /</code>, <code>/static/…</code></td><td>the page; every static file named with <code>?v=&lt;hash&gt;</code> and sent <code>Cache-Control: public, max-age=31536000, immutable</code></td></tr>
 <tr><td><code>GET /api/home</code></td><td>title, syllabus, course goals, the lectures (key, title, week, goal), the layers present</td></tr>
 <tr><td><code>GET /api/view/&lt;key&gt;</code></td><td>what a lecture page needs: segments, sentences, goal, objectives, the graph links into it (<code>before</code>), activities (with <code>unresolved</code>, <code>judge_failed</code>, <code>judge_hide</code>), its concept map, and only the concepts and facts it refers to</td></tr>
-<tr><td><code>GET /api/glossary</code></td><td>the defined concepts (name, other names, definition, where first explained, <code>linked</code>); connecting concepts by name only</td></tr>
-<tr><td><code>GET /api/concept/&lt;C0042&gt;</code></td><td>one card: definition, where explained, facts, relationships</td></tr>
+<tr><td><code>GET /api/glossary</code></td><td>the defined concepts (name, other names, definition, where first explained, <code>linked</code>); connecting concepts are not listed, only counted</td></tr>
+<tr><td><code>GET /api/concept/&lt;C0042&gt;</code></td><td>one card: definition, where explained, facts, relationships; 404 for a connecting concept</td></tr>
 <tr><td><code>GET /api/coursemap</code>, <code>/api/review</code></td><td>the lecture graph for the course map; the review cards</td></tr>
 <tr><td><code>GET /api/course</code>, <code>/api/lecture/&lt;key&gt;</code></td><td>the older, larger routes (kept)</td></tr>
 <tr><td><code>GET /data/knowledge/&lt;file&gt;</code>, <code>/data/activities/&lt;file&gt;</code></td><td>raw layer files (not <code>fact_embeddings.json</code>); 404 when missing</td></tr>
@@ -264,7 +417,7 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>qwen38_27b_vllm_10k_96gb.json</code></td><td>same</td><td>8094</td><td>odd one out, lectures 1 and 26</td><td>thinking 10,240, max_tokens 16,384, 128 slots</td></tr>
 <tr><td><code>sage_a15_vllm.json</code></td><td>Sage-A1.5 FP8 · vLLM</td><td>8095</td><td>2b judge</td><td>thinking 16,384, <code>verification</code> template switch, context 98,304</td></tr>
 <tr><td><code>gemma4_12b_llamacpp.json</code></td><td>Gemma 4 12B QAT Q4 · llama.cpp</td><td>8092</td><td>QA on the local PC (default)</td><td>6 slots, 131,072 context, q8_0 KV, thinking 8,192, temperature 1.0</td></tr>
-<tr><td><code>gemma4_12b_demo.json</code></td><td>same, on an instance</td><td>8096</td><td>the demo</td><td>attach only; filled in by <code>setup_demo.sh</code></td></tr>
+<tr><td><code>gemma4_12b_demo.json</code></td><td>same, on an instance</td><td>8096</td><td>the demo</td><td>attach only; filled in by <code>ec2_model_server.sh</code> or <code>setup_demo.sh</code>; the laptop uses a copy pointed at the tunnel</td></tr>
 <tr><td><code>gemma4_12b_vllm_demo.json</code></td><td>Gemma 4 12B (BF16) · vLLM</td><td>8096</td><td>the demo on vLLM</td><td>8 slots, 0.85 of the GPU, gemma4 reasoning and tool parsers</td></tr>
 <tr><td><code>gemma4_e4b_llamacpp.json</code>, <code>qwen38_27b_llamacpp.json</code></td><td>Gemma 4 E4B; Qwen 27B Q5 GGUF</td><td>8091, 8093</td><td>segmentation runs 1–2; a CPU-offload test (1.4–1.9 tokens/s: stopped)</td><td></td></tr>
 </table></div>
@@ -283,6 +436,7 @@ section “LLMConfig fields”.</p>
 <div class="tablewrap"><table>
 <tr><th>Variable</th><th>Read by</th><th>Meaning</th></tr>
 <tr><td><code>QA_CONFIG</code></td><td><code>qa</code></td><td>the LLM config for answers (default <code>configs/gemma4_12b_llamacpp.json</code>); the demo sets it</td></tr>
+<tr><td><code>QA_EMBED_URL</code>, <code>QA_KEEP_WARM</code>, <code>QA_PIN_SLOTS</code></td><td><code>qa</code></td><td>the embedding server to use instead of a local embedder; keep the connections to the servers open; <code>0</code> turns off pinning a question to one llama.cpp slot (the launcher sets the first two)</td></tr>
 <tr><td><code>QA_OUTPUT</code></td><td><code>qa</code></td><td>the folder holding <code>&lt;course&gt;/knowledge/</code> (default <code>pipeline/output</code>); the viewer's <code>--output</code> sets it</td></tr>
 <tr><td><code>QWEN_CFG</code></td><td><code>ec2_queue.sh</code></td><td>the config the queue starts for <code>qwen</code> jobs</td></tr>
 <tr><td><code>HF_TOKEN</code></td><td><code>setup_ec2.sh</code>, <code>setup_demo.sh</code></td><td>Hugging Face token (else <code>pipeline/.hf_token</code>, gitignored)</td></tr>

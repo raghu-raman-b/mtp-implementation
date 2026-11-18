@@ -18,6 +18,7 @@ which.</p></div>
 <tr><td><a href="#ev-qa">Calibration queries</a></td><td>the “no close match” cut-off</td><td class="n">80</td><td>done</td></tr>
 <tr><td><a href="#ev-qa">MVP test questions</a></td><td>QA on the MVP layer</td><td class="n">36 (+20 rerun)</td><td>done</td></tr>
 <tr><td><a href="#ev-qa">Block 6 question set</a></td><td>QA correctness, scored</td><td class="n">85</td><td>first draft, unchecked, on a branch</td></tr>
+<tr><td><a href="#ev-fails">Failure inventory</a></td><td>every failure kind in the course as built, found by code</td><td class="n">68 kinds</td><td>done (<code>analysis/failures/</code>)</td></tr>
 <tr><td><a href="#ev-baselines">Baseline tests</a></td><td>plain LLM, RAG, graph-only</td><td class="n">—</td><td>running (placeholder)</td></tr>
 </table></div>
 
@@ -48,22 +49,7 @@ all false alarms; <code>acronym</code> flagged none and missed “3D”, “4D�
 {{EVAL:subtle}}
 {{EVAL:gold_rewrites}}
 {{EVAL:missed}}
-<h4>What fails where, in the full course's facts and concepts</h4>
-<div class="tablewrap"><table>
-<tr><th>Stage</th><th>Flag or count</th><th class="n">Items</th><th>Source</th></tr>
-<tr><td>2a</td><td>fact over about 50 words (<code>long</code>)</td><td class="n">117</td><td rowspan="4">notebook run note “2a on all 63 lectures”</td></tr>
-<tr><td>2a</td><td>acronym without its full term</td><td class="n">84</td></tr>
-<tr><td>2a</td><td>pointing word (“this”)</td><td class="n">52</td></tr>
-<tr><td>2a</td><td>sentences cited by no fact</td><td class="n">38%</td></tr>
-<tr><td>2c</td><td><code>reverse</code> / <code>name_not_in_facts</code> / <code>no_triple</code> / <code>no_shared_fact</code> / <code>acronym_in_name</code></td><td class="n">437 / 322 / 184 / 113 / 38</td><td><code>stage_2c_concepts/checks/summary.json</code></td></tr>
-<tr><td>3</td><td>exact merges / model merges / kept apart / triples joined / self-loops dropped</td><td class="n">2,421 / 262 / 2,795 / 46 / 29</td><td><code>stage_3_registry/decisions.jsonl</code></td></tr>
-<tr><td>3</td><td>concept pairs with several labels</td><td class="n">827</td><td>3c log</td></tr>
-<tr><td>4a</td><td>defined / connecting</td><td class="n">1,316 / 1,806</td><td rowspan="2"><code>stage_4a_definitions/checks.json</code>, job log</td></tr>
-<tr><td>4a</td><td><code>defined_mismatch</code> / <code>misplaced</code> / capped at 40 facts</td><td class="n">276 / 29 / 15</td></tr>
-<tr><td>4b</td><td>segment in no objective (mostly closing summaries)</td><td class="n">60</td><td>job log</td></tr>
-<tr><td>4c</td><td>concepts used but never defined (assumed)</td><td class="n">2,074</td><td><code>stage_4c_lecture_graph/checks.json</code></td></tr>
-<tr><td>4d</td><td>broken references</td><td class="n">0 of 206,903</td><td><code>stage_4d_assemble/checks.json</code></td></tr>
-</table></div>
+<p>What fails in the full course's facts and concepts, with how each failure is handled, is in <a href="#ev-fails">What fails where</a> below.</p>
 
 <h3 id="ev-activities" data-toc="Activities">Activities</h3>
 <p>The judge's criteria are in each judge prompt (<a href="#s5-judge">stage 5</a>). Its failures by kind and criterion,
@@ -99,6 +85,22 @@ covered”; B01–B03 are partly taught topics, answered “not covered as such�
 {{EVAL:qset}}
 <p>The questions of the demo plan, each verified on the rebuilt layer with its time and citations, are in
 <code>pipeline/continue/DEMO_PLAN.md</code> (12 questions and 3 optional).</p>
+
+<h3 id="ev-fails" data-toc="What fails where">What fails where, and how each failure is handled</h3>
+<p>Every failure kind found in the course as built, stage by stage, with its count and how it is handled. Two rules
+held (the user's, 2026-11-18). A failure is found only by code: a rule, a pipeline check file, the pipeline's own
+judge verdict, or a stored similarity; no language model and no agent decided what a failure is. And a failure is
+handled only by the pipeline itself or by a display rule that uses the pipeline's own signal (the judge's verdicts,
+4a's <code>defined</code> flag, 4c's graph); nothing was fixed by a stronger model or by a hand-made list. So duplicate
+concepts and odd aliases, which code finds but no pipeline signal resolves, are listed as not fixed (future work).</p>
+<p>The handling values: <b>fixed in the pipeline</b> (a check with retry, a rewrite, a stage that was redone);
+<b>fixed in the viewer</b> (rendering); <b>display rule</b> (the data is kept; the viewer shows a part of it, chosen by
+the pipeline's own signal); <b>hidden from learners</b> (the item is kept and shown only in developer mode);
+<b>not fixed (future work)</b>.</p>
+{{EVAL:failures}}
+<p>For scale, stage 3's own decisions (<code>stage_3_registry/decisions.jsonl</code>): 2,421 exact merges, 262 model
+merges, 2,795 pairs kept apart, 46 triples joined, 29 self-loops dropped; 827 concept pairs carry several
+labels (3c log).</p>
 
 <h3 id="ev-baselines" data-toc="Baseline tests (placeholder)">Baseline tests</h3>
 <div class="callout warn"><span class="tag">Placeholder · filled by a later pass</span>

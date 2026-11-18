@@ -298,16 +298,17 @@ This is how the fact judge was found to do more harm than good before it touched
   <text x="730" y="98" class="t-s ink2">viewer: serve.py + one page</text>
   <text x="730" y="118" class="t-s ink2">knowledge/ and activities/</text>
   <text x="730" y="138" class="t-s ink2">the tool loop (qa/) and its five tools</text>
-  <text x="730" y="158" class="t-s ink2">query embedder (0.6B, on the CPU)</text>
+  <text x="730" y="158" class="t-s ink2">query embedder: server, or here on the CPU</text>
   <text x="730" y="178" class="t-s ink2">videos: local files or YouTube</text>
   <rect x="8" y="262" width="1024" height="82" rx="14" class="box2"/>
   <text x="26" y="290" class="t-l">Once, offline</text>
   <text x="26" y="314" class="t-s ink2">The pipeline (stages 0a to 5) runs on a large GPU (Qwen 3.8 27B FP8 on vLLM) and writes knowledge/ and activities/.</text>
   <text x="26" y="333" class="t-s ink2">Those folders are copied to the app. Serving never runs the pipeline again.</text>
 </svg></div>
-<figcaption>The target design (another agent is building it as of 2026-11-17; no timings for it are reported here).
-As on main today, the demo runs everything on the instance and the browser reaches the viewer through
-<code>ssh -L 8765:127.0.0.1:8765</code> (<a href="#demo">Demo</a>).</figcaption></figure>
+<figcaption>Built on 2026-11-17 (<code>pipeline/demo/</code>): <code>ec2_model_server.sh</code> on the server, <code>python -m
+demo</code> on the learner's machine, joined by an SSH tunnel; the query embedder runs on the server by default, so the
+learner's machine needs only numpy. Measured so far only with the local PC as the server, through a simulated 250 ms
+tunnel (<a href="#demo">Running the demo</a>).</figcaption></figure>
 <p>This split works because the pipeline does the heavy work in advance. What the server must do per question is
 small and stateless: run one model over a prompt of a few thousand tokens, a median of two times. Everything that is
 large (videos: 5.5 GB for the course) or private to the learner (progress, highlights, answers) stays local. The

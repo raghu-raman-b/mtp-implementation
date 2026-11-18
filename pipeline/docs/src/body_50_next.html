@@ -5,15 +5,12 @@
 fixes planned next, then longer-term work. Each limit names where it shows.</p></div>
 <div class="tablewrap"><table>
 <tr><th>Limit</th><th>Where it shows</th><th>Size</th></tr>
-<tr><td>Recap texts the judge failed are still shown (the hiding rule hides recaps only for source talk)</td><td>4/A2, 9/A7, 30/A2, 30/A4, 30/A8, 36/A2, 36/A4 …</td><td>222 of 347 texts; 371 failed points</td></tr>
-<tr><td>Crosswords with judge-failed clues are shown (a clue cannot leave a grid)</td><td>51/A21 (6 of 12 clues), 40/A18 (5), 57/A16 (5 of 8), 29/A11 (4), 5/A12 (3 of 5) …</td><td>82 failed clues</td></tr>
-<tr><td>Duplicate concepts left after the merge</td><td>head-mounted display / virtual reality headset (both defined, together on 7 lecture maps); interaction / user interaction; iPhone operating system / ios</td><td>—</td></tr>
-<tr><td>Two concepts share an alias</td><td>field of view / horizontal field of view (both “FOV”); “VR” also matches “virtual reality headset”</td><td>—</td></tr>
-<tr><td>Odd “also known as” lists</td><td>presence (“present”, “presence results”, “presence ratings”); virtual reality system (“system”)</td><td>—</td></tr>
-<tr><td>Connecting-concept cards with odd role sentences</td><td>“control”, “live-action 180-degree video”, “gigabyte”, “real-world view”, “ios”</td><td>1,806 connecting concepts</td></tr>
-<tr><td>Formulas print as raw LaTeX in answers</td><td>the Kalman question printed <code>$\theta_{dk} = \alpha \theta_{gk} + ...$</code> in 2 of 3 runs</td><td>—</td></tr>
+<tr><td>Duplicate concepts left after the merge (not fixed: no pipeline signal)</td><td>head-mounted display / virtual reality headset (both defined, together on 7 lecture maps); interaction / user interaction; iPhone operating system / ios</td><td>17 acronym pairs, 22 modifier pairs</td></tr>
+<tr><td>Names shared by concepts (not fixed)</td><td>field of view / horizontal field of view (both “FOV”); “VR” also matches “virtual reality headset”</td><td>93 shared name keys; 4 acronyms</td></tr>
+<tr><td>Odd “also known as” lists (not fixed)</td><td>presence (“present”, “presence results”, “presence ratings”); virtual reality system (“system”)</td><td>98 fragment, 44 short, 10 generic aliases</td></tr>
+<tr><td>Match-the-pairs definitions cut off with “…” (no judge for this kind)</td><td>the right-hand side of a pair</td><td>383 of 502 pairs</td></tr>
 <tr><td>The first question that uses the fact search loads the embedder</td><td>20–23 s without <code>--warm</code></td><td>once</td></tr>
-<tr><td>Comparisons of several concepts are slow</td><td>9–19 s</td><td>—</td></tr>
+<tr><td>Comparisons of several concepts are slow</td><td>9–19 s</td><td>4 of 34 bench answers over 8 s</td></tr>
 <tr><td>Selecting a hub concept in the full map view crowds the labels</td><td>“game engine” in lecture 20</td><td>—</td></tr>
 <tr><td>The fact judge is off</td><td>thin facts such as 1/S0/F0 stay</td><td>all 2,006 facts unjudged</td></tr>
 <tr><td>The activity judge is not measured against a seed set</td><td>it only flags</td><td>—</td></tr>
@@ -21,19 +18,15 @@ fixes planned next, then longer-term work. Each limit names where it shows.</p><
 <tr><td>Prerequisite links count any single mention</td><td>“before lecture 30” is thin: only lecture 29's frequency, plus XR and VR</td><td>—</td></tr>
 </table></div>
 <p class="small muted">From <code>pipeline/continue/DEMO_PLAN.md</code> (“Avoid on stage”) and <code>STATUS.md</code>; counts from
-<code>activities/checks.json</code>.</p>
+<code>analysis/failures/inventory.json</code>. Every failure kind, with how it is handled, is in
+<a href="#ev-fails">What fails where</a>.</p>
 
 <h2 id="upcoming" data-toc="Upcoming fixes">Upcoming fixes</h2>
 <div class="cards">
-<div class="card"><span class="k">Recaps</span><h4>Show only passing points</h4><p>222 of 347 recap texts and 371 points failed the judge. Plan: show only the points that pass, and optionally have the model rewrite the text with the judge's reasons.</p></div>
-<div class="card"><span class="k">Crosswords</span><h4>Drop failed words, lay out again</h4><p>A failed clue cannot be hidden inside a grid. Plan: drop the words whose clues fail and run the layout again on the rest.</p></div>
-<div class="card"><span class="k">Duplicates</span><h4>A reviewed merge list</h4><p>HMD / VR headset, interaction / user interaction, iOS / iPhone OS: merged by a list a person reviews, applied in 3c, so the merge is logged like the others.</p></div>
-<div class="card"><span class="k">Aliases</span><h4>FOV and odd alias lists</h4><p>One owner for a shared alias such as FOV; drop aliases like “present” and “system” that are not names of the concept.</p></div>
-<div class="card"><span class="k">Connecting concepts</span><h4>Show their facts</h4><p>On a connecting concept's card, show the lecture facts that use it instead of the model's one-sentence role.</p></div>
-<div class="card"><span class="k">Answers</span><h4>Render formulas</h4><p>Render LaTeX in answers (KaTeX, bundled with the page so it works offline).</p></div>
-<div class="card"><span class="k">First question</span><h4>Warm-up</h4><p>Load the embedder and ask one hidden question at start, so no learner waits 20 s.</p></div>
+<div class="card"><span class="k">Done 2026-11-18</span><h4>Display rules from the pipeline's signals</h4><p>Recaps show only judge-passing points; crosswords show failed words filled in, without their clues; connecting concepts have no card and give question answering their facts only; formulas typeset with KaTeX; the model and embedder warmed at start (<a href="#ev-fails">What fails where</a>).</p></div>
+<div class="card"><span class="k">Not fixed</span><h4>Duplicates and odd aliases</h4><p>HMD / VR headset, interaction / user interaction, iOS / iPhone OS, FOV on two concepts, aliases such as “present” and “system”. Code finds them, but no pipeline signal says which is right, and no stronger model or hand-made list may decide: future work for the pipeline itself.</p></div>
 <div class="card"><span class="k">Viewer</span><h4>The redesign</h4><p>Being done by another agent as of 2026-11-17.</p></div>
-<div class="card"><span class="k">Deployment</span><h4>Remote-model setup</h4><p>Only the model on the GPU server; the viewer, layer, videos and tool loop on the learner's machine (<a href="#deploy">design</a>).</p></div>
+<div class="card"><span class="k">Deployment</span><h4>Remote-model setup: built, rehearsal next</h4><p>Only the model and embedder on the GPU server; the viewer, layer, videos and tool loop on the learner's machine (<a href="#demo">Running the demo</a>). Not yet run on a real instance or on Windows.</p></div>
 <div class="card"><span class="k">Evaluation</span><h4>Baseline experiments</h4><p>Plain LLM, RAG over transcripts and graph-only on the same questions, scored for correctness, grounding, citations, “not covered” and time (<a href="#baselines">placeholder</a>).</p></div>
 </div>
 

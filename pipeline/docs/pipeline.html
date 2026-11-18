@@ -885,16 +885,17 @@ This is how the fact judge was found to do more harm than good before it touched
   <text x="730" y="98" class="t-s ink2">viewer: serve.py + one page</text>
   <text x="730" y="118" class="t-s ink2">knowledge/ and activities/</text>
   <text x="730" y="138" class="t-s ink2">the tool loop (qa/) and its five tools</text>
-  <text x="730" y="158" class="t-s ink2">query embedder (0.6B, on the CPU)</text>
+  <text x="730" y="158" class="t-s ink2">query embedder: server, or here on the CPU</text>
   <text x="730" y="178" class="t-s ink2">videos: local files or YouTube</text>
   <rect x="8" y="262" width="1024" height="82" rx="14" class="box2"/>
   <text x="26" y="290" class="t-l">Once, offline</text>
   <text x="26" y="314" class="t-s ink2">The pipeline (stages 0a to 5) runs on a large GPU (Qwen 3.8 27B FP8 on vLLM) and writes knowledge/ and activities/.</text>
   <text x="26" y="333" class="t-s ink2">Those folders are copied to the app. Serving never runs the pipeline again.</text>
 </svg></div>
-<figcaption>The target design (another agent is building it as of 2026-11-17; no timings for it are reported here).
-As on main today, the demo runs everything on the instance and the browser reaches the viewer through
-<code>ssh -L 8765:127.0.0.1:8765</code> (<a href="#demo">Demo</a>).</figcaption></figure>
+<figcaption>Built on 2026-11-17 (<code>pipeline/demo/</code>): <code>ec2_model_server.sh</code> on the server, <code>python -m
+demo</code> on the learner's machine, joined by an SSH tunnel; the query embedder runs on the server by default, so the
+learner's machine needs only numpy. Measured so far only with the local PC as the server, through a simulated 250 ms
+tunnel (<a href="#demo">Running the demo</a>).</figcaption></figure>
 <p>This split works because the pipeline does the heavy work in advance. What the server must do per question is
 small and stateless: run one model over a prompt of a few thousand tokens, a median of two times. Everything that is
 large (videos: 5.5 GB for the course) or private to the learner (progress, highlights, answers) stays local. The
@@ -2071,8 +2072,9 @@ Answer with the JSON only.
 <p>Most terms a course names it never explains: “discount rate” in a list of policy tools, “gigabyte” in a spec. The
 prompt says not to define such a concept from the model's own knowledge, but to write one sentence on what the
 facts show about it, and set <code>defined</code> to false. These 1,806 <b>connecting concepts</b> stay on the concept
-maps and keep their cards; the <b>glossary lists only the 1,316 defined ones</b> (viewer rule since commit
-<code>194d12a</code>).</p>
+maps, flagged <code>connecting</code>; the <b>glossary lists only the 1,316 defined ones</b> (viewer rule since commit
+<code>194d12a</code>). Since the decision of 2026-11-18 they have no card, their sentence is never sent to the page,
+and question answering gets their facts only (<a href="#ev-fails">What fails where</a>).</p>
 <div class="split">
 <div><span class="lbl">Defined · C1574</span><pre data-lang="json">{
  &quot;name&quot;: &quot;head-related transfer function&quot;,
@@ -2110,7 +2112,7 @@ maps and keep their cards; the <b>glossary lists only the 1,316 defined ones</b>
   &quot;41/S4/F2&quot;
  ]
 }</pre>
-<p>A role sentence, not a definition. The demo plan lists “control” among the odd ones to avoid on stage.</p></div>
+<p>A role sentence, not a definition, which is why it is never shown. The demo plan listed “control” among the odd ones to avoid on stage.</p></div>
 </div>
 <p><code>defined_mismatch</code> (276) flags concepts where 4a's <code>defined</code> disagrees with 2c's: true with no defining
 segment, or false although a segment was marked as defining it. It is reported, not acted on.</p>
@@ -3299,11 +3301,14 @@ marked with its criteria.</p>
 <tr><th>Kind</th><th>A judge-failed item is hidden from learners when it failed …</th></tr>
 <tr><td>put in order, odd one out, open question</td><td>any criterion</td></tr>
 <tr><td>quiz</td><td><code>answerable</code>, <code>one_answer</code>, <code>clear</code> or <code>no_source_talk</code> (kept when only <code>no_giveaway</code> or <code>worth_asking</code> failed)</td></tr>
-<tr><td>recap</td><td><code>no_source_talk</code> (points only; the text is never hidden)</td></tr>
-<tr><td>crossword</td><td>never (a clue cannot leave the grid)</td></tr>
+<tr><td>recap</td><td>any criterion: only the points the judge passed are shown, the text only when it passed, and a
+recap with no passing point not at all (decision of 2026-11-18)</td></tr>
+<tr><td>crossword</td><td>a clue cannot leave the grid: the failed words are shown filled in, their clues never (decision of
+2026-11-18)</td></tr>
 </table></div>
-<p>The result, from <code>pipeline/continue/DEMO_PLAN.md</code>: learners see 1,136 activities; 32 whole activities and 35
-of 1,163 quiz questions are hidden.</p>
+<p>The result, from the failure inventory (<a href="#ev-fails">What fails where</a>): 40 of the 855 judged activities
+are hidden whole (put in order 24 of 41, odd one out 9 of 57, recap 6 of 347, quiz 1 of 347), and 35 of 1,163 quiz
+questions.</p>
 
 <h4>Changes and why</h4>
 <p>The MVP's activity prompts (2026-11-13) were written in a hurry by Opus and never reviewed. Fable read the 63
@@ -3637,8 +3642,8 @@ and its 0a transcript.</p>
 <dt>Flags in the page</dt><dd><code>?dev=1</code> developer mode (IDs, counts, judge marks, hidden items; learners never see statistics); <code>?yt=1</code> / <code>?yt=0</code> prefer YouTube; the theme toggle</dd>
 </dl>
 <ul>
-<li><b>Glossary</b>: only the 1,316 defined concepts; connecting concepts stay on maps and keep their cards, and come in
-the glossary route by name only, for the explorer's search. Search by name, alias or acronym (“HRTF”).</li>
+<li><b>Glossary</b>: only the 1,316 defined concepts; connecting concepts stay on maps, flagged <code>connecting</code>,
+with no card (the display rule of 2026-11-18). Search by name, alias or acronym (“HRTF”).</li>
 <li><b>Hiding</b>: judge-failed items by the per-kind rule above; activities marked <code>unresolved</code> show only in developer mode.</li>
 <li><b>Concept maps</b>: a key view of about 20 concepts by default and an “all N, by part” view; the course map shows
 lectures by week with prerequisite arcs (<code>0965ba9</code>).</li>
@@ -3687,6 +3692,7 @@ which.</p></div>
 <tr><td><a href="#ev-qa">Calibration queries</a></td><td>the “no close match” cut-off</td><td class="n">80</td><td>done</td></tr>
 <tr><td><a href="#ev-qa">MVP test questions</a></td><td>QA on the MVP layer</td><td class="n">36 (+20 rerun)</td><td>done</td></tr>
 <tr><td><a href="#ev-qa">Block 6 question set</a></td><td>QA correctness, scored</td><td class="n">85</td><td>first draft, unchecked, on a branch</td></tr>
+<tr><td><a href="#ev-fails">Failure inventory</a></td><td>every failure kind in the course as built, found by code</td><td class="n">68 kinds</td><td>done (<code>analysis/failures/</code>)</td></tr>
 <tr><td><a href="#ev-baselines">Baseline tests</a></td><td>plain LLM, RAG, graph-only</td><td class="n">—</td><td>running (placeholder)</td></tr>
 </table></div>
 
@@ -3717,22 +3723,7 @@ all false alarms; <code>acronym</code> flagged none and missed “3D”, “4D�
 <details><summary>Subtle seeded errors (review 1, change 9) (13) <span class="meta">analysis/fact_judge/seeded_subtle.json</span></summary><div class="tablewrap"><table><tr><th>ID</th><th>Segment</th><th>Kind</th><th>Breaks</th><th>The wrong fact</th></tr><tr><td>E35</td><td><code>4/S0</code></td><td>a limit dropped (&#x27;partially determine&#x27;)</td><td>Faithful</td><td>Virtual reality (VR) is, according to the Miriam Webster dictionary, an artificial environment experienced through sensory stimuli, in which sights and sounds play a primary role and are provided by a computer, possibly along with other sensory stimuli, and in which a person&#x27;s actions determine what happens in the environment.<br><span class="muted small">&#x27;a person&#x27;s actions partially determine&#x27; to &#x27;a person&#x27;s actions determine&#x27; (sentences 4/28, 4/32: &#x27;one&#x27;s actions partially determine what happens in the environment&#x27;).</span></td></tr><tr><td>E36</td><td><code>16/S1</code></td><td>a hedge dropped (&#x27;in some apps ... may be matched&#x27;)</td><td>Faithful</td><td>In virtual reality (VR), tracked physical objects are matched in the virtual world so that the user receives touch feedback while interacting with them, giving a better, more natural experience.<br><span class="muted small">&#x27;may be matched&#x27; to &#x27;are matched&#x27; (sentence 16/57: &#x27;In some apps, tracked physical objects may be matched in VR&#x27;).</span></td></tr><tr><td>E37</td><td><code>16/S1</code></td><td>a hedge weakened (&#x27;may also be part of&#x27; to &#x27;is usually part of&#x27;)</td><td>Faithful</td><td>In virtual reality (VR), eye tracking may be required if rendering and display technology require compensating for eye movements, and eye tracking is usually part of head tracking.<br><span class="muted small">&#x27;eye tracking may be part of head tracking&#x27; to &#x27;eye tracking is usually part of head tracking&#x27; (sentence 16/32: &#x27;eye tracking may also be part of head tracking&#x27;). The first &#x27;may&#x27; is kept.</span></td></tr><tr><td>E38</td><td><code>1/S3</code></td><td>scope widened: &#x27;in India&#x27; left out, so the figures read as those of the whole industry</td><td>Faithful</td><td>The extended reality industry was estimated at about 1.83 billion US dollars in 2020 and is expected to be about 14 billion US dollars in 2027.<br><span class="muted small">&#x27;In India, the extended reality industry&#x27; to &#x27;The extended reality industry&#x27; (sentence 1/172: &#x27;even in India, in our country, this industry is likely to grow significantly&#x27;).</span></td></tr><tr><td>E39</td><td><code>4/S1</code></td><td>scope narrowed: &#x27;a real world&#x27; left out of &#x27;a real world or an imaginary or fantastic world&#x27;</td><td>Faithful</td><td>The artificial or synthetic environment of a virtual reality (VR) system is a computer-generated graphical representation of an imaginary or fantastic world, populated with artificial objects, and is not a real environment.<br><span class="muted small">&#x27;a computer-generated graphical representation of a real world or an imaginary or fantastic world&#x27; to &#x27;of an imaginary or fantastic world&#x27; (sentence 4/47: &#x27;of two things a real world or it can be an imaginary or fantastic world&#x27;).</span></td></tr><tr><td>E40</td><td><code>1/S3</code></td><td>the wrong thing named for &#x27;this area&#x27;: the metaverse, the topic just before, for the extended reality field</td><td>Grounded, Faithful</td><td>The metaverse is one of the major emerging areas identified by many national governments, along with artificial intelligence (AI), large language models, generative artificial intelligence, drones, and nanomaterials.<br><span class="muted small">&#x27;The extended reality field&#x27; to &#x27;The metaverse&#x27; (sentence 1/198: &#x27;this area is one of the major emerging areas&#x27;; the area is the field the segment argues for, see 1/199 and 1/200; the metaverse is the topic of 1/180 to 1/194).</span></td></tr><tr><td>E41</td><td><code>1/S2</code></td><td>the wrong thing named for &#x27;the two extremes&#x27;: augmented reality and augmented virtuality, the nearest nouns, for the real and the virtual environment</td><td>Grounded, Faithful</td><td>Mixed reality, in a broad sense, is the entire space between augmented reality and augmented virtuality on the reality-virtuality continuum, containing different degrees of augmentation of the real environment with virtual content and of the virtual environment with real content.<br><span class="muted small">&#x27;between the real environment extreme and the virtual environment extreme of the reality-virtuality continuum&#x27; to &#x27;between augmented reality and augmented virtuality on the reality-virtuality continuum&#x27; (sentence 1/134: &#x27;this entire space between the two extremes, that is virtual environment and real environment&#x27;; augmented reality and augmented virtuality are the ends of the interval in 1/128).</span></td></tr><tr><td>E42</td><td><code>1/S2</code></td><td>a thin split: one definition as &#x27;is a scale&#x27; and as its two extremes</td><td>Whole</td><td>The reality-virtuality continuum is essentially a scale. / One extreme of the reality-virtuality continuum is the completely real environment, with nothing virtual, and the other extreme is the completely virtual environment, with nothing real.<br><span class="muted small">1/S2/F0 (&#x27;... is a scale whose extremes are ...&#x27;) written as two facts; the first says nothing without the second.</span></td></tr><tr><td>E43</td><td><code>16/S3</code></td><td>a thin split: one step of a process as what it does and as why it is needed</td><td>Whole</td><td>In the tracking process, registration estimates or determines the initial position and orientation of the sensor. / In the tracking process, the starting point of the sensor must be known before its movement can be tracked.<br><span class="muted small">16/S3/F3 (&#x27;registration estimates ... the initial position and orientation of the sensor, so that the starting point is known before movement can be tracked&#x27;) written as two facts.</span></td></tr><tr><td>E44</td><td><code>1/S5</code></td><td>a restated recap (&#x27;we have seen that concept&#x27;): the continuum and mixed reality, taught in segment 1/S2</td><td>Whole</td><td>The reality-virtuality continuum has the completely virtual environment at one end and the completely real environment at the other, and what lies in between is broadly referred to as mixed reality.<br><span class="muted small">A new fact from sentence 1/230 of the closing summary (&#x27;So, we have seen that concept of the reality-virtuality continuum ...&#x27;). It holds what 1/S2/F0 and 1/S2/F3 hold and adds nothing. The judge sees only this segment: the signs are &#x27;we have seen&#x27; in the evidence sentence and &#x27;To sum up&#x27; in 1/225.</span></td></tr><tr><td>E45</td><td><code>4/S2</code></td><td>a restated recap (&#x27;earlier we talked about&#x27;, &#x27;in this previous lecture I clarified&#x27;) without what the segment adds to it</td><td>Whole</td><td>Non-immersive virtual reality (VR) is experienced on a regular two-dimensional computer screen and is still called an immersive experience, purely from a psychological point of view.<br><span class="muted small">A new fact from the first half of sentence 4/112, which recalls the previous lecture. What the segment adds, that this psychological reading does not apply to the computer-aided design system, is left out.</span></td></tr><tr><td>E46</td><td><code>4/S2</code></td><td>an abbreviation alone that is usually written that way (&#x27;3D&#x27; for three-dimensional)</td><td>Terms in full</td><td>A 3D movie experience is not a virtual reality (VR) system because, although it provides a virtual environment and a partly immersive experience, it is not interactive, as the viewer only watches and cannot change the displayed content.<br><span class="muted small">&#x27;A three-dimensional (3D) movie experience&#x27; to &#x27;A 3D movie experience&#x27;; &#x27;virtual reality (VR)&#x27; stays in full.</span></td></tr><tr><td>E47</td><td><code>16/S2</code></td><td>one acronym alone (&#x27;HMD&#x27;) next to a term written in full</td><td>Terms in full</td><td>Inside-out tracking is a tracking type in which the cameras or other sensors required for tracking are located within the device used for the experience, such as the HMD in virtual reality (VR), which is more common, so no other external devices are needed.<br><span class="muted small">&#x27;the head-mounted display (HMD)&#x27; to &#x27;the HMD&#x27;; &#x27;virtual reality (VR)&#x27; stays in full.</span></td></tr></table></div></details>
 <details><summary>Gold for the 8 rewritten facts <span class="meta">analysis/fact_judge/gold_rewrites.json</span></summary><div class="tablewrap"><table><tr><th>Rewrite of</th><th>Text</th><th>Label</th><th>Note</th></tr><tr><td><code>1/S0/F1</code></td><td>Extended reality (XR), virtual reality (VR), augmented reality (AR), and mixed reality (MR) can refer to different things to different people: for some, magical movie scenes; for some, three-dimensional (3D) or four-dimensional (4D) movie-theater documentaries about extinct animals; and, for virtual reality (VR), the most common perception is that a user wears a headset that blocks vision and is transported to a virtual world.</td><td><b>fail</b></td><td>Still the summary of the segment&#x27;s motivating examples, cut from six to three (64 words). Properties 1 and 3: the movie scenes and the documentaries are associations the lecturer raises only to ask whether they are what the terms mean (&#x27;But is it really the only thing&#x27;, sentence 48; &#x27;But is that so?&#x27;, sentence 58), and he teaches neither. Property 2: it holds the remark that the terms mean different things to different people, two such associations, and the headset (sentences 59-61), which is the one teachable point and should be a fact of its own (worn on the head, blocks vision, the most common perception of VR); removing the whole fact would lose it. Property 6 is now met (&#x27;three-dimensional (3D) or four-dimensional (4D)&#x27;). Each part is found in the cited sentences. Labelled like the 2a fact in gold.json, without 6.</td></tr><tr><td><code>1/S3/F4</code></td><td>The term metaverse has heavily stimulated and spurred growth in the extended reality field.</td><td>pass</td><td>One point, grounded and faithful (&#x27;heavily&#x27; is kept; &#x27;the field&#x27; of sentence 182 is the extended reality field). The rewrite dropped &#x27;in use for more than 30 years&#x27; (sentence 181), which the 2a fact held and which was not a failure: this fact passes, but it is poorer than the 2a fact and no fact holds the age of the term now.</td></tr><tr><td><code>1/S3/F5</code></td><td>The metaverse is not merely an application of virtual reality, mixed reality, or augmented reality technology.</td><td><b>fail</b></td><td>One half of a split: it says only what the metaverse is not. The other half is F6 (what it is, on one view). The 2a fact 1/S3/F5 held both and was the better fact. F5 and F6, with F7 as the detail of F6, are one point.</td></tr><tr><td><code>1/S3/F6</code></td><td>One broad point of view about the metaverse is that humans are going to reimagine the way they interact with the digital world.</td><td><b>fail</b></td><td>The other half of the split (see F5), and the same point as F7 (the 2a fact 1/S3/F6, kept): &#x27;reimagine the way they interact with the digital world&#x27; says nothing until F7 says how (acting as in the real world, natural interaction in an all-around three-dimensional environment instead of flat screens). Faithful to sentence 185 otherwise.</td></tr><tr><td><code>4/S1/F0</code></td><td>A system can be categorized as a virtual reality (VR) system and distinguished from other systems when it has the three characteristics of an artificial environment, sensory experience by computer-generated stimuli, and user actions that partially determine what happens in the environment.</td><td>pass</td><td>One statement now: when a system counts as a virtual reality system, naming the three characteristics without describing them. The second assertion of the 2a fact (&#x27;other systems, which are not supposed to have these aspects&#x27;) is gone, and the fact has 42 words for 57. Borderline: it still carries the use of the list (&#x27;categorized ... and distinguished from other systems&#x27;), the point of 4/S2/F0 in the next segment, so a reader who fails the 2a fact for holding the list and its use can fail this one in the same way; the cleanest fact is the list alone. Grounded in sentences 34, 36-38 and 57.</td></tr><tr><td><code>4/S1/F3</code></td><td>The sensory experience characteristic of a virtual reality (VR) system is that the system provides computer-generated stimuli to the user&#x27;s sensory organs, such as eyes and ears, so the user can immersively experience the artificial or synthetic environment, and immersive experience is a hallmark of a virtual reality system.</td><td>pass</td><td>The 2a fact with &#x27;this immersive experience&#x27; written as &#x27;immersive experience&#x27; (the code check&#x27;s false alarm) and &#x27;means that&#x27; as &#x27;is that&#x27;; nothing lost. One point, grounded in sentences 57-60 and 62.</td></tr><tr><td><code>16/S1/F9</code></td><td>In virtual reality (VR), tracking the surrounding environment can alert the user to physical objects not represented in the virtual world, such as a wall, to reduce harm; for alerting the user to physical objects not represented in the virtual world, tracking the user is not useful, and the surrounding environment must be tracked.</td><td>pass</td><td>The 2a fact with &#x27;for this&#x27; spelled out (the code check&#x27;s false alarm): &#x27;physical objects not represented in the virtual world&#x27; is now said twice, so the fact is clumsier than the 2a fact, but it is one point and faithful (&#x27;can alert&#x27; for &#x27;may alert&#x27;, sentence 49; &#x27;not useful&#x27; for &#x27;will not be of any use&#x27;, sentence 55).</td></tr><tr><td><code>16/S1/F11</code></td><td>In applications such as telepresence, a large part of the physical world can be brought into the virtual world through live capture; augmenting the virtual world with a live capture of the real world is generally classified as augmented virtuality and is a form of tracking the surrounding environment.</td><td>pass</td><td>The 2a fact with &#x27;this is generally classified&#x27; spelled out (the code check&#x27;s false alarm). &#x27;generally&#x27; is kept, and &#x27;a form of&#x27; for &#x27;some sort of&#x27; (sentence 61) is acceptable. That the live capture counts as augmented virtuality is a new statement about live capture, not a recap, though the lecturer recalls the term from the introductory lectures.</td></tr></table></div></details>
 <details><summary>Points 2a missed (5, after reading 15 segments) <span class="meta">analysis/fact_judge/missed.json</span></summary><div class="tablewrap"><table><tr><th>Segment</th><th>Sentences</th><th>Weight</th><th>State</th><th>The point</th></tr><tr><td><code>1/S0</code></td><td>1/59, 1/60, 1/61</td><td>minor</td><td>at risk</td><td>A headset is worn on the head and blocks the wearer&#x27;s vision, so that the wearer experiences a virtual world through it; a user wearing a headset is the most common perception of virtual reality. Held only inside 1/S0/F1, which should fail.</td></tr><tr><td><code>1/S3</code></td><td>1/160, 1/161</td><td>minor</td><td>missing</td><td>A small share can still be a large amount of money: military budgets are huge, so the 4 percent military share translates to a huge sum.</td></tr><tr><td><code>1/S5</code></td><td>1/227, 1/228, 1/229</td><td>major</td><td>missing</td><td>Extended reality intuitively means extending reality by some means; as a system, it means using systems to augment our reality or to replace our perception of reality. The recap adds this way of putting the definition, which no earlier fact holds.</td></tr><tr><td><code>4/S2</code></td><td>4/112</td><td>minor</td><td>missing</td><td>A caution: non-immersive virtual reality is also experienced on a regular screen and is still called immersive from a psychological point of view, but that does not apply to a computer-aided design system.</td></tr><tr><td><code>4/S2</code></td><td>4/146</td><td>minor</td><td>partial</td><td>A three-dimensional movie is partly (semi-) immersive because it blocks the visual sense and partly the auditory sense. 4/S2/F3 says &#x27;partly immersive&#x27; without the reason.</td></tr></table></div></details>
-<h4>What fails where, in the full course's facts and concepts</h4>
-<div class="tablewrap"><table>
-<tr><th>Stage</th><th>Flag or count</th><th class="n">Items</th><th>Source</th></tr>
-<tr><td>2a</td><td>fact over about 50 words (<code>long</code>)</td><td class="n">117</td><td rowspan="4">notebook run note “2a on all 63 lectures”</td></tr>
-<tr><td>2a</td><td>acronym without its full term</td><td class="n">84</td></tr>
-<tr><td>2a</td><td>pointing word (“this”)</td><td class="n">52</td></tr>
-<tr><td>2a</td><td>sentences cited by no fact</td><td class="n">38%</td></tr>
-<tr><td>2c</td><td><code>reverse</code> / <code>name_not_in_facts</code> / <code>no_triple</code> / <code>no_shared_fact</code> / <code>acronym_in_name</code></td><td class="n">437 / 322 / 184 / 113 / 38</td><td><code>stage_2c_concepts/checks/summary.json</code></td></tr>
-<tr><td>3</td><td>exact merges / model merges / kept apart / triples joined / self-loops dropped</td><td class="n">2,421 / 262 / 2,795 / 46 / 29</td><td><code>stage_3_registry/decisions.jsonl</code></td></tr>
-<tr><td>3</td><td>concept pairs with several labels</td><td class="n">827</td><td>3c log</td></tr>
-<tr><td>4a</td><td>defined / connecting</td><td class="n">1,316 / 1,806</td><td rowspan="2"><code>stage_4a_definitions/checks.json</code>, job log</td></tr>
-<tr><td>4a</td><td><code>defined_mismatch</code> / <code>misplaced</code> / capped at 40 facts</td><td class="n">276 / 29 / 15</td></tr>
-<tr><td>4b</td><td>segment in no objective (mostly closing summaries)</td><td class="n">60</td><td>job log</td></tr>
-<tr><td>4c</td><td>concepts used but never defined (assumed)</td><td class="n">2,074</td><td><code>stage_4c_lecture_graph/checks.json</code></td></tr>
-<tr><td>4d</td><td>broken references</td><td class="n">0 of 206,903</td><td><code>stage_4d_assemble/checks.json</code></td></tr>
-</table></div>
+<p>What fails in the full course's facts and concepts, with how each failure is handled, is in <a href="#ev-fails">What fails where</a> below.</p>
 
 <h3 id="ev-activities" data-toc="Activities">Activities</h3>
 <p>The judge's criteria are in each judge prompt (<a href="#s5-judge">stage 5</a>). Its failures by kind and criterion,
@@ -3769,6 +3760,22 @@ covered”; B01–B03 are partly taught topics, answered “not covered as such�
 <p>The questions of the demo plan, each verified on the rebuilt layer with its time and citations, are in
 <code>pipeline/continue/DEMO_PLAN.md</code> (12 questions and 3 optional).</p>
 
+<h3 id="ev-fails" data-toc="What fails where">What fails where, and how each failure is handled</h3>
+<p>Every failure kind found in the course as built, stage by stage, with its count and how it is handled. Two rules
+held (the user's, 2026-11-18). A failure is found only by code: a rule, a pipeline check file, the pipeline's own
+judge verdict, or a stored similarity; no language model and no agent decided what a failure is. And a failure is
+handled only by the pipeline itself or by a display rule that uses the pipeline's own signal (the judge's verdicts,
+4a's <code>defined</code> flag, 4c's graph); nothing was fixed by a stronger model or by a hand-made list. So duplicate
+concepts and odd aliases, which code finds but no pipeline signal resolves, are listed as not fixed (future work).</p>
+<p>The handling values: <b>fixed in the pipeline</b> (a check with retry, a rewrite, a stage that was redone);
+<b>fixed in the viewer</b> (rendering); <b>display rule</b> (the data is kept; the viewer shows a part of it, chosen by
+the pipeline's own signal); <b>hidden from learners</b> (the item is kept and shown only in developer mode);
+<b>not fixed (future work)</b>.</p>
+<div class="tablewrap"><table><tr><th>Stage</th><th>What fails</th><th class="n">Count</th><th>Handling</th><th>How</th></tr><tr><td>0a</td><td>transcript sentences with no start time (the sentence begins inside a subtitle cue) <span class="small muted mono">fact.0a.null_start</span></td><td class="n">201 of 11,893 sentences (1.7%)</td><td>fixed in the pipeline</td><td>By design: a sentence that begins inside a subtitle cue has no start time. 1b places boundaries inside the cue; 4d fills the facts' times (2026-11-13).</td></tr><tr><td>1b</td><td>lectures where a flagged segment problem was left after the retries <span class="small muted mono">seg.1b.flagged_left</span></td><td class="n">1 of 63 lectures (1.6%)</td><td>not fixed (future work)</td><td>Left as reported in <code>stage_1b_verify_segments/report.json</code>.</td></tr><tr><td>2a</td><td>facts over about 50 words (several points in one fact?) <span class="small muted mono">fact.2a.long</span></td><td class="n">117 of 2,006 facts (5.8%)</td><td>not fixed (future work)</td><td>Report-only flag in 2a; the 2b judge, which would act on it, was not run.</td></tr><tr><td>2a</td><td>facts using an acronym without its full term <span class="small muted mono">fact.2a.bare_acronym</span></td><td class="n">84 of 2,006 facts (4.2%)</td><td>not fixed (future work)</td><td>Report-only flag in 2a; the 2b judge, which would act on it, was not run.</td></tr><tr><td>2a</td><td>facts with an unresolved pointing word (this, that) <span class="small muted mono">fact.2a.pointing</span></td><td class="n">52 of 2,006 facts (2.6%)</td><td>not fixed (future work)</td><td>Report-only flag in 2a; the 2b judge, which would act on it, was not run.</td></tr><tr><td>2a</td><td>facts with an acronym flag <span class="small muted mono">fact.2a.acronym</span></td><td class="n">1 of 2,006 facts (0.0%)</td><td>not fixed (future work)</td><td>Report-only flag in 2a; the 2b judge, which would act on it, was not run.</td></tr><tr><td>2a</td><td>transcript sentences that no fact cites as evidence <span class="small muted mono">fact.2a.sentences_uncited</span></td><td class="n">4,460 of 11,893 sentences (37.5%)</td><td>not fixed (future work)</td><td>Many are greetings, recaps and asides; the share is not a defect by itself.</td></tr><tr><td>2a, 4d</td><td>segments with no fact (nothing to ask, recap or link) <span class="small muted mono">seg.no_facts</span></td><td class="n">39 of 386 segments (10.1%)</td><td>not fixed (future work)</td><td>Mostly introductions and closing summaries: nothing to ask, recap or link there.</td></tr><tr><td>2b</td><td>facts never checked by the fact judge (2b skipped: every fact kept unjudged) <span class="small muted mono">fact.2b.not_judged</span></td><td class="n">2,006 of 2,006 facts (100.0%)</td><td>not fixed (future work)</td><td>2b ran with <code>--no-judge</code>: on the gold set the fact judge caught 0 or 1 of 7 real failures, and 7 of the 8 facts it acted on were good (<a href="#s2b">stage 2b</a>). The rerun with the revised prompts is pending.</td></tr><tr><td>2c</td><td>relation written in the opposite direction to its sentence (code check) <span class="small muted mono">con.2c.reverse</span></td><td class="n">437 of 7,502 flags (5.8%)</td><td>not fixed (future work)</td><td>Report-only flag in 2c; stages 3 and 4a use the concepts as extracted.</td></tr><tr><td>2c</td><td>concept name that does not occur in its facts&#x27; text <span class="small muted mono">con.2c.name_not_in_facts</span></td><td class="n">322 of 5,805 flags (5.5%)</td><td>not fixed (future work)</td><td>Report-only flag in 2c; stages 3 and 4a use the concepts as extracted.</td></tr><tr><td>2c</td><td>concept in no relation of its segment <span class="small muted mono">con.2c.no_triple</span></td><td class="n">184 of 5,805 flags (3.2%)</td><td>not fixed (future work)</td><td>Report-only flag in 2c; stages 3 and 4a use the concepts as extracted.</td></tr><tr><td>2c</td><td>relation whose two concepts share no fact <span class="small muted mono">con.2c.no_shared_fact</span></td><td class="n">113 of 7,502 flags (1.5%)</td><td>not fixed (future work)</td><td>Report-only flag in 2c; stages 3 and 4a use the concepts as extracted.</td></tr><tr><td>2c</td><td>acronym written inside the concept name (VR headset) <span class="small muted mono">con.2c.acronym_in_name</span></td><td class="n">38 of 5,805 flags (0.7%)</td><td>not fixed (future work)</td><td>Report-only flag in 2c; stages 3 and 4a use the concepts as extracted.</td></tr><tr><td>2c</td><td>alias that does not occur in the facts <span class="small muted mono">con.2c.alias_not_in_facts</span></td><td class="n">3 of 5,805 flags (0.1%)</td><td>not fixed (future work)</td><td>Lost and added items are retried in 2c (63 retries in turn 1, 22 in turn 2, none unresolved); what is left is reported.</td></tr><tr><td>2c</td><td>fact with no concept <span class="small muted mono">con.2c.fact_without_concept</span></td><td class="n">1 of 2,006 flags (0.0%)</td><td>not fixed (future work)</td><td>Report-only flag in 2c; stages 3 and 4a use the concepts as extracted.</td></tr><tr><td>3</td><td>two concepts that are the same term with an acronym expanded in one (HMD / head-mounted display, VR headset / virtual reality headset, iOS / iPhone operating system, 3D / three-dimensional) <span class="small muted mono">con.acronym_expansion</span></td><td class="n">17 of 3,122 concept pairs (0.5%)</td><td>not fixed (future work)</td><td>3b's synonym merge (262 model merges) removed most: of the MVP's six acronym and expansion twins, five now resolve to one concept. The headset family (C0005, C0075, C0735) still appears together on 7 lecture maps (11 in the MVP).</td></tr><tr><td>3</td><td>a concept whose name is another concept&#x27;s name plus a generic modifier (interaction / user interaction) <span class="small muted mono">con.generic_modifier</span></td><td class="n">22 of 3,122 concept pairs (0.7%)</td><td>not fixed (future work)</td><td>Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>3</td><td>two distinct concepts whose stored entry vectors have cosine &gt;= 0.9 and whose names share a word (likely duplicates or near-synonyms) <span class="small muted mono">con.embedding_similar</span></td><td class="n">676 of 16,556 concept pairs (cross-concept pairs with cosine &gt;= 0.70) (4.1%)</td><td>not fixed (future work)</td><td>The 3b model judged these pairs and kept them apart, except 8 that 3b's cap (12 candidates per cluster) left unjudged.</td></tr><tr><td>3, 2c</td><td>a name, alias or acronym text that identifies two or more concepts <span class="small muted mono">con.shared_key</span></td><td class="n">93 of 4,738 name keys (2.0%)</td><td>not fixed (future work)</td><td>100 concept pairs (alias and name 43, alias and alias 34, acronym and acronym 8, …). Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>3, 2c</td><td>a concept&#x27;s name equals another concept&#x27;s alias or acronym <span class="small muted mono">con.name_is_other_alias</span></td><td class="n">45 of 3,122 name keys (1.4%)</td><td>not fixed (future work)</td><td>A subset of the row above.</td></tr><tr><td>3, 2c</td><td>an acronym on a concept that is not the initials of its name but is the initials of another concept (FOV on horizontal field of view) <span class="small muted mono">con.acronym_of_other_concept</span></td><td class="n">4 of 158 acronyms (2.5%)</td><td>not fixed (future work)</td><td>FOV on “horizontal field of view”. Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>3</td><td>a name key shared by 3 or more concepts <span class="small muted mono">con.alias_shared_by_many</span></td><td class="n">6 of 4,738 name keys (0.1%)</td><td>not fixed (future work)</td><td>Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>2c, 3</td><td>single-word aliases that are only one word of a longer name (fragment aliases) <span class="small muted mono">con.alias_fragment</span></td><td class="n">98 of 1,741 aliases (5.6%)</td><td>not fixed (future work)</td><td>Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>2c, 3</td><td>aliases of 1-2 characters that are not the concept&#x27;s acronym or its initials <span class="small muted mono">con.alias_short</span></td><td class="n">44 of 1,741 aliases (2.5%)</td><td>not fixed (future work)</td><td>Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>2c, 3</td><td>aliases that are a single generic word from a small stoplist <span class="small muted mono">con.alias_generic</span></td><td class="n">10 of 1,741 aliases (0.6%)</td><td>not fixed (future work)</td><td>Found by a code rule. The pipeline has no signal for which concept or name is right, so nothing removes or merges them.</td></tr><tr><td>4a</td><td>connecting concepts (defined: false): no segment defines them, so their &#x27;definition&#x27; is a model-written gloss <span class="small muted mono">con.connecting</span></td><td class="n">1,806 of 3,122 concepts (57.8%)</td><td>display rule</td><td>Signal: 4a's <code>defined</code> flag. No concept card, not in the glossary, flagged <code>connecting</code> on the maps, and the model-written sentence is never sent; question answering gets their facts only (decision of 2026-11-18).</td></tr><tr><td>4a</td><td>concepts 4a marks defined, with no segment that defines them (defined_in empty) <span class="small muted mono">con.4a.defined_mismatch</span></td><td class="n">276 of 1,316 concepts (21.0%)</td><td>not fixed (future work)</td><td>272 are <code>defined: true</code> with no defining segment (they keep a card and a glossary entry); 4 are <code>defined: false</code> with one. Reported, not acted on.</td></tr><tr><td>4a</td><td>definition facts that 4a flags as misplaced (cited under another concept&#x27;s segment) <span class="small muted mono">con.4a.misplaced</span></td><td class="n">29 of 3,122 concepts (0.9%)</td><td>not fixed (future work)</td><td>Reported by 4a's checks.</td></tr><tr><td>4a</td><td>concepts with more facts than the 4a cap (40), so the definition saw a subset <span class="small muted mono">con.4a.capped</span></td><td class="n">15 of 3,122 concepts (0.5%)</td><td>not fixed (future work)</td><td>The definition was written from 40 of the concept's facts.</td></tr><tr><td>4a</td><td>defined concepts whose definition does not read like a definition (no &#x27;is / are / refers to / means / denotes / stands for / describes&#x27; within the first 90 characters of the first 20 words) <span class="small muted mono">con.4a.definition_no_verb</span></td><td class="n">0 of 1,316 defined concepts (0.0%)</td><td>fixed in the pipeline</td><td>The real 4a (one call per concept, 2026-11-17) replaced the MVP's definitions, which were the first defining fact (26% read like a definition). This rule is a lower bound of what is left.</td></tr><tr><td>4b</td><td>segments that serve no lecture objective <span class="small muted mono">seg.4b.in_no_objective</span></td><td class="n">60 of 386 segments (15.5%)</td><td>not fixed (future work)</td><td>Mostly closing summaries.</td></tr><tr><td>4c</td><td>concepts a lecture uses but no earlier lecture defines (assumed knowledge) <span class="small muted mono">seg.4c.assumed</span></td><td class="n">2,074 of 3,122 concepts (66.4%)</td><td>display rule</td><td>Signal: 4c's lecture graph. Listed as what a lecture builds on, not as cards; 1,806 of them are connecting concepts.</td></tr><tr><td>4d</td><td>broken references, duplicate IDs or schema errors in the knowledge layer <span class="small muted mono">seg.4d.broken_refs</span></td><td class="n">0 of 206,903 references (0.0%)</td><td>fixed in the pipeline</td><td>4d's reference check, run again by <code>analysis/mvp/integrity.py</code>.</td></tr><tr><td>4d</td><td>facts whose segment is missing from the lecture layer <span class="small muted mono">fact.no_segment</span></td><td class="n">0 of 2,006 facts (0.0%)</td><td>fixed in the pipeline</td><td>4d's reference check.</td></tr><tr><td>4d</td><td>facts with a null start or end time <span class="small muted mono">fact.null_time</span></td><td class="n">0 of 2,006 facts (0.0%)</td><td>fixed in the pipeline</td><td>4d fills null sentence times (2026-11-13).</td></tr><tr><td>4d</td><td>facts that share their start time with 2 or more other facts of the same segment (coarse time links) <span class="small muted mono">fact.shared_start</span></td><td class="n">462 of 2,006 facts (23.0%)</td><td>not fixed (future work)</td><td>A fact's time is the start of its first evidence sentence, often where the topic is introduced.</td></tr><tr><td>5</td><td>units whose first model output broke a code check and was regenerated (the client&#x27;s retry loop) <span class="small muted mono">act.retried</span></td><td class="n">197 of 1,198 units (16.4%)</td><td>fixed in the pipeline</td><td>Code checks, retried with the problem written out; 0 units left unresolved. Retries: quiz 104, recap 59, crossword 22, odd one out 9, open question 2, put in order 1.</td></tr><tr><td>5</td><td>quiz questions whose correct option is the longest of the four (test-wise bias) <span class="small muted mono">act.quiz.correct_longest</span></td><td class="n">160 of 1,163 questions (13.8%)</td><td>fixed in the pipeline</td><td>Was 52% (751 of 1,443) in the MVP; the retry check “correct option is the longest” brought it to 14%, below the 25% a unique longest has by chance.</td></tr><tr><td>5</td><td>crossword entries whose clue contains the whole answer <span class="small muted mono">act.crossword.clue_has_answer</span></td><td class="n">0 of 645 entries (0.0%)</td><td>fixed in the pipeline</td><td>s5 blanks answer words in a clue and retries; this rule re-checks the final text.</td></tr><tr><td>5</td><td>clues containing a `___` mask (word of the answer blanked by code) <span class="small muted mono">act.crossword.clue_masked</span></td><td class="n">0 of 645 entries (0.0%)</td><td>fixed in the pipeline</td><td>The 5 masked crosswords of the MVP were written again in the judge run.</td></tr><tr><td>5</td><td>items still judge-failed after the judge&#x27;s one rewrite round <span class="small muted mono">act.judge_unresolved</span></td><td class="n">865 of 3,911 items (22.1%)</td><td>fixed in the pipeline</td><td>The judge and one rewrite round repaired 221 of 1,086 first-judgement failures. The 865 left are handled per kind in the rows below; nothing is dropped from the data.</td></tr><tr><td>5</td><td>quiz questions the activities judge fails (first judgement, then one rewrite, the better version kept) <span class="small muted mono">act.quiz.judge_failed</span></td><td class="n">102 of 1,163 questions (8.8%)</td><td>hidden from learners</td><td>Hidden when it failed <code>answerable</code>, <code>clear</code>, <code>no_source_talk</code> or <code>one_answer</code>: 35 of the 102. The 67 that failed only <code>no_giveaway</code> or <code>worth_asking</code> are shown. First judgement 285, rewrite repaired 183.</td></tr><tr><td>5</td><td>open questions the judge fails <span class="small muted mono">act.open_question.judge_failed</span></td><td class="n">24 of 219 items (11.0%)</td><td>hidden from learners</td><td>Every failed item hidden (24 of 24). First judgement 62.</td></tr><tr><td>5</td><td>odd-one-out puzzles the judge fails <span class="small muted mono">act.odd_one_out.judge_failed</span></td><td class="n">39 of 133 items (29.3%)</td><td>hidden from learners</td><td>Every failed item hidden (39 of 39).</td></tr><tr><td>5</td><td>put-in-order items the judge fails <span class="small muted mono">act.put_in_order.judge_failed</span></td><td class="n">25 of 42 items (59.5%)</td><td>hidden from learners</td><td>Every failed item hidden (25 of 25).</td></tr><tr><td>5</td><td>recap points the judge fails (supported/faithful/stands_alone/...) <span class="small muted mono">act.recap.points_failed</span></td><td class="n">371 of 1,360 points (27.3%)</td><td>display rule</td><td>Only the points the judge passed are shown (decision of 2026-11-18; display only, nothing generated again).</td></tr><tr><td>5</td><td>recap summary texts the judge fails <span class="small muted mono">act.recap.text_failed</span></td><td class="n">222 of 347 recap texts (64.0%)</td><td>display rule</td><td>The summary text is shown only when it passed.</td></tr><tr><td>5</td><td>whole recaps with no judge-passing point (nothing left to show) <span class="small muted mono">act.recap.no_passing_point</span></td><td class="n">6 of 347 recaps (1.7%)</td><td>display rule</td><td>The recap is not shown; that break shows only the quiz.</td></tr><tr><td>5</td><td>crossword clues the judge fails (readable, from_text, unique, ...) <span class="small muted mono">act.crossword.clue_failed</span></td><td class="n">82 of 645 clues (12.7%)</td><td>display rule</td><td>The grid is kept; the failed words are shown filled in and their clues are never shown.</td></tr><tr><td>5</td><td>whole activities with every item hidden from learners (judge-failed under the per-kind rule; recaps with no passing point) <span class="small muted mono">act.whole_hidden</span></td><td class="n">40 of 855 activities (4.7%)</td><td>hidden from learners</td><td>Per kind: put in order 24 of 41, odd one out 9 of 57, recap 6 of 347, quiz 1 of 347, open question 0 of 63.</td></tr><tr><td>5</td><td>concept maps with more than 60 nodes (unreadable at &#x27;Fit&#x27;) <span class="small muted mono">act.map.too_big</span></td><td class="n">40 of 63 maps (63.5%)</td><td>display rule</td><td>Maps are made by code (median 71 nodes, max 159). The viewer shows about 20 key concepts, with “all N, by part” as an option (<code>0965ba9</code>).</td></tr><tr><td>5</td><td>units that made no activity (status empty or skipped) <span class="small muted mono">act.units_empty_skipped</span></td><td class="n">33 of 1,198 units (2.8%)</td><td>not fixed (future work)</td><td>A kind may be missing by the contract: put in order empty in 25 units, odd one out in 6; lecture 1 has no recall (no earlier concept), lecture 63 no crossword (5 facts).</td></tr><tr><td>5</td><td>crossword entries whose clue contains a word of the answer&#x27;s concept name/aliases (a part of the answer) <span class="small muted mono">act.crossword.clue_has_part</span></td><td class="n">1 of 645 entries (0.2%)</td><td>not fixed (future work)</td><td>s5 masks the words of the name; what slips through is counted.</td></tr><tr><td>5</td><td>two answers of one grid with the same clue text <span class="small muted mono">act.crossword.clue_duplicate</span></td><td class="n">0 of 645 entries (0.0%)</td><td>not fixed (future work)</td><td>Rule run; none found.</td></tr><tr><td>5</td><td>match-pair definitions cut off with &#x27;…&#x27; (read as unfinished) <span class="small muted mono">act.match.truncated</span></td><td class="n">383 of 502 pairs (76.3%)</td><td>not fixed (future work)</td><td>The right side is the 4a definition cut to a word cap by s5; match the pairs has no judge.</td></tr><tr><td>5</td><td>match pairs where the definition (right) contains the whole term (left): the answer is given away <span class="small muted mono">act.match.term_in_definition</span></td><td class="n">1 of 502 pairs (0.2%)</td><td>not fixed (future work)</td><td>s5 trims the term from the start of the definition, not from later in it.</td></tr><tr><td>5</td><td>pairs of definitions in one match set that are near-identical (token Jaccard &gt;= 0.7) <span class="small muted mono">act.match.twin_rows</span></td><td class="n">0 of 502 pair-pairs (0.0%)</td><td>not fixed (future work)</td><td>Rule run; none found.</td></tr><tr><td>5</td><td>match-pair definitions that start lower-case or with &#x27;…&#x27; <span class="small muted mono">act.match.bad_start</span></td><td class="n">0 of 502 pairs (0.0%)</td><td>not fixed (future work)</td><td>Rule run; none found.</td></tr><tr><td>5</td><td>map edges whose label has 9 or more words (a sentence fragment) <span class="small muted mono">act.map.long_edge_label</span></td><td class="n">1,065 of 7,450 edges (14.3%)</td><td>not fixed (future work)</td><td>Reported.</td></tr><tr><td>5</td><td>complete-the-map activities that blank the same edge twice <span class="small muted mono">act.completemap.blank_twice</span></td><td class="n">0 of 63 activities (0.0%)</td><td>not fixed (future work)</td><td>Rule run; none found.</td></tr><tr><td>5</td><td>report-only code flags on the kept items (not judge verdicts) <span class="small muted mono">act.code_flags</span></td><td class="n">186 of 1,168 flags (15.9%)</td><td>not fixed (future work)</td><td>Report-only. Most: <code>odd_one_out.not_a_concept</code> 85, <code>recap.facts_uncovered</code> 42, <code>crossword.filled_from_used</code> 20.</td></tr><tr><td>QA</td><td>answers slower than 15 s <span class="small muted mono">qa.slow</span></td><td class="n">3 of 56 answers (5.4%)</td><td>fixed in the pipeline</td><td>Thinking only in round 0 and an early exit for unknown names (2026-11-17): bench median 4.8 s, max 9.3 s.</td></tr><tr><td>QA</td><td>bench answers slower than 8 s after the latency fixes <span class="small muted mono">qa.bench_slow</span></td><td class="n">4 of 34 answers (11.8%)</td><td>not fixed (future work)</td><td>Comparisons (two cards, long answers) stay the slowest.</td></tr><tr><td>QA</td><td>not-covered answers that decline but then pad with loosely related facts, and are the slowest type <span class="small muted mono">qa.not_covered_padded</span></td><td class="n">2 of 36 questions (5.6%)</td><td>fixed in the pipeline</td><td>The time is fixed (early exit when nothing close is found); the padding itself is unchanged.</td></tr><tr><td>QA, 4c</td><td>prerequisite answers listing odd concepts (location awareness, markers before lecture 40; augmented virtuality before 16) <span class="small muted mono">qa.prereq_odd</span></td><td class="n">2 of 36 questions (5.6%)</td><td>fixed in the pipeline</td><td><code>lecture_dependencies</code> rewritten (2026-11-17): single mentions listed “in passing”, the rest ranked by uses.</td></tr><tr><td>QA</td><td>&#x27;where is X taught&#x27; answers showing two different times (text 14:25, citation 11:44) <span class="small muted mono">qa.two_times</span></td><td class="n">2 of 36 questions (5.6%)</td><td>fixed in the pipeline</td><td>A time the model writes before a citation is removed; the citation carries one time.</td></tr><tr><td>QA, viewer</td><td>answers containing markdown (** bold, bullets) or LaTeX that the page showed as raw characters <span class="small muted mono">qa.markdown_raw</span></td><td class="n">32 of 56 answers (57.1%)</td><td>fixed in the viewer</td><td>Bold and lists rendered since 2026-11-13; formulas typeset with KaTeX, bundled for offline use, since 2026-11-18.</td></tr></table></div><p class="small muted">68 rows: 14 fixed in the pipeline, 1 fixed in the viewer, 7 display rule, 5 hidden from learners, 41 not fixed (future work). Counts and handling from <code>analysis/failures/inventory.json</code>, written by <code>analysis/failures/inventory.py</code> from <code>pipeline/output/nptel_vr/</code> (read only) and the QA records in <code>analysis/</code>; each row's rule, examples and precision note are in <code>inventory.md</code>. Self-check: judge-failed items counted there 865, the pipeline's own total 865. For a row handled as fixed, the count is what is left after the fix. QA rows count the MVP test answers and the bench, not the whole course.</p><details><summary>Failures found earlier and fixed before this inventory <span class="meta">inventory.json, “history”</span></summary><div class="tablewrap"><table><tr><th>Date</th><th>What failed</th><th>Fix</th></tr><tr><td>2026-11-13</td><td>Activities had no judges; quiz correct option uniquely longest in 52% (751 of 1,443); 5 unresolved crosswords with masked clues; match pairs ~70% problematic</td><td>Activities judge v3 (judge + one rewrite round, per-item verdicts in checks.json) and the retry check for the longest option; unique-longest is now computed above.</td></tr><tr><td>2026-11-13</td><td>4a skipped: each &#x27;definition&#x27; was the concept&#x27;s first defining fact (only 26% read like a definition; 1,107 cards)</td><td>Real 4a, one Qwen call per concept, cap 40 facts, checks with retry (2026-11-17): 1,316 defined / 1,806 connecting concepts.</td></tr><tr><td>2026-11-13</td><td>3b skipped: duplicate concepts on screen (headset / head-mounted display / VR headset on 11 lecture maps; 6 acronym/expansion twins)</td><td>3b synonym merge rebuilt 2026-11-17 (425 clusters, 262 model merges, 2,795 kept apart); activity concept IDs remapped. Residual duplicates are counted in the con.* rows.</td></tr><tr><td>2026-11-13</td><td>4d: null sentence times broke fact times</td><td>4d fixed for null sentence times (2026-11-13).</td></tr><tr><td>2026-11-17</td><td>QA answers slow (median 5.4 s, max 16.2 s) and showing odd prerequisites</td><td>Thinking off after round 0, early exit on unknown names, lecture_dependencies rewritten, citations tidied (analysis/qa/STATE.md): median 4.8 s, max 9.3 s.</td></tr><tr><td>2026-11-17/18</td><td>Judge-failed items shown to learners</td><td>Per-kind hide rule in serve.py (HIDE_JUDGE_FAILED) and the 2026-11-18 display decisions: recaps show passing points only, crosswords pre-fill failed words and hide their clues, connecting concepts get no card / glossary entry / definition.</td></tr></table></div></details>
+<p>For scale, stage 3's own decisions (<code>stage_3_registry/decisions.jsonl</code>): 2,421 exact merges, 262 model
+merges, 2,795 pairs kept apart, 46 triples joined, 29 self-loops dropped; 827 concept pairs carry several
+labels (3c log).</p>
+
 <h3 id="ev-baselines" data-toc="Baseline tests (placeholder)">Baseline tests</h3>
 <div class="callout warn"><span class="tag">Placeholder · filled by a later pass</span>
 <p>The question set of the baseline tests (<code>baseline-tests/</code>: plain LLM, RAG over transcripts, graph-only) and
@@ -3777,7 +3784,7 @@ their results go here, per question and per system. See also <a href="#baselines
 <!-- ======================================================================= PART IV -->
 <div class="part-head" data-part="IV · Using it"><span class="num">Part IV · Using it</span><h2 id="using" data-toc="Running it">Running it</h2>
 <p>How long a run takes, how to get from a fresh clone to a running viewer, how to run or rerun one stage, the EC2
-workflow and the demo. Then the reference: the Python API, every command line, the HTTP routes, the configs and the
+workflow and the four ways to run the demo. Then the reference: the Python API, every command line, the HTTP routes, the configs and the
 environment variables. Commands run from <code>pipeline/</code> unless they say otherwise.</p></div>
 
 <h3 id="timing" data-toc="Time estimates">Time estimates</h3>
@@ -3815,20 +3822,10 @@ request alone. The lir-construction README measured the same model at 752 tokens
 <pre data-lang="bash">git clone --depth 1 --filter=blob:none --sparse https://github.com/raghu-raman-b/mtp-implementation.git
 cd mtp-implementation &amp;&amp; git sparse-checkout set pipeline
 cd pipeline
-python3 viewer/serve.py nptel_vr              # http://localhost:8765 ; add ?dev=1 for developer mode</pre>
+python3 viewer/serve.py nptel_vr --no-qa      # http://localhost:8765 ; add ?dev=1 for developer mode</pre>
 <p>Python 3.11 or newer (configs are read with <code>tomllib</code>). The viewer and most stages need only the standard
-library. The question box needs more:</p>
-<ul>
-<li>the query embedder: <code>torch</code> and <code>sentence-transformers</code> (the local PC runs <code>torch==2.14.1</code>,
-<code>sentence-transformers==6.1.0</code>, <code>transformers==5.15.0</code>; <code>Qwen/Qwen3-Embedding-0.6B</code> downloads on first use);</li>
-<li>a model server: llama.cpp's <code>llama-server</code> and the Gemma 4 12B QAT GGUF (6.72 GB). The local config
-<code>configs/gemma4_12b_llamacpp.json</code> names this PC's binary, model path and toolbox; on another machine edit
-<code>binary</code> and <code>model_path</code>, or point <code>QA_CONFIG</code> at another config. On an Ubuntu GPU machine,
-<code>demo/setup_demo.sh</code> does all of it (<a href="#demo">Demo</a>).</li>
-</ul>
-<pre data-lang="bash">python3 viewer/serve.py nptel_vr --warm       # loads the layer, the embedder and the model at start
-python3 -m qa "What is an HMD?" --lecture 4    # one question from the command line
-python3 -m qa --stop                           # stop the model server it started</pre>
+library. The question box (Ask) needs a model server and the query embedder; the four ways to run it, from no GPU to
+a cloud instance and a Windows laptop, are in <a href="#demo">Running the demo</a>.</p>
 
 <h3 id="run-stage" data-toc="Running one stage">Running one stage, or the whole course</h3>
 <p>Each stage is one script with the course name, an optional <code>--only</code> and, for model stages, <code>--llm
@@ -3904,12 +3901,180 @@ are merged into <code>pipeline/output/</code> (the local cache must be a prefix 
 (<code>tests/fake_*.py</code>).</li>
 </ul>
 
-<h3 id="demo" data-toc="The demo">The demo</h3>
-<span class="redesign">As of 2026-11-17 · being redesigned</span>
-<p>As on main: the viewer and its question box run on one GPU instance, and the laptop reaches it through an SSH port
-forward. <code>demo/setup_demo.sh</code> sets it all up; <code>demo/check_demo.sh</code> checks it end to end
-(<code>pipeline/demo/README.md</code>). Another agent is changing this setup to keep only the model on the server
-(<a href="#deploy">the design</a>).</p>
+<h3 id="demo" data-toc="Running the demo">Running the demo: four setups</h3>
+<p>The viewer, the layers and the videos always run on the machine that shows the page. The setups differ in where
+the model that answers questions runs, or whether there is one. Commands run from <code>pipeline/</code>; the
+PowerShell scripts run from the repository folder. Ports: 8765 the viewer; 8092 the local llama-server; on an
+instance 8096 the model server and 8097 the query embedder, reached through an SSH tunnel on the same port numbers.</p>
+<div class="tablewrap"><table>
+<tr><th>Setup</th><th>Ask</th><th>Model and query embedder</th><th>This machine needs</th><th>Start</th></tr>
+<tr><td><a href="#demo-nogpu">1. No GPU</a></td><td>off</td><td>none</td><td>Python 3.11 or newer</td><td><code>python3 viewer/serve.py nptel_vr --no-qa</code></td></tr>
+<tr><td><a href="#demo-local">2. Local GPU</a></td><td>on</td><td>Gemma 4 12B on llama-server here, started by <code>qa</code>; the embedder here</td><td>an NVIDIA GPU (12 GB is enough), llama.cpp, the GGUF, torch and sentence-transformers</td><td><code>python3 viewer/serve.py nptel_vr --warm</code></td></tr>
+<tr><td><a href="#demo-remote">3. Remote GPU instance</a></td><td>on</td><td>on the instance (llama.cpp or vLLM, and the embedder), through an SSH tunnel</td><td>Python 3.11 or newer, numpy, an SSH client</td><td>instance: <code>demo/ec2_model_server.sh --engine llamacpp</code>; here: <code>python -m demo run</code></td></tr>
+<tr><td><a href="#demo-windows">4. Windows laptop</a></td><td>on</td><td>as in 3</td><td>Python 3.11 or newer (3.12 recommended), the OpenSSH client</td><td><code>setup_windows.ps1</code> once, then <code>run_demo.ps1</code></td></tr>
+</table></div>
+<div class="callout warn"><span class="tag">Not yet run for real · as of 2026-11-19</span>
+<p>Setups 3 and 4 have run only with the local PC standing in for the instance and a simulated 250 ms tunnel
+(<code>analysis/demo/remote_setup.md</code>): <code>ec2_model_server.sh</code> has not run on a real instance (no apt, no
+llama.cpp build, no downloads, no server start), its vLLM branch has not run at all, and the PowerShell scripts are
+<b>untested on real Windows until the rehearsal</b>. The rehearsal's checklist is in <code>remote_setup.md</code>,
+“Checklist for the user”.</p></div>
+
+<h4 id="demo-nogpu">1. No GPU: the viewer only, Ask off</h4>
+<p>Every page works (lectures, activities, maps, glossary, videos); the question box is off, so nothing loads a model,
+the embedder or numpy. Any OS with Python 3.11 or newer. <code>--no-qa</code> (the viewer, the launcher and
+<code>run_demo.ps1</code>) is new on 2026-11-19.</p>
+<pre data-lang="bash">python3 viewer/serve.py nptel_vr --no-qa                                      # any OS
+python -m demo run --no-qa                                                     # the same through the launcher
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -NoQa      # Windows, after setup_windows.ps1</pre>
+<p><b>Videos</b> (5.5 GB) are not in git and are optional: the viewer reads <code>input/nptel_vr/media/</code> or the folder
+given with <code>--media</code>, and plays a lecture without a file from YouTube (by the <code>youtube_id</code> in
+<code>titles.tsv</code>; the machine then needs internet). <code>--prefer-youtube</code> (or <code>?yt=1</code>) uses YouTube
+even when the files are there.</p>
+
+<h4 id="demo-local">2. Local GPU: llama-server started by <code>qa</code></h4>
+<p>How the local PC runs it, with Gemma 4 12B QAT on its 12 GB RTX 5070 (median 4.9 s per question). Needs:</p>
+<ul>
+<li>an NVIDIA GPU and llama.cpp's <code>llama-server</code> built for it (the PC runs commit <code>69eb250</code>, built
+2026-09-15, the <code>LLAMA_REF</code> of the instance script);</li>
+<li>the model <code>unsloth/gemma-4-12B-it-qat-GGUF</code>, file <code>gemma-4-12B-it-qat-UD-Q4_K_XL.gguf</code> (revision
+<code>980b060</code>, 6.72 GB);</li>
+<li>the query embedder in the same Python: numpy, <code>torch==2.14.1</code>, <code>sentence-transformers==6.1.0</code>,
+<code>transformers==5.15.0</code>; <code>Qwen/Qwen3-Embedding-0.6B</code> (1.2 GB) downloads on first use;</li>
+<li>the config <code>configs/gemma4_12b_llamacpp.json</code> (port 8092, 6 slots, 131,072 context, q8_0 KV cache,
+thinking budget 8,192). It names this PC's <code>binary</code> and <code>model_path</code> and runs the server in the Fedora
+toolbox <code>llm-engine</code>. On another machine set <code>binary</code> and <code>model_path</code> and set
+<code>toolbox</code> to <code>""</code> (else the start stops: “toolbox is set in the config but the toolbox command is not
+installed”), or give another config with <code>QA_CONFIG</code>.</li>
+</ul>
+<pre data-lang="bash">python3 viewer/serve.py nptel_vr --warm          # Ask on; loads the layer, the embedder and the model at start
+python3 -m qa "What is an HMD?" --lecture 4      # one question from the command line
+python3 -m qa --stop                             # stop the llama-server on the config's port</pre>
+<p><b>How <code>qa</code> starts and stops its server.</b> The local config does not set <code>"launch": false</code>, so the
+client launches: at the first question, or at start with <code>--warm</code>, it checks the config's port. When nothing
+answers it starts <code>llama-server</code> with the config's flags (inside the toolbox when one is set) in a session of
+its own, logs to <code>output/logs/llm_server_8092.log</code>, waits for <code>/health</code> and attaches. A server that
+already answers on the port is used as it is; one that serves another model is refused. The server is left running
+when the viewer or <code>python -m qa</code> exits, so the next start does not wait for the load. <code>python3 -m qa
+--stop</code> stops it (<code>pkill</code> of llama-server on the config's port; Linux and macOS only, and not for a config
+that points at another machine). Without <code>--warm</code>, the first question that searches the facts waits 20–23 s
+for the embedder to load.</p>
+
+<h4 id="demo-remote">3. Remote GPU instance: the model there, everything else here</h4>
+<p>The instance only serves the model and the query embedder, both on 127.0.0.1 (no port open but SSH). The viewer,
+<code>qa</code>'s tool loop, the layer and the videos run on the laptop; only the model's requests (a few thousand
+tokens of text per call) and the embedder's queries cross the tunnel (<a href="#deploy">the design</a>,
+<code>pipeline/demo/README.md</code> section A).</p>
+<p><b>The instance needs</b> an NVIDIA GPU with the AMI “Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 24.04)”
+(driver, CUDA toolkit, Python 3.12; on Ubuntu 22.04 install python3.12 and set <code>PYTHON=python3.12</code>), a
+security group with SSH only, a 100 GB root volume. For llama.cpp any NVIDIA GPU with 16 GB or more (a g6.xlarge with
+an L4 or a g5.xlarge with an A10G is enough). For vLLM 40 GB or more (an L40S, an A100, the RTX PRO 6000: it serves the
+BF16 checkpoint, 24 GB of weights; <code>FORCE=1</code> overrides the check) and a Hugging Face token with access to
+<code>google/gemma-4-12B-it</code> (<code>HF_TOKEN</code> or <code>pipeline/.hf_token</code>). vLLM was benchmarked at a
+median of 4.5 s and a maximum of 6.6 s per question on the RTX PRO 6000, with the viewer on the same machine
+(<code>configs/gemma4_12b_vllm_demo.json</code>, <code>analysis/qa/STATE.md</code>).</p>
+<pre data-lang="bash"># from the laptop: copy the ~150 kB the instance needs to ~/mtp-demo/pipeline, run the setup there in tmux "setup",
+# and show its output (--no-start: copy only)
+python -m demo push --instance ubuntu@&lt;ip&gt; --key ~/demo.pem --engine llamacpp      # or --engine vllm
+
+# or on the instance itself
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --engine llamacpp     # or --engine vllm; no flag: it asks
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --status              # which ports answer, the tmux sessions, the tunnel command
+bash ~/mtp-demo/pipeline/demo/ec2_model_server.sh --stop                # stops both servers (tmux model and embed)</pre>
+<p><b><code>ec2_model_server.sh</code></b>, in eight steps: the GPU (and the 40 GB check for vLLM), the Hugging Face cache on
+the local NVMe when there is one, the token; the missing system packages (tmux, curl, python3-venv; for llama.cpp also
+git, cmake and build tools); <code>~/demo-venv</code> with torch and sentence-transformers at the versions the facts were
+embedded with, while the model and the embedder download; the engine (llama-server built for this GPU at the PC's
+llama.cpp commit, or vLLM in <code>~/vllm-venv</code>); the demo config set for this instance
+(<code>configs/gemma4_12b_demo.json</code> or <code>gemma4_12b_vllm_demo.json</code>); tmux <code>model</code> (the model server
+on 127.0.0.1:8096, started by <code>scripts/llm/serve.py</code> from the config) and tmux <code>embed</code>
+(<code>demo/embed_server.py</code> on 127.0.0.1:8097); two warm-up requests (a short one, then one with the qa tools and
+thinking); the tunnel command and the laptop's command. It is safe to rerun: what is installed, built or downloaded
+is reused, a server that answers is kept, and switching the engine stops the other one first. <code>--no-embed</code>
+serves no embedder (the laptop then embeds on its CPU with <code>--local-embed</code>). The other options are
+environment variables listed at the top of the script (<code>TORCH_CPU=1</code>, <code>NO_NVME=1</code>,
+<code>LLAMA_REF=master</code>, <code>VLLM_PKG</code>, <code>PYTHON</code>, <code>FORCE=1</code>). The README expects about
+20 minutes the first time and 2–3 after (not yet measured on an instance). Stopping the instance wipes the NVMe and
+with it the model cache: the next start downloads again.</p>
+<p><b>The laptop</b> (Linux or macOS; Windows in setup 4):</p>
+<pre data-lang="bash">pip install -r demo/requirements-local.txt                                      # numpy
+python -m demo setup --instance ubuntu@&lt;ip&gt; --key ~/demo.pem --media ~/videos    # saves demo/local.json, checks this machine
+python -m demo run                       # tunnel + viewer + browser; Ctrl+C stops the viewer and the tunnel
+python -m demo check                     # in a second terminal: PASS / FAIL lines, ALL PASS at the end
+python -m demo bench --warmup            # the demo questions through the stream, timed
+python -m demo tunnel                    # only the tunnel, in the foreground</pre>
+<ul>
+<li><b>setup</b> saves the instance, key, videos folder and <code>--local-embed</code> in <code>demo/local.json</code>
+(gitignored; the other commands take them as defaults) and checks Python 3.11 or newer, numpy (and sentence-transformers
+with <code>--local-embed</code>), <code>ssh</code> on the path, the key file, the videos in the folder, and the course layer.</li>
+<li><b>run</b> opens the tunnel <code>ssh -N -L 8096:127.0.0.1:8096 -L 8097:127.0.0.1:8097 user@host</code> (ServerAliveInterval
+15, ExitOnForwardFailure; opened again when it drops), waits up to 30 minutes for the model server (it may still be
+loading), reads the engine from the served model's name (<code>gemma-4-12b-qat</code> llama.cpp, <code>gemma-4-12b</code> vLLM),
+writes that engine's demo config with <code>url</code> = the tunnel to <code>demo/logs/qa_remote_&lt;engine&gt;.json</code>,
+checks that the embedder serves the layer's model, starts <code>viewer/serve.py --warm</code> with <code>QA_CONFIG</code>,
+<code>QA_EMBED_URL</code> and <code>QA_KEEP_WARM=1</code>, waits until <code>/api/qa_status</code> says ready, and opens the
+browser. The instance keeps serving after Ctrl+C. Options: <code>--port</code> (8765; the next free port when taken),
+<code>--media</code>, <code>--prefer-youtube</code>, <code>--no-browser</code>, <code>--no-tunnel</code> (the ports are already
+forwarded), <code>--model-port N</code> (when 8096 is taken on the laptop), <code>--local-embed</code>,
+<code>--wait-model</code> (1800 s), <code>--wait-warm</code> (180 s), <code>--no-qa</code>.</li>
+<li><b>check</b> prints PASS, FAIL or SKIP per item and exits with 1 on a failure: the viewer answers; the model server is
+healthy through the tunnel (with its time) and serves a demo model; question answering is warm; the embedding server
+serves the layer's model, and its vectors for 24 fact texts equal the layer's (cosine ≥ 0.999); the viewer routes
+<code>/</code>, <code>/api/home</code>, <code>/api/view/4</code>, <code>/api/glossary</code>; one question (“What is an HMD?”,
+<code>--question</code>) answered through the stream with at least one citation, with its times. With the PC standing in
+for the instance through the simulated 250 ms tunnel: ALL PASS, health check 505 ms, minimum cosine 0.99977, first
+words after 4.19 s, done in 7.64 s, 4 citations (<code>remote_setup.md</code>).</li>
+<li><b>bench</b> asks the 12 questions of <code>DEMO_PLAN.md</code> (the list in <code>launcher.py</code>) through
+<code>/api/ask_stream</code> and prints, per question and as medians, the seconds to the first event, the first step, the
+answer's start, the first words and the end. <code>--warmup</code> asks an off-stage question first; <code>--runs N</code>;
+<code>--out FILE</code> appends one JSON line per question; several <code>--url</code> compare setups question by question.</li>
+<li><b>push</b> and <b>tunnel</b>: above; both take <code>--instance</code>, <code>--key</code>, <code>--ssh-port</code>.</li>
+</ul>
+<p><b>The network, first.</b> Time SSH to the instance before choosing it: <code>time (ssh -i key.pem ubuntu@&lt;ip&gt; "head -c
+2000000 /dev/urandom" | wc -c)</code> should take under about 2 s. From the user's network, SSH to us-east-1 ran at about
+40 kB/s: pick an instance in a region near the venue. Each new connection through the tunnel costs a round trip, so
+<code>qa</code> keeps its connections to both servers open (<code>scripts/llm/http_pool.py</code>); through the simulated
+250 ms tunnel the first byte of a round came after 338 ms instead of 589 ms.</p>
+
+<h4 id="demo-windows">4. Windows laptop</h4>
+<div class="callout warn"><span class="tag">Untested on real Windows until the rehearsal</span>
+<p>The two scripts are ASCII only and carry little logic; the logic is <code>python -m demo</code>, which ran on Linux.
+Nothing here has run on Windows yet.</p></div>
+<p><b>Needs</b>: Windows 10 (1809 or later) or 11 with the OpenSSH client (built in; else, in PowerShell as
+administrator, <code>Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0</code>); Python 3.11 or newer
+(<code>winget install -e --id Python.Python.3.12</code>, or python.org with “Add to PATH”, then a new terminal); the
+repository (the sparse clone of <code>pipeline/</code>, about 330 MB, or a copy of the folder); optionally the videos
+(<code>pipeline/input/nptel_vr/media/</code>, 5.5 GB, anywhere on the laptop); the instance's key (.pem). The instance is
+set up as in setup 3.</p>
+<pre data-lang="powershell"># once: a venv in %USERPROFILE%\mtp-demo-venv (numpy), the key's permissions, the settings in pipeline\demo\local.json
+powershell -ExecutionPolicy Bypass -File pipeline\demo\setup_windows.ps1 -Instance ubuntu@&lt;ip&gt; -Key C:\keys\demo.pem -Media D:\demo\media
+
+# the instance, from the laptop (instead of python -m demo push)
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Push -Engine llamacpp     # or -Engine vllm
+
+# demo day
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1            # tunnel + viewer + browser; Ctrl+C stops
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Check     # a second window: ALL PASS expected
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -Bench     # the demo questions, timed (with the warm-up)
+powershell -ExecutionPolicy Bypass -File pipeline\demo\run_demo.ps1 -NoQa      # no instance: the viewer with Ask off</pre>
+<ul>
+<li><b>setup_windows.ps1</b>, five steps: finds Python 3.11 or newer (<code>py -3.12</code>, <code>-3.13</code>, <code>-3.11</code>,
+<code>python</code> …); makes the venv and installs <code>requirements-local.txt</code> (numpy; with <code>-LocalEmbed</code>
+also torch for the CPU and sentence-transformers, about 1 GB, for an instance started with <code>--no-embed</code>);
+checks the OpenSSH client; narrows the key's permissions to the user (<code>icacls</code>: Windows OpenSSH refuses a key
+others can read); runs <code>python -m demo setup</code>. <code>-Venv</code> moves the venv. Safe to rerun.</li>
+<li><b>run_demo.ps1</b> runs <code>python -m demo</code> with the venv's Python: <code>run</code> by default, or
+<code>-Check</code>, <code>-Bench</code> (with <code>--warmup</code>), <code>-Push</code> (<code>-Engine</code>); it takes
+<code>-Instance</code>, <code>-Key</code>, <code>-Media</code>, <code>-Port</code> (8765), <code>-NoBrowser</code>,
+<code>-LocalEmbed</code>, <code>-NoQa</code>; a parameter given wins over the saved settings.</li>
+<li><code>-ExecutionPolicy Bypass</code> runs the scripts without changing the system's policy. “UNPROTECTED PRIVATE KEY
+FILE”: rerun <code>setup_windows.ps1</code> with <code>-Key</code>. Port 8096 taken on the laptop: <code>python -m demo run
+--model-port 18096</code>. More in <code>pipeline/demo/README.md</code>, A4.</li>
+</ul>
+
+<details><summary>The older setup: everything on the instance <span class="meta">demo/setup_demo.sh, check_demo.sh; README section B</span></summary>
+<p>The viewer and the question box both run on one GPU instance, and the laptop opens the page through
+<code>ssh -L 8765</code>. Still in the repository, unchanged.</p>
 <pre data-lang="bash">rsync -a --exclude __pycache__ --exclude 'input/*/media' --exclude 'output/logs' --exclude 'output/*/qa' \
       --exclude 'demo/logs' --exclude '.hf_token' pipeline demo:mtp-implementation/            # about 170 MB
 ssh demo "tmux new -d -s setup 'bash ~/mtp-implementation/pipeline/demo/setup_demo.sh 2&gt;&amp;1 | tee ~/setup_demo.log'"
@@ -3927,15 +4092,8 @@ the model server, the viewer's routes, a Range request on a video, every lecture
 answered with citations. On 2026-11-17 on an RTX PRO 6000: ALL PASS; “What is an HMD?” in 2.9 s with 4 citations
 (<code>analysis/mvp/demo_ec2_2026-11-17/check_demo.txt</code>).</li>
 <li><b>demo_tool.py</b>: helpers for both (fill the config, wait for the model, count media, ask, HTTP checks); standard library only.</li>
-<li><b>Videos</b> (5.5 GB) are optional: without them each lecture plays from YouTube. <code>--prefer-youtube</code> (or
-<code>?yt=1</code>) uses YouTube even when files are there, so video never crosses the tunnel.</li>
-<li><b>vLLM instead of llama.cpp</b>: <code>configs/gemma4_12b_vllm_demo.json</code>, benchmarked at median 4.5 s, max 6.6 s on the
-RTX PRO 6000; start steps in <code>analysis/qa/STATE.md</code>.</li>
-<li><b>Demo day</b>: choose a region near the venue and time the tunnel first (<code>time (ssh demo "head -c 2000000
-/dev/urandom" | wc -c)</code>, under about 2 s); from the user's network to us-east-1 SSH ran at about 40 kB/s. Warm the
-fact search with one off-stage question (the first use of the embedder took 20–23 s). The walk and the verified
-questions are in <code>pipeline/continue/DEMO_PLAN.md</code>.</li>
-</ul>
+</ul></details>
+<p>The walk and the verified questions for the demo are in <code>pipeline/continue/DEMO_PLAN.md</code>.</p>
 
 <!-- ------------------------------------------------------------------ reference -->
 <h2 id="reference" data-toc="Reference">Reference</h2>
@@ -4008,7 +4166,9 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>scripts/s5_activities.py</code></td><td><code>course [--llm CFG] [--only …] [--kinds quiz,recap,…] [--seed N] [--out DIR] [--check] [--judge] [--judge-rewrite] [--judge-llm CFG]</code></td></tr>
 <tr><td><code>python -m scripts.llm.serve</code></td><td><code>CONFIG [--smoke]</code></td></tr>
 <tr><td><code>python -m qa</code></td><td><code>"question" [--lecture N] [--course C] [--config FILE] [--think | --no-think] [--json]</code>; <code>--stop</code></td></tr>
-<tr><td><code>viewer/serve.py</code></td><td><code>course [--port 8765] [--host] [--root] [--media] [--output DIR] [--activities NAME] [--qa-path] [--warm] [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]</code></td></tr>
+<tr><td><code>viewer/serve.py</code></td><td><code>course [--port 8765] [--host] [--root] [--media] [--output DIR] [--activities NAME] [--qa-path] [--warm] [--no-qa] [--prefer-youtube] [--video-chunk-mb 4] [--video-pace 2]</code></td></tr>
+<tr><td><code>python -m demo</code></td><td><code>setup | run | check | bench | push | tunnel</code> (<a href="#demo-remote">Running the demo</a>); <code>run --no-qa</code></td></tr>
+<tr><td><code>demo/ec2_model_server.sh</code></td><td><code>--engine llamacpp|vllm [--no-embed]</code>; <code>--status</code>; <code>--stop</code></td></tr>
 <tr><td><code>analysis/qa/bench.py</code></td><td><code>cd pipeline &amp;&amp; python3 ../analysis/qa/bench.py TAG [IDS…] [--runs N] [--variant shipped|fast|think]</code> (runs B01–B17)</td></tr>
 </table></div>
 
@@ -4019,8 +4179,8 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>GET /</code>, <code>/static/…</code></td><td>the page; every static file named with <code>?v=&lt;hash&gt;</code> and sent <code>Cache-Control: public, max-age=31536000, immutable</code></td></tr>
 <tr><td><code>GET /api/home</code></td><td>title, syllabus, course goals, the lectures (key, title, week, goal), the layers present</td></tr>
 <tr><td><code>GET /api/view/&lt;key&gt;</code></td><td>what a lecture page needs: segments, sentences, goal, objectives, the graph links into it (<code>before</code>), activities (with <code>unresolved</code>, <code>judge_failed</code>, <code>judge_hide</code>), its concept map, and only the concepts and facts it refers to</td></tr>
-<tr><td><code>GET /api/glossary</code></td><td>the defined concepts (name, other names, definition, where first explained, <code>linked</code>); connecting concepts by name only</td></tr>
-<tr><td><code>GET /api/concept/&lt;C0042&gt;</code></td><td>one card: definition, where explained, facts, relationships</td></tr>
+<tr><td><code>GET /api/glossary</code></td><td>the defined concepts (name, other names, definition, where first explained, <code>linked</code>); connecting concepts are not listed, only counted</td></tr>
+<tr><td><code>GET /api/concept/&lt;C0042&gt;</code></td><td>one card: definition, where explained, facts, relationships; 404 for a connecting concept</td></tr>
 <tr><td><code>GET /api/coursemap</code>, <code>/api/review</code></td><td>the lecture graph for the course map; the review cards</td></tr>
 <tr><td><code>GET /api/course</code>, <code>/api/lecture/&lt;key&gt;</code></td><td>the older, larger routes (kept)</td></tr>
 <tr><td><code>GET /data/knowledge/&lt;file&gt;</code>, <code>/data/activities/&lt;file&gt;</code></td><td>raw layer files (not <code>fact_embeddings.json</code>); 404 when missing</td></tr>
@@ -4039,7 +4199,7 @@ output into dicts for a notebook (<code>c.sentences["1/0"]</code>, <code>c.segme
 <tr><td><code>qwen38_27b_vllm_10k_96gb.json</code></td><td>same</td><td>8094</td><td>odd one out, lectures 1 and 26</td><td>thinking 10,240, max_tokens 16,384, 128 slots</td></tr>
 <tr><td><code>sage_a15_vllm.json</code></td><td>Sage-A1.5 FP8 · vLLM</td><td>8095</td><td>2b judge</td><td>thinking 16,384, <code>verification</code> template switch, context 98,304</td></tr>
 <tr><td><code>gemma4_12b_llamacpp.json</code></td><td>Gemma 4 12B QAT Q4 · llama.cpp</td><td>8092</td><td>QA on the local PC (default)</td><td>6 slots, 131,072 context, q8_0 KV, thinking 8,192, temperature 1.0</td></tr>
-<tr><td><code>gemma4_12b_demo.json</code></td><td>same, on an instance</td><td>8096</td><td>the demo</td><td>attach only; filled in by <code>setup_demo.sh</code></td></tr>
+<tr><td><code>gemma4_12b_demo.json</code></td><td>same, on an instance</td><td>8096</td><td>the demo</td><td>attach only; filled in by <code>ec2_model_server.sh</code> or <code>setup_demo.sh</code>; the laptop uses a copy pointed at the tunnel</td></tr>
 <tr><td><code>gemma4_12b_vllm_demo.json</code></td><td>Gemma 4 12B (BF16) · vLLM</td><td>8096</td><td>the demo on vLLM</td><td>8 slots, 0.85 of the GPU, gemma4 reasoning and tool parsers</td></tr>
 <tr><td><code>gemma4_e4b_llamacpp.json</code>, <code>qwen38_27b_llamacpp.json</code></td><td>Gemma 4 E4B; Qwen 27B Q5 GGUF</td><td>8091, 8093</td><td>segmentation runs 1–2; a CPU-offload test (1.4–1.9 tokens/s: stopped)</td><td></td></tr>
 </table></div>
@@ -4058,6 +4218,7 @@ section “LLMConfig fields”.</p>
 <div class="tablewrap"><table>
 <tr><th>Variable</th><th>Read by</th><th>Meaning</th></tr>
 <tr><td><code>QA_CONFIG</code></td><td><code>qa</code></td><td>the LLM config for answers (default <code>configs/gemma4_12b_llamacpp.json</code>); the demo sets it</td></tr>
+<tr><td><code>QA_EMBED_URL</code>, <code>QA_KEEP_WARM</code>, <code>QA_PIN_SLOTS</code></td><td><code>qa</code></td><td>the embedding server to use instead of a local embedder; keep the connections to the servers open; <code>0</code> turns off pinning a question to one llama.cpp slot (the launcher sets the first two)</td></tr>
 <tr><td><code>QA_OUTPUT</code></td><td><code>qa</code></td><td>the folder holding <code>&lt;course&gt;/knowledge/</code> (default <code>pipeline/output</code>); the viewer's <code>--output</code> sets it</td></tr>
 <tr><td><code>QWEN_CFG</code></td><td><code>ec2_queue.sh</code></td><td>the config the queue starts for <code>qwen</code> jobs</td></tr>
 <tr><td><code>HF_TOKEN</code></td><td><code>setup_ec2.sh</code>, <code>setup_demo.sh</code></td><td>Hugging Face token (else <code>pipeline/.hf_token</code>, gitignored)</td></tr>
@@ -4095,15 +4256,12 @@ python3 tests/viewer_smoke.py      # every route, 304/gzip, versioned static fil
 fixes planned next, then longer-term work. Each limit names where it shows.</p></div>
 <div class="tablewrap"><table>
 <tr><th>Limit</th><th>Where it shows</th><th>Size</th></tr>
-<tr><td>Recap texts the judge failed are still shown (the hiding rule hides recaps only for source talk)</td><td>4/A2, 9/A7, 30/A2, 30/A4, 30/A8, 36/A2, 36/A4 …</td><td>222 of 347 texts; 371 failed points</td></tr>
-<tr><td>Crosswords with judge-failed clues are shown (a clue cannot leave a grid)</td><td>51/A21 (6 of 12 clues), 40/A18 (5), 57/A16 (5 of 8), 29/A11 (4), 5/A12 (3 of 5) …</td><td>82 failed clues</td></tr>
-<tr><td>Duplicate concepts left after the merge</td><td>head-mounted display / virtual reality headset (both defined, together on 7 lecture maps); interaction / user interaction; iPhone operating system / ios</td><td>—</td></tr>
-<tr><td>Two concepts share an alias</td><td>field of view / horizontal field of view (both “FOV”); “VR” also matches “virtual reality headset”</td><td>—</td></tr>
-<tr><td>Odd “also known as” lists</td><td>presence (“present”, “presence results”, “presence ratings”); virtual reality system (“system”)</td><td>—</td></tr>
-<tr><td>Connecting-concept cards with odd role sentences</td><td>“control”, “live-action 180-degree video”, “gigabyte”, “real-world view”, “ios”</td><td>1,806 connecting concepts</td></tr>
-<tr><td>Formulas print as raw LaTeX in answers</td><td>the Kalman question printed <code>$\theta_{dk} = \alpha \theta_{gk} + ...$</code> in 2 of 3 runs</td><td>—</td></tr>
+<tr><td>Duplicate concepts left after the merge (not fixed: no pipeline signal)</td><td>head-mounted display / virtual reality headset (both defined, together on 7 lecture maps); interaction / user interaction; iPhone operating system / ios</td><td>17 acronym pairs, 22 modifier pairs</td></tr>
+<tr><td>Names shared by concepts (not fixed)</td><td>field of view / horizontal field of view (both “FOV”); “VR” also matches “virtual reality headset”</td><td>93 shared name keys; 4 acronyms</td></tr>
+<tr><td>Odd “also known as” lists (not fixed)</td><td>presence (“present”, “presence results”, “presence ratings”); virtual reality system (“system”)</td><td>98 fragment, 44 short, 10 generic aliases</td></tr>
+<tr><td>Match-the-pairs definitions cut off with “…” (no judge for this kind)</td><td>the right-hand side of a pair</td><td>383 of 502 pairs</td></tr>
 <tr><td>The first question that uses the fact search loads the embedder</td><td>20–23 s without <code>--warm</code></td><td>once</td></tr>
-<tr><td>Comparisons of several concepts are slow</td><td>9–19 s</td><td>—</td></tr>
+<tr><td>Comparisons of several concepts are slow</td><td>9–19 s</td><td>4 of 34 bench answers over 8 s</td></tr>
 <tr><td>Selecting a hub concept in the full map view crowds the labels</td><td>“game engine” in lecture 20</td><td>—</td></tr>
 <tr><td>The fact judge is off</td><td>thin facts such as 1/S0/F0 stay</td><td>all 2,006 facts unjudged</td></tr>
 <tr><td>The activity judge is not measured against a seed set</td><td>it only flags</td><td>—</td></tr>
@@ -4111,19 +4269,15 @@ fixes planned next, then longer-term work. Each limit names where it shows.</p><
 <tr><td>Prerequisite links count any single mention</td><td>“before lecture 30” is thin: only lecture 29's frequency, plus XR and VR</td><td>—</td></tr>
 </table></div>
 <p class="small muted">From <code>pipeline/continue/DEMO_PLAN.md</code> (“Avoid on stage”) and <code>STATUS.md</code>; counts from
-<code>activities/checks.json</code>.</p>
+<code>analysis/failures/inventory.json</code>. Every failure kind, with how it is handled, is in
+<a href="#ev-fails">What fails where</a>.</p>
 
 <h2 id="upcoming" data-toc="Upcoming fixes">Upcoming fixes</h2>
 <div class="cards">
-<div class="card"><span class="k">Recaps</span><h4>Show only passing points</h4><p>222 of 347 recap texts and 371 points failed the judge. Plan: show only the points that pass, and optionally have the model rewrite the text with the judge's reasons.</p></div>
-<div class="card"><span class="k">Crosswords</span><h4>Drop failed words, lay out again</h4><p>A failed clue cannot be hidden inside a grid. Plan: drop the words whose clues fail and run the layout again on the rest.</p></div>
-<div class="card"><span class="k">Duplicates</span><h4>A reviewed merge list</h4><p>HMD / VR headset, interaction / user interaction, iOS / iPhone OS: merged by a list a person reviews, applied in 3c, so the merge is logged like the others.</p></div>
-<div class="card"><span class="k">Aliases</span><h4>FOV and odd alias lists</h4><p>One owner for a shared alias such as FOV; drop aliases like “present” and “system” that are not names of the concept.</p></div>
-<div class="card"><span class="k">Connecting concepts</span><h4>Show their facts</h4><p>On a connecting concept's card, show the lecture facts that use it instead of the model's one-sentence role.</p></div>
-<div class="card"><span class="k">Answers</span><h4>Render formulas</h4><p>Render LaTeX in answers (KaTeX, bundled with the page so it works offline).</p></div>
-<div class="card"><span class="k">First question</span><h4>Warm-up</h4><p>Load the embedder and ask one hidden question at start, so no learner waits 20 s.</p></div>
+<div class="card"><span class="k">Done 2026-11-18</span><h4>Display rules from the pipeline's signals</h4><p>Recaps show only judge-passing points; crosswords show failed words filled in, without their clues; connecting concepts have no card and give question answering their facts only; formulas typeset with KaTeX; the model and embedder warmed at start (<a href="#ev-fails">What fails where</a>).</p></div>
+<div class="card"><span class="k">Not fixed</span><h4>Duplicates and odd aliases</h4><p>HMD / VR headset, interaction / user interaction, iOS / iPhone OS, FOV on two concepts, aliases such as “present” and “system”. Code finds them, but no pipeline signal says which is right, and no stronger model or hand-made list may decide: future work for the pipeline itself.</p></div>
 <div class="card"><span class="k">Viewer</span><h4>The redesign</h4><p>Being done by another agent as of 2026-11-17.</p></div>
-<div class="card"><span class="k">Deployment</span><h4>Remote-model setup</h4><p>Only the model on the GPU server; the viewer, layer, videos and tool loop on the learner's machine (<a href="#deploy">design</a>).</p></div>
+<div class="card"><span class="k">Deployment</span><h4>Remote-model setup: built, rehearsal next</h4><p>Only the model and embedder on the GPU server; the viewer, layer, videos and tool loop on the learner's machine (<a href="#demo">Running the demo</a>). Not yet run on a real instance or on Windows.</p></div>
 <div class="card"><span class="k">Evaluation</span><h4>Baseline experiments</h4><p>Plain LLM, RAG over transcripts and graph-only on the same questions, scored for correctness, grounding, citations, “not covered” and time (<a href="#baselines">placeholder</a>).</p></div>
 </div>
 
@@ -4212,7 +4366,20 @@ Additions (2026-11-13, requested by the viewer; everything above unchanged):
   relationship&#x27;s facts), each `crossword` entry and each `match_pairs` pair (the concept&#x27;s definition facts). Present
   whenever the material gives them; always a subset of the activity&#x27;s `facts`.
 - `complete_map`: a blank that hides `from` or `to` hides a concept that appears on no other edge of the map, so the
-  answer is not visible elsewhere (blanks on shared concepts hide the `label` instead).</pre></details>
+  answer is not visible elsewhere (blanks on shared concepts hide the `label` instead).
+
+What the viewer server sends (viewer/serve.py, &quot;Display rules&quot;; the files on disk are unchanged, the routes apply these
+from the pipeline&#x27;s own signals only, the judge verdicts of checks*.json and 4a&#x27;s `defined` flag):
+- `recap`: only the points the judge passed; `data.text` only when it passed (absent otherwise); a recap with no passing
+  point is not sent. Dropped something: `&quot;judge_dropped&quot;: {&quot;text&quot;: bool, &quot;points&quot;: [numbers, 1-based]}`.
+- `crossword`: each entry gets `&quot;prefilled&quot;: bool`; a judge-failed clue is `&quot;prefilled&quot;: true` and has no `clue`.
+- `recall` items and `match_pairs` pairs of a connecting concept (`defined: false`) are dropped; every `concept_map` /
+  `complete_map` node gets `&quot;connecting&quot;: bool`. Connecting concepts have no card (`/api/concept/&lt;id&gt;` is 404), are not
+  in `/api/glossary`, and never send a `definition`; map payloads (`/api/view` `map.nodes`, `concepts`; `/api/coursemap`
+  `nodes`) flag them with `&quot;connecting&quot;: true`.
+- Segments in `/api/view` and `/api/lecture` carry `&quot;title&quot;`: the part title of
+  `output/&lt;course&gt;/stage_4e_part_titles/titles.json` (`{&quot;segments&quot;: {&quot;1/S0&quot;: {&quot;title&quot;, &quot;ok&quot;, &quot;problems&quot;}}}`) when `ok`,
+  else null.</pre></details>
 <details><summary>The knowledge layer's JSON schema <span class="meta">pipeline/schemas/knowledge.schema.json</span></summary><pre data-lang="json">{
  &quot;$comment&quot;: &quot;The knowledge layer (output/&lt;course&gt;/knowledge/), checked by scripts/schema_check.py, which supports only the keywords used here. x-ref marks a string that refers to an ID of a kind, x-id a string that defines one; x-key-id and x-key-ref do the same for the keys of an object. Sentence IDs are defined by the first..last range of each segment in lectures/*.json. x-files names the definition each file of the layer is checked against.&quot;,
  &quot;x-files&quot;: {
