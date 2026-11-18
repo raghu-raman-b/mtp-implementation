@@ -1,57 +1,64 @@
-"""Judge packets: for each question, the gold answer and sources, then each system's answer with every citation
-and the course text at it (citations.py). Written to judge/packet_<first id>.txt in batches, read by the judge.
+"""Compact judge packets: for each question, the gold answer and sources, then every (system, run) answer that is not
+yet in judgments.jsonl. Citations are not shown: their validity is checked by code (citations.py, summarize.py).
 
-    python3 baseline-tests/render_for_judge.py            # all questions, batches of 6
+    python3 baseline-tests/render_for_judge.py            # judge/todo_<NN>.txt, about 24 answers per packet
 """
 import json
 
-from citations import ours_citations, written_citations
 from common import OUT
 
-SYSTEMS = ["ours", "plain", "rag", "graphrag"]
+SYSTEMS = ["ours", "plain", "rag", "rag_think", "graphrag_text", "graphrag_notext", "abl_facts", "abl_graph"]
 J = OUT / "judge"
 J.mkdir(exist_ok=True)
+PER_PACKET = 24
 
 
-def load():
-    qs = [json.loads(x) for x in (OUT / "questions.jsonl").open()]
-    runs = {}
+def run_files():
+    """{(system, run): {qid: record}} for every runs/<system>.jsonl (run 1) and runs/<system>_r<N>.jsonl."""
+    out = {}
     for s in SYSTEMS:
-        p = OUT / "runs" / f"{s}.jsonl"
-        runs[s] = {json.loads(x)["id"]: json.loads(x) for x in p.open()} if p.exists() else {}
-    return qs, runs
-
-
-def cites(system, rec):
-    return ours_citations(rec) if system == "ours" else written_citations(rec.get("answer", ""))
-
-
-def render(q, runs) -> str:
-    out = [f"######## {q['id']} [{q['category']}, expect {q['expect']}] {q['question']}",
-           f"GOLD: {q['gold_answer']}", f"SOURCES: {'; '.join(q['gold_sources'])}"]
-    for s in SYSTEMS:
-        rec = runs[s].get(q["id"])
-        if not rec:
-            out.append(f"--- {s}: (no run)")
-            continue
-        out.append(f"--- {s}  ({rec.get('seconds')} s, ctx {rec.get('context_tokens')} tok"
-                   + (f", steps {[x['tool'] for x in rec.get('steps', [])]}" if s == "ours" else "") + ")")
-        out.append(rec.get("answer", "").strip() or f"(empty; error {rec.get('error')})")
-        for n, c in enumerate(cites(s, rec), 1):
-            if s == "ours":
-                out.append(f"   c{n} {c['id']} (L{c['lecture']} {c['time']}) ov={c['auto_overlap']}: {c['source_text']}")
+        for p in sorted((OUT / "runs").glob(f"{s}*.jsonl")):
+            rest = p.stem[len(s):]
+            if rest == "":
+                run = 1
+            elif rest.startswith("_r") and rest[2:].isdigit():
+                run = int(rest[2:])
             else:
-                out.append(f"   c{n} L{c['lecture']} {c['time']} ov={c['auto_overlap']} n={c['window_sentences']}: "
-                           + " || ".join(c["best_sentences"]))
-    return "\n".join(out)
+                continue
+            out[(s, run)] = {json.loads(x)["id"]: json.loads(x) for x in p.open()}
+    return out
+
+
+def judged():
+    p = OUT / "judgments.jsonl"
+    return {(j["qid"], j["system"], j["run"]) for j in map(json.loads, p.open())} if p.exists() else set()
 
 
 def main():
-    qs, runs = load()
-    for i in range(0, len(qs), 6):
-        batch = qs[i:i + 6]
-        (J / f"packet_{i // 6:02d}.txt").write_text("\n\n".join(render(q, runs) for q in batch) + "\n")
-    print(f"{(len(qs) + 5) // 6} packets in {J}")
+    qs = [json.loads(x) for x in (OUT / "questions.jsonl").open()]
+    runs, done = run_files(), judged()
+    for old in J.glob("todo_*.txt"):
+        old.unlink()
+    packets, cur, n_cur = [], [], 0
+    for q in qs:
+        todo = [(s, r) for (s, r) in sorted(runs, key=lambda k: (SYSTEMS.index(k[0]), k[1]))
+                if q["id"] in runs[(s, r)] and (q["id"], s, r) not in done]
+        if not todo:
+            continue
+        lines = [f"## {q['id']} [{q['category']}, expect {q['expect']}] {q['question']}", f"GOLD: {q['gold_answer']}"]
+        for s, r in todo:
+            a = (runs[(s, r)][q["id"]].get("answer") or "").strip() or "(empty)"
+            lines.append(f"-- {s} r{r}: {a}")
+        cur.append("\n".join(lines))
+        n_cur += len(todo)
+        if n_cur >= PER_PACKET:
+            packets.append(cur)
+            cur, n_cur = [], 0
+    if cur:
+        packets.append(cur)
+    for i, p in enumerate(packets):
+        (J / f"todo_{i:02d}.txt").write_text("\n\n".join(p) + "\n")
+    print(f"{len(packets)} packets in {J}")
 
 
 if __name__ == "__main__":
