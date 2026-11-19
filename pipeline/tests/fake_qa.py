@@ -218,6 +218,11 @@ class QAFake(FakeServer):
             if rnd == 0:
                 return [call("check_concept", {"names": ["HMDs", "tracking", "vergence lens", "HMDs"]})]
             return f"An HMD shows the virtual world [{ids_in(last)[0]}].\nCOVERED: partly"
+        if q.startswith("How is the course organised? (page)"):
+            if rnd == 0:
+                return [call("course_structure", {})]
+            ids = re.findall(r"\[((?:CP|CS)\d+)\]", last)
+            return "It is taught by X [%s].\nCOVERED: yes" % ids[0]
         if q.startswith("How is the course organised?"):
             if rnd == 0:
                 return [call("course_structure", {"lecture": "2"} if "lecture 2" in q else {})]
@@ -595,6 +600,13 @@ CS_FILE = {"run": {"fake": True}, "statements": [
      "text": "We will not cover game engines in this course."}]}
 
 
+FAKE_PAGE = {"title": "Fake Course", "platform": "NPTEL", "institution": "IIT Fake",
+             "instructor": {"name": "Prof. A. Teacher", "department": "Department of Testing", "about": "Teaches testing."},
+             "prerequisites": "Some programming.", "intended_audience": "UG students.", "outline": "An outline.",
+             "syllabus": [{"week": 1, "theme": "Basics", "topics": ["Intro", "Terms"]},
+                          {"week": 2, "theme": "More", "topics": ["Depth"]}]}
+
+
 def test_new(cfg: LLMConfig, server: QAFake, out: Path):
     """Several names in one check_concept call, course_structure, and thinking off."""
     import qa
@@ -651,7 +663,7 @@ def test_new(cfg: LLMConfig, server: QAFake, out: Path):
     check("[CS0001] lecture 2, 1:05: In this course there are two modules, the first in weeks one to four." in tm
           and "[CS0002] lecture 4, 2:10: We will not cover game engines in this course." in tm
           and st["label"] == "Course structure read: 2 statements from lectures 2 and 4" and st["found"] is True
-          and st["detail"] == {"statements": 2, "lectures": ["2", "4"], "lecture": None, "available": True},
+          and st["detail"] == {"statements": 2, "lectures": ["2", "4"], "lecture": None, "available": True, "course_page": 0},
           f"the statements verbatim with ID, lecture and time; the step's label and detail ({st['label']!r})")
     c = r["citations"]
     check([(x["fact"], x["lecture"], x["segment"], x["start"], x["end"]) for x in c]
@@ -764,6 +776,51 @@ def test_cli(cfg_path: Path, env: dict):
           f"python -m qa ... --json prints the result (exit {p.returncode}{', ' + p.stderr[-300:] if p.returncode else ''})")
 
 
+def test_course_page(cfg: LLMConfig, server: QAFake, out: Path, course_meta):
+    """course_structure with the course page (CPnn items, cited as "course page"), with and without the statements."""
+    import qa
+    from qa.answer import cite
+    from qa.knowledge import Knowledge
+    print("course_structure with the course page", flush=True)
+    llm = LLM(cfg, log=lambda *a: None)
+    course_meta.load = lambda course: FAKE_PAGE
+    n0 = len(server.bodies)
+    evs = stream_events("How is the course organised? (page)", llm)
+    r = evs[-1]["result"]
+    tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"][0]["content"]
+    st = next(e for e in evs if e["event"] == "step")
+    i_page, i_cs = tm.index("[CP01]"), tm.index("[CS0001]")
+    check(i_page < i_cs and "[CP01] Instructor: Prof. A. Teacher, Department of Testing, IIT Fake. Teaches testing." in tm
+          and "[CP02] Prerequisites: Some programming." in tm and "[CP03] Intended audience: UG students." in tm
+          and "[CP11] Week 1 \u2014 Basics: Intro; Terms." in tm and "[CP12] Week 2 \u2014 More: Depth." in tm
+          and st["label"] == "Course structure read: 6 course page items and 2 statements from lectures 2 and 4"
+          and st["detail"]["course_page"] == 6, f"the course page comes before the statements ({st['label']!r})")
+    c = r["citations"]
+    check(c[0]["lecture"] is None and c[0]["start"] is None and c[0]["source"] == "course page"
+          and c[0]["text"].startswith("Instructor: Prof. A. Teacher") and "(course page)" in r["answer"]
+          and "CP01" not in r["answer"], f"a CP ID is cited as (course page), no lecture or time: {r['answer']!r}")
+    kb = Knowledge.load(COURSE)
+    text, cits, dropped = cite(kb, "Taught by X [CP01]. Also [CP99] and [CP02] [CS0001].", {"CP01", "CP02", "CS0001"})
+    check(dropped == ["CP99"] and text == "Taught by X (course page). Also and (course page; lecture 2, 1:05)."
+          and [x.get("source") for x in cits] == ["course page", "course page", None],
+          f"only a CP ID some tool showed is cited, groups mix ({text!r}, {dropped})")
+    text, cits, dropped = cite(kb, "Not shown [CP01].", set())
+    check(dropped == ["CP01"] and cits == [], "a CP ID no tool showed is dropped")
+    n0 = len(server.bodies)
+    r = qa.answer("How is the course organised? (lecture 2)", course=COURSE, llm=llm)
+    tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"][0]["content"]
+    check("[CP01]" not in tm and "[CS0001]" in tm, "with a lecture the course page is left out")
+    sf = out / COURSE / "stage_4f_course_structure" / "course_structure.json"
+    keep = sf.read_text(encoding="utf-8")
+    sf.unlink()
+    try:
+        r = qa.answer("How is the course organised? (page)", course=COURSE, llm=llm)
+        check(r["steps"][0]["result_summary"] == "6 course page items" and r["covered"] is True
+              and "(course page)" in r["answer"], f"the course page alone works ({r['steps'][0]['result_summary']})")
+    finally:
+        sf.write_text(keep, encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--layer", help="a folder holding output/nptel_vr/knowledge (default: build one)")
@@ -789,7 +846,17 @@ def main():
         test_answers(cfg, server, layer)
         test_cli(cfg_path, {**os.environ, "QA_OUTPUT": str(out)})
         test_stream(cfg, server)
-        test_new(cfg, server, out)
+        from scripts import course_meta
+        keep_load = course_meta.load
+
+        def no_page(course):
+            raise FileNotFoundError("course.json")
+        course_meta.load = no_page                       # the real course.json is not part of the synthetic layer
+        try:
+            test_new(cfg, server, out)
+            test_course_page(cfg, server, out, course_meta)
+        finally:
+            course_meta.load = keep_load
         import qa
         ref = qa.answer("What is an HMD?", course=COURSE, llm=LLM(cfg, log=lambda *a: None))
     finally:
@@ -797,7 +864,7 @@ def main():
     test_vllm(work, {**os.environ, "QA_OUTPUT": str(out)}, ref)
     print("log", flush=True)
     log = [json.loads(x) for x in (out / COURSE / "qa" / "answers.jsonl").read_text().splitlines()]
-    check(len(log) == 36 and all(r["steps"] is not None and "raw_answer" in r for r in log)
+    check(len(log) == 39 and all(r["steps"] is not None and "raw_answer" in r for r in log)
           and log[0]["dropped_ids"] == ["9/S9/F9"] and "result" in log[0]["steps"][0],
           f"every question logged with its full tool results and dropped IDs ({len(log)} lines)")
     print("output", flush=True)

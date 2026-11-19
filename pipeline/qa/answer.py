@@ -17,7 +17,7 @@ answer time (analysis/qa/STATE.md). answer() and answer_stream() take think (Tru
 mode; False: no round thinks); None reads $QA_THINK (0 or 1) and then ROUND0_THINK. The mode that ran is "think" in
 the answers.jsonl line and in the done event's timing.
 
-The answer cites fact IDs ([4/S1/F2]), segment IDs ([4/S1]) or course-structure statement IDs ([CS0001]; its
+The answer cites fact IDs ([4/S1/F2]), segment IDs ([4/S1]) or course-structure statement IDs ([CS0001]; course-page items [CP01] are written "(course page)"; its
 citation has the statement's own time) in square brackets. Each one that a tool result showed
 becomes a citation (lecture, segment, time, text) and is written into the answer as "(lecture 4, 6:03)"; an ID no
 tool showed is dropped (and logged). A time the model wrote before a citation ("at 14:25 [28/S1]") is removed (the
@@ -61,7 +61,7 @@ from scripts.llm.client import Result
 from scripts.llm.http_pool import POOL
 
 from .knowledge import Knowledge, fmt_time, lecture_key, qa_dir
-from .tools import run_tool, tool_specs
+from .tools import course_page_items, run_tool, tool_specs
 
 ROOT = Path(__file__).resolve().parent.parent
 LOCAL_CONFIG = ROOT / "configs" / "gemma4_12b_llamacpp.json"
@@ -92,7 +92,7 @@ NO_ANSWER = "Sorry, I could not answer that just now. Please try asking again in
 PIN_SLOTS = True                # llama.cpp: the rounds of one question go to one server slot (its KV cache is reused)
 THINKING_EVERY_S = 0.5          # "thinking" events at most this often
 
-ID = r"(?:(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?|CS\d{4,})"
+ID = r"(?:(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?|CS\d{4,}|CP\d{2,})"
 BRACKET = re.compile(r"\s?[\[(【]([^\[\]()【】]*?" + ID + r"[^\[\]()【】]*?)[\])】]")
 BARE = re.compile(r"(?<![\w/])(" + ID + r")(?![\w/])")
 # a tool's name the model wrote as if it were a citation ("... lecture 8. [lecture_dependencies]")
@@ -211,6 +211,10 @@ def parse_args(raw) -> dict | None:
 
 # ---------------------------------------------------------------- citations
 def citation(kb: Knowledge, cid: str) -> dict:
+    if cid.startswith("CP"):
+        it = course_page_by_id(kb)[cid]
+        return {"fact": None, "lecture": None, "segment": None, "start": None, "end": None,
+                "text": f"{it['label']}: {it['text']}", "source": "course page"}
     if cid.startswith("CS"):
         s = structure_statements(kb)[cid]
         return {"fact": None, "lecture": str(s["lecture"]), "segment": s.get("segment"), "start": s["start"],
@@ -223,6 +227,11 @@ def citation(kb: Knowledge, cid: str) -> dict:
     s = kb.lectures[k]["segments"][cid]
     return {"fact": None, "lecture": k, "segment": cid, "start": s["start"], "end": s["end"],
             "text": s.get("subgoal", "")}
+
+
+def course_page_by_id(kb: Knowledge) -> dict:
+    """The course-page items by ID (empty without course.json)."""
+    return {x["id"]: x for x in course_page_items(kb)}
 
 
 def structure_statements(kb: Knowledge) -> dict:
@@ -238,7 +247,9 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
     labels: list[list[str]] = []      # the labels, as their parts ("lecture 4, 6:03"); "\x00n\x00" in the text
 
     def valid(i: str) -> bool:
-        if i.startswith("CS"):
+        if i.startswith("CP"):
+            ok = i in shown and i in course_page_by_id(kb)
+        elif i.startswith("CS"):
             ok = i in shown and i in structure_statements(kb)
         else:
             ok = i in shown and (i in kb.facts or ("/F" not in i and i.split("/")[0] in kb.lectures
@@ -254,7 +265,7 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
                 index[i] = len(citations)
                 citations.append(citation(kb, i))
             c = citations[index[i]]
-            p = f"lecture {c['lecture']}, {fmt_time(c['start'])}"
+            p = "course page" if c["lecture"] is None else f"lecture {c['lecture']}, {fmt_time(c['start'])}"
             if p not in parts:
                 parts.append(p)
         if not parts:
@@ -272,7 +283,7 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
     out = merge_adjacent(out, labels)
     out = "\n\n".join(dedup_block(b, labels) for b in re.split(r"\n[ \t]*\n", out))
     out = TOKEN.sub(lambda m: f" ({'; '.join(labels[int(m.group(1))])})", out)
-    out = re.sub(r"\)\s*\(lecture", "; lecture", out)              # "(lecture 4, 1:00) (lecture 5, 2:00)"
+    out = re.sub(r"\)\s*\((?=lecture|course page)", "; ", out)              # "(lecture 4, 1:00) (lecture 5, 2:00)"
     out = re.sub(r"[ \t]+([.,;:!?])", r"\1", out)
     out = re.sub(r"[ \t]{2,}", " ", out)
     return out.strip(), citations, dropped
@@ -611,7 +622,7 @@ def _answer_loop(question: str, course: str, lecture: str | None, llm, t0: float
         covered = False                     # "yes" with nothing cited from the course is not an answer from it
     out = {"answer": text, "citations": citations, "steps": steps, "covered": bool(covered)}
     rec = {"time": round(t0, 3), "course": course, "lecture": lec_key, "question": question, "model": llm.model,
-           "steps": full_steps, "raw_answer": final, "answer": text, "citations": [c["fact"] or c["segment"]
+           "steps": full_steps, "raw_answer": final, "answer": text, "citations": [c["fact"] or c["segment"] or c.get("source")
                                                                                    for c in citations],
            "dropped_ids": dropped, "covered": out["covered"], "covered_line": marker, "error": error,
            "rounds": len([m for m in conv if m["role"] == "assistant"]), "early_exit": early, "think": think_on, "tokens": tokens,

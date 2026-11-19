@@ -68,7 +68,7 @@ token). The thinking text itself is never sent.
 - `label`: one display line in plain words, no IDs. For `check_concept` it names each concept ("Concepts loaded:
   immersion (lecture 4), presence (lecture 4)"; "Concept loaded: ..." for one name; an unknown name reads "name (not
   in the course)"); for `course_structure`: "Course structure read: 5 statements from lectures 1 and 2" (or "The course
-  structure is not available"). The viewer shows "Loading concepts: immersion, presence" from the call's `args`
+  structure is not available"); with the course page: "Course structure read: 12 course page items and 5 statements from lectures 1 and 2". The viewer shows "Loading concepts: immersion, presence" from the call's `args`
   while it runs.
 - `found`: true = the course has something close; false = nothing close (an unknown name whose closest facts score
   low, a search with no close fact: the answer will say the course does not cover it); null = not a search, or the
@@ -84,7 +84,7 @@ token). The thinking text itself is never sent.
 | `lecture_dependencies` | `lecture`, `title`, `revise` (lectures to revise first, most needed first), `relies_on` (concept names, most used first, up to 8), `general` (course-wide concepts it uses), `in_passing` (count), `assumed` (count) |
 | `lecture_overview` | `lecture`, `title`, `segments`, `objectives`, `introduced` (counts) |
 | `course_goals` | `goals` (count) |
-| `course_structure` | `statements` (count), `lectures` (those the statements are from), `lecture` (the one asked for, or null), `available` (false: the stage's file is missing; `found` false) |
+| `course_structure` | `course_page` (count of course-page items shown, 0 when none or when a lecture was asked for), `statements` (count), `lectures` (those the statements are from), `lecture` (the one asked for, or null), `available` (false: the stage's file is missing; `found` false) |
 | any, on a bad call | `error` (the message; the model is told and usually corrects itself) |
 | any, repeated call | `repeated: true` (label "Already looked that up") |
 
@@ -124,3 +124,10 @@ render the latest one. Drafts come per streamed token piece (tens per second).
 ## Timing to expect (demo questions, through an SSH tunnel; analysis/demo/remote_setup.md)
 
 `round` at ~0.01 s; first `step` 1-3 s; `answer_start` / first `draft` 2-5 s; `done` 4-10 s.
+
+## Citations from the course page
+A `course_structure` result also shows course-page items `[CP01]`, `[CP02]`, ... (instructor, prerequisites,
+intended audience, outline, weekly syllabus). One cited in the answer is written "(course page)" (or "(lecture 2,
+1:05; course page)" next to others), and its entry in `result.citations` has `lecture`, `segment`, `start` and `end`
+null, `fact` null, `source: "course page"` and `text` "<label>: <text>". Clients must not build a lecture link from
+it (the viewer shows a "Course page" chip, not a link, and leaves it out of "Sources").

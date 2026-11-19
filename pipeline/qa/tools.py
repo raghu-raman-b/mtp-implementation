@@ -12,7 +12,7 @@ prompts/qa_tools.json (written apart, as a prompt); TOOLS checks that they name 
     lecture_dependencies(lecture)                what is needed before a lecture (the lecture graph)
     lecture_overview(lecture)                    a lecture's goal, objectives, segments and concepts
     course_goals()                               the course goals and the lectures that serve each
-    course_structure(lecture=None)               the lecturers' own statements about the course itself, verbatim
+    course_structure(lecture=None)               the course page (instructor, prerequisites, syllabus) and the lecturers' own statements about the course itself, verbatim
 """
 from __future__ import annotations
 
@@ -422,30 +422,80 @@ def course_goals(kb: Knowledge, **_) -> ToolResult:
 
 
 # ---------------------------------------------------------------- course_structure
+def course_page(kb: Knowledge) -> dict | None:
+    """The official course page (input/<course>/input/course.json, scripts/course_meta.py), or None when missing."""
+    from scripts import course_meta
+    try:
+        d = course_meta.load(kb.course)
+    except (OSError, ValueError, KeyError):
+        return None
+    return d if isinstance(d, dict) else None
+
+
+def course_page_items(kb: Knowledge) -> list[dict]:
+    """The course page as citable items [{"id": "CP01", "label", "text"}]: CP01 instructor, CP02 prerequisites,
+    CP03 intended audience, CP04 outline, CP11, CP12, ... one per syllabus entry (in order). Empty without the file."""
+    d = course_page(kb)
+    if not d:
+        return []
+    items = []
+    ins = d.get("instructor")
+    if isinstance(ins, dict) and ins.get("name"):
+        txt = ins["name"] + (f", {ins['department']}" if ins.get("department") else "") \
+            + (f", {d['institution']}" if d.get("institution") else "") + "."
+        if ins.get("about"):
+            txt += " " + ins["about"].strip()
+        items.append({"id": "CP01", "label": "Instructor", "text": txt})
+    for cid, key, label in (("CP02", "prerequisites", "Prerequisites"), ("CP03", "intended_audience", "Intended audience"),
+                            ("CP04", "outline", "Course outline")):
+        if str(d.get(key) or "").strip():
+            items.append({"id": cid, "label": label, "text": str(d[key]).strip()})
+    for i, w in enumerate(d.get("syllabus") or []):
+        if not isinstance(w, dict) or not w.get("topics"):
+            continue
+        head = (f"Week {w['week']}" if w.get("week") is not None else f"Part {i + 1}") + (f" \u2014 {w['theme']}" if w.get("theme") else "")
+        items.append({"id": f"CP{11 + i}", "label": head, "text": "; ".join(w["topics"]) + "."})
+    return items
+
+
 def course_structure(kb: Knowledge, lecture=None, **_) -> ToolResult:
-    """The lecturers' own statements about the course itself (stage 4f), verbatim, each with its ID (CS0001: the
-    answer cites it like a fact), lecture and start time; only one lecture's when `lecture` is given."""
+    """The official course page (instructor, prerequisites, audience, weekly syllabus; IDs CP01...) and the lecturers'
+    own statements about the course itself (stage 4f), verbatim, each with its ID (CS0001: the answer cites it like a
+    fact), lecture and start time; only one lecture's statements when `lecture` is given (the course page is then
+    left out). Either part may be missing; both missing: not available."""
     st = kb.course_structure()
-    if st is None:
+    k = lecture_key(lecture) if lecture not in (None, "") else None
+    page = [] if k is not None else course_page_items(kb)
+    if st is None and not course_page_items(kb):
         return ToolResult("The course structure is not available.", "course structure not available", found=False,
                           label="The course structure is not available",
                           detail={"statements": 0, "lectures": [], "lecture": None, "available": False})
-    k = lecture_key(lecture) if lecture not in (None, "") else None
+    st = st or []
     if k is not None:
         st = [x for x in st if str(x.get("lecture")) == k]
     have = {str(x["lecture"]) for x in st}
     ks = [j for j in kb.lectures if j in have] + sorted(have - set(kb.lectures))
-    if not st:
+    if not st and not page:
         return ToolResult("The lecturers say nothing about the course itself" + (f" in lecture {k}" if k else "")
                           + ".", "no statements", found=False,
                           label="The lecturers say nothing about the course structure" + (f" in lecture {k}" if k else ""),
                           detail={"statements": 0, "lectures": [], "lecture": k, "available": True})
-    out = ["WHAT THE LECTURERS SAY ABOUT THE COURSE ITSELF" + (f" (lecture {k})" if k else "")
-           + ", in their words (cite the ID):"]
-    out += [f"[{x['id']}] lecture {x['lecture']}, {fmt_time(x['start'])}: {x['text']}" for x in st]
-    return ToolResult("\n".join(out), f"{len(st)} statements from {in_lectures(ks)}", {x["id"] for x in st}, found=True,
-                      label=f"Course structure read: {len(st)} statements from {in_lectures(ks)}",
-                      detail={"statements": len(st), "lectures": ks, "lecture": k, "available": True})
+    out = []
+    if page:
+        d = course_page(kb)
+        out.append("OFFICIAL COURSE PAGE (" + ", ".join(str(d[x]) for x in ("title", "platform", "institution") if d.get(x))
+                   + "), cite the ID:")
+        out += [f"[{x['id']}] {x['label']}: {x['text']}" for x in page]
+        out.append("")
+    if st:
+        out.append("WHAT THE LECTURERS SAY ABOUT THE COURSE ITSELF" + (f" (lecture {k})" if k else "")
+                   + ", in their words (cite the ID):")
+        out += [f"[{x['id']}] lecture {x['lecture']}, {fmt_time(x['start'])}: {x['text']}" for x in st]
+    parts = ([f"{len(page)} course page items"] if page else []) + ([f"{len(st)} statements from {in_lectures(ks)}"] if st else [])
+    return ToolResult("\n".join(out), ", ".join(parts), {x["id"] for x in st} | {x["id"] for x in page}, found=True,
+                      label="Course structure read: " + " and ".join(parts),
+                      detail={"statements": len(st), "lectures": ks, "lecture": k, "available": True,
+                              "course_page": len(page)})
 
 
 FUNCS = {"check_concept": check_concept, "fact_lookup": fact_lookup, "lecture_dependencies": lecture_dependencies,

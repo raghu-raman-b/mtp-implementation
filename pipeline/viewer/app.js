@@ -240,16 +240,21 @@ function factList(fids, here, defining) {
 // renderMath (math.js) to typeset once the answer is complete. Citations "(lecture 4, 6:01)" and "(lecture 4, 6:01;
 // lecture 5, 9:21)" become chips that open the lecture at that time.
 const TIME_RE = "\\d{1,2}(?::\\d{2}){1,2}";
-const CITE_GROUP = new RegExp(`\\(\\s*((?:lecture\\s+\\d+[a-z]?,\\s*)?${TIME_RE}(?:\\s*[;,]\\s*(?:lecture\\s+\\d+[a-z]?,\\s*)?${TIME_RE})*)\\s*\\)`, "g");
+const CITE_ONE = `(?:(?:lecture\\s+\\d+[a-z]?,\\s*)?${TIME_RE}|course page)`;  // "course page": the official course page (no lecture, no time)
+const CITE_GROUP = new RegExp(`\\(\\s*(${CITE_ONE}(?:\\s*[;,]\\s*${CITE_ONE})*)\\s*\\)`, "g");
 const INLINE_MATH = /\u0000(\d+)\u0000|\\\([\s\S]+?\\\)|(^|[^\\$])(\$(?![\s\d$])(?:[^$\\\n]|\\.)+?(?<![\s\\])\$(?!\d))/g;
 const secsOf = (txt) => txt.split(":").map(Number).reduce((a, b) => a * 60 + b, 0);
 function citeChip(lec, time) {
   return h("a", { class: "cite", href: timeHref(lec, secsOf(time)), title: `Watch lecture ${lec} at ${time}` }, icon("play", 8), `Lecture ${lec}, ${time}`);
 }
+function coursePageChip() {  // not a link: the course page is not in a lecture
+  return h("span", { class: "cite", title: "From the official course page" }, "Course page");
+}
 function citeGroup(inner) {  // "lecture 4, 6:01; lecture 5, 9:21" (a time without its lecture belongs to the one before)
   const out = [];
   let lec = null;
-  for (const part of inner.split(/\s*;\s*|\s*,\s*(?=lecture\b)|(?<=\d:\d\d)\s*,\s*/)) {
+  for (const part of inner.split(/\s*;\s*|\s*,\s*(?=lecture\b|course page)|(?<=\d:\d\d)\s*,\s*/)) {
+    if (/^course page$/i.test(part)) { out.push(coursePageChip()); continue; }
     const m = part.match(new RegExp(`^(?:lecture\\s+(\\d+[a-z]?),\\s*)?(${TIME_RE})$`));
     if (!m) return null;
     lec = m[1] || lec;
@@ -2609,7 +2614,7 @@ function askTurn(q, lec) {
     }
     doneReading();
     const cites = res.citations || [];
-    writing.set({ state: res.answer ? "done" : "miss", title: res.answer ? "Answer written" : "No answer", sub: cites.length ? `With ${plural(new Set(cites.map((c) => c.lecture + "@" + Math.round(c.start))).size, "moment")} from the lectures` : res.covered === false ? "The course does not cover this" : "" });
+    writing.set({ state: res.answer ? "done" : "miss", title: res.answer ? "Answer written" : "No answer", sub: cites.some((c) => c.lecture != null) ? `With ${plural(new Set(cites.filter((c) => c.lecture != null).map((c) => c.lecture + "@" + Math.round(c.start))).size, "moment")} from the lectures` : res.covered === false ? "The course does not cover this" : "" });
     badge.textContent = "Answered"; badge.className = "st-badge done";
     barEl.classList.add("done"); barI.style.width = "100%";
     const byLec = new Map();
