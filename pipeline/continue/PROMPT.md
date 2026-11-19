@@ -59,11 +59,11 @@ User decisions: check_concept takes a list (one call, all concepts); fact_lookup
 course logistics only; text copied verbatim by code); viewer names each concept loaded; same 65 questions (no new
 set), no RAG rerun; ours rerun with thinking vs no-thinking in the tool round (label "thinking"/"no thinking"
 latency); docs: targeted edits by a new Opus agent (tool table + new optimisation section, minimal tokens); graphs:
-SciencePlots, paper-ready, professional labels, all studies, folder graphs/. Roles: Sonnet = code/running/judging,
+SciencePlots, paper-ready, professional labels, all studies, folder pipeline/results/. Roles: Sonnet = code/running/judging,
 Opus = docs only; main session orchestrates.
-Tasks: T1 QA code (Sonnet, worktree) | T2 stage 4f (Sonnet, worktree, local GPU) | T3 graphs/ (Sonnet, worktree)
+Tasks: T1 QA code (Sonnet, worktree) | T2 stage 4f (Sonnet, worktree, local GPU) | T3 pipeline/results/ (Sonnet, worktree)
 -> R1 review/merge -> T4 rerun ours think/nothink, 65 q + repeats (Sonnet, GPU) -> T5 Sonnet judges -> T6 graphs
-update -> T7 docs (Opus, targeted) -> R2 merge/push. T1 merged (d6cb9c6), T3 merged (d059584: graphs/, 21 figures). RUNNING: T2 (GPU).
+update -> T7 docs (Opus, targeted) -> R2 merge/push. T1 merged (d6cb9c6), T3 merged (d059584: pipeline/results/, 21 figures). RUNNING: T2 (GPU).
 User 20:05 (then away for the day): cache-warm pings every 50 min while the GPU runs (session one-shot crons 20:55 ...
 02:45; say "warmed"); EVERY graph regenerated with our latest (v2) scores, the optimisation before/after graphs in a
 separate folder; T6 also fixes the activities "Serves the course goals" label -> lecture goals; at the end move
