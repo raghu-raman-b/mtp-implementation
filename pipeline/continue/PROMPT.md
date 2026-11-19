@@ -63,7 +63,11 @@ SciencePlots, paper-ready, professional labels, all studies, folder graphs/. Rol
 Opus = docs only; main session orchestrates.
 Tasks: T1 QA code (Sonnet, worktree) | T2 stage 4f (Sonnet, worktree, local GPU) | T3 graphs/ (Sonnet, worktree)
 -> R1 review/merge -> T4 rerun ours think/nothink, 65 q + repeats (Sonnet, GPU) -> T5 Sonnet judges -> T6 graphs
-update -> T7 docs (Opus, targeted) -> R2 merge/push. RUNNING: T1, T2, T3 (started ~20:15).
+update -> T7 docs (Opus, targeted) -> R2 merge/push. T1 merged (d6cb9c6), T3 merged (d059584: graphs/, 21 figures). RUNNING: T2 (GPU).
+User 20:05 (then away for the day): cache-warm pings every 50 min while the GPU runs (session one-shot crons 20:55 ...
+02:45; say "warmed"); EVERY graph regenerated with our latest (v2) scores, the optimisation before/after graphs in a
+separate folder; T6 also fixes the activities "Serves the course goals" label -> lecture goals; at the end move
+graphs/ to pipeline/results/ (update README, script paths, any docs links).
 
 ## DAY 2026-11-19 (from 11:30 IST) — READ THIS FIRST; supersedes NIGHT below
 User (11:35): finish today: activities study, judging answers + activities, results to docs, sample questions; then
