@@ -53,6 +53,28 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
+## NEXT SESSION (from 2026-11-20) — RUN-TO-RUN ANALYSIS (user, 19 Nov ~23:05; not started) — READ FIRST
+New test: run-to-run consistency. Our optimised QA, thinking (ours_v2) and no thinking (ours_v2_nothink), vs the
+baselines, 5 runs each on the same 65 questions (benchmark unchanged). Goal: show ours stays consistent across runs and
+consistently beats the baselines. Plan to brief (Sonnet for running/judging/graphs, Opus for docs, main orchestrates):
+- Runs: 5 runs each (existing runs count: ours_v2/_nothink r1-r3 exist on 40 repeat questions, r1 on all 65; RAG r1-r3
+  on 28/40; plain/graphrag/ablations r1 only) -> fill up to 5 runs x 65 for ours_v2, ours_v2_nothink and the baselines
+  (at least plain, rag, rag_think, graphrag_text, graphrag_notext; ask the user whether the ablations too). Local GPU,
+  detached queue, flock gpu.lock; sampling as before (temperature 1.0, differs only by seed/run).
+- Judge: Sonnet, same criteria, blind packets (render_for_judge.py) -> judgments.jsonl.
+- Analysis: per system and category: mean +- sd and min-max of correct across the 5 runs, per-question agreement
+  across runs (share of questions with identical score in all 5), answer-text identity, hallucination counts per run,
+  latency spread; "beats every baseline in every run" counts.
+- Graphs: new folder pipeline/results/run_to_run/ — the same baseline graphs but with 5-run aggregate scores (error
+  bars/ranges), plus run-to-run difference plots; same paper style (memory graph-style).
+- Docs: new section "Run-to-run analysis" (Opus, targeted edits only, minimal tokens) and possibly one more benefit in
+  "What the method buys" (consistency), only if the numbers show it.
+Demo left running 19 Nov ~23:15: `QA_THINK=1 setsid nohup bin/python pipeline/viewer/serve.py nptel_vr --port 8765
+--warm` (from pipeline/: `../bin/python viewer/serve.py ...`), log pipeline/output/logs/demo_viewer.log, llama-server
+Gemma 4 12B on 8092 (started by qa). Config = optimised QA with reasoning (best accuracy 0.854). Stop: kill the
+serve.py PID, then `cd pipeline && ../bin/python -m qa --stop`. Checked: "six modules" answered via course_structure,
+5.5 s.
+
 ## QA OPTIMISATION 2026-11-19 (~20:15 IST) — READ THIS FIRST
 User decisions: check_concept takes a list (one call, all concepts); fact_lookup/lecture tools stay separate calls
 (explainable); new tool course_structure fed by a new stage 4f (Gemma 4 12B, per segment, picks sentence IDs about
