@@ -44,22 +44,23 @@ and every other system were not affected (ours runs with the full tool set).
 ## Questions
 
 `questions.jsonl` (built by `make_questions.py`): 53 questions with gold answers and gold sources (fact / sentence IDs
-with lecture and time). Categories: definition 7, explanation 7, comparison 7, list 4, formula 5, where 5,
+with lecture and time), plus 12 multihop questions M01-M12 (`questions_multihop.jsonl`, `questions_multihop.md`: chains
+and comparisons that need more than one passage; 65 in all, the multihop ones Sonnet-judged on 19 Nov). Categories: definition 7, explanation 7, comparison 7, list 4, formula 5, where 5,
 prerequisite 4, structure 5, not_covered 9 (expect "no": the course does not teach it). Includes the DEMO_PLAN
 questions and the bench.py B-questions.
 
 ## Runs
 
-- Run 1: every system on all 53 questions (`runs/<system>.jsonl`).
+- Run 1: every system on all 65 questions (53 + 12 multihop) (`runs/<system>.jsonl`).
 - Repeats: runs 2 and 3 for ours, rag, rag_think on the categories not_covered, where, prerequisite, structure,
-  formula (28 questions; `runs/<system>_r2.jsonl`, `_r3.jsonl`). Same settings; only sampling differs.
+  formula, plus the 12 multihop (40 questions; `runs/<system>_r2.jsonl`, `_r3.jsonl`). Same settings; only sampling differs.
 - plain and rag run 1 are the earlier runs (unchanged systems); all other run-1 files are new.
 - Timings per answer: wall seconds, time to first answer token (ours: first streamed draft), retrieval seconds,
   context (input) tokens, output tokens, model calls.
 
 ## Judging
 
-- Judge: Claude Sonnet (Sonnet 5.5) for every answer (592 = 8 systems x 53 run-1 answers + 6 x 28 repeats), so one
+- Judge: Claude Sonnet (Sonnet 5.5) for every answer (760 = 8 systems x 65 run-1 answers + 3 systems x 2 repeat runs x 40 questions), so one
   judge grades every system. Four Sonnet judges in parallel, each on a disjoint set of compact packets
   (`render_for_judge.py` -> `judge/todo_*.txt`, merged from `judge/sonnet_*.jsonl`): question, category, expected
   coverage, gold answer, and each (system, run) answer labelled with the system name. The judges did not see the
