@@ -333,11 +333,11 @@ transcript window that best matches each item), so they measure faithfulness to 
 tables: <a href="#ev-act-study">the activities study</a>.</p>
 
 <h4>4. What it costs: once per course, then per question</h4>
-<p><b>Once per course.</b> Building the layer and the activities took about 11 GPU hours: 10.8 h of measured stage
-time plus 0.5 h of reruns, about 11.3 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S). This is
+<p><b>Once per course.</b> Building the layer and the activities took about 12 GPU hours: 11.4 h of measured stage
+time plus 0.5 h of reruns, about 11.9 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S; 4f with Gemma 4 12B on the local RTX 5070). This is
 the sum of the stage times in <a href="#ov-stages">Every stage in one line</a> and <a href="#timing">Time
-estimates</a>. Of it, stages 1a to 4d, the part question answering reads, are about 8.1 h (19 + 8 + 86 + 233 + 24 +
-107 + 6.5 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
+estimates</a>. Of it, stages 1a to 4d and 4f, the part question answering reads, are about 8.7 h (19 + 8 + 86 + 233 + 24 +
+107 + 6.5 + 36.7 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
 a CPU.</p>
 <p><b>Per question</b>, the layer costs close to what RAG costs:</p>
 {{BASE:cost}}
@@ -458,7 +458,7 @@ the repository backs it, or <span class="pill pa">argued</span> when it rests on
 
 <div class="tablewrap"><table>
 <tr><th style="width:24%">Argument</th><th>What it means, with the evidence</th><th style="width:10%">Status</th></tr>
-<tr><td><b>Heavy work once, offline</b></td><td>The 63 lectures are processed once (about 10.8 GPU hours, summed from the stage
+<tr><td><b>Heavy work once, offline</b></td><td>The 63 lectures are processed once (about 11.4 GPU hours, summed from the stage
 logs). Answering reads a precomputed folder, <code>knowledge/</code> (31 MB, of which 21 MB are fact embeddings). Nothing
 is re-read or re-summarised at question time.</td><td><span class="pill pm">measured</span></td></tr>
 <tr><td><b>Light inference per question</b></td><td>A 12B model answers: Gemma 4 12B QAT, a 6.72 GB GGUF file. Median 4.9 s on a

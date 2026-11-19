@@ -320,7 +320,7 @@ later needs only a small model and the folder.</p>
   <svg viewBox="0 0 1040 590" role="img" aria-labelledby="ovt">
     <title id="ovt">The pipeline: five build phases feed the knowledge layer, which activities, question answering and the viewer read</title>
     <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
-    <text x="8" y="22" class="t-m mut">BUILT ONCE, OFFLINE (about 11 GPU hours for 63 lectures, measured stage by stage)</text>
+    <text x="8" y="22" class="t-m mut">BUILT ONCE, OFFLINE (about 12 GPU hours for 63 lectures, measured stage by stage)</text>
     <!-- columns -->
     <g>
       <rect x="8" y="34" width="190" height="296" rx="14" class="col"/>
@@ -409,8 +409,9 @@ later needs only a small model and the folder.</p>
 <tr><td><a href="#s4b">4b</a></td><td>Objectives and a goal per lecture, then the course goals</td><td>Qwen</td><td>125 objectives, 8 course goals</td><td class="n">6.5 min</td></tr>
 <tr><td><a href="#s4c">4c</a></td><td>Which lectures need which, from the concepts they use and define</td><td>code</td><td>83 direct links</td><td class="n">&lt; 1 s</td></tr>
 <tr><td><a href="#s4d">4d</a></td><td>The <code>knowledge/</code> folder, checked against its schema and for broken references</td><td>code + embedder</td><td>72 files</td><td class="n">3 s†</td></tr>
+<tr><td><a href="#s4f">4f</a></td><td>The lecturers' own statements about the course (modules, weeks, scope), copied verbatim for the QA tool <code>course_structure</code></td><td>Gemma 4 12B (local GPU)</td><td>28 statements</td><td class="n">36.7 min</td></tr>
 <tr><td><a href="#s5">5</a></td><td>Ten kinds of activity and review cards; code checks, a judge, one rewrite</td><td>Qwen + code</td><td>1,168 activities</td><td class="n">2 h 10 min + 34 min</td></tr>
-<tr class="total"><td colspan="4">Sum of the measured stage times, plus 30 min of reruns (recap re-judge 22 min, odd-one-out rerun 8 min)</td><td class="n">≈ 10.8 h + 0.5 h ≈ 11.3 h</td></tr>
+<tr class="total"><td colspan="4">Sum of the measured stage times, plus 30 min of reruns (recap re-judge 22 min, odd-one-out rerun 8 min)</td><td class="n">≈ 11.4 h + 0.5 h ≈ 11.9 h</td></tr>
 </table></div>
 <p class="small muted">Times are wall time on one RTX PRO 6000 Blackwell (96 GB) on EC2, from <code>ec2_sync/queue/queue.log</code> <span class="local">(local)</span>
 (the 2026-11-17 rebuild), <code>pipeline/output/logs/qwen_vllm_1a.log</code> and the notebook's run notes. * 2c ran on an
@@ -931,11 +932,11 @@ transcript window that best matches each item), so they measure faithfulness to 
 tables: <a href="#ev-act-study">the activities study</a>.</p>
 
 <h4>4. What it costs: once per course, then per question</h4>
-<p><b>Once per course.</b> Building the layer and the activities took about 11 GPU hours: 10.8 h of measured stage
-time plus 0.5 h of reruns, about 11.3 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S). This is
+<p><b>Once per course.</b> Building the layer and the activities took about 12 GPU hours: 11.4 h of measured stage
+time plus 0.5 h of reruns, about 11.9 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S; 4f with Gemma 4 12B on the local RTX 5070). This is
 the sum of the stage times in <a href="#ov-stages">Every stage in one line</a> and <a href="#timing">Time
-estimates</a>. Of it, stages 1a to 4d, the part question answering reads, are about 8.1 h (19 + 8 + 86 + 233 + 24 +
-107 + 6.5 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
+estimates</a>. Of it, stages 1a to 4d and 4f, the part question answering reads, are about 8.7 h (19 + 8 + 86 + 233 + 24 +
+107 + 6.5 + 36.7 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
 a CPU.</p>
 <p><b>Per question</b>, the layer costs close to what RAG costs:</p>
 <div class="tablewrap"><table><tr><th>Per question (65 questions, run 1)</th><th class=n>Ours</th><th class=n>RAG</th><th class=n>RAG + thinking</th></tr><tr><td>Context tokens, median (all model calls summed)</td><td class=n>4,892</td><td class=n>4,033</td><td class=n>4,031</td></tr><tr><td>Model calls, mean</td><td class=n>2.277</td><td class=n>1.0</td><td class=n>1.0</td></tr><tr><td>Seconds, median</td><td class=n>5.66</td><td class=n>4.24</td><td class=n>25.37</td></tr><tr><td>Seconds, 90th percentile</td><td class=n>8.41</td><td class=n>5.54</td><td class=n>48.74</td></tr><tr><td>First answer token, median s</td><td class=n>2.99</td><td class=n>1.53</td><td class=n>24.07</td></tr><tr><td>Correct (all 65)</td><td class=n>0.8</td><td class=n>0.815</td><td class=n>0.808</td></tr></table></div>
@@ -1086,7 +1087,7 @@ the repository backs it, or <span class="pill pa">argued</span> when it rests on
 
 <div class="tablewrap"><table>
 <tr><th style="width:24%">Argument</th><th>What it means, with the evidence</th><th style="width:10%">Status</th></tr>
-<tr><td><b>Heavy work once, offline</b></td><td>The 63 lectures are processed once (about 10.8 GPU hours, summed from the stage
+<tr><td><b>Heavy work once, offline</b></td><td>The 63 lectures are processed once (about 11.4 GPU hours, summed from the stage
 logs). Answering reads a precomputed folder, <code>knowledge/</code> (31 MB, of which 21 MB are fact embeddings). Nothing
 is re-read or re-summarised at question time.</td><td><span class="pill pm">measured</span></td></tr>
 <tr><td><b>Light inference per question</b></td><td>A 12B model answers: Gemma 4 12B QAT, a 6.72 GB GGUF file. Median 4.9 s on a
@@ -4335,12 +4336,13 @@ These are wall times of whole batches, measured from the logs named in each row.
 <tr><td>4a</td><td class="n">3,122</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">1 h 47 min</td><td><code>4.log</code> <span class="local">(local)</span></td></tr>
 <tr><td>4b</td><td class="n">64</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">6.5 min</td><td><code>5.log</code> <span class="local">(local)</span></td></tr>
 <tr><td>4c, 4d</td><td class="n">—</td><td>code (embeddings cached)</td><td>—</td><td class="n">3 s</td><td><code>6.log</code>, <code>7.log</code> <span class="local">(local)</span></td></tr>
+<tr><td>4f</td><td class="n">386</td><td>Gemma 4 12B, thinking 1k · 6</td><td>RTX 5070 (local)</td><td class="n">36.7 min</td><td><code>stage_4f_course_structure/course_structure.json</code> (<code>run.seconds</code>)</td></tr>
 <tr><td>5 writers + judge</td><td class="n">945 + 915</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">2 h 10 min</td><td><code>8.log</code> <span class="local">(local)</span></td></tr>
 <tr><td>5 one rewrite round</td><td class="n">246 + 246</td><td>6k · 128</td><td>RTX PRO 6000</td><td class="n">34 min</td><td><code>10.log</code> <span class="local">(local)</span></td></tr>
 <tr><td>5 recap re-judge; odd one out rerun (lectures 1, 26)</td><td class="n">347; 3</td><td>6k · 128; 10k · 128</td><td>RTX PRO 6000</td><td class="n">22 + 8 min</td><td><code>11.log</code>, <code>12.log</code> <span class="local">(local)</span></td></tr>
-<tr class="total"><td colspan="4">Sum, one pass over the course (plus the 30 min of reruns: ≈ 11.3 h)</td><td class="n">≈ 10.8 h</td><td></td></tr>
+<tr class="total"><td colspan="4">Sum, one pass over the course (plus the 30 min of reruns: ≈ 11.9 h)</td><td class="n">≈ 11.4 h</td><td></td></tr>
 </table></div>
-<p><b>Estimate for a 63-lecture course from scratch:</b> about 11 GPU hours on one 96 GB GPU, plus about 25 minutes
+<p><b>Estimate for a 63-lecture course from scratch:</b> about 12 GPU hours on one 96 GB GPU, plus about 25 minutes
 to set up a fresh instance (mostly model downloads; <code>pipeline/continue/PROMPT.md</code>) and 1–5 minutes per model
 load. This is the sum of the measured stages above, which ran with different settings: 1a, 1b and 2a with 32
 parallel requests and a 16k thinking budget, 2c on a smaller GPU. Running every stage at 128 parallel requests on the
@@ -4832,7 +4834,7 @@ fixes planned next, then longer-term work. Each limit names where it shows.</p><
 <tr><td><b>A judge for every kind, measured first</b></td><td>The activity judge runs on six kinds and is not yet measured on its seed set; recall, match the pairs and complete the map have no judge. The fact judge needs majority voting or another fix for its 15% flips.</td></tr>
 <tr><td><b>A smaller or distilled answer model</b></td><td>The answer time is mostly model time (round 0 about 1.6 s, the final answer about 2.6 s at about 60 tokens per second). A smaller model, or one tuned on the course's tool calls, would cut it; tool choice by a small model is the known risk (B17).</td></tr>
 <tr><td><b>Faster decoding</b></td><td>An FP8 Gemma checkpoint on vLLM would roughly double decode speed over BF16 (<code>analysis/qa/STATE.md</code>); speculative decoding is untried; a forced first tool call works on vLLM but needs a guard (it skipped the search on B17).</td></tr>
-<tr><td><b>Batch the whole build</b></td><td>1a, 1b, 2a and 2c ran at 32 parallel requests; 4a reached about 1,800 tokens per second at 128. Running every stage at 128 on one GPU, and stages whose inputs are ready side by side, would shorten the 10.8 hours.</td></tr>
+<tr><td><b>Batch the whole build</b></td><td>1a, 1b, 2a and 2c ran at 32 parallel requests; 4a reached about 1,800 tokens per second at 128. Running every stage at 128 on one GPU, and stages whose inputs are ready side by side, would shorten the 11.4 hours.</td></tr>
 <tr><td><b>Incremental updates</b></td><td>The cache already skips unchanged requests. A lecture that changes reruns its own segments, facts and concepts; the registry, definitions of the concepts it touches and the graph would then need a targeted rerun rather than a full one.</td></tr>
 <tr><td><b>Relationships across segments</b></td><td>D4: a later pass over concept pairs that share a lecture but never a segment.</td></tr>
 <tr><td><b>Cross-course concept linking</b></td><td>Stage 0a already runs on six courses (VR and five others); one registry over several courses would let a learner follow a concept from one course to another.</td></tr>
