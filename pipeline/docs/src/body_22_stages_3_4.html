@@ -168,3 +168,23 @@ with a vector, every concept in the name index and the graph. It exits 1 when an
 <details><summary>A concept card: concepts.json, C1574</summary><pre data-lang="json">{{S:card_hrtf}}</pre></details>
 <details><summary>A fact in the store: facts.json</summary><pre data-lang="json">{{S:fact_store}}</pre></details>
 <details><summary>The name index: names.json (an acronym can name two concepts)</summary><pre data-lang="json">{{S:names}}</pre></details>
+
+<!-- ------------------------------------------------------------------ 4f -->
+<div class="stage-head"><span class="sid" style="--c:var(--c-qa)">4f</span><h3 id="s4f" data-toc="4f · Course structure">Course structure: the lecturers' own statements</h3><span class="worker w-qa">Gemma 4 12B</span></div>
+<p>The sentences in which a lecturer talks about the course itself: its objective and scope, what is or is not covered,
+its modules and weeks, reading. One call per segment (386); the model returns only the IDs of such sentences, usually
+none, and code copies them verbatim from the transcript, with lecture and time (neighbouring sentences merge into one
+statement). Code checks that every ID is a sentence of that segment, with no duplicates, and retries a failing answer
+with the problems shown. The QA tool <code>course_structure</code> reads the result (<a href="#qa">QA</a>).</p>
+<dl class="facts-grid">
+<dt>In</dt><dd><code>stage_1b_verify_segments/segment_maps/</code>, <code>stage_1c_segment_texts/</code> (“[ID] text” per sentence), <code>stage_0a_preprocess/times/</code></dd>
+<dt>Out</dt><dd><code>stage_4f_course_structure/course_structure.json</code> <code>{"run", "statements": [{"id", "lecture", "segment", "sentence_ids", "start", "end", "text"}]}</code>, <code>course_structure.md</code> (for review); schema <code>schemas/course_structure.md</code>; run 1 kept in <code>history/run1/</code></dd>
+<dt>Command</dt><dd><code>python scripts/s4f_course_structure.py nptel_vr --llm configs/gemma4_12b_llamacpp.json [--lectures 1,4] [--seed 1] [--out DIR]</code></dd>
+<dt>Model</dt><dd>Gemma 4 12B QAT, thinking up to 1,024 tokens, <code>max_tokens</code> 8,192 (a cut-off answer is asked again with thinking off)</dd>
+<dt>Time</dt><dd>36.7 min (386 calls, 0 retries, 2026-11-19)</dd>
+<dt>Result</dt><dd>28 statements, 0 segments failed. It captures the six-module, week-by-week outline the lecturer gives in lecture 63. Some noise remains (book pointers for a single topic, a few remarks inside a topic); it is reported, not filtered by hand.</dd>
+</dl>
+<p>Run 1 (first prompt) returned 61 statements, about half of them lecture signposting, and 7 segments were cut off at
+the token limit and got none. The revised prompt names the exclusions explicitly and <code>max_tokens</code> went to
+8,192: 28 statements, no failure.</p>
+{{PROMPT:course_structure.txt}}

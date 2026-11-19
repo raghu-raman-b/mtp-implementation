@@ -69,6 +69,11 @@ ROWS = [
     ("4d", "seg.4d.broken_refs", "4d's reference check, run again by <code>analysis/mvp/integrity.py</code>."),
     ("4d", "fact.no_segment", "4d's reference check."),
     ("4d", "fact.null_time", "4d fills null sentence times (2026-11-13)."),
+    ("4f", "seg.cs_failed", "Code check (IDs of the segment, no duplicates), retried with the problems shown; a cut-off "
+     "answer is asked again with thinking off."),
+    ("4f", "seg.cs_time_fallback", "The time still points into the right segment, only less exactly."),
+    ("4f", "seg.cs_run1_vs_now", "Revised prompt (explicit exclusions), <code>max_tokens</code> 8,192; run 1 kept in "
+     "<code>history/run1/</code>. Counts only; the remaining noise is reported, not filtered by hand."),
     ("4d", "fact.shared_start", "A fact's time is the start of its first evidence sentence, often where the topic is "
      "introduced."),
     ("5", "act.retried", "Code checks, retried with the problem written out; 0 units left unresolved. Retries: quiz 104, "
