@@ -53,6 +53,23 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
+## DAY 2026-11-19 (from 11:30 IST) — READ THIS FIRST; supersedes NIGHT below
+User (11:35): finish today: activities study, judging answers + activities, results to docs, sample questions; then
+merge. User's point for the docs: QA can be optimised to ONE tool call fetching every needed concept at once, so latency
+is about one call (design point, not measured; memory qa-one-call-optimization).
+- Night queue had died after multihop GPU runs (02:38); activities study never started (READY not touched).
+- DONE: multihop judged by 2 Sonnet agents (168, judge/sonnet_M{A,B}.jsonl), merged; tables/figures/run_stats for 65
+  questions (6f3b22f). Overall correct: ours 0.80, rag 0.815, rag_think 0.808, graphrag_text 0.777, abl_graph 0.785,
+  abl_facts 0.762, plain 0.254. Multihop ours 0.5 vs rag 0.625 (M08/M09: "earlier ideas" routed to the prereq graph).
+  make_samples.py (0d7f665): 6 samples D02 D06 P01 P02 P04 S01 (ours beats every baseline, no hallucination).
+- Activities study: fake test failed (summarize lacked ours_gemma; generate.py never made ours_gemma) -> fixed:
+  generate.py runs s5 on Gemma for the sample (code checks + retry, no judge) (5fc5204). GPU queue restarted 11:37
+  (detached queue.sh; log baseline-tests/queue.log; marker activities_study/GPU_DONE).
+- RUNNING: docs part 2 (Opus agent, worktree agent-afef209db8fea72c8): baseline section "what the method buys" + full
+  method in the Evaluation part; activities subsection waits for the study's out/summary.md (send it to the agent).
+- NEXT: GPU_DONE -> 3 Sonnet agents judge out/sonnet/packets (blind) -> summarize.py -> send summary to docs agent ->
+  review docs -> merge baseline + docs branches to main, sample_questions.json via make_samples.py on main, push.
+
 ## NIGHT 2026-11-19 (from 02:05 IST) — READ THIS FIRST; supersedes everything below where they differ
 
 **User (02:00):** get every test done tonight (studies, GPU runs), queued so they go on if the session's limit runs
