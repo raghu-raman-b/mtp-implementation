@@ -6,20 +6,20 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 
 | run | answers | errors | latency_median_s | latency_p90_s | first_token_median_s | context_tokens_median | model_calls_mean |
 |---|---|---|---|---|---|---|---|
-| ours r1 | 53 | 0 | 5.03 | 7.75 | 2.87 | 4804 | 2.208 |
-| ours r2 | 28 | 0 | 4.35 | 5.95 | 2.48 | 4623.5 | 2.036 |
-| ours r3 | 28 | 0 | 4.39 | 5.95 | 2.53 | 4623.5 | 2.036 |
-| plain r1 | 53 | 0 | 1.56 | 1.87 | 0.08 | 98 | 1.0 |
-| rag r1 | 53 | 0 | 3.85 | 5.47 | 1.53 | 4027 | 1.0 |
-| rag r2 | 28 | 0 | 3.41 | 5.04 | 1.31 | 3739.0 | 1.0 |
-| rag r3 | 28 | 0 | 3.35 | 5.08 | 1.33 | 3739.0 | 1.0 |
-| rag_think r1 | 53 | 0 | 24.36 | 48.78 | 22.58 | 4025 | 1.0 |
-| rag_think r2 | 28 | 0 | 28.01 | 53.49 | 24.71 | 3737.0 | 1.0 |
-| rag_think r3 | 28 | 0 | 27.88 | 52.92 | 24.84 | 3737.0 | 1.0 |
-| graphrag_text r1 | 53 | 0 | 5.51 | 7.16 | 3.0 | 8276 | 1.0 |
-| graphrag_notext r1 | 53 | 0 | 3.53 | 5.05 | 1.36 | 3529 | 1.0 |
-| abl_facts r1 | 53 | 0 | 5.27 | 7.54 | 3.12 | 4804 | 2.189 |
-| abl_graph r1 | 53 | 0 | 5.34 | 7.64 | 3.12 | 4804 | 2.17 |
+| ours r1 | 65 | 0 | 5.66 | 8.41 | 2.99 | 4892 | 2.277 |
+| ours r2 | 40 | 0 | 5.17 | 7.68 | 3.0 | 4793.5 | 2.275 |
+| ours r3 | 40 | 0 | 5.12 | 7.56 | 3.1 | 4793.5 | 2.275 |
+| plain r1 | 65 | 0 | 1.59 | 1.94 | 0.08 | 100 | 1.0 |
+| rag r1 | 65 | 0 | 4.24 | 5.54 | 1.53 | 4033 | 1.0 |
+| rag r2 | 40 | 0 | 4.17 | 5.14 | 1.37 | 3842.5 | 1.0 |
+| rag r3 | 40 | 0 | 4.13 | 5.16 | 1.38 | 3842.5 | 1.0 |
+| rag_think r1 | 65 | 0 | 25.37 | 48.74 | 24.07 | 4031 | 1.0 |
+| rag_think r2 | 40 | 0 | 28.38 | 48.59 | 25.34 | 3840.5 | 1.0 |
+| rag_think r3 | 40 | 0 | 28.05 | 48.56 | 25.4 | 3840.5 | 1.0 |
+| graphrag_text r1 | 65 | 0 | 5.62 | 8.07 | 3.03 | 8291 | 1.0 |
+| graphrag_notext r1 | 65 | 0 | 3.65 | 6.19 | 1.37 | 3624 | 1.0 |
+| abl_facts r1 | 65 | 0 | 5.52 | 7.67 | 3.59 | 3593 | 2.092 |
+| abl_graph r1 | 65 | 0 | 5.74 | 8.4 | 2.98 | 5211 | 2.554 |
 
 ## definition
 
@@ -31,8 +31,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r1 | 7 | 0 | 26.21 | 33.0 | 24.4 | 4057 | 1.0 |
 | graphrag_text r1 | 7 | 0 | 5.22 | 7.16 | 2.97 | 8134 | 1.0 |
 | graphrag_notext r1 | 7 | 0 | 3.71 | 5.05 | 1.36 | 3493 | 1.0 |
-| abl_facts r1 | 7 | 0 | 3.75 | 6.26 | 2.2 | 5167 | 2.0 |
-| abl_graph r1 | 7 | 0 | 3.81 | 6.32 | 2.26 | 5167 | 2.0 |
+| abl_facts r1 | 7 | 0 | 5.77 | 7.2 | 3.01 | 3543 | 2.0 |
+| abl_graph r1 | 7 | 0 | 4.12 | 6.7 | 2.19 | 4695 | 2.0 |
 
 ## explanation
 
@@ -44,8 +44,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r1 | 7 | 0 | 24.36 | 38.17 | 22.58 | 4056 | 1.0 |
 | graphrag_text r1 | 7 | 0 | 5.74 | 6.56 | 3.27 | 8464 | 1.0 |
 | graphrag_notext r1 | 7 | 0 | 3.5 | 4.83 | 1.48 | 3878 | 1.0 |
-| abl_facts r1 | 7 | 0 | 5.09 | 6.97 | 3.62 | 5745 | 2.143 |
-| abl_graph r1 | 7 | 0 | 5.07 | 6.96 | 3.66 | 5745 | 2.143 |
+| abl_facts r1 | 7 | 0 | 5.41 | 5.85 | 3.62 | 3593 | 2.0 |
+| abl_graph r1 | 7 | 0 | 6.25 | 7.17 | 3.05 | 5383 | 2.429 |
 
 ## comparison
 
@@ -57,8 +57,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r1 | 7 | 0 | 20.7 | 41.92 | 17.3 | 4062 | 1.0 |
 | graphrag_text r1 | 7 | 0 | 6.18 | 6.35 | 3.03 | 8305 | 1.0 |
 | graphrag_notext r1 | 7 | 0 | 4.33 | 4.98 | 1.43 | 3796 | 1.0 |
-| abl_facts r1 | 7 | 0 | 6.4 | 7.48 | 3.32 | 9133 | 2.571 |
-| abl_graph r1 | 7 | 0 | 6.39 | 7.44 | 3.3 | 9133 | 2.571 |
+| abl_facts r1 | 7 | 0 | 5.52 | 6.05 | 3.4 | 3502 | 2.0 |
+| abl_graph r1 | 7 | 0 | 6.56 | 7.41 | 3.53 | 6988 | 2.714 |
 
 ## list
 
@@ -70,8 +70,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r1 | 4 | 0 | 18.78 | 66.44 | 16.49 | 3976.0 | 1.0 |
 | graphrag_text r1 | 4 | 0 | 5.63 | 8.18 | 3.13 | 8336.5 | 1.0 |
 | graphrag_notext r1 | 4 | 0 | 4.12 | 6.19 | 1.42 | 3888.5 | 1.0 |
-| abl_facts r1 | 4 | 0 | 7.16 | 9.76 | 3.81 | 5826.0 | 2.75 |
-| abl_graph r1 | 4 | 0 | 7.12 | 9.77 | 3.79 | 5826.0 | 2.75 |
+| abl_facts r1 | 4 | 0 | 5.35 | 6.52 | 3.17 | 3533.5 | 2.0 |
+| abl_graph r1 | 4 | 0 | 6.67 | 8.67 | 3.79 | 5354.0 | 2.75 |
 
 ## formula
 
@@ -89,8 +89,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r3 | 5 | 0 | 28.46 | 60.8 | 25.09 | 4087 | 1.0 |
 | graphrag_text r1 | 5 | 0 | 5.65 | 6.45 | 3.25 | 8405 | 1.0 |
 | graphrag_notext r1 | 5 | 0 | 3.65 | 4.12 | 1.39 | 3624 | 1.0 |
-| abl_facts r1 | 5 | 0 | 6.03 | 7.54 | 3.38 | 5196 | 2.0 |
-| abl_graph r1 | 5 | 0 | 6.01 | 7.31 | 3.22 | 5196 | 2.0 |
+| abl_facts r1 | 5 | 0 | 6.23 | 7.76 | 3.69 | 3649 | 2.0 |
+| abl_graph r1 | 5 | 0 | 6.45 | 7.16 | 3.24 | 5211 | 2.2 |
 
 ## where
 
@@ -108,8 +108,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r3 | 5 | 0 | 22.37 | 45.84 | 20.43 | 3476 | 1.0 |
 | graphrag_text r1 | 5 | 0 | 3.96 | 5.21 | 3.0 | 8314 | 1.0 |
 | graphrag_notext r1 | 5 | 0 | 3.14 | 4.52 | 1.33 | 3437 | 1.0 |
-| abl_facts r1 | 5 | 0 | 3.47 | 4.17 | 2.2 | 4646 | 2.0 |
-| abl_graph r1 | 5 | 0 | 3.49 | 4.2 | 2.23 | 4646 | 2.0 |
+| abl_facts r1 | 5 | 0 | 4.9 | 6.41 | 2.94 | 3626 | 2.0 |
+| abl_graph r1 | 5 | 0 | 3.53 | 4.56 | 2.27 | 4174 | 2.0 |
 
 ## prerequisite
 
@@ -127,8 +127,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r3 | 4 | 0 | 42.46 | 77.84 | 40.82 | 2354.0 | 1.0 |
 | graphrag_text r1 | 4 | 0 | 6.2 | 6.85 | 2.95 | 8184.0 | 1.0 |
 | graphrag_notext r1 | 4 | 0 | 3.67 | 6.75 | 1.26 | 3247.5 | 1.0 |
-| abl_facts r1 | 4 | 0 | 5.39 | 7.19 | 2.05 | 4793.5 | 2.0 |
-| abl_graph r1 | 4 | 0 | 5.45 | 7.21 | 2.08 | 4793.5 | 2.0 |
+| abl_facts r1 | 4 | 0 | 4.2 | 4.74 | 3.9 | 3595.0 | 2.0 |
+| abl_graph r1 | 4 | 0 | 5.61 | 7.64 | 2.1 | 4321.5 | 2.0 |
 
 ## structure
 
@@ -146,8 +146,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r3 | 5 | 0 | 39.28 | 58.66 | 36.35 | 3503 | 1.0 |
 | graphrag_text r1 | 5 | 0 | 4.83 | 9.4 | 2.97 | 8091 | 1.0 |
 | graphrag_notext r1 | 5 | 0 | 3.27 | 6.33 | 1.27 | 3296 | 1.0 |
-| abl_facts r1 | 5 | 0 | 5.88 | 7.39 | 3.82 | 4892 | 2.2 |
-| abl_graph r1 | 5 | 0 | 5.95 | 7.64 | 3.99 | 4892 | 2.2 |
+| abl_facts r1 | 5 | 0 | 4.66 | 5.57 | 3.44 | 3601 | 2.0 |
+| abl_graph r1 | 5 | 0 | 5.62 | 8.4 | 3.58 | 4420 | 2.2 |
 
 ## not_covered
 
@@ -165,8 +165,27 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | rag_think r3 | 9 | 0 | 21.35 | 28.21 | 19.45 | 4007 | 1.0 |
 | graphrag_text r1 | 9 | 0 | 4.52 | 5.02 | 2.96 | 8215 | 1.0 |
 | graphrag_notext r1 | 9 | 0 | 2.91 | 3.57 | 1.34 | 3484 | 1.0 |
-| abl_facts r1 | 9 | 0 | 3.99 | 5.78 | 2.53 | 4343 | 2.111 |
-| abl_graph r1 | 9 | 0 | 3.92 | 5.64 | 2.64 | 4327 | 2.0 |
+| abl_facts r1 | 9 | 0 | 6.17 | 7.67 | 4.35 | 3671 | 2.556 |
+| abl_graph r1 | 9 | 0 | 3.76 | 4.58 | 2.4 | 3855 | 2.0 |
+
+## multihop
+
+| run | answers | errors | latency_median_s | latency_p90_s | first_token_median_s | context_tokens_median | model_calls_mean |
+|---|---|---|---|---|---|---|---|
+| ours r1 | 12 | 0 | 8.0 | 10.13 | 4.82 | 8255.0 | 2.583 |
+| ours r2 | 12 | 0 | 7.56 | 9.41 | 4.74 | 8321.5 | 2.833 |
+| ours r3 | 12 | 0 | 7.26 | 8.66 | 4.46 | 8321.5 | 2.833 |
+| plain r1 | 12 | 0 | 1.77 | 1.98 | 0.09 | 110.0 | 1.0 |
+| rag r1 | 12 | 0 | 4.81 | 9.47 | 1.56 | 4046.5 | 1.0 |
+| rag r2 | 12 | 0 | 4.54 | 5.65 | 1.4 | 4046.5 | 1.0 |
+| rag r3 | 12 | 0 | 4.54 | 5.68 | 1.4 | 4046.5 | 1.0 |
+| rag_think r1 | 12 | 0 | 28.94 | 37.79 | 26.25 | 4044.5 | 1.0 |
+| rag_think r2 | 12 | 0 | 29.0 | 37.8 | 26.3 | 4044.5 | 1.0 |
+| rag_think r3 | 12 | 0 | 28.98 | 37.79 | 26.3 | 4044.5 | 1.0 |
+| graphrag_text r1 | 12 | 0 | 6.31 | 9.76 | 3.45 | 8579.5 | 1.0 |
+| graphrag_notext r1 | 12 | 0 | 4.38 | 6.36 | 1.42 | 4044.0 | 1.0 |
+| abl_facts r1 | 12 | 0 | 7.08 | 9.23 | 4.32 | 3589.5 | 2.083 |
+| abl_graph r1 | 12 | 0 | 7.93 | 9.72 | 5.12 | 12740.5 | 3.917 |
 
 ## GraphRAG index
 

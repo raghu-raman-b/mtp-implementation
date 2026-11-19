@@ -52,7 +52,7 @@ def main():
         fig.savefig(F / name, dpi=150)
         plt.close(fig)
 
-    bars("hallucinations", "hallucinated claims (count, 53 questions)", "Hallucinations per system (run 1)",
+    bars("hallucinations", "hallucinated claims (count, 65 questions)", "Hallucinations per system (run 1)",
          "hallucinations.png")
     bars("context_tokens_median", "median context tokens per question", "Context size per system (run 1)",
          "context_tokens.png")

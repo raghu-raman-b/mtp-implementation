@@ -1,19 +1,19 @@
 # Baseline comparison tables
 
-Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Sonnet judge). halluc: false claims counted (answers with one). cit valid: by code (see summarize.py). nc handled: not-covered questions answered as not covered without invented content. ctx: median context tokens. calls: mean model calls. latency / first token in seconds.
+Run 1 of every system, 65 questions. correct: mean of 1 / 0.5 / 0 (Sonnet judge). halluc: false claims counted (answers with one). cit valid: by code (see summarize.py). nc handled: not-covered questions answered as not covered without invented content. ctx: median context tokens. calls: mean model calls. latency / first token in seconds.
 
 ## Overall
 
 | system | correct | halluc (answers) | cit valid | nc handled | ctx | calls | latency med | latency p90 | first token |
 |---|---|---|---|---|---|---|---|---|---|
-| ours | 0.868 | 2 (2) | 160/194 | 8/9 | 4804 | 2.208 | 5.03 | 7.75 | 2.87 |
-| plain | 0.255 | 43 (29) | 0/0 | 1/9 | 98 | 1.0 | 1.56 | 1.87 | 0.08 |
-| rag | 0.858 | 1 (1) | 197/214 | 9/9 | 4027 | 1.0 | 3.85 | 5.47 | 1.53 |
-| rag_think | 0.858 | 1 (1) | 195/216 | 9/9 | 4025 | 1.0 | 24.36 | 48.78 | 22.58 |
-| graphrag_text | 0.821 | 0 (0) | 174/248 | 8/9 | 8276 | 1.0 | 5.51 | 7.16 | 3.0 |
-| graphrag_notext | 0.717 | 3 (3) | 163/277 | 8/9 | 3529 | 1.0 | 3.53 | 5.05 | 1.36 |
-| abl_facts | 0.802 | 0 (0) | 152/176 | 8/9 | 3593 | 2.094 | 5.41 | 7.19 | 3.45 |
-| abl_graph | 0.887 | 3 (3) | 172/222 | 7/9 | 4392 | 2.245 | 5.48 | 7.74 | 2.89 |
+| ours | 0.8 | 5 (5) | 195/244 | 8/9 | 4892 | 2.277 | 5.66 | 8.41 | 2.99 |
+| plain | 0.254 | 61 (40) | 0/0 | 1/9 | 100 | 1.0 | 1.59 | 1.94 | 0.08 |
+| rag | 0.815 | 3 (3) | 255/279 | 9/9 | 4033 | 1.0 | 4.24 | 5.54 | 1.53 |
+| rag_think | 0.808 | 1 (1) | 250/278 | 9/9 | 4031 | 1.0 | 25.37 | 48.74 | 24.07 |
+| graphrag_text | 0.777 | 1 (1) | 224/328 | 8/9 | 8291 | 1.0 | 5.62 | 8.07 | 3.03 |
+| graphrag_notext | 0.662 | 8 (8) | 197/337 | 8/9 | 3624 | 1.0 | 3.65 | 6.19 | 1.37 |
+| abl_facts | 0.762 | 0 (0) | 196/227 | 8/9 | 3593 | 2.092 | 5.52 | 7.67 | 3.59 |
+| abl_graph | 0.785 | 9 (9) | 205/272 | 7/9 | 5211 | 2.554 | 5.74 | 8.4 | 2.98 |
 
 ## Correct per category
 
@@ -28,6 +28,7 @@ Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Sonnet judge)
 | prerequisite (4) | 0.5 | 0.0 | 0.125 | 0.125 | 0.0 | 0.0 | 0.0 | 0.75 |
 | structure (5) | 0.6 | 0.0 | 0.9 | 0.9 | 0.7 | 0.6 | 0.4 | 0.6 |
 | not_covered (9) | 0.889 | 0.111 | 0.944 | 0.944 | 0.889 | 0.889 | 0.944 | 0.889 |
+| multihop (12) | 0.5 | 0.25 | 0.625 | 0.583 | 0.583 | 0.417 | 0.583 | 0.333 |
 
 ## Hallucinations per category (count)
 
@@ -42,6 +43,7 @@ Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Sonnet judge)
 | prerequisite | 0 | 4 | 0 | 0 | 0 | 1 | 0 | 1 |
 | structure | 1 | 8 | 0 | 0 | 0 | 0 | 0 | 2 |
 | not_covered | 0 | 8 | 0 | 0 | 0 | 0 | 0 | 0 |
+| multihop | 3 | 18 | 2 | 0 | 1 | 5 | 0 | 6 |
 
 ## Citation validity per category (valid/total)
 
@@ -56,6 +58,7 @@ Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Sonnet judge)
 | prerequisite | 13/19 | 0/0 | 10/11 | 7/14 | 15/23 | 5/9 | 0/0 | 15/21 |
 | structure | 7/17 | 0/0 | 16/20 | 21/25 | 9/11 | 20/34 | 1/12 | 9/18 |
 | not_covered | 12/17 | 0/0 | 19/21 | 21/21 | 15/24 | 19/30 | 28/29 | 14/20 |
+| multihop | 35/50 | 0/0 | 58/65 | 55/62 | 50/80 | 34/60 | 44/51 | 33/50 |
 
 ## Latency median / first token median per category (s)
 
@@ -70,6 +73,7 @@ Run 1 of every system, 53 questions. correct: mean of 1 / 0.5 / 0 (Sonnet judge)
 | prerequisite | 5.81 / 2.03 | 1.7 / 0.08 | 2.49 / 0.88 | 42.16 / 40.5 | 6.2 / 2.95 | 3.67 / 1.26 | 4.2 / 3.9 | 5.61 / 2.1 |
 | structure | 5.51 / 2.72 | 1.04 / 0.08 | 3.78 / 1.36 | 39.39 / 36.37 | 4.83 / 2.97 | 3.27 / 1.27 | 4.66 / 3.44 | 5.62 / 3.58 |
 | not_covered | 3.89 / 2.35 | 1.82 / 0.08 | 3.07 / 1.5 | 21.54 / 19.58 | 4.52 / 2.96 | 2.91 / 1.34 | 6.17 / 4.35 | 3.76 / 2.4 |
+| multihop | 8.0 / 4.82 | 1.77 / 0.09 | 4.81 / 1.56 | 28.94 / 26.25 | 6.31 / 3.45 | 4.38 / 1.42 | 7.08 / 4.32 | 7.93 / 5.12 |
 
 ## Repeats (3 runs): correct, mean ± range (min-max) across runs
 
