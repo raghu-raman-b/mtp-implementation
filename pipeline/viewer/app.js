@@ -302,19 +302,32 @@ function mdBlock(text, caret) {
   const maths = [];
   const src = String(text || "").replace(/\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]/g, (x) => { maths.push(x); return `\u0000${maths.length - 1}\u0000`; });
   const box = h("div", { class: "md" });
-  let list = null, para = [], lastEl = null;
+  let stack = [], para = [], lastEl = null;  // stack: the open lists, outermost first: {indent, ordered, el, li}
   const flush = () => { if (para.length) { lastEl = h("p", {}, ...mdInline(para.join(" "), maths)); box.append(lastEl); para = []; } };
   for (const raw of src.split("\n")) {
     const line = raw.trim();
-    const bullet = line.match(/^(?:[*\-•]|\d+[.)])\s+(.*)$/);
+    const bullet = line.match(/^(?:[*\-•]|(\d+)[.)])\s+(.*)$/);
     if (bullet) {
       flush();
-      const ordered = /^\d/.test(line);
-      if (!list || list.ordered !== ordered) { list = { ordered, el: h(ordered ? "ol" : "ul", {}) }; box.append(list.el); }
-      lastEl = h("li", {}, ...mdInline(bullet[1], maths));
-      list.el.append(lastEl);
-    } else if (!line) { flush(); list = null; }
-    else { list = null; para.push(line.replace(/^#+\s*/, "")); }
+      const ordered = bullet[1] != null;
+      const width = raw.match(/^[ \t]*/)[0].replace(/\t/g, "    ").length;
+      const indent = width < 2 ? 0 : width;  // an indent of two spaces or a tab nests the item under the one above
+      while (stack.length && stack[stack.length - 1].indent > indent) stack.pop();
+      if (stack.length && stack[stack.length - 1].indent === indent && stack[stack.length - 1].ordered !== ordered) stack.pop();
+      let cur = stack[stack.length - 1];
+      if (!cur || cur.indent < indent) {
+        const parent = cur && cur.li ? cur.li : box;
+        const nested = parent !== box;
+        const attrs = ordered ? { style: `counter-reset: n ${(+bullet[1] || 1) - 1}`, start: +bullet[1] || 1 } : {};
+        cur = { indent: nested ? indent : 0, ordered, el: h(ordered ? "ol" : "ul", attrs), li: null };
+        parent.append(cur.el);
+        stack.push(cur);
+      }
+      lastEl = h("li", {}, ...mdInline(bullet[2], maths));
+      cur.el.append(lastEl);
+      cur.li = lastEl;
+    } else if (!line) { flush(); }
+    else { stack = []; para.push(line.replace(/^#+\s*/, "")); }
   }
   flush();
   if (caret) (lastEl || box).append(h("span", { class: "caret", "aria-hidden": "true" }));

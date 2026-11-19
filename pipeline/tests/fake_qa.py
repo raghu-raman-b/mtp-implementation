@@ -678,6 +678,9 @@ def test_new(cfg: LLMConfig, server: QAFake, out: Path):
     text, cits, dropped = cite(kb, "One [CS0001]. Two [CS0009]. Three [CS0002].", {"CS0001"})
     check(dropped == ["CS0009", "CS0002"] and [x["segment"] for x in cits] == ["2/S0"]
           and text == "One (lecture 2, 1:05). Two. Three.", f"only a CS ID some tool showed is cited ({text!r})")
+    text, cits, dropped = cite(kb, "A (long system) [CS0001]; B [CS0001] [CS0002].", {"CS0001", "CS0002"})
+    check(text.startswith("A (long system) (lecture 2, 1:05);") and "(long system; " not in text and text.count("(lecture 2") >= 1,
+          f"a citation after a closing parenthesis stays outside it ({text!r})")
 
     print("thinking off (think=False, $QA_THINK)", flush=True)
     n0 = len(server.bodies)

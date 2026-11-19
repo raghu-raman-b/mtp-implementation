@@ -776,6 +776,8 @@ def main():
     if shutil.which("node"):
         r = subprocess.run(["node", "--check", str(ROOT / "viewer" / "app.js")], capture_output=True, text=True)
         check(r.returncode == 0, f"app.js parses {r.stderr.strip()[:200]}")
+        r = subprocess.run(["node", str(ROOT / "tests" / "md_lists.js")], capture_output=True, text=True)
+        check(r.returncode == 0, f"markdown lists (tests/md_lists.js) {r.stdout.strip()[-300:]}")
     else:
         print("  (node not installed: skipped)")
     js = (ROOT / "viewer" / "app.js").read_text()

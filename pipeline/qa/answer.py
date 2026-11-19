@@ -282,8 +282,9 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
     out = BARE.sub(lambda m: label([m.group(1)]) if valid(m.group(1)) else "", out)
     out = merge_adjacent(out, labels)
     out = "\n\n".join(dedup_block(b, labels) for b in re.split(r"\n[ \t]*\n", out))
-    out = TOKEN.sub(lambda m: f" ({'; '.join(labels[int(m.group(1))])})", out)
-    out = re.sub(r"\)\s*\((?=lecture|course page)", "; ", out)              # "(lecture 4, 1:00) (lecture 5, 2:00)"
+    out = TOKEN.sub(lambda m: f" \x01{'; '.join(labels[int(m.group(1))])}\x02", out)  # \x01 \x02: a citation's own parentheses
+    out = re.sub(r"\x02\s*\x01", "; ", out)                                  # "(lecture 4, 1:00) (lecture 5, 2:00)"; a ")" of the text stays outside
+    out = out.replace("\x01", "(").replace("\x02", ")")
     out = re.sub(r"[ \t]+([.,;:!?])", r"\1", out)
     out = re.sub(r"[ \t]{2,}", " ", out)
     return out.strip(), citations, dropped
