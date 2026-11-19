@@ -7,7 +7,8 @@ import json
 
 from common import OUT
 
-SYSTEMS = ["ours", "plain", "rag", "rag_think", "graphrag_text", "graphrag_notext", "abl_facts", "abl_graph"]
+SYSTEMS = ["ours", "plain", "rag", "rag_think", "graphrag_text", "graphrag_notext", "abl_facts", "abl_graph",
+           "ours_v2", "ours_v2_nothink"]
 J = OUT / "judge"
 J.mkdir(exist_ok=True)
 PER_PACKET = 24

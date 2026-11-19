@@ -256,8 +256,13 @@ def restrict_tools(allowed: list[str] | None):
     qa_answer.run_tool = run_tool
 
 
+# ---------------------------------------------------------------- ours after the QA optimisation (T4, 2026-11-19)
+# Same as ours (no tool restriction); ours_v2: thinking in the tool round (shipped mode), ours_v2_nothink: no round thinks.
+V2 = {"ours_v2": True, "ours_v2_nothink": False}
+
+
 # ---------------------------------------------------------------- ours
-def run_ours(q: str) -> dict:
+def run_ours(q: str, think: bool | None = None) -> dict:
     sys.path.insert(0, str(PIPE))
     os.chdir(PIPE)
     import qa
@@ -266,7 +271,7 @@ def run_ours(q: str) -> dict:
     n0 = sum(1 for _ in log_path.open()) if log_path.exists() else 0
     t0 = time.time()
     first, res = None, None
-    for ev in qa.answer_stream(q, course="nptel_vr"):
+    for ev in qa.answer_stream(q, course="nptel_vr", think=think):
         if ev["event"] == "draft" and first is None:
             first = time.time() - t0
         if ev["event"] == "done":
@@ -280,13 +285,16 @@ def run_ours(q: str) -> dict:
             "context": {"tool_results": ctx}, "model_calls": len(rec.get("timing", [])),
             "context_tokens": rec.get("tokens", {}).get("input"), "output_tokens": rec.get("tokens", {}).get("output"),
             "timing": rec.get("timing"), "seconds": round(wall, 2),
-            "first_token_s": round(first, 2) if first is not None else None, "error": res.get("error")}
+            "first_token_s": round(first, 2) if first is not None else None, "error": res.get("error"),
+            "think": rec.get("think", think)}
 
 
 def warm(system: str):
     """Load what each system loads once per process (embedders, indexes) before its timed questions, so that no
     system's first question pays a cold start (qa.warm is what the viewer's --warm does)."""
-    if system == "ours":
+    if system in V2:
+        os.environ["QA_THINK"] = "1" if V2[system] else "0"   # qa.warm reads the mode from here
+    if system == "ours" or system in V2:
         sys.path.insert(0, str(PIPE))
         os.chdir(PIPE)
         import qa
@@ -307,7 +315,8 @@ def warm(system: str):
 
 RUN = {"ours": run_ours, "plain": run_plain, "rag": run_rag, "rag_think": lambda q: run_rag(q, think=True),
        "graphrag_notext": run_graphrag, "graphrag_text": run_graphrag_text,
-       "abl_facts": run_ours, "abl_graph": run_ours}
+       "abl_facts": run_ours, "abl_graph": run_ours,
+       "ours_v2": lambda q: run_ours(q, think=True), "ours_v2_nothink": lambda q: run_ours(q, think=False)}
 
 
 def main():
@@ -323,7 +332,7 @@ def main():
     if a.categories:
         qs = [q for q in qs if q["category"] in a.categories]
     for system in a.systems:
-        if system in ("ours",) or system in ABLATIONS:
+        if system in ("ours",) or system in V2 or system in ABLATIONS:
             restrict_tools(ABLATIONS.get(system))
         warm(system)
         path = RUNS / (f"{system}.jsonl" if a.run == 1 else f"{system}_r{a.run}.jsonl")

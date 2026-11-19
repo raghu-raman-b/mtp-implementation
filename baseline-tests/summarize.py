@@ -19,7 +19,9 @@ from render_for_judge import SYSTEMS, run_files
 
 VALID_OVERLAP = 0.5
 BASELINES = ["plain", "rag", "rag_think", "graphrag_text", "graphrag_notext"]
-REPEAT_SYSTEMS = ["ours", "rag", "rag_think"]
+REPEAT_SYSTEMS = ["ours", "rag", "rag_think", "ours_v2", "ours_v2_nothink"]
+V2_SYSTEMS = ["ours_v2", "ours_v2_nothink"]   # after the QA optimisation (T4); extra columns, "ours" is the old run
+BEFORE_AFTER = ["ours"] + V2_SYSTEMS
 REPEAT_CATS = ["not_covered", "where", "prerequisite", "structure", "formula"]
 
 
@@ -131,12 +133,42 @@ def main():
             x = summary["repeats"].get(c, {}).get(s)
             row.append(f'{x["mean"]} ({x["min"]}-{x["max"]}, {len(x["runs"])} runs)' if x else "-")
         L.append(f"| {c} | " + " | ".join(row) + " |")
+    # before / after the QA optimisation: run 1, ours (old) vs ours_v2 vs ours_v2_nothink
+    ba = [x for x in BEFORE_AFTER if (x, 1) in runs]
+    def tool_counts(recs):
+        n = max(len(recs), 1)
+        return {"tool_calls_per_q": round(sum(len(r.get("steps") or []) for r in recs) / n, 2),
+                "check_concept_per_q": round(sum(sum(st_["tool"] == "check_concept" for st_ in r.get("steps") or [])
+                                                 for r in recs) / n, 2)}
+    ba_sets = {"overall": all_ids, **{c: [q["id"] for q in qs if q["category"] == c] for c in cats}}
+    summary["before_after"] = {g: {x: {**block(x, 1, ids), **tool_counts([runs[(x, 1)][i] for i in ids if i in runs[(x, 1)]])}
+                                   for x in ba} for g, ids in ba_sets.items()}
+    (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
+    L += ["", "## Before / after the QA optimisation (run 1): ours (old run) vs ours_v2 (think) vs ours_v2_nothink", "",
+          "correct: mean 1 / 0.5 / 0 (n judged); latency median / p90 and first token median in seconds; ctx: median "
+          "context tokens; calls: mean model calls; tools/q: tool calls per question; check_concept/q: check_concept "
+          "calls per question.", "", "### Correct per category", "", "| category (n) | " + " | ".join(ba) + " |",
+          "|---|" + "---|" * len(ba)]
+    for c in cats:
+        n = sum(q["category"] == c for q in qs)
+        L.append(f"| {c} ({n}) | " + " | ".join(f'{summary["before_after"][c][x]["correct"]} '
+                                                f'({summary["before_after"][c][x]["judged"]})' for x in ba) + " |")
+    L.append("| overall (%d) | " % len(qs) + " | ".join(f'{summary["before_after"]["overall"][x]["correct"]} '
+                                                          f'({summary["before_after"]["overall"][x]["judged"]})' for x in ba) + " |")
+    L += ["", "### Run-side numbers", "", "| group | system | answers | latency med / p90 | first token | calls | ctx | tools/q | check_concept/q |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    for g in ["overall"] + cats:
+        for x in ba:
+            b = summary["before_after"][g][x]
+            L.append(f'| {g} | {x} | {b["answers"]} | {b["latency_median_s"]} / {b["latency_p90_s"]} | '
+                     f'{b["first_token_median_s"]} | {b["model_calls_mean"]} | {b["context_tokens_median"]} | '
+                     f'{b["tool_calls_per_q"]} | {b["check_concept_per_q"]} |')
     (OUT / "tables.md").write_text("\n".join(L) + "\n")
 
     # examples.jsonl: the 10 questions whose run-1 correctness differs most across systems (population std, then range)
     spread = []
     for q in qs:
-        sc = [J[(q["id"], s, 1)]["correct"] for s in systems if (q["id"], s, 1) in J]
+        sc = [J[(q["id"], s, 1)]["correct"] for s in systems if s not in V2_SYSTEMS and (q["id"], s, 1) in J]
         if len(sc) >= 2:
             spread.append((st.pstdev(sc), max(sc) - min(sc), q["id"]))
     spread.sort(key=lambda x: (-x[0], -x[1], x[2]))
@@ -149,7 +181,7 @@ def main():
                                                 "hallucinations": J.get((qid, s, 1), {}).get("hallucinations"),
                                                 "note": J.get((qid, s, 1), {}).get("note"),
                                                 "answer": runs[(s, 1)].get(qid, {}).get("answer")}
-                                            for s in systems}}, ensure_ascii=False) + "\n")
+                                            for s in systems if s not in V2_SYSTEMS}}, ensure_ascii=False) + "\n")
 
     # demo_questions.json: ours correct=1 in every judged run, best baseline (mean over its runs) lower
     def score(s, qid):

@@ -20,6 +20,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 65 | 0 | 3.65 | 6.19 | 1.37 | 3624 | 1.0 |
 | abl_facts r1 | 65 | 0 | 5.52 | 7.67 | 3.59 | 3593 | 2.092 |
 | abl_graph r1 | 65 | 0 | 5.74 | 8.4 | 2.98 | 5211 | 2.554 |
+| ours_v2 r1 | 65 | 0 | 5.59 | 8.41 | 3.03 | 5759 | 2.154 |
+| ours_v2 r2 | 40 | 0 | 5.78 | 8.98 | 3.0 | 5937.5 | 2.2 |
+| ours_v2 r3 | 40 | 0 | 5.3 | 8.63 | 2.85 | 5831.5 | 2.175 |
+| ours_v2_nothink r1 | 65 | 0 | 3.9 | 5.83 | 1.34 | 5158 | 2.062 |
+| ours_v2_nothink r2 | 40 | 0 | 3.77 | 5.36 | 1.17 | 5119.5 | 2.025 |
+| ours_v2_nothink r3 | 40 | 0 | 3.54 | 5.48 | 1.21 | 5130.5 | 2.075 |
 
 ## definition
 
@@ -33,6 +39,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 7 | 0 | 3.71 | 5.05 | 1.36 | 3493 | 1.0 |
 | abl_facts r1 | 7 | 0 | 5.77 | 7.2 | 3.01 | 3543 | 2.0 |
 | abl_graph r1 | 7 | 0 | 4.12 | 6.7 | 2.19 | 4695 | 2.0 |
+| ours_v2 r1 | 7 | 0 | 4.74 | 7.15 | 2.1 | 5635 | 2.0 |
+| ours_v2_nothink r1 | 7 | 0 | 3.03 | 6.28 | 1.12 | 5637 | 2.0 |
 
 ## explanation
 
@@ -46,6 +54,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 7 | 0 | 3.5 | 4.83 | 1.48 | 3878 | 1.0 |
 | abl_facts r1 | 7 | 0 | 5.41 | 5.85 | 3.62 | 3593 | 2.0 |
 | abl_graph r1 | 7 | 0 | 6.25 | 7.17 | 3.05 | 5383 | 2.429 |
+| ours_v2 r1 | 7 | 0 | 6.18 | 7.53 | 4.2 | 6323 | 2.143 |
+| ours_v2_nothink r1 | 7 | 0 | 3.45 | 4.41 | 1.79 | 5171 | 2.0 |
 
 ## comparison
 
@@ -59,6 +69,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 7 | 0 | 4.33 | 4.98 | 1.43 | 3796 | 1.0 |
 | abl_facts r1 | 7 | 0 | 5.52 | 6.05 | 3.4 | 3502 | 2.0 |
 | abl_graph r1 | 7 | 0 | 6.56 | 7.41 | 3.53 | 6988 | 2.714 |
+| ours_v2 r1 | 7 | 0 | 5.71 | 7.62 | 2.84 | 6493 | 2.0 |
+| ours_v2_nothink r1 | 7 | 0 | 4.27 | 5.2 | 1.44 | 6495 | 2.0 |
 
 ## list
 
@@ -72,6 +84,8 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 4 | 0 | 4.12 | 6.19 | 1.42 | 3888.5 | 1.0 |
 | abl_facts r1 | 4 | 0 | 5.35 | 6.52 | 3.17 | 3533.5 | 2.0 |
 | abl_graph r1 | 4 | 0 | 6.67 | 8.67 | 3.79 | 5354.0 | 2.75 |
+| ours_v2 r1 | 4 | 0 | 6.68 | 11.92 | 3.09 | 6294.0 | 2.75 |
+| ours_v2_nothink r1 | 4 | 0 | 4.16 | 5.89 | 1.25 | 5671.0 | 2.25 |
 
 ## formula
 
@@ -91,6 +105,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 5 | 0 | 3.65 | 4.12 | 1.39 | 3624 | 1.0 |
 | abl_facts r1 | 5 | 0 | 6.23 | 7.76 | 3.69 | 3649 | 2.0 |
 | abl_graph r1 | 5 | 0 | 6.45 | 7.16 | 3.24 | 5211 | 2.2 |
+| ours_v2 r1 | 5 | 0 | 6.67 | 7.16 | 3.36 | 6700 | 2.0 |
+| ours_v2 r2 | 5 | 0 | 5.58 | 6.92 | 3.03 | 6660 | 2.0 |
+| ours_v2 r3 | 5 | 0 | 5.77 | 6.88 | 3.03 | 6660 | 2.0 |
+| ours_v2_nothink r1 | 5 | 0 | 4.94 | 5.22 | 2.05 | 5158 | 2.0 |
+| ours_v2_nothink r2 | 5 | 0 | 4.6 | 4.88 | 1.47 | 5154 | 2.0 |
+| ours_v2_nothink r3 | 5 | 0 | 4.38 | 4.75 | 1.45 | 5158 | 2.0 |
 
 ## where
 
@@ -110,6 +130,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 5 | 0 | 3.14 | 4.52 | 1.33 | 3437 | 1.0 |
 | abl_facts r1 | 5 | 0 | 4.9 | 6.41 | 2.94 | 3626 | 2.0 |
 | abl_graph r1 | 5 | 0 | 3.53 | 4.56 | 2.27 | 4174 | 2.0 |
+| ours_v2 r1 | 5 | 0 | 3.47 | 4.14 | 2.17 | 5114 | 2.0 |
+| ours_v2 r2 | 5 | 0 | 3.55 | 3.98 | 2.05 | 5114 | 2.0 |
+| ours_v2 r3 | 5 | 0 | 3.34 | 3.85 | 2.08 | 5114 | 2.0 |
+| ours_v2_nothink r1 | 5 | 0 | 2.23 | 3.24 | 0.79 | 5116 | 2.0 |
+| ours_v2_nothink r2 | 5 | 0 | 2.25 | 3.14 | 0.78 | 5116 | 2.0 |
+| ours_v2_nothink r3 | 5 | 0 | 2.24 | 3.27 | 0.8 | 5116 | 2.0 |
 
 ## prerequisite
 
@@ -129,6 +155,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 4 | 0 | 3.67 | 6.75 | 1.26 | 3247.5 | 1.0 |
 | abl_facts r1 | 4 | 0 | 4.2 | 4.74 | 3.9 | 3595.0 | 2.0 |
 | abl_graph r1 | 4 | 0 | 5.61 | 7.64 | 2.1 | 4321.5 | 2.0 |
+| ours_v2 r1 | 4 | 0 | 5.21 | 6.19 | 2.0 | 5261.5 | 2.0 |
+| ours_v2 r2 | 4 | 0 | 5.83 | 7.41 | 1.97 | 5261.5 | 2.0 |
+| ours_v2 r3 | 4 | 0 | 5.5 | 7.38 | 1.99 | 5261.5 | 2.0 |
+| ours_v2_nothink r1 | 4 | 0 | 4.3 | 5.65 | 0.8 | 5263.5 | 2.0 |
+| ours_v2_nothink r2 | 4 | 0 | 4.06 | 5.49 | 0.81 | 5263.5 | 2.0 |
+| ours_v2_nothink r3 | 4 | 0 | 4.34 | 5.66 | 0.81 | 5263.5 | 2.0 |
 
 ## structure
 
@@ -148,6 +180,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 5 | 0 | 3.27 | 6.33 | 1.27 | 3296 | 1.0 |
 | abl_facts r1 | 5 | 0 | 4.66 | 5.57 | 3.44 | 3601 | 2.0 |
 | abl_graph r1 | 5 | 0 | 5.62 | 8.4 | 3.58 | 4420 | 2.2 |
+| ours_v2 r1 | 5 | 0 | 4.96 | 5.85 | 2.48 | 6315 | 2.0 |
+| ours_v2 r2 | 5 | 0 | 4.9 | 6.61 | 2.31 | 6315 | 2.0 |
+| ours_v2 r3 | 5 | 0 | 4.71 | 5.81 | 2.32 | 6315 | 2.0 |
+| ours_v2_nothink r1 | 5 | 0 | 3.46 | 3.94 | 1.14 | 6317 | 2.0 |
+| ours_v2_nothink r2 | 5 | 0 | 3.57 | 4.04 | 1.19 | 6317 | 2.0 |
+| ours_v2_nothink r3 | 5 | 0 | 3.48 | 4.1 | 1.15 | 6317 | 2.0 |
 
 ## not_covered
 
@@ -167,6 +205,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 9 | 0 | 2.91 | 3.57 | 1.34 | 3484 | 1.0 |
 | abl_facts r1 | 9 | 0 | 6.17 | 7.67 | 4.35 | 3671 | 2.556 |
 | abl_graph r1 | 9 | 0 | 3.76 | 4.58 | 2.4 | 3855 | 2.0 |
+| ours_v2 r1 | 9 | 0 | 3.98 | 5.76 | 2.95 | 4811 | 2.0 |
+| ours_v2 r2 | 9 | 0 | 3.9 | 8.04 | 2.41 | 4811 | 2.222 |
+| ours_v2 r3 | 9 | 0 | 4.17 | 7.99 | 2.34 | 4795 | 2.111 |
+| ours_v2_nothink r1 | 9 | 0 | 2.44 | 4.55 | 0.81 | 4797 | 2.0 |
+| ours_v2_nothink r2 | 9 | 0 | 2.2 | 4.14 | 0.83 | 4793 | 2.0 |
+| ours_v2_nothink r3 | 9 | 0 | 2.34 | 4.12 | 0.82 | 4797 | 2.0 |
 
 ## multihop
 
@@ -186,6 +230,12 @@ Latency and first token in seconds; context tokens median; model calls mean. Per
 | graphrag_notext r1 | 12 | 0 | 4.38 | 6.36 | 1.42 | 4044.0 | 1.0 |
 | abl_facts r1 | 12 | 0 | 7.08 | 9.23 | 4.32 | 3589.5 | 2.083 |
 | abl_graph r1 | 12 | 0 | 7.93 | 9.72 | 5.12 | 12740.5 | 3.917 |
+| ours_v2 r1 | 12 | 0 | 8.29 | 9.55 | 5.25 | 8648.0 | 2.5 |
+| ours_v2 r2 | 12 | 0 | 7.52 | 10.78 | 5.01 | 8637.5 | 2.5 |
+| ours_v2 r3 | 12 | 0 | 7.64 | 10.85 | 4.96 | 8648.0 | 2.5 |
+| ours_v2_nothink r1 | 12 | 0 | 4.82 | 6.2 | 1.91 | 5155.5 | 2.25 |
+| ours_v2_nothink r2 | 12 | 0 | 4.62 | 5.88 | 1.54 | 5119.5 | 2.083 |
+| ours_v2_nothink r3 | 12 | 0 | 4.58 | 5.88 | 1.63 | 5155.5 | 2.25 |
 
 ## GraphRAG index
 
