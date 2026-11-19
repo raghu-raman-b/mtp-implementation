@@ -68,6 +68,11 @@ User 20:05 (then away for the day): cache-warm pings every 50 min while the GPU 
 02:45; say "warmed"); EVERY graph regenerated with our latest (v2) scores, the optimisation before/after graphs in a
 separate folder; T6 also fixes the activities "Serves the course goals" label -> lecture goals; at the end move
 graphs/ to pipeline/results/ (update README, script paths, any docs links).
+20:20 T2 run1: 61 statements, ~half signposting, 7 segments cut at max_tokens (1/S0, 1/S4 ...) -> agent revising
+prompt + max_tokens, rerun all 386 (run1 kept in history/run1). User 20:58: wire 4f into the pipeline -> T2b (Sonnet,
+after 4f merge): rebuild_queue.sh (+4e +4f after 4d), schemas/course_structure.md, demo launcher check warns if missing,
+failure inventory + 4f kinds; docs stage 4f entry goes into T7. Schedule: T2 ~22:15, R1 ~22:25, T2b ~22:50, T4 ~23:05,
+T5 ~23:25, T6 ~23:50, T7 ~00:20, R2 ~00:35.
 User 20:10: graph text professional and crisp, no over-explaining: short correct titles and axis labels, no
 parenthetical asides like "(lower is better)", no explanatory notes on the plot; explanations belong in README.md.
 
