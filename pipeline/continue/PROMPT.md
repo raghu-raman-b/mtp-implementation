@@ -73,6 +73,13 @@ prompt + max_tokens, rerun all 386 (run1 kept in history/run1). User 20:58: wire
 after 4f merge): rebuild_queue.sh (+4e +4f after 4d), schemas/course_structure.md, demo launcher check warns if missing,
 failure inventory + 4f kinds; docs stage 4f entry goes into T7. Schedule: T2 ~22:15, R1 ~22:25, T2b ~22:50, T4 ~23:05,
 T5 ~23:25, T6 ~23:50, T7 ~00:20, R2 ~00:35.
+22:15 status: T2 merged (039cacb; rerun with explicit exclusions: 28 statements, 0 failed, six-module outline from
+lecture 63), T2b merged (cbbb835), T4 done (2056544), T5 judged 290 (cd2ef37). Results run 1: correct ours 0.80 ->
+ours_v2 0.854 / ours_v2_nothink 0.831 (RAG 0.815); false-claim answers 5 -> 1 / 0; latency median 5.66 -> 5.59 / 3.90 s
+(RAG 4.24); structure 0.6 -> 0.9; multihop 0.5 -> 0.708 / 0.583; not_covered 8/9 -> 7/9 (N05). RUNNING: T6 graphs
+regen + qa_optimisation/ + move to pipeline/results/ (Sonnet, worktree); T7 docs targeted (Opus, worktree).
+Open for the user: default QA mode for the demo (no-reasoning is faster than RAG and as accurate); sample questions
+still from the earlier run.
 User 20:10: graph text professional and crisp, no over-explaining: short correct titles and axis labels, no
 parenthetical asides like "(lower is better)", no explanatory notes on the plot; explanations belong in README.md.
 
