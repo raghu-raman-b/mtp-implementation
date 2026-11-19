@@ -75,6 +75,9 @@ Written by `analysis/failures/inventory.py` from `pipeline/output/nptel_vr/` (re
 | `qa.prereq_odd` | QA / 4c | prerequisite answers listing odd concepts (location awareness, markers before lecture 40; augmented virtuality before 16) | 2 of 36 (5.6%) questions | fixed in the pipeline |
 | `qa.two_times` | QA | 'where is X taught' answers showing two different times (text 14:25, citation 11:44) | 2 of 36 (5.6%) questions | fixed in the pipeline |
 | `seg.part_titles` | 4e part titles | part titles failing the code check after retries (ok: false; shown as "Part N") | 0 of 386 (0.0%) segments | fixed in the pipeline |
+| `seg.cs_failed` | 4f course structure | segments whose every attempt failed the code check (no statement; listed in run.failed) | 0 of 386 (0.0%) segments | fixed in the pipeline |
+| `seg.cs_time_fallback` | 4f course structure | statements whose start or end fell back to the segment's own time (a sentence boundary was null in 0a) | 0 of 28 (0.0%) statements | fixed in the pipeline |
+| `seg.cs_run1_vs_now` | 4f course structure | statements of the first run (history/run1) against the current run (revised prompt with explicit exclusions) | 28 of 61 (45.9%) statements (current of run 1) | fixed in the pipeline |
 
 Self-check: failed judge items found here 865, the pipeline's own total (checks.json totals.judge.still_failed_items) 865: equal.
 
@@ -128,11 +131,11 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** every point number 1..n is in the unit's judge failed_items
 - **Count:** 6 of 347 (1.7%) recaps
 - **Examples:**
-  - `15/A9`: Spatial AR devices are projector-based, room-scale systems that place virtual content on physical objects, no…
-  - `19/A2`: VR software does not merely drive VR or AR hardware; it creates sensory stimuli for a VR experience.
-  - `23/A10`: Human factors in XR system design require knowing users' characteristics, because users in the same task need…
   - `48/A7`: Use the Human-Computer Interaction book and NPTEL weeks 4, 5, 10-12 for prototype building, evaluation, empir…
   - `6/A2`: Virtual reality's evolution has four mostly distinct, sometimes overlapping phases: before digital computers,…
+  - `8/A10`: Slater and Wilbur's 1997 paper is an early reference for VR immersion and presence definitions.
+  - `15/A9`: Spatial AR devices are projector-based, room-scale systems that place virtual content on physical objects, no…
+  - `19/A2`: VR software does not merely drive VR or AR hardware; it creates sensory stimuli for a VR experience.
 - **Handling:** display rule. 2026-11-18 decision: such recaps are dropped; that break shows only the quiz.
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact given the verdicts (same source as the recap rows). Matches the 6 stated in PROMPT.md.
 
@@ -198,11 +201,11 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** per activity: hidden items (HIDE_JUDGE_FAILED parsed by ast from pipeline/viewer/serve.py; recap rule of 2026-11-18) cover all its items
 - **Count:** 40 of 855 (4.7%) activities
 - **Examples:**
-  - `put_in_order 1/A6`: all items hidden
-  - `put_in_order 13/A11`: all items hidden
-  - `recap 15/A9`: all items hidden
-  - `recap 19/A2`: all items hidden
-  - `odd_one_out 2/A10`: all items hidden
+  - `put_in_order 45/A22`: all items hidden
+  - `put_in_order 48/A5`: all items hidden
+  - `odd_one_out 46/A15`: all items hidden
+  - `odd_one_out 50/A15`: all items hidden
+  - `recap 48/A7`: all items hidden
 - **Handling:** hidden from learners. per kind: quiz 1/347, recap 6/347, put_in_order 24/41, odd_one_out 9/57, open_question 0/63
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact given the rule parsed from serve.py. The recap number follows the 2026-11-18 decision, which serve.py HIDE_JUDGE_FAILED implements since 2026-11-18 (075f045).
 
@@ -304,11 +307,11 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** right side ends with '…' or '...'
 - **Count:** 383 of 502 (76.3%) pairs
 - **Examples:**
-  - `1/A13 extended reality`: An umbrella term, not a specific technology, that covers all present or future immersive technologies, such as augmented reality (AR), virt…
-  - `1/A13 augmented reality`: An enhanced version of reality created by technology, in which computer-generated digital content is overlaid on the real world in real tim…
-  - `1/A13 mixed reality`: An immersive technology that is the same as augmented reality, in which digital content is overlaid on the view of reality and …
-  - `1/A13 immersive technology`: A technology that produces an experience in which a person perceives an environment through sensory organs as real, so that they cannot …
-  - `1/A13 immersive experience`: A perceived experience through sensory organs that appears real, because a person cannot distinguish the experienced environment from their…
+  - `45/A19 empirical study`: A usability-testing stage in interactive system development, performed after code testing, that systematically tests a fully implemented sy…
+  - `45/A19 quick prototype evaluation`: A limited-scale early evaluation that uses a limited number of evaluators to evaluate prototypes, so it can quickly identify some major usa…
+  - `45/A19 experiment`: The designed and executed part of an empirical study that collects and compares objective data to answer a research question and measure …
+  - `45/A19 non-testable research question`: A broader, generalized research question that cannot be directly tested objectively because it depends on users' subjective interpretation …
+  - `46/A13 data analysis`: The fourth stage of the system implementation process in which empirical data from an experiment are processed and tested for statistical s…
 - **Handling:** not fixed (future work). The right side is the 4a definition cut to a word cap by s5; no judge exists for match pairs (code-made kind).
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact (text ends with the ellipsis). Read 5 (57/A15): each is the 4a definition cut mid-clause.
 
@@ -352,7 +355,7 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - `20/A15`: 157 nodes, 234 edges
   - `61/A14`: 138 nodes, 218 edges
   - `58/A17`: 135 nodes, 206 edges
-  - `18/A22`: 133 nodes, 190 edges
+  - `56/A24`: 133 nodes, 233 edges
 - **Handling:** display rule. median 71 nodes, max 159. The viewer shows ~20 key concepts by default with 'all N, by part' as an option (2026-11-13, commit 0965ba9). Maps are code-made: no judge verdicts.
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact count of nodes. 60 is the line from analysis/mvp/test_report.md, not a pipeline value.
 
@@ -362,11 +365,11 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Detected by:** len(label.split()) >= 9 on concept_map edges
 - **Count:** 1,065 of 7,450 (14.3%) edges
 - **Examples:**
-  - `1/A11 C0002->C0005`: is most commonly perceived as involving a user wearing a
-  - `1/A11 C0002->C0006`: is most commonly perceived as involving a user transported to a
-  - `1/A11 C0004->C0010`: in a broad sense is the entire space between the real and virtual extremes of the
-  - `1/A11 C0013->C0012`: has a market in the extended reality market that is about 60 percent of the
-  - `1/A11 C0014->C0012`: has a market in the extended reality market that is about 40 percent of the
+  - `45/A17 C1669->C2246`: has as a stage the design and execution of
+  - `45/A17 C1669->C0227`: has as a stage the analysis of the data to reach a reliable conclusion about the system's overall
+  - `45/A17 C2247->C0227`: is analyzed to reach a reliable conclusion about the system's overall
+  - `45/A17 C2244->C1245`: is problematic because it asks about the quality of a new
+  - `45/A17 C2244->C2252`: asks whether a proposed text input interface is better than
 - **Handling:** not fixed (future work)
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Heuristic (>= 9 words). Read 5: all are fragments cut at a dangling preposition ('...projected onto the'); other long labels may be complete, so over-counts.
 
@@ -818,10 +821,10 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
 - **Count:** 39 of 386 (10.1%) segments
 - **Examples:**
   - `1/S4`: Outline the course's objectives, scope, and the digital heritage preservation case study used for practical l…
-  - `2/S2`: Summarize the main points of this part of the lecture and preview the next part on AR applications.
-  - `4/S3`: Summarize the main points of the lecture.
   - `11/S8`: Summarize the main points of the lecture and preview the remaining topics.
   - `12/S5`: Summarize the main points of the lecture and preview the next topic.
+  - `14/S4`: Summarize the main points of the lecture and preview the next lecture on AR hardware.
+  - `15/S5`: Summarize the main points of the AR hardware lecture.
 - **Handling:** not fixed (future work). Mostly intros and closing summaries; 4b: segments in no objective 60 (of which 13 define a concept).
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Exact. Read 5: intros and closing summaries ('Summarize the main points...') have no facts by design.
 
@@ -953,6 +956,37 @@ Self-check: failed judge items found here 865, the pipeline's own total (checks.
   - (none)
 - **Handling:** fixed in the pipeline. Code check: 3-6 words, no end punctuation/quotes/IDs, Title Case, no filler start, unique within the lecture, a content word from the goal or facts; retry with feedback (12 of 386 retried). Failed titles stay null; the viewer shows "Part N".
 - **Sample read (an agent's reading of a few hits; not code, not used for any count):** Pending.
+
+### `seg.cs_failed` (4f course structure)
+
+- **Fails:** segments whose every attempt failed the code check (no statement; listed in run.failed)
+- **Detected by:** stage_4f_course_structure/course_structure.json run.failed
+- **Count:** 0 of 386 (0.0%) segments
+- **Examples:**
+  - (none)
+- **Handling:** fixed in the pipeline. Code check: every ID is a sentence of the segment, no duplicates; retry with the problems shown to the model.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** not sampled
+
+### `seg.cs_time_fallback` (4f course structure)
+
+- **Fails:** statements whose start or end fell back to the segment's own time (a sentence boundary was null in 0a)
+- **Detected by:** stage_4f_course_structure/course_structure.json statements[*].time_from == "segment"
+- **Count:** 0 of 28 (0.0%) statements
+- **Examples:**
+  - (none)
+- **Handling:** fixed in the pipeline. The time still points into the right segment; it is only less exact than the sentence's own time.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** not sampled
+
+### `seg.cs_run1_vs_now` (4f course structure)
+
+- **Fails:** statements of the first run (history/run1) against the current run (revised prompt with explicit exclusions)
+- **Detected by:** len(statements) in history/run1/course_structure.json vs the current file
+- **Count:** 28 of 61 (45.9%) statements (current of run 1)
+- **Examples:**
+  - `run1`: 61 statements
+  - `current`: 28 statements
+- **Handling:** fixed in the pipeline. Counts only: run 1 61 -> now 28. Code makes no judgement of which statements are right.
+- **Sample read (an agent's reading of a few hits; not code, not used for any count):** not sampled
 
 ## History: failures found earlier and fixed
 

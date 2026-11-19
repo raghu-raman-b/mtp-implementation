@@ -989,6 +989,34 @@ else:
     row("seg.part_titles", "4e part titles", "part titles failing the code check (ok: false)", "stage_4e_part_titles/titles.json (task S6, not run yet)",
         None, 386, "segments", [], "not fixed (future work)", "pending: the file does not exist yet.")
 
+# --------------------------------------------------------------------------------------------- course structure (4f)
+cs4 = OUT / "stage_4f_course_structure" / "course_structure.json"
+if cs4.exists():
+    c = jload(cs4)
+    run, sts = c.get("run", {}), c.get("statements", [])
+    failed = run.get("failed") or []
+    row("seg.cs_failed", "4f course structure", "segments whose every attempt failed the code check (no statement; listed in run.failed)",
+        "stage_4f_course_structure/course_structure.json run.failed", len(failed), run.get("segments"), "segments",
+        [ex(f if isinstance(f, str) else json.dumps(f), "no statement for this segment") for f in failed[:5]],
+        "not fixed (future work)" if failed else "fixed in the pipeline",
+        "Code check: every ID is a sentence of the segment, no duplicates; retry with the problems shown to the model.")
+    fb = [x for x in sts if x.get("time_from") == "segment"]
+    row("seg.cs_time_fallback", "4f course structure", "statements whose start or end fell back to the segment's own time (a sentence boundary was null in 0a)",
+        "stage_4f_course_structure/course_structure.json statements[*].time_from == \"segment\"", len(fb), len(sts), "statements",
+        [ex(x["id"], f'{x["segment"]} {x["start"]}-{x["end"]}: {x["text"]}') for x in fb[:5]], "display rule" if fb else "fixed in the pipeline",
+        "The time still points into the right segment; it is only less exact than the sentence's own time.")
+    r1p = cs4.parent / "history" / "run1" / "course_structure.json"
+    if r1p.exists():
+        r1 = len(jload(r1p).get("statements", []))
+        row("seg.cs_run1_vs_now", "4f course structure", "statements of the first run (history/run1) against the current run (revised prompt with explicit exclusions)",
+            "len(statements) in history/run1/course_structure.json vs the current file", len(sts), r1, "statements (current of run 1)",
+            [ex("run1", f"{r1} statements"), ex("current", f"{len(sts)} statements")], "fixed in the pipeline",
+            f"Counts only: run 1 {r1} -> now {len(sts)}. Code makes no judgement of which statements are right.",
+            extra={"run1": r1, "current": len(sts)})
+else:
+    row("seg.cs_failed", "4f course structure", "segments whose every attempt failed the code check", "stage_4f_course_structure/course_structure.json (not run yet)",
+        None, 386, "segments", [], "not fixed (future work)", "pending: the file does not exist yet.")
+
 # --------------------------------------------------------------------------------------------- history
 HISTORY = [
     ("2026-11-13", "Activities had no judges; quiz correct option uniquely longest in 52% (751 of 1,443); 5 unresolved crosswords with masked clues; "
