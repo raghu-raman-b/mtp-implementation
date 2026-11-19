@@ -20,7 +20,7 @@ which.</p></div>
 <tr><td><a href="#ev-qa">Block 6 question set</a></td><td>QA correctness, scored</td><td class="n">85</td><td>first draft, unchecked, on a branch</td></tr>
 <tr><td><a href="#ev-fails">Failure inventory</a></td><td>every failure kind in the course as built, found by code</td><td class="n">68 kinds</td><td>done (<code>analysis/failures/</code>)</td></tr>
 <tr><td><a href="#ev-baselines">Baseline tests</a></td><td>question answering against plain LLM, RAG (± thinking), GraphRAG (± text) and two ablations</td><td class="n">65 questions × 8 systems, 760 judged answers</td><td>done</td></tr>
-<tr><td><a href="#ev-act-study">Activities study</a></td><td>activities with and without the layer, same model</td><td class="n">6 lectures × 4 systems</td><td>running</td></tr>
+<tr><td><a href="#ev-act-study">Activities study</a></td><td>activities with and without the layer, same model</td><td class="n">6 lectures × 4 systems, 1,037 items judged blind</td><td>done</td></tr>
 </table></div>
 
 <h3 id="ev-seg" data-toc="Segmentation">Segmentation</h3>
@@ -275,12 +275,23 @@ judged kinds, each seeing what its writer saw (B1 cites nothing, so each B1 item
 that best matches it); (2) code checks on every item: schema, duplicates, cites sources, traceable (at least 60% of the
 key text's content words in one 3-sentence window of the transcript), quiz key position and length, source talk,
 concept-map ends found together with a typed relation, recall naming an earlier lecture that has the concept;
-(3) a blind Sonnet judge per lecture, the systems shuffled per unit as sets X / Y / Z with no IDs, grading each item
+(3) a blind Sonnet judge per lecture, the systems shuffled per unit as sets X / Y / Z / W with no IDs, grading each item
 for correct, grounded, distractors, fit to the lecture's goals and use of earlier lectures.</li>
 <li><b>Only possible with the layer:</b> counted from ours over the course and the sample: recall, typed concept maps,
 complete the map, match the pairs, crosswords, spaced-review cards, fact IDs, concept links, and open questions on
 earlier lectures' facts.</li>
 </ul>
-<div class="callout warn"><span class="tag">Results pending · the study is running</span>
-<p>Generation, judging and summary (<code>activities_study/out/summary.md</code>) are not finished. Its tables go
-here and in points 2 and 3 of <a href="#baselines">What the method buys</a>.</p></div>
+<h4>Activities study: results</h4>
+<p>From <code>activities_study/out/summary.md</code> and <code>summary.json</code> (commit <code>d5db9fa</code>; copies
+in <code>pipeline/docs/src/baselines/activities/</code>). Every unit was generated: B1 all 42 (6 lectures × 7 kinds);
+B2 all but 1 quiz and 2 odd-one-out units, which stayed unresolved after the retries. What they mean is in points
+2 and 3 of <a href="#baselines">What the method buys</a>.</p>
+<details open><summary>Only possible with the layer <span class="meta">counted from ours</span></summary>{{BASE:act_layer}}</details>
+<details open><summary>Pipeline judges (Gemma 4 12B), pass rate <span class="meta">prompts/activity_judge_&lt;kind&gt;.txt; one round, no rewrite</span></summary>{{BASE:act_gemma}}</details>
+<details><summary>Code checks on the model-made kinds <span class="meta">traceable: ≥ 60% of the key's content words in one 3-sentence transcript window</span></summary>{{BASE:act_code}}</details>
+<details><summary>Code checks on concept maps and recall <span class="meta">ours against the two baselines</span></summary>{{BASE:act_cross}}</details>
+<details open><summary>Blind Sonnet judge, 1,037 items <span class="meta">at most 12 items per system, kind and lecture; systems shuffled and unlabelled</span></summary>{{BASE:act_sonnet}}</details>
+<p class="small muted">Wrong concept-map edges that the Sonnet judge called reversed (counted from its reasons in
+<code>out/sonnet/judgments.jsonl</code> with <code>sonnet_key.json</code> for this page): B1 11 of 18, B2 21 of 22, ours 0
+of 2. Limits: six lectures; the Gemma judges see each writer's own input; the shipped set's model-made kinds were
+written by Qwen 3.8 27B with its judge (recaps by Gemma 4 12B), so “ours on Gemma” is the same-model comparison.</p>

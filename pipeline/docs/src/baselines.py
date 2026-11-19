@@ -3,7 +3,8 @@
 The files in baselines/ are copies from baseline-tests/ at commit 0d7f665 (branch worktree-agent-ac043cfbb4e8a782d):
 questions.jsonl (65 questions), judgments.jsonl (760 Sonnet judgments), summary.json (summarize.py's output), and
 answers.jsonl, the run-1 answers of every system to D06, P02, S02 and M08 taken from runs/<system>.jsonl (answer,
-seconds, model calls, tool calls; nothing else changed).
+seconds, model calls, tool calls; nothing else changed). activities/summary.json and summary.md: the activities study's
+output (baseline-tests/activities_study/out/, commit d5db9fa), copied unchanged.
 """
 import html
 import json
@@ -273,4 +274,80 @@ def build(HERE):
     X["ans_P02"] = ans("P02", ["ours", "rag"], "prerequisite · ")
     X["ans_S02"] = ans("S02", ["ours", "rag"], "structure · ")
     X["ans_M08"] = ans("M08", ["ours", "rag"], "multihop · ")
+    X.update(activities(D / "activities" / "summary.json"))
+    return X
+
+
+ASYS = ["ours", "ours_gemma", "b2", "b1"]
+ANAME = {"ours": "Ours (shipped)", "ours_gemma": "Ours on Gemma", "b2": "B2: our prompts, transcript", "b1": "B1: plain prompt"}
+AKIND = {"quiz": "quiz", "recap": "recap", "open_question": "open question", "odd_one_out": "odd one out",
+         "put_in_order": "put in order", "concept_map": "concept map", "recall": "recall"}
+
+
+ASHORT = {"ours": "ours", "ours_gemma": "ours on Gemma", "b2": "B2", "b1": "B1"}
+
+
+def pct(a, b):
+    return f"{100 * a / b:.0f}%" if b else "—"
+
+
+def activities(path):
+    S = json.loads(path.read_text())
+    X = {}
+    lo, ls = S["layer_only"]["all"], S["layer_only"]["sample"]
+    X["act_layer"] = table(["Only with the layer", "Whole course (63 lectures)", "Sample (6 lectures)", "Baselines"], [
+        ["Recall before each lecture (lecture graph, concepts, 4a definitions)", f'{lo["act:recall"]} activities, {lo["recall_items"]:,} items',
+         f'{ls["act:recall"]} activities, {ls["recall_items"]} items', "attempted from earlier lectures' titles"],
+        ["Concept maps with typed relationships (edges carry relationship IDs and facts)",
+         f'{lo["act:concept_map"]} maps, {lo["concept_map_typed"]:,} / {lo["concept_map_edges"]:,} edges typed',
+         f'{ls["act:concept_map"]} maps, {ls["concept_map_typed"]:,} / {ls["concept_map_edges"]:,} edges typed',
+         "maps drawn from the transcript, 0% typed"],
+        ["Complete the map", f'{lo["act:complete_map"]} activities, {lo["blanks"]} blanks', f'{ls["act:complete_map"]} activities, {ls["blanks"]} blanks', "cannot be made"],
+        ["Match the pairs (concept and definition)", f'{lo["act:match_pairs"]} activities, {lo["pairs"]} pairs', f'{ls["act:match_pairs"]} activities, {ls["pairs"]} pairs', "cannot be made"],
+        ["Crossword (clues judged against the definition)", f'{lo["act:crossword"]} grids, {lo["entries"]} entries', f'{ls["act:crossword"]} grids, {ls["entries"]} entries', "cannot be made"],
+        ["Spaced-review cards (one per defined concept, with every lecture that uses it)", f'{S["layer_only"]["spaced_review_cards"]:,} cards', "course-wide", "cannot be made"],
+        ["Activities citing facts (time links into the video)", f'{lo["acts_with_facts"]:,} / {lo["acts"]:,}', f'{ls["acts_with_facts"]} / {ls["acts"]}', "B2 cites sentences; B1 nothing"],
+        ["Quiz, odd-one-out, put-in-order items citing their own facts", f'{lo["items_with_fact_ids"]:,} / {lo["fact_items"]:,}', f'{ls["items_with_fact_ids"]} / {ls["fact_items"]}', "—"],
+        ["Activities with concept links (glossary)", f'{lo["acts_with_concepts"]:,} / {lo["acts"]:,}', f'{ls["acts_with_concepts"]} / {ls["acts"]}', "—"],
+        ["Open questions on an earlier lecture's facts", f'{lo["oq_earlier"]} / {lo["oq"]}', f'{ls["oq_earlier"]} / {ls["oq"]}', "—"],
+    ])
+    G, C, N = S["gemma_judge"], S["code_checks"], S["sonnet"]
+    rows = []
+    for k in ["quiz", "recap", "open_question", "odd_one_out", "put_in_order"]:
+        cells = []
+        for s in ASYS:
+            g = G.get(f"{k}/{s}")
+            cells.append(f'{pct(g["pass"], g["n"])} <span class="small muted">of {g["n"]}</span>' if g else "—")
+        rows.append([AKIND[k]] + cells)
+    X["act_gemma"] = table(["Kind"] + [ANAME[s] for s in ASYS], rows, num=range(1, 5))
+    rows = []
+    for k in ["quiz", "recap", "open_question", "odd_one_out", "put_in_order"]:
+        cells = []
+        for s in ASYS:
+            c = C.get(f"{k}/{s}")
+            if not c or not c["items"]:
+                cells.append("—"); continue
+            extra = ""
+            if k == "quiz":
+                extra = "; key longest " + c["extra"].split("key longest ")[1].split(";")[0]
+            cells.append(f'{pct(c["traceable"], c["items"])} traceable · {c["source_talk"]} source talk{extra}')
+        rows.append([AKIND[k]] + cells)
+    X["act_code"] = table(["Kind"] + [ANAME[s] for s in ASYS], rows)
+    rows = []
+    for k in AKIND:
+        for s in ASYS:
+            d = N.get(f"{k}/{s}")
+            if not d or not d["n"]:
+                continue
+            rows.append([AKIND[k], ASHORT[s], str(d["n"]), pct(d["correct"], d["n"]), pct(d["grounded_yes"], d["n"]),
+                         pct(d["d_good"], d["d_n"]) if d.get("d_n") else "—", pct(d["goals_yes"], d["n"]),
+                         pct(d["link_yes"], d["n"]), pct(d["link_wrong"], d["n"])])
+    X["act_sonnet"] = table(["Kind", "System", "Items", "Correct", "Grounded", "Distractors good", "Serves goals",
+                             "Links lectures", "Wrong link"], rows, num=range(2, 9))
+    rows = []
+    for k in ["concept_map", "recall"]:
+        for s in ["ours", "b2", "b1"]:
+            c = C[f"{k}/{s}"]
+            rows.append([AKIND[k], ASHORT[s], f'{c["items"]:,}', pct(c["traceable"], c["items"]), E(c["extra"])])
+    X["act_cross"] = table(["Kind", "System", "Items", "Traceable", "Kind checks"], rows, num=(2, 3))
     return X

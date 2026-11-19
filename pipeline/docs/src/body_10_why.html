@@ -233,7 +233,7 @@ subsection is <span class="pill pm">measured</span>, except the planned optimisa
 <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))" aria-label="Baseline tests, headline numbers">
   <div class="tile"><b>1.0 vs 0.786</b><span>definitions: ours against RAG (7 questions)</span></div>
   <div class="tile"><b>0.5 vs ≤ 0.125</b><span>prerequisites: ours against every baseline (4 questions, same in 3 runs)</span></div>
-  <div class="tile"><b>0.9 vs 0.7</b><span>formulas: ours against RAG; RAG + thinking reaches 0.9 at 25 s per answer</span></div>
+  <div class="tile"><b>0.9 vs 0.7</b><span>formulas: ours against RAG; RAG + thinking reaches 0.9 at 27.9 s per formula answer</span></div>
   <div class="tile"><b>5 vs 61</b><span>false claims in 65 answers: ours against the plain LLM</span></div>
   <div class="tile"><b>0.80 vs 0.815</b><span>all 65 questions: ours against RAG, a near tie</span></div>
   <div class="tile"><b>5.7 s vs 4.2 s</b><span>median answer time: ours against RAG (RTX 5070, 12 GB)</span></div>
@@ -276,17 +276,60 @@ says.</li>
 </ul>
 
 <h4>2. Activities only the knowledge layer makes possible</h4>
-<div class="callout warn"><span class="tag">Results pending · activities study running</span>
-<p>The activities study (<a href="#ev-act-study">method</a>) counts, over the course and its six-lecture sample, the
-activities that need the layer and cannot be made from a transcript: recall of earlier lectures, typed concept maps,
-complete the map, match the pairs, crosswords, spaced-review cards, items citing fact IDs, concept links, and open
-questions on earlier lectures' facts. Its numbers go here when the run finishes.</p></div>
+<p>The activities study (<a href="#ev-act-study">method</a>) compares, on six lectures, the shipped activities with
+activities made without the layer by the same 12B model: <b>B1</b>, the whole transcript and a plain prompt per kind;
+<b>B2</b>, our own prompts, code checks and retry, with the transcript where the facts go. <b>Ours on Gemma</b> reruns our
+stage 5 on that same model, from the layer. Several kinds need the layer's structure and cannot be made from a
+transcript at all; two more can be attempted from one, and come out worse:</p>
+{{BASE:act_layer}}
+<ul>
+<li><b>Concept maps.</b> Every edge of ours is a relationship from stage 2c with its type and facts (1,076 of 1,076 in
+the sample); the baselines' maps have no typed relationship (0%). The blind Sonnet judge found 97% of ours' sampled
+edges correct, against 75% for B1 and 69% for B2. Most of the baselines' wrong edges point the wrong way (“gaming is
+a kind of application domain”, read backwards): by the judge's reasons, 11 of B1's 18 wrong edges and 21 of B2's
+22.</li>
+<li><b>Recall before a lecture.</b> Ours picks the earlier lectures from the lecture graph and the answers from 4a's
+definitions; the baselines were given the earlier lectures' titles. Sonnet found ours grounded in the course on 83%
+of items, B1 on 66%, B2 on 69%, and a wrong link between lectures on 6% against 11% and 14%. By code, the concept is
+found in the lecture the item names on 89% of ours, 80% of B1 and 74% of B2. Sonnet rated a few more baseline items
+correct (B1 97%, B2 100%, ours 94%): the baselines write plausible questions, but less often about what the named
+lecture actually taught.</li>
+<li><b>Kinds the baselines cannot make:</b> complete the map, match the pairs and crosswords are built from concepts,
+definitions and typed relationships; 1,316 spaced-review cards come from the defined concepts and every lecture that
+uses them. Every one of the 1,168 activities cites facts, so each item links to its minute of the video, and every one
+carries concept links to the glossary.</li>
+</ul>
 
 <h4>3. Activity quality without the layer</h4>
-<div class="callout warn"><span class="tag">Results pending · activities study running</span>
-<p>The same study makes the same kinds and counts of activities on six lectures without the layer (a plain
-transcript prompt; our own prompts with the transcript in place of the facts) and with it on the same Gemma 4 12B,
-then grades them with the pipeline's judges, code checks and a blind Sonnet judge. Its numbers go here.</p></div>
+<p>For the kinds a transcript can feed (quiz, recap, open question, odd one out, put in order), the answer is
+mixed, and it is stated as measured.</p>
+<ul>
+<li><b>A plain transcript prompt is clearly worse.</b> The pipeline's own judges (on Gemma) pass B1's quiz questions 65%
+of the time against 96% for ours on Gemma, open questions 10% against 83%, odd one out 29% against 73%, put in order
+0% against 50%. B1's quiz key is the longest option 64% of the time (ours on Gemma 24%, shipped 10%), and the code check
+found source talk (wording that speaks of the lecture or the text instead of the subject) 87 times in its quiz
+items. Sonnet found B1's open questions grounded only 57% of the
+time. One exception: B1's recaps pass the Gemma judge more often (91%) than ours on Gemma (78%).</li>
+<li><b>Our prompts and checks without the layer come close.</b> B2 passes the Gemma judges on 99% of quiz questions
+and 98% of recap points (ours on Gemma 96% and 78%); it is a little behind on open questions (71% against 83%), odd
+one out (64% against 73%) and put in order (43% against 50%), and its retries left 1 quiz and 2 odd-one-out units of
+6 unresolved. Sonnet rates nearly every item of every system correct on quiz, recap, open question and put in order.
+So for items about a single lecture, most of the quality comes from the prompts and the code checks with retry,
+which a transcript can feed too.</li>
+<li><b>Where the shipped set is still ahead:</b> Sonnet rated its quiz distractors good on 75% of questions (B1 43%,
+B2 51%), its quiz questions serving the lecture's goals on 80% (61%, 64%) and its recap points on 85% (68%, 75%). That
+gap mixes the layer with the writer and the judge: the shipped quiz items were written by Qwen 3.8 27B, the shipped
+recaps by Gemma 4 12B, and both went through the pipeline's judge (quiz items also through a rewrite). Ours on Gemma, the same-model comparison, lands between: distractors 55%, quiz goals 78%, recap goals
+77%.</li>
+<li><b>Where the baselines are ahead:</b> on odd one out, Sonnet found the baselines' groups serving the goals more
+often (B1 64%, B2 57%, shipped 43%, ours on Gemma 36%), and rated 2 of the 14 shipped items incorrect. The lexical
+traceability check also favours the transcript-fed systems, as it should: they copy the transcript's words (quiz keys
+traceable: B2 89%, ours on Gemma 82%, shipped 77%).</li>
+</ul>
+<p class="small muted">A small sample: six lectures, and Sonnet saw at most 12 items per system and kind in a lecture
+(1,037 items in all). The Gemma judges see what each writer saw (ours its facts, B2 its transcript blocks, B1 the
+transcript window that best matches each item), so they measure faithfulness to each system's own input. Full
+tables: <a href="#ev-act-study">the activities study</a>.</p>
 
 <h4>4. What it costs: once per course, then per question</h4>
 <p><b>Once per course.</b> Building the layer and the activities took about 11 GPU hours: 10.8 h of measured stage
