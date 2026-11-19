@@ -2413,7 +2413,7 @@ const SAMPLE_FALLBACK = [
   { q: "Who won the 2022 FIFA World Cup?", category: "not_covered" },
 ];
 const CATEGORY = { definition: "A DEFINITION", explanation: "AN EXPLANATION", comparison: "TWO CONCEPTS", list: "A LIST", formula: "A FORMULA",
-  where: "WHERE IT IS SAID", prerequisite: "PREREQUISITES", structure: "THE COURSE", not_covered: "OUTSIDE THE COURSE" };
+  where: "WHERE IT IS SAID", prerequisite: "PREREQUISITES", structure: "THE COURSE", not_covered: "OUTSIDE THE COURSE", multihop: "ACROSS LECTURES" };
 const TOOL_TITLE = {  // [while it runs, when it is done, when it found nothing close]
   check_concept: ["Loading the concept card", "Concept loaded", "Concept not in the course"],
   fact_lookup: ["Checking the lectures' facts", "Facts checked", "No close facts found"],
