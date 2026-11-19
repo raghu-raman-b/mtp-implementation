@@ -448,6 +448,10 @@ def cmd_check(a) -> int:
             item(code == 200, f"viewer route {route}", str(code))
         say("\nALL PASS" if not fails else f"\n{len(fails)} FAILED: {', '.join(fails)}")
         return 1 if fails else 0
+    cs = (a.output or PIPELINE / "output") / COURSE / "stage_4f_course_structure" / "course_structure.json"
+    if not cs.is_file():
+        say(f"WARN  stage 4f course structure file missing ({cs}): QA will answer course-structure questions as not "
+            "available (the rest of the demo is unaffected)")
     cfg_path = os.environ.get("QA_CONFIG") or next(iter(sorted(LOGS.glob("qa_remote_*.json"),
                                                                key=lambda p: p.stat().st_mtime)[-1:]), None)
     model_url = a.model_url
