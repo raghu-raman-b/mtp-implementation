@@ -172,4 +172,7 @@ def build(WT, HERE):
                     + ", ".join(f"{k} {v}" for k, v in cnt.items()) + ")",
                     "branch fable-gold-sets, analysis/qa/questions.json (not merged; not yet checked)",
                     table(["ID", "Kind", "Question", "Covered", "Reference answer", "Lectures"], trs))
+
+    import failures
+    X["failures"] = failures.build(A)
     return X

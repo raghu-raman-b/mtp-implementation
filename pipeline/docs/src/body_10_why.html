@@ -162,21 +162,26 @@ had skipped. The table lists the changes with their measured effect; each is tol
 
 <h2 id="vs" data-toc="Against simpler approaches">Against simpler approaches</h2>
 <p>Three simpler designs could answer a learner's question about a course. Here is how this pipeline differs from
-each, illustrated with real outputs. <b>None of the three was run on this course yet</b>, so this section is an
-argument from design; the experiment that measures it is described under <a href="#baselines">Measured
-comparison</a>, and a separate run is under way.</p>
+each, illustrated with real outputs. This first part is the argument from design. All three were then run on this
+course with the same model and the same questions; what that measured, wins and losses, is in <a
+href="#baselines">What the method buys</a> below.</p>
 
 <div class="cards">
 <div class="card"><span class="k">(a) Plain LLM</span><h4>Ask a model, no course data</h4>
 <p>It answers from what it learned in training. It cannot say which lecture taught a thing or at what minute, it
-cannot say “this course does not cover that”, and its definitions are the textbook's, not the lecturer's.</p></div>
+cannot say “this course does not cover that”, and its definitions are the textbook's, not the lecturer's.</p>
+<p class="small muted">Measured: 0.254 correct, 61 false claims in 65 answers, 1 of 9 not-covered questions handled.</p></div>
 <div class="card"><span class="k">(b) RAG over transcripts</span><h4>Search the lecture text, answer from chunks</h4>
 <p>It can cite lectures. But a chunk of speech is full of “this”, “it”, “as we saw”, acronyms and asides; a chunk
 that <i>mentions</i> a term is retrieved as readily as the one that <i>defines</i> it; and no chunk holds “what do I
-need before lecture 9”.</p></div>
+need before lecture 9”.</p>
+<p class="small muted">Measured: 0.815 correct, level with ours overall; ahead on structure and multihop questions,
+behind on definitions (0.786), prerequisites (0.125) and formulas (0.7).</p></div>
 <div class="card"><span class="k">(c) GraphRAG alone</span><h4>An entity graph built from chunks</h4>
 <p>It adds entities and relations, often with community summaries. Without facts that cite sentences, a course order,
-a lecture graph and goals, it can relate concepts but not tell a learner where one is taught or what comes first.</p></div>
+a lecture graph and goals, it can relate concepts but not tell a learner where one is taught or what comes first.</p>
+<p class="small muted">Measured: 0.777 correct with its source text (twice RAG's context), 0.662 without; 0 on
+prerequisites.</p></div>
 </div>
 
 <p>What the knowledge layer gives that these do not, each with a real example:</p>
@@ -216,15 +221,170 @@ crosswords and concept maps with that link.</li>
 <p class="small muted">Sampled runs are less reliable: at the sampling temperature, the same prompt scored WindowDiff 0.08 to 0.49 (<code>REPORT.md</code>), and v3 samples at temperature 1.0. One lecture and one annotator: a small test. v3's segmentation was then measured for
 run-to-run stability (boundary F1 0.75 between seeds), not against a human again.</p>
 
-<section id="baselines">
-<h4 data-toc="Measured comparison (baseline tests)">Measured comparison (baseline tests)</h4>
-<div class="callout warn"><span class="tag">Placeholder · to be filled by a later pass</span>
-<p>A separate run is testing three baselines on this course, writing into <code>baseline-tests/</code>: a plain LLM
-with no course data, RAG over the lecture transcripts, and a graph-only approach. When it finishes, this subsection
-gets its numbers: answers correct, claims backed by the course, citations that point at the right lecture and time,
-correct “not covered” answers, latency and tokens per question. Until then, nothing on this page claims a measured
-advantage over these baselines.</p></div>
-</section>
+<h3 id="baselines" data-toc="What the method buys (measured)">What the method buys: measured against plain LLM, RAG and GraphRAG</h3>
+<p>The same 12B model answered 65 questions about this course through eight systems: ours, a plain LLM with no
+course data, RAG over the transcripts (with and without thinking), a GraphRAG-style index (with and without its
+source text), and two ablations of ours that keep only part of the knowledge layer. Every one of the
+{{BASE:n_judged}} answers was graded by one judge, Claude Sonnet, against a gold answer written from the transcripts;
+a second judge (Claude Opus) agreed on 257 of them with Cohen's kappa 0.715. How each system was built and run, all
+65 questions and every table are in <a href="#ev-baselines">Evaluation: baseline tests</a>. Everything in this
+subsection is <span class="pill pm">measured</span>, except the planned optimisation in point 4, which is marked
+<span class="pill pa">argued</span>.</p>
+<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))" aria-label="Baseline tests, headline numbers">
+  <div class="tile"><b>1.0 vs 0.786</b><span>definitions: ours against RAG (7 questions)</span></div>
+  <div class="tile"><b>0.5 vs ≤ 0.125</b><span>prerequisites: ours against every baseline (4 questions, same in 3 runs)</span></div>
+  <div class="tile"><b>0.9 vs 0.7</b><span>formulas: ours against RAG; RAG + thinking reaches 0.9 at 27.9 s per formula answer</span></div>
+  <div class="tile"><b>5 vs 61</b><span>false claims in 65 answers: ours against the plain LLM</span></div>
+  <div class="tile"><b>0.80 vs 0.815</b><span>all 65 questions: ours against RAG, a near tie</span></div>
+  <div class="tile"><b>5.7 s vs 4.2 s</b><span>median answer time: ours against RAG (RTX 5070, 12 GB)</span></div>
+</div>
+<p>The two ablations say which part of the layer earns each result. <b>Fact search only</b> is ours offered just
+<code>fact_lookup</code> (search over the 2,006 facts). <b>Graph tools only</b> is ours offered just
+<code>check_concept</code>, <code>lecture_dependencies</code>, <code>lecture_overview</code> and
+<code>course_goals</code>: the concept cards, the lecture graph, the lecture overviews and the goals, with no fact
+search. Prompt, rounds and everything else are unchanged.</p>
+
+<h4>1. Where ours wins, and which part of the knowledge layer causes it</h4>
+{{BASE:wins}}
+<p class="small muted">Mean correct (1 / 0.5 / 0) per category, run 1. “Not covered”: the course does not teach the
+topic; correct means the answer says so without inventing course content.</p>
+<ul>
+<li><b>Definitions come from the concept cards.</b> Ours and graph tools only score 1.0 on all seven; RAG 0.786,
+GraphRAG with text 0.786, fact search only 0.929. The clearest case is <i>“What is vection?”</i>: RAG and RAG with
+thinking both answer that the course does not cover it (retrieval missed lectures 11 and 26), fact search only gets
+half of it, and one <code>check_concept</code> call returns the card with its definition and times. On <i>“What is an
+IMU?”</i> RAG has the three sensors but not their role in correcting drift, which ours includes.
+{{BASE:ans_D06}}</li>
+<li><b>Prerequisites come from the lecture dependency graph.</b> <i>“What do I need before lecture 17?”</i> has no
+passage that answers it: the answer is a relation between lectures, which stage 4c computes from the concepts each
+lecture uses and defines. Graph tools only score 0.75, ours 0.5, and every baseline 0.125 or less; fact search only
+scores 0. RAG and RAG with thinking answer at least two of the four with a false “not covered”; the GraphRAG variants name
+no earlier lecture or the wrong ones. Over three runs ours stays at 0.5, RAG averages 0.042. The gap between ours and graph tools only
+is two half-points on four questions (P02 and P03), with near-identical answers.
+{{BASE:ans_P02}}</li>
+<li><b>Formulas.</b> Ours 0.9, RAG 0.7, the same in all three runs: a fact holds a formula with its terms and
+conditions, where a transcript chunk may hold half of it. RAG with thinking also reaches 0.9, but at a median 27.9 s
+per formula answer against ours' 5.2 s.</li>
+<li><b>“Where is X taught?”</b> Every system with course data scores 1.0 (the plain LLM 0): a tie: the layer
+answers it from fact times, RAG from chunk times.</li>
+<li><b>“Not covered” and false claims.</b> Ours handled 8 of 9 not-covered questions, RAG 9 of 9, the plain LLM 1 of 9.
+Ours made 5 false claims in 65 answers (one each in 5 answers), RAG 3, RAG with thinking 1, the plain LLM 61 (in 40
+answers). So against a model without course data the layer removes almost every invented claim; against RAG it is
+level, not better. The ablations show where grounding comes from: fact search only made <b>no</b> false claim at all,
+graph tools only made 9 (6 of them on multihop questions), so the fact store is what keeps answers to what the course
+says.</li>
+</ul>
+
+<h4>2. Activities only the knowledge layer makes possible</h4>
+<p>The activities study (<a href="#ev-act-study">method</a>) compares, on six lectures, the shipped activities with
+activities made without the layer by the same 12B model: <b>B1</b>, the whole transcript and a plain prompt per kind;
+<b>B2</b>, our own prompts, code checks and retry, with the transcript where the facts go. <b>Ours on Gemma</b> reruns our
+stage 5 on that same model, from the layer. Several kinds need the layer's structure and cannot be made from a
+transcript at all; two more can be attempted from one, and come out worse:</p>
+{{BASE:act_layer}}
+<ul>
+<li><b>Concept maps.</b> Every edge of ours is a relationship from stage 2c with its type and facts (1,076 of 1,076 in
+the sample); the baselines' maps have no typed relationship (0%). The blind Sonnet judge found 97% of ours' sampled
+edges correct, against 75% for B1 and 69% for B2. Most of the baselines' wrong edges point the wrong way (“gaming is
+a kind of application domain”, read backwards): by the judge's reasons, 11 of B1's 18 wrong edges and 21 of B2's
+22.</li>
+<li><b>Recall before a lecture.</b> Ours picks the earlier lectures from the lecture graph and the answers from 4a's
+definitions; the baselines were given the earlier lectures' titles. Sonnet found ours grounded in the course on 83%
+of items, B1 on 66%, B2 on 69%, and a wrong link between lectures on 6% against 11% and 14%. By code, the concept is
+found in the lecture the item names on 89% of ours, 80% of B1 and 74% of B2. Sonnet rated a few more baseline items
+correct (B1 97%, B2 100%, ours 94%): the baselines write plausible questions, but less often about what the named
+lecture actually taught.</li>
+<li><b>Kinds the baselines cannot make:</b> complete the map, match the pairs and crosswords are built from concepts,
+definitions and typed relationships; 1,316 spaced-review cards come from the defined concepts and every lecture that
+uses them. Every one of the 1,168 activities cites facts, so each item links to its minute of the video, and every one
+carries concept links to the glossary.</li>
+</ul>
+
+<h4>3. Activity quality without the layer</h4>
+<p>For the kinds a transcript can feed (quiz, recap, open question, odd one out, put in order), the answer is
+mixed, and it is stated as measured.</p>
+<ul>
+<li><b>A plain transcript prompt is clearly worse.</b> The pipeline's own judges (on Gemma) pass B1's quiz questions 65%
+of the time against 96% for ours on Gemma, open questions 10% against 83%, odd one out 29% against 73%, put in order
+0% against 50%. B1's quiz key is the longest option 64% of the time (ours on Gemma 24%, shipped 10%), and the code check
+found source talk (wording that speaks of the lecture or the text instead of the subject) 87 times in its quiz
+items. Sonnet found B1's open questions grounded only 57% of the
+time. One exception: B1's recaps pass the Gemma judge more often (91%) than ours on Gemma (78%).</li>
+<li><b>Our prompts and checks without the layer come close.</b> B2 passes the Gemma judges on 99% of quiz questions
+and 98% of recap points (ours on Gemma 96% and 78%); it is a little behind on open questions (71% against 83%), odd
+one out (64% against 73%) and put in order (43% against 50%), and its retries left 1 quiz and 2 odd-one-out units of
+6 unresolved. Sonnet rates nearly every item of every system correct on quiz, recap, open question and put in order.
+So for items about a single lecture, most of the quality comes from the prompts and the code checks with retry,
+which a transcript can feed too.</li>
+<li><b>Where the shipped set is still ahead:</b> Sonnet rated its quiz distractors good on 75% of questions (B1 43%,
+B2 51%), its quiz questions serving the lecture's goals on 80% (61%, 64%) and its recap points on 85% (68%, 75%). That
+gap mixes the layer with the writer and the judge: the shipped quiz items were written by Qwen 3.8 27B, the shipped
+recaps by Gemma 4 12B, and both went through the pipeline's judge (quiz items also through a rewrite). Ours on Gemma, the same-model comparison, lands between: distractors 55%, quiz goals 78%, recap goals
+77%.</li>
+<li><b>Where the baselines are ahead:</b> on odd one out, Sonnet found the baselines' groups serving the goals more
+often (B1 64%, B2 57%, shipped 43%, ours on Gemma 36%), and rated 2 of the 14 shipped items incorrect. The lexical
+traceability check also favours the transcript-fed systems, as it should: they copy the transcript's words (quiz keys
+traceable: B2 89%, ours on Gemma 82%, shipped 77%).</li>
+</ul>
+<p class="small muted">A small sample: six lectures, and Sonnet saw at most 12 items per system and kind in a lecture
+(1,037 items in all). The Gemma judges see what each writer saw (ours its facts, B2 its transcript blocks, B1 the
+transcript window that best matches each item), so they measure faithfulness to each system's own input. Full
+tables: <a href="#ev-act-study">the activities study</a>.</p>
+
+<h4>4. What it costs: once per course, then per question</h4>
+<p><b>Once per course.</b> Building the layer and the activities took about 11 GPU hours: 10.8 h of measured stage
+time plus 0.5 h of reruns, about 11.3 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S). This is
+the sum of the stage times in <a href="#ov-stages">Every stage in one line</a> and <a href="#timing">Time
+estimates</a>. Of it, stages 1a to 4d, the part question answering reads, are about 8.1 h (19 + 8 + 86 + 233 + 24 +
+107 + 6.5 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
+a CPU.</p>
+<p><b>Per question</b>, the layer costs close to what RAG costs:</p>
+{{BASE:cost}}
+<p>Ours reads about 900 more context tokens than RAG at the median and makes 2.3 model calls where RAG makes 1:
+one round in which the model thinks and calls tools, then the answer, sometimes a second tool round. The 1.4 s between them
+comes from that extra call and from ours thinking in its first round (RAG does not think). RAG with thinking matches ours on formulas and lands close overall (0.808), but at a median
+25.4 s, about 4.5 times ours.</p>
+<div class="callout why"><span class="tag">Planned optimisation · argued, not measured</span>
+<p>The tool rounds are the part of ours' time that RAG does not have. Question answering can be changed so that,
+instead of several tool rounds, <b>one tool call fetches every concept and fact the question needs at once</b>. The
+answer then takes about one tool call before it starts, the same shape as RAG's single retrieval and answer, so the
+latency should come close to RAG's. This has not been built or measured, and no number is claimed for it here.</p></div>
+
+<h4>5. Where RAG ties or wins</h4>
+{{BASE:ties}}
+<ul>
+<li><b>Overall it is a near tie:</b> ours 0.80, RAG 0.815, RAG with thinking 0.808, GraphRAG with text 0.777 on all
+65 questions. The method's advantage is in specific kinds of question, not across the board.</li>
+<li><b>Questions answered by one passage of one lecture</b> (explanation, comparison, list) tie or go slightly to
+RAG: 0.929 against 1.0, 0.929 against 1.0, 0.875 against 1.0. When the answer sits in one stretch of speech, eight
+transcript chunks hold it, and the layer has
+nothing to add.</li>
+<li><b>Course-structure questions:</b> RAG 0.9, ours 0.6. Ours fails <i>“What are the six modules of this course?”</i>
+(it answers from the eight course goals and denies there are six modules) and <i>“What topics does the course say it
+does not cover?”</i>. Both answers are statements about the course itself, and fact extraction leaves those out by
+design: rule 7 of <code>prompts/fact_extraction.txt</code> says “On the subject, not on the course”, skipping what
+the course will cover, its objectives and how it is organised. RAG finds the closing lecture's summary sentence. This
+is a design choice, open for revision, not a bug.
+{{BASE:ans_S02}}</li>
+<li><b>Multihop questions</b> (12, each needing passages from several lectures): RAG 0.625, ours 0.5 (0.528 over three
+runs, RAG 0.625 in all three). Every system is weak here with a 12B model; graph tools only score lowest of the systems with course data (0.333). One
+failure mode is clear: M08 and M09 are phrased “What earlier ideas does X rest on?”, which sent ours to
+<code>lecture_dependencies</code>; the graph returned the course's general foundations (XR, the definition of a VR
+system, computer graphics) instead of the specific earlier facts (presence, the Simulator Sickness Questionnaire, the
+empirical-study method; the GPU and frame-rate needs), and ours scored 0 on both in all three runs where RAG scored 0.5.
+{{BASE:ans_M08}}</li>
+<li><b>Citation validity, checked by code:</b> RAG 255 of 279 written citations valid (91%), ours 195 of 244 (80%).
+The rule is the same for every system and lexical: half of the cited sentence's content words must occur in that
+lecture's transcript from 30 s before to 240 s after the cited time. Ours' sentences paraphrase facts (acronyms spelled
+out, pronouns resolved), and a fact's time can be its segment's start, which may lower ours' score; neither cause was
+measured, so the gap stands as reported. The lowest category is structure (7 of 17).</li>
+<li><b>Speed:</b> RAG answers in 4.2 s at the median and starts writing after 1.5 s; ours 5.7 s and 3.0 s (point 4).</li>
+</ul>
+<figure class="wide"><div class="frame">{{BASE:fig_cat}}</div>
+<figcaption>Mean correct per category, run 1, five of the eight systems (all eight are in the <a href="#ev-baselines">tables</a>).
+The grey line spans the lowest to the highest system in each row; hover a mark for its value. Ours leads on
+definitions, prerequisites and formulas, ties on “where” and not covered, and trails RAG on structure and
+multihop.</figcaption></figure>
 
 <h2 id="design" data-toc="Why this design">Why this design</h2>
 <p>Every argument for the design, each marked <span class="pill pm">measured</span> when a number in
@@ -248,10 +408,12 @@ is judged (3,911 items, 1,086 failed), one rewrite is tried, and items failing t
 The activity judge itself is not yet measured against its seed set. Honest limits: the fact judge is off, and recap texts the judge failed are still shown.</td><td><span class="pill pm">measured (counts); judge accuracy not measured</span></td></tr>
 <tr><td><b>Traceable</b></td><td>Every claim cites a fact ID, and a fact ID becomes “(lecture N, m:ss)”. Stage 4d checks
 206,903 references in the layer, all resolve. The answer loop drops any ID no tool returned. In the benchmarks every
-answer was read: no wrong citation was seen (answers read, not scored).</td><td><span class="pill pm">measured</span></td></tr>
+answer was read: no wrong citation was seen (answers read, not scored). The baseline tests' lexical code check
+passes 195 of 244 written citations (80%; RAG 91%, <a href="#baselines">point 5</a>).</td><td><span class="pill pm">measured</span></td></tr>
 <tr><td><b>Honest “not covered”</b></td><td>A calibrated cut-off on retrieval scores (0.55) separates 80 labelled queries with
 AUC 0.989; it flags 27 of 39 out-of-course queries and none of the 38 in-course ones (<code>analysis/qa/calibration.json</code>).
-The FIFA question is answered “not covered” in every run.</td><td><span class="pill pm">measured</span></td></tr>
+The FIFA question is answered “not covered” in every run. In the baseline tests ours handled 8 of 9 not-covered
+questions (RAG 9, the plain LLM 1).</td><td><span class="pill pm">measured</span></td></tr>
 <tr><td><b>Code where possible, a model where needed</b></td><td>Times, segment maps, the registry merge, the lecture graph,
 concept maps, complete-the-map, match-the-pairs, recall, crossword layout and review cards are code. A model writes
 only facts, concepts, “same?” decisions, definitions, goals, text activities and answers.</td><td><span class="pill pa">argued</span></td></tr>
@@ -264,7 +426,9 @@ layer; Gemma 4 12B answers; the demo ran both on llama.cpp (<code>check_demo.sh<
 <tr><td><b>Bounded prompts</b></td><td>Units are a segment, a cluster, a concept or a lecture, so no prompt grows with the
 course (v2's links prompt reached 63.9k tokens). 2c averaged about 3,700 input tokens per call.</td><td><span class="pill pm">measured</span></td></tr>
 <tr><td><b>Structure a learner can use</b></td><td>Goals (8 course goals, 125 objectives), prerequisites per lecture, concepts
-introduced / met again / assumed, activities and review cards. RAG returns passages; it has none of these.</td><td><span class="pill pa">argued</span></td></tr>
+introduced / met again / assumed, activities and review cards. RAG returns passages; it has none of these. Measured
+on prerequisite questions: ours 0.5, graph tools alone 0.75, every baseline 0.125 or less; course-structure
+questions go the other way, RAG 0.9 against ours 0.6 (<a href="#baselines">baseline tests</a>).</td><td><span class="pill pm">measured (prerequisites)</span> <span class="pill pa">argued (the rest)</span></td></tr>
 <tr><td><b>Inference apart from the app</b></td><td>Only text crosses the network: the request (question and tool results,
 a few thousand tokens) and the streamed answer. Videos, the layer and the page stay on the learner's machine (<a href="#deploy">below</a>).</td><td><span class="pill pa">argued (being built)</span></td></tr>
 <tr><td><b>Modest hardware to serve</b></td><td>Serving runs on the 12 GB RTX 5070 used throughout this work. Building needs more:
@@ -298,16 +462,17 @@ This is how the fact judge was found to do more harm than good before it touched
   <text x="730" y="98" class="t-s ink2">viewer: serve.py + one page</text>
   <text x="730" y="118" class="t-s ink2">knowledge/ and activities/</text>
   <text x="730" y="138" class="t-s ink2">the tool loop (qa/) and its five tools</text>
-  <text x="730" y="158" class="t-s ink2">query embedder (0.6B, on the CPU)</text>
+  <text x="730" y="158" class="t-s ink2">query embedder: server, or here on the CPU</text>
   <text x="730" y="178" class="t-s ink2">videos: local files or YouTube</text>
   <rect x="8" y="262" width="1024" height="82" rx="14" class="box2"/>
   <text x="26" y="290" class="t-l">Once, offline</text>
   <text x="26" y="314" class="t-s ink2">The pipeline (stages 0a to 5) runs on a large GPU (Qwen 3.8 27B FP8 on vLLM) and writes knowledge/ and activities/.</text>
   <text x="26" y="333" class="t-s ink2">Those folders are copied to the app. Serving never runs the pipeline again.</text>
 </svg></div>
-<figcaption>The target design (another agent is building it as of 2026-11-17; no timings for it are reported here).
-As on main today, the demo runs everything on the instance and the browser reaches the viewer through
-<code>ssh -L 8765:127.0.0.1:8765</code> (<a href="#demo">Demo</a>).</figcaption></figure>
+<figcaption>Built on 2026-11-17 (<code>pipeline/demo/</code>): <code>ec2_model_server.sh</code> on the server, <code>python -m
+demo</code> on the learner's machine, joined by an SSH tunnel; the query embedder runs on the server by default, so the
+learner's machine needs only numpy. Measured so far only with the local PC as the server, through a simulated 250 ms
+tunnel (<a href="#demo">Running the demo</a>).</figcaption></figure>
 <p>This split works because the pipeline does the heavy work in advance. What the server must do per question is
 small and stateless: run one model over a prompt of a few thousand tokens, a median of two times. Everything that is
 large (videos: 5.5 GB for the course) or private to the learner (progress, highlights, answers) stays local. The
