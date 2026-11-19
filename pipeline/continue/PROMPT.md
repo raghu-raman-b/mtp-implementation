@@ -68,6 +68,8 @@ User 20:05 (then away for the day): cache-warm pings every 50 min while the GPU 
 02:45; say "warmed"); EVERY graph regenerated with our latest (v2) scores, the optimisation before/after graphs in a
 separate folder; T6 also fixes the activities "Serves the course goals" label -> lecture goals; at the end move
 graphs/ to pipeline/results/ (update README, script paths, any docs links).
+User 20:10: graph text professional and crisp, no over-explaining: short correct titles and axis labels, no
+parenthetical asides like "(lower is better)", no explanatory notes on the plot; explanations belong in README.md.
 
 ## DAY 2026-11-19 (from 11:30 IST) — READ THIS FIRST; supersedes NIGHT below
 User (11:35): finish today: activities study, judging answers + activities, results to docs, sample questions; then
