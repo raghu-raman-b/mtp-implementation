@@ -13,7 +13,7 @@ the tools return, and must put the IDs it used in square brackets after each cla
   <rect x="170" y="34" width="190" height="116" rx="12" class="k-qa sw"/>
   <text x="184" y="60" class="t-l">Round 0</text><text x="184" y="84" class="t-s">thinking on</text><text x="184" y="104" class="t-s">chooses the tools</text><text x="184" y="126" class="t-s mut">median 1.6–1.7 s</text>
   <rect x="382" y="34" width="270" height="116" rx="12" class="k-code sw"/>
-  <text x="396" y="60" class="t-l">Tools (local, ≤ 0.7 s)</text><text x="396" y="82" class="t-s">check_concept · fact_lookup</text><text x="396" y="101" class="t-s">lecture_dependencies</text><text x="396" y="120" class="t-s">lecture_overview</text><text x="396" y="139" class="t-s">course_goals</text>
+  <text x="396" y="60" class="t-l">Tools (local, ≤ 0.7 s)</text><text x="396" y="82" class="t-s">check_concept · fact_lookup</text><text x="396" y="101" class="t-s">lecture_dependencies</text><text x="396" y="120" class="t-s">lecture_overview</text><text x="396" y="139" class="t-s">course_goals · course_structure</text>
   <rect x="674" y="34" width="170" height="116" rx="12" class="k-qa sw"/>
   <text x="688" y="60" class="t-l">Rounds 1–5</text><text x="688" y="84" class="t-s">thinking off</text><text x="688" y="104" class="t-s">more tools,</text><text x="688" y="124" class="t-s">or the answer</text>
   <rect x="866" y="34" width="166" height="116" rx="12" class="k-acc sw"/>
@@ -29,18 +29,19 @@ the tools return, and must put the IDs it used in square brackets after each cla
 <dt>In</dt><dd>the question, optionally the lecture being watched; <code>knowledge/</code> (or <code>$QA_OUTPUT/&lt;course&gt;/knowledge/</code>)</dd>
 <dt>Out</dt><dd><code>{"answer", "citations": [{"fact", "lecture", "segment", "start", "end", "text"}], "steps", "covered"}</code>; logs in <code>output/&lt;course&gt;/qa/answers.jsonl</code> and <code>llm_calls.jsonl</code> (gitignored)</dd>
 <dt>Command</dt><dd><code>python -m qa "What is an HMD?" [--lecture 4] [--course nptel_vr] [--config FILE] [--think | --no-think] [--json]</code>; <code>python -m qa --stop</code></dd>
-<dt>Model</dt><dd>Gemma 4 12B QAT (<code>unsloth/gemma-4-12B-it-qat-GGUF</code>, <code>UD-Q4_K_XL</code>) on llama.cpp, <code>configs/gemma4_12b_llamacpp.json</code> (port 8092, 6 slots, thinking up to 8,192 tokens, temperature 1.0); on a cloud instance <code>configs/gemma4_12b_demo.json</code> or the vLLM <code>configs/gemma4_12b_vllm_demo.json</code> (<code>google/gemma-4-12B-it</code>). Queries embedded with Qwen3-Embedding-0.6B on the CPU.</dd>
+<dt>Model</dt><dd>Gemma 4 12B QAT (<code>unsloth/gemma-4-12B-it-qat-GGUF</code>, <code>UD-Q4_K_XL</code>) on llama.cpp, <code>configs/gemma4_12b_llamacpp.json</code> (port 8092, 6 slots, thinking up to 8,192 tokens, temperature 1.0); on a cloud instance <code>configs/gemma4_12b_demo.json</code> or the vLLM <code>configs/gemma4_12b_vllm_demo.json</code> (<code>google/gemma-4-12B-it</code>). Queries embedded with Qwen3-Embedding-0.6B on the CPU. Thinking switch: <code>think=False</code>, <code>--no-think</code> or <code>$QA_THINK=0</code> turns thinking off in round 0 as well (the tool-choosing round), so no round thinks; an explicit <code>think=True</code> wins over the variable (measured in <a href="#qa-opt">the optimisation section</a>).</dd>
 <dt>Time</dt><dd>local RTX 5070: median 4.9 s, p90 7.6 s, max 8.9 s (34 answers); vLLM on the RTX PRO 6000: median 4.5 s, max 6.6 s, none over 8 s (17 answers); first words after a median 3.2 s when streamed</dd>
 </dl>
 {{PROMPT:qa_system.txt}}
 {{PROMPT:qa_tools.json}}
 <div class="tablewrap"><table>
 <tr><th>Tool</th><th>What it returns</th><th>Used for</th></tr>
-<tr><td><code>check_concept(name)</code></td><td>the card: definition, where defined (lecture, time, the first defining fact), up to 10 facts with IDs and times, up to 10 relationships, the lectures leading to it. Finds aliases, acronyms, plurals and close spellings (difflib ≥ 0.84). An unknown name returns its 5 closest facts, so no extra round is needed.</td><td>“what is X”, “how does X work”, “where is X taught”, each side of “X vs Y”</td></tr>
+<tr><td><code>check_concept(names)</code></td><td>a list of names, one card per name in one call; each card: definition, where defined (lecture, time, the first defining fact), up to 10 facts with IDs and times, up to 10 relationships, the lectures leading to it. Finds aliases, acronyms, plurals and close spellings (difflib ≥ 0.84). An unknown name returns its 5 closest facts, so no extra round is needed.</td><td>“what is X”, “how does X work”, “where is X taught”, each side of “X vs Y”</td></tr>
 <tr><td><code>fact_lookup(query, rephrasings, lecture)</code></td><td>the 8 facts closest to the query or any of up to 4 rewordings (best cosine), with a note when the best score is under 0.55</td><td>how / why questions, steps, questions across lectures, unknown terms</td></tr>
 <tr><td><code>lecture_dependencies(lecture)</code></td><td>direct prerequisite lectures; earlier concepts ranked by how many of the lecture's facts use them (≥ 2 uses with definition, single uses “in passing”); hubs named apart; lectures to revise</td><td>“what do I need before lecture N”</td></tr>
 <tr><td><code>lecture_overview(lecture)</code></td><td>goal, objectives, segments with times and sub-goals, concepts by kind, course goals</td><td>“what is lecture N for”</td></tr>
 <tr><td><code>course_goals()</code></td><td>the course goals and their lectures</td><td>“what is this course about”</td></tr>
+<tr><td><code>course_structure(lecture)</code></td><td>(lecture optional) the lecturers' own statements about the course itself (objective and scope, what is or is not covered, modules and weeks, reading), verbatim with lecture and time, from stage 4f, each with an ID</td><td>“how is the course organised”, “how many modules”, “is X covered”</td></tr>
 </table></div>
 <h4>A real answer, with its timing</h4>
 <p>“What is the difference between immersion and presence?” on the rebuilt layer, local GPU

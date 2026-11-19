@@ -228,8 +228,9 @@ source text), and two ablations of ours that keep only part of the knowledge lay
 {{BASE:n_judged}} answers was graded by one judge, Claude Sonnet, against a gold answer written from the transcripts;
 a second judge (Claude Opus) agreed on 257 of them with Cohen's kappa 0.715. How each system was built and run, all
 65 questions and every table are in <a href="#ev-baselines">Evaluation: baseline tests</a>. Everything in this
-subsection is <span class="pill pm">measured</span>, except the planned optimisation in point 4, which is marked
-<span class="pill pa">argued</span>.</p>
+subsection is <span class="pill pm">measured</span>. The numbers below are for question answering as first built;
+the optimised version (batched concept lookup, a course-structure tool, thinking off in the tool round) was rerun
+on the same questions, and its numbers are in <a href="#qa-opt">Optimisation (measured)</a>.</p>
 <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))" aria-label="Baseline tests, headline numbers">
   <div class="tile"><b>1.0 vs 0.786</b><span>definitions: ours against RAG (7 questions)</span></div>
   <div class="tile"><b>0.5 vs ≤ 0.125</b><span>prerequisites: ours against every baseline (4 questions, same in 3 runs)</span></div>
@@ -332,11 +333,11 @@ transcript window that best matches each item), so they measure faithfulness to 
 tables: <a href="#ev-act-study">the activities study</a>.</p>
 
 <h4>4. What it costs: once per course, then per question</h4>
-<p><b>Once per course.</b> Building the layer and the activities took about 11 GPU hours: 10.8 h of measured stage
-time plus 0.5 h of reruns, about 11.3 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S). This is
+<p><b>Once per course.</b> Building the layer and the activities took about 12 GPU hours: 11.4 h of measured stage
+time plus 0.5 h of reruns, about 11.9 h, with Qwen 3.8 27B on one 96 GB RTX PRO 6000 (2c on a 46 GB L40S; 4f with Gemma 4 12B on the local RTX 5070). This is
 the sum of the stage times in <a href="#ov-stages">Every stage in one line</a> and <a href="#timing">Time
-estimates</a>. Of it, stages 1a to 4d, the part question answering reads, are about 8.1 h (19 + 8 + 86 + 233 + 24 +
-107 + 6.5 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
+estimates</a>. Of it, stages 1a to 4d and 4f, the part question answering reads, are about 8.7 h (19 + 8 + 86 + 233 + 24 +
+107 + 6.5 + 36.7 minutes); the rest is the activities. RAG's index, for comparison, is 738 chunks embedded in 27 minutes on
 a CPU.</p>
 <p><b>Per question</b>, the layer costs close to what RAG costs:</p>
 {{BASE:cost}}
@@ -344,11 +345,11 @@ a CPU.</p>
 one round in which the model thinks and calls tools, then the answer, sometimes a second tool round. The 1.4 s between them
 comes from that extra call and from ours thinking in its first round (RAG does not think). RAG with thinking matches ours on formulas and lands close overall (0.808), but at a median
 25.4 s, about 4.5 times ours.</p>
-<div class="callout why"><span class="tag">Planned optimisation · argued, not measured</span>
-<p>The tool rounds are the part of ours' time that RAG does not have. Question answering can be changed so that,
-instead of several tool rounds, <b>one tool call fetches every concept and fact the question needs at once</b>. The
-answer then takes about one tool call before it starts, the same shape as RAG's single retrieval and answer, so the
-latency should come close to RAG's. This has not been built or measured, and no number is claimed for it here.</p></div>
+<div class="callout why"><span class="tag">Optimisation · measured</span>
+<p>The tool rounds are the part of ours' time that RAG does not have. The optimised version fetches every concept in
+one <code>check_concept</code> call and can turn thinking off in the tool round. Without reasoning it answers in a
+median 3.90 s (first token 1.34 s), against RAG's 4.24 s (1.53 s), at 0.831 correct against 0.815; batching alone
+barely moves the median (5.66 to 5.59 s). Details and caveats: <a href="#qa-opt">Optimisation (measured)</a>.</p></div>
 
 <h4>5. Where RAG ties or wins</h4>
 {{BASE:ties}}
@@ -386,13 +387,78 @@ The grey line spans the lowest to the highest system in each row; hover a mark f
 definitions, prerequisites and formulas, ties on “where” and not covered, and trails RAG on structure and
 multihop.</figcaption></figure>
 
+<h3 id="qa-opt" data-toc="Optimisation (measured)">Optimisation: batched concept lookup and a course-structure tool (measured)</h3>
+<p>After the baseline tests, question answering was changed in four ways (the user's design) and rerun on the
+<b>same 65 questions</b>, with the same judge (Claude Sonnet) and the same criteria; the 40 repeat questions were run
+three times. RAG, GraphRAG, the plain LLM and the ablations were not rerun: their numbers below are the ones above.
+Everything here is <span class="pill pm">measured</span>.</p>
+<ul>
+<li><b>One call for every concept.</b> <code>check_concept</code> takes a list of names and returns every card in one
+call, so “X vs Y” no longer needs a second round. The viewer names each concept loaded (“Concepts loaded: immersion
+(lecture 4), presence (lecture 4)”).</li>
+<li><b>The other tools stay separate.</b> <code>fact_lookup</code>, <code>lecture_dependencies</code>,
+<code>lecture_overview</code> and <code>course_goals</code> remain their own calls, so each step the answer took can
+still be shown and explained.</li>
+<li><b>A course-structure tool.</b> <code>course_structure</code> returns the lecturers' own statements about the
+course (modules, weeks, scope), verbatim, from the new <a href="#s4f">stage 4f</a>.</li>
+<li><b>A thinking switch.</b> One switch turns thinking off in the tool round as well (<code>--no-think</code>,
+<code>think=False</code> or <code>$QA_THINK=0</code>); the optimised system was measured both ways, with reasoning
+and without.</li>
+</ul>
+<p><b>Before and after</b>, run 1, all 65 questions (latency on the RTX 5070, in seconds):</p>
+<div class="tablewrap"><table>
+<tr><th></th><th class="n">ours, earlier</th><th class="n">optimised, reasoning</th><th class="n">optimised, no reasoning</th><th class="n">RAG</th></tr>
+<tr><td>correct (mean)</td><td class="n">0.80</td><td class="n">0.854</td><td class="n">0.831</td><td class="n">0.815</td></tr>
+<tr><td>answers with a false claim</td><td class="n">5</td><td class="n">1</td><td class="n">0</td><td class="n">3</td></tr>
+<tr><td>not-covered questions handled</td><td class="n">8/9</td><td class="n">7/9</td><td class="n">7/9</td><td class="n">9/9</td></tr>
+<tr><td>latency, median</td><td class="n">5.66</td><td class="n">5.59</td><td class="n">3.90</td><td class="n">4.24</td></tr>
+<tr><td>latency, p90</td><td class="n">8.41</td><td class="n">8.41</td><td class="n">5.83</td><td class="n">5.54</td></tr>
+<tr><td>first token, median</td><td class="n">2.99</td><td class="n">3.03</td><td class="n">1.34</td><td class="n">1.53</td></tr>
+<tr><td>model calls (mean)</td><td class="n">2.28</td><td class="n">2.15</td><td class="n">2.06</td><td class="n">1.0</td></tr>
+<tr><td>context tokens (median)</td><td class="n">4,892</td><td class="n">5,759</td><td class="n">5,158</td><td class="n">4,033</td></tr>
+</table></div>
+<p><b>Per category</b>, mean correct, run 1:</p>
+<div class="tablewrap"><table>
+<tr><th>category (questions)</th><th class="n">ours, earlier</th><th class="n">optimised, reasoning</th><th class="n">optimised, no reasoning</th><th class="n">RAG</th></tr>
+<tr><td>definition (7)</td><td class="n">1.0</td><td class="n">1.0</td><td class="n">1.0</td><td class="n">0.786</td></tr>
+<tr><td>explanation (7)</td><td class="n">0.929</td><td class="n">0.714</td><td class="n">0.857</td><td class="n">1.0</td></tr>
+<tr><td>comparison (7)</td><td class="n">0.929</td><td class="n">1.0</td><td class="n">0.929</td><td class="n">1.0</td></tr>
+<tr><td>list (4)</td><td class="n">0.875</td><td class="n">1.0</td><td class="n">0.875</td><td class="n">1.0</td></tr>
+<tr><td>formula (5)</td><td class="n">0.9</td><td class="n">1.0</td><td class="n">0.9</td><td class="n">0.7</td></tr>
+<tr><td>where (5)</td><td class="n">1.0</td><td class="n">1.0</td><td class="n">1.0</td><td class="n">1.0</td></tr>
+<tr><td>prerequisite (4)</td><td class="n">0.5</td><td class="n">0.5</td><td class="n">0.625</td><td class="n">0.125</td></tr>
+<tr><td>structure (5)</td><td class="n">0.6</td><td class="n">0.9</td><td class="n">0.9</td><td class="n">0.9</td></tr>
+<tr><td>not covered (9)</td><td class="n">0.889</td><td class="n">0.833</td><td class="n">0.833</td><td class="n">0.944</td></tr>
+<tr><td>multihop (12)</td><td class="n">0.5</td><td class="n">0.708</td><td class="n">0.583</td><td class="n">0.625</td></tr>
+<tr class="total"><td>all (65)</td><td class="n">0.80</td><td class="n">0.854</td><td class="n">0.831</td><td class="n">0.815</td></tr>
+</table></div>
+<ul>
+<li><b>Accuracy:</b> both optimised modes now lead RAG overall (0.854 and 0.831 against 0.815, RAG with thinking
+0.808), with fewer false claims (1 and 0 answers, RAG 3). Structure rose from 0.6 to 0.9 in both modes (the same in
+all three runs), multihop from 0.5 to 0.708 with reasoning and 0.583 without.</li>
+<li><b>Where it got worse:</b> explanation fell from 0.929 to 0.714 with reasoning (0.857 without), and not covered
+from 0.889 to 0.833: 7 of 9 handled in both modes, against 8 of 9 before. N05 (“How does foveated rendering work?”)
+is now answered as if the course taught it, in all three runs of both modes.</li>
+<li><b>Speed:</b> batching alone barely moves the median (5.66 to 5.59 s with reasoning). The gain comes from turning
+thinking off in the tool round: 3.90 s at the median and the first token after 1.34 s, against RAG's 4.24 s and
+1.53 s. Without reasoning the optimised system is faster than RAG and more accurate.</li>
+</ul>
+<div class="callout warn"><span class="tag">Caveats</span>
+<p>The question set is the same on purpose (consistency, the user's choice), but the structure questions are what
+motivated the <code>course_structure</code> tool, so its gain on structure is not an independent test. Each question
+was answered once, except the 40 repeat questions (three runs). Only ours was rerun; the other systems' numbers are
+from the earlier runs.</p></div>
+<p class="small muted">Paper-ready figures: <code>pipeline/results/qa_optimisation/</code>. Tables:
+<code>baseline-tests/tables.md</code> (before / after section), <code>baseline-tests/summary.json</code>
+(<code>before_after</code>).</p>
+
 <h2 id="design" data-toc="Why this design">Why this design</h2>
 <p>Every argument for the design, each marked <span class="pill pm">measured</span> when a number in
 the repository backs it, or <span class="pill pa">argued</span> when it rests on the design and examples only.</p>
 
 <div class="tablewrap"><table>
 <tr><th style="width:24%">Argument</th><th>What it means, with the evidence</th><th style="width:10%">Status</th></tr>
-<tr><td><b>Heavy work once, offline</b></td><td>The 63 lectures are processed once (about 10.8 GPU hours, summed from the stage
+<tr><td><b>Heavy work once, offline</b></td><td>The 63 lectures are processed once (about 11.4 GPU hours, summed from the stage
 logs). Answering reads a precomputed folder, <code>knowledge/</code> (31 MB, of which 21 MB are fact embeddings). Nothing
 is re-read or re-summarised at question time.</td><td><span class="pill pm">measured</span></td></tr>
 <tr><td><b>Light inference per question</b></td><td>A 12B model answers: Gemma 4 12B QAT, a 6.72 GB GGUF file. Median 4.9 s on a
