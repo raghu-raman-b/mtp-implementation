@@ -78,6 +78,9 @@ lecture 63), T2b merged (cbbb835), T4 done (2056544), T5 judged 290 (cd2ef37). R
 ours_v2 0.854 / ours_v2_nothink 0.831 (RAG 0.815); false-claim answers 5 -> 1 / 0; latency median 5.66 -> 5.59 / 3.90 s
 (RAG 4.24); structure 0.6 -> 0.9; multihop 0.5 -> 0.708 / 0.583; not_covered 8/9 -> 7/9 (N05). RUNNING: T6 graphs
 regen + qa_optimisation/ + move to pipeline/results/ (Sonnet, worktree); T7 docs targeted (Opus, worktree).
+DONE ~23:00: T6 merged (01fb5df: all 25 figures regenerated, qa_optimisation/ before-after, folder now
+pipeline/results/), T7 merged (docs: tool table, stage 4f, measured optimisation section #qa-opt, build totals
+10.8 -> 11.4 h measured, "about 12 GPU hours"; build byte-identical). QA OPTIMISATION COMPLETE.
 Open for the user: default QA mode for the demo (no-reasoning is faster than RAG and as accurate); sample questions
 still from the earlier run.
 User 20:10: graph text professional and crisp, no over-explaining: short correct titles and axis labels, no
