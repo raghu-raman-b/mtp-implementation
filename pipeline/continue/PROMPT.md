@@ -67,7 +67,13 @@ is about one call (design point, not measured; memory qa-one-call-optimization).
   (detached queue.sh; log baseline-tests/queue.log; marker activities_study/GPU_DONE).
 - RUNNING: docs part 2 (Opus agent, worktree agent-afef209db8fea72c8): baseline section "what the method buys" + full
   method in the Evaluation part; activities subsection waits for the study's out/summary.md (send it to the agent).
-- NEXT: GPU_DONE -> 3 Sonnet agents judge out/sonnet/packets (blind) -> summarize.py -> send summary to docs agent ->
+- **DONE 19 Nov ~20:00**: activities study GPU 16:12; 6 Sonnet blind judges (1037 items); summary (d5db9fa); baseline
+  branch merged (1ae5f6d); sample_questions.json + multihop label (6dfd0de, viewer smoke PASS); docs part 1+2 merged
+  (Opus; build byte-identical). Activities: layer-only gains = typed concept maps (Sonnet 97% vs 75/69%), recall (grounded
+  83% vs 66/69%), complete_map/match/crossword/review cards; B1 clearly worse; B2 (our prompts + transcript) ~ties on
+  single-lecture kinds. NEXT (deferred by the user): DEMO_PLAN rewrite, rehearsal; design question: structure facts
+  (rule 7); QA one-call optimisation (not built).
+- (was) NEXT: GPU_DONE -> 3 Sonnet agents judge out/sonnet/packets (blind) -> summarize.py -> send summary to docs agent ->
   review docs -> merge baseline + docs branches to main, sample_questions.json via make_samples.py on main, push.
 
 ## NIGHT 2026-11-19 (from 02:05 IST) — READ THIS FIRST; supersedes everything below where they differ

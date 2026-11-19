@@ -1,6 +1,6 @@
-PIPELINE v3 STATUS - BASELINES TO DOCS  (updated 11:50 IST, 19 Nov; full state: pipeline/continue/PROMPT.md "DAY")
+PIPELINE v3 STATUS - BASELINES + DOCS DONE  (updated ~20:00 IST, 19 Nov; full state: pipeline/continue/PROMPT.md "DAY")
 
-DONE: multihop judged (Sonnet), tables/figures for 65 questions; sample questions chosen by code (6)
-RUNNING: activities study on the local GPU (queue.sh); docs part 2 (Opus agent)
-NEXT: Sonnet blind-judges activities -> summary -> docs activities part -> merge all to main
+DONE: QA baselines (8 systems x 65 questions, Sonnet-judged), activities study (4 systems, 6 lectures, 1037 items
+  judged blind), docs part 1+2 merged, Ask sample questions from the study
+NEXT (deferred by the user): DEMO_PLAN rewrite, rehearsal; open: structure facts (rule 7), QA one-call optimisation
 
