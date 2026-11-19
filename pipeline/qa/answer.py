@@ -13,9 +13,12 @@ once, too, when every tool result so far found nothing close in the course (Tool
 whose closest facts score low, a fact_lookup with no close fact): the answer is then "not covered", and another
 search would only cost time. Thinking (when the config has it on) is used in round 0 only, where the tools are
 chosen; later rounds are sent with enable_thinking false, since thinking before the final answer was most of the
-answer time (analysis/qa/STATE.md).
+answer time (analysis/qa/STATE.md). answer() and answer_stream() take think (True: round 0 thinks, the shipped
+mode; False: no round thinks); None reads $QA_THINK (0 or 1) and then ROUND0_THINK. The mode that ran is "think" in
+the answers.jsonl line and in the done event's timing.
 
-The answer cites fact IDs ([4/S1/F2]) or segment IDs ([4/S1]) in square brackets. Each one that a tool result showed
+The answer cites fact IDs ([4/S1/F2]), segment IDs ([4/S1]) or course-structure statement IDs ([CS0001]; its
+citation has the statement's own time) in square brackets. Each one that a tool result showed
 becomes a citation (lecture, segment, time, text) and is written into the answer as "(lecture 4, 6:03)"; an ID no
 tool showed is dropped (and logged). A time the model wrote before a citation ("at 14:25 [28/S1]") is removed (the
 label carries the time); the same label repeated over a run of sentences of one line is written once, at the end of
@@ -89,11 +92,11 @@ NO_ANSWER = "Sorry, I could not answer that just now. Please try asking again in
 PIN_SLOTS = True                # llama.cpp: the rounds of one question go to one server slot (its KV cache is reused)
 THINKING_EVERY_S = 0.5          # "thinking" events at most this often
 
-ID = r"(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?"
+ID = r"(?:(?:\d+[a-z]?|tut_\d+(?:_part\d+)?)/S\d+(?:/F\d+)?|CS\d{4,})"
 BRACKET = re.compile(r"\s?[\[(【]([^\[\]()【】]*?" + ID + r"[^\[\]()【】]*?)[\])】]")
 BARE = re.compile(r"(?<![\w/])(" + ID + r")(?![\w/])")
 # a tool's name the model wrote as if it were a citation ("... lecture 8. [lecture_dependencies]")
-TOOL_REF = re.compile(r"[ \t]*[\[(【]`?(?:check_concept|fact_lookup|lecture_dependencies|lecture_overview|course_goals)`?[\])】]")
+TOOL_REF = re.compile(r"[ \t]*[\[(【]`?(?:check_concept|fact_lookup|lecture_dependencies|lecture_overview|course_goals|course_structure)`?[\])】]")
 TIME = r"\d{1,2}:\d{2}(?::\d{2})?"
 RANGE = TIME + r"(?:\s*(?:-|–|—|to|and)\s*" + TIME + r")?"
 # a time or range the model wrote before a citation: "at 14:25 [..]", "from 14:25 to 15:00 [..]", "(14:25-15:00) [..]";
@@ -126,6 +129,16 @@ def get_llm(config: str | Path | None = None, think: bool | None = None) -> LLM:
         return _llms[key]
 
 
+def want_think(think: bool | None = None) -> bool:
+    """Whether round 0 thinks: the argument, else $QA_THINK (0 or 1), else ROUND0_THINK."""
+    if think is not None:
+        return bool(think)
+    env = os.environ.get("QA_THINK", "").strip().lower()
+    if env in ("0", "1", "false", "true", "off", "on"):
+        return env in ("1", "true", "on")
+    return ROUND0_THINK
+
+
 def warm(course: str = "nptel_vr", llm=None) -> dict:
     """Load the layer and the query embedder, and start (or attach to) the model server, so that the first
     question does not wait for them (the embedder takes about 10 s to load on the CPU, the server longer). Then one
@@ -148,7 +161,7 @@ def warm(course: str = "nptel_vr", llm=None) -> dict:
     out["model_server_s"] = round(time.time() - t, 2)
     t = time.time()
     req = Request(prompt="Hello.", system=system_prompt(kb), tools=tool_specs(), tool_choice=ROUND0_TOOL_CHOICE,
-                  key="qa.warm", max_tokens=1, sampling={} if ROUND0_THINK else
+                  key="qa.warm", max_tokens=1, sampling={} if want_think() else
                   {"chat_template_kwargs": {**llm.cfg.chat_template_kwargs, "enable_thinking": False}})
     if llm.cfg.engine == "llamacpp":
         try:                                    # which slots are busy now, so the prefix does not wait behind them
@@ -198,6 +211,10 @@ def parse_args(raw) -> dict | None:
 
 # ---------------------------------------------------------------- citations
 def citation(kb: Knowledge, cid: str) -> dict:
+    if cid.startswith("CS"):
+        s = structure_statements(kb)[cid]
+        return {"fact": None, "lecture": str(s["lecture"]), "segment": s.get("segment"), "start": s["start"],
+                "end": s.get("end", s["start"]), "text": s["text"]}
     if "/F" in cid:
         f = kb.facts[cid]
         return {"fact": cid, "lecture": f["lecture"], "segment": f["segment"], "start": f["start"], "end": f["end"],
@@ -208,6 +225,11 @@ def citation(kb: Knowledge, cid: str) -> dict:
             "text": s.get("subgoal", "")}
 
 
+def structure_statements(kb: Knowledge) -> dict:
+    """The course-structure statements by ID (empty without the stage's file)."""
+    return {x["id"]: x for x in kb.course_structure() or []}
+
+
 def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[str]]:
     """Replace the IDs in the answer by "(lecture 4, 6:03)"; return the text, the citations (in order of first use)
     and the IDs dropped (not shown by any tool, or not in the layer). Only the text is tidied (model-written times
@@ -216,8 +238,11 @@ def cite(kb: Knowledge, text: str, shown: set) -> tuple[str, list[dict], list[st
     labels: list[list[str]] = []      # the labels, as their parts ("lecture 4, 6:03"); "\x00n\x00" in the text
 
     def valid(i: str) -> bool:
-        ok = i in shown and (i in kb.facts or ("/F" not in i and i.split("/")[0] in kb.lectures
-                                                and i in kb.lectures[i.split("/")[0]].get("segments", {})))
+        if i.startswith("CS"):
+            ok = i in shown and i in structure_statements(kb)
+        else:
+            ok = i in shown and (i in kb.facts or ("/F" not in i and i.split("/")[0] in kb.lectures
+                                                    and i in kb.lectures[i.split("/")[0]].get("segments", {})))
         if not ok and i not in dropped:
             dropped.append(i)
         return ok
@@ -307,13 +332,16 @@ def split_covered(text: str) -> tuple[str, bool | None]:
 
 
 # ---------------------------------------------------------------- the loop
-def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, llm=None) -> dict:
+def answer(question: str, course: str = "nptel_vr", lecture: str | None = None, llm=None,
+           think: bool | None = None) -> dict:
     """{"answer", "citations": [{"fact", "lecture", "segment", "start", "end", "text"}], "steps": [{"tool", "args",
-    "result_summary"}], "covered"}. `llm`: an LLM, an LLMConfig, a config path, or None for Gemma 4 12B."""
-    return _answer(question, course, lecture, llm)
+    "result_summary"}], "covered"}. `llm`: an LLM, an LLMConfig, a config path, or None for Gemma 4 12B.
+    `think`: round 0 thinks (True, shipped), or no round does (False); None: $QA_THINK, then ROUND0_THINK."""
+    return _answer(question, course, lecture, llm, think=think)
 
 
-def answer_stream(question: str, course: str = "nptel_vr", lecture: str | None = None, llm=None) -> Iterator[dict]:
+def answer_stream(question: str, course: str = "nptel_vr", lecture: str | None = None, llm=None,
+                  think: bool | None = None) -> Iterator[dict]:
     """The events of one answer (module docstring), the last always {"event": "done", "result": {...}} with what
     answer() would return (an exception in the loop gives the NO_ANSWER result with "error")."""
     q: queue.Queue = queue.Queue()
@@ -322,7 +350,7 @@ def answer_stream(question: str, course: str = "nptel_vr", lecture: str | None =
 
     def run():
         try:
-            res = _answer(question, course, lecture, llm, emit=q.put)
+            res = _answer(question, course, lecture, llm, emit=q.put, think=think)
         except Exception as e:                    # noqa: BLE001  the viewer gets an answer, never a hung stream
             res = {"answer": NO_ANSWER, "citations": [], "steps": [], "covered": False,
                    "error": f"{type(e).__name__}: {e}"}
@@ -460,20 +488,21 @@ def stream_round(llm: LLM, req: Request, log_file: Path | None, on_text: Callabl
     return res
 
 
-def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable[[dict], None] | None = None) -> dict:
+def _answer(question: str, course: str, lecture: str | None, llm, emit: Callable[[dict], None] | None = None,
+            think: bool | None = None) -> dict:
     t0 = time.time()
     if llm is None or isinstance(llm, (str, Path)):
         llm = get_llm(llm)
     elif isinstance(llm, LLMConfig):
         llm = LLM(llm, log=lambda *a: print(*a, file=sys.stderr))
     if emit is None:
-        return _answer_loop(question, course, lecture, llm, t0, None, None)
+        return _answer_loop(question, course, lecture, llm, t0, None, None, want_think(think))
     with pinned_slot(llm) as slot:              # streamed: every round of this question on one llama.cpp slot
-        return _answer_loop(question, course, lecture, llm, t0, emit, slot)
+        return _answer_loop(question, course, lecture, llm, t0, emit, slot, want_think(think))
 
 
 def _answer_loop(question: str, course: str, lecture: str | None, llm, t0: float,
-                 emit: Callable[[dict], None] | None, slot: int | None) -> dict:
+                 emit: Callable[[dict], None] | None, slot: int | None, think_on: bool = True) -> dict:
     if emit is not None:
         raw_emit = emit
         emit = lambda ev: raw_emit({**ev, "t": round(time.time() - t0, 3)})  # noqa: E731
@@ -497,14 +526,14 @@ def _answer_loop(question: str, course: str, lecture: str | None, llm, t0: float
         followup = conv + ([{"role": "user", "content": FINAL_NUDGE}] if last else [])
         req = Request(prompt=user, system=system, followup=followup, tools=tools,
                       tool_choice="none" if last else ROUND0_TOOL_CHOICE if rnd == 0 else "auto", key=f"qa.{rnd}",
-                      sampling=no_think if rnd > 0 or not ROUND0_THINK else {})
+                      sampling=no_think if rnd > 0 or not think_on else {})
         if emit is None:
             res = llm.generate(req, log_file=calls_log)
         else:
             sent, began, thought = [""], [False], [0.0]
-            think = req.sampling.get("chat_template_kwargs", {}).get("enable_thinking", True) and \
+            thinks = req.sampling.get("chat_template_kwargs", {}).get("enable_thinking", True) and \
                 getattr(llm.cfg, "thinking", True)
-            emit({"event": "round", "round": rnd, "final": last, "thinking": bool(think)})
+            emit({"event": "round", "round": rnd, "final": last, "thinking": bool(thinks)})
 
             def on_text(raw: str, rnd=rnd, last=last):
                 if not began[0] and raw.strip():
@@ -585,7 +614,7 @@ def _answer_loop(question: str, course: str, lecture: str | None, llm, t0: float
            "steps": full_steps, "raw_answer": final, "answer": text, "citations": [c["fact"] or c["segment"]
                                                                                    for c in citations],
            "dropped_ids": dropped, "covered": out["covered"], "covered_line": marker, "error": error,
-           "rounds": len([m for m in conv if m["role"] == "assistant"]), "early_exit": early, "tokens": tokens,
+           "rounds": len([m for m in conv if m["role"] == "assistant"]), "early_exit": early, "think": think_on, "tokens": tokens,
            "timing": timing, "seconds": round(time.time() - t0, 2)}
     try:
         logs.mkdir(parents=True, exist_ok=True)
@@ -595,5 +624,5 @@ def _answer_loop(question: str, course: str, lecture: str | None, llm, t0: float
         pass
     if emit is not None:
         marks["total"] = round(time.time() - t0, 3)
-        _last_timing[threading.get_ident()] = {**marks, "rounds": timing}
+        _last_timing[threading.get_ident()] = {**marks, "think": think_on, "rounds": timing}
     return out

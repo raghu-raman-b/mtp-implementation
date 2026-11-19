@@ -7,11 +7,12 @@ display line ("label", plain words, no IDs) and "detail" (the same in fields: na
 fields per tool are in schemas/qa_stream.md). The tool descriptions the model sees are in
 prompts/qa_tools.json (written apart, as a prompt); TOOLS checks that they name exactly the tools here.
 
-    check_concept(name)                          a concept's card, by name, alias, acronym, plural or a close spelling
+    check_concept(names)                         a card per name (alias, acronym, plural or close spelling), one call
     fact_lookup(query, rephrasings=[], lecture)  the facts closest to the query and its other wordings
     lecture_dependencies(lecture)                what is needed before a lecture (the lecture graph)
     lecture_overview(lecture)                    a lecture's goal, objectives, segments and concepts
     course_goals()                               the course goals and the lectures that serve each
+    course_structure(lecture=None)               the lecturers' own statements about the course itself, verbatim
 """
 from __future__ import annotations
 
@@ -158,10 +159,8 @@ def card_text(kb: Knowledge, cid: str, shown: set) -> list[str]:
     return out
 
 
-def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
-    name = (name or "").strip()
-    if not name:
-        raise ToolError("Give the concept's name, e.g. {\"name\": \"head-mounted display\"}.")
+def one_card(kb: Knowledge, name: str) -> ToolResult:
+    """The card of one name (an unknown name: its closest facts), as check_concept shows each name of its list."""
     cids, how, matched = kb.lookup_name(name)
     if not cids:
         sug = kb.suggestions(name)
@@ -188,7 +187,7 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
                           + (f"; closest fact {best:.2f}" + (" (low)" if best < low else "") if hits else ""),
                           {f for f, _ in hits}, found=close, label=label,
                           detail={"name": name, "known": False, "suggestions": sug, "facts": len(hits),
-                                  "lectures": ks, "best_score": round(best, 2), "close": close})
+                                  "lectures": ks, "best_score": round(best, 2), "close": close, "lecture": None})
     shown: set = set()
     lines = []
     if how == "close":
@@ -212,7 +211,35 @@ def check_concept(kb: Knowledge, name: str = "", **_) -> ToolResult:
         else "facts found") + (f", {n_facts} facts from {in_lectures(ks)}" if n_facts else "")
     return ToolResult("\n".join(lines).strip(), summary, shown, found=True, label=label,
                       detail={"name": name, "known": True, "matched": matched, "how": how, "concepts": cards,
-                              "facts": n_facts, "lectures": ks})
+                              "facts": n_facts, "lectures": ks,
+                              "lecture": next((k for c in cards for k in c["defined_in"]), None)
+                              or next((k for c in cids[:CARDS_PER_NAME] for k in kb.concepts[c].get("lectures", [])),
+                                      None)})
+
+
+def check_concept(kb: Knowledge, names=None, name=None, **_) -> ToolResult:
+    """One card per name, in order, each as one_card gives it, separated by a blank line. Its label names each
+    concept with the lecture that defines it ("Concepts loaded: immersion (lecture 4), presence (lecture 4)"; "not in
+    the course" for an unknown name). found is False only when every name found nothing close."""
+    if isinstance(names, str):
+        names = [names]
+    names = [str(n).strip() for n in (names if isinstance(names, list) else [name] if name else [])
+             if n is not None and str(n).strip()]
+    names = list(dict.fromkeys(names))
+    if not names:
+        raise ToolError("Give the terms as a list, e.g. {\"names\": [\"head-mounted display\", \"field of view\"]}.")
+    rs = [one_card(kb, n) for n in names]
+    items = [{**r.detail, "label": r.label} for r in rs]
+    order = {k: i for i, k in enumerate(kb.lectures)}
+    ks = sorted({k for r in rs for k in r.detail.get("lectures", [])}, key=lambda k: order.get(k, 1e9))
+    part = lambda d: (f"{d['name']} (not in the course)" if not d["known"]  # noqa: E731
+                      else f"{d['concepts'][0]['name']}" + (f" (lecture {d['lecture']})" if d.get("lecture") else ""))
+    label = ("Concept loaded: " if len(rs) == 1 else "Concepts loaded: ") + ", ".join(part(d) for d in items)
+    shown = set().union(*(r.shown for r in rs))
+    found = not all(r.found is False for r in rs)
+    return ToolResult("\n\n".join(r.text for r in rs), " | ".join(r.summary for r in rs), shown, found=found,
+                      label=label, detail={"names": names, "items": items, "known": sum(d["known"] for d in items),
+                                           "facts": sum(d["facts"] for d in items), "lectures": ks})
 
 
 # ---------------------------------------------------------------- fact_lookup
@@ -394,8 +421,36 @@ def course_goals(kb: Knowledge, **_) -> ToolResult:
                       detail={"goals": len(cg)})
 
 
+# ---------------------------------------------------------------- course_structure
+def course_structure(kb: Knowledge, lecture=None, **_) -> ToolResult:
+    """The lecturers' own statements about the course itself (stage 4f), verbatim, each with its ID (CS0001: the
+    answer cites it like a fact), lecture and start time; only one lecture's when `lecture` is given."""
+    st = kb.course_structure()
+    if st is None:
+        return ToolResult("The course structure is not available.", "course structure not available", found=False,
+                          label="The course structure is not available",
+                          detail={"statements": 0, "lectures": [], "lecture": None, "available": False})
+    k = lecture_key(lecture) if lecture not in (None, "") else None
+    if k is not None:
+        st = [x for x in st if str(x.get("lecture")) == k]
+    have = {str(x["lecture"]) for x in st}
+    ks = [j for j in kb.lectures if j in have] + sorted(have - set(kb.lectures))
+    if not st:
+        return ToolResult("The lecturers say nothing about the course itself" + (f" in lecture {k}" if k else "")
+                          + ".", "no statements", found=False,
+                          label="The lecturers say nothing about the course structure" + (f" in lecture {k}" if k else ""),
+                          detail={"statements": 0, "lectures": [], "lecture": k, "available": True})
+    out = ["WHAT THE LECTURERS SAY ABOUT THE COURSE ITSELF" + (f" (lecture {k})" if k else "")
+           + ", in their words (cite the ID):"]
+    out += [f"[{x['id']}] lecture {x['lecture']}, {fmt_time(x['start'])}: {x['text']}" for x in st]
+    return ToolResult("\n".join(out), f"{len(st)} statements from {in_lectures(ks)}", {x["id"] for x in st}, found=True,
+                      label=f"Course structure read: {len(st)} statements from {in_lectures(ks)}",
+                      detail={"statements": len(st), "lectures": ks, "lecture": k, "available": True})
+
+
 FUNCS = {"check_concept": check_concept, "fact_lookup": fact_lookup, "lecture_dependencies": lecture_dependencies,
-         "lecture_overview": lecture_overview, "course_goals": course_goals}
+         "lecture_overview": lecture_overview, "course_goals": course_goals,
+         "course_structure": course_structure}
 
 
 def tool_specs(path: Path = TOOLS_FILE) -> list[dict]:

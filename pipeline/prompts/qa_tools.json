@@ -3,13 +3,13 @@
   "type": "function",
   "function": {
    "name": "check_concept",
-   "description": "Look up one term of the course by its name, an alias or an acronym (a plural or a small misspelling is found too). Returns the concept's card: its definition, the lecture and time where it is defined, its facts with IDs, and how it relates to other concepts, and the lectures that lead up to it. Use it for 'what is X', 'how does X work', 'what kinds or parts of X are there', 'where is X taught', 'what do I need before X', and once per term for 'how do X and Y differ'. If the term is unknown, it says so: then use fact_lookup.",
+   "description": "Look up terms of the course by name, alias or acronym (a plural or a small misspelling is found too). Ask for every term the question needs in ONE call, e.g. both sides of 'X vs Y'. Returns one card per term, in order: its definition, the lecture and time where it is defined, its facts with IDs, how it relates to other concepts, and the lectures that lead up to it. Use it for 'what is X', 'how does X work', 'what kinds or parts of X are there', 'where is X taught', 'what do I need before X', and 'how do X and Y differ'. A term the course does not have is reported as unknown, with the closest facts: then use fact_lookup.",
    "parameters": {
     "type": "object",
     "properties": {
-     "name": {"type": "string", "description": "The term only, as the learner wrote it, e.g. \"HMD\" or \"field of view\"; not a whole question."}
+     "names": {"type": "array", "items": {"type": "string"}, "description": "The terms, each the term only, as the learner wrote it, e.g. [\"HMD\", \"field of view\"]; not a whole question."}
     },
-    "required": ["name"]
+    "required": ["names"]
    }
   }
  },
@@ -63,6 +63,19 @@
    "name": "course_goals",
    "description": "The goals of the whole course and which lectures serve each one. Use it for 'what is this course about', 'what will I be able to do after the course', 'which lectures are about ...' at the level of the course.",
    "parameters": {"type": "object", "properties": {}}
+  }
+ },
+ {
+  "type": "function",
+  "function": {
+   "name": "course_structure",
+   "description": "What the lecturers themselves say about the course itself: its modules and weeks, what is and is not covered, how the course is organised. Returns their statements word for word, each with an ID, lecture and time. Use it for questions about the course itself (its modules, scope, what it skips, how it is organised), not about the subject taught.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "lecture": {"type": "string", "description": "Optional: only the statements made in this lecture, e.g. \"1\". Leave it out for the whole course."}
+    }
+   }
   }
  }
 ]
