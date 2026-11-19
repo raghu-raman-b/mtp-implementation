@@ -47,6 +47,14 @@ What it looks for (each line is what a broken piece would show):
            lectures of its facts; an unknown name: known false, the closest facts' lectures) or its time; no
            "answer_start" before the first draft; "t" going backwards; done without its timing; on llama.cpp the
            rounds of one question not all on one slot (id_slot) or without cache_prompt
+  concepts check_concept with a list of names not giving one card per name in order (a repeated name once, an unknown
+           name with its closest facts), or its label not naming each concept with its lecture ("not in the course"
+           for an unknown one); a string or an empty list not handled
+  structure course_structure without its file crashing instead of saying it is not available; its statements not
+           shown verbatim with ID, lecture and time; a CS ID not cited with the statement's own time, or one no tool
+           showed cited; the lecture limit not working
+  think    think=False / $QA_THINK=0 not turning thinking off in every round (the config's other switches kept), an
+           explicit argument not winning over the environment, the mode not logged and in done's timing
   round 0  the round-0 switches (qa.answer.ROUND0_THINK, ROUND0_TOOL_CHOICE) not reaching round 0, or leaking into
            round 1
   vllm     qa with configs/gemma4_12b_vllm_demo.json (fake vLLM on a free port) not sending repetition_penalty, sending
@@ -136,12 +144,12 @@ class QAFake(FakeServer):
     def script(q: str, rnd: int, last: str, tools: list, msgs: list, body: dict):
         if q == "What is an HMD?":
             if rnd == 0:
-                return [call("check_concept", {"name": "HMD"})]
+                return [call("check_concept", {"names": ["HMD"]})]
             a, b = ids_in(last)[:2]
             return f"An HMD is a display worn on the head [{a}]. It is defined early [{b}, 9/S9/F9].\nCOVERED: yes"
         if q == "What is a vergence lens?":
             if rnd == 0:
-                return [call("check_concept", {"name": "vergence lens"})]
+                return [call("check_concept", {"names": ["vergence lens"]})]
             if body.get("tool_choice") == "none":     # the closest facts came with "unknown": answer from them
                 return f"The course mentions something close [{ids_in(last)[0]}].\nCOVERED: partly"
             if "unknown" in last and "fact_lookup" in last:
@@ -149,11 +157,11 @@ class QAFake(FakeServer):
             return "I do not know.\nCOVERED: no"
         if q == "Vergence lens and HMD":
             if rnd == 0:
-                return [call("check_concept", {"name": "vergence lens"}, 0), call("check_concept", {"name": "HMD"}, 1)]
+                return [call("check_concept", {"names": ["vergence lens"]}, 0), call("check_concept", {"names": ["HMD"]}, 1)]
             return f"An HMD is worn on the head [{ids_in(tools[-1])[0]}].\nCOVERED: partly"
         if q == "Repeated labels":
             if rnd == 0:
-                return [call("check_concept", {"name": "stereoscopy"})]
+                return [call("check_concept", {"names": ["stereoscopy"]})]
             a, b, c = ids_in(last)[:3]
             return (f"Stereoscopy is taught at 26:57 [{a}]. It is a fake concept [{a}]. Its screens are 16:9 [{c}]. "
                     f"It goes on from 26:57 to 27:07 [{a}, {b}], (26:57-27:07) [{b}].\n\nIts points are:\n"
@@ -176,17 +184,17 @@ class QAFake(FakeServer):
                    "COVERED: yes"
         if q == "How do HMDs and tracking relate?":
             if rnd == 0:
-                return [call("check_concept", {"name": "HMDs"}, 0), call("check_concept", {"name": "tracking"}, 1)]
+                return [call("check_concept", {"names": ["HMDs"]}, 0), call("check_concept", {"names": ["tracking"]}, 1)]
             a, b = ids_in(tools[-2])[0], ids_in(tools[-1])[0]
             return f"An HMD shows the virtual world [{a}] and tracking follows the head [{b}].\nCOVERED: yes"
         if q == "What is strereoscopy?":
             if rnd == 0:
-                return [call("check_concept", {"name": "strereoscopy"})]
+                return [call("check_concept", {"names": ["strereoscopy"]})]
             return f"Stereoscopy is explained in lecture 2 ({ids_in(last)[0]}).\nCOVERED: yes"
         if q == "Keep calling tools":
             if body.get("tool_choice") == "none":
                 return "Here is what I found [7/S9/F9].\nCOVERED: yes"
-            return [call("check_concept", {"name": "VR"} if rnd % 2 == 0 else {"name": "rendering"})]
+            return [call("check_concept", {"names": ["VR"]} if rnd % 2 == 0 else {"names": ["rendering"]})]
         if q == "Call a broken tool":
             if rnd == 0:
                 return [call("no_such_tool", {}, 0), call("check_concept", "{not json", 1),
@@ -194,18 +202,29 @@ class QAFake(FakeServer):
             return "Sorry, nothing found.\nCOVERED: no"
         if q == "No covered line, with a citation":
             if rnd == 0:
-                return [call("check_concept", {"name": "rendering"})]
+                return [call("check_concept", {"names": ["rendering"]})]
             return f"Rendering is taught in lecture 4 [{ids_in(last)[0]}]."
         if q == "No covered line, nothing cited":
             return "I cannot tell."
         if q == "Yes without citations":
             if rnd == 0:
-                return [call("check_concept", {"name": "rendering"})]
+                return [call("check_concept", {"names": ["rendering"]})]
             return "Rendering is a big topic.\nCOVERED: yes"
         if q == "Talk first, then search":
             if rnd == 0:
-                return "Let me look this up in the course first.", [call("check_concept", {"name": "rendering"})]
+                return "Let me look this up in the course first.", [call("check_concept", {"names": ["rendering"]})]
             return f"Rendering is taught in lecture 4 [{ids_in(last)[0]}].\nCOVERED: yes"
+        if q == "HMD, tracking and a vergence lens together":
+            if rnd == 0:
+                return [call("check_concept", {"names": ["HMDs", "tracking", "vergence lens", "HMDs"]})]
+            return f"An HMD shows the virtual world [{ids_in(last)[0]}].\nCOVERED: partly"
+        if q.startswith("How is the course organised?"):
+            if rnd == 0:
+                return [call("course_structure", {"lecture": "2"} if "lecture 2" in q else {})]
+            ids = re.findall(r"\[(CS\d+)\]", last)
+            if not ids:
+                return "The lecturers do not say how it is organised.\nCOVERED: no"
+            return "It has two modules at 1:05 [%s]. And an exam [%s].\nCOVERED: yes" % (ids[0], ids[-1])
         if q == "What is this course about?":
             if rnd == 0:
                 return [call("course_goals", {})]
@@ -242,8 +261,8 @@ def test_client(cfg: LLMConfig, server: QAFake, work: Path):
     sent = server.bodies[-1]
     check([t["function"]["name"] for t in sent.get("tools", [])] == ["check_concept", "fact_lookup",
                                                                     "lecture_dependencies", "lecture_overview",
-                                                                    "course_goals"]
-          and sent.get("tool_choice") == "auto", "the five tools and tool_choice sent to the server")
+                                                                    "course_goals", "course_structure"]
+          and sent.get("tool_choice") == "auto", "the six tools and tool_choice sent to the server")
 
 
 def facts_of(layer: Path) -> tuple[dict, dict]:
@@ -279,7 +298,7 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
     r = ask("What is an HMD?")
     b0, b1 = server.bodies[n0], server.bodies[n0 + 1]
     check(set(r) == {"answer", "citations", "steps", "covered"}, "the result has exactly the four keys")
-    check(tools_of(r) == ["check_concept"] and r["steps"][0]["args"] == {"name": "HMD"}
+    check(tools_of(r) == ["check_concept"] and r["steps"][0]["args"] == {"names": ["HMD"]}
           and "head-mounted display" in r["steps"][0]["result_summary"],
           f"check_concept('HMD') run and finds head-mounted display ({r['steps'][0]['result_summary']})")
     check("THE LECTURES OF THE COURSE" in b0["messages"][0]["content"] and "4: Definitions" in
@@ -392,14 +411,15 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
     try:
         r = ask("How do HMDs and tracking relate?")
         tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"]
-        cc = _rt(_kb, "check_concept", {"name": "tracking"})
+        cc = _rt(_kb, "check_concept", {"names": ["tracking"]})
         dp = _rt(_kb, "lecture_dependencies", {"lecture": "6"})
         transcript = json.dumps(server.bodies[n0:]) + cc.text + dp.text + json.dumps([(s["result_summary"], s.get("label")) for s in r["steps"]])
         facts_of_c = [f for f in saved[tid].get("facts", []) if f in _kb.facts]
         check(SECRET not in transcript and "Definition: none" in cc.text and "built from" not in cc.text
               and "Defined in:" not in cc.text and all(f in cc.text for f in facts_of_c[:3]) and facts_of_c
-              and cc.detail["concepts"][0]["defined"] is False
-              and "definition found" not in cc.label and "facts found" in cc.label,
+              and cc.detail["items"][0]["concepts"][0]["defined"] is False
+              and "definition found" not in cc.detail["items"][0]["label"]
+              and "facts found" in cc.detail["items"][0]["label"],
               f"connecting concept: no definition text anywhere, facts shown, defined false ({cc.label!r})")
         check(SECRET not in dp.text and "- stereoscopy (2 uses; first met in lecture 2)" in dp.text
               and "2/S2/F3" in dp.text, "lecture_dependencies: a connecting concept shows facts, no definition")
@@ -407,12 +427,12 @@ def test_answers(cfg: LLMConfig, server: QAFake, layer: Path):
         for c, v in saved.items():
             _kb.concepts[c].clear()
             _kb.concepts[c].update(v)
-    dd = _rt(_kb, "check_concept", {"name": "stereoscopy"})
-    check("Definition: Stereoscopy" in dd.text and dd.detail["concepts"][0]["defined"] is True
-          and "definition found" in dd.label and "first defined in lecture 2" in
+    dd = _rt(_kb, "check_concept", {"names": ["stereoscopy"]})
+    check("Definition: Stereoscopy" in dd.text and dd.detail["items"][0]["concepts"][0]["defined"] is True
+          and "definition found" in dd.detail["items"][0]["label"] and "first defined in lecture 2" in
           _rt(_kb, "lecture_dependencies", {"lecture": "6"}).text, f"a defined concept keeps its definition ({dd.label!r})")
     check(tools_of(r) == ["check_concept", "check_concept"]
-          and [s["args"]["name"] for s in r["steps"]] == ["HMDs", "tracking"]
+          and [s["args"]["names"][0] for s in r["steps"]] == ["HMDs", "tracking"]
           and [m["tool_call_id"] for m in tm] == ["call_check_concept_0", "call_check_concept_1"],
           "both run in order, each result under its own call ID ('HMDs' found by its plural)")
     check(len(r["citations"]) == 2 and real_citations(r, facts, lectures), "a citation from each card")
@@ -484,7 +504,7 @@ def test_stream(cfg: LLMConfig, server: QAFake):
     blocking = ask("What is an HMD?")
     s0 = next(e for e in evs if e["event"] == "step")
     check(kinds(evs) == ["step", "draft", "done"] and s0["tool"] == "check_concept"
-          and s0["args"] == {"name": "HMD"} and "head-mounted display" in s0["result_summary"],
+          and s0["args"] == {"names": ["HMD"]} and "head-mounted display" in s0["result_summary"],
           f"events: the step, then drafts, then done ({kinds(evs)})")
     check(evs[-1]["result"] == blocking, "done's result equals answer()'s for the same question")
     check_drafts(evs, blocking, "one tool call")
@@ -499,10 +519,13 @@ def test_stream(cfg: LLMConfig, server: QAFake):
           and isinstance(step["seconds"], float) and step["found"] is True,
           "a call event before its step; the step with round, index, seconds and found")
     d = step.get("detail") or {}
-    check(d.get("known") is True and d.get("concepts") and d["concepts"][0]["name"] == "head-mounted display"
-          and isinstance(d["concepts"][0]["defined"], bool) and d.get("facts", 0) > 0 and d.get("lectures")
-          and all(isinstance(k, str) for k in d["lectures"])
-          and step.get("label", "").startswith('Looked up "head-mounted display"') and "/F" not in step["label"],
+    it = (d.get("items") or [{}])[0]
+    check(d.get("names") == ["HMD"] and d.get("known") == 1 and it.get("known") is True and it.get("concepts")
+          and it["concepts"][0]["name"] == "head-mounted display"
+          and isinstance(it["concepts"][0]["defined"], bool) and d.get("facts", 0) > 0 and d.get("lectures")
+          and all(isinstance(k, str) for k in d["lectures"]) and isinstance(it.get("lecture"), str)
+          and step.get("label") == f"Concept loaded: head-mounted display (lecture {it['lecture']})"
+          and "/F" not in step["label"],
           f"check_concept's step: label and detail (concept, definition found, facts and their lectures) "
           f"({step.get('label')!r}, {d})")
     check(names.index("answer_start") < names.index("draft") and names.index("answer_start") > names.index("step")
@@ -531,7 +554,7 @@ def test_stream(cfg: LLMConfig, server: QAFake):
     evs = stream_events("How do HMDs and tracking relate?", llm)
     blocking = ask("How do HMDs and tracking relate?")
     steps = [e for e in evs if e["event"] == "step"]
-    check(kinds(evs) == ["step", "draft", "done"] and [s["args"]["name"] for s in steps] == ["HMDs", "tracking"]
+    check(kinds(evs) == ["step", "draft", "done"] and [s["args"]["names"][0] for s in steps] == ["HMDs", "tracking"]
           and evs[-1]["result"] == blocking,
           "two calls in one message: two step events in order (tool-call deltas assembled by index); done == answer()")
     order = [(e["event"], e.get("tool")) for e in evs if e["event"] in ("call", "step")]
@@ -563,6 +586,118 @@ def test_stream(cfg: LLMConfig, server: QAFake):
               f"{b0.get('tool_choice')}, {b1.get('tool_choice')})")
     finally:
         qa_answer.ROUND0_THINK, qa_answer.ROUND0_TOOL_CHOICE = keep
+
+
+CS_FILE = {"run": {"fake": True}, "statements": [
+    {"id": "CS0001", "lecture": "2", "segment": "2/S0", "sentence_ids": [1, 2], "start": 65.0, "end": 71.5,
+     "text": "In this course there are two modules, the first in weeks one to four."},
+    {"id": "CS0002", "lecture": "4", "segment": "4/S1", "sentence_ids": [9], "start": 130.2, "end": 140.0,
+     "text": "We will not cover game engines in this course."}]}
+
+
+def test_new(cfg: LLMConfig, server: QAFake, out: Path):
+    """Several names in one check_concept call, course_structure, and thinking off."""
+    import qa
+    qa_answer = importlib.import_module("qa.answer")
+    llm = LLM(cfg, log=lambda *a: None)
+    ctk = lambda b: b.get("chat_template_kwargs") or {}  # noqa: E731
+    log = lambda: json.loads((out / COURSE / "qa" / "answers.jsonl").read_text().splitlines()[-1])  # noqa: E731
+
+    print("check_concept with several names in one call", flush=True)
+    n0 = len(server.bodies)
+    evs = stream_events("HMD, tracking and a vergence lens together", llm)
+    r = evs[-1]["result"]
+    tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"]
+    steps = [e for e in evs if e["event"] == "step"]
+    d = steps[0]["detail"] if steps else {}
+    it = d.get("items", [])
+    check(len(steps) == 1 and len(tm) == 1 and d.get("names") == ["HMDs", "tracking", "vergence lens"]
+          and [i["known"] for i in it] == [True, True, False] and d.get("known") == 2
+          and tm[0]["content"].index("CONCEPT head-mounted display") < tm[0]["content"].index("CONCEPT tracking")
+          < tm[0]["content"].index('"vergence lens" is not the name of a concept')
+          and "facts closest to" in tm[0]["content"] and steps[0]["found"] is True,
+          f"one call, one step, one card per name in order (a repeated name once; the unknown name with its closest "
+          f"facts): {steps[0].get('label') if steps else None!r}")
+    l0, l1 = it[0]["lecture"], it[1]["lecture"]
+    check(steps[0]["label"] == f"Concepts loaded: head-mounted display (lecture {l0}), tracking (lecture {l1}), "
+                               "vergence lens (not in the course)" and isinstance(l0, str) and isinstance(l1, str),
+          f"the step label names each concept with its lecture, 'not in the course' for the unknown ({steps[0]['label']!r})")
+    check(r["steps"][0]["args"]["names"] == ["HMDs", "tracking", "vergence lens", "HMDs"] and r["citations"],
+          "the steps keep the call's arguments as sent")
+    kb = qa.Knowledge.load(COURSE)
+    one = qa.run_tool(kb, "check_concept", {"names": "tracking"})
+    check(one.label.startswith("Concept loaded: tracking") and one.text == qa.run_tool(
+        kb, "check_concept", {"names": ["tracking"]}).text and "CONCEPT tracking" in one.text,
+          "a single name (or a bare string) gives the one card, as before")
+    bad = qa.run_tool(kb, "check_concept", {"names": []})
+    check(bad.summary.startswith("error") and "names" in bad.text, "an empty list is an error the model can correct")
+
+    print("course_structure", flush=True)
+    n0 = len(server.bodies)
+    r = qa.answer("How is the course organised?", course=COURSE, llm=llm)
+    sent = server.bodies[n0:]
+    check(r["steps"][0]["tool"] == "course_structure" and "not available" in r["steps"][0]["result_summary"]
+          and r["covered"] is False and len(sent) == 2 and sent[1].get("tool_choice") == "none",
+          f"no course_structure.json: the tool says it is not available, no crash, early answer "
+          f"({r['steps'][0]['result_summary']})")
+    sdir = out / COURSE / "stage_4f_course_structure"
+    sdir.mkdir(parents=True)
+    (sdir / "course_structure.json").write_text(json.dumps(CS_FILE), encoding="utf-8")
+    n0 = len(server.bodies)
+    evs = stream_events("How is the course organised?", llm)
+    r = evs[-1]["result"]
+    tm = [m for m in server.bodies[n0 + 1]["messages"] if m["role"] == "tool"][0]["content"]
+    st = next(e for e in evs if e["event"] == "step")
+    check("[CS0001] lecture 2, 1:05: In this course there are two modules, the first in weeks one to four." in tm
+          and "[CS0002] lecture 4, 2:10: We will not cover game engines in this course." in tm
+          and st["label"] == "Course structure read: 2 statements from lectures 2 and 4" and st["found"] is True
+          and st["detail"] == {"statements": 2, "lectures": ["2", "4"], "lecture": None, "available": True},
+          f"the statements verbatim with ID, lecture and time; the step's label and detail ({st['label']!r})")
+    c = r["citations"]
+    check([(x["fact"], x["lecture"], x["segment"], x["start"], x["end"]) for x in c]
+          == [(None, "2", "2/S0", 65.0, 71.5), (None, "4", "4/S1", 130.2, 140.0)]
+          and c[1]["text"] == CS_FILE["statements"][1]["text"] and not re.search(r"CS\d", r["answer"])
+          and "(lecture 2, 1:05)" in r["answer"] and "(lecture 4, 2:10)" in r["answer"] and r["covered"] is True,
+          f"a CS ID is cited like a fact, with the statement's own time: {r['answer']!r}")
+    r = qa.answer("How is the course organised? (lecture 2)", course=COURSE, llm=llm)
+    check(r["steps"][0]["args"] == {"lecture": "2"} and r["steps"][0]["result_summary"] == "1 statements from lecture 2"
+          and [x["lecture"] for x in r["citations"]] == ["2"], "the optional lecture limits the statements")
+    from qa.answer import cite
+    text, cits, dropped = cite(kb, "One [CS0001]. Two [CS0009]. Three [CS0002].", {"CS0001"})
+    check(dropped == ["CS0009", "CS0002"] and [x["segment"] for x in cits] == ["2/S0"]
+          and text == "One (lecture 2, 1:05). Two. Three.", f"only a CS ID some tool showed is cited ({text!r})")
+
+    print("thinking off (think=False, $QA_THINK)", flush=True)
+    n0 = len(server.bodies)
+    qa.answer("What is an HMD?", course=COURSE, llm=llm, think=False)
+    b = server.bodies[n0:]
+    check(len(b) == 2 and all(ctk(x).get("enable_thinking") is False for x in b) and ctk(b[0]).get("extra_switch") == 1
+          and log()["think"] is False, f"think=False: no round thinks, the other switch kept, logged ({[ctk(x) for x in b]})")
+    os.environ["QA_THINK"] = "0"
+    try:
+        n0 = len(server.bodies)
+        qa.answer("What is an HMD?", course=COURSE, llm=llm)
+        b = server.bodies[n0:]
+        check(ctk(b[0]).get("enable_thinking") is False and log()["think"] is False, "$QA_THINK=0 turns round 0's thinking off")
+        n0 = len(server.bodies)
+        qa.answer("What is an HMD?", course=COURSE, llm=llm, think=True)
+        check(ctk(server.bodies[n0]).get("enable_thinking") is True and log()["think"] is True,
+              "an explicit think=True wins over $QA_THINK=0")
+        evs = stream_events("What is an HMD?", llm)
+        check(evs[0]["thinking"] is False and evs[-1]["timing"]["think"] is False,
+              "$QA_THINK=0 on the stream: the round event says thinking false, the timing records the mode")
+    finally:
+        del os.environ["QA_THINK"]
+    n0 = len(server.bodies)
+    evs = stream_events("What is an HMD?", llm, think=False)
+    b = server.bodies[n0:]
+    check(ctk(b[0]).get("enable_thinking") is False and evs[-1]["timing"]["think"] is False
+          and ctk(b[0]).get("extra_switch") == 1,
+          "answer_stream(think=False): round 0 sent without thinking; done's timing says think false")
+    n0 = len(server.bodies)
+    evs = stream_events("What is an HMD?", llm)
+    check(ctk(server.bodies[n0]).get("enable_thinking") is True and evs[-1]["timing"]["think"] is True
+          and qa_answer.want_think() is True, "default: thinking on in round 0, timing says think true")
 
 
 def test_vllm(work: Path, env: dict, ref: dict):
@@ -654,6 +789,7 @@ def main():
         test_answers(cfg, server, layer)
         test_cli(cfg_path, {**os.environ, "QA_OUTPUT": str(out)})
         test_stream(cfg, server)
+        test_new(cfg, server, out)
         import qa
         ref = qa.answer("What is an HMD?", course=COURSE, llm=LLM(cfg, log=lambda *a: None))
     finally:
@@ -661,7 +797,7 @@ def main():
     test_vllm(work, {**os.environ, "QA_OUTPUT": str(out)}, ref)
     print("log", flush=True)
     log = [json.loads(x) for x in (out / COURSE / "qa" / "answers.jsonl").read_text().splitlines()]
-    check(len(log) == 26 and all(r["steps"] is not None and "raw_answer" in r for r in log)
+    check(len(log) == 36 and all(r["steps"] is not None and "raw_answer" in r for r in log)
           and log[0]["dropped_ids"] == ["9/S9/F9"] and "result" in log[0]["steps"][0],
           f"every question logged with its full tool results and dropped IDs ({len(log)} lines)")
     print("output", flush=True)

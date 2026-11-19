@@ -136,6 +136,18 @@ class Knowledge:
         """A concept used across much of the course (the lecture graph's weight < 1, see s4c_lecture_graph)."""
         return ((self.graph.get("concepts") or {}).get(cid) or {}).get("weight", 1.0) < 1.0
 
+    def course_structure(self) -> list[dict] | None:
+        """The lecturers' own statements about the course (stage 4f: <output>/<course>/stage_4f_course_structure/
+        course_structure.json, {"run", "statements": [{"id", "lecture", "segment", "sentence_ids", "start", "end",
+        "text"}]}), or None when the file is missing or unreadable. Read at each call (it is small, and a stage
+        may write it while the viewer runs)."""
+        p = output_root() / self.course / "stage_4f_course_structure" / "course_structure.json"
+        try:
+            st = json.loads(p.read_text(encoding="utf-8")).get("statements")
+        except (OSError, ValueError, AttributeError):
+            return None
+        return [x for x in st if isinstance(x, dict) and x.get("id") and x.get("text")] if isinstance(st, list) else None
+
     # ------------------------------------------------------------ names
     def lookup_name(self, name: str) -> tuple[list[str], str | None, str | None]:
         """The concepts a name stands for, how it matched ("exact", "plural", "close") and the indexed name it

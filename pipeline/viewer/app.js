@@ -2420,7 +2420,27 @@ const TOOL_TITLE = {  // [while it runs, when it is done, when it found nothing 
   lecture_dependencies: ["Checking what the lecture builds on", "Prerequisites checked", "Prerequisites checked"],
   lecture_overview: ["Reading the lecture's overview", "Lecture overview read", "Lecture overview read"],
   course_goals: ["Reading the course goals", "Course goals read", "Course goals read"],
+  course_structure: ["Reading the course structure", "Course structure read", "Course structure read"],
 };
+// check_concept names each concept: while it runs from the call's list, when done from the step's label
+// ("Concepts loaded: immersion (lecture 4), presence (lecture 4)"), the facts and lectures as the sub line
+function conceptNames(args) {
+  const n = args && typeof args === "object" ? (Array.isArray(args.names) ? args.names : args.names ? [args.names] : args.name ? [args.name] : []) : [];
+  return n.map(String).filter(Boolean);
+}
+function stepRunning(ev, T) {
+  if (ev.tool === "check_concept") { const n = conceptNames(ev.args); return { title: n.length ? `${n.length > 1 ? "Loading concepts" : "Loading concept"}: ${n.join(", ")}` : T[0], sub: "" }; }
+  return { title: T[0], sub: argText(ev.args).replace(/^\w+: /, "") };
+}
+function stepDone(ev, T) {
+  const miss = ev.found === false;
+  if (ev.tool === "check_concept" && ev.label) {
+    const d = ev.detail || {}, ks = (d.lectures || []).map(String);
+    return { title: ev.label,  // an unknown name reads "name (not in the course)" in it
+      sub: d.facts ? `${plural(d.facts, "fact")} read${ks.length ? ` from lecture${ks.length > 1 ? "s" : ""} ${ks.join(", ")}` : ""}` : "" };
+  }
+  return { title: miss ? T[2] : T[1], sub: ev.label || ev.result_summary || "" };
+}
 function samplesData() {
   if (!S.samples) S.samples = getJSON("/api/samples").then((x) => ((x && x.questions) || []).filter((q) => q && q.q).length ? x.questions.filter((q) => q && q.q) : SAMPLE_FALLBACK, () => SAMPLE_FALLBACK);
   return S.samples;
@@ -2546,7 +2566,7 @@ function askTurn(q, lec) {
     let c = calls.get(ev.index);
     if (!c) {
       const T = TOOL_TITLE[ev.tool] || ["Looking through the course", "Looked through the course", "Nothing close found"];
-      c = { T, item: stepItem({ title: T[0], sub: argText(ev.args).replace(/^\w+: /, ""), state: "active" }), done: false };
+      c = { T, item: stepItem({ ...stepRunning(ev, T), state: "active" }), done: false };
       calls.set(ev.index, c);
       stepsEl.insertBefore(c.item.el, writing.el);
     }
@@ -2561,7 +2581,7 @@ function askTurn(q, lec) {
         doneReading();
         const c = stepFor(ev);
         c.done = true;
-        c.item.set({ state: ev.found === false ? "miss" : "done", title: ev.found === false ? c.T[2] : c.T[1], sub: ev.label || ev.result_summary || "", trace: traceOf(ev) });
+        c.item.set({ state: ev.found === false ? "miss" : "done", ...stepDone(ev, c.T), trace: traceOf(ev) });
         break;
       }
       case "answer_start": doneReading(calls.size ? "" : "Answered from what it already knows of the course"); wState = "active"; writing.set({ state: "active", sub: "Streaming" }); break;
