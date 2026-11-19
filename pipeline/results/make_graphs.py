@@ -466,6 +466,18 @@ def qa_calibration():
 
 
 # ============================================================ failures inventory
+FAIL_LABEL = {
+    "act.match.truncated": "Match pairs: truncated definitions", "seg.4c.assumed": "Lecture graph: assumed prerequisites",
+    "act.recap.text_failed": "Recap: summary text failed judge", "act.map.too_big": "Concept map: too many nodes",
+    "act.put_in_order.judge_failed": "Put in order: failed judge", "con.connecting": "Connecting concepts: no definition",
+    "qa.markdown_raw": "QA: raw markdown shown", "fact.2a.sentences_uncited": "Facts: uncited sentences",
+    "act.odd_one_out.judge_failed": "Odd one out: failed judge", "act.recap.points_failed": "Recap: points failed judge",
+    "fact.shared_start": "Facts: shared start time", "act.judge_unresolved": "Activities: judge failure unresolved",
+    "con.4a.defined_mismatch": "Definitions: defined without source segment",
+    "act.retried": "Activities: regenerated after code check",
+}
+
+
 def failures_inventory():
     d = jload(A / "failures/inventory.json")
     rows = d["rows"]
@@ -487,10 +499,10 @@ def failures_inventory():
     axs[0].set_title("Failure kinds by stage", fontsize=8.5)
     axs[0].legend(loc="lower right", fontsize=6.5)
     rr = [(r["id"], r["count"] / r["denominator"] * 100, r["handling"]) for r in rows
-          if r["count"] > 0 and r["denominator"] > 0 and r["id"] != "fact.2b.not_judged"]
+          if r["count"] > 0 and r["denominator"] > 0 and r["id"] not in ("fact.2b.not_judged", "seg.cs_run1_vs_now")]
     rr.sort(key=lambda t: -t[1])
     rr = rr[:14][::-1]
-    axs[1].barh([t[0] for t in rr], [t[1] for t in rr], color=[hcol[hand.index(t[2])] for t in rr], height=0.65)
+    axs[1].barh([FAIL_LABEL[t[0]] for t in rr], [t[1] for t in rr], color=[hcol[hand.index(t[2])] for t in rr], height=0.65)
     axs[1].set_xlabel("Share of affected units (%)")
     axs[1].set_title("Most frequent failure kinds", fontsize=8.5)
     for ax, s in zip(axs, "ab"):
@@ -621,7 +633,7 @@ def bqa_judge_agreement():
     w = 0.36
     axs[0].bar(x - w / 2, [j["per_system"][k]["correct_opus"] for k in keys], w, color=C["blue"], label="Judge A (Opus)")
     axs[0].bar(x + w / 2, [j["per_system"][k]["correct_sonnet"] for k in keys], w, color=C["orange"], label="Judge B (Sonnet)")
-    axs[0].set_xticks(x, ["Proposed\n(knowledge\nlayer)", "Plain\nLLM", "RAG", "Ablation:\nfact retrieval\nonly", "Ablation:\ngraph tools\nonly"], fontsize=6.5)
+    axs[0].set_xticks(x, ["Proposed\n(earlier)", "Plain\nLLM", "RAG", "Ablation:\nfact retrieval\nonly", "Ablation:\ngraph tools\nonly"], fontsize=6.5)
     axs[0].set_ylim(0, 1.15)
     axs[0].set_ylabel("Mean correctness")
     axs[0].set_title("Judge comparison", fontsize=8.5)
