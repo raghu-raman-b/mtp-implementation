@@ -18,9 +18,10 @@ One call per segment (parallel up to the config's slots). The model answers {"se
 The text of a statement is copied verbatim from the transcript by code: consecutive chosen sentences of a segment
 (neighbours in the segment) merge into one statement. Code check (a failing answer is retried with the problems shown
 to the model, up to the config's retries): every ID is a sentence of this segment; no duplicates.
+A segment whose answer is cut off at max_tokens (8192) is asked again with thinking off (run.thinking_off_segments).
 A segment whose attempts all fail the check gets no statement and is listed under run.failed.
 Sentence times come from stage 0a; a boundary that is null there (inside a cue) falls back to the segment's own start
-(first sentence) or end (last sentence).
+(first sentence) or end (last sentence); the statement then has "time_from": "segment" (else "sentences").
 """
 from __future__ import annotations
 
@@ -41,7 +42,8 @@ from scripts.llm import LLM, LLMConfig, Request  # noqa: E402
 
 PROMPT = ROOT / "prompts" / "course_structure.txt"
 THINK_BUDGET = 1024
-MAX_TOKENS = 4096
+MAX_TOKENS = 8192
+NO_THINK = {"chat_template_kwargs": {"enable_thinking": False}}   # per-request override, for a segment still cut off
 LINE = re.compile(r"\[(?P<id>[^\]]+)\] (?P<text>.*)")
 SCHEMA = {"type": "object", "properties": {"sentence_ids": {"type": "array", "items": {"type": "string"}}},
           "required": ["sentence_ids"], "additionalProperties": False}
@@ -67,9 +69,12 @@ def check_ids(answer, valid: list[str]) -> list[str]:
     return probs
 
 
-def make_request(template: str, lecture: str, sid: str, sents: list[tuple[str, str]], sampling: dict) -> Request:
+def make_request(template: str, lecture: str, sid: str, sents: list[tuple[str, str]], sampling: dict,
+                 think: bool = True) -> Request:
     prompt = template.format(segment="\n".join(f"[{i}] {t}" for i, t in sents))
     valid = [i for i, _ in sents]
+    if not think:
+        sampling = {**sampling, **NO_THINK}
     return Request(prompt=prompt, key=sid, schema=SCHEMA, feedback=True, sampling=sampling, max_tokens=MAX_TOKENS,
                    think_budget=THINK_BUDGET, meta={"lecture": lecture, "segment": sid},
                    check=lambda a: check_ids(a, valid))
@@ -109,10 +114,17 @@ def run(course: str, llm: LLM, lectures: list | None = None, seed: int | None = 
     print(f"4f: course structure over {len(items)} segments in {len(keys)} lectures with {llm.model}", flush=True)
     reqs = [make_request(template, k, sid, sents, sampling) for k, sid, seg, sents in items]
     results = llm.generate_many(reqs, cache_file=cache, log_file=log)
-    statements, failed, calls, retries = [], [], 0, 0
-    for (k, sid, seg, sents), res in zip(items, results):
+    statements, failed, calls, retries, no_think = [], [], 0, 0, []
+    for n, ((k, sid, seg, sents), res) in enumerate(zip(items, results)):
         calls += res.attempts
         retries += res.attempts - 1
+        if not res.ok and any("max_tokens" in e for e in res.errors):   # cut off: this segment again, thinking off
+            print(f"4f: {sid} cut off, asking again with thinking off", flush=True)
+            res = llm.generate(make_request(template, k, sid, sents, sampling, think=False), cache_file=cache,
+                               log_file=log)
+            calls += res.attempts
+            retries += res.attempts - 1
+            no_think.append(sid)
         if not res.ok:
             failed.append({"segment": sid, "problems": list(res.errors) or ["no answer"]})
             continue
@@ -122,13 +134,14 @@ def run(course: str, llm: LLM, lectures: list | None = None, seed: int | None = 
             statements.append({"id": "", "lecture": k, "segment": sid, "sentence_ids": g,
                                "start": seg["start"] if start is None else start,
                                "end": seg["end"] if end is None else end,
+                               "time_from": "sentences" if start is not None and end is not None else "segment",
                                "text": " ".join(texts[sid][i] for i in g)})
     for n, s in enumerate(statements, 1):
         s["id"] = f"CS{n:04d}"
     run_info = {"stage": "4f_course_structure", "model": llm.model,
                 "prompt_sha256": hashlib.sha256(template.encode()).hexdigest()[:16], "think_budget": THINK_BUDGET,
                 "date": time.strftime("%Y-%m-%d"), "lectures": keys, "segments": len(items), "calls": calls,
-                "retries": retries, "statements": len(statements), "failed": failed,
+                "retries": retries, "thinking_off_segments": no_think, "statements": len(statements), "failed": failed,
                 "seconds": round(time.time() - t0, 1), "finished": time.strftime("%Y-%m-%d %H:%M:%S")}
     (od / "course_structure.json").write_text(json.dumps({"run": run_info, "statements": statements}, indent=1,
                                                          ensure_ascii=False) + "\n", encoding="utf-8")
