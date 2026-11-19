@@ -19,7 +19,8 @@ which.</p></div>
 <tr><td><a href="#ev-qa">MVP test questions</a></td><td>QA on the MVP layer</td><td class="n">36 (+20 rerun)</td><td>done</td></tr>
 <tr><td><a href="#ev-qa">Block 6 question set</a></td><td>QA correctness, scored</td><td class="n">85</td><td>first draft, unchecked, on a branch</td></tr>
 <tr><td><a href="#ev-fails">Failure inventory</a></td><td>every failure kind in the course as built, found by code</td><td class="n">68 kinds</td><td>done (<code>analysis/failures/</code>)</td></tr>
-<tr><td><a href="#ev-baselines">Baseline tests</a></td><td>plain LLM, RAG, graph-only</td><td class="n">—</td><td>running (placeholder)</td></tr>
+<tr><td><a href="#ev-baselines">Baseline tests</a></td><td>question answering against plain LLM, RAG (± thinking), GraphRAG (± text) and two ablations</td><td class="n">65 questions × 8 systems, 760 judged answers</td><td>done</td></tr>
+<tr><td><a href="#ev-act-study">Activities study</a></td><td>activities with and without the layer, same model</td><td class="n">6 lectures × 4 systems</td><td>running</td></tr>
 </table></div>
 
 <h3 id="ev-seg" data-toc="Segmentation">Segmentation</h3>
@@ -102,7 +103,184 @@ the pipeline's own signal); <b>hidden from learners</b> (the item is kept and sh
 merges, 2,795 pairs kept apart, 46 triples joined, 29 self-loops dropped; 827 concept pairs carry several
 labels (3c log).</p>
 
-<h3 id="ev-baselines" data-toc="Baseline tests (placeholder)">Baseline tests</h3>
-<div class="callout warn"><span class="tag">Placeholder · filled by a later pass</span>
-<p>The question set of the baseline tests (<code>baseline-tests/</code>: plain LLM, RAG over transcripts, graph-only) and
-their results go here, per question and per system. See also <a href="#baselines">Measured comparison</a> in Part I.</p></div>
+<h3 id="ev-baselines" data-toc="Baseline tests">Baseline tests: question answering against plain LLM, RAG and GraphRAG</h3>
+<p>The full method behind <a href="#baselines">What the method buys</a> in Part I. Eight systems answered the same 65
+questions on this course with the same model; one judge graded every answer; code checked every citation. Everything
+here comes from <code>baseline-tests/</code> (commit <code>0d7f665</code>): <code>README.md</code> (method),
+<code>questions.jsonl</code>, <code>judgments.jsonl</code>, <code>summary.json</code> and <code>tables.md</code>
+(results), <code>run_stats.md</code>, <code>judge_agreement.md</code>; raw answers in <code>runs/</code>. The tables
+on this page are computed from copies of those files (<code>pipeline/docs/src/baselines/</code>).</p>
+
+<h4>Model and sampling, the same for every system</h4>
+<ul>
+<li>Gemma 4 12B QAT (unsloth <code>gemma-4-12B-it-qat-UD-Q4_K_XL.gguf</code>) on one llama-server (llama.cpp), config
+<code>pipeline/configs/gemma4_12b_llamacpp.json</code>: context 131,072, 6 slots, KV cache q8_0, reasoning budget 8,192
+tokens. Run on a local RTX 5070 (12 GB), one question at a time per system.</li>
+<li>Sampling: temperature 1.0, top_p 0.95, top_k 64 (question answering's own config), for every call of every system.</li>
+<li>Thinking: ours and the two ablations think in their first round only (as question answering ships); RAG with
+thinking thinks in its one call (same 8,192-token budget, max_tokens 12,288); the plain LLM, RAG and both GraphRAG
+variants do not think (max_tokens 2,048).</li>
+</ul>
+
+<h4>The eight systems</h4>
+<div class="tablewrap"><table>
+<tr><th style="width:17%">System</th><th>How it was built and run</th></tr>
+<tr><td><b>Ours</b></td><td><code>qa.answer_stream(question, course="nptel_vr")</code>, the viewer's route, unchanged. A tool loop over the
+knowledge layer: up to 5 tool rounds, then a forced answer. Tools <code>check_concept</code>, <code>fact_lookup</code>,
+<code>lecture_dependencies</code>, <code>lecture_overview</code>, <code>course_goals</code>
+(<code>prompts/qa_tools.json</code>); system prompt <code>prompts/qa_system.txt</code> with the lecture list; citations
+are question answering's own fact citations. Context tokens are the input tokens summed over all its calls.</td></tr>
+<tr><td><b>Plain LLM</b></td><td>One call, no course data. System prompt: a teaching assistant for the course, answer in 2–5
+sentences or a short list; user message: course title and question.</td></tr>
+<tr><td><b>RAG</b></td><td>Chunks of the human-written subtitles (stage 0a): whole sentences of one lecture, about 400 tokens
+each with 60 tokens of overlap, 738 chunks, each labelled with lecture, title and start time. Embeddings:
+Qwen3-Embedding-0.6B (the pipeline's embedder) on CPU, the query with a retrieval instruction; cosine similarity, top 8
+chunks. Prompt: our answer rules adapted (use only the excerpts, cite “(lecture N, m:ss)” after each claim, say when
+something is not covered, answer the covered part, 2–5 sentences, a final COVERED line) and the course's lecture
+list. One call.</td></tr>
+<tr><td><b>RAG + thinking</b></td><td>RAG with thinking on; same retrieval and prompt.</td></tr>
+<tr><td><b>GraphRAG, no text</b></td><td>A light GraphRAG index after Microsoft GraphRAG's standard indexing: 476 text units of
+about 600 tokens (60 overlap) within one lecture; entity and relationship extraction per unit with GraphRAG's
+tuple-format prompt (entity types adapted to the course, no gleaning); entities merged by name, relationships by pair;
+Louvain communities (communities over 40 entities split again, 3 or more kept); one GraphRAG-style community report
+per community; embeddings of entities and reports. Index: 3,515 entities, 3,790 relationships, 332 communities and
+reports. Query, as GraphRAG's local search without text units: top 12 entities by similarity, up to 24 relationships
+touching them, up to 4 community reports, each item labelled with the lectures and times of its text units. Same
+answer rules as RAG. One call.</td></tr>
+<tr><td><b>GraphRAG with text</b></td><td>The same context plus the source text units of the selected entities, ranked as
+GraphRAG's local search ranks them, added up to 6,000 tokens (half of GraphRAG's default 12,000-token local context),
+each labelled with lecture, title and start time. One call.</td></tr>
+<tr><td><b>Ours, fact search only</b></td><td>Ours offered only <code>fact_lookup</code>.</td></tr>
+<tr><td><b>Ours, graph tools only</b></td><td>Ours offered only <code>check_concept</code>, <code>lecture_dependencies</code>,
+<code>lecture_overview</code> and <code>course_goals</code> (no fact search).</td></tr>
+</table></div>
+<p>The ablations replace the tool list question answering offers, and answer a call to a removed tool with its own
+“There is no tool …” result; prompt, tool descriptions, rounds and everything else stay as shipped, and
+<code>pipeline/qa</code> itself is not modified. The first ablation runs were invalid: the patch bound the function
+<code>qa.answer</code> instead of the module, so both ran with every tool (found when they gave the same answer on 52
+of 53 questions). The patch was fixed, checked (fact search only is offered one tool, graph tools only the other four),
+and both were rerun and re-judged; the invalid runs are kept apart and used only in the judge-agreement check.</p>
+
+<h4>The questions</h4>
+<p>65 questions, each with a gold answer and gold sources (fact or sentence IDs with lecture and time), written from
+the transcripts (<code>make_questions.py</code>): definition 7, explanation 7, comparison 7, list 4, formula 5, where 5,
+prerequisite 4, structure 5, not covered 9 (the course does not teach the topic; the right answer says so), multihop 12.
+They include the demo plan's questions and the QA bench's B-questions. The 12 multihop questions (M01–M12,
+<code>questions_multihop.md</code>) were written without looking at any system's output and checked against the
+transcripts; each needs passages from three to seven lectures, in four kinds: a chain of causes across lectures, a
+topic spread over more lectures than a top-8 search covers, the course order, and a link between two concepts that
+the course states only in pieces.</p>
+<p>Every question with its gold answer, sources, and each system's score in run 1 (an asterisk: the answer had a false
+claim), with the judge's note on ours and on RAG:</p>
+{{BASE:questions}}
+
+<h4>Runs</h4>
+<p>Run 1: every system on all 65 questions. Runs 2 and 3: ours, RAG and RAG with thinking on the 40 questions of the
+categories where they differ most or that test reliability (not covered, where, prerequisite, structure, formula and
+multihop); same settings, only sampling differs. Recorded per answer: wall seconds, time to the first answer token (ours:
+the first streamed draft), retrieval seconds, context and output tokens, model calls. No run had an error. The repeats
+vary little: across the three runs, ours gave the same answer text on 29 of the 40 questions, RAG on 15, RAG with
+thinking on 39 (counted from <code>runs/</code> for this page), and the category means hardly move:</p>
+{{BASE:repeats}}
+
+<h4>Judging</h4>
+<ul>
+<li><b>One judge for every answer:</b> Claude Sonnet graded all {{BASE:n_judged}} answers (8 systems × 65 in run 1, plus
+3 systems × 2 runs × 40), four judges in parallel on disjoint sets. Each saw the question, its category, whether the
+course covers it, the gold answer, and every system's answer labelled with the system's name; none saw earlier
+judgments.</li>
+<li><b>Criteria</b>, one line per answer: <code>correct</code> 1 (the gold's main points, nothing wrong), 0.5 (partly
+right or incomplete) or 0 (wrong, empty, or a false “not covered”); on not-covered questions, 1 means it says the
+course does not cover the topic. <code>hallucinations</code>: the number of false claims, contradictions of the course,
+or outside content presented as taught. <code>not_covered_handled</code> (not-covered questions only): said not
+covered and invented no course content. A note of at most 12 words.</li>
+<li><b>Second judge:</b> an earlier pass by Claude Opus graded 257 of the same answers (ours, plain and RAG on the
+first 53 questions, and the invalid ablation runs). Agreement on <code>correct</code>: exact 0.864, never more than half
+a point apart, Cohen's kappa 0.715; on whether an answer has a false claim, 0.930. Opus is more lenient (ours 0.915
+under Opus, 0.868 under Sonnet; plain 0.396 and 0.255), but both judges rank the systems the same way. The 35
+disagreements are listed in <code>judge_agreement.md</code>.</li>
+<li><b>Citation validity, by code</b> (the same rule for every system, <code>summarize.py</code>): each
+“(lecture N, m:ss)” an answer writes is valid when the lecture exists and at least half of the content words of the
+sentence it closes occur in that lecture's transcript from 30 s before to 240 s after the cited time.</li>
+</ul>
+
+<h4>Results</h4>
+<p>All systems, all 65 questions, run 1. False claims: the count (answers with at least one).</p>
+{{BASE:overall}}
+<details open><summary>Correct per category <span class="meta">mean of 1 / 0.5 / 0; the best in each row in bold</span></summary>{{BASE:cat_correct}}</details>
+<details><summary>False claims per category <span class="meta">count, run 1</span></summary>{{BASE:cat_halluc}}</details>
+<details><summary>Citations valid per category <span class="meta">valid / written, by code</span></summary>{{BASE:cat_cit}}</details>
+<details><summary>Seconds per category <span class="meta">median answer / median first token</span></summary>{{BASE:cat_lat}}</details>
+<details><summary>Context per category <span class="meta">median context tokens · mean model calls</span></summary>{{BASE:cat_ctx}}</details>
+<figure class="wide"><div class="frame">{{BASE:fig_abl}}</div>
+<figcaption>Ours against its two ablations, with RAG for reference. The graph tools carry definitions and
+prerequisites (graph tools only 1.0 and 0.75, fact search only 0.929 and 0); fact search carries multihop (0.583
+against 0.333). On structure the graph tools do better (0.6 against 0.4: the goals tool). Ours, with both, is not
+always the best of the three: on prerequisites and multihop one ablation beats it.</figcaption></figure>
+<figure class="wide"><div class="frame">{{BASE:fig_lat}}</div>
+<figcaption>Seconds per answer. RAG with thinking pays about 21 s of thinking for no gain in overall correctness.
+GraphRAG with text reads a median 8,291 context tokens, the most of any system; ours 4,892, RAG 4,033.</figcaption></figure>
+
+<h4>Limits of this test</h4>
+<ul>
+<li>One course and 65 questions; a category has 4 to 12 questions, so one question moves its mean by 0.04 to 0.125
+(a half point) or 0.08 to 0.25 (a full point).</li>
+<li>One model size: Gemma 4 12B for every system. The layer itself was built with Qwen 3.8 27B, so ours carries the
+work of a larger model done once, offline; that is the method, and it is the cost in point 4 of Part I.</li>
+<li>One judge family. Sonnet graded everything; Opus agreed with kappa 0.715 on 257 answers.</li>
+<li>The repeats vary little (most answer texts are the same in all three runs), so they show stability under these
+settings, not the full spread of sampling.</li>
+</ul>
+
+<h4>How to rerun</h4>
+<p>From <code>baseline-tests/</code>. The llama-server on port 8092 is started by question answering on first use, or
+by <code>python -m qa "hi"</code> in <code>pipeline/</code>; <code>python -m qa --stop</code> stops it.</p>
+<pre data-lang="bash">python3 rag.py build                      # chunks + embeddings (27 min on CPU; rag/embeddings.json not committed)
+python3 graphrag_build.py extract         # resumable extraction -> graphrag/extractions.jsonl
+python3 graphrag_build.py graph           # merge, Louvain, community reports, embeddings -> graphrag/
+python3 run_systems.py ours plain rag rag_think graphrag_text graphrag_notext abl_facts abl_graph
+for r in 2 3; do python3 run_systems.py ours rag rag_think --run $r \
+    --categories not_covered where prerequisite structure formula; done
+for r in 2 3; do python3 run_systems.py ours rag rag_think --run $r --categories multihop; done   # as queue.sh ran them
+python3 render_for_judge.py               # judge/todo_*.txt: answers not yet in judgments.jsonl
+# judge them into judgments.jsonl (fields above), then
+python3 summarize.py                      # summary.json, tables.md, examples.jsonl, demo_questions.json
+python3 judge_agreement.py                # judge_agreement.md: Opus vs Sonnet on the 257 answers both judged</pre>
+
+<h4 id="ev-act-study">The activities study</h4>
+<p>Question answering is half of what the layer is for; the other half is activities. A second study
+(<code>baseline-tests/activities_study/</code>) asks two questions: which activities are only possible with the
+knowledge layer, and how activity quality drops without it, at the same kinds and counts.</p>
+<ul>
+<li><b>Sample:</b> six lectures chosen by code: of the 35 lectures whose activities include every kind of the study
+(quiz, recap, open question, odd one out, put in order, concept map, recall), six evenly spaced in course order:
+lectures 2, 18, 28, 39, 51 and 62.</li>
+<li><b>Ours:</b> the shipped activities (<code>activities/lec_&lt;n&gt;.json</code>, not regenerated). Their quiz, open
+question, odd one out and put in order were written by Qwen 3.8 27B (with its judge and one rewrite), recaps by
+Gemma 4 12B; recall and concept maps are code.</li>
+<li><b>Ours on Gemma:</b> our stage 5 run again on the same Gemma 4 12B as the baselines, from the layer, for the five
+model-made kinds, with its code checks and retry and no judge (the baselines get no judge either). This makes the
+comparison same-model; recall and concept maps are code from the layer, so they are the shipped ones.</li>
+<li><b>B1, plain:</b> the whole lecture transcript and a short plain prompt per kind asking for the same JSON; one call
+per lecture and kind; JSON schema enforced; no code checks, no retry beyond unparsable answers.</li>
+<li><b>B2, our prompts without the layer:</b> our own activity prompts with the whole transcript, numbered by
+sentence, where the facts go; the layer's other inputs (sub-goal, objective, lecture goal, related concepts,
+relationships) given as “(not given)” or “(none)”; stage 5's own code checks with retry and its conversion. Concept
+maps and recall have no prompt of ours (they are code), so both baselines get B1's prompt for them, B2 with the
+numbered transcript and sentence citations.</li>
+<li><b>Counts:</b> each baseline is asked, per lecture, for as many items of each kind as ours has. All Gemma requests
+use the pipeline's client, sampling and cache, thinking on, max_tokens 24,576.</li>
+<li><b>Grading, three ways:</b> (1) the pipeline's own activity judges on Gemma, one round, no rewrite, for the five
+judged kinds, each seeing what its writer saw (B1 cites nothing, so each B1 item is shown with the transcript window
+that best matches it); (2) code checks on every item: schema, duplicates, cites sources, traceable (at least 60% of the
+key text's content words in one 3-sentence window of the transcript), quiz key position and length, source talk,
+concept-map ends found together with a typed relation, recall naming an earlier lecture that has the concept;
+(3) a blind Sonnet judge per lecture, the systems shuffled per unit as sets X / Y / Z with no IDs, grading each item
+for correct, grounded, distractors, fit to the lecture's goals and use of earlier lectures.</li>
+<li><b>Only possible with the layer:</b> counted from ours over the course and the sample: recall, typed concept maps,
+complete the map, match the pairs, crosswords, spaced-review cards, fact IDs, concept links, and open questions on
+earlier lectures' facts.</li>
+</ul>
+<div class="callout warn"><span class="tag">Results pending · the study is running</span>
+<p>Generation, judging and summary (<code>activities_study/out/summary.md</code>) are not finished. Its tables go
+here and in points 2 and 3 of <a href="#baselines">What the method buys</a>.</p></div>

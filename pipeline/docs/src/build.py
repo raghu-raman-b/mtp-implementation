@@ -3,6 +3,8 @@
 Macros in the body files:
   {{PROMPT:name.txt}}   the full prompt file, escaped, in a collapsible block
   {{S:key}}             a real sample (escaped text) computed below from the pipeline's files
+  {{EVAL:key}}          evaluation HTML from evals.py
+  {{BASE:key}}          baseline-comparison HTML from baselines.py (data in baselines/)
 """
 import html
 import json
@@ -158,6 +160,8 @@ for f in ("old_fact_prompt.txt", "mvp_quiz_prompt.txt", "v1_segment_prompt.txt",
 sys.path.insert(0, str(HERE))
 import evals  # noqa: E402
 S_EVAL = evals.build(WT, HERE)
+import baselines  # noqa: E402
+S_BASE = baselines.build(HERE)
 _q30 = J(O / "activities/checks.json")["lectures"]["30"]["quiz"]["quiz:30/S0"]["retry"]
 S["retry30"] = "\n".join(_q30["problems"][0]) if isinstance(_q30["problems"][0], list) else str(_q30["problems"][0])
 
@@ -186,6 +190,7 @@ body = re.sub(r"\{\{PROMPT:([\w.]+)\}\}", lambda m: prompt_block(m.group(1)), bo
 body = re.sub(r"\{\{S:([\w.]+)\}\}", sub_s, body)
 body = re.sub(r"\{\{FILE:([\w./-]+)\}\}", lambda m: html.escape((WT / m.group(1)).read_text().rstrip("\n")), body)
 body = re.sub(r"\{\{EVAL:(\w+)\}\}", lambda m: S_EVAL.get(m.group(1), f"[missing eval {m.group(1)}]"), body)
+body = re.sub(r"\{\{BASE:(\w+)\}\}", lambda m: S_BASE.get(m.group(1), f"[missing baseline {m.group(1)}]"), body)
 out = (HERE / "head.html").read_text().replace("{{BODY}}", body)
 dest = P / "docs" / "pipeline.html"
 dest.write_text(out)
