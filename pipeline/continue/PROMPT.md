@@ -53,6 +53,18 @@ with python, it is large), then this file's "State" and "Next".
   that other runs are writing under `output/logs/` (rerun when nothing runs); never `pkill -f` a pattern that matches
   your own shell; fake servers in tests must not use 8094/8095 while a forward is up.
 
+## QA OPTIMISATION 2026-11-19 (~20:15 IST) — READ THIS FIRST
+User decisions: check_concept takes a list (one call, all concepts); fact_lookup/lecture tools stay separate calls
+(explainable); new tool course_structure fed by a new stage 4f (Gemma 4 12B, per segment, picks sentence IDs about
+course logistics only; text copied verbatim by code); viewer names each concept loaded; same 65 questions (no new
+set), no RAG rerun; ours rerun with thinking vs no-thinking in the tool round (label "thinking"/"no thinking"
+latency); docs: targeted edits by a new Opus agent (tool table + new optimisation section, minimal tokens); graphs:
+SciencePlots, paper-ready, professional labels, all studies, folder graphs/. Roles: Sonnet = code/running/judging,
+Opus = docs only; main session orchestrates.
+Tasks: T1 QA code (Sonnet, worktree) | T2 stage 4f (Sonnet, worktree, local GPU) | T3 graphs/ (Sonnet, worktree)
+-> R1 review/merge -> T4 rerun ours think/nothink, 65 q + repeats (Sonnet, GPU) -> T5 Sonnet judges -> T6 graphs
+update -> T7 docs (Opus, targeted) -> R2 merge/push. RUNNING: T1, T2, T3 (started ~20:15).
+
 ## DAY 2026-11-19 (from 11:30 IST) — READ THIS FIRST; supersedes NIGHT below
 User (11:35): finish today: activities study, judging answers + activities, results to docs, sample questions; then
 merge. User's point for the docs: QA can be optimised to ONE tool call fetching every needed concept at once, so latency
