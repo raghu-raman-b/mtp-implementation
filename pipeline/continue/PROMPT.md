@@ -73,7 +73,7 @@ consistently beats the baselines. Plan to brief (Sonnet for running/judging/grap
 audience, outline, weekly syllabus; IDs CPnn, cited "(course page)"); 4f prompt now includes the instructor's
 self-introduction (4f NOT rerun); CS0029 (lecture 1, 1/2-1/3, instructor intro) added by hand, source "manual (user)"
 (38a98ce). Benchmarks NOT rerun after this: the run-to-run runs tomorrow use this version — say so in the docs; also
-update the docs' course_structure tool row (course page) in that pass. Demo restarted (serve.py PID 243354); checked:
+update the docs' course_structure tool row (course page) in that pass. Demo restarted again after 7f47cbf (viewer nested lists/list numbering; citation after a parenthesis stays outside) — serve.py PID 249834 (earlier note of 243354 was wrong); checked:
 instructor, prerequisites, week 3 answered from the course page.
 Demo left running 19 Nov ~23:15: `QA_THINK=1 setsid nohup bin/python pipeline/viewer/serve.py nptel_vr --port 8765
 --warm` (from pipeline/: `../bin/python viewer/serve.py ...`), log pipeline/output/logs/demo_viewer.log, llama-server
